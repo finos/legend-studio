@@ -41,5 +41,5 @@ export const ViewerStoreProvider = ({
 export const useViewerStore = (): ViewerStore =>
   guaranteeNonNullable(
     useContext(ViewerStoreContext),
-    'useViewerStore() hook must be used inside ReviewStore context provider',
+    `Can't find viewer store in context`,
   );

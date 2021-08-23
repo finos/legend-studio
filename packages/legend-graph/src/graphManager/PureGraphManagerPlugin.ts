@@ -22,4 +22,16 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
 
   getExtraPureGraphExtensionClasses?(): Clazz<PackageableElement>[];
+
+  getExtraPureGrammarParserNames?(): string[];
+
+  getExtraPureGrammarKeywords?(): string[];
+
+  /**
+   * Many system elements are included when building the graph, but only a few should
+   * be presented in the form view to user as selection options. This method will
+   * provide the allowed list of system element paths that we want the users to be
+   * able to see directly in selection/dropdown menus.
+   */
+  getExtraExposedSystemElementPath?(): string[];
 }

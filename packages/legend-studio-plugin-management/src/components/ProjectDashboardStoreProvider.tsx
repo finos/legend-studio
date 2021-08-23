@@ -17,8 +17,9 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-studio';
+import { useApplicationStore } from '@finos/legend-application';
 import { ProjectDashboardStore } from '../stores/ProjectDashboardStore';
+import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 
 const ProjectDashboardStoreContext = createContext<
   ProjectDashboardStore | undefined
@@ -30,8 +31,9 @@ export const ProjectDashboardStoreProvider = ({
   children: React.ReactNode;
 }): React.ReactElement => {
   const applicationStore = useApplicationStore();
+  const sdlcServerClient = useSDLCServerClient();
   const store = useLocalObservable(
-    () => new ProjectDashboardStore(applicationStore),
+    () => new ProjectDashboardStore(applicationStore, sdlcServerClient),
   );
   return (
     <ProjectDashboardStoreContext.Provider value={store}>
@@ -43,5 +45,5 @@ export const ProjectDashboardStoreProvider = ({
 export const useProjectDashboardStore = (): ProjectDashboardStore =>
   guaranteeNonNullable(
     useContext(ProjectDashboardStoreContext),
-    'useProjectDashboardStore() hook must be used inside ProjectDashboardStoreContext context provider',
+    `Can't find project dashboard store in context`,
   );

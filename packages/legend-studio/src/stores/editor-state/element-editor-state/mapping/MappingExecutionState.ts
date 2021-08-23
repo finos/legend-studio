@@ -49,12 +49,6 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { TAB_SIZE } from '../../../EditorConfig';
-import { LambdaEditorState } from '../LambdaEditorState';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '../../../ApplicationStore';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
 import type {
   Runtime,
@@ -96,6 +90,12 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
 } from '@finos/legend-graph';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  LambdaEditorState,
+  TAB_SIZE,
+} from '@finos/legend-application';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -135,7 +135,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -250,12 +250,12 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
       'Model-to-model mapping execution test data is not a valid JSON string',
     );
     const engineConfig =
-      this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
     return createRuntimeForExecution(
       this.mapping,
       new JsonModelConnection(
         PackageableElementExplicitReference.create(
-          this.editorStore.graphState.graph.modelStore,
+          this.editorStore.graphManagerState.graph.modelStore,
         ),
         PackageableElementExplicitReference.create(
           guaranteeNonNullable(this.inputData.sourceClass.value),
@@ -310,7 +310,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphState.graphManager.TEMP__getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
     return createRuntimeForExecution(
       this.mapping,
       new FlatDataConnection(
@@ -586,17 +586,19 @@ export class MappingExecutionState {
             tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
           const testContainer = new TestContainer(
-            this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
+            this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
               this.executionResultText,
             ),
             singleExecutionTest,
           );
           singleExecutionTest.asserts.push(testContainer);
           const servicePackage =
-            this.editorStore.graphState.graph.getOrCreatePackage(packagePath);
+            this.editorStore.graphManagerState.graph.getOrCreatePackage(
+              packagePath,
+            );
           service.test = singleExecutionTest;
           servicePackage.addElement(service);
-          this.editorStore.graphState.graph.addElement(service);
+          this.editorStore.graphManagerState.graph.addElement(service);
           this.editorStore.openElement(service);
         } else {
           throw new UnsupportedOperationError(
@@ -625,8 +627,8 @@ export class MappingExecutionState {
       ) {
         this.isExecuting = true;
         const result =
-          (yield this.editorStore.graphState.graphManager.executeMapping(
-            this.editorStore.graphState.graph,
+          (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+            this.editorStore.graphManagerState.graph,
             this.mappingEditorState.mapping,
             query,
             runtime,
@@ -686,7 +688,7 @@ export class MappingExecutionState {
     yield flowResult(
       this.queryState.updateLamba(
         setImplementation
-          ? this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+          ? this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
               guaranteeType(getMappingElementTarget(setImplementation), Class),
             )
           : RawLambda.createStub(),

@@ -22,7 +22,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState';
-import type { StoreRelational_EditorPlugin_Extension } from '../../../StoreRelational_EditorPlugin_Extension';
+import type { StoreRelational_StudioPlugin_Extension } from '../../../StoreRelational_StudioPlugin_Extension';
 import { DatabaseBuilderState } from './DatabaseBuilderState';
 import type {
   PackageableElement,
@@ -138,12 +138,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.REDSHIFT;
     }
     const extraDatasourceSpecificationTypeGetters =
-      this.editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
+      this.editorStore.pluginManager
+        .getStudioPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_EditorPlugin_Extension
+              plugin as StoreRelational_StudioPlugin_Extension
             ).getExtraDatasourceSpecificationTypeGetters?.() ?? [],
         );
     for (const typeGetter of extraDatasourceSpecificationTypeGetters) {
@@ -198,12 +198,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       default: {
         const extraDatasourceSpecificationCreators =
-          this.editorStore.applicationStore.pluginManager
-            .getEditorPlugins()
+          this.editorStore.pluginManager
+            .getStudioPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_EditorPlugin_Extension
+                  plugin as StoreRelational_StudioPlugin_Extension
                 ).getExtraDatasourceSpecificationCreators?.() ?? [],
             );
         for (const creator of extraDatasourceSpecificationCreators) {
@@ -240,12 +240,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     }
 
     const extraAuthenticationStrategyTypeGetters =
-      this.editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
+      this.editorStore.pluginManager
+        .getStudioPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_EditorPlugin_Extension
+              plugin as StoreRelational_StudioPlugin_Extension
             ).getExtraAuthenticationStrategyTypeGetters?.() ?? [],
         );
     for (const typeGetter of extraAuthenticationStrategyTypeGetters) {
@@ -305,12 +305,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         return;
       default: {
         const extraAuthenticationStrategyCreators =
-          this.editorStore.applicationStore.pluginManager
-            .getEditorPlugins()
+          this.editorStore.pluginManager
+            .getStudioPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_EditorPlugin_Extension
+                  plugin as StoreRelational_StudioPlugin_Extension
                 ).getExtraAuthenticationStrategyCreators?.() ?? [],
             );
         for (const creator of extraAuthenticationStrategyCreators) {

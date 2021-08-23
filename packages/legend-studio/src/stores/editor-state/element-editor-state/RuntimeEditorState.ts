@@ -27,7 +27,7 @@ import {
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
-import type { TreeData } from '@finos/legend-application-components';
+import type { TreeData } from '@finos/legend-art';
 import { ConnectionEditorState } from './connection/ConnectionEditorState';
 import { getMappingElementSource } from './mapping/MappingEditorState';
 import type {
@@ -419,7 +419,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
   }
 
   get packageableConnections(): PackageableConnection[] {
-    return this.editorStore.graphState.graph.ownConnections.filter(
+    return this.editorStore.graphManagerState.graph.ownConnections.filter(
       (connection) =>
         isConnectionForStore(connection.connectionValue, this.store),
     );
@@ -461,7 +461,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
         this.runtimeEditorState.runtimeValue.mappings.map(
           (mapping) => mapping.value,
         ),
-        this.editorStore.graphState.graph,
+        this.editorStore.graphManagerState.graph,
       );
       if (!stores.includes(this.store)) {
         this.runtimeEditorState.openTabFor(
@@ -506,7 +506,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
   }
 
   get packageableConnections(): PackageableConnection[] {
-    return this.editorStore.graphState.graph.ownConnections.filter(
+    return this.editorStore.graphManagerState.graph.ownConnections.filter(
       (connection) =>
         isConnectionForModelStoreWithClass(
           connection.connectionValue,
@@ -518,7 +518,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
   createNewCustomConnection(): Connection {
     return new JsonModelConnection(
       PackageableElementExplicitReference.create(
-        this.editorStore.graphState.graph.modelStore,
+        this.editorStore.graphManagerState.graph.modelStore,
       ),
       PackageableElementExplicitReference.create(this.class),
     );
@@ -608,7 +608,7 @@ export class RuntimeEditorState {
       decorateRuntimeWithNewMapping(
         this.runtimeValue,
         mapping,
-        this.editorStore.graphState.graph,
+        this.editorStore.graphManagerState.graph,
       );
       this.reprocessRuntimeExplorerTree();
     }
@@ -627,7 +627,7 @@ export class RuntimeEditorState {
     decorateRuntimeWithNewMapping(
       this.runtimeValue,
       newVal,
-      this.editorStore.graphState.graph,
+      this.editorStore.graphManagerState.graph,
     );
     this.reprocessRuntimeExplorerTree();
   }
@@ -695,7 +695,7 @@ export class RuntimeEditorState {
   decorateRuntimeConnections(): void {
     getStoresFromMappings(
       this.runtimeValue.mappings.map((mapping) => mapping.value),
-      this.editorStore.graphState.graph,
+      this.editorStore.graphManagerState.graph,
     ).forEach((store) =>
       this.runtimeValue.addUniqueStoreConnectionsForStore(store),
     );

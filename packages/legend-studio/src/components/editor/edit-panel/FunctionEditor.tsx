@@ -31,20 +31,13 @@ import {
 } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import { FaLock, FaPlus, FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
-import { StudioLambdaEditor } from '../../shared/LambdaEditor';
-import {
-  clsx,
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-application-components';
-import { CORE_TEST_ID } from '../../../const';
-import { getElementIcon } from '../../shared/Icon';
+import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 import type {
   ConcreteFunctionDefinition,
   StereotypeReference,
@@ -65,6 +58,9 @@ import {
   PrimitiveType,
   StereotypeExplicitReference,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
+import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -209,7 +205,7 @@ const ParameterBasicEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -241,7 +237,7 @@ const ParameterBasicEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -392,7 +388,7 @@ const ReturnTypeEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -424,7 +420,7 @@ const ReturnTypeEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -471,7 +467,7 @@ export const FunctionMainEditor = observer(
     functionEditorState: FunctionEditorState;
   }) => {
     const editorStore = useEditorStore();
-    const defaultType = editorStore.graphState.graph.getPrimitiveType(
+    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
     const { functionElement, isReadOnly, functionEditorState } = props;

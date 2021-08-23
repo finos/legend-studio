@@ -17,12 +17,12 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WorkspaceOption } from '../../stores/SetupStore';
-import type { SelectComponent } from '@finos/legend-application-components';
-import { CustomSelectorInput } from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
+import { CustomSelectorInput } from '@finos/legend-art';
 import { FaPlus } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const WorkspaceSelector = observer(
   (

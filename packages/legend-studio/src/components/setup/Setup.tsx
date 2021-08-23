@@ -19,16 +19,12 @@ import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-application-components';
-import {
-  CustomSelectorInput,
-  PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
+import { CustomSelectorInput, PanelLoadingIndicator } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
-import { CORE_TEST_ID } from '../../const';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
+import { STUDIO_TEST_ID } from '../StudioTestID';
 import Dialog from '@material-ui/core/Dialog';
 import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
@@ -41,7 +37,10 @@ import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { flowResult } from 'mobx';
 import { ProjectType } from '@finos/legend-server-sdlc';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import {
+  useApplicationStore,
+  NotificationSnackbar,
+} from '@finos/legend-application';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
@@ -99,7 +98,9 @@ const CreateProjectModal = observer(() => {
   ): void => {
     event.preventDefault();
     if (importProjectSuccessReport) {
-      window.open(importProjectSuccessReport.reviewUrl, '_blank');
+      applicationStore.navigator.openNewWindow(
+        importProjectSuccessReport.reviewUrl,
+      );
     } else {
       if (projectIdentifier && groupId && artifactId) {
         if (projectType === ProjectType.PROTOTYPE) {
@@ -323,7 +324,7 @@ const CreateProjectModal = observer(() => {
                 <div
                   className="panel__content__form__section__list__items"
                   data-testid={
-                    CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+                    STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
                   }
                 >
                   {tagsArray.map((value, idx) => (
@@ -641,7 +642,7 @@ const SetupSelection = observer(() => {
         <div className="setup">
           <div
             className="setup__content"
-            data-testid={CORE_TEST_ID.SETUP__CONTENT}
+            data-testid={STUDIO_TEST_ID.SETUP__CONTENT}
           >
             <div>
               <ProjectSelector

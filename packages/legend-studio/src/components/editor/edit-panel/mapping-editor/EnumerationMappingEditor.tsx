@@ -17,7 +17,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaTimes, FaPlus } from 'react-icons/fa';
-import type { SelectComponent } from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
 import {
   ResizablePanel,
   ResizablePanelGroup,
@@ -26,7 +26,8 @@ import {
   CustomSelectorInput,
   BlankPanelPlaceholder,
   createFilter,
-} from '@finos/legend-application-components';
+  EnumerationIcon,
+} from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { TypeTree } from '../../../shared/TypeTree';
 import { useDrop } from 'react-dnd';
@@ -39,8 +40,7 @@ import {
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { EnumerationIcon } from '../../../shared/Icon';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { MdModeEdit } from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
 import { noop } from '@finos/legend-shared';
@@ -68,8 +68,12 @@ const EnumerationMappingSourceSelectorModal = observer(
     const { enumerationMapping, closeModal, open } = props;
     const editorStore = useEditorStore();
     const options = [
-      editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER),
-      editorStore.graphState.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+      editorStore.graphManagerState.graph.getPrimitiveType(
+        PRIMITIVE_TYPE.INTEGER,
+      ),
+      editorStore.graphManagerState.graph.getPrimitiveType(
+        PRIMITIVE_TYPE.STRING,
+      ),
     ]
       .map(buildElementOption)
       .concat(editorStore.enumerationOptions);
@@ -362,7 +366,7 @@ export const EnumerationMappingEditor = observer(
             );
     }, [enumerationMapping, isReadOnly]);
     return (
-      <div data-testid={CORE_TEST_ID.MAIN_EDITOR} className="editor__main">
+      <div data-testid={STUDIO_TEST_ID.MAIN_EDITOR} className="editor__main">
         <div className="mapping-element-editor enumeration-mapping-editor">
           <div className="mapping-element-editor__metadata">
             {/* Target */}
@@ -449,7 +453,7 @@ export const EnumerationMappingEditor = observer(
               <ResizablePanelSplitter />
               <ResizablePanel size={300} minSize={300}>
                 <div
-                  data-testid={CORE_TEST_ID.SOURCE_PANEL}
+                  data-testid={STUDIO_TEST_ID.SOURCE_PANEL}
                   className="panel source-panel"
                 >
                   <div className="panel__header">

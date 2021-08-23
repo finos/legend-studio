@@ -40,7 +40,6 @@ import type { RawValueSpecification } from '../models/metamodels/pure/rawValueSp
 import type { ServiceExecutionMode } from './action/service/ServiceExecutionMode';
 import type { TEMP__AbstractEngineConfig } from './action/TEMP__AbstractEngineConfig';
 import type { DatabaseBuilderInput } from './action/generation/DatabaseBuilderInput';
-import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import type { RawRelationalOperationElement } from '../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type {
   ExecutionPlan,
@@ -49,12 +48,13 @@ import type {
 import type { ExecutionNode } from '../models/metamodels/pure/executionPlan/nodes/ExecutionNode';
 import type {
   GeneratorFn,
+  Log,
   ServerClientConfig,
   TracerServicePlugin,
 } from '@finos/legend-shared';
 import type { LightQuery, Query } from './action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
-import type { PureProtocolProcessorPlugin } from '../models/protocols/pure/PureProtocolProcessorPlugin';
+import type { GraphPluginManager } from '../GraphPluginManager';
 
 export interface TEMP__EngineSetupConfig {
   env: string;
@@ -71,15 +71,12 @@ export interface GraphBuilderOptions {
 }
 
 export abstract class AbstractPureGraphManager {
-  pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
-  pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
+  pluginManager: GraphPluginManager;
+  log: Log;
 
-  constructor(
-    pureGraphManagerPlugins: PureGraphManagerPlugin[],
-    pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
-  ) {
-    this.pureGraphManagerPlugins = pureGraphManagerPlugins;
-    this.pureProtocolProcessorPlugins = pureProtocolProcessorPlugins;
+  constructor(pluginManager: GraphPluginManager, log: Log) {
+    this.pluginManager = pluginManager;
+    this.log = log;
   }
 
   /**
@@ -94,7 +91,7 @@ export abstract class AbstractPureGraphManager {
 
   abstract initialize(
     config: TEMP__EngineSetupConfig,
-    plugins: {
+    options: {
       tracerServicePlugins?: TracerServicePlugin<unknown>[];
     },
   ): GeneratorFn<void>;

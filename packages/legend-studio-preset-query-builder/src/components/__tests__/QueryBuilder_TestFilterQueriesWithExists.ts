@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const lambda_input_filterWithExists = {
+export const TEST_DATA__lambda_input_filterWithExists = {
   _type: 'lambda',
   body: [
     {

@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-import { relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
+import { TEST_DATA__relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
 import { unitTest, guaranteeType } from '@finos/legend-shared';
-import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   PRIMITIVE_TYPE,
@@ -27,17 +30,17 @@ import {
   getClassMappingsByClass,
 } from '@finos/legend-graph';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await buildGraphBasic(
-    relationalCompleteGraphEntities as Entity[],
+  await TEST__buildGraphBasic(
+    TEST_DATA__relationalCompleteGraphEntities as Entity[],
     editorStore,
   );
 });
 
 test(unitTest('Relational database is loaded properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   expect(graph.ownStores).toHaveLength(3);
   expect(graph.ownDatabases).toHaveLength(2);
   // db
@@ -66,7 +69,7 @@ test(unitTest('Relational database is loaded properly'), () => {
 });
 
 test(unitTest('Relational Mapping is loaded properly'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   expect(graph.ownMappings).toHaveLength(2);
   const simpleRelationalMapping = graph.getMapping(
     'meta::relational::tests::simpleRelationalMapping',

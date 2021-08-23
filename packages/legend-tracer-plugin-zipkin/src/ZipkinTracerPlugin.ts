@@ -19,15 +19,17 @@ import SpanBuilder from 'zipkin-javascript-opentracing';
 import { BatchRecorder, jsonEncoder } from 'zipkin';
 import { HttpLogger } from 'zipkin-transport-http';
 import type { Span as ZipkinSpan } from 'opentracing';
-import type { TraceData } from '@finos/legend-shared';
+import type {
+  TraceData,
+  TracerServicePluginManager,
+} from '@finos/legend-shared';
 import {
+  CORE_TRACER_TAG,
   assertNonEmptyString,
   guaranteeNonNullable,
   isNonNullable,
   TracerServicePlugin,
 } from '@finos/legend-shared';
-import type { PluginManager } from '@finos/legend-studio';
-import { CORE_TRACER_TAG } from '@finos/legend-studio';
 
 interface ZipkinTracerPluginConfigData {
   url: string;
@@ -38,7 +40,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
   private _spanBuilder?: SpanBuilder;
 
   constructor() {
-    super(packageJson.name, packageJson.version);
+    super(packageJson.extensions.tracerPlugin, packageJson.version);
   }
 
   override configure(_configData: object): TracerServicePlugin<ZipkinSpan> {
@@ -82,7 +84,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
     return this;
   }
 
-  install(pluginManager: PluginManager): void {
+  install(pluginManager: TracerServicePluginManager): void {
     pluginManager.registerTracerServicePlugin(this);
   }
 

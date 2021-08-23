@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const simpleRelationalPlan = {
+export const TEST_DATA__simpleRelationalPlan = {
   plan: {
     serializer: {
       name: 'pure',

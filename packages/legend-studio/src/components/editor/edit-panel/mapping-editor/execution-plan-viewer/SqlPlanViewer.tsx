@@ -15,12 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { TextInputEditor } from '../../../../shared/TextInputEditor';
-import { EDITOR_LANGUAGE } from '../../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { SQL_DISPLAY_TABS } from '../../../../../stores/ExecutionPlanState';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { clsx } from '@finos/legend-application-components';
+import { clsx } from '@finos/legend-art';
 import { RelationalDatabaseConnectionEditor } from '../../connection-editor/RelationalDatabaseConnectionEditor';
 import { format } from 'sql-formatter';
 import { RelationalDatabaseConnectionValueState } from '../../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
@@ -49,6 +48,7 @@ import {
   BigInt,
   RelationalDatabaseConnection,
 } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
 
 interface QueryProps {
   query: string;
@@ -105,7 +105,7 @@ const generateDataTypeLabel = (
 
 const QueryViewer: React.FC<QueryProps> = ({ query, language, wordWrap }) => (
   <div className="mapping-test-editor__query-panel__query">
-    <TextInputEditor
+    <StudioTextInputEditor
       inputValue={query}
       isReadOnly={true}
       language={language}

@@ -26,7 +26,8 @@ import {
   TAB_SIZE,
   EDITOR_THEME,
   EDITOR_LANGUAGE,
-} from '../../../../stores/EditorConfig';
+  useApplicationStore,
+} from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import type {
   MergeEditorComparisonViewInfo,
@@ -54,14 +55,13 @@ import {
   setErrorMarkers,
   revealError,
   resetLineNumberGutterWidth,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const getConflictSummaryText = (
   conflictEditorState: EntityChangeConflictEditorState,

@@ -20,6 +20,7 @@ export const ELEMENT_PATH_DELIMITER = '::';
 export const UNIT_PATH_DELIMITER = '~';
 export const LAMBDA_PIPE = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
+export const DEFAULT_DATABASE_SCHEMA_NAME = 'default';
 
 export enum ROOT_PACKAGE_NAME {
   CORE = 'CORE',
@@ -92,9 +93,27 @@ export const AUTO_IMPORTS = [
 
 export enum CORE_ELEMENT_PATH {
   ANY = 'meta::pure::metamodel::type::Any',
-  // NOTE: we could have moved most of the paths from protocol classifier path here if it's not for the fact that
-  // Typescript does not allow to use computed value for enum.
-  // See https://github.com/microsoft/TypeScript/issues/27976
+
+  PROFILE_DOC = 'meta::pure::profiles::doc',
+
+  // classifier paths
+  PROFILE = 'meta::pure::metamodel::extension::Profile',
+  ENUMERATION = 'meta::pure::metamodel::type::Enumeration',
+  MEASURE = 'meta::pure::metamodel::type::Measure', // since we don't expose unit outside of measure, we probably don't need to reveal it
+  CLASS = 'meta::pure::metamodel::type::Class',
+  ASSOCIATION = 'meta::pure::metamodel::relationship::Association',
+  FUNCTION = 'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  FLAT_DATA = 'meta::flatData::metamodel::FlatData',
+  DATABASE = 'meta::relational::metamodel::Database',
+  SERVICE_STORE = 'meta::servicestore::metamodel::ServiceStore',
+  MAPPING = 'meta::pure::mapping::Mapping',
+  SERVICE = 'meta::legend::service::metamodel::Service',
+  DIAGRAM = 'meta::pure::metamodel::diagram::Diagram',
+  CONNECTION = 'meta::pure::runtime::PackageableConnection',
+  RUNTIME = 'meta::pure::runtime::PackageableRuntime',
+  FILE_GENERATION = 'meta::pure::generation::metamodel::GenerationConfiguration',
+  GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
+  SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
 }
 
 /**
@@ -299,5 +318,3 @@ export enum CORE_HASH_STRUCTURE {
   RAW_VARIABLE = 'RAW_VARIABLE',
   RAW_INSTANCE_VALUE = 'RAW_INSTANCE_VALUE',
 }
-
-export const DEFAULT_DATABASE_SCHEMA_NAME = 'default';

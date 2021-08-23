@@ -18,7 +18,7 @@
 // - ConnectionPointer
 // - EngineRuntime mapping
 // - EngineRuntime store
-export const testRuntimeRoundtrip = [
+export const TEST_DATA__RuntimeRoundtrip = [
   {
     path: 'test::tClass',
     content: {

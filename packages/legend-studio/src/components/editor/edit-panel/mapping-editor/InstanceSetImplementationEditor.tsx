@@ -23,13 +23,13 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type {
   ElementDragSource,
   MappingElementSourceDropTarget,
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import {
   InstanceSetImplementationState,
   MappingElementState,
@@ -46,7 +46,6 @@ import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
 import { PropertyMappingsEditor } from './PropertyMappingsEditor';
 import { useDrop } from 'react-dnd';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import { ActionAlertActionType } from '../../../../stores/ApplicationStore';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
@@ -57,7 +56,10 @@ import {
 } from './InstanceSetImplementationSourceSelectorModal';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import {
+  ActionAlertActionType,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type {
   InstanceSetImplementation,
   Property,
@@ -246,7 +248,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     }
     return (
       <div
-        data-testid={CORE_TEST_ID.SOURCE_PANEL}
+        data-testid={STUDIO_TEST_ID.SOURCE_PANEL}
         className={clsx('panel source-panel', {
           /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
           backdrop__element:

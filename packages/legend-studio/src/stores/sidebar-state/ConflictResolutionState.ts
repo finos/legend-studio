@@ -16,8 +16,8 @@
 
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -206,7 +206,7 @@ export class ConflictResolutionState {
       'Editor must be in conflict resolution mode to call this method',
     );
     const projectConfiguration =
-      (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConfigurationOfWorkspaceInConflictResolutionMode(
+      (yield this.editorStore.sdlcServerClient.getConfigurationOfWorkspaceInConflictResolutionMode(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       )) as PlainObject<ProjectConfiguration>;
@@ -320,7 +320,7 @@ export class ConflictResolutionState {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.editorStore.changeDetectionState.stop();
-      yield flowResult(this.editorStore.graphState.precomputeHashes());
+      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
@@ -347,7 +347,7 @@ export class ConflictResolutionState {
     try {
       // fetch latest revision
       const latestRevision = Revision.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getConflictResolutionRevision(
+        (yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.CURRENT,
@@ -359,7 +359,7 @@ export class ConflictResolutionState {
         `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
       );
       const entities =
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+        (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           this.sdlcState.currentRevisionId,
@@ -392,7 +392,7 @@ export class ConflictResolutionState {
     );
     try {
       const workspaceBaseEntities =
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+        (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.BASE,
@@ -457,7 +457,7 @@ export class ConflictResolutionState {
       });
       const entityChanges =
         this.editorStore.graphState.computeLocalEntityChanges();
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.acceptConflictResolution(
+      yield this.editorStore.sdlcServerClient.acceptConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
         {
@@ -522,7 +522,7 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.discardConflictResolutionChanges(
+      yield this.editorStore.sdlcServerClient.discardConflictResolutionChanges(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
@@ -576,7 +576,7 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.abortConflictResolution(
+      yield this.editorStore.sdlcServerClient.abortConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
@@ -611,14 +611,17 @@ export class ConflictResolutionState {
       if (this.hasResolvedAllConflicts) {
         // if the editor has already built the graph, we will get live entity
         const element =
-          this.editorStore.graphState.graph.getNullableElement(entityPath);
+          this.editorStore.graphManagerState.graph.getNullableElement(
+            entityPath,
+          );
         if (!element) {
           return undefined;
         }
-        const entity = this.editorStore.graphState.graphManager.elementToEntity(
-          element,
-          true,
-        );
+        const entity =
+          this.editorStore.graphManagerState.graphManager.elementToEntity(
+            element,
+            true,
+          );
         return entity;
       }
       // if the editor is still in conflict resolution phase (i.e. graph is not built yet), we will get entity from change detection or conflict resolutions

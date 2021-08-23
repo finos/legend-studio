@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const simpleDebuggingCase = [
+export const TEST_DATA__simpleDebuggingCase = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     path: 'myPack::BasicPerson',
@@ -317,7 +317,7 @@ export const simpleDebuggingCase = [
   },
 ];
 
-export const testAutoImportsWithSystemProfiles = [
+export const TEST_DATA__AutoImportsWithSystemProfiles = [
   {
     path: 'test::enumeration',
     content: {
@@ -349,7 +349,7 @@ export const testAutoImportsWithSystemProfiles = [
   },
 ];
 
-export const testAutoImportsWithAny = [
+export const TEST_DATA__AutoImportsWithAny = [
   {
     path: 'test::doc',
     content: {

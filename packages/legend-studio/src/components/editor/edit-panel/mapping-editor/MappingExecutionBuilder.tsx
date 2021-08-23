@@ -29,10 +29,10 @@ import {
   PlayIcon,
   FlaskIcon,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   getMappingElementSource,
@@ -43,7 +43,6 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { NewServiceModal } from '../service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import {
   guaranteeType,
   uniq,
@@ -57,20 +56,21 @@ import {
   MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
+  EDITOR_LANGUAGE,
   ActionAlertActionType,
   ActionAlertType,
-} from '../../../../stores/ApplicationStore';
+  useApplicationStore,
+} from '@finos/legend-application';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import {
   Class,
   RawLambda,
   SetImplementation,
   OperationSetImplementation,
 } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -153,8 +153,8 @@ const MappingExecutionQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = applicationStore.pluginManager
-      .getEditorPlugins()
+    const extraQueryEditors = editorStore.pluginManager
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           plugin.getExtraMappingExecutionQueryEditorRendererConfigurations?.() ??
@@ -186,7 +186,7 @@ const MappingExecutionQueryEditor = observer(
         flowResult(
           queryState.updateLamba(
             setImplementation
-              ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+              ? editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
                   guaranteeType(
                     getMappingElementTarget(setImplementation),
                     Class,
@@ -304,7 +304,7 @@ const MappingExecutionQueryEditor = observer(
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={250}>
                 <div className="mapping-execution-builder__query-panel__query">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}
@@ -361,7 +361,7 @@ export const MappingExecutionObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -381,7 +381,7 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -406,7 +406,7 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -695,7 +695,7 @@ export const MappingExecutionBuilder = observer(
                   </div>
                 </div>
                 <div className="panel__content mapping-execution-builder__result-panel__content">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={executionResultText ?? ''}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.JSON}

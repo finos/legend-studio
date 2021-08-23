@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 
-import fileGenerationTestData from './FileGenerationTestData.json';
+import TEST_DATA__fileGeneration from './TEST_DATA__FileGeneration.json';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
-import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import { PackageableElementReference } from '@finos/legend-graph';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await buildGraphBasic(fileGenerationTestData as Entity[], editorStore);
+  await TEST__buildGraphBasic(
+    TEST_DATA__fileGeneration as Entity[],
+    editorStore,
+  );
 });
 
 test(unitTest('File Generation Graph Success'), () => {
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   expect(graph.ownClasses).toHaveLength(3);
   expect(graph.ownEnumerations).toHaveLength(1);
   expect(graph.ownProfiles).toHaveLength(1);
@@ -45,10 +51,10 @@ test(unitTest('File Generation Graph Success'), () => {
 });
 
 test(unitTest('Generated Function paths are valid'), () => {
-  const functionGen = editorStore.graphState.graph.getFunction(
+  const functionGen = editorStore.graphManagerState.graph.getFunction(
     'model::functionFullPath_Firm_1__Firm_MANY__Firm_$1_MANY$__String_1__Boolean_1_',
   );
   const entity =
-    editorStore.graphState.graphManager.elementToEntity(functionGen);
+    editorStore.graphManagerState.graphManager.elementToEntity(functionGen);
   expect(entity.path).toBe('model::functionFullPath');
 });

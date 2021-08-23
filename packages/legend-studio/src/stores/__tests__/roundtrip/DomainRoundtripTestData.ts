@@ -23,7 +23,7 @@
 // - DerivedProperty:
 //   - GenericType
 //   - TaggedValue + Stereotype
-export const testClassRoundtrip = [
+export const TEST_DATA__ClassRoundtrip = [
   {
     path: '__internal__::SectionIndex',
     content: {
@@ -361,7 +361,7 @@ export const testClassRoundtrip = [
   },
 ];
 
-export const testClassWithComplexConstraint = [
+export const TEST_DATA__ClassWithComplexConstraint = [
   {
     path: 'test::A',
     content: {
@@ -496,7 +496,7 @@ export const testClassWithComplexConstraint = [
 // References to resolve in Enumeration
 // - TaggedValue + Stereotype
 // - EnumValue: TaggedValue + Stereotype
-export const testEnumerationRoundtrip = [
+export const TEST_DATA__EnumerationRoundtrip = [
   {
     path: '__internal__::SectionIndex',
     content: {
@@ -603,7 +603,7 @@ export const testEnumerationRoundtrip = [
 // - DerivedProperty:
 //   - GenericType
 //   - TaggedValue + Stereotype
-export const testAssociationRoundtrip = [
+export const TEST_DATA__AssociationRoundtrip = [
   {
     path: '__internal__::SectionIndex',
     content: {
@@ -719,7 +719,7 @@ export const testAssociationRoundtrip = [
 // - TaggedValue + Stereotype
 // - ReturnType
 // - VariableType
-export const testFunctionRoundtrip = [
+export const TEST_DATA__FunctionRoundtrip = [
   {
     path: '__internal__::SectionIndex',
     content: {
@@ -825,7 +825,7 @@ export const testFunctionRoundtrip = [
   },
 ];
 
-export const testMeasureRoundtrip = [
+export const TEST_DATA__MeasureRoundtrip = [
   {
     path: 'test::newMeasure',
     content: {

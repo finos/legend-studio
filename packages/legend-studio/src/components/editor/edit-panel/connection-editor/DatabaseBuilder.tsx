@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import Dialog from '@material-ui/core/Dialog';
-import type { TreeNodeContainerProps } from '@finos/legend-application-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -26,7 +26,9 @@ import {
   FireIcon,
   clsx,
   TreeView,
-} from '@finos/legend-application-components';
+  SchemaIcon,
+  TableIcon,
+} from '@finos/legend-art';
 import { useEffect } from 'react';
 import type {
   DatabaseBuilderState,
@@ -46,14 +48,13 @@ import {
   FaRegCircle,
 } from 'react-icons/fa';
 import { capitalize } from '@finos/legend-shared';
-import { SchemaIcon, TableIcon } from '../../../shared/Icon';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper';
 import { flowResult } from 'mobx';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -337,7 +338,7 @@ export const DatabaseBuilder = observer(
                     </div>
                   </div>
                   <div className="panel__content">
-                    <TextInputEditor
+                    <StudioTextInputEditor
                       language={EDITOR_LANGUAGE.PURE}
                       inputValue={databaseBuilderState.databaseGrammarCode}
                       isReadOnly={true}

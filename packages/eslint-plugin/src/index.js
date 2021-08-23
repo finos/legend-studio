@@ -26,8 +26,9 @@ module.exports = {
     'enforce-protocol-export-prefix': require('./rules/enforce-protocol-export-prefix'),
     'enforce-protocol-file-prefix': require('./rules/enforce-protocol-file-prefix'),
     'no-cross-protocol-version-import': require('./rules/no-cross-protocol-version-import'),
-    'no-cross-workspace-unexposed-import': require('./rules/no-cross-workspace-unexposed-import'),
-    'no-cross-workspace-source-import': require('./rules/no-cross-workspace-source-import'),
+    'no-cross-workspace-non-export-usage': require('./rules/no-cross-workspace-non-export-usage'),
+    'no-cross-workspace-source-usage': require('./rules/no-cross-workspace-source-usage'),
+    'no-same-workspace-absolute-import': require('./rules/no-same-workspace-absolute-import'),
     'no-same-workspace-index-import': require('./rules/no-same-workspace-index-import'),
   },
 };

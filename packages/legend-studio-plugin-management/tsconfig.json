@@ -11,7 +11,8 @@
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-shared" },
     { "path": "../legend-server-sdlc" },
-    { "path": "../legend-application-components" },
+    { "path": "../legend-application" },
+    { "path": "../legend-art" },
     { "path": "../legend-studio" }
   ]
 }

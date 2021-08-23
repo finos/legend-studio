@@ -18,9 +18,7 @@ import { action, makeAutoObservable, flowResult } from 'mobx';
 import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { DATE_TIME_FORMAT } from '../../const';
-import { TAB_SIZE } from '../EditorConfig';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -31,12 +29,17 @@ import {
   NetworkClientError,
   HttpStatus,
 } from '@finos/legend-shared';
-import { ActionAlertType, ActionAlertActionType } from '../ApplicationStore';
+import {
+  DATE_TIME_FORMAT,
+  TAB_SIZE,
+  ActionAlertType,
+  ActionAlertActionType,
+} from '@finos/legend-application';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { Entity } from '@finos/legend-model-storage';
 import { EntityDiff, Revision } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 
 export class LocalChangesState {
   editorStore: EditorStore;
@@ -71,14 +74,15 @@ export class LocalChangesState {
         return undefined;
       }
       const element =
-        this.editorStore.graphState.graph.getNullableElement(entityPath);
+        this.editorStore.graphManagerState.graph.getNullableElement(entityPath);
       if (!element) {
         return undefined;
       }
-      const entity = this.editorStore.graphState.graphManager.elementToEntity(
-        element,
-        true,
-      );
+      const entity =
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
+          element,
+          true,
+        );
       return entity;
     };
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)
@@ -116,7 +120,7 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.stop();
       yield Promise.all([
         this.sdlcState.buildWorkspaceLatestRevisionEntityHashesIndex(),
-        this.editorStore.graphState.precomputeHashes(),
+        this.editorStore.graphManagerState.precomputeHashes(),
       ]);
       this.editorStore.changeDetectionState.start();
       yield flowResult(
@@ -194,7 +198,7 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
       const latestRevision = Revision.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.performEntityChanges(
+        (yield this.editorStore.sdlcServerClient.performEntityChanges(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           {
@@ -229,7 +233,7 @@ export class LocalChangesState {
          * coming from the server.
          */
         const entities =
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getEntitiesByRevision(
+          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.sdlcState.currentProjectId,
             this.sdlcState.currentWorkspaceId,
             latestRevision.id,
@@ -295,7 +299,7 @@ export class LocalChangesState {
           throw error;
         }
       }
-      yield flowResult(this.editorStore.graphState.precomputeHashes());
+      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield Promise.all([
         this.editorStore.changeDetectionState.computeLocalChanges(true),

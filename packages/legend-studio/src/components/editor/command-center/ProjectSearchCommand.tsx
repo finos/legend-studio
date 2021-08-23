@@ -19,14 +19,14 @@ import { observer } from 'mobx-react-lite';
 import { compareLabelFn } from '@finos/legend-shared';
 import { FaCaretDown } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
-import type { SelectComponent } from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
 import {
   DropdownMenu,
   NonBlockingDialog,
   createFilter,
   CustomSelectorInput,
-} from '@finos/legend-application-components';
-import { getElementTypeIcon } from '../../shared/Icon';
+} from '@finos/legend-art';
+import { getElementTypeIcon } from '../../shared/ElementIconUtils';
 import type { PackageableElement } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
@@ -42,7 +42,7 @@ export const ProjectSearchCommand = observer(() => {
     (type: string | undefined): (() => void) =>
     (): void =>
       setElementType(type);
-  const options = editorStore.graphState.graph.allOwnElements
+  const options = editorStore.graphManagerState.graph.allOwnElements
     .filter(
       (element) =>
         !elementType ||

@@ -398,9 +398,9 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
   ): GeneratorFn<string> {
     if (entity) {
       const elementGrammar =
-        (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
-          entity,
-        ])) as string;
+        (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+          [entity],
+        )) as string;
       return elementGrammar;
     }
     return '';
@@ -409,7 +409,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
   *markAsResolved(): GeneratorFn<void> {
     try {
       const entities =
-        (yield this.editorStore.graphState.graphManager.pureCodeToEntities(
+        (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
           this.mergedText ?? '',
         )) as Entity[];
       if (!entities.length) {
@@ -420,7 +420,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
         const resolvedEntity = entities[0];
         // cleanup the source information since we are using this entity to compute diff
         resolvedEntity.content =
-          this.editorStore.graphState.graphManager.pruneSourceInformation(
+          this.editorStore.graphManagerState.graphManager.pruneSourceInformation(
             resolvedEntity.content as object,
           );
         this.editorStore.changeDetectionState.resolutions.push(

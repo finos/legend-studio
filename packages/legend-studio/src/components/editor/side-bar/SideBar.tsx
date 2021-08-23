@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { clsx } from '@finos/legend-application-components';
+import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { Explorer } from './Explorer';

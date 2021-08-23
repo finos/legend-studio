@@ -17,4 +17,7 @@
 export * from './models/ProjectData';
 export * from './models/ProjectVersionEntities';
 
-export * from './DepotServerClient';
+export { DepotServerClient } from './DepotServerClient';
+export * from './DepotServerClientProvider';
+
+export * from './DepotServerClientTestUtils';

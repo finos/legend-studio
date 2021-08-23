@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import { MultiplicityBadge } from '../../../shared/MultiplicityBadge';
 import { PurePropertyMappingEditor } from './PurePropertyMappingEditor';
-import { getElementIcon } from '../../../shared/Icon';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
@@ -26,7 +26,7 @@ import {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { clsx } from '@finos/legend-application-components';
+import { clsx } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
 import type { FlatDataPropertyMappingState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
@@ -36,7 +36,6 @@ import type {
   RelationalPropertyMappingState,
   RootRelationalInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { Property } from '@finos/legend-graph';
 import {
@@ -51,6 +50,7 @@ import {
   PureInstanceSetImplementation,
   EmbeddedFlatDataPropertyMapping,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const PropertyMappingsEditor = observer(
   (props: {

@@ -22,12 +22,13 @@ import {
   FaRegWindowMaximize,
   FaRegWindowRestore,
 } from 'react-icons/fa';
-import { clsx } from '@finos/legend-application-components';
-import { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QueryBuilder } from './QueryBuilder';
-import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
+import { clsx } from '@finos/legend-art';
+import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { noop } from '@finos/legend-shared';
+import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
+import { useApplicationStore } from '@finos/legend-application';
+import { QueryBuilder } from '@finos/legend-query';
 
 /**
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
@@ -36,20 +37,21 @@ import { noop } from '@finos/legend-shared';
 export const QueryBuilderDialog = observer(() => {
   const applicationStore = useApplicationStore();
   const editorStore = useEditorStore();
-  const queryBuilderState =
-    editorStore.getEditorExtensionState(QueryBuilderState);
+  const queryBuilderExtensionState = editorStore.getEditorExtensionState(
+    QueryBuilder_EditorExtensionState,
+  );
   const [isMaximized, setIsMaximized] = useState(false);
   const toggleMaximize = (): void => setIsMaximized(!isMaximized);
   const closeQueryBuilder = (): void => {
-    flowResult(queryBuilderState.setOpenQueryBuilder(false)).catch(
+    flowResult(queryBuilderExtensionState.setOpenQueryBuilder(false)).catch(
       applicationStore.alertIllegalUnhandledError,
     );
-    queryBuilderState.reset();
+    queryBuilderExtensionState.reset();
   };
 
   return (
     <Dialog
-      open={Boolean(queryBuilderState.openQueryBuilder)}
+      open={Boolean(queryBuilderExtensionState.openQueryBuilder)}
       onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
       classes={{
         root: 'editor-modal__root-container',
@@ -83,7 +85,9 @@ export const QueryBuilderDialog = observer(() => {
           </div>
         </div>
         <div className="query-builder__dialog__content">
-          <QueryBuilder queryBuilderState={queryBuilderState} />
+          <QueryBuilder
+            queryBuilderState={queryBuilderExtensionState.queryBuilderState}
+          />
         </div>
       </div>
     </Dialog>

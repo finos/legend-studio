@@ -16,9 +16,8 @@
 
 import type { EditorStore } from '../EditorStore';
 import { action, makeAutoObservable } from 'mobx';
-import { GRAMMAR_ELEMENT_TYPE_LABEL } from '../PureLanguageSupport';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { DSL_EditorPlugin_Extension } from '../EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../StudioPlugin';
 import type { PackageableElement, EngineError } from '@finos/legend-graph';
 import {
   Profile,
@@ -42,6 +41,7 @@ import {
   RelationalDatabaseConnection,
   ServiceStore,
 } from '@finos/legend-graph';
+import { GRAMMAR_ELEMENT_TYPE_LABEL } from '@finos/legend-application';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -133,15 +133,14 @@ export class GrammarTextEditorState {
     } else if (element instanceof PackageableRuntime) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME;
     } else {
-      const extraPureGrammarElementLabelers =
-        this.editorStore.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSL_EditorPlugin_Extension
-              ).getExtraPureGrammarElementLabelers?.() ?? [],
-          );
+      const extraPureGrammarElementLabelers = this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_StudioPlugin_Extension
+            ).getExtraPureGrammarElementLabelers?.() ?? [],
+        );
       for (const labeler of extraPureGrammarElementLabelers) {
         const _typeLabel = labeler(element);
         if (_typeLabel) {

@@ -22,8 +22,9 @@ import {
   PureModel,
   SystemModel,
 } from '../../../../../../../../graph/PureModel';
-import { V1_PureGraphManager } from '../../../../V1_PureGraphManager';
-import { V1_unsupportedFunctionExpression } from './V1_ValueSpecificationBuilderTestData';
+import { TEST__GraphPluginManager } from '../../../../../../../../GraphManagerTestUtils';
+import { getGraphManager } from '../../../../../Pure';
+import { V1_TEST_DATA__unsupportedFunctionExpression } from './V1_ValueSpecificationBuilderTestData';
 
 type RoundtripTestCase = [
   string,
@@ -40,7 +41,7 @@ const cases: RoundtripTestCase[] = [
   [
     'Unsupported function expression',
     { entities: [] },
-    V1_unsupportedFunctionExpression,
+    V1_TEST_DATA__unsupportedFunctionExpression,
     {
       errorMessage: `Can't find expression builder for function 'getAll': no compatible function expression builder available from plugins`,
     },
@@ -53,7 +54,10 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
     const { errorMessage } = result;
     const graph = new PureModel(new CoreModel([]), new SystemModel([]), []);
     // setup
-    const graphManager = new V1_PureGraphManager([], [], new Log());
+    const graphManager = getGraphManager(
+      new TEST__GraphPluginManager(),
+      new Log(),
+    );
     await flowResult(
       graphManager.buildGraph(graph, entities, {
         TEMPORARY__keepSectionIndex: true,

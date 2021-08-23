@@ -49,14 +49,14 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+  MappingIcon,
+  RuntimeIcon,
+} from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
-import { MappingIcon, RuntimeIcon } from '../../../shared/Icon';
 import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type { KeyedExecutionParameter, Runtime } from '@finos/legend-graph';
 import {
   PureSingleExecution,
@@ -66,6 +66,7 @@ import {
   PackageableRuntime,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {
@@ -127,8 +128,8 @@ const PureSingleExecutionConfigurationEditor = observer(
           label: string | React.ReactNode;
           value?: Runtime;
         }[]);
-    const runtimes = editorStore.graphState.graph.ownRuntimes.filter((rt) =>
-      rt.runtimeValue.mappings.map((m) => m.value).includes(mapping),
+    const runtimes = editorStore.graphManagerState.graph.ownRuntimes.filter(
+      (rt) => rt.runtimeValue.mappings.map((m) => m.value).includes(mapping),
     ); // only include runtime associated with the mapping
     runtimeOptions = runtimeOptions.concat(
       runtimes.map((rt) => ({

@@ -27,7 +27,7 @@ import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
-import { STUDIO_LOG_EVENT } from '../../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../../stores/StudioLogEvent';
 import type { PackageableElement } from '@finos/legend-graph';
 
 /**
@@ -128,7 +128,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     );
   }
   get element(): PackageableElement | undefined {
-    return this.editorStore.graphState.graph.getNullableElement(
+    return this.editorStore.graphManagerState.graph.getNullableElement(
       this.effectiveEntityPath,
     );
   }
@@ -178,9 +178,9 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     if (this.fromEntity) {
       try {
         const elementGrammar =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
-            this.fromEntity,
-          ])) as string;
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+            [this.fromEntity],
+          )) as string;
         this.setFromGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(
@@ -200,9 +200,9 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     if (this.toEntity) {
       try {
         const elementGrammar =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureCode([
-            this.toEntity,
-          ])) as string;
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+            [this.toEntity],
+          )) as string;
         this.setToGrammarText(elementGrammar);
       } catch (error: unknown) {
         this.setFromGrammarText(

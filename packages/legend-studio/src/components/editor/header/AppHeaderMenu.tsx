@@ -20,10 +20,10 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
 import Dialog from '@material-ui/core/Dialog';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const AboutModal: React.FC<{
   open: boolean;
@@ -116,9 +116,8 @@ export const AppHeaderMenu: React.FC = () => {
   const showAboutModal = (): void => setOpenAboutModal(true);
   const hideAboutModal = (): void => setOpenAboutModal(false);
   // documentation
-  const goToDocumentation = (): void => {
-    window.open(config.documentationUrl, '_blank');
-  };
+  const goToDocumentation = (): void =>
+    applicationStore.navigator.openNewWindow(config.documentationUrl);
 
   return (
     <>

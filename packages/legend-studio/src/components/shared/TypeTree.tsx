@@ -23,14 +23,11 @@ import {
   printObject,
 } from '@finos/legend-shared';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-} from '@finos/legend-application-components';
-import { clsx, TreeView } from '@finos/legend-application-components';
+import type { TreeNodeContainerProps, TreeData } from '@finos/legend-art';
+import { EnumValueIcon, clsx, TreeView } from '@finos/legend-art';
 import { useDrag } from 'react-dnd';
 import { TypeDragSource, CORE_DND_TYPE } from '../../stores/shared/DnDUtil';
-import { EnumValueIcon, getClassPropertyIcon } from './Icon';
+import { getClassPropertyIcon } from './ElementIconUtils';
 import type { TypeTreeNodeData } from '../../stores/shared/TreeUtil';
 import type { Type, Enum, AbstractProperty } from '@finos/legend-graph';
 import {

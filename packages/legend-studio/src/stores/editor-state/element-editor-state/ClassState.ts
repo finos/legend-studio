@@ -17,7 +17,6 @@
 import { observable, action, flow, makeObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
-import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../EditorStore';
 import type { Class, Constraint, DerivedProperty } from '@finos/legend-graph';
 import {
@@ -27,6 +26,7 @@ import {
   RawLambda,
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
@@ -67,7 +67,7 @@ export class DerivedPropertyState extends LambdaEditorState {
     if (this.lambdaString) {
       try {
         const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
           )) as RawLambda | undefined;
@@ -100,7 +100,7 @@ export class DerivedPropertyState extends LambdaEditorState {
           ),
         );
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -154,7 +154,7 @@ export class ConstraintState extends LambdaEditorState {
     if (this.lambdaString) {
       try {
         const lambda =
-          (yield this.editorStore.graphState.graphManager.pureCodeToLambda(
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
           )) as RawLambda | undefined;
@@ -181,7 +181,7 @@ export class ConstraintState extends LambdaEditorState {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.constraint.functionDefinition);
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
           )) as Map<string, string>;
@@ -323,7 +323,7 @@ export class ClassState {
       this.isConvertingConstraintLambdaObjects = true;
       try {
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
@@ -360,7 +360,7 @@ export class ClassState {
       this.isConvertingDerivedPropertyLambdaObjects = true;
       try {
         const isolatedLambdas =
-          (yield this.editorStore.graphState.graphManager.lambdasToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {

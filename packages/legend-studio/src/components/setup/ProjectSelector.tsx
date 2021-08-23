@@ -18,15 +18,12 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaPlus } from 'react-icons/fa';
 import type { ProjectOption } from '../../stores/SetupStore';
-import type { SelectComponent } from '@finos/legend-application-components';
-import {
-  clsx,
-  CustomSelectorInput,
-} from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
+import { clsx, CustomSelectorInput } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useSetupStore } from './SetupStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   <div className="setup__project__label">

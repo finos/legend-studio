@@ -15,8 +15,8 @@
  */
 
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
-import type { ApplicationStore } from './ApplicationStore';
+import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
+import type { ApplicationStore } from '@finos/legend-application';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -25,6 +25,7 @@ import {
   compareLabelFn,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from './LegendStudioRouter';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import {
   ImportReport,
   Project,
@@ -67,6 +68,8 @@ const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
 
 export class SetupStore {
   applicationStore: ApplicationStore;
+  sdlcServerClient: SDLCServerClient;
+
   currentProjectId?: string;
   currentWorkspaceId?: string;
   projects?: Map<string, Project>;
@@ -79,9 +82,13 @@ export class SetupStore {
   showCreateWorkspaceModal = false;
   importProjectSuccessReport?: ImportProjectSuccessReport;
 
-  constructor(applicationStore: ApplicationStore) {
+  constructor(
+    applicationStore: ApplicationStore,
+    sdlcServerClient: SDLCServerClient,
+  ) {
     makeAutoObservable(this, {
       applicationStore: false,
+      sdlcServerClient: false,
       setCreateProjectModal: action,
       setCreateWorkspaceModal: action,
       setCurrentProjectId: action,
@@ -90,6 +97,7 @@ export class SetupStore {
     });
 
     this.applicationStore = applicationStore;
+    this.sdlcServerClient = sdlcServerClient;
   }
 
   get currentProject(): Project | undefined {
@@ -132,13 +140,13 @@ export class SetupStore {
       const projects = (
         (yield Promise.all(
           [
-            this.applicationStore.networkClientManager.sdlcClient.getProjects(
+            this.sdlcServerClient.getProjects(
               ProjectType.PRODUCTION,
               undefined,
               undefined,
               undefined,
             ),
-            this.applicationStore.networkClientManager.sdlcClient.getProjects(
+            this.sdlcServerClient.getProjects(
               ProjectType.PROTOTYPE,
               undefined,
               undefined,
@@ -191,16 +199,14 @@ export class SetupStore {
     this.createOrImportProjectState.inProgress();
     try {
       const createdProject = Project.serialization.fromJson(
-        (yield this.applicationStore.networkClientManager.sdlcClient.createProject(
-          {
-            name,
-            description,
-            type: ProjectType.PROTOTYPE,
-            groupId,
-            artifactId,
-            tags,
-          },
-        )) as PlainObject<Project>,
+        (yield this.sdlcServerClient.createProject({
+          name,
+          description,
+          type: ProjectType.PROTOTYPE,
+          groupId,
+          artifactId,
+          tags,
+        })) as PlainObject<Project>,
       );
       this.applicationStore.notifySuccess(
         `Project '${name}' is succesfully created`,
@@ -229,17 +235,15 @@ export class SetupStore {
     this.createOrImportProjectState.inProgress();
     try {
       const report = ImportReport.serialization.fromJson(
-        (yield this.applicationStore.networkClientManager.sdlcClient.importProject(
-          {
-            id,
-            type: ProjectType.PRODUCTION,
-            groupId,
-            artifactId,
-          },
-        )) as PlainObject<ImportReport>,
+        (yield this.sdlcServerClient.importProject({
+          id,
+          type: ProjectType.PRODUCTION,
+          groupId,
+          artifactId,
+        })) as PlainObject<ImportReport>,
       );
       const importReview = Review.serialization.fromJson(
-        (yield this.applicationStore.networkClientManager.sdlcClient.getReview(
+        (yield this.sdlcServerClient.getReview(
           report.project.projectId,
           report.reviewId,
         )) as PlainObject<Review>,
@@ -285,13 +289,13 @@ export class SetupStore {
     this.loadWorkspacesState.inProgress();
     try {
       const workspacesInConflictResolutionIds = (
-        (yield this.applicationStore.networkClientManager.sdlcClient.getWorkspacesInConflictResolutionMode(
+        (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           projectId,
         )) as Workspace[]
       ).map((workspace) => workspace.workspaceId);
       const workspaceMap = observable<string, Workspace>(new Map());
       (
-        (yield this.applicationStore.networkClientManager.sdlcClient.getWorkspaces(
+        (yield this.sdlcServerClient.getWorkspaces(
           projectId,
         )) as PlainObject<Workspace>[]
       )
@@ -323,7 +327,7 @@ export class SetupStore {
     try {
       assertNonNullable(workspaceId, 'workspace ID is required');
       const workspace = Workspace.serialization.fromJson(
-        (yield this.applicationStore.networkClientManager.sdlcClient.createWorkspace(
+        (yield this.sdlcServerClient.createWorkspace(
           projectId,
           workspaceId,
         )) as PlainObject<Workspace>,

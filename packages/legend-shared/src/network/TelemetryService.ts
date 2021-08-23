@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
+import type { AbstractPluginManager } from '../application/AbstractPluginManager';
 import { AbstractPlugin } from '../application/AbstractPluginManager';
 
 export interface TelemetryData {
   [key: string]: unknown;
+}
+
+export interface TelemetryServicePluginManager extends AbstractPluginManager {
+  getTelemetryServicePlugins(): TelemetryServicePlugin[];
+  registerTelemetryServicePlugin(plugin: TelemetryServicePlugin): void;
 }
 
 export abstract class TelemetryServicePlugin extends AbstractPlugin {

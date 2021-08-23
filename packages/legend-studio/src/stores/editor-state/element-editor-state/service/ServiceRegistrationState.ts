@@ -28,11 +28,11 @@ import {
   getNullableFirstElement,
   assertTrue,
 } from '@finos/legend-shared';
-import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import { ServiceRegistrationEnvInfo } from '../../../application/ApplicationConfig';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
 import { Version } from '@finos/legend-server-sdlc';
 import type { ServiceRegistrationResult } from '@finos/legend-graph';
 import { ServiceExecutionMode } from '@finos/legend-graph';
+import { ServiceRegistrationEnvInfo } from '@finos/legend-application';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
@@ -202,8 +202,8 @@ export class ServiceRegistrationState {
           : undefined;
       const projectId = this.editorStore.sdlcState.currentProjectId;
       const serviceRegistrationResult =
-        (yield this.editorStore.graphState.graphManager.registerService(
-          this.editorStore.graphState.graph,
+        (yield this.editorStore.graphManagerState.graphManager.registerService(
+          this.editorStore.graphManagerState.graph,
           this.serviceEditorState.service,
           projectId,
           serverUrl,
@@ -211,7 +211,7 @@ export class ServiceRegistrationState {
           versionInput,
         )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
-        yield this.editorStore.graphState.graphManager.activateService(
+        yield this.editorStore.graphManagerState.graphManager.activateService(
           serverUrl,
           serviceRegistrationResult.serviceInstanceId,
         );

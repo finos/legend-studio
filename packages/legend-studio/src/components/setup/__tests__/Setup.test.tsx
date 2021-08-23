@@ -21,18 +21,20 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import {
-  getMockedApplicationStore,
-  SDLC_TestData,
-  TEST__ApplicationStoreProvider,
-} from '../../ComponentTestUtils';
-import type { ApplicationStore } from '../../../stores/ApplicationStore';
+import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
+import {
+  TEST__SDLCServerClientProvider,
+  TEST__provideMockedSDLCServerClient,
+} from '@finos/legend-server-sdlc';
+import { TEST__ApplicationStoreProvider } from '@finos/legend-application';
 
-let applicationStore: ApplicationStore;
+let sdlcServerClient: SDLCServerClient;
+
 beforeEach(() => {
-  applicationStore = getMockedApplicationStore();
+  sdlcServerClient = TEST__provideMockedSDLCServerClient();
 });
 
 test(
@@ -42,15 +44,17 @@ test(
   async () => {
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(applicationStore.networkClientManager.sdlcClient, 'getProjects')
-      .mockResolvedValueOnce([SDLC_TestData.project])
+      .spyOn(sdlcServerClient, 'getProjects')
+      .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
       .mockResolvedValueOnce([]);
     MOBX__disableSpyOrMock();
 
     const { queryByText } = render(
       <MemoryRouter>
         <TEST__ApplicationStoreProvider>
-          <Setup />
+          <TEST__SDLCServerClientProvider>
+            <Setup />
+          </TEST__SDLCServerClientProvider>
         </TEST__ApplicationStoreProvider>
       </MemoryRouter>,
     );
@@ -67,15 +71,15 @@ test(
   integrationTest('Disable project selector when there is no projects'),
   async () => {
     MOBX__enableSpyOrMock();
-    jest
-      .spyOn(applicationStore.networkClientManager.sdlcClient, 'getProjects')
-      .mockResolvedValue([]);
+    jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
     MOBX__disableSpyOrMock();
 
     const { queryByText } = render(
       <MemoryRouter>
         <TEST__ApplicationStoreProvider>
-          <Setup />
+          <TEST__SDLCServerClientProvider>
+            <Setup />
+          </TEST__SDLCServerClientProvider>
         </TEST__ApplicationStoreProvider>
       </MemoryRouter>,
     );

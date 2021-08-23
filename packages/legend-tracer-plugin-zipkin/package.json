@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-tracer-plugin-zipkin",
-  "version": "0.0.47",
+  "version": "0.0.0",
   "description": "Legend application plugin for tracer using Zipkin and OpenTracing",
   "keywords": [
     "legend",
@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
     "@types/zipkin-javascript-opentracing": "1.6.0",
     "opentracing": "0.14.5",
     "zipkin": "0.22.0",
@@ -56,5 +55,8 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
+  },
+  "extensions": {
+    "tracerPlugin": "@finos/legend-tracer-plugin-zipkin"
   }
 }

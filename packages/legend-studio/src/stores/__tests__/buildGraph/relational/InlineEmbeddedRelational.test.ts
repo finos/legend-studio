@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-import { inlineEmbeddedRelationalTestData } from './RelationalEntitiesTestData';
+import { TEST_DATA__inlineEmbeddedRelationalTestData } from './RelationalEntitiesTestData';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
-import { buildGraphBasic, getTestEditorStore } from '../../../StoreTestUtils';
+import {
+  TEST__buildGraphBasic,
+  TEST__getTestEditorStore,
+} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   RootRelationalInstanceSetImplementation,
   getClassMappingsByClass,
 } from '@finos/legend-graph';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await buildGraphBasic(
-    inlineEmbeddedRelationalTestData as Entity[],
+  await TEST__buildGraphBasic(
+    TEST_DATA__inlineEmbeddedRelationalTestData as Entity[],
     editorStore,
   );
 });
@@ -35,7 +38,7 @@ beforeAll(async () => {
 // TODO Add more processing checks
 test(unitTest('Inline Embedded Relational Mapping'), () => {
   // db
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   const myDB = graph.getDatabase('mapping::db');
   expect(myDB.schemas).toHaveLength(1);
   expect(myDB.schemas[0].tables).toHaveLength(1);

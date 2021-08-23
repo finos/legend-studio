@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
 import { makeAutoObservable, action, flowResult } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import { ACTIVITY_MODE, TAB_SIZE } from './EditorConfig';
+import { ACTIVITY_MODE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from './StudioLogEvent';
+import { TAB_SIZE } from '@finos/legend-application';
 
 export class ReviewStore {
   editorStore: EditorStore;
@@ -64,7 +65,7 @@ export class ReviewStore {
     try {
       // setup engine
       yield flowResult(
-        this.editorStore.graphState.graphManager.initialize(
+        this.editorStore.graphManagerState.graphManager.initialize(
           {
             env: this.editorStore.applicationStore.config.env,
             tabSize: TAB_SIZE,
@@ -78,7 +79,7 @@ export class ReviewStore {
           },
           {
             tracerServicePlugins:
-              this.editorStore.applicationStore.pluginManager.getTracerServicePlugins(),
+              this.editorStore.pluginManager.getTracerServicePlugins(),
           },
         ),
       );
@@ -100,11 +101,11 @@ export class ReviewStore {
     this.isFetchingComparison = true;
     try {
       const [fromEntities, toEntities] = (yield Promise.all([
-        this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviewFromEntities(
+        this.editorStore.sdlcServerClient.getReviewFromEntities(
           this.projectId,
           this.review.id,
         ),
-        this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviewToEntities(
+        this.editorStore.sdlcServerClient.getReviewToEntities(
           this.projectId,
           this.review.id,
         ),
@@ -146,7 +147,7 @@ export class ReviewStore {
   *fetchProject(): GeneratorFn<void> {
     try {
       this.currentProject = Project.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getProject(
+        (yield this.editorStore.sdlcServerClient.getProject(
           this.projectId,
         )) as PlainObject<Project>,
       );
@@ -163,7 +164,7 @@ export class ReviewStore {
     try {
       this.isFetchingCurrentReview = true;
       this.currentReview = Review.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReview(
+        (yield this.editorStore.sdlcServerClient.getReview(
           this.projectId,
           this.reviewId,
         )) as PlainObject<Review>,
@@ -183,7 +184,7 @@ export class ReviewStore {
     this.isApprovingReview = true;
     try {
       this.currentReview = Review.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.approveReview(
+        (yield this.editorStore.sdlcServerClient.approveReview(
           this.projectId,
           this.review.id,
         )) as PlainObject<Review>,
@@ -203,7 +204,7 @@ export class ReviewStore {
     this.isCommittingReview = true;
     try {
       this.currentReview = Review.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.commitReview(
+        (yield this.editorStore.sdlcServerClient.commitReview(
           this.projectId,
           this.review.id,
           { message: `${this.review.title} [review]` },
@@ -224,7 +225,7 @@ export class ReviewStore {
     this.isReopeningReview = true;
     try {
       this.currentReview = Review.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.reopenReview(
+        (yield this.editorStore.sdlcServerClient.reopenReview(
           this.projectId,
           this.review.id,
         )) as PlainObject<Review>,
@@ -244,7 +245,7 @@ export class ReviewStore {
     this.isClosingReview = true;
     try {
       this.currentReview = Review.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.closeReview(
+        (yield this.editorStore.sdlcServerClient.closeReview(
           this.projectId,
           this.review.id,
         )) as PlainObject<Review>,

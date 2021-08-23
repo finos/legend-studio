@@ -34,7 +34,7 @@ import {
   FaPlus,
 } from 'react-icons/fa';
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
-import { clsx, ContextMenu } from '@finos/legend-application-components';
+import { clsx, ContextMenu } from '@finos/legend-art';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
@@ -42,7 +42,7 @@ import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { Randomizer } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 import { SetImplementation } from '@finos/legend-graph';
 
 const addTestPromps = [

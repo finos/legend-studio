@@ -37,7 +37,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-application-components": "workspace:*",
+    "@finos/legend-application": "workspace:*",
+    "@finos/legend-art": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
@@ -64,5 +65,8 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
+  },
+  "extensions": {
+    "studioPlugin": "@finos/legend-studio-plugin-management"
   }
 }

@@ -16,18 +16,12 @@
 
 import type { AbstractPureGraphManager } from '../../../graphManager/AbstractPureGraphManager';
 import { V1_PureGraphManager } from './v1/V1_PureGraphManager';
-import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
-import type { PureGraphManagerPlugin } from '../../../graphManager/PureGraphManagerPlugin';
 import type { Log } from '@finos/legend-shared';
+import type { GraphPluginManager } from '../../../GraphPluginManager';
 
 export const getGraphManager = (
-  pureGraphManagerPlugins: PureGraphManagerPlugin[],
-  pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
+  pluginManager: GraphPluginManager,
   log: Log,
 ): AbstractPureGraphManager =>
   // NOTE: until we support more client versions, we always default to return V1
-  new V1_PureGraphManager(
-    pureGraphManagerPlugins,
-    pureProtocolProcessorPlugins,
-    log,
-  );
+  new V1_PureGraphManager(pluginManager, log);

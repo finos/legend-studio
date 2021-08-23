@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const lambda_input_graphFetchWithFullPathFunctions = {
+export const TEST_DATA__lambda_input_graphFetchWithFullPathFunctions = {
   _type: 'lambda',
   body: [
     {
@@ -67,7 +67,7 @@ export const lambda_input_graphFetchWithFullPathFunctions = {
   parameters: [],
 };
 
-export const lambda_output_graphFetchWithFullPathFunctions = {
+export const TEST_DATA__lambda_output_graphFetchWithFullPathFunctions = {
   _type: 'lambda',
   body: [
     {
@@ -120,7 +120,7 @@ export const lambda_output_graphFetchWithFullPathFunctions = {
   parameters: [],
 };
 
-export const lambda_input_filterWithFullPathFunctions = {
+export const TEST_DATA__lambda_input_filterWithFullPathFunctions = {
   _type: 'lambda',
   body: [
     {
@@ -205,7 +205,7 @@ export const lambda_input_filterWithFullPathFunctions = {
   parameters: [],
 };
 
-export const lambda_output_filterWithFullPathFunctions = {
+export const TEST_DATA__lambda_output_filterWithFullPathFunctions = {
   _type: 'lambda',
   body: [
     {
@@ -290,7 +290,7 @@ export const lambda_output_filterWithFullPathFunctions = {
   parameters: [],
 };
 
-export const lambda_input_projectionWithFullPathFunctions = {
+export const TEST_DATA__lambda_input_projectionWithFullPathFunctions = {
   _type: 'lambda',
   body: [
     {
@@ -487,7 +487,7 @@ export const lambda_input_projectionWithFullPathFunctions = {
   parameters: [],
 };
 
-export const lambda_output_projectionWithFullPathFunctions = {
+export const TEST_DATA__lambda_output_projectionWithFullPathFunctions = {
   _type: 'lambda',
   body: [
     {

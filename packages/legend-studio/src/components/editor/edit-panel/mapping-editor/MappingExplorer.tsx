@@ -24,12 +24,8 @@ import {
   CORE_DND_TYPE,
   MappingElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { TreeNodeContainerProps } from '@finos/legend-application-components';
-import {
-  clsx,
-  TreeView,
-  ContextMenu,
-} from '@finos/legend-application-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
+import { clsx, TreeView, ContextMenu } from '@finos/legend-art';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { useDrop, useDrag } from 'react-dnd';
 import { toSentenceCase } from '@finos/legend-shared';
@@ -52,19 +48,19 @@ import {
   FaChevronRight,
   FaChevronDown,
 } from 'react-icons/fa';
-import { CORE_TEST_ID } from '../../../../const';
-import { getElementIcon } from '../../../shared/Icon';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   SetImplementation,
   EnumerationMapping,
   PropertyMapping,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingExplorerContextMenu = observer(
   (
@@ -409,7 +405,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
 
   return (
     <div
-      data-testid={CORE_TEST_ID.MAPPING_EXPLORER}
+      data-testid={STUDIO_TEST_ID.MAPPING_EXPLORER}
       className="panel mapping-explorer"
     >
       <div className="panel__header">

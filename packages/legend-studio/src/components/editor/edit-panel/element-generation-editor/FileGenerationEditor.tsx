@@ -17,7 +17,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
-import { getElementIcon } from '../../../shared/Icon';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { useDrop } from 'react-dnd';
 import {
   getTextContent,
@@ -34,7 +34,7 @@ import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -45,7 +45,7 @@ import {
   BlankPanelContent,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import {
   FaTimes,
   FaCheckSquare,
@@ -62,7 +62,6 @@ import { MdModeEdit, MdRefresh } from 'react-icons/md';
 import type { FileGenerationSourceDropTarget } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { GenerationTreeNodeData } from '../../../../stores/shared/FileGenerationTreeUtil';
 import {
@@ -70,9 +69,8 @@ import {
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type {
   GenerationProperty,
   PackageableElement,
@@ -85,6 +83,8 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -289,7 +289,7 @@ export const GenerationResultViewer = observer(
             </div>
             <div className="panel__content">
               {fileNode instanceof GenerationFile && (
-                <TextInputEditor
+                <StudioTextInputEditor
                   inputValue={getTextContent(fileNode.content, fileNode.format)}
                   isReadOnly={true}
                   language={getEditorLanguageFromFormat(fileNode.format)}
@@ -362,7 +362,7 @@ const FileGenerationScopeEditor = observer(
     const addValue = (): void => {
       if (itemValue && !isReadOnly) {
         regenerate.cancel();
-        const element = editorStore.graphState.graph.getNullableElement(
+        const element = editorStore.graphManagerState.graph.getNullableElement(
           itemValue,
           true,
         );
@@ -383,10 +383,11 @@ const FileGenerationScopeEditor = observer(
             .map((element) => scopeElementPath(element))
             .includes(itemValue)
         ) {
-          const element = editorStore.graphState.graph.getNullableElement(
-            itemValue,
-            true,
-          );
+          const element =
+            editorStore.graphManagerState.graph.getNullableElement(
+              itemValue,
+              true,
+            );
           if (element) {
             regenerate.cancel();
             fileGeneration.changeScopeElement(
@@ -411,7 +412,7 @@ const FileGenerationScopeEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {scopeElements.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -808,7 +809,7 @@ const GenerationArrayPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {arrayValues.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -1016,7 +1017,7 @@ const GenerationMapPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {Array.from(Object.entries(mapValues)).map(([key, value], idx) => (
               // NOTE: since the key must be unique, we will use it to generate the key

@@ -17,14 +17,14 @@
 import type { PlainObject } from '@finos/legend-shared';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  simpleDebuggingCase,
-  testAutoImportsWithAny,
-  testAutoImportsWithSystemProfiles,
+  TEST_DATA__simpleDebuggingCase,
+  TEST_DATA__AutoImportsWithAny,
+  TEST_DATA__AutoImportsWithSystemProfiles,
 } from '../roundtrip/RoundtripTestData';
-import m2mGraphEntities from './M2MGraphEntitiesTestData.json';
+import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { waitFor } from '@testing-library/dom';
-import { getTestEditorStore } from '../../StoreTestUtils';
-import { simpleCoreModelData } from './CoreTestData';
+import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
+import { TEST_DATA__SimpleGraph } from './CoreTestData';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
@@ -163,48 +163,49 @@ const testDependencyElements = async (
       buildFileGenerationDepentOnDependencyElements(dependencyElementPaths),
     );
   }
-  const editorStore = getTestEditorStore();
+  const editorStore = TEST__getTestEditorStore();
   editorStore.projectConfigurationEditorState.setProjectConfiguration(
     ProjectConfiguration.serialization.fromJson(PROJECT_CONFIG),
   );
   // mock version entities api return
   jest
     .spyOn(
-      guaranteeNonNullable(
-        editorStore.applicationStore.networkClientManager.depotClient,
-      ),
+      guaranteeNonNullable(editorStore.depotServerClient),
       'getProjectVersionsDependencyEntities',
     )
     .mockResolvedValue(dependencyEntities);
-  await flowResult(editorStore.graphState.initializeSystem());
+  await flowResult(editorStore.graphManagerState.initializeSystem());
   const dependencyManager = new DependencyManager([]);
   const dependencyEntitiesMap = await flowResult(
     editorStore.graphState.getConfigurationProjectDependencyEntities(),
   );
-  editorStore.graphState.graph.setDependencyManager(dependencyManager);
+  editorStore.graphManagerState.graph.setDependencyManager(dependencyManager);
   await flowResult(
-    editorStore.graphState.graphManager.buildDependencies(
-      editorStore.graphState.coreModel,
-      editorStore.graphState.systemModel,
+    editorStore.graphManagerState.graphManager.buildDependencies(
+      editorStore.graphManagerState.coreModel,
+      editorStore.graphManagerState.systemModel,
       dependencyManager,
       dependencyEntitiesMap,
     ),
   );
   await waitFor(() =>
     expect(
-      editorStore.graphState.graph.dependencyManager.buildState.hasSucceeded,
+      editorStore.graphManagerState.graph.dependencyManager.buildState
+        .hasSucceeded,
     ).toBeTrue(),
   );
 
   await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
       entities,
       { TEMPORARY__keepSectionIndex: true },
     ),
   );
   await waitFor(() =>
-    expect(editorStore.graphState.graph.buildState.hasSucceeded).toBeTrue(),
+    expect(
+      editorStore.graphManagerState.graph.buildState.hasSucceeded,
+    ).toBeTrue(),
   );
   Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
@@ -222,25 +223,28 @@ const testDependencyElements = async (
       element,
       `element ${e} not found in dependency manager`,
     );
-    const elementInGraph = editorStore.graphState.graph.getElement(e);
+    const elementInGraph = editorStore.graphManagerState.graph.getElement(e);
     guaranteeNonNullable(
       elementInGraph,
       `element ${e} not found in main graph`,
     );
-    const elementInMainGraph = editorStore.graphState.graph.allOwnElements.find(
-      (el) => el.path === e,
-    );
+    const elementInMainGraph =
+      editorStore.graphManagerState.graph.allOwnElements.find(
+        (el) => el.path === e,
+      );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
     expect(elementInGraph.isReadOnly).toBeTrue();
   });
   if (includeDependencyInFileGenerationScopeElements) {
     const fileGeneration = guaranteeNonNullable(
-      editorStore.graphState.graph.getOwnFileGeneration(FILE_GENERATION_PATH),
+      editorStore.graphManagerState.graph.getOwnFileGeneration(
+        FILE_GENERATION_PATH,
+      ),
     );
     dependencyElementPaths.forEach((e) => {
       const elementInGraph = guaranteeNonNullable(
-        editorStore.graphState.graph.getElement(e),
+        editorStore.graphManagerState.graph.getElement(e),
       );
       expect(
         fileGeneration.scopeElements.find(
@@ -251,9 +255,10 @@ const testDependencyElements = async (
       ).toBeDefined();
     });
   }
-  const transformedEntities = editorStore.graphState.graph.allOwnElements.map(
-    (el) => editorStore.graphState.graphManager.elementToEntity(el),
-  );
+  const transformedEntities =
+    editorStore.graphManagerState.graph.allOwnElements.map((el) =>
+      editorStore.graphManagerState.graphManager.elementToEntity(el),
+    );
   expect(entities).toIncludeSameMembers(transformedEntities);
   // Ensure dependency elements are not transformed
   for (const entityPath of dependencyElementPaths) {
@@ -277,12 +282,12 @@ const buildProjectVersionEntities = (
 test(unitTest('M2M graph dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(m2mGraphEntities as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__m2mGraphEntities as Entity[]),
     true,
   );
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(simpleDebuggingCase as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__simpleDebuggingCase as Entity[]),
     true,
   );
 });
@@ -290,12 +295,14 @@ test(unitTest('M2M graph dependency check'), async () => {
 test(unitTest('Auto-imports dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(testAutoImportsWithSystemProfiles as Entity[]),
+    buildProjectVersionEntities(
+      TEST_DATA__AutoImportsWithSystemProfiles as Entity[],
+    ),
     true,
   );
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(testAutoImportsWithAny as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__AutoImportsWithAny as Entity[]),
     true,
   );
 });
@@ -303,7 +310,7 @@ test(unitTest('Auto-imports dependency check'), async () => {
 test(unitTest('Core model dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(simpleCoreModelData as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__SimpleGraph as Entity[]),
     true,
   );
 });

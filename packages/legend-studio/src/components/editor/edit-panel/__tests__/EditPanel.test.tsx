@@ -23,28 +23,30 @@ import {
   queryByText,
   getByTitle,
 } from '@testing-library/react';
-import m2mGraphEntities from '../../../../stores/__tests__/buildGraph/M2MGraphEntitiesTestData.json';
+import TEST_DATA__m2mGraphEntities from '../../../../stores/__tests__/buildGraph/TEST_DATA__M2MGraphEntities.json';
 import { integrationTest } from '@finos/legend-shared';
 import {
-  openElementFromExplorerTree,
-  getMockedEditorStore,
-  setUpEditorWithDefaultSDLCData,
-} from '../../../ComponentTestUtils';
-import { CORE_TEST_ID } from '../../../../const';
+  TEST__openElementFromExplorerTree,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditorWithDefaultSDLCData,
+} from '../../../EditorComponentTestUtils';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 
 let renderResult: RenderResult;
 
 beforeEach(async () => {
-  const mockedEditorStore = getMockedEditorStore();
-  renderResult = await setUpEditorWithDefaultSDLCData(mockedEditorStore, {
-    entities: m2mGraphEntities,
+  const mockedEditorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+    entities: TEST_DATA__m2mGraphEntities,
   });
 });
 
 test(integrationTest('Test navigation between element states'), async () => {
   // Test opening multiple elements
-  await openElementFromExplorerTree('ui::test1::Animal', renderResult);
-  const packageExplorer = renderResult.getByTestId(CORE_TEST_ID.EXPLORER_TREES);
+  await TEST__openElementFromExplorerTree('ui::test1::Animal', renderResult);
+  const packageExplorer = renderResult.getByTestId(
+    STUDIO_TEST_ID.EXPLORER_TREES,
+  );
   fireEvent.click(getByText(packageExplorer, 'TestClass'));
   fireEvent.click(getByText(packageExplorer, 'TestEnumeration'));
   fireEvent.click(getByText(packageExplorer, 'testDiagram'));
@@ -53,7 +55,7 @@ test(integrationTest('Test navigation between element states'), async () => {
   fireEvent.click(getByText(packageExplorer, 'Something'));
   fireEvent.click(getByText(packageExplorer, 'ProfileTest'));
   const editPanelHeader = renderResult.getByTestId(
-    CORE_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   await waitFor(() => getByText(editPanelHeader, 'ProfileTest'));
 
@@ -72,12 +74,14 @@ test(integrationTest('Test navigation between element states'), async () => {
   fireEvent.click(getByText(editPanelHeader, 'TestClass'));
   await waitFor(() => renderResult.getByText('founder'));
   const navigateToClass = async (className: string): Promise<void> => {
-    const classForm = renderResult.getByTestId(CORE_TEST_ID.CLASS_FORM_EDITOR);
+    const classForm = renderResult.getByTestId(
+      STUDIO_TEST_ID.CLASS_FORM_EDITOR,
+    );
     const property = await waitFor(() => getByText(classForm, className));
     const propertyBasicEditor = property.parentElement as HTMLElement;
     const navigateButton = getByTestId(
       propertyBasicEditor,
-      CORE_TEST_ID.TYPE_VISIT,
+      STUDIO_TEST_ID.TYPE_VISIT,
     );
     fireEvent.click(navigateButton);
     await waitFor(() => getByText(editPanelHeader, className));

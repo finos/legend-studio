@@ -15,7 +15,7 @@
  */
 
 import type { CORE_DND_TYPE } from '../shared/DnDUtil';
-import type { TreeNodeData } from '@finos/legend-application-components';
+import type { TreeNodeData } from '@finos/legend-art';
 import type {
   Type,
   PackageableElement,

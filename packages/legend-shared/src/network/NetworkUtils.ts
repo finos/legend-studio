@@ -502,10 +502,12 @@ export const createUrlStringFromData = (
     : `data:${contentType},${encodeURIComponent(data)}`;
 
 // NOTE: we can potentially use the native `URLSearchParams` as it provides
-// farily good API and structured output, but it does not support duplicated query
+// fairly good API and structured output, but it does not support duplicated query
 // such as `?foo=1&foo=2`, only the first value of `foo` will be recorded
 // See https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
 export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
-  const params = isFullUrl ? _getQueryParamsFromUrl(url) : _getQueryParams(url);
+  const params = isFullUrl
+    ? _getQueryParamsFromUrl(url).query
+    : _getQueryParams(url);
   return params as unknown as T;
 };

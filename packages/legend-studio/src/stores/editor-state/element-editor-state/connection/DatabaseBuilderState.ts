@@ -15,10 +15,7 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-application-components';
+import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -29,7 +26,7 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
 import type { EditorStore } from '../../../EditorStore';
 import type {
   RelationalDatabaseConnection,
@@ -448,11 +445,11 @@ export class DatabaseBuilderState {
             }
           });
         const entities =
-          (yield this.editorStore.graphState.graphManager.buildDatabase(
+          (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
             databaseBuilderInput,
           )) as Entity[];
         const dbGrammar =
-          (yield this.editorStore.graphState.graphManager.entitiesToPureCode(
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
             entities,
           )) as string;
         this.setDatabaseGrammarCode(dbGrammar);
@@ -481,14 +478,18 @@ export class DatabaseBuilderState {
 
   private *buildDatabaseGrammar(grammar: string): GeneratorFn<Database> {
     const entities =
-      (yield this.editorStore.graphState.graphManager.pureCodeToEntities(
+      (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
         grammar,
       )) as Entity[];
-    const dbGraph = this.editorStore.graphState.createEmptyGraph();
+    const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
     (yield flowResult(
-      this.editorStore.graphState.graphManager.buildGraph(dbGraph, entities, {
-        quiet: true,
-      }),
+      this.editorStore.graphManagerState.graphManager.buildGraph(
+        dbGraph,
+        entities,
+        {
+          quiet: true,
+        },
+      ),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -501,14 +502,18 @@ export class DatabaseBuilderState {
     databaseBuilderInput: DatabaseBuilderInput,
   ): GeneratorFn<Database> {
     const entities =
-      (yield this.editorStore.graphState.graphManager.buildDatabase(
+      (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
         databaseBuilderInput,
       )) as Entity[];
-    const dbGraph = this.editorStore.graphState.createEmptyGraph();
+    const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
     (yield flowResult(
-      this.editorStore.graphState.graphManager.buildGraph(dbGraph, entities, {
-        quiet: true,
-      }),
+      this.editorStore.graphManagerState.graphManager.buildGraph(
+        dbGraph,
+        entities,
+        {
+          quiet: true,
+        },
+      ),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -539,9 +544,11 @@ export class DatabaseBuilderState {
           'Database package is missing',
         );
         const databasePackage =
-          this.editorStore.graphState.graph.getOrCreatePackage(PackagePath);
+          this.editorStore.graphManagerState.graph.getOrCreatePackage(
+            PackagePath,
+          );
         databasePackage.addElement(newDatabase);
-        this.editorStore.graphState.graph.addElement(newDatabase);
+        this.editorStore.graphManagerState.graph.addElement(newDatabase);
         currentDatabase = newDatabase;
         this.editorStore.explorerTreeState.reprocess();
       } else {

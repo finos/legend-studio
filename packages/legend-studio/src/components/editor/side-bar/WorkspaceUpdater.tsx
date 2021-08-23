@@ -28,16 +28,12 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { Link } from 'react-router-dom';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '../../../stores/ApplicationStore';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type {
   EntityChangeConflict,
@@ -45,7 +41,11 @@ import type {
 } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import {
+  ActionAlertType,
+  ActionAlertActionType,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();
@@ -186,7 +186,9 @@ export const WorkspaceUpdater = observer(() => {
                 </div>
                 <div
                   className="side-bar__panel__header__changes-count"
-                  data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                  data-testid={
+                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                  }
                 >
                   {changes.length}
                 </div>
@@ -240,7 +242,9 @@ export const WorkspaceUpdater = observer(() => {
                 </div>
                 <div
                   className="side-bar__panel__header__changes-count"
-                  data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                  data-testid={
+                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                  }
                 >
                   {commitedReviews.length}
                 </div>

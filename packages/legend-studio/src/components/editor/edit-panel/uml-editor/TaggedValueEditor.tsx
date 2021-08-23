@@ -22,11 +22,7 @@ import {
   FaArrowAltCircleRight,
   FaLongArrowAltUp,
 } from 'react-icons/fa';
-import {
-  clsx,
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-application-components';
+import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { Profile, TaggedValue, Tag } from '@finos/legend-graph';

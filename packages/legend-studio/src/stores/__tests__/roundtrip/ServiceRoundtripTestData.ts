@@ -17,7 +17,7 @@
 // References to resolve in Service
 // - Execution - MappingPointer
 // - Execution - RuntimePointer
-export const testServiceRoundtrip = [
+export const TEST_DATA__ServiceRoundtrip = [
   {
     path: 'test::tClass',
     content: {

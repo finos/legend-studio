@@ -36,9 +36,9 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const NewFileGenerationModal = observer(
   (props: {
@@ -77,9 +77,10 @@ const NewFileGenerationModal = observer(
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
-    const elementAlreadyExists = editorStore.graphState.graph.allOwnElements
-      .map((el) => el.path)
-      .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
+    const elementAlreadyExists =
+      editorStore.graphManagerState.graph.allOwnElements
+        .map((el) => el.path)
+        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
 
     return (
       <Dialog

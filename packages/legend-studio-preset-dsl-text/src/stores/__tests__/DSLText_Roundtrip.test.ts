@@ -16,21 +16,20 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import {
-  getTestApplicationConfig,
-  PluginManager,
-  getTestEditorStore,
-  checkBuildingElementsRoundtrip,
+  StudioPluginManager,
+  TEST__getTestEditorStore,
+  TEST__checkBuildingElementsRoundtrip,
 } from '@finos/legend-studio';
 import { unitTest } from '@finos/legend-shared';
-import { DSLText_Preset } from '../../DSLText_Preset';
-import { roundtripTestData } from './DSLText_RoundtripTestData';
+import { DSLText_StudioPreset } from '../../DSLText_StudioPreset';
+import { TEST_DATA__roundtrip } from './DSLText_RoundtripTestData';
 
-const pluginManager = PluginManager.create();
-pluginManager.usePresets([new DSLText_Preset()]).install();
+const pluginManager = StudioPluginManager.create();
+pluginManager.usePresets([new DSLText_StudioPreset()]).install();
 
 test(unitTest('Text import resolution roundtrip'), async () => {
-  await checkBuildingElementsRoundtrip(
-    roundtripTestData as Entity[],
-    getTestEditorStore(getTestApplicationConfig(), pluginManager),
+  await TEST__checkBuildingElementsRoundtrip(
+    TEST_DATA__roundtrip as Entity[],
+    TEST__getTestEditorStore(pluginManager),
   );
 });

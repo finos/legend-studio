@@ -25,7 +25,7 @@ import {
   IdentifiedConnectionsPerStoreEditorTabState,
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
-import type { TreeNodeContainerProps } from '@finos/legend-application-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
   ResizablePanel,
   ResizablePanelGroup,
@@ -40,7 +40,12 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
-} from '@finos/legend-application-components';
+  RuntimeIcon,
+  ConnectionIcon,
+  ModelStoreIcon,
+  ClassIcon,
+  MappingIcon,
+} from '@finos/legend-art';
 import {
   FaChevronDown,
   FaChevronRight,
@@ -50,14 +55,7 @@ import {
   FaCog,
   FaCaretRight,
 } from 'react-icons/fa';
-import {
-  getElementIcon,
-  RuntimeIcon,
-  ConnectionIcon,
-  ModelStoreIcon,
-  ClassIcon,
-  MappingIcon,
-} from '../../shared/Icon';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor';
 import type { UMLEditorElementDropTarget } from '../../../stores/shared/DnDUtil';
@@ -76,7 +74,6 @@ import { Dialog } from '@material-ui/core';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 import type { PackageableElementReference } from '@finos/legend-graph';
 import {
   Connection,
@@ -95,6 +92,7 @@ import {
   RelationalDatabaseConnection,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const getConnectionTooltipText = (connection: Connection): string => {
   const connectionValue =
@@ -784,7 +782,7 @@ const RuntimeMappingEditor = observer(
     const { runtimeEditorState, mappingRef, isReadOnly } = props;
     const editorStore = useEditorStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
-    const mappingOptions = editorStore.graphState.graph.ownMappings
+    const mappingOptions = editorStore.graphManagerState.graph.ownMappings
       .filter((m) => !runtimeValue.mappings.map((_m) => _m.value).includes(m))
       .map(buildElementOption);
     const filterOption = createFilter({
@@ -851,7 +849,7 @@ const RuntimeGeneralEditor = observer(
     const runtimeValue = runtimeEditorState.runtimeValue;
     const isRuntimeEmbedded = !(runtime instanceof RuntimePointer);
     // mappings
-    const mappings = editorStore.graphState.graph.ownMappings.filter(
+    const mappings = editorStore.graphManagerState.graph.ownMappings.filter(
       (mapping) => !runtimeValue.mappings.map((m) => m.value).includes(mapping),
     );
     const allowAddingMapping = !isReadOnly && Boolean(mappings.length);

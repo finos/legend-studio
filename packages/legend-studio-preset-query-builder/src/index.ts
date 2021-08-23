@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export * from './QueryBuilder_Preset';
-export * from './application/LegendQuery';
+export * from './QueryBuilder_StudioPreset';

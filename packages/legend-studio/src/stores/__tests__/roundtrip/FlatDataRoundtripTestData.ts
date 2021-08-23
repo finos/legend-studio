@@ -16,7 +16,7 @@
 
 // References to resolve in FlatData
 // - Includes
-export const testFlatDataRoundtrip = [
+export const TEST_DATA__FlatDataRoundtrip = [
   {
     path: 'test::flatDataExample1',
     content: {
@@ -210,7 +210,7 @@ export const testFlatDataRoundtrip = [
   },
 ];
 
-export const testFlatDataRoundtrip2 = [
+export const TEST_DATA__FlatDataRoundtrip2 = [
   {
     path: 'somethingelse::internal::country::CountryCsv',
     content: {
@@ -6739,7 +6739,7 @@ export const testFlatDataRoundtrip2 = [
 
 // References to resolve in FlatData Mapping
 // - Source RecordType
-export const testFlatDataMappingRoundtrip = [
+export const TEST_DATA__FlatDataMappingRoundtrip = [
   {
     path: 'test::Person',
     content: {
@@ -7570,7 +7570,7 @@ export const testFlatDataMappingRoundtrip = [
   },
 ];
 
-export const testEmbeddedFlatDataMappingRoundtrip = [
+export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
   {
     path: 'myFlatDataTest::Origination',
     content: {
@@ -15580,7 +15580,7 @@ export const testEmbeddedFlatDataMappingRoundtrip = [
 
 // References to resolve in FlatData Connection
 // - Connection store
-export const testFlatDataConnectionRoundtrip = [
+export const TEST_DATA__FlatDataConnectionRoundtrip = [
   {
     path: 'test::tFlatData',
     content: {
@@ -15638,7 +15638,7 @@ export const testFlatDataConnectionRoundtrip = [
 
 // References to resolve in FlatData Mapping Test Input Data
 // - store
-export const testFlatDataInputDataRoundtrip = [
+export const TEST_DATA__FlatDataInputDataRoundtrip = [
   {
     path: 'test::tClass',
     content: {

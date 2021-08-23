@@ -27,8 +27,7 @@ export default {
   testEnvironment: 'jsdom',
   moduleNameMapper: {
     ...base.moduleNameMapper,
-    '^monaco-editor$':
-      '@finos/legend-application-components/lib/testMocks/MockedMonacoEditor.js',
+    '^monaco-editor$': '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
   },
   testMatch: [
     '<rootDir>/packages/legend-studio-manual-tests/src/**/__tests__/**/*(*.)test.[jt]s?(x)',

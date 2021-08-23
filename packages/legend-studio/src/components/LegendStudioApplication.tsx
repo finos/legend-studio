@@ -20,42 +20,47 @@ import { Setup } from './setup/Setup';
 import { Editor } from './editor/Editor';
 import { Review } from './review/Review';
 import { Viewer } from './viewer/Viewer';
-import { NotificationSnackbar } from './application/NotificationSnackbar';
 import { observer } from 'mobx-react-lite';
 import {
   CustomSelectorInput,
   LegendMaterialUITheme,
   PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
 import {
   generateSetupRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
   generateRoutePatternWithSDLCServerKey,
 } from '../stores/LegendStudioRouter';
-import { ActionAlert } from './application/ActionAlert';
-import { BlockingAlert } from './application/BlockingAlert';
 import { AppHeader, BasicAppHeader } from './shared/AppHeader';
 import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
 import { ThemeProvider } from '@material-ui/core/styles';
-import type {
-  ApplicationConfig,
-  SDLCServerOption,
-} from '../stores/application/ApplicationConfig';
-import type { PluginManager } from '../application/PluginManager';
+import type { StudioPluginManager } from '../application/StudioPluginManager';
 import type { Log } from '@finos/legend-shared';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
+import { DepotServerClientProvider } from '@finos/legend-server-depot';
+import { StudioStoreProvider, useStudioStore } from './StudioStoreProvider';
+import { GraphManagerStateProvider } from '@finos/legend-graph';
+import type {
+  ApplicationConfig,
+  SDLCServerOption,
+} from '@finos/legend-application';
 import {
+  ActionAlert,
   ApplicationStoreProvider,
+  BlockingAlert,
+  NotificationSnackbar,
   useApplicationStore,
-} from './application/ApplicationStoreProvider';
-import { useWebApplicationNavigator } from './application/WebApplicationNavigatorProvider';
+  useWebApplicationNavigator,
+} from '@finos/legend-application';
 
 export const LegendStudioApplicationRoot = observer(() => {
+  const studioStore = useStudioStore();
   const applicationStore = useApplicationStore();
-  const extraApplicationPageRenderEntries = applicationStore.pluginManager
-    .getEditorPlugins()
+  const extraApplicationPageRenderEntries = studioStore.pluginManager
+    .getStudioPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? [])
     .filter((entry) => {
       /**
@@ -73,17 +78,17 @@ export const LegendStudioApplicationRoot = observer(() => {
     });
 
   useEffect(() => {
-    flowResult(applicationStore.initialize()).catch(
+    flowResult(studioStore.initialize()).catch(
       applicationStore.alertIllegalUnhandledError,
     );
-  }, [applicationStore]);
+  }, [applicationStore, studioStore]);
 
   return (
     <div className="app">
       <BlockingAlert />
       <ActionAlert />
       <NotificationSnackbar />
-      {!applicationStore.isSDLCAuthorized && (
+      {!studioStore.isSDLCAuthorized && (
         <div className="app__page">
           <AppHeader>
             <AppHeaderMenu />
@@ -92,7 +97,7 @@ export const LegendStudioApplicationRoot = observer(() => {
           <div className="app__content" />
         </div>
       )}
-      {applicationStore.isSDLCAuthorized && (
+      {studioStore.isSDLCAuthorized && (
         <Switch>
           <Route
             exact={true}
@@ -202,7 +207,7 @@ const LegendStudioApplicationConfigEditor = observer(
 export const LegendStudioApplication = observer(
   (props: {
     config: ApplicationConfig;
-    pluginManager: PluginManager;
+    pluginManager: StudioPluginManager;
     log: Log;
   }) => {
     const { config, pluginManager, log } = props;
@@ -243,15 +248,27 @@ export const LegendStudioApplication = observer(
       );
     }
     return (
-      <ApplicationStoreProvider
-        config={config}
-        navigator={navigator}
-        pluginManager={pluginManager}
-        log={log}
-      >
-        <ThemeProvider theme={LegendMaterialUITheme}>
-          <LegendStudioApplicationRoot />
-        </ThemeProvider>
+      <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
+        <SDLCServerClientProvider
+          config={{
+            env: config.env,
+            serverUrl: config.sdlcServerUrl,
+          }}
+        >
+          <DepotServerClientProvider
+            config={{
+              serverUrl: config.depotServerUrl,
+            }}
+          >
+            <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
+              <StudioStoreProvider pluginManager={pluginManager}>
+                <ThemeProvider theme={LegendMaterialUITheme}>
+                  <LegendStudioApplicationRoot />
+                </ThemeProvider>
+              </StudioStoreProvider>
+            </GraphManagerStateProvider>
+          </DepotServerClientProvider>
+        </SDLCServerClientProvider>
       </ApplicationStoreProvider>
     );
   },

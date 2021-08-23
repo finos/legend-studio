@@ -26,7 +26,7 @@ import { ElementEditorState } from './ElementEditorState';
 import type { DiagramRenderer } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { DIAGRAM_INTERACTION_MODE } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { ClassEditorState } from './ClassEditorState';
-import { PanelDisplayState } from '@finos/legend-application-components';
+import { PanelDisplayState } from '@finos/legend-art';
 import type {
   PackageableElement,
   ClassView,
@@ -372,12 +372,12 @@ export class DiagramEditorState extends ElementEditorState {
         _class.addProperty(
           new Property(
             `property_${_class.properties.length + 1}`,
-            this.editorStore.graphState.graph.getTypicalMultiplicity(
+            this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
               TYPICAL_MULTIPLICITY_TYPE.ONE,
             ),
             GenericTypeExplicitReference.create(
               new GenericType(
-                this.editorStore.graphState.graph.getPrimitiveType(
+                this.editorStore.graphManagerState.graph.getPrimitiveType(
                   PRIMITIVE_TYPE.STRING,
                 ),
               ),

@@ -17,7 +17,6 @@
 import { observable, computed, makeObservable, action, flow } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { uuid } from '@finos/legend-shared';
-import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import type { EditorStore } from '../../../EditorStore';
 import type { MappingElement } from './MappingEditorState';
 import type {
@@ -26,6 +25,7 @@ import type {
   SetImplementation,
   Type,
 } from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export class MappingElementState {
   uuid = uuid();

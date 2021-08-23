@@ -30,7 +30,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
-import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { FileGenerationTypeOption } from './editor-state/GraphGenerationState';
 import { DEFAULT_GENERATION_SPECIFICATION_NAME } from './editor-state/GraphGenerationState';
 import type {
@@ -122,7 +122,7 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
       isValid: computed,
     });
 
-    const mappings = this.editorStore.graphState.graph.ownMappings;
+    const mappings = this.editorStore.graphManagerState.graph.ownMappings;
     if (mappings.length) {
       this.mapping = mappings[0];
     }
@@ -172,7 +172,7 @@ export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureM
       isValid: computed,
     });
 
-    const classes = this.editorStore.graphState.graph.ownClasses;
+    const classes = this.editorStore.graphManagerState.graph.ownClasses;
     if (classes.length) {
       this.class = classes[0];
     }
@@ -234,7 +234,7 @@ export class NewRelationalDbConnectionDriver extends NewConnectionValueDriver<Re
     if (store instanceof Database) {
       selectedStore = store;
     } else {
-      const dbs = this.editorStore.graphState.graph.ownDatabases;
+      const dbs = this.editorStore.graphManagerState.graph.ownDatabases;
       selectedStore = dbs.length ? dbs[0] : Database.createStub();
     }
     return new RelationalDatabaseConnection(
@@ -328,7 +328,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
     const connection = new PackageableConnection(name);
     connection.setConnectionValue(
       this.newConnectionValueDriver.createConnection(
-        this.store ?? this.editorStore.graphState.graph.modelStore,
+        this.store ?? this.editorStore.graphManagerState.graph.modelStore,
       ),
     ); // default to model store
     return connection;
@@ -366,7 +366,7 @@ export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpec
     fileGeneration.setType(guaranteeNonNullable(this.typeOption).value);
     // default to all packages
     fileGeneration.setScopeElements(
-      this.editorStore.graphState.graph.root.children
+      this.editorStore.graphManagerState.graph.root.children
         .filter((element) => element instanceof Package)
         .map((element) => PackageableElementExplicitReference.create(element)),
     );
@@ -385,7 +385,8 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
   }
 
   get isValid(): boolean {
-    return !this.editorStore.graphState.graph.ownGenerationSpecifications;
+    return !this.editorStore.graphManagerState.graph
+      .ownGenerationSpecifications;
   }
 
   createElement(name: string): GenerationSpecification {
@@ -425,7 +426,7 @@ export class NewElementState {
   get elementAndPackageName(): [string, string] {
     return resolvePackageAndElementName(
       this.selectedPackage,
-      this._package === this.editorStore.graphState.graph.root,
+      this._package === this.editorStore.graphManagerState.graph.root,
       this.name,
     );
   }
@@ -484,15 +485,14 @@ export class NewElementState {
           driver = new NewGenerationSpecificationDriver(this.editorStore);
           break;
         default: {
-          const extraNewElementDriverCreators =
-            this.editorStore.applicationStore.pluginManager
-              .getEditorPlugins()
-              .flatMap(
-                (plugin) =>
-                  (
-                    plugin as DSL_EditorPlugin_Extension
-                  ).getExtraNewElementDriverCreators?.() ?? [],
-              );
+          const extraNewElementDriverCreators = this.editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_StudioPlugin_Extension
+                ).getExtraNewElementDriverCreators?.() ?? [],
+            );
           for (const creator of extraNewElementDriverCreators) {
             const _driver = creator(newType, this.editorStore);
             if (_driver) {
@@ -527,8 +527,9 @@ export class NewElementState {
     if (this.name && this.isValid) {
       const [packagePath, elementName] = this.elementAndPackageName;
       if (
-        this.editorStore.graphState.graph.getNullablePackage(packagePath) ===
-          this.editorStore.graphState.graph.root &&
+        this.editorStore.graphManagerState.graph.getNullablePackage(
+          packagePath,
+        ) === this.editorStore.graphManagerState.graph.root &&
         this.type !== PACKAGEABLE_ELEMENT_TYPE.PACKAGE
       ) {
         throw new IllegalStateError(
@@ -537,10 +538,12 @@ export class NewElementState {
       } else {
         const element = this.createElement(elementName);
         (packagePath
-          ? this.editorStore.graphState.graph.getOrCreatePackage(packagePath)
-          : this.editorStore.graphState.graph.root
+          ? this.editorStore.graphManagerState.graph.getOrCreatePackage(
+              packagePath,
+            )
+          : this.editorStore.graphManagerState.graph.root
         ).addElement(element);
-        this.editorStore.graphState.graph.addElement(element);
+        this.editorStore.graphManagerState.graph.addElement(element);
         if (element instanceof Package) {
           // expand tree node only
           this.editorStore.explorerTreeState.openNode(element);
@@ -560,7 +563,7 @@ export class NewElementState {
     ) {
       const generationElement = element;
       const generationSpecifications =
-        this.editorStore.graphState.graph.ownGenerationSpecifications;
+        this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       let generationSpec: GenerationSpecification;
       if (generationSpecifications.length) {
         // TODO? handle case when more than one generation specification
@@ -572,7 +575,7 @@ export class NewElementState {
         guaranteeNonNullable(generationElement.package).addElement(
           generationSpec,
         );
-        this.editorStore.graphState.graph.addElement(generationSpec);
+        this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
       generationSpec.addGenerationElement(generationElement);
     }
@@ -602,11 +605,11 @@ export class NewElementState {
         element = new ConcreteFunctionDefinition(
           name,
           PackageableElementExplicitReference.create(
-            this.editorStore.graphState.graph.getPrimitiveType(
+            this.editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.STRING,
             ),
           ),
-          this.editorStore.graphState.graph.getTypicalMultiplicity(
+          this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
             TYPICAL_MULTIPLICITY_TYPE.ONE,
           ),
         );
@@ -629,10 +632,13 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
         const service = new Service(name);
         const mapping = Mapping.createStub(); // since it does not really make sense to start with the first available mapping, we start with a stub
-        const runtimes = this.editorStore.graphState.graph.ownRuntimes.filter(
-          (runtime) =>
-            runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
-        );
+        const runtimes =
+          this.editorStore.graphManagerState.graph.ownRuntimes.filter(
+            (runtime) =>
+              runtime.runtimeValue.mappings
+                .map((m) => m.value)
+                .includes(mapping),
+          );
         let runtimeValue: Runtime;
         if (runtimes.length) {
           runtimeValue = runtimes[0].runtimeValue;
@@ -641,7 +647,7 @@ export class NewElementState {
           decorateRuntimeWithNewMapping(
             runtimeValue,
             mapping,
-            this.editorStore.graphState.graph,
+            this.editorStore.graphManagerState.graph,
           );
         }
         service.setExecution(
@@ -675,15 +681,14 @@ export class NewElementState {
         element = new GenerationSpecification(name);
         break;
       default: {
-        const extraNewElementFromStateCreators =
-          this.editorStore.applicationStore.pluginManager
-            .getEditorPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as DSL_EditorPlugin_Extension
-                ).getExtraNewElementFromStateCreators?.() ?? [],
-            );
+        const extraNewElementFromStateCreators = this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_StudioPlugin_Extension
+              ).getExtraNewElementFromStateCreators?.() ?? [],
+          );
         for (const creator of extraNewElementFromStateCreators) {
           const _element = creator(this.type, name, this);
           if (_element) {

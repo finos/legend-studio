@@ -19,7 +19,6 @@ import { useResizeDetector } from 'react-resize-detector';
 import { InheritanceDiagramRenderer } from '../../../shared/diagram-viewer/InheritanceDiagramRenderer';
 import { observer } from 'mobx-react-lite';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
 import { useDrop } from 'react-dnd';
 import type {
   ElementDragSource,
@@ -45,9 +44,8 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
-} from '@finos/legend-application-components';
-import { CORE_TEST_ID } from '../../../../const';
-import { getElementIcon } from '../../../shared/Icon';
+} from '@finos/legend-art';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { PropertyEditor } from './PropertyEditor';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
@@ -56,7 +54,6 @@ import { ClassEditorState } from '../../../../stores/editor-state/element-editor
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type {
   StereotypeReference,
   GenericTypeReference,
@@ -83,6 +80,9 @@ import {
   GenericTypeExplicitReference,
   Association,
 } from '@finos/legend-graph';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
+import { useApplicationStore } from '@finos/legend-application';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -222,7 +222,7 @@ const PropertyBasicEditor = observer(
             </div>
             <div
               data-testid={
-                CORE_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
               }
               className="property-basic-editor__type__label property-basic-editor__type__label--hover"
               onClick={(): void => setIsEditingType(true)}
@@ -231,7 +231,7 @@ const PropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -263,7 +263,7 @@ const PropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -492,7 +492,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               <div
                 data-testid={
-                  CORE_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                  STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
                 }
                 className="property-basic-editor__type__label property-basic-editor__type__label--hover"
                 onClick={(): void => setIsEditingType(true)}
@@ -501,7 +501,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <button
-                  data-testid={CORE_TEST_ID.TYPE_VISIT}
+                  data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
@@ -533,7 +533,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <button
-                  data-testid={CORE_TEST_ID.TYPE_VISIT}
+                  data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
@@ -699,7 +699,7 @@ const ConstraintEditor = observer(
           }
           lambdaEditorState={constraintState}
           forceBackdrop={hasParserError}
-          expectedType={editorStore.graphState.graph.getPrimitiveType(
+          expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
             PRIMITIVE_TYPE.BOOLEAN,
           )}
         />
@@ -792,7 +792,7 @@ export const ClassFormEditor = observer(
         ); // attempting to read the hashCode of immutable element will throw an error
     const classState = editorState.classState;
     const isReadOnly = editorState.isReadOnly;
-    const defaultType = editorStore.graphState.graph.getPrimitiveType(
+    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
     // Selected property
@@ -865,15 +865,16 @@ export const ClassFormEditor = observer(
           superType.value.rawType.deleteSubClass(_class);
         }
       };
-    const possibleSupertypes = editorStore.graphState.graph.ownClasses.filter(
-      (superType) =>
-        // Exclude current class
-        superType !== _class &&
-        // Exclude super types of the class
-        !_class.allSuperClasses.includes(superType) &&
-        // Ensure there is no loop (might be expensive)
-        !superType.allSuperClasses.includes(_class),
-    );
+    const possibleSupertypes =
+      editorStore.graphManagerState.graph.ownClasses.filter(
+        (superType) =>
+          // Exclude current class
+          superType !== _class &&
+          // Exclude super types of the class
+          !_class.allSuperClasses.includes(superType) &&
+          // Ensure there is no loop (might be expensive)
+          !superType.allSuperClasses.includes(_class),
+      );
     // Derived properties
     const indirectDerivedProperties = _class
       .getAllDerivedProperties()
@@ -1108,7 +1109,7 @@ export const ClassFormEditor = observer(
 
     return (
       <div
-        data-testid={CORE_TEST_ID.CLASS_FORM_EDITOR}
+        data-testid={STUDIO_TEST_ID.CLASS_FORM_EDITOR}
         className="uml-element-editor class-form-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
@@ -1148,7 +1149,7 @@ export const ClassFormEditor = observer(
                 </div>
               </div>
               <div
-                data-testid={CORE_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
                 className="panel__header uml-element-editor__tabs__header"
               >
                 <div className="uml-element-editor__tabs">

@@ -17,7 +17,7 @@
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -43,7 +43,7 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;
@@ -183,7 +183,7 @@ export class WorkspaceUpdaterState {
     try {
       this.isRefreshingWorkspaceUpdater = true;
       this.sdlcState.isWorkspaceOutdated =
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.isWorkspaceOutdated(
+        (yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         )) as boolean;
@@ -268,7 +268,7 @@ export class WorkspaceUpdaterState {
         showLoading: true,
       });
       const workspaceUpdateReport =
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.updateWorkspace(
+        (yield this.editorStore.sdlcServerClient.updateWorkspace(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         )) as WorkspaceUpdateReport;
@@ -310,14 +310,14 @@ export class WorkspaceUpdaterState {
       // 2. the revision is the merged/comitted review revision (this usually happens for prototype projects where fast forwarding merging is not default)
       // in those case, we will get the time from the base revision
       const workspaceBaseRevision = Revision.serialization.fromJson(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getRevision(
+        (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.BASE,
         )) as PlainObject<Revision>,
       );
       const baseReviewObj = getNullableFirstElement(
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviews(
+        (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.currentProjectId,
           ReviewState.COMMITTED,
           [workspaceBaseRevision.id],
@@ -330,7 +330,7 @@ export class WorkspaceUpdaterState {
         ? Review.serialization.fromJson(baseReviewObj)
         : undefined;
       this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = (
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getReviews(
+        (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.currentProjectId,
           ReviewState.COMMITTED,
           undefined,

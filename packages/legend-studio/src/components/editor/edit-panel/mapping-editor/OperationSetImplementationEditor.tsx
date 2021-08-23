@@ -18,11 +18,7 @@ import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaTimes, FaArrowAltCircleRight, FaPlus } from 'react-icons/fa';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import {
-  clsx,
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-application-components';
+import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
 import type {
   OperationSetImplementationDropTarget,
   MappingElementDragSource,

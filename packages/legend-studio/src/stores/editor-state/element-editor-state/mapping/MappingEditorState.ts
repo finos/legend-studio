@@ -54,13 +54,9 @@ import {
   FlatDataInstanceSetImplementationState,
   RootFlatDataInstanceSetImplementationState,
 } from './FlatDataInstanceSetImplementationState';
-import type {
-  TreeNodeData,
-  TreeData,
-} from '@finos/legend-application-components';
+import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
 import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
-import { LambdaEditorState } from '../LambdaEditorState';
 import type {
   CompilationError,
   PackageableElement,
@@ -110,6 +106,7 @@ import {
   updateRootSetImplementationOnCreate,
   updateRootSetImplementationOnDelete,
 } from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -889,7 +886,9 @@ export class MappingEditorState extends ElementEditorState {
   ): GeneratorFn<void> {
     let mappingElementsToClose = [mappingElement];
     if (
-      this.editorStore.graphState.isInstanceSetImplementation(mappingElement)
+      this.editorStore.graphManagerState.isInstanceSetImplementation(
+        mappingElement,
+      )
     ) {
       const embeddedChildren = mappingElement.getEmbeddedSetImplmentations();
       mappingElementsToClose = mappingElementsToClose.concat(embeddedChildren);
@@ -958,7 +957,7 @@ export class MappingEditorState extends ElementEditorState {
             this.mapping,
             suggestedId,
             spec.target,
-            this.editorStore.graphState.graph.getPrimitiveType(
+            this.editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.STRING,
             ),
           );
@@ -1315,7 +1314,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *createNewTest(setImplementation: SetImplementation): GeneratorFn<void> {
     const query =
-      this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+      this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
         setImplementation.class.value,
       );
     const source = getMappingElementSource(setImplementation);

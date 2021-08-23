@@ -6,14 +6,18 @@
   "files": [],
   "references": [
     { "path": "packages/legend-shared" },
+    { "path": "packages/legend-tracer-plugin-zipkin" },
     { "path": "packages/legend-server-sdlc" },
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
     {
+      "path": "packages/legend-graph-preset-dsl-text"
+    },
+    {
       "path": "packages/legend-graph-preset-external-format-json-schema"
     },
-    { "path": "packages/legend-application-components" },
-    { "path": "packages/legend-tracer-plugin-zipkin" },
+    { "path": "packages/legend-application" },
+    { "path": "packages/legend-art" },
     { "path": "packages/legend-model-storage" },
     { "path": "packages/legend-studio" },
     { "path": "packages/legend-studio-app" },
@@ -22,6 +26,7 @@
     { "path": "packages/legend-studio-preset-dsl-text" },
     { "path": "packages/legend-studio-preset-query-builder" },
     { "path": "packages/legend-studio-manual-tests" },
+    { "path": "packages/legend-query" },
     { "path": "packages/legend-query-app" },
     { "path": "packages/legend-query-deployment" }
   ]

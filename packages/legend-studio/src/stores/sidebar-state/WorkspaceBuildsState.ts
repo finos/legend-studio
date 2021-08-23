@@ -15,7 +15,7 @@
  */
 
 import { makeAutoObservable } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
@@ -43,7 +43,7 @@ export class WorkspaceBuildsState {
       this.isFetchingBuilds = true;
       // NOTE: this network call can take a while, so we might consider limiting the number of builds to 10 or so
       this.builds = (
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getBuilds(
+        (yield this.editorStore.sdlcServerClient.getBuilds(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           undefined,

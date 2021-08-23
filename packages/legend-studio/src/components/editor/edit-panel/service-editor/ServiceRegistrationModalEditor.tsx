@@ -20,16 +20,16 @@ import {
   clsx,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { Dialog } from '@material-ui/core';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { ServiceExecutionMode } from '@finos/legend-graph';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const ServiceRegistrationModalEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -123,7 +123,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <div
-        data-testid={CORE_TEST_ID.SERVICE_REGISTRATION_MODAL}
+        data-testid={STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL}
         className="modal modal--dark service-registration-modal"
       >
         <div className="service-registration-modal__heading">

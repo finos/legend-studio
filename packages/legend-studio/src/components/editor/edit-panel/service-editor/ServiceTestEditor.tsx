@@ -43,22 +43,24 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type { TestContainerState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
 import { MdRefresh, MdCompareArrows } from 'react-icons/md';
 import { LinearProgress } from '@material-ui/core';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import {
+  EDITOR_LANGUAGE,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { TestContainer } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const TestContainerContextMenu = observer(
   (
@@ -489,7 +491,7 @@ export const ServiceTestEditorEditPanel = observer(
                       </div>
                     )}
                     {expectedResult && (
-                      <TextInputEditor
+                      <StudioTextInputEditor
                         inputValue={expectedResult}
                         isReadOnly={
                           isReadOnly ||
@@ -700,7 +702,7 @@ export const ServiceTestEditor = observer(
                 <PanelLoadingIndicator
                   isLoading={selectedTestState.isGeneratingTestData}
                 />
-                <TextInputEditor
+                <StudioTextInputEditor
                   inputValue={selectedTest.data}
                   updateInput={updateTestData}
                   isReadOnly={isReadOnly}

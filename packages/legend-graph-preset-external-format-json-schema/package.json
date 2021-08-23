@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-graph-preset-external-format-json-schema",
-  "version": "0.0.42",
+  "version": "0.0.0",
   "description": "Legend Studio preset for JSON Schema external format",
   "keywords": [
     "legend",
@@ -40,8 +40,7 @@
   },
   "dependencies": {
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
@@ -55,5 +54,8 @@
   "publishConfig": {
     "directory": "build/publishContent"
   },
-  "pluginPrefix": "@finos/legend-studio-plugin-external-format-json-schema"
+  "extensions": {
+    "graphPreset": "@finos/legend-graph-preset-external-format-json-schema",
+    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-external-format-json-schema-pure-protocol-processor"
+  }
 }

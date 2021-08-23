@@ -14,56 +14,12 @@
  * limitations under the License.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { setup } from '@finos/legend-studio-app/scripts/setup.js';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
-import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const outputDir = process.argv[2];
-const resolvedOutputDir = resolve(__dirname, `../${outputDir}`);
 
-if (!existsSync(resolvedOutputDir)) {
-  mkdirSync(resolvedOutputDir);
-}
-
-writeFileSync(
-  resolve(resolvedOutputDir, 'version.json'),
-  JSON.stringify(
-    {
-      buildTime: new Date().toISOString(),
-      version: `${loadJSON(resolve(__dirname, '../package.json')).version}`,
-      commitSHA: execSync(`git rev-parse HEAD`, {
-        encoding: 'utf-8',
-      }).trim(),
-    },
-    null,
-    2,
-  ),
-);
-
-writeFileSync(
-  resolve(resolvedOutputDir, 'config.json'),
-  JSON.stringify(
-    {
-      appName: 'studio',
-      env: 'local',
-      sdlc: {
-        url: 'http://localhost:7070/api',
-      },
-      engine: {
-        url: 'http://localhost:6060/api',
-      },
-      metadata: {
-        url: 'http://localhost:9090/api',
-      },
-      documentation: {
-        url: 'https://legend.finos.org',
-      },
-    },
-    undefined,
-    2,
-  ),
-);
+setup(resolve(__dirname, `../${outputDir}`));

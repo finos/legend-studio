@@ -24,7 +24,7 @@
 // - Association mapping - stores
 // - MappingTest - inputData - flatdata
 // - MappingTest - inputData - class
-export const testMappingRoundtrip = [
+export const TEST_DATA__MappingRoundtrip = [
   {
     path: 'test::tClass',
     content: {
@@ -464,7 +464,7 @@ export const testMappingRoundtrip = [
   },
 ];
 
-export const testLocalPropertyMapping = [
+export const TEST_DATA__LocalPropertyMapping = [
   {
     path: 'test::Firm',
     content: {
@@ -617,7 +617,7 @@ export const testLocalPropertyMapping = [
   },
 ];
 
-export const testAggregationAwareMappingRoundtrip = [
+export const TEST_DATA__AggregationAwareMappingRoundtrip = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {

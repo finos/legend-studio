@@ -43,4 +43,7 @@ export * from './models/configuration/ProjectConfigurationCommands';
 
 export * from './models/User';
 
-export * from './SDLCServerClient';
+export { SDLCServerClient } from './SDLCServerClient';
+export * from './SDLCServerClientProvider';
+
+export * from './SDLCServerClientTestUtils';

@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './EFJSONSchema_Preset';
+export * from './EFJSONSchema_GraphPreset';

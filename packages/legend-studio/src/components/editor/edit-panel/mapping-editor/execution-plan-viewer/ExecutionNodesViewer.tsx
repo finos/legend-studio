@@ -22,7 +22,6 @@ import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from './ExecutionPlanViewer';
-import { EDITOR_LANGUAGE } from '../../../../../stores/EditorConfig';
 import type { ResultType, DataType } from '@finos/legend-graph';
 import {
   SQLExecutionNode,
@@ -45,15 +44,15 @@ import {
   Timestamp,
   Other,
 } from '@finos/legend-graph';
-
 import {
   BlankPanelContent,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { TextInputEditor } from '../../../../shared/TextInputEditor';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
 
 const generateDataTypeLabel = (type: unknown | undefined): string => {
   if (type === undefined) {
@@ -191,7 +190,7 @@ const JSONViewer: React.FC<{ query: string }> = (props: { query: string }) => {
   const { query } = props;
   return (
     <div className="panel__content">
-      <TextInputEditor
+      <StudioTextInputEditor
         inputValue={query}
         isReadOnly={true}
         language={EDITOR_LANGUAGE.JSON}

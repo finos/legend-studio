@@ -41,5 +41,5 @@ export const ReviewStoreProvider = ({
 export const useReviewStore = (): ReviewStore =>
   guaranteeNonNullable(
     useContext(ReviewStoreContext),
-    'useReviewStore() hook must be used inside ReviewStore context provider',
+    `Can't find review store in context`,
   );

@@ -23,7 +23,7 @@ import {
   flow,
   makeObservable,
 } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -34,7 +34,7 @@ import {
   hashObject,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
-import type { GraphState } from './GraphState';
+import type { EditorGraphState } from './EditorGraphState';
 import type { Entity } from '@finos/legend-model-storage';
 import type { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import {
@@ -45,7 +45,7 @@ import {
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;
-  graphState: GraphState;
+  graphState: EditorGraphState;
   changes: EntityDiff[] = [];
   entityHashesIndex = new Map<string, string>();
   isBuildingEntityHashesIndex = false;
@@ -61,7 +61,7 @@ class RevisionChangeDetectionState {
     this.entities = entities;
   }
 
-  constructor(editorStore: EditorStore, graphState: GraphState) {
+  constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       changes: observable.ref,
       entityHashesIndex: observable.ref,
@@ -83,9 +83,9 @@ class RevisionChangeDetectionState {
     let changes: EntityDiff[] = [];
     if (!this.isBuildingEntityHashesIndex) {
       const originalPaths = new Set(Array.from(this.entityHashesIndex.keys()));
-      if (this.graphState.graph.allOwnElements.length) {
+      if (this.editorStore.graphManagerState.graph.allOwnElements.length) {
         yield Promise.all<void>(
-          this.graphState.graph.allOwnElements.map(
+          this.editorStore.graphManagerState.graph.allOwnElements.map(
             (element) =>
               new Promise((resolve) =>
                 setTimeout(() => {
@@ -145,9 +145,10 @@ class RevisionChangeDetectionState {
     const startTime = Date.now();
     this.setIsBuildingEntityHashesIndex(true);
     try {
-      const hashesIndex = (yield this.graphState.graphManager.buildHashesIndex(
-        entities,
-      )) as Map<string, string>;
+      const hashesIndex =
+        (yield this.editorStore.graphManagerState.graphManager.buildHashesIndex(
+          entities,
+        )) as Map<string, string>;
       this.setEntityHashesIndex(hashesIndex);
       this.setIsBuildingEntityHashesIndex(false);
       if (!quiet) {
@@ -197,7 +198,7 @@ class RevisionChangeDetectionState {
  */
 export class ChangeDetectionState {
   editorStore: EditorStore;
-  graphState: GraphState;
+  graphState: EditorGraphState;
   isChangeDetectionRunning = false;
   hasChangeDetectionStarted = false;
   forcedStop = false;
@@ -254,7 +255,7 @@ export class ChangeDetectionState {
   conflicts: EntityChangeConflict[] = []; // conflicts in conflict resolution mode (derived from aggregated workspace changes and conflict resolution changes)
   resolutions: EntityChangeConflictResolution[] = [];
 
-  constructor(editorStore: EditorStore, graphState: GraphState) {
+  constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       isChangeDetectionRunning: observable,
       hasChangeDetectionStarted: observable,
@@ -392,7 +393,7 @@ export class ChangeDetectionState {
   snapshotLocalEntityHashesIndex(quiet?: boolean): Map<string, string> {
     const startTime = Date.now();
     const snapshot = new Map<string, string>();
-    this.graphState.graph.allOwnElements.forEach((el) =>
+    this.editorStore.graphManagerState.graph.allOwnElements.forEach((el) =>
       snapshot.set(el.path, el.hashCode),
     );
     if (!quiet) {

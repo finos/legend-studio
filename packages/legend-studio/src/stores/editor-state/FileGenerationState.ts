@@ -16,8 +16,8 @@
 
 import type { EditorStore } from '../EditorStore';
 import { observable, action, makeAutoObservable } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
-import type { TreeData } from '@finos/legend-application-components';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import type { TreeData } from '@finos/legend-art';
 import type {
   GenerationTreeNodeData,
   GenerationFile,
@@ -116,10 +116,10 @@ export class FileGenerationState {
           this.fileGeneration.type,
         ).generationMode;
       const result =
-        (yield this.editorStore.graphState.graphManager.generateFile(
+        (yield this.editorStore.graphManagerState.graphManager.generateFile(
           this.fileGeneration,
           mode,
-          this.editorStore.graphState.graph,
+          this.editorStore.graphManagerState.graph,
         )) as GenerationOutput[];
       this.processGenerationResult(result);
     } catch (error: unknown) {

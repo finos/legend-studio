@@ -29,18 +29,21 @@ import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
-import { CORE_TEST_ID } from '../../const';
-import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
-import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
+import { STUDIO_TEST_ID } from '../StudioTestID';
+import {
+  ACTIVITY_MODE,
+  STUDIO_HOTKEY,
+  STUDIO_HOTKEY_MAP,
+} from '../../stores/EditorConfig';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
 import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
@@ -53,7 +56,10 @@ import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import {
+  NotificationSnackbar,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
@@ -87,7 +93,7 @@ const ViewerStatusBar = observer(() => {
 
   return (
     <div
-      data-testid={CORE_TEST_ID.STATUS_BAR}
+      data-testid={STUDIO_TEST_ID.STATUS_BAR}
       className="editor__status-bar viewer__status-bar"
     >
       <div className="editor__status-bar__left">
@@ -183,40 +189,40 @@ export const ViewerInner = observer(() => {
   const applicationStore = useApplicationStore();
   const allowOpeningElement =
     editorStore.sdlcState.currentProject &&
-    editorStore.graphState.graph.buildState.hasSucceeded;
+    editorStore.graphManagerState.graph.buildState.hasSucceeded;
   const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
     editorStore.sideBarDisplayState.setSize(
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
     );
   // Extensions
-  const extraEditorExtensionComponents =
-    editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
-          [],
-      )
-      .filter(isNonNullable)
-      .map((config) => (
-        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
-      ));
+  const extraEditorExtensionComponents = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],
+    )
+    .filter(isNonNullable)
+    .map((config) => (
+      <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+    ));
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys
   const keyMap = {
-    [HOTKEY.OPEN_ELEMENT]: [HOTKEY_MAP.OPEN_ELEMENT],
-    [HOTKEY.TOGGLE_TEXT_MODE]: [HOTKEY_MAP.TOGGLE_TEXT_MODE],
+    [STUDIO_HOTKEY.OPEN_ELEMENT]: [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
+    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
   };
   const handlers = {
-    [HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
+    [STUDIO_HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
       editorStore.searchElementCommandState.open(),
     ),
-    [HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(() => {
-      flowResult(editorStore.toggleTextMode()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
-    }),
+    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(
+      () => {
+        flowResult(editorStore.toggleTextMode()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      },
+    ),
   };
 
   useEffect(() => {

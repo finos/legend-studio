@@ -15,23 +15,25 @@
  */
 
 import type { MappingExecutionState } from '@finos/legend-studio';
-import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
+import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilderState } from '../stores/QueryBuilderState';
 import {
   EngineRuntime,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import type { RawLambda } from '@finos/legend-graph';
+import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingExecutionQueryBuilder = observer(
   (props: { executionState: MappingExecutionState }) => {
     const { executionState } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
-    const queryBuilderState =
-      editorStore.getEditorExtensionState(QueryBuilderState);
+    const queryBuilderExtension = editorStore.getEditorExtensionState(
+      QueryBuilder_EditorExtensionState,
+    );
     const editWithQueryBuilder = async (): Promise<void> => {
       const mapping = executionState.mappingEditorState.mapping;
       const customRuntime = new EngineRuntime();
@@ -39,7 +41,7 @@ export const MappingExecutionQueryBuilder = observer(
         PackageableElementExplicitReference.create(mapping),
       );
       await flowResult(
-        queryBuilderState.querySetupState.setup(
+        queryBuilderExtension.setup(
           executionState.queryState.query,
           mapping,
           customRuntime,

@@ -24,15 +24,15 @@ import {
   FaBrush,
 } from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
-import { clsx, HammerIcon } from '@finos/legend-application-components';
+import { clsx, HammerIcon } from '@finos/legend-art';
 import { GoSync } from 'react-icons/go';
-import { CORE_TEST_ID } from '../../const';
+import { STUDIO_TEST_ID } from '../StudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import type { EditorPathParams } from '../../stores/LegendStudioRouter';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
@@ -59,7 +59,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     flowResult(editorStore.localChangesState.syncWithWorkspace()),
   );
   const syncStatusText =
-    editorStore.graphState.graph.buildState.hasFailed ||
+    editorStore.graphManagerState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
       : !editorStore.changeDetectionState.isChangeDetectionRunning
@@ -82,7 +82,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     flowResult(editorStore.conflictResolutionState.acceptConflictResolution()),
   );
   const conflictResolutionStatusText =
-    editorStore.graphState.graph.buildState.hasFailed ||
+    editorStore.graphManagerState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
       : !editorStore.changeDetectionState.isChangeDetectionRunning
@@ -123,7 +123,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
 
   return (
     <div
-      data-testid={CORE_TEST_ID.STATUS_BAR}
+      data-testid={STUDIO_TEST_ID.STATUS_BAR}
       className={clsx('editor__status-bar', {
         'editor__status-bar--conflict-resolution': isInConflictResolutionMode,
       })}
@@ -170,7 +170,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         </div>
       </div>
       <div
-        data-testid={CORE_TEST_ID.EDITOR__STATUS_BAR__RIGHT}
+        data-testid={STUDIO_TEST_ID.EDITOR__STATUS_BAR__RIGHT}
         className="editor__status-bar__right"
       >
         {isInConflictResolutionMode && (
@@ -244,7 +244,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           disabled={
             editorStore.graphState.isApplicationUpdateOperationIsRunning ||
             actionsDisabled ||
-            !editorStore.graphState.graph.ownGenerationSpecifications.length
+            !editorStore.graphManagerState.graph.ownGenerationSpecifications
+              .length
           }
           onClick={generate}
           tabIndex={-1}

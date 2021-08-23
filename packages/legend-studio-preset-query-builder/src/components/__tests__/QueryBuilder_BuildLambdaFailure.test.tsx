@@ -17,13 +17,13 @@
 /// <reference types="jest-extended" />
 import { getByText } from '@testing-library/react';
 import {
-  malformedFilterExpression,
-  errorInGraphLambda,
-  unsupportedFunction,
-  misplacedTakeFunction,
-  unsupportedFunctionWithFullPath,
+  TEST_DATA__malformedFilterExpression,
+  TEST_DATA__errorInGraphLambda,
+  TEST_DATA__unsupportedFunction,
+  TEST_DATA__misplacedTakeFunction,
+  TEST_DATA__unsupportedFunctionWithFullPath,
 } from './QueryBuilder_FailureTestData';
-import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
+import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   integrationTest,
@@ -31,13 +31,13 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
-import { setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
-import { QueryBuilderState } from '../../stores/QueryBuilderState';
+import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
+import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
 import { flowResult } from 'mobx';
-import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+import { TEST__buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import { RawLambda } from '@finos/legend-graph';
+import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
@@ -58,7 +58,7 @@ type TestCase = [
 ];
 
 const relationalCtx = {
-  entities: ComplexRelationalModel,
+  entities: TEST_DATA__ComplexRelationalModel,
   targetClassPath: 'model::pure::tests::model::simple::Person',
   className: 'Person',
   mappingName: 'simpleRelationalMapping',
@@ -69,31 +69,31 @@ const cases: TestCase[] = [
   [
     'Graph element resolution issue',
     relationalCtx,
-    errorInGraphLambda,
+    TEST_DATA__errorInGraphLambda,
     `Can't find type 'model::pure::tests::model::simple::NotFound'`,
   ],
   [
     'Unsupported function',
     relationalCtx,
-    unsupportedFunction,
+    TEST_DATA__unsupportedFunction,
     `Can't find expression builder for function 'testUnsupported': no compatible function expression builder available from plugins`,
   ],
   [
     'Unsupported function (with full-path)',
     relationalCtx,
-    unsupportedFunctionWithFullPath,
+    TEST_DATA__unsupportedFunctionWithFullPath,
     `Can't find expression builder for function 'something::getAll': no compatible function expression builder available from plugins`,
   ],
   [
     'Malformed filter()',
     relationalCtx,
-    malformedFilterExpression,
+    TEST_DATA__malformedFilterExpression,
     `Can't build filter() expression: filter() expects 1 argument`,
   ],
   [
     'Misplaced take()',
     relationalCtx,
-    misplacedTakeFunction,
+    TEST_DATA__misplacedTakeFunction,
     `Can't process take() expression: only support take() in TDS expression`,
   ],
 ];
@@ -113,23 +113,26 @@ describe(
           mappingName,
           runtimeName,
         } = context;
-        const mockedEditorStore = buildQueryBuilderMockedEditorStore();
-        const renderResult = await setUpEditorWithDefaultSDLCData(
+        const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
+        const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
           mockedEditorStore,
           {
             entities,
           },
         );
+
         MOBX__enableSpyOrMock();
         mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
         MOBX__disableSpyOrMock();
-        const queryBuilderState =
-          mockedEditorStore.getEditorExtensionState(QueryBuilderState);
-        await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-        queryBuilderState.querySetupState.setClass(
-          mockedEditorStore.graphState.graph.getClass(targetClassPath),
+
+        const queryBuilderExtension = mockedEditorStore.getEditorExtensionState(
+          QueryBuilder_EditorExtensionState,
         );
-        queryBuilderState.resetData();
+        await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
+        queryBuilderExtension.queryBuilderState.querySetupState.setClass(
+          mockedEditorStore.graphManagerState.graph.getClass(targetClassPath),
+        );
+        queryBuilderExtension.queryBuilderState.resetData();
         const queryBuilderSetup = await waitFor(() =>
           renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
         );
@@ -138,7 +141,9 @@ describe(
         await waitFor(() => getByText(queryBuilderSetup, mappingName));
         await waitFor(() => getByText(queryBuilderSetup, runtimeName));
         expect(() =>
-          queryBuilderState.buildStateFromRawLambda(getRawLambda(lambdaJson)),
+          queryBuilderExtension.queryBuilderState.buildStateFromRawLambda(
+            getRawLambda(lambdaJson),
+          ),
         ).toThrowError(errorMessage);
       },
     );

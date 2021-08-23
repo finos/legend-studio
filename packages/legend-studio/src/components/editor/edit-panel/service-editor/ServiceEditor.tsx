@@ -29,14 +29,14 @@ import {
   ServiceEditorState,
   SERVICE_TAB,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { clsx } from '@finos/legend-application-components';
+import { clsx } from '@finos/legend-art';
 import { MdModeEdit } from 'react-icons/md';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/service-editor/ServiceRegistrationModalEditor';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 import { validateServicePattern } from '@finos/legend-graph';
 
 const ServiceGeneralEditor = observer(() => {
@@ -268,7 +268,7 @@ const ServiceGeneralEditor = observer(() => {
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {owners.map((value, idx) => (
               <div

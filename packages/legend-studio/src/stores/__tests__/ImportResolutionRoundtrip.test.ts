@@ -16,83 +16,83 @@
 
 import { unitTest } from '@finos/legend-shared';
 import {
-  testAutoImportsWithSystemProfiles,
-  simpleDebuggingCase,
-  testAutoImportsWithAny,
+  TEST_DATA__AutoImportsWithSystemProfiles,
+  TEST_DATA__simpleDebuggingCase,
+  TEST_DATA__AutoImportsWithAny,
 } from './roundtrip/RoundtripTestData';
-import m2mGraphEntities from './buildGraph/M2MGraphEntitiesTestData.json';
+import TEST_DATA__m2mGraphEntities from './buildGraph/TEST_DATA__M2MGraphEntities.json';
 import {
-  testClassRoundtrip,
-  testEnumerationRoundtrip,
-  testAssociationRoundtrip,
-  testFunctionRoundtrip,
-  testMeasureRoundtrip,
-  testClassWithComplexConstraint,
+  TEST_DATA__ClassRoundtrip,
+  TEST_DATA__EnumerationRoundtrip,
+  TEST_DATA__AssociationRoundtrip,
+  TEST_DATA__FunctionRoundtrip,
+  TEST_DATA__MeasureRoundtrip,
+  TEST_DATA__ClassWithComplexConstraint,
 } from './roundtrip/DomainRoundtripTestData';
-import { testDiagramRoundtrip } from './roundtrip/DiagramRoundtripTestData';
+import { TEST_DATA__DiagramRoundtrip } from './roundtrip/DiagramRoundtripTestData';
 import {
   testConnectionRoundtrip,
   testModelChainConnectionRoundtrip,
 } from './roundtrip/ConnectionRoundtripTestdata';
 import {
-  testFileGenerationRoundtrip,
-  testFileGenerationWithPackageSameAsSystemElement,
+  TEST_DATA__FileGenerationRoundtrip,
+  TEST_DATA__FileGenerationWithPackageSameAsSystemElement,
 } from './roundtrip/FileGenerationRoundtripTestData';
 import {
-  testFlatDataRoundtrip,
-  testFlatDataMappingRoundtrip,
-  testFlatDataConnectionRoundtrip,
-  testFlatDataInputDataRoundtrip,
-  testFlatDataRoundtrip2,
-  testEmbeddedFlatDataMappingRoundtrip,
+  TEST_DATA__FlatDataRoundtrip,
+  TEST_DATA__FlatDataMappingRoundtrip,
+  TEST_DATA__FlatDataConnectionRoundtrip,
+  TEST_DATA__FlatDataInputDataRoundtrip,
+  TEST_DATA__FlatDataRoundtrip2,
+  TEST_DATA__EmbeddedFlatDataMappingRoundtrip,
 } from './roundtrip/FlatDataRoundtripTestData';
-import { testGenerationSpecificationRoundtrip } from './roundtrip/GenerationSpecificationTestData';
+import { TEST_DATA__GenerationSpecificationRoundtrip } from './roundtrip/GenerationSpecificationTestData';
 import {
-  testDatabaseRoundtrip,
-  testRelationalDatabaseConnectionRoundtrip,
-  testDatabaseWithSelfJoin,
-  simpleEmbeddedRelationalRoundtrip,
-  multiLevelEmbeddedRelationalRoundtrip,
-  testRelationalAssociationMapping,
-  testXStoreAssociationMapping,
+  TEST_DATA__DatabaseRoundtrip,
+  TEST_DATA__RelationalDatabaseConnectionRoundtrip,
+  TEST_DATA__DatabaseWithSelfJoin,
+  TEST_DATA__simpleEmbeddedRelationalRoundtrip,
+  TEST_DATA__multiLevelEmbeddedRelationalRoundtrip,
+  TEST_DATA__RelationalAssociationMapping,
+  TEST_DATA__XStoreAssociationMapping,
 } from './roundtrip/RelationalRoundtripTestData';
-import { testServiceRoundtrip } from './roundtrip/ServiceRoundtripTestData';
+import { TEST_DATA__ServiceRoundtrip } from './roundtrip/ServiceRoundtripTestData';
 import {
-  testAggregationAwareMappingRoundtrip,
-  testMappingRoundtrip,
-  testLocalPropertyMapping,
+  TEST_DATA__AggregationAwareMappingRoundtrip,
+  TEST_DATA__MappingRoundtrip,
+  TEST_DATA__LocalPropertyMapping,
 } from './roundtrip/MappingRoundtripTestData';
-import { testRuntimeRoundtrip } from './roundtrip/RuntimeRoundtripTestData';
-import { checkBuildingElementsRoundtrip } from '../StoreTestUtils';
+import { TEST_DATA__RuntimeRoundtrip } from './roundtrip/RuntimeRoundtripTestData';
+import { TEST__checkBuildingElementsRoundtrip } from '../EditorStoreTestUtils';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([
-    ['Simple M2M (debugging case)', simpleDebuggingCase],
-    ['Complex M2M', m2mGraphEntities],
+    ['Simple M2M (debugging case)', TEST_DATA__simpleDebuggingCase],
+    ['Complex M2M', TEST_DATA__m2mGraphEntities],
   ])('%s', async (testName, entities) => {
-    await checkBuildingElementsRoundtrip(entities);
+    await TEST__checkBuildingElementsRoundtrip(entities);
   });
 });
 
 describe(unitTest('Auto-imports resolution roundtrip'), () => {
   test.each([
-    ['System profiles', testAutoImportsWithSystemProfiles],
-    [`'Any' type`, testAutoImportsWithAny],
+    ['System profiles', TEST_DATA__AutoImportsWithSystemProfiles],
+    [`'Any' type`, TEST_DATA__AutoImportsWithAny],
   ])('%s', async (testName, entities) => {
-    await checkBuildingElementsRoundtrip(entities);
+    await TEST__checkBuildingElementsRoundtrip(entities);
   });
 });
 
 describe(unitTest('Domain import resolution roundtrip'), () => {
   test.each([
-    ['Class', testClassRoundtrip],
-    ['Class with complex constraint', testClassWithComplexConstraint],
-    ['Enumeration', testEnumerationRoundtrip],
-    ['Association', testAssociationRoundtrip],
-    ['Function', testFunctionRoundtrip],
-    ['Measure', testMeasureRoundtrip],
+    ['Class', TEST_DATA__ClassRoundtrip],
+    ['Class with complex constraint', TEST_DATA__ClassWithComplexConstraint],
+    ['Enumeration', TEST_DATA__EnumerationRoundtrip],
+    ['Association', TEST_DATA__AssociationRoundtrip],
+    ['Function', TEST_DATA__FunctionRoundtrip],
+    ['Measure', TEST_DATA__MeasureRoundtrip],
   ])('%s', async (testName, entities) => {
-    await checkBuildingElementsRoundtrip(entities);
+    await TEST__checkBuildingElementsRoundtrip(entities);
   });
 });
 
@@ -102,64 +102,70 @@ describe(unitTest('Connection import resolution roundtrip'), () => {
     ['Model chain connection', testModelChainConnectionRoundtrip],
     // TODO test post processor
   ])('%s', async (testName, entities) => {
-    await checkBuildingElementsRoundtrip(entities);
+    await TEST__checkBuildingElementsRoundtrip(entities);
   });
 });
 
 describe(unitTest('Runtime import resolution roundtrip'), () => {
-  test.each([['Simple runtime', testRuntimeRoundtrip]])(
+  test.each([['Simple runtime', TEST_DATA__RuntimeRoundtrip]])(
     '%s',
     async (testName, entities) => {
-      await checkBuildingElementsRoundtrip(entities);
+      await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
 });
 
 describe(unitTest('Mapping import resolution roundtrip'), () => {
   test.each([
-    ['M2M mapping', testMappingRoundtrip],
+    ['M2M mapping', TEST_DATA__MappingRoundtrip],
     // TODO? association mapping
-    ['Aggregation-aware mapping', testAggregationAwareMappingRoundtrip],
+    ['Aggregation-aware mapping', TEST_DATA__AggregationAwareMappingRoundtrip],
   ])('%s', async (testName, entities) => {
-    await checkBuildingElementsRoundtrip(entities);
+    await TEST__checkBuildingElementsRoundtrip(entities);
   });
 });
 
 describe(unitTest('Flat-data import resolution roundtrip'), () => {
   test.each([
     // TODO: import resolution for included stores?
-    ['Simple flat-data store', testFlatDataRoundtrip],
-    ['Complex flat-data store', testFlatDataRoundtrip2],
-    ['Flat-data mapping', testFlatDataMappingRoundtrip],
-    ['Flat-data embedded mapping', testEmbeddedFlatDataMappingRoundtrip],
-    ['Flat-data connection', testFlatDataConnectionRoundtrip],
-    ['Flat-data mapping test input data', testFlatDataInputDataRoundtrip],
+    ['Simple flat-data store', TEST_DATA__FlatDataRoundtrip],
+    ['Complex flat-data store', TEST_DATA__FlatDataRoundtrip2],
+    ['Flat-data mapping', TEST_DATA__FlatDataMappingRoundtrip],
+    ['Flat-data embedded mapping', TEST_DATA__EmbeddedFlatDataMappingRoundtrip],
+    ['Flat-data connection', TEST_DATA__FlatDataConnectionRoundtrip],
+    [
+      'Flat-data mapping test input data',
+      TEST_DATA__FlatDataInputDataRoundtrip,
+    ],
   ])('%s', async (testName, entities) => {
-    await checkBuildingElementsRoundtrip(entities);
+    await TEST__checkBuildingElementsRoundtrip(entities);
   });
 });
 
 describe(unitTest('Relational import resolution roundtrip'), () => {
   test.each([
     // TODO: import resolution for included stores?
-    ['Complex database with includes', testDatabaseRoundtrip],
-    ['Database with self join', testDatabaseWithSelfJoin],
+    ['Complex database with includes', TEST_DATA__DatabaseRoundtrip],
+    ['Database with self join', TEST_DATA__DatabaseWithSelfJoin],
     // testRelationalInputData
     // targetSetImplementationThroughAssociation
-    ['Relational embedded mapping', simpleEmbeddedRelationalRoundtrip],
+    [
+      'Relational embedded mapping',
+      TEST_DATA__simpleEmbeddedRelationalRoundtrip,
+    ],
     [
       'Relational nested embedded mappings',
-      multiLevelEmbeddedRelationalRoundtrip,
+      TEST_DATA__multiLevelEmbeddedRelationalRoundtrip,
     ],
-    ['Relational association mapping', testRelationalAssociationMapping],
-    ['XStore association mapping', testXStoreAssociationMapping],
-    ['Local property mapping', testLocalPropertyMapping],
+    ['Relational association mapping', TEST_DATA__RelationalAssociationMapping],
+    ['XStore association mapping', TEST_DATA__XStoreAssociationMapping],
+    ['Local property mapping', TEST_DATA__LocalPropertyMapping],
     [
       'Relational database connection',
-      testRelationalDatabaseConnectionRoundtrip,
+      TEST_DATA__RelationalDatabaseConnectionRoundtrip,
     ],
   ])('%s', async (testName, entities) => {
-    await checkBuildingElementsRoundtrip(entities);
+    await TEST__checkBuildingElementsRoundtrip(entities);
   });
 });
 
@@ -167,9 +173,12 @@ describe(
   unitTest('Generation specification import resolution roundtrip'),
   () => {
     test.each([
-      ['Simple generation specification', testGenerationSpecificationRoundtrip],
+      [
+        'Simple generation specification',
+        TEST_DATA__GenerationSpecificationRoundtrip,
+      ],
     ])('%s', async (testName, entities) => {
-      await checkBuildingElementsRoundtrip(entities);
+      await TEST__checkBuildingElementsRoundtrip(entities);
     });
   },
 );
@@ -178,31 +187,31 @@ describe(
   unitTest('File generation specification import resolution roundtrip'),
   () => {
     test.each([
-      ['Simple specification', testFileGenerationRoundtrip],
+      ['Simple specification', TEST_DATA__FileGenerationRoundtrip],
       [
         'Specification with package same as system element',
-        testFileGenerationWithPackageSameAsSystemElement,
+        TEST_DATA__FileGenerationWithPackageSameAsSystemElement,
       ],
     ])('%s', async (testName, entities) => {
-      await checkBuildingElementsRoundtrip(entities);
+      await TEST__checkBuildingElementsRoundtrip(entities);
     });
   },
 );
 
 describe(unitTest('Diagram import resolution roundtrip'), () => {
-  test.each([['Simple diagram specification', testDiagramRoundtrip]])(
+  test.each([['Simple diagram specification', TEST_DATA__DiagramRoundtrip]])(
     '%s',
     async (testName, entities) => {
-      await checkBuildingElementsRoundtrip(entities);
+      await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
 });
 
 describe(unitTest('Service import resolution roundtrip'), () => {
-  test.each([['Simple service', testServiceRoundtrip]])(
+  test.each([['Simple service', TEST_DATA__ServiceRoundtrip]])(
     '%s',
     async (testName, entities) => {
-      await checkBuildingElementsRoundtrip(entities);
+      await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
 });

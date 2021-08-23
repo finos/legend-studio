@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-application-components';
+import { clsx } from '@finos/legend-art';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider';
@@ -24,7 +24,7 @@ export const DevTool = observer(() => {
   const editorStore = useEditorStore();
   // Engine
   const engineConfig =
-    editorStore.graphState.graphManager.TEMP__getEngineConfig();
+    editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
   const changeEngineClientBaseUrl: React.ChangeEventHandler<HTMLInputElement> =
     (event) =>
       engineConfig.setBaseUrl(

@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './DSLText_Preset';
+export * from './DSLText_StudioPreset';

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { DATE_TIME_FORMAT, DATE_FORMAT } from '../../const';
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
 import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
@@ -27,6 +26,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '@finos/legend-graph';
+import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,

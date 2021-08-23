@@ -16,7 +16,7 @@
 
 // References to resolve in FileGeneration
 // - ScopeElement
-export const testFileGenerationRoundtrip = [
+export const TEST_DATA__FileGenerationRoundtrip = [
   {
     path: 'test::tClass',
     content: {
@@ -82,7 +82,7 @@ export const testFileGenerationRoundtrip = [
   },
 ];
 
-export const testFileGenerationWithPackageSameAsSystemElement = [
+export const TEST_DATA__FileGenerationWithPackageSameAsSystemElement = [
   {
     path: 'test::Firm',
     content: {

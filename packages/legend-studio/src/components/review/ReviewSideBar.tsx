@@ -17,21 +17,18 @@
 import { observer } from 'mobx-react-lite';
 import { EntityDiffSideBarItem } from '../editor/edit-panel/diff-editor/EntityDiffView';
 import { FaInfoCircle, FaTimes, FaArrowUp, FaCheck } from 'react-icons/fa';
-import {
-  clsx,
-  PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
 import { formatDistanceToNow } from 'date-fns';
 import { FiGitMerge } from 'react-icons/fi';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { CORE_TEST_ID } from '../../const';
+import { STUDIO_TEST_ID } from '../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { ReviewState } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../stores/EditorSdlcState';
 import { useReviewStore } from './ReviewStoreProvider';
 import { useEditorStore } from '../editor/EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const ReviewSideBar = observer(() => {
   const reviewStore = useReviewStore();
@@ -39,8 +36,7 @@ export const ReviewSideBar = observer(() => {
   const applicationStore = useApplicationStore();
   // Review infos
   const review = reviewStore.review;
-  const currentUser =
-    applicationStore.networkClientManager.sdlcClient.currentUser;
+  const currentUser = editorStore.sdlcServerClient.currentUser;
   let reviewStatus = '';
   switch (review.state) {
     case ReviewState.OPEN:
@@ -208,7 +204,7 @@ export const ReviewSideBar = observer(() => {
               </div>
               <div
                 className="side-bar__panel__header__changes-count"
-                data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
               >
                 {changes.length}
               </div>

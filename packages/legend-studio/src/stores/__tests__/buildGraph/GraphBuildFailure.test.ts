@@ -16,33 +16,33 @@
 
 import type { EditorStore } from '../../EditorStore';
 import {
-  testMissingSuperType,
-  testMissingProfile,
-  testMissingProperty,
-  testMissingStereoType,
-  testMissingTagValue,
-  testMissingTargetClassinMapping,
-  testMissingSetImp,
-  testMissingClassInDiagram,
-  testMissingClassMapping,
-  testMissingClassMappingWithTargetId,
+  TEST_DATA__MissingSuperType,
+  TEST_DATA__MissingProfile,
+  TEST_DATA__MissingProperty,
+  TEST_DATA__MissingStereoType,
+  TEST_DATA__MissingTagValue,
+  TEST_DATA__MissingTargetClassinMapping,
+  TEST_DATA__MissingSetImp,
+  TEST_DATA__MissingClassInDiagram,
+  TEST_DATA__MissingClassMapping,
+  TEST_DATA__MissingClassMappingWithTargetId,
 } from './GraphBuildFailureTestData';
 import { unitTest } from '@finos/legend-shared';
-import { getTestEditorStore } from '../../StoreTestUtils';
+import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 
 let editorStore: EditorStore;
 
 beforeEach(async () => {
-  editorStore = getTestEditorStore();
+  editorStore = TEST__getTestEditorStore();
 });
 
 test(unitTest('Missing super type'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingSuperType as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingSuperType as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -52,9 +52,9 @@ test(unitTest('Missing super type'), async () => {
 
 test(unitTest('Missing profile'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingProfile as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingProfile as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -64,9 +64,9 @@ test(unitTest('Missing profile'), async () => {
 
 test(unitTest('Missing class property'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingProperty as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingProperty as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -76,9 +76,9 @@ test(unitTest('Missing class property'), async () => {
 
 test(unitTest('Missing stereotype'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingStereoType as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingStereoType as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -88,9 +88,9 @@ test(unitTest('Missing stereotype'), async () => {
 
 test(unitTest('Missing tagged value'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingTagValue as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingTagValue as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -100,9 +100,9 @@ test(unitTest('Missing tagged value'), async () => {
 
 test(unitTest('Missing class in Pure Instance class mapping'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingTargetClassinMapping as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingTargetClassinMapping as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -112,9 +112,9 @@ test(unitTest('Missing class in Pure Instance class mapping'), async () => {
 
 test(unitTest('Missing class mapping'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingClassMapping as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingClassMapping as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -124,9 +124,9 @@ test(unitTest('Missing class mapping'), async () => {
 
 test(unitTest('Missing class mapping with ID'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingClassMappingWithTargetId as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingClassMappingWithTargetId as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -138,9 +138,9 @@ test(unitTest('Missing class mapping with ID'), async () => {
 // Unskip when include mappings support is added
 test.skip(unitTest('Missing set implementation'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingSetImp as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingSetImp as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(
@@ -150,9 +150,9 @@ test.skip(unitTest('Missing set implementation'), async () => {
 
 test(unitTest('Missing class in diagram class view'), async () => {
   const buildGraph = flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      testMissingClassInDiagram as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__MissingClassInDiagram as Entity[],
     ),
   );
   await expect(buildGraph).rejects.toThrowError(

@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { guaranteeType } from '@finos/legend-shared';
 import Dialog from '@material-ui/core/Dialog';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 import type { Mapping } from '@finos/legend-graph';
 import {
   ELEMENT_PATH_DELIMITER,
@@ -60,9 +60,10 @@ export const NewServiceModal = observer(
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
-    const elementAlreadyExists = editorStore.graphState.graph.allOwnElements
-      .map((s) => s.path)
-      .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
+    const elementAlreadyExists =
+      editorStore.graphManagerState.graph.allOwnElements
+        .map((s) => s.path)
+        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
     return (
       <Dialog
         open={showModal}

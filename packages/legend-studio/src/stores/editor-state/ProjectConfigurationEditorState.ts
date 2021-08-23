@@ -39,7 +39,7 @@ import {
   UpdateProjectConfigurationCommand,
   Version,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
@@ -135,7 +135,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       const dependencies = projectConfig.projectDependencies;
       yield Promise.all(
         dependencies.map((projDep) =>
-          this.editorStore.applicationStore.networkClientManager.sdlcClient
+          this.editorStore.sdlcServerClient
             .getProject(projDep.projectId)
             .then((projectObj) => {
               const project = Project.serialization.fromJson(projectObj);
@@ -151,7 +151,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
       yield Promise.all(
         dependencies.map((projDep) =>
-          this.editorStore.applicationStore.networkClientManager.sdlcClient
+          this.editorStore.sdlcServerClient
             .getVersions(projDep.projectId)
             .then((versions) => {
               const versionMap = observable<string, Version>(new Map());
@@ -170,7 +170,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
       // add production projects
       (
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getProjects(
+        (yield this.editorStore.sdlcServerClient.getProjects(
           ProjectType.PRODUCTION,
           undefined,
           undefined,
@@ -196,7 +196,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   ): GeneratorFn<void> {
     try {
       this.isUpdatingConfiguration = true;
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.updateConfiguration(
+      yield this.editorStore.sdlcServerClient.updateConfiguration(
         this.editorStore.sdlcState.currentProjectId,
         this.editorStore.sdlcState.currentWorkspaceId,
         UpdateProjectConfigurationCommand.serialization.toJson(
@@ -240,7 +240,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.isQueryingProjects = true;
       try {
         (
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getProjects(
+          (yield this.editorStore.sdlcServerClient.getProjects(
             ProjectType.PRODUCTION,
             false,
             query,
@@ -266,7 +266,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     try {
       const versionMap = observable<string, Version>(new Map());
       (
-        (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getVersions(
+        (yield this.editorStore.sdlcServerClient.getVersions(
           projectId,
         )) as PlainObject<Version>[]
       )
@@ -345,7 +345,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     try {
       this.latestProjectStructureVersion =
         ProjectStructureVersion.serialization.fromJson(
-          (yield this.editorStore.applicationStore.networkClientManager.sdlcClient.getLatestProjectStructureVersion()) as PlainObject<ProjectStructureVersion>,
+          (yield this.editorStore.sdlcServerClient.getLatestProjectStructureVersion()) as PlainObject<ProjectStructureVersion>,
         );
     } catch (error: unknown) {
       this.editorStore.applicationStore.log.error(

@@ -16,11 +16,7 @@
 
 import { FaTimes } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  DropdownMenu,
-  ContextMenu,
-} from '@finos/legend-application-components';
+import { clsx, DropdownMenu, ContextMenu } from '@finos/legend-art';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,

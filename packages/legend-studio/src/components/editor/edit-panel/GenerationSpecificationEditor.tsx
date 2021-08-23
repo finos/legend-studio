@@ -26,7 +26,7 @@ import { FaFire, FaTimes, FaPlus, FaLongArrowAltRight } from 'react-icons/fa';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import { useDragLayer, useDrag, useDrop } from 'react-dnd';
-import { FileGenerationIcon, getElementIcon } from '../../shared/Icon';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 import { MdRefresh } from 'react-icons/md';
 import {
   clsx,
@@ -36,7 +36,8 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+  FileGenerationIcon,
+} from '@finos/legend-art';
 import type {
   ElementDragSource,
   FileGenerationSourceDropTarget,
@@ -45,10 +46,9 @@ import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGenerationSpecification_EditorPlugin_Extension } from '../../../stores/DSLGenerationSpecification_EditorPlugin_Extension';
+import type { DSLGenerationSpecification_StudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_StudioPlugin_Extension';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 import type {
   PackageableElement,
   PackageableElementReference,
@@ -59,6 +59,7 @@ import {
   PackageableElementExplicitReference,
   GenerationTreeNode,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -254,23 +255,22 @@ const ModelGenerationSpecifications = observer(
     const { specState } = props;
     const specNodesStates = specState.generationTreeNodeStates;
     const editorStore = useEditorStore();
-    const modelGenerationElementsInGraph =
-      editorStore.applicationStore.pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
-            ).getExtraModelGenerationElementGetters?.() ?? [],
-        )
-        .flatMap((getter) => getter(editorStore.graphState.graph));
+    const modelGenerationElementsInGraph = editorStore.pluginManager
+      .getPureGraphManagerPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+          ).getExtraModelGenerationElementGetters?.() ?? [],
+      )
+      .flatMap((getter) => getter(editorStore.graphManagerState.graph));
     const extraModelGenerationSpecificationElementDnDTypes =
-      editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
+      editorStore.pluginManager
+        .getStudioPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGenerationSpecification_EditorPlugin_Extension
+              plugin as DSLGenerationSpecification_StudioPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
     const modelGenerationElementOptions =
@@ -435,7 +435,7 @@ const FileGenerationSpecifications = observer(
         (f) => f.value,
       );
     const fileGenerationInGraph =
-      editorStore.graphState.graph.ownFileGenerations;
+      editorStore.graphManagerState.graph.ownFileGenerations;
     const fileGenerationsOptions = fileGenerationInGraph
       .filter((f) => !fileGenerations.includes(f))
       .map(

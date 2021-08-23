@@ -5,7 +5,7 @@
 '@finos/legend-query-deployment': patch
 '@finos/legend-studio': patch
 '@finos/legend-studio-deployment': patch
-'@finos/legend-application-components': patch
+'@finos/legend-art': patch
 '@finos/legend-dev-utils': patch
 '@finos/legend-studio-plugin-management': patch
 '@finos/legend-tracer-plugin-zipkin': patch

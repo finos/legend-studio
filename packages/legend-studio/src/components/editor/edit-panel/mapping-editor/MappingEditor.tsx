@@ -28,15 +28,13 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-} from '@finos/legend-application-components';
-import { ClassMappingEditor } from './ClassMappingEditor';
-import { EnumerationMappingEditor } from './EnumerationMappingEditor';
-import {
   UnknownTypeIcon,
   ClassIcon,
   EnumerationIcon,
   AssociationIcon,
-} from '../../../shared/Icon';
+} from '@finos/legend-art';
+import { ClassMappingEditor } from './ClassMappingEditor';
+import { EnumerationMappingEditor } from './EnumerationMappingEditor';
 import { useResizeDetector } from 'react-resize-detector';
 import type {
   MappingEditorTabState,
@@ -53,17 +51,17 @@ import { MappingExplorer } from './MappingExplorer';
 import { MappingTestEditor } from './MappingTestEditor';
 import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingTestsExplorer } from './MappingTestsExplorer';
-import { CORE_TEST_ID } from '../../../../const';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type {
   SetImplementation,
   EnumerationMapping,
 } from '@finos/legend-graph';
 import { Class, Enumeration, Association } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -242,7 +240,7 @@ export const MappingEditor = observer(() => {
               disabled={true}
             >
               <div
-                data-testid={CORE_TEST_ID.EDITOR__TABS__HEADER}
+                data-testid={STUDIO_TEST_ID.EDITOR__TABS__HEADER}
                 className="mapping-editor__header__tabs"
               >
                 {mappingEditorState.openedTabStates.map((tabState) => (

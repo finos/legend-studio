@@ -20,7 +20,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
-import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
   getControlledResizablePanelProps,
   clsx,
@@ -29,7 +29,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   useStateWithCallback,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel';
 import { SideBar } from './side-bar/SideBar';
 import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel';
@@ -40,12 +40,7 @@ import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
-import Backdrop from '@material-ui/core/Backdrop';
 import type { EditorPathParams } from '../../stores/LegendStudioRouter';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '../../stores/ApplicationStore';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
@@ -53,7 +48,12 @@ import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchComm
 import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { EditorStoreProvider, useEditorStore } from './EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import {
+  ActionAlertType,
+  ActionAlertActionType,
+  ApplicationBackdrop,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],
@@ -77,18 +77,16 @@ export const EditorInner = observer(() => {
   const applicationStore = useApplicationStore();
 
   // Extensions
-  const extraEditorExtensionComponents =
-    editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
-          [],
-      )
-      .filter(isNonNullable)
-      .map((config) => (
-        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
-      ));
+  const extraEditorExtensionComponents = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],
+    )
+    .filter(isNonNullable)
+    .map((config) => (
+      <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+    ));
 
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
@@ -222,7 +220,7 @@ export const EditorInner = observer(() => {
     return true;
   };
   const editable =
-    editorStore.graphState.graph.buildState.hasCompleted &&
+    editorStore.graphManagerState.graph.buildState.hasCompleted &&
     editorStore.isInitialized;
   const isResolvingConflicts =
     editorStore.isInConflictResolutionMode &&
@@ -250,7 +248,7 @@ export const EditorInner = observer(() => {
           >
             <div className="editor__body">
               <ActivityBar />
-              <Backdrop className="backdrop" open={editorStore.backdrop} />
+              <ApplicationBackdrop open={editorStore.backdrop} />
               <div ref={ref} className="editor__content-container">
                 <div
                   className={clsx('editor__content', {

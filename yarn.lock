@@ -2058,9 +2058,47 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-application-components@workspace:*, @finos/legend-application-components@workspace:packages/legend-application-components":
+"@finos/legend-application@workspace:*, @finos/legend-application@workspace:packages/legend-application":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-application-components@workspace:packages/legend-application-components"
+  resolution: "@finos/legend-application@workspace:packages/legend-application"
+  dependencies:
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@material-ui/core": 4.12.3
+    "@testing-library/dom": 8.1.0
+    "@testing-library/react": 12.0.0
+    "@types/css-font-loading-module": 0.0.6
+    "@types/react": 17.0.19
+    "@types/react-dom": 17.0.9
+    "@types/react-router-dom": 5.1.8
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    history: 5.0.1
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.27.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    react-dom: 17.0.2
+    react-icons: 4.2.0
+    react-resize-detector: 6.7.6
+    react-router: 5.2.0
+    react-router-dom: 5.2.0
+    rimraf: 3.0.2
+    sass: 1.38.0
+    serializr: 2.0.5
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-art@workspace:*, @finos/legend-art@workspace:packages/legend-art":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-art@workspace:packages/legend-art"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2142,6 +2180,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-graph-preset-dsl-text@workspace:*, @finos/legend-graph-preset-dsl-text@workspace:packages/legend-graph-preset-dsl-text":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-graph-preset-dsl-text@workspace:packages/legend-graph-preset-dsl-text"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@types/react": 17.0.19
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    rimraf: 3.0.2
+    serializr: 2.0.5
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-graph-preset-external-format-json-schema@workspace:*, @finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema"
@@ -2149,7 +2209,6 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
     cross-env: 7.0.3
     eslint: 7.32.0
     jest: 27.0.6
@@ -2170,7 +2229,9 @@ __metadata:
     eslint: 7.32.0
     jest: 27.0.6
     mobx: 6.3.2
+    mobx-react-lite: 3.2.0
     npm-run-all: 4.1.5
+    react: 17.0.2
     rimraf: 3.0.2
     serializr: 2.0.5
     typescript: 4.3.5
@@ -2196,12 +2257,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-query-app@workspace:packages/legend-query-app"
   dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph-preset-dsl-text": "workspace:*"
     "@finos/legend-graph-preset-external-format-json-schema": "workspace:*"
+    "@finos/legend-query": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-preset-dsl-text": "workspace:*"
-    "@finos/legend-studio-preset-query-builder": "workspace:*"
     "@types/react": 17.0.19
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -2232,6 +2294,52 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-query@workspace:*, @finos/legend-query@workspace:packages/legend-query":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-query@workspace:packages/legend-query"
+  dependencies:
+    "@ag-grid-community/client-side-row-model": 26.0.0
+    "@ag-grid-community/core": 26.0.0
+    "@ag-grid-community/react": 26.0.0
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@material-ui/core": 4.12.3
+    "@testing-library/dom": 8.1.0
+    "@testing-library/react": 12.0.0
+    "@types/papaparse": 5.2.6
+    "@types/react": 17.0.19
+    "@types/react-dom": 17.0.9
+    "@types/react-router-dom": 5.1.8
+    cross-env: 7.0.3
+    date-fns: 2.23.0
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.27.0
+    npm-run-all: 4.1.5
+    papaparse: 5.3.1
+    react: 17.0.2
+    react-dnd: 14.0.3
+    react-dnd-html5-backend: 14.0.1
+    react-dom: 17.0.2
+    react-hotkeys: 2.0.0
+    react-icons: 4.2.0
+    react-router: 5.2.0
+    react-router-dom: 5.2.0
+    rimraf: 3.0.2
+    sass: 1.38.0
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-server-depot@workspace:*, @finos/legend-server-depot@workspace:packages/legend-server-depot":
   version: 0.0.0-use.local
   resolution: "@finos/legend-server-depot@workspace:packages/legend-server-depot"
@@ -2243,7 +2351,9 @@ __metadata:
     eslint: 7.32.0
     jest: 27.0.6
     mobx: 6.3.2
+    mobx-react-lite: 3.2.0
     npm-run-all: 4.1.5
+    react: 17.0.2
     rimraf: 3.0.2
     serializr: 2.0.5
     typescript: 4.3.5
@@ -2261,7 +2371,9 @@ __metadata:
     eslint: 7.32.0
     jest: 27.0.6
     mobx: 6.3.2
+    mobx-react-lite: 3.2.0
     npm-run-all: 4.1.5
+    react: 17.0.2
     rimraf: 3.0.2
     serializr: 2.0.5
     typescript: 4.3.5
@@ -2304,6 +2416,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-app@workspace:packages/legend-studio-app"
   dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph-preset-external-format-json-schema": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2344,7 +2458,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests"
   dependencies:
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
@@ -2367,7 +2481,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management"
   dependencies:
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2395,9 +2510,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
   dependencies:
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-graph-preset-dsl-text": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
@@ -2423,40 +2540,28 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 26.0.0
-    "@ag-grid-community/core": 26.0.0
-    "@ag-grid-community/react": 26.0.0
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-query": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.1.0
     "@testing-library/react": 12.0.0
-    "@types/papaparse": 5.2.6
     "@types/react": 17.0.19
-    "@types/react-dom": 17.0.9
-    "@types/react-router-dom": 5.1.8
     cross-env: 7.0.3
-    date-fns: 2.23.0
     eslint: 7.32.0
     jest: 27.0.6
     mobx: 6.3.2
     mobx-react-lite: 3.2.0
-    monaco-editor: 0.27.0
     npm-run-all: 4.1.5
-    papaparse: 5.3.1
     react: 17.0.2
-    react-dnd: 14.0.3
-    react-dnd-html5-backend: 14.0.1
     react-dom: 17.0.2
-    react-hotkeys: 2.0.0
     react-icons: 4.2.0
-    react-router: 5.2.0
-    react-router-dom: 5.2.0
     rimraf: 3.0.2
     sass: 1.38.0
     typescript: 4.3.5
@@ -2469,7 +2574,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
   dependencies:
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
@@ -2479,7 +2585,6 @@ __metadata:
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.1.0
     "@testing-library/react": 12.0.0
-    "@types/css-font-loading-module": 0.0.6
     "@types/react": 17.0.19
     "@types/react-dom": 17.0.9
     "@types/react-router-dom": 5.1.8
@@ -2520,7 +2625,6 @@ __metadata:
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
     "@types/zipkin-javascript-opentracing": 1.6.0
     cross-env: 7.0.3
     eslint: 7.32.0

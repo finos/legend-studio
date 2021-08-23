@@ -16,10 +16,7 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
 import { MdRefresh } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -30,11 +27,11 @@ import {
   FaTimesCircle,
   FaCheckCircle,
 } from 'react-icons/fa';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import { BuildStatus } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const getBuildStatusIcon = (buildStatus: BuildStatus): React.ReactNode => {
   switch (buildStatus) {
@@ -143,7 +140,7 @@ export const WorkspaceBuilds = observer(() => {
             </div>
             <div
               className="side-bar__panel__header__changes-count"
-              data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+              data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
             >
               {workspaceBuildsState.builds.length}
             </div>

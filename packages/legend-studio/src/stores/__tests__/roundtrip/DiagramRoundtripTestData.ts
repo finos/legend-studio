@@ -18,7 +18,7 @@
 // - ClassView - class
 // - PropertyView - property
 // - AssociationView - association
-export const testDiagramRoundtrip = [
+export const TEST_DATA__DiagramRoundtrip = [
   {
     path: 'test::tClass2',
     content: {

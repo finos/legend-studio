@@ -38,24 +38,24 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import {
   IllegalStateError,
   isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
 import {
+  EDITOR_LANGUAGE,
+  useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
-} from '../../../../stores/ApplicationStore';
+} from '@finos/legend-application';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
@@ -65,13 +65,13 @@ import {
   getMappingElementTarget,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import {
   Class,
   RawLambda,
   SetImplementation,
   OperationSetImplementation,
 } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -80,8 +80,8 @@ const MappingTestQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = applicationStore.pluginManager
-      .getEditorPlugins()
+    const extraQueryEditors = editorStore.pluginManager
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           plugin.getExtraMappingTestQueryEditorRendererConfigurations?.() ?? [],
@@ -113,7 +113,7 @@ const MappingTestQueryEditor = observer(
         flowResult(
           queryState.updateLamba(
             setImplementation
-              ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+              ? editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
                   guaranteeType(
                     getMappingElementTarget(setImplementation),
                     Class,
@@ -210,7 +210,7 @@ const MappingTestQueryEditor = observer(
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={250}>
                 <div className="mapping-test-editor__query-panel__query">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}
@@ -269,7 +269,7 @@ export const MappingTestObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.data}
           isReadOnly={isReadOnly}
@@ -293,7 +293,7 @@ export const MappingTestFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
@@ -322,7 +322,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
@@ -484,7 +484,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               <VscError />
             </div>
           )}
-          <TextInputEditor
+          <StudioTextInputEditor
             inputValue={assertionState.expectedResult}
             updateInput={updateExpectedResult}
             isReadOnly={isReadOnly}

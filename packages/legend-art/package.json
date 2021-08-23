@@ -1,0 +1,75 @@
+{
+  "name": "@finos/legend-art",
+  "version": "0.0.0",
+  "description": "Legend shared visual components and component utilities",
+  "keywords": [
+    "legend",
+    "legend-studio",
+    "studio",
+    "component",
+    "shared-component",
+    "utilities"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-art",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-art"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:sass && yarn build:tsc",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD sass ./style/index.scss ./lib/index.css --style=compressed && node ../../scripts/copyright/addBundledCodeCopyrightHeader.js ./lib/index.css",
+    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "clean": "rimraf \"lib\" \"build\"",
+    "dev": "npm-run-all --parallel dev:sass dev:tsc",
+    "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
+    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-shared": "workspace:*",
+    "@material-ui/core": "4.12.3",
+    "@types/react": "17.0.19",
+    "@types/react-select": "4.0.17",
+    "@types/react-window": "1.8.5",
+    "clsx": "1.1.1",
+    "mobx": "6.3.2",
+    "mobx-react-lite": "3.2.0",
+    "monaco-editor": "0.27.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-icons": "4.2.0",
+    "react-reflex": "4.0.3",
+    "react-resize-detector": "6.7.6",
+    "react-select": "4.3.1",
+    "react-window": "1.8.6"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "cross-env": "7.0.3",
+    "eslint": "7.32.0",
+    "jest": "27.0.6",
+    "npm-run-all": "4.1.5",
+    "rimraf": "3.0.2",
+    "sass": "1.38.0",
+    "typescript": "4.3.5"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  }
+}

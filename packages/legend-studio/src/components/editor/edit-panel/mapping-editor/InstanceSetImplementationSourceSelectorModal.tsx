@@ -16,11 +16,8 @@
 
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-application-components';
-import {
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
+import { CustomSelectorInput, createFilter } from '@finos/legend-art';
 import type {
   MappingEditorState,
   MappingElementSource,
@@ -39,7 +36,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSourceFilterText = (
@@ -126,13 +123,15 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     const applicationStore = useApplicationStore();
     /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const options = (
-      editorStore.graphState.graph.ownClasses as MappingElementSource[]
+      editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
     )
       .concat(
-        editorStore.graphState.graph.ownFlatDatas.flatMap((e) => e.recordTypes),
+        editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
+          (e) => e.recordTypes,
+        ),
       )
       .concat(
-        editorStore.graphState.graph.ownDatabases.flatMap((e) =>
+        editorStore.graphManagerState.graph.ownDatabases.flatMap((e) =>
           e.schemas.flatMap((schema) =>
             (schema.tables as (Table | View)[]).concat(schema.views),
           ),

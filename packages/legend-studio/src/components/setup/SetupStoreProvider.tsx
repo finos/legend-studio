@@ -18,7 +18,8 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { SetupStore } from '../../stores/SetupStore';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
+import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 
 const SetupStoreContext = createContext<SetupStore | undefined>(undefined);
 
@@ -28,7 +29,10 @@ export const SetupStoreProvider = ({
   children: React.ReactNode;
 }): React.ReactElement => {
   const applicationStore = useApplicationStore();
-  const store = useLocalObservable(() => new SetupStore(applicationStore));
+  const sdlcServerClient = useSDLCServerClient();
+  const store = useLocalObservable(
+    () => new SetupStore(applicationStore, sdlcServerClient),
+  );
   return (
     <SetupStoreContext.Provider value={store}>
       {children}
@@ -39,5 +43,5 @@ export const SetupStoreProvider = ({
 export const useSetupStore = (): SetupStore =>
   guaranteeNonNullable(
     useContext(SetupStoreContext),
-    'useSetupStore() hook must be used inside SetupStore context provider',
+    `Can't find setup store in context`,
   );

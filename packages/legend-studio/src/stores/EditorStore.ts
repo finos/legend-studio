@@ -15,28 +15,19 @@
  */
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type {
-  ApplicationStore,
-  ActionAlertInfo,
-  BlockingAlertInfo,
-} from './ApplicationStore';
-import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState';
-import { editor as monacoEditorAPI } from 'monaco-editor';
 import { ExplorerTreeState } from './ExplorerTreeState';
 import {
   ACTIVITY_MODE,
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
-  MONOSPACED_FONT_FAMILY,
-  TAB_SIZE,
-  HOTKEY,
-  HOTKEY_MAP,
+  STUDIO_HOTKEY,
+  STUDIO_HOTKEY_MAP,
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
-import { GraphState } from './GraphState';
+import { EditorGraphState } from './EditorGraphState';
 import { ChangeDetectionState } from './ChangeDetectionState';
 import { NewElementState } from './NewElementState';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState';
@@ -73,8 +64,7 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
-import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState';
 import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState';
@@ -85,17 +75,19 @@ import {
   generateSetupRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
-import {
-  NonBlockingDialogState,
-  PanelDisplayState,
-} from '@finos/legend-application-components';
+import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
-import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
-import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
+import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
-import type { PackageableElement, Type, Store } from '@finos/legend-graph';
+import type {
+  PackageableElement,
+  Type,
+  Store,
+  GraphManagerState,
+} from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   PACKAGEABLE_ELEMENT_TYPE,
@@ -119,6 +111,20 @@ import {
   PRIMITIVE_TYPE,
   Package,
 } from '@finos/legend-graph';
+import type { DepotServerClient } from '@finos/legend-server-depot';
+import type { StudioPluginManager } from '../application/StudioPluginManager';
+import type {
+  ActionAlertInfo,
+  ApplicationStore,
+  BlockingAlertInfo,
+} from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  APPLICATION_LOG_EVENT,
+  TAB_SIZE,
+} from '@finos/legend-application';
+import { STUDIO_LOG_EVENT } from './StudioLogEvent';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -142,10 +148,15 @@ export class EditorHotkey {
 
 export class EditorStore {
   applicationStore: ApplicationStore;
-  explorerTreeState: ExplorerTreeState;
+  sdlcServerClient: SDLCServerClient;
+  depotServerClient: DepotServerClient;
+  pluginManager: StudioPluginManager;
+
   editorExtensionStates: EditorExtensionState[] = [];
+  explorerTreeState: ExplorerTreeState;
   sdlcState: EditorSdlcState;
-  graphState: GraphState;
+  graphState: EditorGraphState;
+  graphManagerState: GraphManagerState;
   changeDetectionState: ChangeDetectionState;
   grammarTextEditorState: GrammarTextEditorState;
   modelLoaderState: ModelLoaderState;
@@ -157,10 +168,12 @@ export class EditorStore {
   localChangesState: LocalChangesState;
   conflictResolutionState: ConflictResolutionState;
   devToolState: DevToolState;
+
   private _isDisposed = false;
   initState = ActionState.create();
   mode = EDITOR_MODE.STANDARD;
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
+
   // Aux Panel
   activeAuxPanelMode: AUX_PANEL_MODE = AUX_PANEL_MODE.CONSOLE;
   auxPanelDisplayState = new PanelDisplayState({
@@ -175,10 +188,12 @@ export class EditorStore {
     default: 300,
     snap: 150,
   });
+
   // Hot keys
   blockGlobalHotkeys = false;
   defaultHotkeys: EditorHotkey[] = [];
   hotkeys: EditorHotkey[] = [];
+
   // Tabs
   currentEditorState?: EditorState;
   openedEditorStates: EditorState[] = [];
@@ -194,9 +209,19 @@ export class EditorStore {
   ignoreNavigationBlocking = false;
   isDevToolEnabled = true;
 
-  constructor(applicationStore: ApplicationStore) {
+  constructor(
+    applicationStore: ApplicationStore,
+    sdlcServerClient: SDLCServerClient,
+    depotServerClient: DepotServerClient,
+    graphManagerState: GraphManagerState,
+    pluginManager: StudioPluginManager,
+  ) {
     makeAutoObservable(this, {
       applicationStore: false,
+      sdlcServerClient: false,
+      depotServerClient: false,
+      graphState: false,
+      graphManagerState: false,
       setMode: action,
       setDevTool: action,
       setHotkeys: action,
@@ -229,8 +254,13 @@ export class EditorStore {
     });
 
     this.applicationStore = applicationStore;
+    this.sdlcServerClient = sdlcServerClient;
+    this.depotServerClient = depotServerClient;
+    this.pluginManager = pluginManager;
+
     this.sdlcState = new EditorSdlcState(this);
-    this.graphState = new GraphState(this);
+    this.graphState = new EditorGraphState(this);
+    this.graphManagerState = graphManagerState;
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolState(this);
     // side bar panels
@@ -256,8 +286,8 @@ export class EditorStore {
       this.sdlcState,
     );
     // extensions
-    this.editorExtensionStates = this.applicationStore.pluginManager
-      .getEditorPlugins()
+    this.editorExtensionStates = this.pluginManager
+      .getStudioPlugins()
       .flatMap(
         (plugin) => plugin.getExtraEditorExtensionStateCreators?.() ?? [],
       )
@@ -268,8 +298,8 @@ export class EditorStore {
     this.defaultHotkeys = [
       // actions that need blocking
       new EditorHotkey(
-        HOTKEY.COMPILE,
-        [HOTKEY_MAP.COMPILE],
+        STUDIO_HOTKEY.COMPILE,
+        [STUDIO_HOTKEY_MAP.COMPILE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.graphState.globalCompileInFormMode()).catch(
             applicationStore.alertIllegalUnhandledError,
@@ -277,8 +307,8 @@ export class EditorStore {
         }),
       ),
       new EditorHotkey(
-        HOTKEY.GENERATE,
-        [HOTKEY_MAP.GENERATE],
+        STUDIO_HOTKEY.GENERATE,
+        [STUDIO_HOTKEY_MAP.GENERATE],
         this.createGlobalHotKeyAction(() => {
           flowResult(
             this.graphState.graphGenerationState.globalGenerate(),
@@ -286,20 +316,20 @@ export class EditorStore {
         }),
       ),
       new EditorHotkey(
-        HOTKEY.CREATE_ELEMENT,
-        [HOTKEY_MAP.CREATE_ELEMENT],
+        STUDIO_HOTKEY.CREATE_ELEMENT,
+        [STUDIO_HOTKEY_MAP.CREATE_ELEMENT],
         this.createGlobalHotKeyAction(() => this.newElementState.openModal()),
       ),
       new EditorHotkey(
-        HOTKEY.OPEN_ELEMENT,
-        [HOTKEY_MAP.OPEN_ELEMENT],
+        STUDIO_HOTKEY.OPEN_ELEMENT,
+        [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
         this.createGlobalHotKeyAction(() =>
           this.searchElementCommandState.open(),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_TEXT_MODE,
-        [HOTKEY_MAP.TOGGLE_TEXT_MODE],
+        STUDIO_HOTKEY.TOGGLE_TEXT_MODE,
+        [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.toggleTextMode()).catch(
             applicationStore.alertIllegalUnhandledError,
@@ -307,15 +337,15 @@ export class EditorStore {
         }),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_MODEL_LOADER,
-        [HOTKEY_MAP.TOGGLE_MODEL_LOADER],
+        STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
+        [STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
         this.createGlobalHotKeyAction(() =>
           this.openState(this.modelLoaderState),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.SYNC_WITH_WORKSPACE,
-        [HOTKEY_MAP.SYNC_WITH_WORKSPACE],
+        STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
+        [STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.localChangesState.syncWithWorkspace()).catch(
             applicationStore.alertIllegalUnhandledError,
@@ -324,34 +354,34 @@ export class EditorStore {
       ),
       // simple actions (no blocking is needed)
       new EditorHotkey(
-        HOTKEY.TOGGLE_AUX_PANEL,
-        [HOTKEY_MAP.TOGGLE_AUX_PANEL],
+        STUDIO_HOTKEY.TOGGLE_AUX_PANEL,
+        [STUDIO_HOTKEY_MAP.TOGGLE_AUX_PANEL],
         this.createGlobalHotKeyAction(() => this.auxPanelDisplayState.toggle()),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
-        [HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
+        STUDIO_HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
+        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_SIDEBAR_CHANGES,
-        [HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
+        STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
+        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.CHANGES),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
-        [HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
+        STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
-        [HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
+        STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
         ),
@@ -380,7 +410,7 @@ export class EditorStore {
         this.sdlcState.currentProject &&
           this.sdlcState.currentWorkspace &&
           this.sdlcState.currentRevision,
-      ) && this.graphState.systemModel.buildState.hasSucceeded
+      ) && this.graphManagerState.systemModel.buildState.hasSucceeded
     );
   }
   get isInGrammarTextMode(): boolean {
@@ -576,11 +606,10 @@ export class EditorStore {
             message: 'Creating workspace...',
             prompt: 'Please do not close the application',
           });
-          const workspace =
-            await this.applicationStore.networkClientManager.sdlcClient.createWorkspace(
-              projectId,
-              workspaceId,
-            );
+          const workspace = await this.sdlcServerClient.createWorkspace(
+            projectId,
+            workspaceId,
+          );
           this.applicationStore.setBlockingAlert(undefined);
           this.applicationStore.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
@@ -643,9 +672,8 @@ export class EditorStore {
     }
     yield Promise.all([
       this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
-      this.preloadTextEditorFont(),
-      this.graphState.initializeSystem(), // this can be moved inside of `setupEngine`
-      this.graphState.graphManager.initialize(
+      this.graphManagerState.initializeSystem(), // this can be moved inside of `setupEngine`
+      this.graphManagerState.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
           tabSize: TAB_SIZE,
@@ -657,8 +685,7 @@ export class EditorStore {
           },
         },
         {
-          tracerServicePlugins:
-            this.applicationStore.pluginManager.getTracerServicePlugins(),
+          tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
         },
       ),
     ]);
@@ -741,11 +768,11 @@ export class EditorStore {
     try {
       // fetch workspace entities and config at the same time
       const result = (yield Promise.all([
-        this.applicationStore.networkClientManager.sdlcClient.getEntities(
+        this.sdlcServerClient.getEntities(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         ),
-        this.applicationStore.networkClientManager.sdlcClient.getConfiguration(
+        this.sdlcServerClient.getConfiguration(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         ),
@@ -777,7 +804,7 @@ export class EditorStore {
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
       yield Promise.all([
-        this.graphState.precomputeHashes(), // for local changes detection
+        this.graphManagerState.precomputeHashes(), // for local changes detection
         this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
@@ -988,12 +1015,12 @@ export class EditorStore {
     } else if (element instanceof FileGenerationSpecification) {
       return new FileGenerationEditorState(this, element);
     }
-    const extraElementEditorStateCreators = this.applicationStore.pluginManager
-      .getEditorPlugins()
+    const extraElementEditorStateCreators = this.pluginManager
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_EditorPlugin_Extension
+            plugin as DSL_StudioPlugin_Extension
           ).getExtraElementEditorStateCreators?.() ?? [],
       );
     for (const creator of extraElementEditorStateCreators) {
@@ -1034,7 +1061,7 @@ export class EditorStore {
       return;
     }
     const generatedChildrenElements =
-      this.graphState.graph.generationModel.allOwnElements.filter(
+      this.graphManagerState.graph.generationModel.allOwnElements.filter(
         (e) => e.generationParentElement === element,
       );
     const elementsToDelete = [element, ...generatedChildrenElements];
@@ -1052,9 +1079,9 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphState.graph.generationModel.deleteOwnElement(el),
+      this.graphManagerState.graph.generationModel.deleteOwnElement(el),
     );
-    this.graphState.graph.deleteElement(element);
+    this.graphManagerState.graph.deleteElement(element);
     // rerender currently opened diagram
     if (this.currentEditorState instanceof DiagramEditorState) {
       this.currentEditorState.renderer.render();
@@ -1076,7 +1103,7 @@ export class EditorStore {
     if (element.isReadOnly) {
       return;
     }
-    this.graphState.graph.renameOwnElement(element, newPath);
+    this.graphManagerState.graph.renameOwnElement(element, newPath);
     // rerender currently opened diagram
     if (this.currentEditorState instanceof DiagramEditorState) {
       this.currentEditorState.renderer.render();
@@ -1101,9 +1128,10 @@ export class EditorStore {
     editorState: EditorState,
   ): EditorState | undefined => {
     if (editorState instanceof ElementEditorState) {
-      const correspondingElement = this.graphState.graph.getNullableElement(
-        editorState.element.path,
-      );
+      const correspondingElement =
+        this.graphManagerState.graph.getNullableElement(
+          editorState.element.path,
+        );
       if (correspondingElement) {
         return editorState.reprocess(correspondingElement, this);
       }
@@ -1185,8 +1213,8 @@ export class EditorStore {
       });
       try {
         const graphGrammar =
-          (yield this.graphState.graphManager.graphToPureCode(
-            this.graphState.graph,
+          (yield this.graphManagerState.graphManager.graphToPureCode(
+            this.graphManagerState.graph,
           )) as string;
         yield flowResult(
           this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
@@ -1216,115 +1244,74 @@ export class EditorStore {
     }
   }
 
-  /**
-   * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened
-   * this is to ensure
-   */
-  async preloadTextEditorFont(): Promise<void> {
-    const fontLoadFailureErrorMessage = `Monospaced font '${MONOSPACED_FONT_FAMILY}' has not been loaded properly, text editor display problems might occur`;
-    await document.fonts
-      .load(`1em ${MONOSPACED_FONT_FAMILY}`)
-      .then(() => {
-        if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
-          monacoEditorAPI.remeasureFonts();
-          this.applicationStore.log.info(
-            LogEvent.create(STUDIO_LOG_EVENT.EDITOR_FONT_LOADED),
-            `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
-          );
-        } else {
-          this.applicationStore.notifyError(fontLoadFailureErrorMessage);
-        }
-      })
-      .catch(() =>
-        this.applicationStore.notifyError(fontLoadFailureErrorMessage),
-      );
-  }
-
-  /**
-   * Filter the list of system elements that will be shown in selection options
-   * to users. This is helpful to avoid overwhelming and confusing users in form
-   * mode since many system elements are needed to build the graph, but should
-   * not present at all as selection options in form mode.
-   */
-  filterSystemElementOptions<T extends PackageableElement>(
-    systemElements: T[],
-  ): T[] {
-    const allowedSystemElements = this.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap((plugin) => plugin.getExtraExposedSystemElementPath?.() ?? []);
-    return systemElements.filter((element) =>
-      allowedSystemElements.includes(element.path),
-    );
-  }
-
   get enumerationOptions(): PackageableElementOption<Enumeration>[] {
-    return this.graphState.graph.ownEnumerations
-      .concat(this.graphState.graph.dependencyManager.enumerations)
+    return this.graphManagerState.graph.ownEnumerations
+      .concat(this.graphManagerState.graph.dependencyManager.enumerations)
       .map(
         (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
       );
   }
 
   get classOptions(): PackageableElementOption<Class>[] {
-    return this.graphState.graph.ownClasses
+    return this.graphManagerState.graph.ownClasses
       .concat(
-        this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.ownClasses,
+        this.graphManagerState.filterSystemElementOptions(
+          this.graphManagerState.graph.systemModel.ownClasses,
         ),
       )
-      .concat(this.graphState.graph.dependencyManager.classes)
+      .concat(this.graphManagerState.graph.dependencyManager.classes)
       .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
   }
 
   get associationOptions(): PackageableElementOption<Association>[] {
-    return this.graphState.graph.ownAssociations
+    return this.graphManagerState.graph.ownAssociations
       .concat(
-        this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.ownAssociations,
+        this.graphManagerState.filterSystemElementOptions(
+          this.graphManagerState.graph.systemModel.ownAssociations,
         ),
       )
-      .concat(this.graphState.graph.dependencyManager.associations)
+      .concat(this.graphManagerState.graph.dependencyManager.associations)
       .map(
         (e) => buildElementOption(e) as PackageableElementOption<Association>,
       );
   }
 
   get profileOptions(): PackageableElementOption<Profile>[] {
-    return this.graphState.graph.ownProfiles
+    return this.graphManagerState.graph.ownProfiles
       .concat(
-        this.filterSystemElementOptions(
-          this.graphState.graph.systemModel.ownProfiles,
+        this.graphManagerState.filterSystemElementOptions(
+          this.graphManagerState.graph.systemModel.ownProfiles,
         ),
       )
-      .concat(this.graphState.graph.dependencyManager.profiles)
+      .concat(this.graphManagerState.graph.dependencyManager.profiles)
       .map((e) => buildElementOption(e) as PackageableElementOption<Profile>);
   }
 
   get classPropertyGenericTypeOptions(): PackageableElementOption<Type>[] {
-    return this.graphState.graph.primitiveTypes
+    return this.graphManagerState.graph.primitiveTypes
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
       .map((e) => buildElementOption(e) as PackageableElementOption<Type>)
       .concat(
-        this.graphState.graph.ownTypes
+        this.graphManagerState.graph.ownTypes
           .concat(
-            this.filterSystemElementOptions(
-              this.graphState.graph.systemModel.ownTypes,
+            this.graphManagerState.filterSystemElementOptions(
+              this.graphManagerState.graph.systemModel.ownTypes,
             ),
           )
-          .concat(this.graphState.graph.dependencyManager.types)
+          .concat(this.graphManagerState.graph.dependencyManager.types)
           .map((e) => buildElementOption(e) as PackageableElementOption<Type>),
       );
   }
 
   get mappingOptions(): PackageableElementOption<Mapping>[] {
-    return this.graphState.graph.ownMappings
-      .concat(this.graphState.graph.dependencyManager.mappings)
+    return this.graphManagerState.graph.ownMappings
+      .concat(this.graphManagerState.graph.dependencyManager.mappings)
       .map((e) => buildElementOption(e) as PackageableElementOption<Mapping>);
   }
 
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    return this.graphState.graph.ownRuntimes
-      .concat(this.graphState.graph.dependencyManager.runtimes)
+    return this.graphManagerState.graph.ownRuntimes
+      .concat(this.graphManagerState.graph.dependencyManager.runtimes)
       .map(
         (e) =>
           buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
@@ -1332,14 +1319,14 @@ export class EditorStore {
   }
 
   get serviceOptions(): PackageableElementOption<Service>[] {
-    return this.graphState.graph.ownServices
-      .concat(this.graphState.graph.dependencyManager.services)
+    return this.graphManagerState.graph.ownServices
+      .concat(this.graphManagerState.graph.dependencyManager.services)
       .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
   }
 
   get storeOptions(): PackageableElementOption<Store>[] {
-    return this.graphState.graph.ownStores
-      .concat(this.graphState.graph.dependencyManager.stores)
+    return this.graphManagerState.graph.ownStores
+      .concat(this.graphManagerState.graph.dependencyManager.stores)
       .map((e) => buildElementOption(e) as PackageableElementOption<Store>);
   }
 
@@ -1364,12 +1351,12 @@ export class EditorStore {
         PACKAGEABLE_ELEMENT_TYPE.DATABASE,
       ] as string[]
     ).concat(
-      this.applicationStore.pluginManager
-        .getEditorPlugins()
+      this.pluginManager
+        .getStudioPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_EditorPlugin_Extension
+              plugin as DSL_StudioPlugin_Extension
             ).getExtraSupportedElementTypes?.() ?? [],
         ),
     );

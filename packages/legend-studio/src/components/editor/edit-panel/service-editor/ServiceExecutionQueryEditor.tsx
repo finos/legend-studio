@@ -18,8 +18,6 @@ import { Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';
 import type { ServicePureExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { Dialog } from '@material-ui/core';
 import {
   clsx,
@@ -28,12 +26,14 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
 import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const ServiceExecutionModals = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -56,12 +56,12 @@ const ServiceExecutionModals = observer(
             paper: 'editor-modal__content',
           }}
         >
-          <div className="modal modal--dark editor-modal execution-plan-viewer">
+          <div className="modal modal--dark editor-modal">
             <div className="modal__header">
               <div className="modal__title">Execution Result</div>
             </div>
             <div className="modal__body">
-              <TextInputEditor
+              <StudioTextInputEditor
                 inputValue={executionResultText ?? ''}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.JSON}
@@ -93,8 +93,8 @@ export const ServiceExecutionQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = editorStore.applicationStore;
     // query editor extensions
-    const extraServiceQueryEditors = applicationStore.pluginManager
-      .getEditorPlugins()
+    const extraServiceQueryEditors = editorStore.pluginManager
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           plugin.TEMP__getExtraServiceQueryEditorRendererConfigurations?.() ??
@@ -177,7 +177,7 @@ export const ServiceExecutionQueryEditor = observer(
                 <div
                   className={clsx('service-execution-query-editor__content')}
                 >
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}

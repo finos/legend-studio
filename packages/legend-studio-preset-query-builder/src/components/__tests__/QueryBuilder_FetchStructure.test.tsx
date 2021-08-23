@@ -17,17 +17,17 @@
 /// <reference types="jest-extended" />
 import { fireEvent, getByTitle, getByText } from '@testing-library/react';
 import {
-  simpleProjection,
-  projectionWithChainedProperty,
-  projectionWithResultSetModifiers,
-  getAllWithGroupedFilter,
-  getAllWithOneConditionFilter,
-  projectWithDerivedProperty,
-  complexGraphFetch,
-  simpleGraphFetch,
+  TEST_DATA__simpleProjection,
+  TEST_DATA__projectionWithChainedProperty,
+  TEST_DATA__projectionWithResultSetModifiers,
+  TEST_DATA__getAllWithGroupedFilter,
+  TEST_DATA__getAllWithOneConditionFilter,
+  TEST_DATA__projectWithDerivedProperty,
+  TEST_DATA__complexGraphFetch,
+  TEST_DATA__simpleGraphFetch,
 } from './QueryBuilder_TestData';
-import ComplexRelationalModel from './QueryBuilder_Model_ComplexRelational.json';
-import ComplexM2MModel from './QueryBuilder_Model_ComplexM2M.json';
+import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
+import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import {
   integrationTest,
   guaranteeNonNullable,
@@ -36,20 +36,23 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import { getAllByText, waitFor } from '@testing-library/dom';
-import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
-import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
-import { setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '../../QueryBuilder_Const';
-import { QueryBuilderState } from '../../stores/QueryBuilderState';
+import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
-import { buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
-import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
+import { TEST__buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+
+import {
+  QueryBuilderExplorerTreeRootNodeData,
+  FETCH_STRUCTURE_MODE,
+  QUERY_BUILDER_TEST_ID,
+  COLUMN_SORT_TYPE,
+  QueryBuilderSimpleProjectionColumnState,
+} from '@finos/legend-query';
 import {
   AbstractPropertyExpression,
   getRootSetImplementation,
   RawLambda,
 } from '@finos/legend-graph';
+import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
@@ -61,27 +64,33 @@ test(
     'Query builder state is properly set after processing a projection lambda',
   ),
   async () => {
-    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
-    const renderResult = await setUpEditorWithDefaultSDLCData(
+    const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
       mockedEditorStore,
       {
-        entities: ComplexRelationalModel,
+        entities: TEST_DATA__ComplexRelationalModel,
       },
     );
-    const _personClass = mockedEditorStore.graphState.graph.getClass(
+
+    const _personClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Person',
     );
-    const _firmClass = mockedEditorStore.graphState.graph.getClass(
+    const _firmClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Firm',
     );
+
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
     MOBX__disableSpyOrMock();
-    const queryBuilderState =
-      mockedEditorStore.getEditorExtensionState(QueryBuilderState);
-    await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-    queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetData();
+
+    const queryBuilderExtension = mockedEditorStore.getEditorExtensionState(
+      QueryBuilder_EditorExtensionState,
+    );
+    await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
+    queryBuilderExtension.queryBuilderState.querySetupState.setClass(
+      _personClass,
+    );
+    queryBuilderExtension.queryBuilderState.resetData();
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -91,13 +100,13 @@ test(
     );
     await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
     const treeData = guaranteeNonNullable(
-      queryBuilderState.explorerState.treeData,
+      queryBuilderExtension.queryBuilderState.explorerState.treeData,
     );
     const rootNode = guaranteeType(
       treeData.nodes.get(treeData.rootIds[0]),
       QueryBuilderExplorerTreeRootNodeData,
     );
-    const mapping = mockedEditorStore.graphState.graph.getMapping(
+    const mapping = mockedEditorStore.graphManagerState.graph.getMapping(
       'model::relational::tests::simpleRelationalMapping',
     );
     expect(getRootSetImplementation(mapping, _personClass)).toBe(
@@ -106,7 +115,9 @@ test(
     expect(rootNode.mapped).toBe(true);
 
     // simpleProjection
-    queryBuilderState.initialize(getRawLambda(simpleProjection));
+    queryBuilderExtension.queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__simpleProjection),
+    );
     let projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -123,10 +134,11 @@ test(
       ),
     ).not.toBeNull();
     expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .projectionState.columns.length,
     ).toBe(2);
     let fistNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
+      queryBuilderExtension.queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === FIRST_NAME_ALIAS,
       ),
     );
@@ -136,7 +148,7 @@ test(
     ).propertyExpressionState.propertyExpression.func;
     expect(firstNameProperty).toBe(_personClass.getProperty('firstName'));
     const lastNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
+      queryBuilderExtension.queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === LAST_NAME_ALIAS,
       ),
     );
@@ -145,11 +157,15 @@ test(
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func;
     expect(lastNameProperty).toBe(_personClass.getProperty('lastName'));
-    expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+    expect(
+      queryBuilderExtension.queryBuilderState.resultSetModifierState.limit,
+    ).toBeUndefined();
 
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
-    queryBuilderState.initialize(getRawLambda(projectionWithChainedProperty));
+    queryBuilderExtension.queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__projectionWithChainedProperty),
+    );
     const projectionWithChainedPropertyCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -161,10 +177,11 @@ test(
       ),
     ).not.toBeNull();
     expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .projectionState.columns.length,
     ).toBe(1);
     let legalNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
+      queryBuilderExtension.queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -179,12 +196,14 @@ test(
       AbstractPropertyExpression,
     );
     expect(_firmPropertyExpression.func).toBe(_personClass.getProperty('firm'));
-    expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+    expect(
+      queryBuilderExtension.queryBuilderState.resultSetModifierState.limit,
+    ).toBeUndefined();
 
     // result set modifiers
     const RESULT_LIMIT = 500;
-    queryBuilderState.initialize(
-      getRawLambda(projectionWithResultSetModifiers),
+    queryBuilderExtension.queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__projectionWithResultSetModifiers),
     );
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
@@ -207,19 +226,21 @@ test(
       ),
     ).not.toBeNull();
     expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .projectionState.columns.length,
     ).toBe(3);
-    const resultSetModifierState = queryBuilderState.resultSetModifierState;
+    const resultSetModifierState =
+      queryBuilderExtension.queryBuilderState.resultSetModifierState;
     expect(resultSetModifierState.limit).toBe(RESULT_LIMIT);
     expect(resultSetModifierState.distinct).toBe(true);
     expect(resultSetModifierState.sortColumns).toHaveLength(2);
     fistNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
+      queryBuilderExtension.queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === FIRST_NAME_ALIAS,
       ),
     );
     legalNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
+      queryBuilderExtension.queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -256,7 +277,9 @@ test(
 
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initialize(getRawLambda(getAllWithOneConditionFilter));
+    queryBuilderExtension.queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__getAllWithOneConditionFilter),
+    );
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
@@ -268,16 +291,19 @@ test(
     ).not.toBeNull();
     await waitFor(() => getByText(filterPanel, 'First Name'));
     await waitFor(() => getByText(filterPanel, 'is'));
-    const filterState = queryBuilderState.filterState;
+    const filterState = queryBuilderExtension.queryBuilderState.filterState;
     expect(filterState.nodes.size).toBe(1);
     expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .projectionState.columns.length,
     ).toBe(0);
 
     // filter with group condition
-    queryBuilderState.resetData();
+    queryBuilderExtension.queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initialize(getRawLambda(getAllWithGroupedFilter));
+    queryBuilderExtension.queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__getAllWithGroupedFilter),
+    );
     filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
@@ -299,15 +325,20 @@ test(
       ),
     ).not.toBeNull();
     await waitFor(() => getByText(filterPanel, 'Last Name'));
-    expect(queryBuilderState.filterState.nodes.size).toBe(3);
+    expect(queryBuilderExtension.queryBuilderState.filterState.nodes.size).toBe(
+      3,
+    );
     expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .projectionState.columns.length,
     ).toBe(0);
 
     // projection column with derived property
-    queryBuilderState.resetData();
+    queryBuilderExtension.queryBuilderState.resetData();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    queryBuilderState.initialize(getRawLambda(projectWithDerivedProperty));
+    queryBuilderExtension.queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__projectWithDerivedProperty),
+    );
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -318,7 +349,8 @@ test(
     ).not.toBeNull();
     await waitFor(() => getByText(projectionCols, 'Name With Title'));
     expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .projectionState.columns.length,
     ).toBe(1);
     fireEvent.click(
       getByTitle(projectionCols, 'Set Derived Property Argument(s)...'),
@@ -338,27 +370,32 @@ test(
     'Query builder state is properly set after processing a graph-fetch lambda',
   ),
   async () => {
-    const mockedEditorStore = buildQueryBuilderMockedEditorStore();
-    const renderResult = await setUpEditorWithDefaultSDLCData(
+    const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
       mockedEditorStore,
       {
-        entities: ComplexM2MModel,
+        entities: TEST_DATA__ComplexM2MModel,
       },
     );
-    const _personClass = mockedEditorStore.graphState.graph.getClass(
+    const _personClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::target::NPerson',
     );
-    const _firmClass = mockedEditorStore.graphState.graph.getClass(
+    const _firmClass = mockedEditorStore.graphManagerState.graph.getClass(
       'model::target::NFirm',
     );
+
     MOBX__enableSpyOrMock();
     mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
     MOBX__disableSpyOrMock();
-    const queryBuilderState =
-      mockedEditorStore.getEditorExtensionState(QueryBuilderState);
-    await flowResult(queryBuilderState.setOpenQueryBuilder(true));
-    queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetData();
+
+    const queryBuilderExtension = mockedEditorStore.getEditorExtensionState(
+      QueryBuilder_EditorExtensionState,
+    );
+    await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
+    queryBuilderExtension.queryBuilderState.querySetupState.setClass(
+      _personClass,
+    );
+    queryBuilderExtension.queryBuilderState.resetData();
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -366,16 +403,23 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'MyMapping'));
 
     // simple graph fetch
-    queryBuilderState.initialize(getRawLambda(simpleGraphFetch));
-    expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
-      FETCH_STRUCTURE_MODE.GRAPH_FETCH,
+    queryBuilderExtension.queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__simpleGraphFetch),
     );
-    queryBuilderState.initialize(getRawLambda(complexGraphFetch));
-    expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
-      FETCH_STRUCTURE_MODE.GRAPH_FETCH,
+    expect(
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .fetchStructureMode,
+    ).toBe(FETCH_STRUCTURE_MODE.GRAPH_FETCH);
+    queryBuilderExtension.queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__complexGraphFetch),
     );
+    expect(
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .fetchStructureMode,
+    ).toBe(FETCH_STRUCTURE_MODE.GRAPH_FETCH);
     const firmGraphFetchTree = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.graphFetchTreeState.treeData,
+      queryBuilderExtension.queryBuilderState.fetchStructureState
+        .graphFetchTreeState.treeData,
     );
     const firmGraphFetchTreeNode = firmGraphFetchTree.tree;
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);

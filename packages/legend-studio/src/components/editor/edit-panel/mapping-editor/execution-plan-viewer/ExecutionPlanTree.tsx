@@ -19,13 +19,13 @@ import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import {
   clsx,
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import {

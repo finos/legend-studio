@@ -24,7 +24,6 @@ import type { RelationalDatabaseConnectionValueState } from '../../../../stores/
 import { useState } from 'react';
 import { MdModeEdit } from 'react-icons/md';
 import { VscError } from 'react-icons/vsc';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -34,7 +33,7 @@ import {
   CheckSquareIcon,
   SquareIcon,
   TimesIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 import type { RelationalDatabaseConnection, Store } from '@finos/legend-graph';
 import {
@@ -54,11 +53,12 @@ import {
 import { runInAction } from 'mobx';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
-import type { EditorPlugin } from '../../../../stores/EditorPlugin';
-import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
+import type { StudioPlugin } from '../../../../stores/StudioPlugin';
+import type { StoreRelational_StudioPlugin_Extension } from '../../../../stores/StoreRelational_StudioPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -169,7 +169,7 @@ export const ConnectionEditor_TextEditor = observer(
           {description}
         </div>
         <div className="panel__content__form__section__text-editor">
-          <TextInputEditor
+          <StudioTextInputEditor
             inputValue={value ?? ''}
             updateInput={update}
             isReadOnly={isReadOnly}
@@ -746,7 +746,8 @@ const RelationalConnectionStoreEditor = observer(
         <VscError />
       </div>
     );
-    const stores = connectionValueState.editorStore.graphState.graph.ownStores;
+    const stores =
+      connectionValueState.editorStore.graphManagerState.graph.ownStores;
     const options = stores.map(buildElementOption);
     const store = connection.store.value;
     const selectedStore = {
@@ -798,7 +799,7 @@ const RelationalConnectionStoreEditor = observer(
 const renderDatasourceSpecificationEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: EditorPlugin[],
+  plugins: StudioPlugin[],
 ): React.ReactNode => {
   const sourceSpec = connection.datasourceSpecification;
   if (sourceSpec instanceof StaticDatasourceSpecification) {
@@ -847,7 +848,7 @@ const renderDatasourceSpecificationEditor = (
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_EditorPlugin_Extension
+          plugin as StoreRelational_StudioPlugin_Extension
         ).getExtraDatasourceSpecificationEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraDatasourceSpecificationEditorRenderers) {
@@ -864,7 +865,7 @@ const renderDatasourceSpecificationEditor = (
 const renderAuthenticationStrategyEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: EditorPlugin[],
+  plugins: StudioPlugin[],
 ): React.ReactNode => {
   const authSpec = connection.authenticationStrategy;
   if (authSpec instanceof DelegatedKerberosAuthenticationStrategy) {
@@ -899,7 +900,7 @@ const renderAuthenticationStrategyEditor = (
     const extraAuthenticationStrategyEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_EditorPlugin_Extension
+          plugin as StoreRelational_StudioPlugin_Extension
         ).getExtraAuthenticationStrategyEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraAuthenticationStrategyEditorRenderers) {
@@ -920,8 +921,8 @@ const RelationalConnectionGeneralEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly } = props;
     const connection = connectionValueState.connection;
-    const applicationStore = useApplicationStore();
-    const plugins = applicationStore.pluginManager.getEditorPlugins();
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getStudioPlugins();
     // database type
     const typeOptions = Object.values(DatabaseType).map((e) => ({
       value: e,
@@ -945,7 +946,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_EditorPlugin_Extension
+              plugin as StoreRelational_StudioPlugin_Extension
             ).getExtraDatasourceSpecificationTypes?.() ?? [],
         ),
       )
@@ -973,7 +974,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_EditorPlugin_Extension
+              plugin as StoreRelational_StudioPlugin_Extension
             ).getExtraAuthenticationStrategyTypes?.() ?? [],
         ),
       )

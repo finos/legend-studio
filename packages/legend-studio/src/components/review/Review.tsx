@@ -26,11 +26,10 @@ import {
   FaUser,
   FaRegWindowMaximize,
 } from 'react-icons/fa';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
-import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
   getControlledResizablePanelProps,
   clsx,
@@ -38,7 +37,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateViewProjectRoute,
@@ -51,15 +50,17 @@ import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import {
+  NotificationSnackbar,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const currentUserId =
-    applicationStore.networkClientManager.sdlcClient.currentUser?.userId ??
-    '(unknown)';
+    editorStore.sdlcServerClient.currentUser?.userId ?? '(unknown)';
   const currentProject = reviewStore.currentProject
     ? reviewStore.currentProject.name
     : reviewStore.projectId;

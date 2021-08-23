@@ -20,11 +20,7 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import {
-  useEditorStore,
-  EDITOR_LANGUAGE,
-  TextInputEditor,
-} from '@finos/legend-studio';
+import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
 import { TextEditorState } from '../stores/TextEditorState';
 import {
   LockIcon,
@@ -32,8 +28,9 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-application-components';
-import { TEXT_TYPE } from '../models/metamodels/pure/model/packageableElements/Text';
+} from '@finos/legend-art';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { TEXT_TYPE } from '@finos/legend-graph-preset-dsl-text';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
   switch (type) {
@@ -109,7 +106,7 @@ export const TextElementEditor = observer(() => {
         </div>
       </div>
       <div className="panel__content text-element-editor__editor">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={getTextElementEditorLanguage(textElement.type)}
           inputValue={textElement.content}
           updateInput={changeContent}

@@ -25,12 +25,13 @@ import {
   baseTextEditorSettings,
   disableEditorHotKeys,
   resetLineNumberGutterWidth,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import {
   TAB_SIZE,
   EDITOR_THEME,
   EDITOR_LANGUAGE,
-} from '../../../stores/EditorConfig';
+  useApplicationStore,
+} from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import { FaUserSecret } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
@@ -38,10 +39,9 @@ import type { ElementDragSource } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   (props: {}, ref: React.Ref<HTMLDivElement>) => {
@@ -127,12 +127,12 @@ export const GrammarTextEditor = observer(() => {
   }, [editorStore, applicationStore, editor, grammarTextEditorState]);
 
   // Drag and Drop
-  const extraDnDTypes = applicationStore.pluginManager
-    .getEditorPlugins()
+  const extraDnDTypes = editorStore.pluginManager
+    .getStudioPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_EditorPlugin_Extension
+          plugin as DSL_StudioPlugin_Extension
         ).getExtraGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(

@@ -17,10 +17,7 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
-import {
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-application-components';
+import { CustomSelectorInput, createFilter } from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type {
