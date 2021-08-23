@@ -11,6 +11,9 @@
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
     {
+      "path": "packages/legend-graph-preset-dsl-text"
+    },
+    {
       "path": "packages/legend-graph-preset-external-format-json-schema"
     },
     { "path": "packages/legend-application" },
