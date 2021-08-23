@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { AbstractPluginManager } from '../application/AbstractPluginManager';
 import { AbstractPlugin } from '../application/AbstractPluginManager';
 
 export interface TraceData {
@@ -29,6 +30,10 @@ export enum CORE_TRACER_TAG {
   HTTP_STATUS = 'status',
   HTTP_REQUEST_METHOD = 'method',
   HTTP_REQUEST_URL = 'url',
+}
+export interface TracerServicePluginManager extends AbstractPluginManager {
+  getTracerServicePlugins(): TracerServicePlugin<unknown>[];
+  registerTracerServicePlugin(plugin: TracerServicePlugin<unknown>): void;
 }
 
 export interface TracerServicePluginInfo {

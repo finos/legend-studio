@@ -21,15 +21,15 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
-import { TEST__getTestApplicationConfig } from '../../stores/StoreTestUtils';
 import {
+  WebApplicationNavigator,
   TEST__provideMockedApplicationStore,
   TEST__ApplicationStoreProvider,
-  TEST__StudioStoreProvider,
-} from '../ComponentTestUtils';
+  TEST__getTestApplicationConfig,
+} from '@finos/legend-application';
+import { TEST__StudioStoreProvider } from '../EditorComponentTestUtils';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { WebApplicationNavigator } from '../../stores/application/WebApplicationNavigator';
 import { createMemoryHistory } from 'history';
 import {
   SDLCServerClient,

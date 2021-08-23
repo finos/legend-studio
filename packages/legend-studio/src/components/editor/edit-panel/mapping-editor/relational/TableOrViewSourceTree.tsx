@@ -21,8 +21,8 @@ import type {
   TreeData,
   TreeNodeData,
 } from '@finos/legend-application-components';
-import { TableJoinIcon } from '../../../../shared/Icon';
 import {
+  TableJoinIcon,
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,

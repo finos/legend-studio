@@ -29,19 +29,7 @@ import {
 } from 'react-icons/fa';
 import { MdSettingsEthernet, MdLink } from 'react-icons/md';
 import { FiPackage } from 'react-icons/fi';
-import { returnUndefOnError } from '@finos/legend-shared';
 import { RiShapeLine } from 'react-icons/ri';
-import type { EditorStore } from '../../stores/EditorStore';
-import type { DSL_EditorPlugin_Extension } from '../../stores/EditorPlugin';
-import type { PackageableElement, Type } from '@finos/legend-graph';
-import {
-  PACKAGEABLE_ELEMENT_TYPE,
-  Measure,
-  Unit,
-  Enumeration,
-  PrimitiveType,
-  Class,
-} from '@finos/legend-graph';
 
 export const PrimitiveTypeIcon: React.FC = () => (
   <div className="icon icon--primitive color--primitive">p</div>
@@ -149,96 +137,5 @@ export const ModelStoreIcon: React.FC = () => (
     <RiShapeLine />
   </div>
 );
-
-export const getClassPropertyIcon = (type: Type): React.ReactNode => {
-  if (type instanceof PrimitiveType) {
-    return <PrimitiveTypeIcon />;
-  } else if (type instanceof Class) {
-    return <ClassIcon />;
-  } else if (type instanceof Enumeration) {
-    return <EnumerationIcon />;
-  } else if (type instanceof Measure) {
-    return <MeasureIcon />;
-  } else if (type instanceof Unit) {
-    return <UnitIcon />;
-  }
-  return <UnknownTypeIcon />;
-};
-
-export const getElementTypeIcon = (
-  editorStore: EditorStore,
-  type: string | undefined,
-): React.ReactNode => {
-  switch (type) {
-    case PACKAGEABLE_ELEMENT_TYPE.PRIMITIVE:
-      return <PrimitiveTypeIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.PACKAGE:
-      return <PackageIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.CLASS:
-      return <ClassIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION:
-      return <AssociationIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.ENUMERATION:
-      return <EnumerationIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.MEASURE:
-      return <MeasureIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.UNIT:
-      return <UnitIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.PROFILE:
-      return <ProfileIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.FUNCTION:
-      return <FunctionIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE:
-      return <FlatDataStoreIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.DATABASE:
-      return <DatabaseIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.MAPPING:
-      return <MappingIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.DIAGRAM:
-      return <DiagramIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
-      return <ServiceIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:
-      return <ConnectionIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
-      return <RuntimeIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
-      return <FileGenerationIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
-      return <GenerationSpecificationIcon />;
-    default: {
-      if (type) {
-        const extraElementIconGetters = editorStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSL_EditorPlugin_Extension
-              ).getExtraElementIconGetters?.() ?? [],
-          );
-        for (const iconGetter of extraElementIconGetters) {
-          const elementIcon = iconGetter(type);
-          if (elementIcon) {
-            return elementIcon;
-          }
-        }
-      }
-      return <UnknownTypeIcon />;
-    }
-  }
-};
-
-export const getElementIcon = (
-  editorStore: EditorStore,
-  element: PackageableElement | undefined,
-): React.ReactNode =>
-  getElementTypeIcon(
-    editorStore,
-    element
-      ? returnUndefOnError(() =>
-          editorStore.graphState.getPackageableElementType(element),
-        )
-      : undefined,
-  );
 
 export const CheckIcon: React.FC = () => <FaCheck className="icon__check" />;

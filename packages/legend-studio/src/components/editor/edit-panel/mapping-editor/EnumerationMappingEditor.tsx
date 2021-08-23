@@ -26,6 +26,7 @@ import {
   CustomSelectorInput,
   BlankPanelPlaceholder,
   createFilter,
+  EnumerationIcon,
 } from '@finos/legend-application-components';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { TypeTree } from '../../../shared/TypeTree';
@@ -39,7 +40,6 @@ import {
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { EnumerationIcon } from '../../../shared/Icon';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { MdModeEdit } from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';

@@ -31,7 +31,9 @@ import {
   SerializationFactory,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import { URL_PATH_PLACEHOLDER } from '../LegendStudioRouter';
+
+// FIXME: to be removed when we genericize config
+export const URL_PATH_PLACEHOLDER = '-';
 
 export class ServiceRegistrationEnvInfo {
   env!: string;

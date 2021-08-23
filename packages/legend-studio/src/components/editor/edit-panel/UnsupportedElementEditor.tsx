@@ -20,7 +20,7 @@ import { FaLock } from 'react-icons/fa';
 import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const UnsupportedEditorPanel = observer(
   (props: { text: string; isReadOnly: boolean }) => {

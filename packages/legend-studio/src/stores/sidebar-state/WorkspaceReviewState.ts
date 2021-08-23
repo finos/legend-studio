@@ -17,8 +17,8 @@
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -26,7 +26,6 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { ActionAlertActionType } from '../ApplicationStore';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { generateSetupRoute } from '../LegendStudioRouter';
@@ -38,6 +37,7 @@ import {
   ReviewState,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
+import { ActionAlertActionType } from '@finos/legend-application';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;

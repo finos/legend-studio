@@ -29,7 +29,7 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../ComponentTestUtils';
+} from '../../../EditorComponentTestUtils';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 
 let renderResult: RenderResult;

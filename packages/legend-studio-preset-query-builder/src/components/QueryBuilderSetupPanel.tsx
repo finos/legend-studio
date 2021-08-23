@@ -22,17 +22,19 @@ import {
   CogIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  ClassIcon,
+  MappingIcon,
+  RuntimeIcon,
 } from '@finos/legend-application-components';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type { PackageableElementOption } from '@finos/legend-studio';
-import { ClassIcon, MappingIcon, RuntimeIcon } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import type { Class, Mapping, Runtime } from '@finos/legend-graph';
 import {
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
+import type { PackageableElementOption } from '@finos/legend-application';
 
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

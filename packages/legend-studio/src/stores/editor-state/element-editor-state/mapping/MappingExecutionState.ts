@@ -49,11 +49,6 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { LambdaEditorState } from '../LambdaEditorState';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '../../../ApplicationStore';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
 import type {
   Runtime,
@@ -95,7 +90,12 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
 } from '@finos/legend-graph';
-import { TAB_SIZE } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  LambdaEditorState,
+  TAB_SIZE,
+} from '@finos/legend-application';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;

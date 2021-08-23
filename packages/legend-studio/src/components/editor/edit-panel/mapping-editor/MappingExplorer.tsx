@@ -53,18 +53,18 @@ import {
   FaChevronDown,
 } from 'react-icons/fa';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
-import { getElementIcon } from '../../../shared/Icon';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   SetImplementation,
   EnumerationMapping,
   PropertyMapping,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingExplorerContextMenu = observer(
   (

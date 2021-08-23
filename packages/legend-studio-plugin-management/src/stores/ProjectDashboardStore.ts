@@ -16,7 +16,7 @@
 
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { makeAutoObservable } from 'mobx';
-import type { ApplicationStore } from '@finos/legend-studio';
+import type { ApplicationStore } from '@finos/legend-application';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { Build, Project, ProjectType } from '@finos/legend-server-sdlc';
 

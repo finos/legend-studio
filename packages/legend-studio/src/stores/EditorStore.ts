@@ -15,12 +15,6 @@
  */
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type {
-  ApplicationStore,
-  ActionAlertInfo,
-  BlockingAlertInfo,
-} from './ApplicationStore';
-import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState';
 import { ExplorerTreeState } from './ExplorerTreeState';
 import {
@@ -28,8 +22,8 @@ import {
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
-  HOTKEY,
-  HOTKEY_MAP,
+  STUDIO_HOTKEY,
+  STUDIO_HOTKEY_MAP,
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
@@ -70,8 +64,7 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
-import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState';
 import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState';
@@ -89,7 +82,6 @@ import {
 import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
-import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
@@ -124,7 +116,18 @@ import {
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
-import { TAB_SIZE } from '@finos/legend-application';
+import type {
+  ActionAlertInfo,
+  ApplicationStore,
+  BlockingAlertInfo,
+} from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  APPLICATION_LOG_EVENT,
+  TAB_SIZE,
+} from '@finos/legend-application';
+import { STUDIO_LOG_EVENT } from './StudioLogEvent';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -298,8 +301,8 @@ export class EditorStore {
     this.defaultHotkeys = [
       // actions that need blocking
       new EditorHotkey(
-        HOTKEY.COMPILE,
-        [HOTKEY_MAP.COMPILE],
+        STUDIO_HOTKEY.COMPILE,
+        [STUDIO_HOTKEY_MAP.COMPILE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.graphState.globalCompileInFormMode()).catch(
             applicationStore.alertIllegalUnhandledError,
@@ -307,8 +310,8 @@ export class EditorStore {
         }),
       ),
       new EditorHotkey(
-        HOTKEY.GENERATE,
-        [HOTKEY_MAP.GENERATE],
+        STUDIO_HOTKEY.GENERATE,
+        [STUDIO_HOTKEY_MAP.GENERATE],
         this.createGlobalHotKeyAction(() => {
           flowResult(
             this.graphState.graphGenerationState.globalGenerate(),
@@ -316,20 +319,20 @@ export class EditorStore {
         }),
       ),
       new EditorHotkey(
-        HOTKEY.CREATE_ELEMENT,
-        [HOTKEY_MAP.CREATE_ELEMENT],
+        STUDIO_HOTKEY.CREATE_ELEMENT,
+        [STUDIO_HOTKEY_MAP.CREATE_ELEMENT],
         this.createGlobalHotKeyAction(() => this.newElementState.openModal()),
       ),
       new EditorHotkey(
-        HOTKEY.OPEN_ELEMENT,
-        [HOTKEY_MAP.OPEN_ELEMENT],
+        STUDIO_HOTKEY.OPEN_ELEMENT,
+        [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
         this.createGlobalHotKeyAction(() =>
           this.searchElementCommandState.open(),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_TEXT_MODE,
-        [HOTKEY_MAP.TOGGLE_TEXT_MODE],
+        STUDIO_HOTKEY.TOGGLE_TEXT_MODE,
+        [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.toggleTextMode()).catch(
             applicationStore.alertIllegalUnhandledError,
@@ -337,15 +340,15 @@ export class EditorStore {
         }),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_MODEL_LOADER,
-        [HOTKEY_MAP.TOGGLE_MODEL_LOADER],
+        STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
+        [STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
         this.createGlobalHotKeyAction(() =>
           this.openState(this.modelLoaderState),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.SYNC_WITH_WORKSPACE,
-        [HOTKEY_MAP.SYNC_WITH_WORKSPACE],
+        STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
+        [STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.localChangesState.syncWithWorkspace()).catch(
             applicationStore.alertIllegalUnhandledError,
@@ -354,34 +357,34 @@ export class EditorStore {
       ),
       // simple actions (no blocking is needed)
       new EditorHotkey(
-        HOTKEY.TOGGLE_AUX_PANEL,
-        [HOTKEY_MAP.TOGGLE_AUX_PANEL],
+        STUDIO_HOTKEY.TOGGLE_AUX_PANEL,
+        [STUDIO_HOTKEY_MAP.TOGGLE_AUX_PANEL],
         this.createGlobalHotKeyAction(() => this.auxPanelDisplayState.toggle()),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
-        [HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
+        STUDIO_HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
+        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_SIDEBAR_CHANGES,
-        [HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
+        STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
+        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.CHANGES),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
-        [HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
+        STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
         ),
       ),
       new EditorHotkey(
-        HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
-        [HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
+        STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
         ),

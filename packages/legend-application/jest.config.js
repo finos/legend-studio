@@ -32,12 +32,6 @@ export default {
   ],
   moduleNameMapper: {
     ...base.moduleNameMapper,
-    // Mock for testing `react-dnd`
-    // See http://react-dnd.github.io/react-dnd/docs/testing
-    '^dnd-core$': 'dnd-core/dist/cjs',
-    '^react-dnd$': 'react-dnd/dist/cjs',
-    '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
-    // manual mocks - TODO: we might eventually want to move these to `@finos/legend-application-components` or `@finos/legend-application-test-mocks`, etc.
     '^monaco-editor$':
       '@finos/legend-application-components/lib/testMocks/MockedMonacoEditor.js',
   },

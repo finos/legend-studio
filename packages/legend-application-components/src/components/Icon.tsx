@@ -32,7 +32,7 @@ export {
   FaHashtag as NumberTypeIcon,
   FaClock as DateTypeIcon,
   FaToggleOn as BooleanTypeIcon,
-  FaQuestionCircle as UnknownTypeIcon,
+  FaQuestionCircle as QuestionCircleIcon,
   FaInfoCircle as InfoCircleIcon,
   FaCompress as CompressIcon,
   FaMap as MapIcon,

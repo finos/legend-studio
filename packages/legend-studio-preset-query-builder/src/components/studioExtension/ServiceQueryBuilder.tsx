@@ -15,11 +15,12 @@
  */
 
 import type { ServicePureExecutionState } from '@finos/legend-studio';
-import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
+import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import type { RawLambda } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const ServiceQueryBuilder = observer(
   (props: {

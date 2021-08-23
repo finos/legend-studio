@@ -23,7 +23,7 @@ import {
   flow,
   makeObservable,
 } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,

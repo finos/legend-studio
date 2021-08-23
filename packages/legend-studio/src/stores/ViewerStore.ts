@@ -37,7 +37,7 @@ import {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import { TAB_SIZE } from '@finos/legend-application';
 
 export class ViewerStore {

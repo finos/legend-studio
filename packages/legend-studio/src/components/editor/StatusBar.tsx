@@ -32,7 +32,7 @@ import type { EditorPathParams } from '../../stores/LegendStudioRouter';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;

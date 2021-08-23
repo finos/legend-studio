@@ -19,7 +19,7 @@ import { unitTest } from '@finos/legend-shared';
 import {
   TEST__buildGraphBasic,
   TEST__getTestEditorStore,
-} from '../StoreTestUtils';
+} from '../EditorStoreTestUtils';
 import { TEST_DATA__simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
 
 type RoundtripTestCase = [

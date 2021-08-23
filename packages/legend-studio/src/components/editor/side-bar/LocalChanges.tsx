@@ -29,7 +29,7 @@ import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const LocalChanges = observer(() => {
   const editorStore = useEditorStore();

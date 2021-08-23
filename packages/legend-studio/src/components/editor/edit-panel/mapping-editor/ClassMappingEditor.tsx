@@ -21,8 +21,9 @@ import { FaRegSquare, FaCheckSquare } from 'react-icons/fa';
 import {
   clsx,
   CustomSelectorInput,
+  ClassIcon,
 } from '@finos/legend-application-components';
-import { ClassIcon, getElementTypeIcon } from '../../../shared/Icon';
+import { getElementTypeIcon } from '../../../shared/ElementIconUtils';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type {

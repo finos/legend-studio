@@ -19,7 +19,6 @@ import { useResizeDetector } from 'react-resize-detector';
 import { InheritanceDiagramRenderer } from '../../../shared/diagram-viewer/InheritanceDiagramRenderer';
 import { observer } from 'mobx-react-lite';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { StudioLambdaEditor } from '../../../shared/LambdaEditor';
 import { useDrop } from 'react-dnd';
 import type {
   ElementDragSource,
@@ -47,7 +46,6 @@ import {
   getControlledResizablePanelProps,
 } from '@finos/legend-application-components';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
-import { getElementIcon } from '../../../shared/Icon';
 import { PropertyEditor } from './PropertyEditor';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
@@ -56,7 +54,6 @@ import { ClassEditorState } from '../../../../stores/editor-state/element-editor
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type {
   StereotypeReference,
   GenericTypeReference,
@@ -83,6 +80,9 @@ import {
   GenericTypeExplicitReference,
   Association,
 } from '@finos/legend-graph';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
+import { useApplicationStore } from '@finos/legend-application';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 
 const PropertyBasicEditor = observer(
   (props: {

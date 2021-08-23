@@ -25,16 +25,16 @@ import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import {
+  WebApplicationNavigatorProvider,
+  TEST__provideMockedWebApplicationNavigator,
   TEST_DATA__applicationConfig,
   TEST_DATA__applicationVersion,
-} from '../../stores/StoreTestUtils';
-import { TEST__provideMockedWebApplicationNavigator } from '../ComponentTestUtils';
-import { ApplicationConfig } from '../../stores/application/ApplicationConfig';
+  ApplicationConfig,
+} from '@finos/legend-application';
 import {
   generateSetupRoute,
   URL_PATH_PLACEHOLDER,
 } from '../../stores/LegendStudioRouter';
-import { WebApplicationNavigatorProvider } from '../application/WebApplicationNavigatorProvider';
 import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
 import { StudioPluginManager } from '../../application/StudioPluginManager';
 

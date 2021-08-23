@@ -24,10 +24,11 @@ import {
 } from 'react-icons/fa';
 import { clsx } from '@finos/legend-application-components';
 import { QueryBuilder } from '../QueryBuilder';
-import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
+import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { noop } from '@finos/legend-shared';
 import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
+import { useApplicationStore } from '@finos/legend-application';
 
 /**
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog

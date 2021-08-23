@@ -42,7 +42,7 @@ import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { Randomizer } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 import { SetImplementation } from '@finos/legend-graph';
 
 const addTestPromps = [

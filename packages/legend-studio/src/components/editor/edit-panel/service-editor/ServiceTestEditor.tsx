@@ -46,18 +46,20 @@ import {
 } from '@finos/legend-application-components';
 import type { TestContainerState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
 import { MdRefresh, MdCompareArrows } from 'react-icons/md';
 import { LinearProgress } from '@material-ui/core';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import {
+  EDITOR_LANGUAGE,
+  TextInputEditor,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { TestContainer } from '@finos/legend-graph';
 
 const TestContainerContextMenu = observer(

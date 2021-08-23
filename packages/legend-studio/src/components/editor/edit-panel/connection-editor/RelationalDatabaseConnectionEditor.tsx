@@ -24,7 +24,6 @@ import type { RelationalDatabaseConnectionValueState } from '../../../../stores/
 import { useState } from 'react';
 import { MdModeEdit } from 'react-icons/md';
 import { VscError } from 'react-icons/vsc';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -58,7 +57,7 @@ import type { EditorPlugin } from '../../../../stores/EditorPlugin';
 import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { TextInputEditor, EDITOR_LANGUAGE } from '@finos/legend-application';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor

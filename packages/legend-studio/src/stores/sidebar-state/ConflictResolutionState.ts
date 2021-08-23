@@ -16,8 +16,8 @@
 
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {

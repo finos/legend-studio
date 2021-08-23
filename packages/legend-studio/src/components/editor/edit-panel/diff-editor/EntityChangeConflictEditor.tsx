@@ -26,6 +26,7 @@ import {
   TAB_SIZE,
   EDITOR_THEME,
   EDITOR_LANGUAGE,
+  useApplicationStore,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import type {
@@ -61,7 +62,6 @@ import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entit
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 
 const getConflictSummaryText = (
   conflictEditorState: EntityChangeConflictEditorState,

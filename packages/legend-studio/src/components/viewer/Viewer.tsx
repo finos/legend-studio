@@ -30,7 +30,11 @@ import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
 import { STUDIO_TEST_ID } from '../StudioTestID';
-import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
+import {
+  ACTIVITY_MODE,
+  STUDIO_HOTKEY,
+  STUDIO_HOTKEY_MAP,
+} from '../../stores/EditorConfig';
 import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
 import {
   clsx,
@@ -40,7 +44,6 @@ import {
   getControlledResizablePanelProps,
 } from '@finos/legend-application-components';
 import { isNonNullable } from '@finos/legend-shared';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
 import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
@@ -53,7 +56,10 @@ import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import {
+  NotificationSnackbar,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
@@ -203,18 +209,20 @@ export const ViewerInner = observer(() => {
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys
   const keyMap = {
-    [HOTKEY.OPEN_ELEMENT]: [HOTKEY_MAP.OPEN_ELEMENT],
-    [HOTKEY.TOGGLE_TEXT_MODE]: [HOTKEY_MAP.TOGGLE_TEXT_MODE],
+    [STUDIO_HOTKEY.OPEN_ELEMENT]: [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
+    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
   };
   const handlers = {
-    [HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
+    [STUDIO_HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
       editorStore.searchElementCommandState.open(),
     ),
-    [HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(() => {
-      flowResult(editorStore.toggleTextMode()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
-    }),
+    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(
+      () => {
+        flowResult(editorStore.toggleTextMode()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      },
+    ),
   };
 
   useEffect(() => {

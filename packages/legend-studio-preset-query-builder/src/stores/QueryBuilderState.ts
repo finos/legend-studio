@@ -83,8 +83,8 @@ import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 import type {
   ApplicationStore,
   PackageableElementOption,
-} from '@finos/legend-studio';
-import { buildElementOption } from '@finos/legend-studio';
+} from '@finos/legend-application';
+import { buildElementOption } from '@finos/legend-application';
 
 export class QueryBuilderState {
   applicationStore: ApplicationStore;

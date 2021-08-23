@@ -60,7 +60,6 @@ import type {
 } from '@finos/legend-application-components';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
 import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
-import { LambdaEditorState } from '../LambdaEditorState';
 import type {
   CompilationError,
   PackageableElement,
@@ -110,6 +109,7 @@ import {
   updateRootSetImplementationOnCreate,
   updateRootSetImplementationOnDelete,
 } from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;

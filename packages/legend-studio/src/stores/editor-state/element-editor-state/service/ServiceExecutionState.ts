@@ -25,12 +25,11 @@ import {
 import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
-import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState';
-import { TAB_SIZE } from '@finos/legend-application';
+import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
 import type {
   ServiceExecution,

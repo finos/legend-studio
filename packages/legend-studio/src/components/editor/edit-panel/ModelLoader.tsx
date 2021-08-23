@@ -26,12 +26,6 @@ import {
   FaTruckLoading,
 } from 'react-icons/fa';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { TextInputEditor } from '../../shared/TextInputEditor';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '../../../stores/ApplicationStore';
 import {
   DropdownMenu,
   MenuContent,
@@ -40,7 +34,13 @@ import {
 import type { ImportConfigurationDescription } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import {
+  TextInputEditor,
+  ActionAlertType,
+  ActionAlertActionType,
+  useApplicationStore,
+  EDITOR_LANGUAGE,
+} from '@finos/legend-application';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();

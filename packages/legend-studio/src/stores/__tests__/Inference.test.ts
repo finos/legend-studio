@@ -25,7 +25,7 @@ import {
   TEST__getTestEditorStore,
   TEST__excludeSectionIndex,
   TEST__buildGraphBasic,
-} from '../StoreTestUtils';
+} from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 

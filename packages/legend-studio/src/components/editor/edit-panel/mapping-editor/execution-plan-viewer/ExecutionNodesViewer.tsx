@@ -22,7 +22,6 @@ import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from './ExecutionPlanViewer';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import type { ResultType, DataType } from '@finos/legend-graph';
 import {
   SQLExecutionNode,
@@ -45,7 +44,6 @@ import {
   Timestamp,
   Other,
 } from '@finos/legend-graph';
-
 import {
   BlankPanelContent,
   DropdownMenu,
@@ -53,7 +51,7 @@ import {
   MenuContentItem,
 } from '@finos/legend-application-components';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { TextInputEditor } from '../../../../shared/TextInputEditor';
+import { TextInputEditor, EDITOR_LANGUAGE } from '@finos/legend-application';
 
 const generateDataTypeLabel = (type: unknown | undefined): string => {
   if (type === undefined) {

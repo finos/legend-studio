@@ -26,7 +26,7 @@ import {
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useSetupStore } from './SetupStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   <div className="setup__project__label">

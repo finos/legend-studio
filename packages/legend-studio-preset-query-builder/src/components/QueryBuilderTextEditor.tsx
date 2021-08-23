@@ -20,10 +20,13 @@ import { observer } from 'mobx-react-lite';
 import { clsx } from '@finos/legend-application-components';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
-import { useApplicationStore, TextInputEditor } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  TextInputEditor,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 export const QueryBuilderTextEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

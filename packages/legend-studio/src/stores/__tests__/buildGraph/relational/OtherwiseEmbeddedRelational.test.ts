@@ -19,7 +19,7 @@ import { guaranteeType, unitTest } from '@finos/legend-shared';
 import {
   TEST__buildGraphBasic,
   TEST__getTestEditorStore,
-} from '../../../StoreTestUtils';
+} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   RootRelationalInstanceSetImplementation,

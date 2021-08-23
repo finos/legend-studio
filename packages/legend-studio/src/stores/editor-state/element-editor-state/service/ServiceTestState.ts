@@ -17,7 +17,7 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,

@@ -19,9 +19,9 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { StudioStore } from '../stores/StudioStore';
-import { useApplicationStore } from './application/ApplicationStoreProvider';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
 import { useLocalObservable } from 'mobx-react-lite';
+import { useApplicationStore } from '@finos/legend-application';
 
 const StudioStoreContext = createContext<StudioStore | undefined>(undefined);
 

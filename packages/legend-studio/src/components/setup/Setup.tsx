@@ -28,7 +28,6 @@ import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
 import { STUDIO_TEST_ID } from '../StudioTestID';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import Dialog from '@material-ui/core/Dialog';
 import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
@@ -41,7 +40,10 @@ import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { flowResult } from 'mobx';
 import { ProjectType } from '@finos/legend-server-sdlc';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import {
+  useApplicationStore,
+  NotificationSnackbar,
+} from '@finos/legend-application';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();

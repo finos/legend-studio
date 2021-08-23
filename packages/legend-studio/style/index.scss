@@ -22,7 +22,8 @@
 @forward 'extensions';
 
 // Components
-@forward 'components/shared';
+@forward 'components/shared/multiplicity-badge';
+
 @forward 'components/app';
 @forward 'components/setup';
 @forward 'components/editor';

@@ -24,7 +24,7 @@ import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import {
   TEST__buildGraphBasic,
   TEST__getTestEditorStore,
-} from '../../StoreTestUtils';
+} from '../../EditorStoreTestUtils';
 import { TEST_DATA__SimpleGraph } from './CoreTestData';
 import { waitFor } from '@testing-library/dom';
 import { flowResult } from 'mobx';

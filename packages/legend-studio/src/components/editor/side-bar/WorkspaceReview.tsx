@@ -33,17 +33,17 @@ import { MdRefresh } from 'react-icons/md';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { formatDistanceToNow } from 'date-fns';
 import { FiGitMerge } from 'react-icons/fi';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '../../../stores/ApplicationStore';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import {
+  ActionAlertType,
+  ActionAlertActionType,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();

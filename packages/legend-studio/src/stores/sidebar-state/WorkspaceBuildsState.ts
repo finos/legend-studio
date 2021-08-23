@@ -15,7 +15,7 @@
  */
 
 import { makeAutoObservable } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';

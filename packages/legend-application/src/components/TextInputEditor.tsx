@@ -17,8 +17,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { IDisposable } from 'monaco-editor';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
-import type { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { TAB_SIZE, EDITOR_THEME } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import {
   disposeEditor,
@@ -26,9 +24,9 @@ import {
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
 } from '@finos/legend-application-components';
-import { flowResult } from 'mobx';
-import { useEditorStore } from '../editor/EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import type { EDITOR_LANGUAGE } from '../const';
+import { EDITOR_THEME, TAB_SIZE } from '../const';
+import { useApplicationStore } from './ApplicationStoreProvider';
 
 export const TextInputEditor: React.FC<{
   inputValue: string;
@@ -49,7 +47,6 @@ export const TextInputEditor: React.FC<{
     hideGutter,
     extraEditorOptions,
   } = props;
-  const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
@@ -77,20 +74,21 @@ export const TextInputEditor: React.FC<{
         formatOnPaste: true,
       });
       _editor.onKeyDown((event) => {
-        // NOTE: ideally, we should make this component fully independent of `editorStore` but we can't for now
+        // FIXME: ideally, we should make this component fully independent of `editorStore` but we can't for now
         // since `monaco-editor` does not give a way to disable hot key by default
         if (event.keyCode === KeyCode.F8) {
           event.preventDefault();
           event.stopPropagation();
-          flowResult(editorStore.toggleTextMode()).catch(
-            applicationStore.alertIllegalUnhandledError,
-          );
+          // See how we do this in `LambdaEditor` and replicate the behavior
+          // flowResult(editorStore.toggleTextMode()).catch(
+          //   applicationStore.alertIllegalUnhandledError,
+          // );
         }
       });
       disableEditorHotKeys(_editor);
       setEditor(_editor);
     }
-  }, [applicationStore, editorStore, editor]);
+  }, [applicationStore, editor]);
 
   useEffect(() => {
     if (editor) {

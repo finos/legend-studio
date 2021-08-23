@@ -24,7 +24,7 @@ import {
   guaranteeNonNullable,
   assertTrue,
 } from '@finos/legend-shared';
-import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
@@ -39,7 +39,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from './StudioLogEvent';
 
 export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
   extractEntityNameFromPath(a.newPath ?? a.oldPath ?? '').localeCompare(

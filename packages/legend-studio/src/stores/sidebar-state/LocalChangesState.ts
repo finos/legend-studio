@@ -18,7 +18,7 @@ import { action, makeAutoObservable, flowResult } from 'mobx';
 import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -29,13 +29,17 @@ import {
   NetworkClientError,
   HttpStatus,
 } from '@finos/legend-shared';
-import { ActionAlertType, ActionAlertActionType } from '../ApplicationStore';
+import {
+  DATE_TIME_FORMAT,
+  TAB_SIZE,
+  ActionAlertType,
+  ActionAlertActionType,
+} from '@finos/legend-application';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { Entity } from '@finos/legend-model-storage';
 import { EntityDiff, Revision } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
-import { DATE_TIME_FORMAT, TAB_SIZE } from '@finos/legend-application';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 
 export class LocalChangesState {
   editorStore: EditorStore;

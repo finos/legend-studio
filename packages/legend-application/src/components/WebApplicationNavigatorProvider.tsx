@@ -18,7 +18,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
 import { useHistory } from 'react-router';
-import { WebApplicationNavigator } from '../../stores/application/WebApplicationNavigator';
+import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
 
 const WebApplicationNavigatorContext = createContext<
   WebApplicationNavigator | undefined

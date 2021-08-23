@@ -23,7 +23,7 @@ import {
 import {
   TEST__buildGraphBasic,
   TEST__getTestEditorStore,
-} from '../../../StoreTestUtils';
+} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   DynaFunction,

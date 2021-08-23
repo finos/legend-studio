@@ -43,19 +43,20 @@ import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   IllegalStateError,
   isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
 import {
+  EDITOR_LANGUAGE,
+  useApplicationStore,
+  TextInputEditor,
   ActionAlertActionType,
   ActionAlertType,
-} from '../../../../stores/ApplicationStore';
+} from '@finos/legend-application';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
@@ -65,7 +66,6 @@ import {
   getMappingElementTarget,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import {
   Class,
   RawLambda,

@@ -30,7 +30,6 @@ import {
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { StudioLambdaEditor } from '../../../../shared/LambdaEditor';
 import { guaranteeType } from '@finos/legend-shared';
 import {
   TableOrViewTreeNodeDragSource,
@@ -45,6 +44,7 @@ import {
   RelationalPropertyMapping,
   getEnumerationMappingsByEnumeration,
 } from '@finos/legend-graph';
+import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

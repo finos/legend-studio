@@ -15,68 +15,18 @@
  */
 
 /// <reference types="jest-extended" />
-import { ApplicationConfig } from './application/ApplicationConfig';
-import { ApplicationStore } from './ApplicationStore';
 import { EditorStore } from './EditorStore';
-import { createBrowserHistory } from 'history';
 import { StudioPluginManager } from '../application/StudioPluginManager';
-import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { GraphBuilderOptions } from '@finos/legend-graph';
 import { TEST__getTestGraphManagerState } from '@finos/legend-graph';
-import { WebApplicationNavigator } from './application/WebApplicationNavigator';
-import { Log } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   EntityChangeType,
   TEST__getTestSDLCServerClient,
 } from '@finos/legend-server-sdlc';
 import { TEST__getTestDepotServerClient } from '@finos/legend-server-depot';
-
-export const TEST_DATA__applicationConfig = {
-  appName: 'test-app',
-  env: 'test-env',
-  sdlc: {
-    url: 'https://testSdlcUrl',
-  },
-  engine: {
-    url: 'https://testEngineUrl',
-  },
-  depot: {
-    url: 'https://testMetadataUrl',
-  },
-  documentation: {
-    url: 'https://testDocUrl',
-  },
-};
-
-export const TEST_DATA__applicationVersion = {
-  buildTime: '2001-01-01T00:00:00-0000',
-  version: 'test-version',
-  commitSHA: 'test-commit-id',
-};
-
-export const TEST__getTestApplicationConfig = (
-  extraConfigData = {},
-): ApplicationConfig => {
-  const config = new ApplicationConfig(
-    {
-      ...TEST_DATA__applicationConfig,
-      ...extraConfigData,
-    },
-    TEST_DATA__applicationVersion,
-    '/studio/',
-  );
-  config.setSDLCServerKey(URL_PATH_PLACEHOLDER);
-  return config;
-};
-
-export const TEST__getTestApplicationStore = (): ApplicationStore =>
-  new ApplicationStore(
-    TEST__getTestApplicationConfig(),
-    new WebApplicationNavigator(createBrowserHistory()),
-    new Log(),
-  );
+import { TEST__getTestApplicationStore } from '@finos/legend-application';
 
 export const TEST__getTestEditorStore = (
   pluginManager = StudioPluginManager.create(),

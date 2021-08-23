@@ -15,8 +15,7 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from '../utils/ChangeDetectionLogEvent';
-import type { LambdaEditorState } from './editor-state/element-editor-state/LambdaEditorState';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -30,7 +29,6 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
-import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';
@@ -85,6 +83,11 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
 } from '@finos/legend-graph';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  LambdaEditorState,
+} from '@finos/legend-application';
 
 export class EditorGraphState {
   editorStore: EditorStore;

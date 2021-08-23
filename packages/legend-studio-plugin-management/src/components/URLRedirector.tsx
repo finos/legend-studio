@@ -19,12 +19,8 @@ import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator } from '@finos/legend-application-components';
 import { getQueryParameters } from '@finos/legend-shared';
 import { useParams } from 'react-router-dom';
-import {
-  useApplicationStore,
-  useStudioStore,
-  AppHeader,
-  AppHeaderMenu,
-} from '@finos/legend-studio';
+import { useStudioStore, AppHeader, AppHeaderMenu } from '@finos/legend-studio';
+import { useApplicationStore } from '@finos/legend-application';
 
 const EVENT_MARKETING_LINK_ACCESS = 'Marketing link accessed';
 export const PATH_PARAM_TOKEN_REDIRECT_URL = 'redirectUrl';

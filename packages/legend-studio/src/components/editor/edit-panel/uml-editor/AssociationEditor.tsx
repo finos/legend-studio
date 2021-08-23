@@ -43,7 +43,7 @@ import {
   BlankPanelContent,
   getControlledResizablePanelProps,
 } from '@finos/legend-application-components';
-import { getElementIcon } from '../../../shared/Icon';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';

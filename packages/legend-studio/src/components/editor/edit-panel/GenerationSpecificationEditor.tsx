@@ -26,7 +26,7 @@ import { FaFire, FaTimes, FaPlus, FaLongArrowAltRight } from 'react-icons/fa';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import { useDragLayer, useDrag, useDrop } from 'react-dnd';
-import { FileGenerationIcon, getElementIcon } from '../../shared/Icon';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 import { MdRefresh } from 'react-icons/md';
 import {
   clsx,
@@ -36,6 +36,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  FileGenerationIcon,
 } from '@finos/legend-application-components';
 import type {
   ElementDragSource,
@@ -48,7 +49,6 @@ import { getNullableFirstElement } from '@finos/legend-shared';
 import type { DSLGenerationSpecification_EditorPlugin_Extension } from '../../../stores/DSLGenerationSpecification_EditorPlugin_Extension';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 import type {
   PackageableElement,
   PackageableElementReference,
@@ -59,6 +59,7 @@ import {
   PackageableElementExplicitReference,
   GenerationTreeNode,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

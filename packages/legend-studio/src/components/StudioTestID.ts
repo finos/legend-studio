@@ -51,8 +51,6 @@ export enum STUDIO_TEST_ID {
 
   SERVICE_REGISTRATION_MODAL = 'service_registration_modal', // TODO: revise
 
-  LAMBDA_EDITOR__EDITOR_INPUT = 'lambda-editor__editor__input',
-
   MAPPING_EXPLORER = 'mapping-explorer', // TODO: revise
   SOURCE_PANEL = 'source-panel', // TODO: revise
   TYPE_VISIT = 'type-visit', // TODO: revise

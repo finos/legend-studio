@@ -53,9 +53,9 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState';
-import { useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
+import { useApplicationStore } from '@finos/legend-application';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

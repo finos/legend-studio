@@ -43,7 +43,6 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { NewServiceModal } from '../service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   guaranteeType,
   uniq,
@@ -57,14 +56,15 @@ import {
   MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
+  EDITOR_LANGUAGE,
+  TextInputEditor,
   ActionAlertActionType,
   ActionAlertType,
-} from '../../../../stores/ApplicationStore';
+  useApplicationStore,
+} from '@finos/legend-application';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import {
   Class,
   RawLambda,

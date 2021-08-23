@@ -17,7 +17,7 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EditorStore } from '../../stores/EditorStore';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';

@@ -40,6 +40,8 @@ import {
   CompressIcon,
   EyeIcon,
   InfoCircleIcon,
+  ClassIcon,
+  CheckIcon,
 } from '@finos/legend-application-components';
 import type {
   QueryBuilderExplorerTreeDragSource,
@@ -56,12 +58,6 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import {
-  getClassPropertyIcon,
-  useApplicationStore,
-  ClassIcon,
-  CheckIcon,
-} from '@finos/legend-studio';
 import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil';
 import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState';
 import { flowResult } from 'mobx';
@@ -75,6 +71,8 @@ import {
   PRIMITIVE_TYPE,
   Enumeration,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
+import { getClassPropertyIcon } from './shared/ElementIconUtils';
 
 const QueryBuilderExplorerPreviewDataModal = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

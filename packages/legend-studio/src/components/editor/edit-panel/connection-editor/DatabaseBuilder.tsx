@@ -26,6 +26,8 @@ import {
   FireIcon,
   clsx,
   TreeView,
+  SchemaIcon,
+  TableIcon,
 } from '@finos/legend-application-components';
 import { useEffect } from 'react';
 import type {
@@ -46,9 +48,7 @@ import {
   FaRegCircle,
 } from 'react-icons/fa';
 import { capitalize } from '@finos/legend-shared';
-import { SchemaIcon, TableIcon } from '../../../shared/Icon';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,

@@ -30,6 +30,7 @@ import {
   TAB_SIZE,
   EDITOR_THEME,
   EDITOR_LANGUAGE,
+  useApplicationStore,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import { FaUserSecret } from 'react-icons/fa';
@@ -41,7 +42,6 @@ import { useDrop } from 'react-dnd';
 import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   (props: {}, ref: React.Ref<HTMLDivElement>) => {

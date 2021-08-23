@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-application-components';
 import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
 import Dialog from '@material-ui/core/Dialog';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const AboutModal: React.FC<{
   open: boolean;

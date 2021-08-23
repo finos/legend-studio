@@ -32,7 +32,6 @@ import type { TreeNodeContainerProps } from '@finos/legend-application-component
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
 import { isNonNullable } from '@finos/legend-shared';
-import { getClassPropertyIcon } from '@finos/legend-studio';
 import type {
   QueryBuilderGraphFetchTreeData,
   QueryBuilderGraphFetchTreeNodeData,
@@ -44,6 +43,7 @@ import {
 import type { QueryBuilderExplorerTreeDragSource } from '../stores/QueryBuilderExplorerState';
 import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
 import type { QueryBuilderGraphFetchTreeState } from '../stores/QueryBuilderGraphFetchTreeState';
+import { getClassPropertyIcon } from './shared/ElementIconUtils';
 
 const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

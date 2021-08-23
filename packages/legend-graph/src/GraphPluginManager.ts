@@ -19,5 +19,10 @@ import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PurePr
 
 export interface GraphPluginManager {
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[];
+  registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void;
+
   getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[];
+  registerPureProtocolProcessorPlugin(
+    plugin: PureProtocolProcessorPlugin,
+  ): void;
 }

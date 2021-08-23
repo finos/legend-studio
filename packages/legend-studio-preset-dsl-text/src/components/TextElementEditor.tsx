@@ -20,11 +20,7 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import {
-  useEditorStore,
-  EDITOR_LANGUAGE,
-  TextInputEditor,
-} from '@finos/legend-studio';
+import { useEditorStore } from '@finos/legend-studio';
 import { TextEditorState } from '../stores/TextEditorState';
 import {
   LockIcon,
@@ -34,6 +30,7 @@ import {
   MenuContentItem,
 } from '@finos/legend-application-components';
 import { TEXT_TYPE } from '../models/metamodels/pure/model/packageableElements/Text';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
   switch (type) {

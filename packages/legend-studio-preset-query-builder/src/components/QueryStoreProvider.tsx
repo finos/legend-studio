@@ -18,10 +18,10 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { QueryStore } from '../stores/QueryStore';
 import type { StudioPluginManager } from '@finos/legend-studio';
-import { useApplicationStore } from '@finos/legend-studio';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useGraphManagerState } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const QueryStoreContext = createContext<QueryStore | undefined>(undefined);
 

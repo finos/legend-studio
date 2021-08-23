@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-// Base
-@import '@finos/legend-application-components/lib/index.css';
+import { Backdrop } from '@material-ui/core';
+import { observer } from 'mobx-react-lite';
+
+export const ApplicationBackdrop = observer((props: { open: boolean }) => (
+  <Backdrop className="backdrop" open={props.open} />
+));

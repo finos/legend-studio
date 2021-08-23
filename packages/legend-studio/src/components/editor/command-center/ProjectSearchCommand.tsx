@@ -26,7 +26,7 @@ import {
   createFilter,
   CustomSelectorInput,
 } from '@finos/legend-application-components';
-import { getElementTypeIcon } from '../../shared/Icon';
+import { getElementTypeIcon } from '../../shared/ElementIconUtils';
 import type { PackageableElement } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';

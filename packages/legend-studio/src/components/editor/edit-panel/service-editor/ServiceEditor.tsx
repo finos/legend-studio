@@ -36,7 +36,7 @@ import { ServiceExecutionEditor } from './ServiceExecutionEditor';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/service-editor/ServiceRegistrationModalEditor';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 import { validateServicePattern } from '@finos/legend-graph';
 
 const ServiceGeneralEditor = observer(() => {

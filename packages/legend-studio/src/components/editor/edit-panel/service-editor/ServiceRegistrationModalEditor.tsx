@@ -29,7 +29,7 @@ import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const ServiceRegistrationModalEditor = observer(() => {
   const editorStore = useEditorStore();

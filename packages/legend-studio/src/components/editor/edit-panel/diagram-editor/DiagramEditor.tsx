@@ -93,7 +93,7 @@ import { Dialog } from '@material-ui/core';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {

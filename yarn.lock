@@ -2411,6 +2411,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
@@ -2439,6 +2440,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-application-components": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2565,7 +2567,6 @@ __metadata:
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
     "@types/zipkin-javascript-opentracing": 1.6.0
     cross-env: 7.0.3
     eslint: 7.32.0

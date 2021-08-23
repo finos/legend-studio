@@ -17,7 +17,7 @@
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from '../../utils/ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -43,7 +43,7 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;

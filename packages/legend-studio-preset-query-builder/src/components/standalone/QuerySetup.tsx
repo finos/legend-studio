@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { PackageableElementOption } from '@finos/legend-studio';
-import { useApplicationStore } from '@finos/legend-studio';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -62,6 +60,8 @@ import type {
   Mapping,
   PackageableRuntime,
 } from '@finos/legend-graph';
+import type { PackageableElementOption } from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 
 type QueryOption = { label: string; value: LightQuery };
 const buildQueryOption = (query: LightQuery): QueryOption => ({

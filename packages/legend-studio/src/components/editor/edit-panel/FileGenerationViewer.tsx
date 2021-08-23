@@ -21,7 +21,7 @@ import {
   getEditorLanguageFromFormat,
 } from '../../../stores/editor-state/FileGenerationViewerState';
 import { FaLock, FaFire, FaArrowCircleRight } from 'react-icons/fa';
-import { TextInputEditor } from '../../shared/TextInputEditor';
+import { TextInputEditor } from '@finos/legend-application';
 import type { FileGenerationSpecification } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider';
 

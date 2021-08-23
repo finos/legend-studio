@@ -65,12 +65,9 @@ import {
   ProjectData,
   ProjectVersionEntities,
 } from '@finos/legend-server-depot';
-import type {
-  ApplicationStore,
-  StudioPluginManager,
-} from '@finos/legend-studio';
-import { APPLICATION_LOG_EVENT } from '@finos/legend-studio';
-import { TAB_SIZE } from '@finos/legend-application';
+import type { StudioPluginManager } from '@finos/legend-studio';
+import type { ApplicationStore } from '@finos/legend-application';
+import { APPLICATION_LOG_EVENT, TAB_SIZE } from '@finos/legend-application';
 
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';

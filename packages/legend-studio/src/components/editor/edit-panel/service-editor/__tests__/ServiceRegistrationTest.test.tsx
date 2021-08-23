@@ -34,15 +34,17 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditor,
-  TEST__provideMockedApplicationStore,
-} from '../../../../ComponentTestUtils';
+} from '../../../../EditorComponentTestUtils';
 import { STUDIO_TEST_ID } from '../../../../StudioTestID';
 import type { PlainObject } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { NOTIFCATION_SEVERITY } from '../../../../../stores/ApplicationStore';
+import {
+  NOTIFCATION_SEVERITY,
+  TEST__provideMockedApplicationStore,
+  TEST__getTestApplicationConfig,
+} from '@finos/legend-application';
 import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState';
-import { TEST__getTestApplicationConfig } from '../../../../../stores/StoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
 import {

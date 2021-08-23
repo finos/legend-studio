@@ -17,7 +17,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
-import { getElementIcon } from '../../../shared/Icon';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { useDrop } from 'react-dnd';
 import {
   getTextContent,
@@ -62,7 +62,6 @@ import { MdModeEdit, MdRefresh } from 'react-icons/md';
 import type { FileGenerationSourceDropTarget } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { GenerationTreeNodeData } from '../../../../stores/shared/FileGenerationTreeUtil';
 import {
@@ -72,7 +71,6 @@ import {
 } from '../../../../stores/shared/FileGenerationTreeUtil';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type {
   GenerationProperty,
   PackageableElement,
@@ -85,6 +83,10 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
+import {
+  TextInputEditor,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

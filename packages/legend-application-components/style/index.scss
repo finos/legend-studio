@@ -18,7 +18,6 @@
 @forward 'base/normalize';
 @forward 'base/utils';
 @forward 'base/common';
-@forward 'base/icon';
 @forward 'base/button';
 @forward 'base/input';
 @forward 'base/panel';
@@ -26,6 +25,7 @@
 @forward 'base/menu';
 @forward 'base/table';
 
+@forward 'components/icon';
 @forward 'components/panel-loading-indicator';
 @forward 'components/blank-panel-placeholder';
 @forward 'components/selector-input';

@@ -25,7 +25,7 @@ import { integrationTest, toTitleCase } from '@finos/legend-shared';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../ComponentTestUtils';
+} from '../../../EditorComponentTestUtils';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import type { EditorStore } from '../../../../stores/EditorStore';
 import { PACKAGEABLE_ELEMENT_TYPE } from '@finos/legend-graph';

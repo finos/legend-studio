@@ -26,7 +26,6 @@ import {
   FaUser,
   FaRegWindowMaximize,
 } from 'react-icons/fa';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
@@ -51,7 +50,10 @@ import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import {
+  NotificationSnackbar,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();

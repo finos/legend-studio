@@ -31,20 +31,17 @@ import {
 } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import { FaLock, FaPlus, FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
-import { StudioLambdaEditor } from '../../shared/LambdaEditor';
 import {
   clsx,
   CustomSelectorInput,
   createFilter,
 } from '@finos/legend-application-components';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
-import { getElementIcon } from '../../shared/Icon';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 import type {
   ConcreteFunctionDefinition,
   StereotypeReference,
@@ -65,6 +62,9 @@ import {
   PrimitiveType,
   StereotypeExplicitReference,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
+import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

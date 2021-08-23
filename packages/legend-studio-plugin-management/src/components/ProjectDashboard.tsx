@@ -26,16 +26,13 @@ import {
 } from 'react-icons/fa';
 import { PanelLoadingIndicator } from '@finos/legend-application-components';
 import { flowResult } from 'mobx';
-import {
-  useApplicationStore,
-  AppHeader,
-  AppHeaderMenu,
-} from '@finos/legend-studio';
+import { AppHeader, AppHeaderMenu } from '@finos/legend-studio';
 import { Build, BuildStatus, ProjectType } from '@finos/legend-server-sdlc';
 import {
   ProjectDashboardStoreProvider,
   useProjectDashboardStore,
 } from './ProjectDashboardStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const renderBuildStatus = (data: Build): React.ReactElement => {
   switch (data.status) {

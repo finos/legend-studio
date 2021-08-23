@@ -78,7 +78,7 @@ import {
   buildNumericPreviewDataQuery,
 } from './QueryBuilderPreviewDataHelper';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
-import { LambdaEditorState } from '@finos/legend-studio';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',

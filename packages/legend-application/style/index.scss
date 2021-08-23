@@ -18,9 +18,11 @@
 @use 'mixins' as *;
 
 // Dependencies
-@forward 'deps';
 @forward 'extensions';
 
 // Components
-// @forward 'components/shared';
-// @forward 'components/app';
+@forward 'components/blocking-alert';
+@forward 'components/backdrop';
+@forward 'components/lambda-editor';
+@forward 'components/notification';
+@forward 'components/text-editor';

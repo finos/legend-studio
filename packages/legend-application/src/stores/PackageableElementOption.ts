@@ -14,36 +14,16 @@
  * limitations under the License.
  */
 
-@use '../mixins' as *;
+import type { PackageableElement } from '@finos/legend-graph';
 
-.icon {
-  @include flexCenter;
-
-  font-family: 'Raleway', sans-serif;
-  font-weight: 900;
-  user-select: none;
+export interface PackageableElementOption<T extends PackageableElement> {
+  label: string;
+  value: T;
 }
 
-.icon--flat-data {
-  svg {
-    font-size: 1.2rem;
-  }
-}
-
-.icon--connection,
-.icon--config {
-  svg {
-    font-size: 1.6rem;
-  }
-}
-
-.icon--function {
-  font-family: 'Roboto Condensed', sans-serif;
-  font-size: 1.2rem;
-  letter-spacing: 0.1rem;
-}
-
-.icon--table-join {
-  font-family: 'Roboto Monospaced', sans-serif;
-  font-size: 1.6rem;
-}
+export const buildElementOption = (
+  element: PackageableElement,
+): PackageableElementOption<PackageableElement> => ({
+  label: element.name,
+  value: element,
+});

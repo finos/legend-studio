@@ -19,8 +19,8 @@ import {
   BooleanTypeIcon,
   DateTypeIcon,
   NumberTypeIcon,
+  QuestionCircleIcon,
   StringTypeIcon,
-  UnknownTypeIcon,
 } from '@finos/legend-application-components';
 import { getClass, UnsupportedOperationError } from '@finos/legend-shared';
 import type { RelationalDataType } from '@finos/legend-graph';
@@ -120,7 +120,7 @@ export const renderColumnTypeIcon = (
     );
   } else if (type instanceof Other) {
     return (
-      <UnknownTypeIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
+      <QuestionCircleIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
     );
   }
   throw new UnsupportedOperationError(

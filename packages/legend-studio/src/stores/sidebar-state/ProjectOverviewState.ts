@@ -30,7 +30,7 @@ import {
   Workspace,
   Review,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',

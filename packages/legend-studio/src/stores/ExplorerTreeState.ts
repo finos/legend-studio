@@ -31,8 +31,7 @@ import {
   openNodes,
   populatePackageTreeNodeChildren,
 } from './shared/PackageTreeUtil';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
-import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
+import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-application-components';
 import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
@@ -44,6 +43,7 @@ import {
   Unit,
   PrimitiveType,
 } from '@finos/legend-graph';
+import { APPLICATION_LOG_EVENT } from '@finos/legend-application';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',

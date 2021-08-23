@@ -29,8 +29,10 @@ import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  EDITOR_LANGUAGE,
+} from '@finos/legend-application';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {

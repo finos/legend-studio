@@ -23,7 +23,7 @@ import {
 } from '../roundtrip/RoundtripTestData';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { waitFor } from '@testing-library/dom';
-import { TEST__getTestEditorStore } from '../../StoreTestUtils';
+import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
 import { TEST_DATA__SimpleGraph } from './CoreTestData';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';

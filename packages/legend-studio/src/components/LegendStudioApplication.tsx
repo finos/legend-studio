@@ -20,7 +20,6 @@ import { Setup } from './setup/Setup';
 import { Editor } from './editor/Editor';
 import { Review } from './review/Review';
 import { Viewer } from './viewer/Viewer';
-import { NotificationSnackbar } from './application/NotificationSnackbar';
 import { observer } from 'mobx-react-lite';
 import {
   CustomSelectorInput,
@@ -33,28 +32,29 @@ import {
   LEGEND_STUDIO_ROUTE_PATTERN,
   generateRoutePatternWithSDLCServerKey,
 } from '../stores/LegendStudioRouter';
-import { ActionAlert } from './application/ActionAlert';
-import { BlockingAlert } from './application/BlockingAlert';
 import { AppHeader, BasicAppHeader } from './shared/AppHeader';
 import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
 import { ThemeProvider } from '@material-ui/core/styles';
-import type {
-  ApplicationConfig,
-  SDLCServerOption,
-} from '../stores/application/ApplicationConfig';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
 import type { Log } from '@finos/legend-shared';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import {
-  ApplicationStoreProvider,
-  useApplicationStore,
-} from './application/ApplicationStoreProvider';
-import { useWebApplicationNavigator } from './application/WebApplicationNavigatorProvider';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { StudioStoreProvider, useStudioStore } from './StudioStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
+import type {
+  ApplicationConfig,
+  SDLCServerOption,
+} from '@finos/legend-application';
+import {
+  ActionAlert,
+  ApplicationStoreProvider,
+  BlockingAlert,
+  NotificationSnackbar,
+  useApplicationStore,
+  useWebApplicationNavigator,
+} from '@finos/legend-application';
 
 export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useStudioStore();

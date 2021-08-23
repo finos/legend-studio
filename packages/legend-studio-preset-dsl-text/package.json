@@ -40,6 +40,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@finos/legend-application": "workspace:*",
     "@finos/legend-application-components": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",

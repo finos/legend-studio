@@ -18,23 +18,16 @@ import type { RenderResult } from '@testing-library/react';
 import { render, fireEvent, waitFor, getByText } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
-import { ApplicationStore } from '../stores/ApplicationStore';
 import { STUDIO_TEST_ID } from './StudioTestID';
 import { EditorStore } from '../stores/EditorStore';
 import { Editor } from './editor/Editor';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
-import {
-  TEST__getTestApplicationConfig,
-  TEST__getTestApplicationStore as TEST__getTestApplicationStore,
-} from '../stores/StoreTestUtils';
 import type { PlainObject } from '@finos/legend-shared';
 import {
-  Log,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
 import { StudioPluginManager } from '../application/StudioPluginManager';
-import { WebApplicationNavigator } from '../stores/application/WebApplicationNavigator';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   Project,
@@ -49,7 +42,6 @@ import {
   TEST__SDLCServerClientProvider,
   TEST__getTestSDLCServerClient,
 } from '@finos/legend-server-sdlc';
-import { ApplicationStoreProvider } from './application/ApplicationStoreProvider';
 import type {
   ImportConfigurationDescription,
   ImportMode,
@@ -68,8 +60,12 @@ import {
   TEST__getTestDepotServerClient,
 } from '@finos/legend-server-depot';
 import { StudioStoreProvider } from './StudioStoreProvider';
-import type { ApplicationConfig } from '../stores/application/ApplicationConfig';
-import type { History } from 'history';
+import type { ApplicationStore } from '@finos/legend-application';
+import {
+  TEST__ApplicationStoreProvider,
+  TEST__getTestApplicationStore,
+  WebApplicationNavigator,
+} from '@finos/legend-application';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {
@@ -138,20 +134,6 @@ export const TEST_DATA__DefaultSDLCInfo = {
   ],
 };
 
-export const TEST__ApplicationStoreProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => (
-  <ApplicationStoreProvider
-    config={TEST__getTestApplicationConfig()}
-    navigator={new WebApplicationNavigator(createMemoryHistory())}
-    log={new Log()}
-  >
-    {children}
-  </ApplicationStoreProvider>
-);
-
 export const TEST__StudioStoreProvider = ({
   children,
 }: {
@@ -161,42 +143,6 @@ export const TEST__StudioStoreProvider = ({
     {children}
   </StudioStoreProvider>
 );
-
-export const TEST__provideMockedApplicationStore = (customization?: {
-  mock?: ApplicationStore;
-  config?: ApplicationConfig;
-  navigator?: WebApplicationNavigator;
-}): ApplicationStore => {
-  const value =
-    customization?.mock ??
-    new ApplicationStore(
-      customization?.config ?? TEST__getTestApplicationConfig(),
-      customization?.navigator ??
-        new WebApplicationNavigator(createMemoryHistory()),
-      new Log(),
-    );
-  const MockedApplicationStoreProvider = require('./application/ApplicationStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedApplicationStoreProvider.useApplicationStore = jest.fn();
-  MockedApplicationStoreProvider.useApplicationStore.mockReturnValue(value);
-  return value;
-};
-
-export const TEST__provideMockedWebApplicationNavigator = (customization?: {
-  mock?: WebApplicationNavigator;
-  history?: History;
-}): WebApplicationNavigator => {
-  const value =
-    customization?.mock ??
-    new WebApplicationNavigator(
-      customization?.history ?? createMemoryHistory(),
-    );
-  const MockWebApplicationNavigatorProvider = require('./application/WebApplicationNavigatorProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockWebApplicationNavigatorProvider.useWebApplicationNavigator = jest.fn();
-  MockWebApplicationNavigatorProvider.useWebApplicationNavigator.mockReturnValue(
-    value,
-  );
-  return value;
-};
 
 export const TEST__provideMockedEditorStore = (customization?: {
   mock?: EditorStore;

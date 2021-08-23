@@ -16,7 +16,6 @@
 
 import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
-import { LambdaEditorState } from './LambdaEditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent, guaranteeType, assertType } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
@@ -29,6 +28,7 @@ import {
   RawLambda,
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export enum FUNCTION_SPEC_TAB {
   GENERAL = 'GENERAL',

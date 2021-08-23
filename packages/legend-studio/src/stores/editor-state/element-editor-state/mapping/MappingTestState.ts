@@ -47,7 +47,6 @@ import {
   flowResult,
 } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { LambdaEditorState } from '../LambdaEditorState';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
 import type {
   MappingTest,
@@ -83,7 +82,7 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
 } from '@finos/legend-graph';
-import { TAB_SIZE } from '@finos/legend-application';
+import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

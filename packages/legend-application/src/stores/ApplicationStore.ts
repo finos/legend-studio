@@ -22,9 +22,9 @@ import {
   ApplicationError,
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
-import { APPLICATION_LOG_EVENT } from '../utils/ApplicationLogEvent';
-import type { ApplicationConfig } from './application/ApplicationConfig';
-import type { WebApplicationNavigator } from './application/WebApplicationNavigator';
+import { APPLICATION_LOG_EVENT } from './ApplicationLogEvent';
+import type { ApplicationConfig } from './ApplicationConfig';
+import type { WebApplicationNavigator } from './WebApplicationNavigator';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',

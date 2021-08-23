@@ -16,7 +16,6 @@
 
 import type { EditorStore } from '../EditorStore';
 import { action, makeAutoObservable } from 'mobx';
-import { GRAMMAR_ELEMENT_TYPE_LABEL } from '../PureLanguageSupport';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { DSL_EditorPlugin_Extension } from '../EditorPlugin';
 import type { PackageableElement, EngineError } from '@finos/legend-graph';
@@ -42,6 +41,7 @@ import {
   RelationalDatabaseConnection,
   ServiceStore,
 } from '@finos/legend-graph';
+import { GRAMMAR_ELEMENT_TYPE_LABEL } from '@finos/legend-application';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,

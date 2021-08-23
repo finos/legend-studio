@@ -18,18 +18,7 @@ import { useEffect } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { ThemeProvider } from '@material-ui/core/styles';
-import type {
-  ApplicationConfig,
-  StudioPluginManager,
-} from '@finos/legend-studio';
-import {
-  useWebApplicationNavigator,
-  useApplicationStore,
-  ActionAlert,
-  ApplicationStoreProvider,
-  BlockingAlert,
-  NotificationSnackbar,
-} from '@finos/legend-studio';
+import type { StudioPluginManager } from '@finos/legend-studio';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
 import {
@@ -46,6 +35,15 @@ import type { Log } from '@finos/legend-shared';
 import { QueryStoreProvider, useQueryStore } from '../QueryStoreProvider';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
+import type { ApplicationConfig } from '@finos/legend-application';
+import {
+  ActionAlert,
+  ApplicationStoreProvider,
+  BlockingAlert,
+  NotificationSnackbar,
+  useApplicationStore,
+  useWebApplicationNavigator,
+} from '@finos/legend-application';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useQueryStore();

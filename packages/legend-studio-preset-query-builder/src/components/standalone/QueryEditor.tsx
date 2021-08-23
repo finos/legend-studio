@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useApplicationStore } from '@finos/legend-studio';
 import {
   ArrowLeftIcon,
   PanelLoadingIndicator,
@@ -47,6 +46,7 @@ import {
 import { QueryBuilder } from '../QueryBuilder';
 import { useQueryStore } from '../QueryStoreProvider';
 import { RuntimePointer } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const QueryExportInner = observer(
   (props: { queryExportState: QueryExportState }) => {

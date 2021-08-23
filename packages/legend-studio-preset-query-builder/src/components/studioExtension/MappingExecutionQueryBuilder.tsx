@@ -15,7 +15,7 @@
  */
 
 import type { MappingExecutionState } from '@finos/legend-studio';
-import { useApplicationStore, useEditorStore } from '@finos/legend-studio';
+import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
@@ -24,6 +24,7 @@ import {
 } from '@finos/legend-graph';
 import type { RawLambda } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingExecutionQueryBuilder = observer(
   (props: { executionState: MappingExecutionState }) => {

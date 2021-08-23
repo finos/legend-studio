@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import type {
-  LambdaEditorOnKeyDownEventHandler,
-  LambdaEditorState,
-} from '@finos/legend-studio';
-import { LambdaEditor, useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import type { IKeyboardEvent } from 'monaco-editor';
@@ -26,6 +21,11 @@ import { KeyCode } from 'monaco-editor';
 import { useCallback, useMemo } from 'react';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type { Type } from '@finos/legend-graph';
+import type {
+  LambdaEditorState,
+  LambdaEditorOnKeyDownEventHandler,
+} from '@finos/legend-application';
+import { useApplicationStore, LambdaEditor } from '@finos/legend-application';
 
 export const QueryBuilderLambdaEditor = observer(
   (props: {

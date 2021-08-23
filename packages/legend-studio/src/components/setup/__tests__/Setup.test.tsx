@@ -21,10 +21,7 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import {
-  TEST_DATA__DefaultSDLCInfo,
-  TEST__ApplicationStoreProvider,
-} from '../../ComponentTestUtils';
+import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
@@ -32,6 +29,7 @@ import {
   TEST__SDLCServerClientProvider,
   TEST__provideMockedSDLCServerClient,
 } from '@finos/legend-server-sdlc';
+import { TEST__ApplicationStoreProvider } from '@finos/legend-application';
 
 let sdlcServerClient: SDLCServerClient;
 

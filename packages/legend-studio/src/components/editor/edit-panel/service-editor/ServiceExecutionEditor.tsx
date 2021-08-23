@@ -49,14 +49,14 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  MappingIcon,
+  RuntimeIcon,
 } from '@finos/legend-application-components';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
-import { MappingIcon, RuntimeIcon } from '../../../shared/Icon';
 import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type { KeyedExecutionParameter, Runtime } from '@finos/legend-graph';
 import {
   PureSingleExecution,
@@ -66,6 +66,7 @@ import {
   PackageableRuntime,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {

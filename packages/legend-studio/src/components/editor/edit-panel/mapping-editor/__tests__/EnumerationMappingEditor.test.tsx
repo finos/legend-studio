@@ -28,7 +28,7 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../../ComponentTestUtils';
+} from '../../../../EditorComponentTestUtils';
 import { STUDIO_TEST_ID } from '../../../../StudioTestID';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';

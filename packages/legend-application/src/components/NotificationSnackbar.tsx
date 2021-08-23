@@ -21,7 +21,7 @@ import SnackbarContent from '@material-ui/core/SnackbarContent';
 import {
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
-} from '../../stores/ApplicationStore';
+} from '../stores/ApplicationStore';
 import {
   FaTimes,
   FaCheckCircle,

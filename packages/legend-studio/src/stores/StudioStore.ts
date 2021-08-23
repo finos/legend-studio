@@ -21,8 +21,12 @@ import {
   assertErrorThrown,
   TelemetryService,
 } from '@finos/legend-shared';
-import type { ApplicationStore } from './ApplicationStore';
-import { ActionAlertActionType, ActionAlertType } from './ApplicationStore';
+import type { ApplicationStore } from '@finos/legend-application';
+import {
+  CORE_TELEMETRY_EVENT,
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
 import {
   action,
   computed,
@@ -31,9 +35,8 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { CORE_TELEMETRY_EVENT } from './network/Telemetry';
 import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
 

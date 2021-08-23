@@ -39,7 +39,7 @@ import {
   UpdateProjectConfigurationCommand,
   Version,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',

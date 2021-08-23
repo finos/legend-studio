@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-export enum CORE_TRACER_TAG {
-  USER = 'user',
-  ENV = 'env',
-  RESULT = 'result',
-  ERROR = 'error',
-  HTTP_STATUS = 'status',
-  HTTP_REQUEST_METHOD = 'method',
-  HTTP_REQUEST_URL = 'url',
+export enum APPLICATION_TEST_ID {
+  LAMBDA_EDITOR__EDITOR_INPUT = 'lambda-editor__editor__input',
 }

@@ -31,10 +31,6 @@ import {
 } from '@finos/legend-application-components';
 import { Link } from 'react-router-dom';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '../../../stores/ApplicationStore';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
@@ -45,7 +41,11 @@ import type {
 } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSdlcState';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import {
+  ActionAlertType,
+  ActionAlertActionType,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();

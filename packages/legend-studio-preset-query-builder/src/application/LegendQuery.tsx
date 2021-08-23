@@ -16,13 +16,29 @@
 
 import {
   LegendApplication,
-  setupLegendStudioUILibrary,
-  StudioPluginManager,
+  setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
-} from '@finos/legend-studio';
+} from '@finos/legend-application';
+import { configure as configureReactHotkeys } from 'react-hotkeys';
+import type { Log } from '@finos/legend-shared';
+import { StudioPluginManager } from '@finos/legend-studio';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/standalone/LegendQueryApplication';
+
+const setupLegendQueryUILibrary = async (
+  pluginManager: StudioPluginManager,
+  log: Log,
+): Promise<void> => {
+  await setupLegendApplicationUILibrary(pluginManager, log);
+
+  configureReactHotkeys({
+    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
+    // We want to listen to hotkey from every where in the app so we disable that
+    // See https://github.com/greena13/react-hotkeys#ignoring-events
+    ignoreTags: [],
+  });
+};
 
 export class LegendQuery extends LegendApplication {
   declare pluginManager: StudioPluginManager;
@@ -33,7 +49,7 @@ export class LegendQuery extends LegendApplication {
 
   async loadApplication(): Promise<void> {
     // Setup React application libraries
-    await setupLegendStudioUILibrary(this.pluginManager, this.log);
+    await setupLegendQueryUILibrary(this.pluginManager, this.log);
 
     // TODO: we can remove this in the future when we modularize core a bit better
     // especially application config

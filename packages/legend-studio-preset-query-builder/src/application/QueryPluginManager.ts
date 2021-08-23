@@ -21,13 +21,18 @@ import type {
 } from '@finos/legend-graph';
 import type {
   TelemetryServicePlugin,
+  TelemetryServicePluginManager,
   TracerServicePlugin,
+  TracerServicePluginManager,
 } from '@finos/legend-shared';
 import { AbstractPluginManager } from '@finos/legend-shared';
 
 export class QueryPluginManager
   extends AbstractPluginManager
-  implements GraphPluginManager
+  implements
+    GraphPluginManager,
+    TracerServicePluginManager,
+    TelemetryServicePluginManager
 {
   private telemetryServicePlugins: TelemetryServicePlugin[] = [];
   private tracerServicePlugins: TracerServicePlugin<unknown>[] = [];

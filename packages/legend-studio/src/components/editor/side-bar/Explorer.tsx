@@ -40,13 +40,13 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   TreeView,
+  ProjectConfigurationIcon,
 } from '@finos/legend-application-components';
 import type { TreeNodeContainerProps } from '@finos/legend-application-components';
 import {
   getElementIcon,
   getElementTypeIcon,
-  ProjectConfigurationIcon,
-} from '../../shared/Icon';
+} from '../../shared/ElementIconUtils';
 import {
   getElementTypeLabel,
   CreateNewElementModal,
@@ -65,7 +65,6 @@ import { isNonNullable, toTitleCase } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 import {
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
@@ -74,6 +73,7 @@ import {
   isValidFullPath,
   isValidPath,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;

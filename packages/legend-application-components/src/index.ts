@@ -22,6 +22,7 @@ export * from './utils/TextEditorUtils';
 export * from './theme/LegendApplicationMaterialUITheme';
 
 export * from './components/Icon';
+export * from './components/LegendIcon';
 export * from './components/LegendLogo';
 export * from './components/TreeView';
 export * from './components/CustomSelectorInput';

@@ -38,7 +38,7 @@ import type {
 import { PureSingleExecution, PureMultiExecution } from '@finos/legend-graph';
 import type { QueryStore } from './QueryStore';
 import { ProjectData } from '@finos/legend-server-depot';
-import type { PackageableElementOption } from '@finos/legend-studio';
+import type { PackageableElementOption } from '@finos/legend-application';
 
 export abstract class QuerySetupState {
   queryStore: QueryStore;

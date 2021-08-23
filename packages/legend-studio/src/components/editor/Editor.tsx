@@ -40,12 +40,7 @@ import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
-import Backdrop from '@material-ui/core/Backdrop';
 import type { EditorPathParams } from '../../stores/LegendStudioRouter';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '../../stores/ApplicationStore';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
@@ -53,7 +48,12 @@ import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchComm
 import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { EditorStoreProvider, useEditorStore } from './EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import {
+  ActionAlertType,
+  ActionAlertActionType,
+  ApplicationBackdrop,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],
@@ -248,7 +248,7 @@ export const EditorInner = observer(() => {
           >
             <div className="editor__body">
               <ActivityBar />
-              <Backdrop className="backdrop" open={editorStore.backdrop} />
+              <ApplicationBackdrop open={editorStore.backdrop} />
               <div ref={ref} className="editor__content-container">
                 <div
                   className={clsx('editor__content', {

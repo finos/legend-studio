@@ -28,15 +28,13 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-} from '@finos/legend-application-components';
-import { ClassMappingEditor } from './ClassMappingEditor';
-import { EnumerationMappingEditor } from './EnumerationMappingEditor';
-import {
   UnknownTypeIcon,
   ClassIcon,
   EnumerationIcon,
   AssociationIcon,
-} from '../../../shared/Icon';
+} from '@finos/legend-application-components';
+import { ClassMappingEditor } from './ClassMappingEditor';
+import { EnumerationMappingEditor } from './EnumerationMappingEditor';
 import { useResizeDetector } from 'react-resize-detector';
 import type {
   MappingEditorTabState,
@@ -58,12 +56,12 @@ import { MappingExecutionState } from '../../../../stores/editor-state/element-e
 import { MappingExecutionBuilder } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
 import type {
   SetImplementation,
   EnumerationMapping,
 } from '@finos/legend-graph';
 import { Class, Enumeration, Association } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;

@@ -39,7 +39,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSourceFilterText = (

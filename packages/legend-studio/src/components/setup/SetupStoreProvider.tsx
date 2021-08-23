@@ -18,7 +18,7 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { SetupStore } from '../../stores/SetupStore';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 
 const SetupStoreContext = createContext<SetupStore | undefined>(undefined);

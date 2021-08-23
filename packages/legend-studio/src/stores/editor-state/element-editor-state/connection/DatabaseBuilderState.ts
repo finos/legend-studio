@@ -29,7 +29,7 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
 import type { EditorStore } from '../../../EditorStore';
 import type {
   RelationalDatabaseConnection,

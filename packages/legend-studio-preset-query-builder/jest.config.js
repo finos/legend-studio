@@ -36,7 +36,6 @@ export default {
     '^dnd-core$': 'dnd-core/dist/cjs',
     '^react-dnd$': 'react-dnd/dist/cjs',
     '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
-    // manual mocks - TODO: we might eventually want to move these to `@finos/legend-application-components` or `@finos/legend-studio-test-mocks`, etc.
     '^monaco-editor$':
       '@finos/legend-application-components/lib/testMocks/MockedMonacoEditor.js',
   },

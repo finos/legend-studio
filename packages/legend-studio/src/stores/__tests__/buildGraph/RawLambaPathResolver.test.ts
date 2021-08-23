@@ -16,7 +16,7 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
-import { TEST__checkBuildingResolvedElements } from '../../StoreTestUtils';
+import { TEST__checkBuildingResolvedElements } from '../../EditorStoreTestUtils';
 
 const getClassEntity = (enumPath: string): Entity => ({
   classifierPath: 'meta::pure::metamodel::type::Class',

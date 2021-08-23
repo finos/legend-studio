@@ -46,7 +46,6 @@ import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
 import { PropertyMappingsEditor } from './PropertyMappingsEditor';
 import { useDrop } from 'react-dnd';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import { ActionAlertActionType } from '../../../../stores/ApplicationStore';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
@@ -57,7 +56,10 @@ import {
 } from './InstanceSetImplementationSourceSelectorModal';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import {
+  ActionAlertActionType,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type {
   InstanceSetImplementation,
   Property,

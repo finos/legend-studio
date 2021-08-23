@@ -28,11 +28,11 @@ import {
   getNullableFirstElement,
   assertTrue,
 } from '@finos/legend-shared';
-import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
-import { ServiceRegistrationEnvInfo } from '../../../application/ApplicationConfig';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
 import { Version } from '@finos/legend-server-sdlc';
 import type { ServiceRegistrationResult } from '@finos/legend-graph';
 import { ServiceExecutionMode } from '@finos/legend-graph';
+import { ServiceRegistrationEnvInfo } from '@finos/legend-application';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 

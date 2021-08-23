@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { LambdaEditorState } from '@finos/legend-studio';
 import {
   GRAPH_MANAGER_LOG_EVENT,
   buildSourceInformationSourceId,
@@ -26,7 +25,7 @@ import type { GeneratorFn } from '@finos/legend-shared';
 import { LogEvent } from '@finos/legend-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
-import { TAB_SIZE } from '@finos/legend-application';
+import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
 export class QueryRawLambdaState {
   lambda: RawLambda;

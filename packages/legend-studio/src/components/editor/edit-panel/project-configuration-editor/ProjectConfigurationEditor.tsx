@@ -37,10 +37,6 @@ import {
   clsx,
   CustomSelectorInput,
 } from '@finos/legend-application-components';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-} from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
 import { ProjectDependency } from '@finos/legend-server-sdlc';
 import type {
@@ -48,9 +44,13 @@ import type {
   Version,
   Project,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../../../utils/StudioLogEvent';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
 
 interface VersionOption {
   label: string;

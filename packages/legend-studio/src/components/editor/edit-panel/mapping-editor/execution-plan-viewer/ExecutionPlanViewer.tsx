@@ -35,8 +35,11 @@ import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanStat
 import { observer } from 'mobx-react-lite';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
 import Dialog from '@material-ui/core/Dialog';
-import { TextInputEditor } from '../../../../shared/TextInputEditor';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
+import {
+  TextInputEditor,
+  EDITOR_LANGUAGE,
+  TAB_SIZE,
+} from '@finos/legend-application';
 import type { ExecutionPlan } from '@finos/legend-graph';
 import {
   ExecutionNode,

@@ -38,7 +38,7 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-application-components';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '../../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const NewFileGenerationModal = observer(
   (props: {

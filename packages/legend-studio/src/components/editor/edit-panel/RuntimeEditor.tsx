@@ -40,6 +40,11 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
+  RuntimeIcon,
+  ConnectionIcon,
+  ModelStoreIcon,
+  ClassIcon,
+  MappingIcon,
 } from '@finos/legend-application-components';
 import {
   FaChevronDown,
@@ -50,14 +55,7 @@ import {
   FaCog,
   FaCaretRight,
 } from 'react-icons/fa';
-import {
-  getElementIcon,
-  RuntimeIcon,
-  ConnectionIcon,
-  ModelStoreIcon,
-  ClassIcon,
-  MappingIcon,
-} from '../../shared/Icon';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor';
 import type { UMLEditorElementDropTarget } from '../../../stores/shared/DnDUtil';
@@ -76,7 +74,6 @@ import { Dialog } from '@material-ui/core';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
 import type { PackageableElementReference } from '@finos/legend-graph';
 import {
   Connection,
@@ -95,6 +92,7 @@ import {
   RelationalDatabaseConnection,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const getConnectionTooltipText = (connection: Connection): string => {
   const connectionValue =

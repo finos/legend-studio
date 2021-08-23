@@ -15,8 +15,8 @@
  */
 
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../utils/StudioLogEvent';
-import type { ApplicationStore } from './ApplicationStore';
+import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
+import type { ApplicationStore } from '@finos/legend-application';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,

@@ -22,6 +22,14 @@ import type { GraphPluginManager } from './GraphPluginManager';
 import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
 
 export class TEST__GraphPluginManager implements GraphPluginManager {
+  registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
+    // do nothing
+  }
+  registerPureProtocolProcessorPlugin(
+    plugin: PureProtocolProcessorPlugin,
+  ): void {
+    // do nothing
+  }
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
     return [];
   }

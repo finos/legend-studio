@@ -31,7 +31,7 @@ import { ReviewState } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../stores/EditorSdlcState';
 import { useReviewStore } from './ReviewStoreProvider';
 import { useEditorStore } from '../editor/EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const ReviewSideBar = observer(() => {
   const reviewStore = useReviewStore();

@@ -30,8 +30,8 @@ import {
 } from 'react-icons/go';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { STUDIO_TEST_ID } from '../StudioTestID';
-import { CheckIcon } from '../shared/Icon';
 import {
+  CheckIcon,
   clsx,
   DropdownMenu,
   MenuContent,

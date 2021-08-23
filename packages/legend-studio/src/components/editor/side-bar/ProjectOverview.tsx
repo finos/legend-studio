@@ -36,7 +36,7 @@ import { flowResult } from 'mobx';
 import type { Workspace } from '@finos/legend-server-sdlc';
 import { NewVersionType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
-import { useApplicationStore } from '../../application/ApplicationStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const WorkspaceViewerContextMenu = observer<
   {

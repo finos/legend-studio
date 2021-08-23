@@ -22,6 +22,7 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   TAB_SIZE,
+  useApplicationStore,
 } from '@finos/legend-application';
 import {
   disposeDiffEditor,
@@ -36,7 +37,6 @@ import {
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../editor/EditorStoreProvider';
-import { useApplicationStore } from '../application/ApplicationStoreProvider';
 
 export const TextDiffView = observer(
   (props: { language: EDITOR_LANGUAGE; from?: string; to?: string }) => {

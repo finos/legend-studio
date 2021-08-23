@@ -30,7 +30,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
-import { STUDIO_LOG_EVENT } from '../../utils/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type {
   GenerationTreeNodeData,
   GenerationOutputResult,

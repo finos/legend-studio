@@ -33,10 +33,20 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
-import { HOTKEY, HOTKEY_MAP, useApplicationStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
-import Backdrop from '@material-ui/core/Backdrop';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
+import {
+  ApplicationBackdrop,
+  useApplicationStore,
+} from '@finos/legend-application';
+
+export enum QUERY_HOTKEY {
+  COMPILE = 'COMPILE',
+}
+
+export const QUERY_HOTKEY_MAP = Object.freeze({
+  [QUERY_HOTKEY.COMPILE]: 'f9',
+});
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -144,10 +154,10 @@ export const QueryBuilder = observer(
 
     // Hotkeys
     const keyMap = {
-      [HOTKEY.COMPILE]: [HOTKEY_MAP.COMPILE],
+      [QUERY_HOTKEY.COMPILE]: [QUERY_HOTKEY_MAP.COMPILE],
     };
     const handlers = {
-      [HOTKEY.COMPILE]: (event: KeyboardEvent | undefined): void => {
+      [QUERY_HOTKEY.COMPILE]: (event: KeyboardEvent | undefined): void => {
         event?.preventDefault();
         flowResult(queryBuilderState.compileQuery()).catch(
           applicationStore.alertIllegalUnhandledError,
@@ -161,7 +171,7 @@ export const QueryBuilder = observer(
         className="query-builder"
       >
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-          <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
+          <ApplicationBackdrop open={queryBuilderState.backdrop} />
           <QueryBuilderHeader queryBuilderState={queryBuilderState} />
           <div className="query-builder__content">
             <ResizablePanelGroup orientation="horizontal">
