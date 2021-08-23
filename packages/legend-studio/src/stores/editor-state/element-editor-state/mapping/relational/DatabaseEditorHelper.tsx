@@ -21,7 +21,7 @@ import {
   NumberTypeIcon,
   QuestionCircleIcon,
   StringTypeIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { getClass, UnsupportedOperationError } from '@finos/legend-shared';
 import type { RelationalDataType } from '@finos/legend-graph';
 import {

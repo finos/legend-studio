@@ -28,7 +28,7 @@ import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
  * Since, Typescript does not currently support subpath `exports` well, we can't really
  * use Jest `moduleNameMapper` to mock, e.g.
  *
- * '^@finos/legend-application-components/lib/ResizablePanel$': '@finos/legend-application-components/lib/testMocks/MockedResizablePanel.js'
+ * '^@finos/legend-art/lib/ResizablePanel$': '@finos/legend-art/lib/testMocks/MockedResizablePanel.js'
  *
  * TODO: we should come back to the `moduleNameMaper` approach for mock when this issue is resolved
  * See https://github.com/microsoft/TypeScript/issues/33079

@@ -23,10 +23,7 @@ import type {
 import { EmbeddedRelationalInstanceSetImplementationState } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 import type { MappingElement } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import {
-  clsx,
-  CustomSelectorInput,
-} from '@finos/legend-application-components';
+import { clsx, CustomSelectorInput } from '@finos/legend-art';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';

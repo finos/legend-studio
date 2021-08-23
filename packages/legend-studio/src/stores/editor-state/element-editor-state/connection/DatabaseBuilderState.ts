@@ -15,10 +15,7 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-application-components';
+import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,

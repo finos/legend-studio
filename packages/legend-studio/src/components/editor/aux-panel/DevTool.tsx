@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-application-components';
+import { clsx } from '@finos/legend-art';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider';

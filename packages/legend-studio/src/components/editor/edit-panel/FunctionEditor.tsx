@@ -31,11 +31,7 @@ import {
 } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import { FaLock, FaPlus, FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
-import {
-  clsx,
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-application-components';
+import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';

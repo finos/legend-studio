@@ -26,7 +26,7 @@ import { ElementEditorState } from './ElementEditorState';
 import type { DiagramRenderer } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { DIAGRAM_INTERACTION_MODE } from '../../../components/shared/diagram-viewer/DiagramRenderer';
 import { ClassEditorState } from './ClassEditorState';
-import { PanelDisplayState } from '@finos/legend-application-components';
+import { PanelDisplayState } from '@finos/legend-art';
 import type {
   PackageableElement,
   ClassView,

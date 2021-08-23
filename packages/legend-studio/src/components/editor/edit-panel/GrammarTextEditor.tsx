@@ -25,7 +25,7 @@ import {
   baseTextEditorSettings,
   disableEditorHotKeys,
   resetLineNumberGutterWidth,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import {
   TAB_SIZE,
   EDITOR_THEME,

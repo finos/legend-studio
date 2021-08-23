@@ -33,7 +33,7 @@ import { BsFillTriangleFill } from 'react-icons/bs';
 import type {
   TreeNodeContainerProps,
   TreeNodeViewProps,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import {
   clsx,
   ContextMenu,
@@ -41,7 +41,7 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type {
   QueryBuilderFilterConditionDragSource,
   QueryBuilderFilterDropTarget,

@@ -1,7 +1,7 @@
 ---
 '@finos/babel-preset-legend-studio': patch
 '@finos/eslint-plugin-legend-studio': patch
-'@finos/legend-application-components': patch
+'@finos/legend-art': patch
 '@finos/legend-dev-utils': patch
 '@finos/legend-graph': patch
 '@finos/legend-graph-preset-external-format-json-schema': patch

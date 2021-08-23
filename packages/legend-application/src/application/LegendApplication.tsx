@@ -48,7 +48,7 @@ import {
   NetworkClient,
 } from '@finos/legend-shared';
 import { APPLICATION_LOG_EVENT } from '../stores/ApplicationLogEvent';
-import { configureComponents } from '@finos/legend-application-components';
+import { configureComponents } from '@finos/legend-art';
 import type { GraphPluginManager } from '@finos/legend-graph';
 
 export const setupTextEdtiorAPI = (pluginManager: GraphPluginManager): void => {

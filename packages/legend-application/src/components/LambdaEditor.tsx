@@ -25,7 +25,7 @@ import {
   disposeEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { FaLongArrowAltDown, FaLongArrowAltUp } from 'react-icons/fa';
 import type { LambdaEditorState } from '../stores/LambdaEditorState';
 import type { DebouncedFunc, GeneratorFn } from '@finos/legend-shared';

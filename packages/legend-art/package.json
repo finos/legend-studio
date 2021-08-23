@@ -1,7 +1,7 @@
 {
-  "name": "@finos/legend-application-components",
-  "version": "0.0.30",
-  "description": "Legend Studio shared components and component utilities",
+  "name": "@finos/legend-art",
+  "version": "0.0.0",
+  "description": "Legend Studio shared visual components and component utilities",
   "keywords": [
     "legend",
     "legend-studio",
@@ -10,14 +10,14 @@
     "shared-component",
     "utilities"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-components",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-art",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-application-components"
+    "directory": "packages/legend-art"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

@@ -16,15 +16,8 @@
 
 import { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-} from '@finos/legend-application-components';
-import {
-  clsx,
-  TreeView,
-  PrimitiveTypeIcon,
-} from '@finos/legend-application-components';
+import type { TreeNodeContainerProps, TreeData } from '@finos/legend-art';
+import { clsx, TreeView, PrimitiveTypeIcon } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
   FlatDataColumnDragSource,

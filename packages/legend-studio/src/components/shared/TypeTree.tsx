@@ -23,15 +23,8 @@ import {
   printObject,
 } from '@finos/legend-shared';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-} from '@finos/legend-application-components';
-import {
-  EnumValueIcon,
-  clsx,
-  TreeView,
-} from '@finos/legend-application-components';
+import type { TreeNodeContainerProps, TreeData } from '@finos/legend-art';
+import { EnumValueIcon, clsx, TreeView } from '@finos/legend-art';
 import { useDrag } from 'react-dnd';
 import { TypeDragSource, CORE_DND_TYPE } from '../../stores/shared/DnDUtil';
 import { getClassPropertyIcon } from './ElementIconUtils';

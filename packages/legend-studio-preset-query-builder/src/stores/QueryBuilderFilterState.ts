@@ -21,10 +21,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type {
-  TreeNodeData,
-  TreeData,
-} from '@finos/legend-application-components';
+import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   assertTrue,
   getNullableFirstElement,

@@ -51,7 +51,7 @@ import {
   ResizablePanelSplitterLine,
   MappingIcon,
   RuntimeIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
 import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';

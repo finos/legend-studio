@@ -24,7 +24,7 @@ import {
   FaBrush,
 } from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
-import { clsx, HammerIcon } from '@finos/legend-application-components';
+import { clsx, HammerIcon } from '@finos/legend-art';
 import { GoSync } from 'react-icons/go';
 import { STUDIO_TEST_ID } from '../StudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';

@@ -17,7 +17,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaTimes, FaPlus } from 'react-icons/fa';
-import type { SelectComponent } from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
 import {
   ResizablePanel,
   ResizablePanelGroup,
@@ -27,7 +27,7 @@ import {
   BlankPanelPlaceholder,
   createFilter,
   EnumerationIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { TypeTree } from '../../../shared/TypeTree';
 import { useDrop } from 'react-dnd';

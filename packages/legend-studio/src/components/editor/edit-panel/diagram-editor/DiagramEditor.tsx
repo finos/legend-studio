@@ -41,7 +41,7 @@ import {
   CORE_DND_TYPE,
   ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
   getControlledResizablePanelProps,
   BasePopover,
@@ -60,7 +60,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanel,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type { Type } from '@finos/legend-graph';
 import {
   Class,

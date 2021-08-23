@@ -46,7 +46,7 @@ import {
   UnknownTypeIcon,
   UnitIcon,
   PackageIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 
 export const getClassPropertyIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {

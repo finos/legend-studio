@@ -17,11 +17,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  CustomSelectorInput,
-  PencilIcon,
-} from '@finos/legend-application-components';
+import { clsx, CustomSelectorInput, PencilIcon } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
   isNonNullable,

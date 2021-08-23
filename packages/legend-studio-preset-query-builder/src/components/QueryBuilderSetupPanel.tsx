@@ -25,7 +25,7 @@ import {
   ClassIcon,
   MappingIcon,
   RuntimeIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';

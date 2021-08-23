@@ -26,11 +26,7 @@ import {
   FaTruckLoading,
 } from 'react-icons/fa';
 import { prettyCONSTName } from '@finos/legend-shared';
-import {
-  DropdownMenu,
-  MenuContent,
-  MenuContentItem,
-} from '@finos/legend-application-components';
+import { DropdownMenu, MenuContent, MenuContentItem } from '@finos/legend-art';
 import type { ImportConfigurationDescription } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';

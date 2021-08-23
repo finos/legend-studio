@@ -19,13 +19,13 @@ import { observer } from 'mobx-react-lite';
 import { compareLabelFn } from '@finos/legend-shared';
 import { FaCaretDown } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
-import type { SelectComponent } from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
 import {
   DropdownMenu,
   NonBlockingDialog,
   createFilter,
   CustomSelectorInput,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { getElementTypeIcon } from '../../shared/ElementIconUtils';
 import type { PackageableElement } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';

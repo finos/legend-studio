@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  TreeNodeData,
-  TreeData,
-} from '@finos/legend-application-components';
+import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
   addUniqueEntry,

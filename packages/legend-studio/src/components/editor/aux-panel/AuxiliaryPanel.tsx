@@ -16,7 +16,7 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-application-components';
+import { clsx } from '@finos/legend-art';
 import { Console } from './Console';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig';
 import { GoChevronUp, GoChevronDown, GoX } from 'react-icons/go';

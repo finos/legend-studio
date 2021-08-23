@@ -38,7 +38,7 @@ import {
   MenuContentItem,
   MenuContentItemIcon,
   MenuContentItemLabel,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider';
 
 const SettingsMenu = observer(

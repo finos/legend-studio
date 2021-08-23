@@ -25,7 +25,7 @@ import {
   IdentifiedConnectionsPerStoreEditorTabState,
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
-import type { TreeNodeContainerProps } from '@finos/legend-application-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
   ResizablePanel,
   ResizablePanelGroup,
@@ -45,7 +45,7 @@ import {
   ModelStoreIcon,
   ClassIcon,
   MappingIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import {
   FaChevronDown,
   FaChevronRight,

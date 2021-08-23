@@ -18,7 +18,7 @@ import {
   ArrowLeftIcon,
   PanelLoadingIndicator,
   RobotIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';

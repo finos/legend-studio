@@ -26,7 +26,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
 import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';

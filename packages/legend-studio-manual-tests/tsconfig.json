@@ -12,6 +12,6 @@
     { "path": "../legend-graph" },
     { "path": "../legend-studio" },
     { "path": "../legend-server-sdlc" },
-    { "path": "../legend-application-components" }
+    { "path": "../legend-art" }
   ]
 }

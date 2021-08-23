@@ -37,7 +37,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   FileGenerationIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type {
   ElementDragSource,
   FileGenerationSourceDropTarget,

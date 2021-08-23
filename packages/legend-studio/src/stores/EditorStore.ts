@@ -75,10 +75,7 @@ import {
   generateSetupRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
-import {
-  NonBlockingDialogState,
-  PanelDisplayState,
-} from '@finos/legend-application-components';
+import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
 import type { DSL_EditorPlugin_Extension } from './EditorPlugin';

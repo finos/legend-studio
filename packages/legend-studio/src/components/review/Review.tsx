@@ -29,7 +29,7 @@ import {
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
-import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
   getControlledResizablePanelProps,
   clsx,
@@ -37,7 +37,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateViewProjectRoute,

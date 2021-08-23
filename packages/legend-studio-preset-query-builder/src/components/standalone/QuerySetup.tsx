@@ -25,7 +25,7 @@ import {
   PlusIcon,
   RobotIcon,
   UserIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';

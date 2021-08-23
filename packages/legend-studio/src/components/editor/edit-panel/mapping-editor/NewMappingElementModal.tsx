@@ -17,11 +17,8 @@
 import { useState, useRef } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
-import {
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-application-components';
-import type { SelectComponent } from '@finos/legend-application-components';
+import { CustomSelectorInput, createFilter } from '@finos/legend-art';
+import type { SelectComponent } from '@finos/legend-art';
 import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   createClassMapping,

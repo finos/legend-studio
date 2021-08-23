@@ -16,11 +16,8 @@
 
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-application-components';
-import {
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
+import { CustomSelectorInput, createFilter } from '@finos/legend-art';
 import type {
   MappingEditorState,
   MappingElementSource,

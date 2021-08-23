@@ -24,12 +24,8 @@ import {
   CORE_DND_TYPE,
   MappingElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { TreeNodeContainerProps } from '@finos/legend-application-components';
-import {
-  clsx,
-  TreeView,
-  ContextMenu,
-} from '@finos/legend-application-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
+import { clsx, TreeView, ContextMenu } from '@finos/legend-art';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { useDrop, useDrag } from 'react-dnd';
 import { toSentenceCase } from '@finos/legend-shared';

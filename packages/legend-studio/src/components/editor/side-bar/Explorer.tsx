@@ -41,8 +41,8 @@ import {
   BlankPanelContent,
   TreeView,
   ProjectConfigurationIcon,
-} from '@finos/legend-application-components';
-import type { TreeNodeContainerProps } from '@finos/legend-application-components';
+} from '@finos/legend-art';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
   getElementIcon,
   getElementTypeIcon,

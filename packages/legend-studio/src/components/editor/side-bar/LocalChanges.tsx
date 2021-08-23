@@ -15,10 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import { FaInfoCircle, FaDownload } from 'react-icons/fa';

@@ -18,11 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { InstanceSetImplementationEditor } from './InstanceSetImplementationEditor';
 import { OperationSetImplementationEditor } from './OperationSetImplementationEditor';
 import { FaRegSquare, FaCheckSquare } from 'react-icons/fa';
-import {
-  clsx,
-  CustomSelectorInput,
-  ClassIcon,
-} from '@finos/legend-application-components';
+import { clsx, CustomSelectorInput, ClassIcon } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../EditorStoreProvider';

@@ -44,7 +44,7 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { PropertyEditor } from './PropertyEditor';
 import { StereotypeSelector } from './StereotypeSelector';

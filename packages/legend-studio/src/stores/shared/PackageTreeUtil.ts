@@ -16,10 +16,7 @@
 
 import { isNonNullable, addUniqueEntry } from '@finos/legend-shared';
 import type { PackageTreeNodeData } from './TreeUtil';
-import type {
-  TreeNodeData,
-  TreeData,
-} from '@finos/legend-application-components';
+import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore';
 import { CORE_DND_TYPE } from './DnDUtil';
 import type { DSL_EditorPlugin_Extension } from '../EditorPlugin';

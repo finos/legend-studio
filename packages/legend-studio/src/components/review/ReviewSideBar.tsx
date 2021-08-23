@@ -17,10 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { EntityDiffSideBarItem } from '../editor/edit-panel/diff-editor/EntityDiffView';
 import { FaInfoCircle, FaTimes, FaArrowUp, FaCheck } from 'react-icons/fa';
-import {
-  clsx,
-  PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
 import { formatDistanceToNow } from 'date-fns';
 import { FiGitMerge } from 'react-icons/fi';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';

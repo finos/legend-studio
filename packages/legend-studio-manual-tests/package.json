@@ -22,7 +22,7 @@
     "test:watch": "jest --config jest.config.manual.js --watch"
   },
   "dependencies": {
-    "@finos/legend-application-components": "workspace:*",
+    "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",

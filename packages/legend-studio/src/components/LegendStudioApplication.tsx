@@ -25,7 +25,7 @@ import {
   CustomSelectorInput,
   LegendMaterialUITheme,
   PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
 import {
   generateSetupRoute,

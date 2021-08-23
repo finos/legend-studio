@@ -16,7 +16,7 @@
 
 import type { TooltipProps } from '@material-ui/core';
 import { Tooltip } from '@material-ui/core';
-import { StubTransition } from '@finos/legend-application-components';
+import { StubTransition } from '@finos/legend-art';
 import type { AbstractProperty, Multiplicity } from '@finos/legend-graph';
 import { DerivedProperty, MULTIPLICITY_INFINITE } from '@finos/legend-graph';
 

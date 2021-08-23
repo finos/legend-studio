@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import Dialog from '@material-ui/core/Dialog';
-import type { TreeNodeContainerProps } from '@finos/legend-application-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -28,7 +28,7 @@ import {
   TreeView,
   SchemaIcon,
   TableIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { useEffect } from 'react';
 import type {
   DatabaseBuilderState,

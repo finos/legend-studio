@@ -31,7 +31,7 @@ import type {
   EditorPluginSetup,
 } from '@finos/legend-studio';
 import { EditorPlugin } from '@finos/legend-studio';
-import { MenuContentItem } from '@finos/legend-application-components';
+import { MenuContentItem } from '@finos/legend-art';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder';
 import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';

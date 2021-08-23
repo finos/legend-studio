@@ -31,8 +31,7 @@ export default {
   ],
   moduleNameMapper: {
     ...base.moduleNameMapper,
-    '^monaco-editor$':
-      '@finos/legend-application-components/lib/testMocks/MockedMonacoEditor.js',
+    '^monaco-editor$': '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
   },
   testMatch: [
     '<rootDir>/packages/legend-studio-preset-dsl-text/src/**/__tests__/**/*(*.)test.[jt]s?(x)',

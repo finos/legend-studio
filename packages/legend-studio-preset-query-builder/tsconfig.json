@@ -15,6 +15,6 @@
     { "path": "../legend-model-storage" },
     { "path": "../legend-server-depot" },
     { "path": "../legend-application" },
-    { "path": "../legend-application-components" }
+    { "path": "../legend-art" }
   ]
 }

@@ -25,10 +25,7 @@ import {
 import { Link } from 'react-router-dom';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import {
-  clsx,
-  PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
 import { MdRefresh } from 'react-icons/md';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { formatDistanceToNow } from 'date-fns';

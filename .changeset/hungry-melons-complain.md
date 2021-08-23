@@ -1,5 +1,5 @@
 ---
-'@finos/legend-application-components': patch
+'@finos/legend-art': patch
 '@finos/legend-dev-utils': patch
 '@finos/legend-graph': patch
 '@finos/legend-graph-preset-external-format-json-schema': patch

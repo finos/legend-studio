@@ -33,7 +33,7 @@ import {
   CheckSquareIcon,
   SquareIcon,
   TimesIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 import type { RelationalDatabaseConnection, Store } from '@finos/legend-graph';
 import {

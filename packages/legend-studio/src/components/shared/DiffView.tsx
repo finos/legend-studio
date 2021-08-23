@@ -28,7 +28,7 @@ import {
   disposeDiffEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import {
   isString,
   losslessStringify,

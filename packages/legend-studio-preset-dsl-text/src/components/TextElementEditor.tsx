@@ -28,7 +28,7 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { TEXT_TYPE } from '../models/metamodels/pure/model/packageableElements/Text';
 import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 

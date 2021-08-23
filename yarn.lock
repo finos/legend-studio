@@ -2058,44 +2058,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-application-components@workspace:*, @finos/legend-application-components@workspace:packages/legend-application-components":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-application-components@workspace:packages/legend-application-components"
-  dependencies:
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@material-ui/core": 4.12.3
-    "@types/react": 17.0.19
-    "@types/react-select": 4.0.17
-    "@types/react-window": 1.8.5
-    clsx: 1.1.1
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    mobx: 6.3.2
-    mobx-react-lite: 3.2.0
-    monaco-editor: 0.27.0
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    react-dom: 17.0.2
-    react-icons: 4.2.0
-    react-reflex: 4.0.3
-    react-resize-detector: 6.7.6
-    react-select: 4.3.1
-    react-window: 1.8.6
-    rimraf: 3.0.2
-    sass: 1.38.0
-    typescript: 4.3.5
-  peerDependencies:
-    react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-application@workspace:*, @finos/legend-application@workspace:packages/legend-application":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application@workspace:packages/legend-application"
   dependencies:
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2123,6 +2090,39 @@ __metadata:
     rimraf: 3.0.2
     sass: 1.38.0
     serializr: 2.0.5
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-art@workspace:*, @finos/legend-art@workspace:packages/legend-art":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-art@workspace:packages/legend-art"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@material-ui/core": 4.12.3
+    "@types/react": 17.0.19
+    "@types/react-select": 4.0.17
+    "@types/react-window": 1.8.5
+    clsx: 1.1.1
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.27.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    react-dom: 17.0.2
+    react-icons: 4.2.0
+    react-reflex: 4.0.3
+    react-resize-detector: 6.7.6
+    react-select: 4.3.1
+    react-window: 1.8.6
+    rimraf: 3.0.2
+    sass: 1.38.0
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0
@@ -2387,7 +2387,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-manual-tests@workspace:packages/legend-studio-manual-tests"
   dependencies:
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
@@ -2411,7 +2411,7 @@ __metadata:
   resolution: "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management"
   dependencies:
     "@finos/legend-application": "workspace:*"
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2440,7 +2440,7 @@ __metadata:
   resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
   dependencies:
     "@finos/legend-application": "workspace:*"
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
@@ -2472,7 +2472,7 @@ __metadata:
     "@ag-grid-community/core": 26.0.0
     "@ag-grid-community/react": 26.0.0
     "@finos/legend-application": "workspace:*"
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
@@ -2516,7 +2516,7 @@ __metadata:
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
   dependencies:
     "@finos/legend-application": "workspace:*"
-    "@finos/legend-application-components": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"

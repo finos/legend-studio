@@ -21,10 +21,7 @@ import {
   generateViewProjectRoute,
   generateViewVersionRoute,
 } from '../../../stores/LegendStudioRouter';
-import {
-  PanelLoadingIndicator,
-  CustomSelectorInput,
-} from '@finos/legend-application-components';
+import { PanelLoadingIndicator, CustomSelectorInput } from '@finos/legend-art';
 import { FiShare } from 'react-icons/fi';
 import type { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';

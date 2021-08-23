@@ -36,8 +36,7 @@ export default {
     '^dnd-core$': 'dnd-core/dist/cjs',
     '^react-dnd$': 'react-dnd/dist/cjs',
     '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
-    '^monaco-editor$':
-      '@finos/legend-application-components/lib/testMocks/MockedMonacoEditor.js',
+    '^monaco-editor$': '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
   },
   testMatch: [
     '<rootDir>/packages/legend-studio-preset-query-builder/src/**/__tests__/**/*(*.)test.[jt]s?(x)',

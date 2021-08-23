@@ -15,11 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  BlankPanelContent,
-  PlusIcon,
-} from '@finos/legend-application-components';
+import { clsx, BlankPanelContent, PlusIcon } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';

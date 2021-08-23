@@ -27,10 +27,7 @@ import type {
   FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import {
-  clsx,
-  CustomSelectorInput,
-} from '@finos/legend-application-components';
+import { clsx, CustomSelectorInput } from '@finos/legend-art';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';

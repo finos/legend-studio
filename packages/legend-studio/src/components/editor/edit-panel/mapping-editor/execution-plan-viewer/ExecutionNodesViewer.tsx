@@ -49,7 +49,7 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { TextInputEditor, EDITOR_LANGUAGE } from '@finos/legend-application';
 

@@ -30,7 +30,7 @@ import { flowResult } from 'mobx';
 import {
   LegendMaterialUITheme,
   PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type { Log } from '@finos/legend-shared';
 import { QueryStoreProvider, useQueryStore } from '../QueryStoreProvider';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';

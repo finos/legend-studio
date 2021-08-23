@@ -23,7 +23,7 @@ import {
   disableEditorHotKeys,
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import type { EDITOR_LANGUAGE } from '../const';
 import { EDITOR_THEME, TAB_SIZE } from '../const';
 import { useApplicationStore } from './ApplicationStoreProvider';

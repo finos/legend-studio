@@ -35,14 +35,14 @@ import {
   STUDIO_HOTKEY,
   STUDIO_HOTKEY_MAP,
 } from '../../stores/EditorConfig';
-import type { ResizablePanelHandlerProps } from '@finos/legend-application-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';

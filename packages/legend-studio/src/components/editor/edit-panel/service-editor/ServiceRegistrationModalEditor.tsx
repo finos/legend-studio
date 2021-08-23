@@ -20,7 +20,7 @@ import {
   clsx,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { Dialog } from '@material-ui/core';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';

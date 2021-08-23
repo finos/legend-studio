@@ -33,7 +33,7 @@ import {
 } from './shared/PackageTreeUtil';
 import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
-import type { TreeData } from '@finos/legend-application-components';
+import type { TreeData } from '@finos/legend-art';
 import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
 import { getGenerationTreeData } from './shared/FileGenerationTreeUtil';
 import type { PackageableElement } from '@finos/legend-graph';

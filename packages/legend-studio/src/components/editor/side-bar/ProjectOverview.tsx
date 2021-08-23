@@ -21,11 +21,7 @@ import { FaInfoCircle, FaTimes } from 'react-icons/fa';
 import { MdModeEdit } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
 import { Link } from 'react-router-dom';
-import {
-  clsx,
-  PanelLoadingIndicator,
-  ContextMenu,
-} from '@finos/legend-application-components';
+import { clsx, PanelLoadingIndicator, ContextMenu } from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
 import {
   generateEditorRoute,

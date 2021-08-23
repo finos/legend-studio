@@ -54,10 +54,7 @@ import {
   FlatDataInstanceSetImplementationState,
   RootFlatDataInstanceSetImplementationState,
 } from './FlatDataInstanceSetImplementationState';
-import type {
-  TreeNodeData,
-  TreeData,
-} from '@finos/legend-application-components';
+import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
 import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
 import type {

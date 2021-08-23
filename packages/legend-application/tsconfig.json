@@ -10,7 +10,7 @@
   "references": [
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-shared" },
-    { "path": "../legend-application-components" },
+    { "path": "../legend-art" },
     { "path": "../legend-graph" }
   ]
 }

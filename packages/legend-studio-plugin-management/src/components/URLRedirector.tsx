@@ -16,7 +16,7 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { PanelLoadingIndicator } from '@finos/legend-application-components';
+import { PanelLoadingIndicator } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { useParams } from 'react-router-dom';
 import { useStudioStore, AppHeader, AppHeaderMenu } from '@finos/legend-studio';

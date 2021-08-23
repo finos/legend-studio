@@ -19,11 +19,8 @@ import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-application-components';
-import {
-  CustomSelectorInput,
-  PanelLoadingIndicator,
-} from '@finos/legend-application-components';
+import type { SelectComponent } from '@finos/legend-art';
+import { CustomSelectorInput, PanelLoadingIndicator } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';

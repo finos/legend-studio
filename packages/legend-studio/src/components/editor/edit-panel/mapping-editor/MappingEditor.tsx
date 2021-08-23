@@ -32,7 +32,7 @@ import {
   ClassIcon,
   EnumerationIcon,
   AssociationIcon,
-} from '@finos/legend-application-components';
+} from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor';
 import { useResizeDetector } from 'react-resize-detector';

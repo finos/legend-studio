@@ -29,7 +29,7 @@ import {
   ServiceEditorState,
   SERVICE_TAB,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { clsx } from '@finos/legend-application-components';
+import { clsx } from '@finos/legend-art';
 import { MdModeEdit } from 'react-icons/md';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor';
