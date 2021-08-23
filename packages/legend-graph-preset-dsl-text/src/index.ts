@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-import { LegendQuery } from '@finos/legend-query';
-import { DSLText_GraphPreset } from '@finos/legend-graph-preset-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-graph-preset-external-format-json-schema';
-import { BrowserConsole } from '@finos/legend-shared';
+export * from './DSLText_GraphPreset';
 
-export class LegendQueryApplication {
-  static run(baseUrl: string): void {
-    LegendQuery.create()
-      .setup({ baseUrl })
-      .withPresets([new DSLText_GraphPreset(), new EFJSONSchema_GraphPreset()])
-      .withLoggers([new BrowserConsole()])
-      .start()
-      .catch((e: unknown) => {
-        throw e;
-      });
-  }
-}
+export {
+  TEXT_TYPE,
+  Text,
+} from './models/metamodels/pure/model/packageableElements/Text';
+
+export {
+  PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
+  DSLText_PureGraphManagerPlugin,
+} from './models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
+export { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin';

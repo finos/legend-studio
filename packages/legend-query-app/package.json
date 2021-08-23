@@ -39,10 +39,10 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-graph-preset-dsl-text": "workspace:*",
     "@finos/legend-graph-preset-external-format-json-schema": "workspace:*",
     "@finos/legend-query": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio-preset-dsl-text": "workspace:*",
     "@types/react": "17.0.19",
     "react": "17.0.2"
   },

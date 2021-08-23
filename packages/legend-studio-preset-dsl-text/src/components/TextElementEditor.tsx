@@ -29,8 +29,8 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
-import { TEXT_TYPE } from '../models/metamodels/pure/model/packageableElements/Text';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { TEXT_TYPE } from '@finos/legend-graph-preset-dsl-text';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
   switch (type) {

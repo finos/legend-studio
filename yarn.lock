@@ -2180,6 +2180,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-graph-preset-dsl-text@workspace:*, @finos/legend-graph-preset-dsl-text@workspace:packages/legend-graph-preset-dsl-text":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-graph-preset-dsl-text@workspace:packages/legend-graph-preset-dsl-text"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@types/react": 17.0.19
+    cross-env: 7.0.3
+    eslint: 7.32.0
+    jest: 27.0.6
+    mobx: 6.3.2
+    rimraf: 3.0.2
+    serializr: 2.0.5
+    typescript: 4.3.5
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-graph-preset-external-format-json-schema@workspace:*, @finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema"
@@ -2238,9 +2260,10 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph-preset-dsl-text": "workspace:*"
     "@finos/legend-graph-preset-external-format-json-schema": "workspace:*"
+    "@finos/legend-query": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio-preset-dsl-text": "workspace:*"
     "@types/react": 17.0.19
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -2491,6 +2514,7 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-graph-preset-dsl-text": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
@@ -2536,6 +2560,7 @@ __metadata:
     mobx-react-lite: 3.2.0
     npm-run-all: 4.1.5
     react: 17.0.2
+    react-dom: 17.0.2
     rimraf: 3.0.2
     sass: 1.38.0
     typescript: 4.3.5

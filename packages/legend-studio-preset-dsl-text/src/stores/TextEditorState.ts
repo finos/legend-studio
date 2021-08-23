@@ -18,8 +18,8 @@ import { computed, action, makeObservable } from 'mobx';
 import type { EditorStore } from '@finos/legend-studio';
 import { guaranteeType } from '@finos/legend-shared';
 import { ElementEditorState } from '@finos/legend-studio';
-import { Text } from '../models/metamodels/pure/model/packageableElements/Text';
 import type { PackageableElement } from '@finos/legend-graph';
+import { Text } from '@finos/legend-graph-preset-dsl-text';
 
 export class TextEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {

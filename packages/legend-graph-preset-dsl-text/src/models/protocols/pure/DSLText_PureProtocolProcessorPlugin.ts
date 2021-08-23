@@ -18,7 +18,6 @@ import packageJson from '../../../../package.json';
 import { V1_Text } from './v1/model/packageableElements/V1_Text';
 import type { PlainObject } from '@finos/legend-shared';
 import { assertType } from '@finos/legend-shared';
-import type { StudioPluginManager } from '@finos/legend-studio';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_textModelSchema,
@@ -30,6 +29,7 @@ import {
   TEXT_TYPE,
 } from '../../metamodels/pure/model/packageableElements/Text';
 import type {
+  GraphPluginManager,
   PackageableElement,
   V1_ElementProtocolClassifierPathGetter,
   V1_ElementProtocolDeserializer,
@@ -55,7 +55,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     );
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: GraphPluginManager): void {
     pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
