@@ -40,7 +40,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
   private _spanBuilder?: SpanBuilder;
 
   constructor() {
-    super(packageJson.name, packageJson.version);
+    super(packageJson.extensions.tracerPlugin, packageJson.version);
   }
 
   override configure(_configData: object): TracerServicePlugin<ZipkinSpan> {

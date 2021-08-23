@@ -23,7 +23,7 @@ import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSL
 
 export class DSLText_Preset extends AbstractPreset {
   constructor() {
-    super(packageJson.name, packageJson.version);
+    super(packageJson.extensions.studioPreset, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {

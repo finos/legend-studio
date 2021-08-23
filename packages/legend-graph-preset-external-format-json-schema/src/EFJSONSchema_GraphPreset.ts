@@ -21,7 +21,7 @@ import type { GraphPluginManager } from '@finos/legend-graph';
 
 export class EFJSONSchema_GraphPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.name, packageJson.version);
+    super(packageJson.extensions.graphPreset, packageJson.version);
   }
 
   install(pluginManager: GraphPluginManager): void {

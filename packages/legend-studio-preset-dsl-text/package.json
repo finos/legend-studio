@@ -69,5 +69,11 @@
   "publishConfig": {
     "directory": "build/publishContent"
   },
-  "pluginPrefix": "@finos/legend-studio-plugin-dsl-text"
+  "extensions": {
+    "graphPreset": "@finos/legend-graph-preset-dsl-text",
+    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-text-pure-protocol-processor",
+    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-text-pure-graph-manager",
+    "studioPreset": "@finos/legend-studio-preset-dsl-text",
+    "studioPlugin": "@finos/legend-studio-plugin-dsl-text"
+  }
 }

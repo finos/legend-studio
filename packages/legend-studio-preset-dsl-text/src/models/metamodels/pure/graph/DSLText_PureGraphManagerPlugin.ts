@@ -26,10 +26,7 @@ export const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
 
 export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
-    super(
-      `${packageJson.pluginPrefix}-pure-graph-manager`,
-      packageJson.version,
-    );
+    super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {

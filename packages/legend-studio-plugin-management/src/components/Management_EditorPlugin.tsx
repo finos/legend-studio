@@ -25,7 +25,7 @@ import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
 
 export class Management_EditorPlugin extends EditorPlugin {
   constructor() {
-    super(packageJson.name, packageJson.version);
+    super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {

@@ -120,7 +120,11 @@ export const setupLegendApplicationUILibrary = async (
 
 export abstract class LegendApplication {
   protected appConfig!: ApplicationConfig;
+
   protected pluginManager: AbstractPluginManager;
+  protected basePresets: AbstractPreset[] = [];
+  protected basePlugins: AbstractPlugin[] = [];
+
   protected log = new Log();
   protected baseUrl!: string;
   protected pluginRegister?: (
@@ -154,13 +158,21 @@ export abstract class LegendApplication {
     return this;
   }
 
+  protected setBasePresets(presets: AbstractPreset[]): void {
+    this.basePresets = presets;
+  }
+
+  protected setBasePlugins(plugins: AbstractPlugin[]): void {
+    this.basePlugins = plugins;
+  }
+
   withPresets(presets: AbstractPreset[]): LegendApplication {
-    this.pluginManager.usePresets(presets);
+    this.pluginManager.usePresets([...this.basePresets, ...presets]);
     return this;
   }
 
   withPlugins(plugins: AbstractPlugin[]): LegendApplication {
-    this.pluginManager.usePlugins(plugins);
+    this.pluginManager.usePlugins([...this.basePlugins, ...plugins]);
     return this;
   }
 

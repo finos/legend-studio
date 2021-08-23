@@ -17,10 +17,6 @@
 // Mixins
 @use 'mixins' as *;
 
-// Dependencies
-@forward 'deps';
-@forward 'extensions';
-
 // Components
 @forward 'components/shared/multiplicity-badge';
 

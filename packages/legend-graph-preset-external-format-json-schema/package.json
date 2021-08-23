@@ -54,5 +54,8 @@
   "publishConfig": {
     "directory": "build/publishContent"
   },
-  "pluginPrefix": "@finos/legend-graph-plugin-external-format-json-schema"
+  "extensions": {
+    "graphPreset": "@finos/legend-graph-preset-external-format-json-schema",
+    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-external-format-json-schema-pure-protocol-processor"
+  }
 }

@@ -50,7 +50,7 @@ const TEXT_ELEMENT_CLASSIFIER_PATH = 'meta::pure::metamodel::text::Text';
 export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
     super(
-      `${packageJson.pluginPrefix}-pure-protocol-processor`,
+      packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
   }

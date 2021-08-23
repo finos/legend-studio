@@ -45,7 +45,7 @@ export class DSLText_EditorPlugin
   implements DSL_EditorPlugin_Extension
 {
   constructor() {
-    super(`${packageJson.pluginPrefix}-editor`, packageJson.version);
+    super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {

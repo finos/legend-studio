@@ -55,5 +55,8 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
+  },
+  "extensions": {
+    "tracerPlugin": "@finos/legend-tracer-plugin-zipkin"
   }
 }

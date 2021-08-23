@@ -15,11 +15,11 @@
  */
 
 import type { Mapping, RawLambda, Runtime } from '@finos/legend-graph';
+import { QueryBuilderState } from '@finos/legend-query';
 import type { GeneratorFn } from '@finos/legend-shared';
 import type { EditorStore } from '@finos/legend-studio';
 import { EditorExtensionState } from '@finos/legend-studio';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import { QueryBuilderState } from './QueryBuilderState';
 
 export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
   editorStore: EditorStore;
