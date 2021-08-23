@@ -18,12 +18,11 @@ import { useMemo, useCallback } from 'react';
 import type { IKeyboardEvent } from 'monaco-editor';
 import { KeyCode } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
-import {
-  LambdaEditor,
+import type {
   LambdaEditorOnKeyDownEventHandler,
   LambdaEditorState,
-  useApplicationStore,
 } from '@finos/legend-application';
+import { LambdaEditor, useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import type { Type } from '@finos/legend-graph';
 import { useEditorStore } from '../editor/EditorStoreProvider';

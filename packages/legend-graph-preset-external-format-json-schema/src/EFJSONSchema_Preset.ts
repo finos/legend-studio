@@ -15,16 +15,16 @@
  */
 
 import packageJson from '../package.json';
-import type { StudioPluginManager } from '@finos/legend-studio';
 import { AbstractPreset } from '@finos/legend-shared';
 import { EFJSONSchema_PureProtocolProcessorPlugin } from './models/protocols/pure/EFJSONSchema_PureProtocolProcessorPlugin';
+import type { GraphPluginManager } from '@finos/legend-graph';
 
 export class EFJSONSchema_Preset extends AbstractPreset {
   constructor() {
     super(packageJson.name, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: GraphPluginManager): void {
     new EFJSONSchema_PureProtocolProcessorPlugin().install(pluginManager);
   }
 }

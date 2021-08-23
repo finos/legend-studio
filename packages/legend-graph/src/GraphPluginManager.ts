@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+import type { AbstractPluginManager } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
 import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
 
-export interface GraphPluginManager {
+export interface GraphPluginManager extends AbstractPluginManager {
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[];
   registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void;
 

@@ -85,5 +85,5 @@
   "publishConfig": {
     "directory": "build/publishContent"
   },
-  "pluginPrefix": "@finos/legend-studio-preset-query-builder"
+  "pluginPrefix": "@finos/legend-studio-plugin-query-builder"
 }

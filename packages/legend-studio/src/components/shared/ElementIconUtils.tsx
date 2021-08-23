@@ -24,8 +24,8 @@ import {
   Measure,
   Unit,
   PrimitiveType,
+  PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';
-import { PACKAGEABLE_ELEMENT_TYPE } from '@finos/legend-graph';
 import {
   ClassIcon,
   PrimitiveTypeIcon,
