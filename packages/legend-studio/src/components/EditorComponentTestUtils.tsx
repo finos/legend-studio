@@ -158,7 +158,8 @@ export const TEST__provideMockedEditorStore = (customization?: {
       customization?.applicationStore ?? TEST__getTestApplicationStore(),
       customization?.sdlcServerClient ?? TEST__getTestSDLCServerClient(),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
-      customization?.graphManagerState ?? TEST__getTestGraphManagerState(),
+      customization?.graphManagerState ??
+        TEST__getTestGraphManagerState(customization?.pluginManager),
       customization?.pluginManager ?? StudioPluginManager.create(),
     );
   const MockedEditorStoreProvider = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment

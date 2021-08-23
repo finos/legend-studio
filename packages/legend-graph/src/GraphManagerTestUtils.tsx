@@ -14,14 +14,30 @@
  * limitations under the License.
  */
 
-import { Log } from '@finos/legend-shared';
+import type { AbstractPlugin, AbstractPreset } from '@finos/legend-shared';
+import { Log, AbstractPluginManager } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
 import { GraphManagerState } from './GraphManagerState';
 import { GraphManagerStateProvider } from './GraphManagerStateProvider';
 import type { GraphPluginManager } from './GraphPluginManager';
 import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
 
-export class TEST__GraphPluginManager implements GraphPluginManager {
+export class TEST__GraphPluginManager
+  extends AbstractPluginManager
+  implements GraphPluginManager
+{
+  override usePlugins(plugins: AbstractPlugin[]): AbstractPluginManager {
+    return this;
+  }
+  override usePresets(presets: AbstractPreset[]): AbstractPluginManager {
+    return this;
+  }
+  override configure(configData: Record<PropertyKey, object>): void {
+    // do nothing
+  }
+  override install(): void {
+    // do nothing
+  }
   registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
     // do nothing
   }
