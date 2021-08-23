@@ -1,17 +1,16 @@
 {
-  "name": "@finos/legend-studio-manual-tests",
-  "version": "0.0.28",
+  "name": "@finos/legend-manual-tests",
+  "version": "0.0.0",
   "private": true,
-  "description": "Legend Studio manual tests",
+  "description": "Legend manual tests",
   "keywords": [
     "legend",
-    "legend-studio",
     "manual-tests"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-studio-manual-tests"
+    "directory": "packages/legend-manual-tests"
   },
   "license": "Apache-2.0",
   "type": "module",

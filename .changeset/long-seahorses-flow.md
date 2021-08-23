@@ -1,5 +1,5 @@
 ---
-'@finos/legend-studio-manual-tests': patch
+'@finos/legend-manual-tests': patch
 ---
 
 pr: #419

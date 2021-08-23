@@ -24,5 +24,5 @@ export default {
   displayName: packageJson.name,
   name: packageJson.name,
   rootDir: '../..',
-  testMatch: ['<rootDir>/packages/legend-studio-manual-tests'],
+  testMatch: ['<rootDir>/packages/legend-manual-tests'],
 };
