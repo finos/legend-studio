@@ -17,6 +17,7 @@
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../graphManager/GraphManagerLogEvent';
 import {
+  CORE_ELEMENT_PATH,
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   SOURCE_INFORMATION_KEY,
@@ -225,27 +226,6 @@ const getFunctionSuffix = (fn: V1_ConcreteFunctionDefinition): string =>
   `${fn.parameters.map((p) => getVariableSuffix(p)).join('_')}_${fn.returnType
     .split(ELEMENT_PATH_DELIMITER)
     .pop()}_${getMultiplicitySuffix(fn.returnMultiplicity)}_`;
-
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
-enum CORE_ELEMENT_CLASSIFIER_PATH {
-  PROFILE = 'meta::pure::metamodel::extension::Profile',
-  ENUMERATION = 'meta::pure::metamodel::type::Enumeration',
-  MEASURE = 'meta::pure::metamodel::type::Measure', // since we don't expose unit outside of measure, we probably don't need to reveal it
-  CLASS = 'meta::pure::metamodel::type::Class',
-  ASSOCIATION = 'meta::pure::metamodel::relationship::Association',
-  FUNCTION = 'meta::pure::metamodel::function::ConcreteFunctionDefinition',
-  FLAT_DATA = 'meta::flatData::metamodel::FlatData',
-  DATABASE = 'meta::relational::metamodel::Database',
-  SERVICE_STORE = 'meta::servicestore::metamodel::ServiceStore',
-  MAPPING = 'meta::pure::mapping::Mapping',
-  SERVICE = 'meta::legend::service::metamodel::Service',
-  DIAGRAM = 'meta::pure::metamodel::diagram::Diagram',
-  CONNECTION = 'meta::pure::runtime::PackageableConnection',
-  RUNTIME = 'meta::pure::runtime::PackageableRuntime',
-  FILE_GENERATION = 'meta::pure::generation::metamodel::GenerationConfiguration',
-  GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
-  SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
-}
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2327,39 +2307,39 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     protocol: V1_PackageableElement,
   ): string => {
     if (protocol instanceof V1_Association) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.ASSOCIATION;
+      return CORE_ELEMENT_PATH.ASSOCIATION;
     } else if (protocol instanceof V1_Class) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.CLASS;
+      return CORE_ELEMENT_PATH.CLASS;
     } else if (protocol instanceof V1_Enumeration) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.ENUMERATION;
+      return CORE_ELEMENT_PATH.ENUMERATION;
     } else if (protocol instanceof V1_ConcreteFunctionDefinition) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.FUNCTION;
+      return CORE_ELEMENT_PATH.FUNCTION;
     } else if (protocol instanceof V1_Profile) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.PROFILE;
+      return CORE_ELEMENT_PATH.PROFILE;
     } else if (protocol instanceof V1_Measure) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.MEASURE;
+      return CORE_ELEMENT_PATH.MEASURE;
     } else if (protocol instanceof V1_Mapping) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.MAPPING;
+      return CORE_ELEMENT_PATH.MAPPING;
     } else if (protocol instanceof V1_PackageableConnection) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.CONNECTION;
+      return CORE_ELEMENT_PATH.CONNECTION;
     } else if (protocol instanceof V1_PackageableRuntime) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.RUNTIME;
+      return CORE_ELEMENT_PATH.RUNTIME;
     } else if (protocol instanceof V1_SectionIndex) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.SECTION_INDEX;
+      return CORE_ELEMENT_PATH.SECTION_INDEX;
     } else if (protocol instanceof V1_FlatData) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.FLAT_DATA;
+      return CORE_ELEMENT_PATH.FLAT_DATA;
     } else if (protocol instanceof V1_Database) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.DATABASE;
+      return CORE_ELEMENT_PATH.DATABASE;
     } else if (protocol instanceof V1_ServiceStore) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.SERVICE_STORE;
+      return CORE_ELEMENT_PATH.SERVICE_STORE;
     } else if (protocol instanceof V1_Service) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.SERVICE;
+      return CORE_ELEMENT_PATH.SERVICE;
     } else if (protocol instanceof V1_Diagram) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.DIAGRAM;
+      return CORE_ELEMENT_PATH.DIAGRAM;
     } else if (protocol instanceof V1_FileGenerationSpecification) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.FILE_GENERATION;
+      return CORE_ELEMENT_PATH.FILE_GENERATION;
     } else if (protocol instanceof V1_GenerationSpecification) {
-      return CORE_ELEMENT_CLASSIFIER_PATH.GENERATION_SPECIFICATION;
+      return CORE_ELEMENT_PATH.GENERATION_SPECIFICATION;
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()

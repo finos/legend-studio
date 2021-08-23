@@ -27,6 +27,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/LegendQueryApplication';
 import { QueryPluginManager } from './QueryPluginManager';
 import { Query_GraphPreset } from '../models/Query_GraphPreset';
+import { getRootElement } from '@finos/legend-art';
+import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   // Register module extensions for `ag-grid`
@@ -45,7 +47,8 @@ export class LegendQuery extends LegendApplication {
 
   static create(): LegendQuery {
     const application = new LegendQuery(QueryPluginManager.create());
-    application.setBasePresets([new Query_GraphPreset()]);
+    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
+    application.withBasePresets([new Query_GraphPreset()]);
     return application;
   }
 
@@ -60,17 +63,6 @@ export class LegendQuery extends LegendApplication {
     this.appConfig.setConfigured(true);
 
     // Render React application
-    const root = ((): Element => {
-      let rootEl = document.getElementsByTagName('root').length
-        ? document.getElementsByTagName('root')[0]
-        : undefined;
-      if (!rootEl) {
-        rootEl = document.createElement('root');
-        document.body.appendChild(rootEl);
-      }
-      return rootEl;
-    })();
-
     ReactDOM.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
@@ -81,7 +73,7 @@ export class LegendQuery extends LegendApplication {
           />
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
-      root,
+      getRootElement(),
     );
   }
 }

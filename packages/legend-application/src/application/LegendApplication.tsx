@@ -158,12 +158,14 @@ export abstract class LegendApplication {
     return this;
   }
 
-  protected setBasePresets(presets: AbstractPreset[]): void {
+  protected withBasePresets(presets: AbstractPreset[]): LegendApplication {
     this.basePresets = presets;
+    return this.withPresets([]); // this will reset the preset list and prepend with base presets
   }
 
-  protected setBasePlugins(plugins: AbstractPlugin[]): void {
+  protected withBasePlugins(plugins: AbstractPlugin[]): LegendApplication {
     this.basePlugins = plugins;
+    return this.withPlugins([]); // this will reset the plugin list and prepend with base plugins
   }
 
   withPresets(presets: AbstractPreset[]): LegendApplication {

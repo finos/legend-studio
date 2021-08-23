@@ -25,6 +25,8 @@ import {
   WebApplicationNavigatorProvider,
 } from '@finos/legend-application';
 import type { Log } from '@finos/legend-shared';
+import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import { getRootElement } from '@finos/legend-art';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: StudioPluginManager,
@@ -51,7 +53,9 @@ export class LegendStudio extends LegendApplication {
   declare pluginManager: StudioPluginManager;
 
   static create(): LegendStudio {
-    return new LegendStudio(StudioPluginManager.create());
+    const application = new LegendStudio(StudioPluginManager.create());
+    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
+    return application;
   }
 
   async loadApplication(): Promise<void> {
@@ -59,17 +63,6 @@ export class LegendStudio extends LegendApplication {
     await setupLegendStudioUILibrary(this.pluginManager, this.log);
 
     // Render React application
-    const root = ((): Element => {
-      let rootEl = document.getElementsByTagName('root').length
-        ? document.getElementsByTagName('root')[0]
-        : undefined;
-      if (!rootEl) {
-        rootEl = document.createElement('root');
-        document.body.appendChild(rootEl);
-      }
-      return rootEl;
-    })();
-
     ReactDOM.render(
       // TODO: would be great if we can have <React.StrictMode> here but since Mobx React is not ready for
       // concurrency yet, we would have to wait until @next become official
@@ -83,7 +76,7 @@ export class LegendStudio extends LegendApplication {
           />
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
-      root,
+      getRootElement(),
     );
   }
 }

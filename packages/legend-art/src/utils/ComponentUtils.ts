@@ -28,3 +28,14 @@ export const useStateWithCallback = <T>(
   useEffect(() => callback(state), [state, callback]);
   return [state, setState];
 };
+
+export const getRootElement = (): Element => {
+  let rootEl = document.getElementsByTagName('root').length
+    ? document.getElementsByTagName('root')[0]
+    : undefined;
+  if (!rootEl) {
+    rootEl = document.createElement('root');
+    document.body.appendChild(rootEl);
+  }
+  return rootEl;
+};

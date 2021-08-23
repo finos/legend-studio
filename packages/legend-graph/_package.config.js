@@ -24,6 +24,7 @@ export default {
   publish: {
     typescript: {
       main: './tsconfig.build.json',
+      others: ['./tsconfig.package.json'],
     },
   },
   build: {
