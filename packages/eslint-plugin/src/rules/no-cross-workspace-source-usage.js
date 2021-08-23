@@ -31,10 +31,26 @@ module.exports = {
   create(context) {
     return {
       ImportDeclaration(node) {
-        if (node.source.value.includes('/src/')) {
+        if (node.source && node.source.value.includes('/src/')) {
           context.report({
             node: node.source,
             message: 'Do not import source code from another workspace',
+          });
+        }
+      },
+      ExportNamedDeclaration(node) {
+        if (node.source && node.source.value.includes('/src/')) {
+          context.report({
+            node: node.source,
+            message: 'Do not export source code from another workspace',
+          });
+        }
+      },
+      ExportAllDeclaration(node) {
+        if (node.source && node.source.value.includes('/src/')) {
+          context.report({
+            node: node.source,
+            message: 'Do not export source code from another workspace',
           });
         }
       },

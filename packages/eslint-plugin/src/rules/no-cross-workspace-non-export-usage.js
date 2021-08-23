@@ -28,10 +28,26 @@ module.exports = {
   create(context) {
     return {
       ImportDeclaration(node) {
-        if (node.source.value.includes('/lib/')) {
+        if (node.source && node.source.value.includes('/lib/')) {
           context.report({
             node: node.source,
             message: 'Do not import unexposed exports from another workspace',
+          });
+        }
+      },
+      ExportNamedDeclaration(node) {
+        if (node.source && node.source.value.includes('/lib/')) {
+          context.report({
+            node: node.source,
+            message: 'Do not export unexposed exports from another workspace',
+          });
+        }
+      },
+      ExportAllDeclaration(node) {
+        if (node.source && node.source.value.includes('/lib/')) {
+          context.report({
+            node: node.source,
+            message: 'Do not export unexposed exports from another workspace',
           });
         }
       },
