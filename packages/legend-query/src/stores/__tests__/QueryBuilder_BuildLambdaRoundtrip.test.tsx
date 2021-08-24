@@ -15,7 +15,6 @@
  */
 
 /// <reference types="jest-extended" />
-import { getByText } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
   TEST_DATA__projectionWithChainedProperty,
@@ -31,16 +30,6 @@ import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_C
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M.json';
-import {
-  MOBX__enableSpyOrMock,
-  MOBX__disableSpyOrMock,
-  integrationTest,
-} from '@finos/legend-shared';
-import { waitFor } from '@testing-library/dom';
-import type { PlainObject } from '@finos/legend-shared';
-import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
-import { flowResult } from 'mobx';
 import {
   TEST_DATA__lambda_enumerationOperatorFilter,
   TEST_DATA__lambda_existsChainFilter,
@@ -63,19 +52,22 @@ import {
   TEST_DATA__lambda_input_projectionWithFullPathFunctions,
   TEST_DATA__lambda_output_projectionWithFullPathFunctions,
 } from './QueryBuilder_TestQueriesWithFullPathFunctions';
-import { TEST__buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
 import type { Entity } from '@finos/legend-model-storage';
-import { RawLambda } from '@finos/legend-graph';
-import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
+import {
+  RawLambda,
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '@finos/legend-graph';
+import { TEST__getTestApplicationStore } from '@finos/legend-application';
+import { integrationTest } from '@finos/legend-shared';
+import { QueryBuilderState } from '../QueryBuilderState';
+import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 
 type RoundtripTestCase = [
   string,
   {
-    entities: PlainObject<Entity>[];
-    targetClassPath: string;
-    className: string;
-    mappingName: string;
-    runtimeName: string | undefined;
+    entities: Entity[];
   },
   { parameters?: object; body?: object },
   { parameters?: object; body?: object } | undefined,
@@ -83,34 +75,18 @@ type RoundtripTestCase = [
 
 const projectionCtx = {
   entities: TEST_DATA__ComplexRelationalModel,
-  targetClassPath: 'model::pure::tests::model::simple::Person',
-  className: 'Person',
-  mappingName: 'simpleRelationalMapping',
-  runtimeName: 'MyRuntime',
 };
 
 const graphFetchCtx = {
   entities: TEST_DATA__ComplexM2MModel,
-  targetClassPath: 'model::target::NPerson',
-  className: 'NPerson',
-  mappingName: 'MyMapping',
-  runtimeName: undefined,
 };
 
 const relationalFilterCtx = {
   entities: TEST_DATA__COVIDDataSimpleModel,
-  targetClassPath: 'domain::COVIDData',
-  className: 'COVIDData',
-  mappingName: 'CovidDataMapping',
-  runtimeName: 'H2Runtime',
 };
 
 const m2mFilterCtx = {
   entities: TEST_DATA__SimpleM2MModel,
-  targetClassPath: 'model::target::_Person',
-  className: '_Person',
-  mappingName: 'mapping',
-  runtimeName: 'runtime',
 };
 
 const cases: RoundtripTestCase[] = [
@@ -242,46 +218,24 @@ describe(
   integrationTest('Query builder lambda processing roundtrip test'),
   () => {
     test.each(cases)('%s', async (testName, context, lambda, inputLambda) => {
-      const { entities, targetClassPath, className, mappingName, runtimeName } =
-        context;
-      const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
-      const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-        mockedEditorStore,
-        {
-          entities,
-        },
+      const { entities } = context;
+      const pluginManager = QueryPluginManager.create();
+      pluginManager.usePresets([new Query_GraphPreset()]).install();
+      const applicationStore = TEST__getTestApplicationStore();
+      const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+      await TEST__buildGraphWithEntities(graphManagerState, entities);
+      const queryBuilderState = new QueryBuilderState(
+        applicationStore,
+        graphManagerState,
       );
-
-      MOBX__enableSpyOrMock();
-      mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-      MOBX__disableSpyOrMock();
-
-      const queryBuilderExtensionState =
-        mockedEditorStore.getEditorExtensionState(
-          QueryBuilder_EditorExtensionState,
-        );
-      await flowResult(queryBuilderExtensionState.setOpenQueryBuilder(true));
-      queryBuilderExtensionState.queryBuilderState.querySetupState.setClass(
-        mockedEditorStore.graphManagerState.graph.getClass(targetClassPath),
-      );
-      queryBuilderExtensionState.queryBuilderState.resetData();
-      const queryBuilderSetup = await waitFor(() =>
-        renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-      );
-      // ensure form has updated with respect to the new state
-      await waitFor(() => getByText(queryBuilderSetup, className));
-      await waitFor(() => getByText(queryBuilderSetup, mappingName));
-      if (runtimeName) {
-        await waitFor(() => getByText(queryBuilderSetup, runtimeName));
-      }
       // do the check using input and output lambda
       const rawLambda = inputLambda ?? lambda;
-      queryBuilderExtensionState.queryBuilderState.buildStateFromRawLambda(
+      queryBuilderState.buildStateFromRawLambda(
         new RawLambda(rawLambda.parameters, rawLambda.body),
       );
       const jsonQuery =
-        mockedEditorStore.graphManagerState.graphManager.serializeRawValueSpecification(
-          queryBuilderExtensionState.queryBuilderState.getQuery(),
+        graphManagerState.graphManager.serializeRawValueSpecification(
+          queryBuilderState.getQuery(),
         );
       expect([lambda]).toIncludeSameMembers([jsonQuery]);
     });

@@ -36,10 +36,13 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import { getAllByText, waitFor } from '@testing-library/dom';
-import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
+import type { EditorStore } from '@finos/legend-studio';
+import {
+  StudioPluginManager,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditorWithDefaultSDLCData,
+} from '@finos/legend-studio';
 import { flowResult } from 'mobx';
-import { TEST__buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
-
 import {
   QueryBuilderExplorerTreeRootNodeData,
   FETCH_STRUCTURE_MODE,
@@ -51,13 +54,34 @@ import {
   AbstractPropertyExpression,
   getRootSetImplementation,
   RawLambda,
+  TEST__provideMockedGraphManagerState,
 } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
+import { QueryBuilder_StudioPreset } from '../../QueryBuilder_StudioPreset';
+import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
+
+const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
+  const pluginManager = StudioPluginManager.create();
+  pluginManager.usePresets([new QueryBuilder_StudioPreset()]).install();
+
+  return TEST__provideMockedEditorStore({
+    applicationStore: TEST__provideMockedApplicationStore(),
+    graphManagerState: TEST__provideMockedGraphManagerState({ pluginManager }),
+    pluginManager,
+  });
+};
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
   body?: object;
 }): RawLambda => new RawLambda(jsonRawLambda.parameters, jsonRawLambda.body);
+
+// TODO: we should consider moving this test to @finos/legend-query instead
+// as it tests for the internal logic of query builder
+// it just so happens that at the time of writing this test, the only way
+// to access query builder is via Studio.
+//
+// Hence, migrating this to `@finos/legend-query` would mean rewriting only the test setup logic.
 
 test(
   integrationTest(

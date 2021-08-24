@@ -15,7 +15,6 @@
  */
 
 /// <reference types="jest-extended" />
-import { getByText } from '@testing-library/react';
 import {
   TEST_DATA__malformedFilterExpression,
   TEST_DATA__errorInGraphLambda,
@@ -24,20 +23,17 @@ import {
   TEST_DATA__unsupportedFunctionWithFullPath,
 } from './QueryBuilder_FailureTestData';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
-import type { PlainObject } from '@finos/legend-shared';
-import {
-  integrationTest,
-  MOBX__enableSpyOrMock,
-  MOBX__disableSpyOrMock,
-} from '@finos/legend-shared';
-import { waitFor } from '@testing-library/dom';
-import { TEST__setUpEditorWithDefaultSDLCData } from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
-import { flowResult } from 'mobx';
-import { TEST__buildQueryBuilderMockedEditorStore } from './QueryBuilder_TestUtils';
+import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
-import { RawLambda } from '@finos/legend-graph';
-import { QueryBuilder_EditorExtensionState } from '../../stores/QueryBuilder_EditorExtensionState';
+import {
+  RawLambda,
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '@finos/legend-graph';
+import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset';
+import { TEST__getTestApplicationStore } from '@finos/legend-application';
+import { QueryBuilderState } from '../QueryBuilderState';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
@@ -47,11 +43,7 @@ const getRawLambda = (jsonRawLambda: {
 type TestCase = [
   string,
   {
-    entities: PlainObject<Entity>[];
-    targetClassPath: string;
-    className: string;
-    mappingName: string;
-    runtimeName: string;
+    entities: Entity[];
   },
   { parameters?: object; body?: object },
   string,
@@ -59,10 +51,6 @@ type TestCase = [
 
 const relationalCtx = {
   entities: TEST_DATA__ComplexRelationalModel,
-  targetClassPath: 'model::pure::tests::model::simple::Person',
-  className: 'Person',
-  mappingName: 'simpleRelationalMapping',
-  runtimeName: 'MyRuntime',
 };
 
 const cases: TestCase[] = [
@@ -106,44 +94,18 @@ describe(
     test.each(cases)(
       '%s',
       async (testName, context, lambdaJson, errorMessage) => {
-        const {
-          entities,
-          targetClassPath,
-          className,
-          mappingName,
-          runtimeName,
-        } = context;
-        const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
-        const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-          mockedEditorStore,
-          {
-            entities,
-          },
+        const { entities } = context;
+        const pluginManager = QueryPluginManager.create();
+        pluginManager.usePresets([new Query_GraphPreset()]).install();
+        const applicationStore = TEST__getTestApplicationStore();
+        const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+        await TEST__buildGraphWithEntities(graphManagerState, entities);
+        const queryBuilderState = new QueryBuilderState(
+          applicationStore,
+          graphManagerState,
         );
-
-        MOBX__enableSpyOrMock();
-        mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
-        MOBX__disableSpyOrMock();
-
-        const queryBuilderExtension = mockedEditorStore.getEditorExtensionState(
-          QueryBuilder_EditorExtensionState,
-        );
-        await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
-        queryBuilderExtension.queryBuilderState.querySetupState.setClass(
-          mockedEditorStore.graphManagerState.graph.getClass(targetClassPath),
-        );
-        queryBuilderExtension.queryBuilderState.resetData();
-        const queryBuilderSetup = await waitFor(() =>
-          renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
-        );
-        // ensure form has updated with respect to the new state
-        await waitFor(() => getByText(queryBuilderSetup, className));
-        await waitFor(() => getByText(queryBuilderSetup, mappingName));
-        await waitFor(() => getByText(queryBuilderSetup, runtimeName));
         expect(() =>
-          queryBuilderExtension.queryBuilderState.buildStateFromRawLambda(
-            getRawLambda(lambdaJson),
-          ),
+          queryBuilderState.buildStateFromRawLambda(getRawLambda(lambdaJson)),
         ).toThrowError(errorMessage);
       },
     );
