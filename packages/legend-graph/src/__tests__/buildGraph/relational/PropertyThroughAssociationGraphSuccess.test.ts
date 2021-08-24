@@ -20,31 +20,33 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import {
-  TEST__buildGraphBasic,
-  TEST__getTestEditorStore,
-} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
+import type { GraphManagerState } from '../../../GraphManagerState';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../../GraphManagerTestUtils';
 import {
   DynaFunction,
   TableAliasColumn,
-  RootRelationalInstanceSetImplementation,
-  RelationalPropertyMapping,
-  getClassMappingsByClass,
-} from '@finos/legend-graph';
+} from '../../../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
+import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
+import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 
-const editorStore = TEST__getTestEditorStore();
+let graphManagerState: GraphManagerState;
 
-beforeAll(async () => {
-  await TEST__buildGraphBasic(
+beforeEach(async () => {
+  graphManagerState = TEST__getTestGraphManagerState();
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
     TEST_DATA__targetSetImplementationThroughAssociation as Entity[],
-    editorStore,
   );
 });
 
 test(unitTest('Relational Mapping with property from association'), () => {
   // db
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   const database = graph.getDatabase(
     'apps::pure::studio::model::simple::dbInc',
   );

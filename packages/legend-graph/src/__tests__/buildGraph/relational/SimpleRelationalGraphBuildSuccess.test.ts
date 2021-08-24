@@ -16,31 +16,31 @@
 
 import { TEST_DATA__relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
 import { unitTest, guaranteeType } from '@finos/legend-shared';
-import {
-  TEST__buildGraphBasic,
-  TEST__getTestEditorStore,
-} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
+import type { GraphManagerState } from '../../../GraphManagerState';
 import {
-  PRIMITIVE_TYPE,
-  Database,
-  RootRelationalInstanceSetImplementation,
-  EmbeddedRelationalInstanceSetImplementation,
-  RelationalPropertyMapping,
-  getClassMappingsByClass,
-} from '@finos/legend-graph';
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../../GraphManagerTestUtils';
+import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
+import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
+import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
+import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import { PRIMITIVE_TYPE } from '../../../MetaModelConst';
 
-const editorStore = TEST__getTestEditorStore();
+let graphManagerState: GraphManagerState;
 
-beforeAll(async () => {
-  await TEST__buildGraphBasic(
+beforeEach(async () => {
+  graphManagerState = TEST__getTestGraphManagerState();
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
     TEST_DATA__relationalCompleteGraphEntities as Entity[],
-    editorStore,
   );
 });
 
 test(unitTest('Relational database is loaded properly'), () => {
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   expect(graph.ownStores).toHaveLength(3);
   expect(graph.ownDatabases).toHaveLength(2);
   // db
@@ -69,7 +69,7 @@ test(unitTest('Relational database is loaded properly'), () => {
 });
 
 test(unitTest('Relational Mapping is loaded properly'), () => {
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   expect(graph.ownMappings).toHaveLength(2);
   const simpleRelationalMapping = graph.getMapping(
     'meta::relational::tests::simpleRelationalMapping',

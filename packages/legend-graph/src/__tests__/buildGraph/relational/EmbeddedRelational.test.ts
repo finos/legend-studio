@@ -16,29 +16,29 @@
 
 import { TEST_DATA__embeddedRelationalTestData } from './RelationalEntitiesTestData';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
-import {
-  TEST__buildGraphBasic,
-  TEST__getTestEditorStore,
-} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
 import {
-  RootRelationalInstanceSetImplementation,
-  EmbeddedRelationalInstanceSetImplementation,
-  getClassMappingsByClass,
-} from '@finos/legend-graph';
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../../GraphManagerTestUtils';
+import type { GraphManagerState } from '../../../GraphManagerState';
+import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
+import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 
-const editorStore = TEST__getTestEditorStore();
+let graphManagerState: GraphManagerState;
 
-beforeAll(async () => {
-  await TEST__buildGraphBasic(
+beforeEach(async () => {
+  graphManagerState = TEST__getTestGraphManagerState();
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
     TEST_DATA__embeddedRelationalTestData as Entity[],
-    editorStore,
   );
 });
 
 test(unitTest('Embedded Relational Mapping'), () => {
   // db
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   const myDB = graph.getDatabase(
     'meta::relational::tests::mapping::embedded::model::store::myDB',
   );

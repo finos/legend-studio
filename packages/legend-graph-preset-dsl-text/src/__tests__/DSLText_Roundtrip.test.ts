@@ -15,21 +15,18 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import {
-  StudioPluginManager,
-  TEST__getTestEditorStore,
-  TEST__checkBuildingElementsRoundtrip,
-} from '@finos/legend-studio';
 import { unitTest } from '@finos/legend-shared';
-import { DSLText_StudioPreset } from '../../DSLText_StudioPreset';
 import { TEST_DATA__roundtrip } from './DSLText_RoundtripTestData';
+import { DSLText_GraphPreset } from '../DSLText_GraphPreset';
+import { TEST__GraphPluginManager } from '@finos/legend-graph';
+import { TEST__checkBuildingElementsRoundtrip } from '@finos/legend-graph';
 
-const pluginManager = StudioPluginManager.create();
-pluginManager.usePresets([new DSLText_StudioPreset()]).install();
+const pluginManager = new TEST__GraphPluginManager();
+pluginManager.usePresets([new DSLText_GraphPreset()]).install();
 
 test(unitTest('Text import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     TEST_DATA__roundtrip as Entity[],
-    TEST__getTestEditorStore(pluginManager),
+    pluginManager,
   );
 });

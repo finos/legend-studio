@@ -21,16 +21,16 @@ import {
   TEST_DATA__AutoImportsWithSystemProfiles,
 } from '../roundtrip/RoundtripTestData';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
-import {
-  TEST__buildGraphBasic,
-  TEST__getTestEditorStore,
-} from '../../EditorStoreTestUtils';
 import { TEST_DATA__SimpleGraph } from './CoreTestData';
-import { waitFor } from '@testing-library/dom';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../GraphManagerTestUtils';
 
 const PARENT_ELEMENT_PATH = 'model::myFileGeneration';
+
 const buildParentElement = (): Entity => {
   const fileGeneration = {
     path: PARENT_ELEMENT_PATH,
@@ -54,59 +54,52 @@ const testGeneratedElements = async (
 ): Promise<void> => {
   entities.push(buildParentElement());
   const generatedElementPaths = generatedEntities.map((e) => e.path);
-  const editorStore = TEST__getTestEditorStore();
-  await TEST__buildGraphBasic(entities, editorStore, {
+  const graphManagerState = TEST__getTestGraphManagerState();
+  await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__keepSectionIndex: true,
   });
-  await waitFor(() =>
-    expect(
-      editorStore.graphManagerState.graph.buildState.hasSucceeded,
-    ).toBeTrue(),
-  );
+
+  expect(graphManagerState.graph.buildState.hasSucceeded).toBeTrue();
   // build generation graph
   const generatedEntitiesMap = new Map<string, Entity[]>();
   generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);
   await flowResult(
-    editorStore.graphManagerState.graphManager.buildGenerations(
-      editorStore.graphManagerState.graph,
+    graphManagerState.graphManager.buildGenerations(
+      graphManagerState.graph,
       generatedEntitiesMap,
     ),
   );
 
-  expect(
-    editorStore.graphManagerState.graph.generationModel.allOwnElements.length,
-  ).toBe(generatedElementPaths.length);
+  expect(graphManagerState.graph.generationModel.allOwnElements.length).toBe(
+    generatedElementPaths.length,
+  );
   const parentElement = guaranteeNonNullable(
-    editorStore.graphManagerState.graph.getElement(PARENT_ELEMENT_PATH),
+    graphManagerState.graph.getElement(PARENT_ELEMENT_PATH),
   );
   generatedElementPaths.forEach((e) => {
     const element =
-      editorStore.graphManagerState.graph.generationModel.getOwnNullableElement(
-        e,
-      );
+      graphManagerState.graph.generationModel.getOwnNullableElement(e);
     guaranteeNonNullable(
       element,
       `Element '${e}' not found in generated model manager`,
     );
-    const elementInGraph = editorStore.graphManagerState.graph.getElement(e);
+    const elementInGraph = graphManagerState.graph.getElement(e);
     guaranteeNonNullable(
       elementInGraph,
       `Element '${e}' not found in main graph`,
     );
-    const elementInMainGraph =
-      editorStore.graphManagerState.graph.allOwnElements.find(
-        (el) => el.path === e,
-      );
+    const elementInMainGraph = graphManagerState.graph.allOwnElements.find(
+      (el) => el.path === e,
+    );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
     expect(elementInGraph.isReadOnly).toBeTrue();
     expect(elementInGraph.generationParentElement).toBe(parentElement);
   });
 
-  const transformedEntities =
-    editorStore.graphManagerState.graph.allOwnElements.map((el) =>
-      editorStore.graphManagerState.graphManager.elementToEntity(el),
-    );
+  const transformedEntities = graphManagerState.graph.allOwnElements.map((el) =>
+    graphManagerState.graphManager.elementToEntity(el),
+  );
   expect(entities).toIncludeSameMembers(transformedEntities);
   // Ensure generated elements are not transformed
   for (const entityPath of generatedElementPaths) {

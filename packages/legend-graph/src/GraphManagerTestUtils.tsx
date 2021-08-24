@@ -14,43 +14,41 @@
  * limitations under the License.
  */
 
-import type { AbstractPlugin, AbstractPreset } from '@finos/legend-shared';
+/// <reference types="jest-extended" />
+import { flowResult } from 'mobx';
 import { Log, AbstractPluginManager } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
 import { GraphManagerState } from './GraphManagerState';
 import { GraphManagerStateProvider } from './GraphManagerStateProvider';
 import type { GraphPluginManager } from './GraphPluginManager';
 import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
+import type { Entity } from '@finos/legend-model-storage';
+import { SECTION_INDEX_ELEMENT_PATH } from './MetaModelConst';
+import type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager';
 
 export class TEST__GraphPluginManager
   extends AbstractPluginManager
   implements GraphPluginManager
 {
-  override usePlugins(plugins: AbstractPlugin[]): AbstractPluginManager {
-    return this;
-  }
-  override usePresets(presets: AbstractPreset[]): AbstractPluginManager {
-    return this;
-  }
-  override configure(configData: Record<PropertyKey, object>): void {
-    // do nothing
-  }
-  override install(): void {
-    // do nothing
-  }
+  private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
+  private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
+
   registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
-    // do nothing
+    this.pureGraphManagerPlugins.push(plugin);
   }
+
   registerPureProtocolProcessorPlugin(
     plugin: PureProtocolProcessorPlugin,
   ): void {
-    // do nothing
+    this.pureProtocolProcessorPlugins.push(plugin);
   }
+
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
-    return [];
+    return this.pureGraphManagerPlugins;
   }
+
   getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[] {
-    return [];
+    return this.pureProtocolProcessorPlugins;
   }
 }
 
@@ -87,3 +85,148 @@ export const TEST__GraphManagerStateProvider = ({
     {children}
   </GraphManagerStateProvider>
 );
+
+export const TEST__excludeSectionIndex = (entities: Entity[]): Entity[] =>
+  entities.filter((entity) => entity.path !== SECTION_INDEX_ELEMENT_PATH);
+
+export const TEST_DEBUG__expectToIncludeSameMembers = (
+  expected: Entity[],
+  actual: Entity[],
+): void => {
+  for (const entity of expected) {
+    expect(entity).toEqual(actual.find((entry) => entity.path === entry.path));
+  }
+  for (const entity of actual) {
+    expect(entity).toEqual(
+      expected.find((entry) => entity.path === entry.path),
+    );
+  }
+};
+
+export const TEST__ensureObjectFieldsAreSortedAlphabetically = (
+  obj: Record<PropertyKey, unknown> | unknown[],
+): void => {
+  const checkObjectFieldsAreSortedAlphabetically = (
+    _obj: Record<PropertyKey, unknown> | unknown[],
+  ): void => {
+    if (Array.isArray(_obj)) {
+      _obj.forEach((element) => {
+        if (typeof element === 'object') {
+          checkObjectFieldsAreSortedAlphabetically(
+            element as Record<PropertyKey, unknown> | unknown[],
+          );
+        }
+      });
+    } else {
+      expect(Object.keys(_obj)).toEqual(
+        /**
+         * NOTE: we cannot use `localeCompare` because it is not compatible with
+         * the way the backend (i.e. Java's Jackson/GSON sort property fields, which
+         * employees a sorting strategy based on ASCII value).
+         * e.g. 'enumeration'.localeCompare('enumValueMapping') = -1
+         * but 'E' < 'e' in terms of ASCII value.
+         * Therefore, we should just uses string comparison here instead
+         */
+        Object.keys(_obj).sort((k1, k2) => (k1 > k2 ? 1 : k1 < k2 ? -1 : 0)),
+      );
+      for (const prop in _obj) {
+        if (Object.prototype.hasOwnProperty.call(_obj, prop)) {
+          const value = _obj[prop];
+          if (typeof value === 'object') {
+            checkObjectFieldsAreSortedAlphabetically(
+              value as Record<PropertyKey, unknown> | unknown[],
+            );
+          }
+        }
+      }
+    }
+  };
+  checkObjectFieldsAreSortedAlphabetically(obj);
+};
+
+export const TEST__buildGraphWithEntities = async (
+  graphManagerState: GraphManagerState,
+  entities: Entity[],
+  options?: GraphBuilderOptions,
+): Promise<void> => {
+  await flowResult(graphManagerState.initializeSystem());
+  await flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
+      options,
+    ),
+  );
+};
+
+export const TEST__checkBuildingElementsRoundtrip = async (
+  entities: Entity[],
+  pluginManager?: GraphPluginManager,
+): Promise<void> => {
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await TEST__buildGraphWithEntities(graphManagerState, entities, {
+    TEMPORARY__keepSectionIndex: true,
+  });
+
+  const transformedEntities = graphManagerState.graph.allOwnElements.map(
+    (element) => graphManagerState.graphManager.elementToEntity(element),
+  );
+  // ensure that transformed entities have all fields ordered alphabetically
+  transformedEntities.forEach((entity) =>
+    TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
+  );
+  // check if the contents are the same (i.e. roundtrip test)
+  expect(transformedEntities).toIncludeSameMembers(
+    TEST__excludeSectionIndex(entities),
+  );
+  // check hash
+  await flowResult(graphManagerState.precomputeHashes());
+  const originalHashesIndex =
+    await graphManagerState.graphManager.buildHashesIndex(entities);
+  const graphHashesIndex = new Map<string, string>();
+  await Promise.all<void>(
+    graphManagerState.graph.allOwnElements.map(
+      (element) =>
+        new Promise((resolve) =>
+          setTimeout(() => {
+            graphHashesIndex.set(element.path, element.hashCode);
+            resolve();
+          }, 0),
+        ),
+    ),
+  );
+  expect(
+    Array.from(originalHashesIndex.entries()).filter(
+      (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
+    ),
+  ).toIncludeSameMembers(
+    Array.from(graphHashesIndex.entries()).filter(
+      (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
+    ),
+  );
+};
+
+export const TEST__checkBuildingResolvedElements = async (
+  entities: Entity[],
+  resolvedEntities: Entity[],
+): Promise<void> => {
+  const graphManagerState = TEST__getTestGraphManagerState();
+  await flowResult(graphManagerState.initializeSystem());
+  await flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
+    ),
+  );
+  const transformedEntities = graphManagerState.graph.allOwnElements.map(
+    (element) => graphManagerState.graphManager.elementToEntity(element),
+  );
+  // ensure that transformed entities have all fields ordered alphabetically
+  transformedEntities.forEach((entity) =>
+    TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
+  );
+  // check if the contents are the same (i.e. roundtrip test)
+  expect(transformedEntities).toIncludeSameMembers(
+    TEST__excludeSectionIndex(resolvedEntities),
+  );
+};

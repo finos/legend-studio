@@ -21,27 +21,26 @@ import {
   TEST_DATA__ReferenceWithoutSection,
   TEST_DATA__ReferenceModification,
 } from '../__tests__/InferenceTestData';
-import {
-  TEST__getTestEditorStore,
-  TEST__excludeSectionIndex,
-  TEST__buildGraphBasic,
-} from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__excludeSectionIndex,
+  TEST__getTestGraphManagerState,
+} from '../GraphManagerTestUtils';
 
 test(unitTest('Infer default mapping element ID'), async () => {
-  const editorStore = TEST__getTestEditorStore();
-  await TEST__buildGraphBasic(
+  const graphManagerState = TEST__getTestGraphManagerState();
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
     TEST_DATA__InferenceDefaultMappingElementID as Entity[],
-    editorStore,
     {
       TEMPORARY__keepSectionIndex: true,
     },
   );
-  const transformedEntities =
-    editorStore.graphManagerState.graph.allOwnElements.map((element) =>
-      editorStore.graphManagerState.graphManager.elementToEntity(element),
-    );
+  const transformedEntities = graphManagerState.graph.allOwnElements.map(
+    (element) => graphManagerState.graphManager.elementToEntity(element),
+  );
   expect(transformedEntities).toIncludeSameMembers(
     TEST__excludeSectionIndex(
       TEST_DATA__InferenceDefaultMappingElementID as Entity[],
@@ -52,12 +51,12 @@ test(unitTest('Infer default mapping element ID'), async () => {
 test(
   unitTest('Import resolution throws when multiple matches found'),
   async () => {
-    const editorStore = TEST__getTestEditorStore();
-    await flowResult(editorStore.graphManagerState.initializeSystem());
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await flowResult(graphManagerState.initializeSystem());
     await expect(() =>
       flowResult(
-        editorStore.graphManagerState.graphManager.buildGraph(
-          editorStore.graphManagerState.graph,
+        graphManagerState.graphManager.buildGraph(
+          graphManagerState.graph,
           TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
           { TEMPORARY__keepSectionIndex: true },
         ),
@@ -73,15 +72,14 @@ test(
     'Reference without section index should resolve all reference to full path during serialization',
   ),
   async () => {
-    const editorStore = TEST__getTestEditorStore();
-    await TEST__buildGraphBasic(
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__ReferenceWithoutSection.original as Entity[],
-      editorStore,
     );
-    const transformedEntities =
-      editorStore.graphManagerState.graph.allOwnElements.map((element) =>
-        editorStore.graphManagerState.graphManager.elementToEntity(element),
-      );
+    const transformedEntities = graphManagerState.graph.allOwnElements.map(
+      (element) => graphManagerState.graphManager.elementToEntity(element),
+    );
     expect(transformedEntities).toIncludeSameMembers(
       TEST_DATA__ReferenceWithoutSection.withoutSection,
     );
@@ -92,49 +90,44 @@ test(
   unitTest('Modified reference should resolve serialization path properly'),
   async () => {
     // If the reference owner does not change, the serialized path is kept as user input
-    let editorStore = TEST__getTestEditorStore();
-    await TEST__buildGraphBasic(
+    let graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__ReferenceModification.original as Entity[],
-      editorStore,
       {
         TEMPORARY__keepSectionIndex: true,
       },
     );
-    let enumeration =
-      editorStore.graphManagerState.graph.getEnumeration('test::tEnum');
+    let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(
-      editorStore.graphManagerState.graph
-        .getProfile('test::tProf')
-        .getTag('s4'),
+      graphManagerState.graph.getProfile('test::tProf').getTag('s4'),
     );
     expect(
-      editorStore.graphManagerState.graph.allOwnElements.map((element) =>
-        editorStore.graphManagerState.graphManager.elementToEntity(element),
+      graphManagerState.graph.allOwnElements.map((element) =>
+        graphManagerState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
       TEST__excludeSectionIndex(
         TEST_DATA__ReferenceModification.sameProfileModification as Entity[],
       ),
     );
+
     // If the reference owner changes, the serialized path is fully-resolved
-    editorStore = TEST__getTestEditorStore();
-    await TEST__buildGraphBasic(
+    graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__ReferenceModification.original as Entity[],
-      editorStore,
       {
         TEMPORARY__keepSectionIndex: true,
       },
     );
-    enumeration =
-      editorStore.graphManagerState.graph.getEnumeration('test::tEnum');
+    enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(
-      editorStore.graphManagerState.graph
-        .getProfile('test2::tProf')
-        .getTag('s1'),
+      graphManagerState.graph.getProfile('test2::tProf').getTag('s1'),
     );
     expect(
-      editorStore.graphManagerState.graph.allOwnElements.map((element) =>
-        editorStore.graphManagerState.graphManager.elementToEntity(element),
+      graphManagerState.graph.allOwnElements.map((element) =>
+        graphManagerState.graphManager.elementToEntity(element),
       ),
     ).toIncludeSameMembers(
       TEST__excludeSectionIndex(

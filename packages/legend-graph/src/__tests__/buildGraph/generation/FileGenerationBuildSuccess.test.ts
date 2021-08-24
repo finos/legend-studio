@@ -16,24 +16,26 @@
 
 import TEST_DATA__fileGeneration from './TEST_DATA__FileGeneration.json';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
-import {
-  TEST__buildGraphBasic,
-  TEST__getTestEditorStore,
-} from '../../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
-import { PackageableElementReference } from '@finos/legend-graph';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../../GraphManagerTestUtils';
+import { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference';
+import type { GraphManagerState } from '../../../GraphManagerState';
 
-const editorStore = TEST__getTestEditorStore();
+let graphManagerState: GraphManagerState;
 
-beforeAll(async () => {
-  await TEST__buildGraphBasic(
+beforeEach(async () => {
+  graphManagerState = TEST__getTestGraphManagerState();
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
     TEST_DATA__fileGeneration as Entity[],
-    editorStore,
   );
 });
 
 test(unitTest('File Generation Graph Success'), () => {
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   expect(graph.ownClasses).toHaveLength(3);
   expect(graph.ownEnumerations).toHaveLength(1);
   expect(graph.ownProfiles).toHaveLength(1);
@@ -51,10 +53,9 @@ test(unitTest('File Generation Graph Success'), () => {
 });
 
 test(unitTest('Generated Function paths are valid'), () => {
-  const functionGen = editorStore.graphManagerState.graph.getFunction(
+  const functionGen = graphManagerState.graph.getFunction(
     'model::functionFullPath_Firm_1__Firm_MANY__Firm_$1_MANY$__String_1__Boolean_1_',
   );
-  const entity =
-    editorStore.graphManagerState.graphManager.elementToEntity(functionGen);
+  const entity = graphManagerState.graphManager.elementToEntity(functionGen);
   expect(entity.path).toBe('model::functionFullPath');
 });

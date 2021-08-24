@@ -16,15 +16,8 @@
 
 import type { PlainObject } from '@finos/legend-shared';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  TEST_DATA__simpleDebuggingCase,
-  TEST_DATA__AutoImportsWithAny,
-  TEST_DATA__AutoImportsWithSystemProfiles,
-} from '../roundtrip/RoundtripTestData';
-import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { waitFor } from '@testing-library/dom';
-import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
-import { TEST_DATA__SimpleGraph } from './CoreTestData';
+import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
@@ -33,6 +26,7 @@ import {
   DependencyManager,
   PackageableElementReference,
 } from '@finos/legend-graph';
+import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 
 const testDependingOnDifferentProjectVersions = [
   {
@@ -107,6 +101,7 @@ const testDependingOnMoreThanOneproject = [
 ];
 
 const TEST_DEPENDENCY_PROJECT_ID = 'UAT-TEST_DEPENDENCY';
+
 const PROJECT_CONFIG = {
   projectStructureVersion: { version: 6, extensionVersion: 1 },
   projectId: TEST_DEPENDENCY_PROJECT_ID,
@@ -279,38 +274,10 @@ const buildProjectVersionEntities = (
   },
 ];
 
-test(unitTest('M2M graph dependency check'), async () => {
+test(unitTest('Build dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
-    buildProjectVersionEntities(TEST_DATA__m2mGraphEntities as Entity[]),
-    true,
-  );
-  await testDependencyElements(
-    [] as Entity[],
-    buildProjectVersionEntities(TEST_DATA__simpleDebuggingCase as Entity[]),
-    true,
-  );
-});
-
-test(unitTest('Auto-imports dependency check'), async () => {
-  await testDependencyElements(
-    [] as Entity[],
-    buildProjectVersionEntities(
-      TEST_DATA__AutoImportsWithSystemProfiles as Entity[],
-    ),
-    true,
-  );
-  await testDependencyElements(
-    [] as Entity[],
-    buildProjectVersionEntities(TEST_DATA__AutoImportsWithAny as Entity[]),
-    true,
-  );
-});
-
-test(unitTest('Core model dependency check'), async () => {
-  await testDependencyElements(
-    [] as Entity[],
-    buildProjectVersionEntities(TEST_DATA__SimpleGraph as Entity[]),
+    buildProjectVersionEntities(TEST_DATA__M2MGraphEntities as Entity[]),
     true,
   );
 });

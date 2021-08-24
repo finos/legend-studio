@@ -16,38 +16,32 @@
 
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { unitTest } from '@finos/legend-shared';
-import {
-  TEST__buildGraphBasic,
-  TEST__getTestEditorStore,
-} from '../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  PureInstanceSetImplementation,
-  OperationSetImplementation,
-  Class,
-} from '@finos/legend-graph';
 import {
-  PRIMITIVE_TYPE,
-  fromElementPathToMappingElementId,
-  Enum,
-} from '@finos/legend-graph';
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../GraphManagerTestUtils';
+import { PRIMITIVE_TYPE } from '../../MetaModelConst';
+import type { OperationSetImplementation } from '../../models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+import type { PureInstanceSetImplementation } from '../../models/metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
+import { fromElementPathToMappingElementId } from '../../MetaModelUtils';
+import { Enum } from '../../models/metamodels/pure/packageableElements/domain/Enum';
+import type { Class } from '../../models/metamodels/pure/packageableElements/domain/Class';
 
-const editorStore = TEST__getTestEditorStore();
+const graphManagerState = TEST__getTestGraphManagerState();
 
 beforeAll(async () => {
-  await TEST__buildGraphBasic(
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
     TEST_DATA__m2mGraphEntities as Entity[],
-    editorStore,
   );
 });
 
 test(unitTest('Graph has been initialized properly'), () => {
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   expect(graph.buildState.hasSucceeded).toBeTruthy();
   expect(
-    Array.from(
-      editorStore.graphManagerState.coreModel.multiplicitiesIndex.values(),
-    ).length,
+    Array.from(graphManagerState.coreModel.multiplicitiesIndex.values()).length,
   ).toBeGreaterThan(0);
   Object.values(PRIMITIVE_TYPE).forEach((primitiveType) =>
     expect(graph.getPrimitiveType(primitiveType)).toBeDefined(),
@@ -55,7 +49,7 @@ test(unitTest('Graph has been initialized properly'), () => {
 });
 
 test(unitTest('Enumeration is loaded properly'), () => {
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   const pureEnum = graph.getEnumeration('ui::TestEnumeration');
   expect(pureEnum.values).toHaveLength(3);
   pureEnum.values.forEach((val) => expect(val instanceof Enum).toBeTruthy());
@@ -68,7 +62,7 @@ test(unitTest('Enumeration is loaded properly'), () => {
 });
 
 test(unitTest('Class is loaded properly'), () => {
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   const testClass = graph.getClass('ui::TestClass');
   const stereotype = testClass.stereotypes[0].value;
   expect(
@@ -97,7 +91,7 @@ test(unitTest('Class is loaded properly'), () => {
 });
 
 test(unitTest('Mapping is loaded properly'), () => {
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   const simpleMapping = graph.getMapping('ui::testMapping');
   expect(simpleMapping.classMappings).toHaveLength(3);
   const targetClass = graph.getClass('ui::test1::Target_Something');
@@ -128,7 +122,7 @@ test(unitTest('Mapping is loaded properly'), () => {
 });
 
 test(unitTest('Diagram is loaded properly'), () => {
-  const graph = editorStore.graphManagerState.graph;
+  const graph = graphManagerState.graph;
   const assertClassInGraph = (_class: Class): void =>
     expect(_class).toEqual(graph.getClass(_class.path));
   const simpleDiagram = graph.getDiagram('ui::testDiagram');

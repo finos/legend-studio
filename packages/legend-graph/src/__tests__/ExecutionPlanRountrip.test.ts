@@ -17,9 +17,9 @@
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import {
-  TEST__buildGraphBasic,
-  TEST__getTestEditorStore,
-} from '../EditorStoreTestUtils';
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../GraphManagerTestUtils';
 import { TEST_DATA__simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
 
 type RoundtripTestCase = [
@@ -46,20 +46,17 @@ describe(unitTest('Execution plan processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, executionPlanJson) => {
     const { entities } = context;
     // setup
-    const editorStore = TEST__getTestEditorStore();
-    await TEST__buildGraphBasic(entities, editorStore, {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(graphManagerState, entities, {
       TEMPORARY__keepSectionIndex: true,
     });
     // roundtrip check
-    const executionPlan =
-      editorStore.graphManagerState.graphManager.buildExecutionPlan(
-        executionPlanJson,
-        editorStore.graphManagerState.graph,
-      );
+    const executionPlan = graphManagerState.graphManager.buildExecutionPlan(
+      executionPlanJson,
+      graphManagerState.graph,
+    );
     const _executionPlanJson =
-      editorStore.graphManagerState.graphManager.serializeExecutionPlan(
-        executionPlan,
-      );
+      graphManagerState.graphManager.serializeExecutionPlan(executionPlan);
     expect(_executionPlanJson).toEqual(executionPlanJson);
   });
 });

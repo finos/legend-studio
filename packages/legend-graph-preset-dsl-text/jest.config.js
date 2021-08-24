@@ -24,10 +24,6 @@ export default {
   displayName: packageJson.name,
   name: packageJson.name,
   rootDir: '../..',
-  setupFiles: [
-    ...base.setupFiles,
-    '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
-  ],
   testMatch: [
     '<rootDir>/packages/legend-graph-preset-dsl-text/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],

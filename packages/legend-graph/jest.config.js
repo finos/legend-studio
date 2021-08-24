@@ -24,11 +24,6 @@ export default {
   displayName: packageJson.name,
   name: packageJson.name,
   rootDir: '../..',
-  testEnvironment: 'jsdom',
-  setupFiles: [
-    ...base.setupFiles,
-    '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
-  ],
   testMatch: [
     '<rootDir>/packages/legend-graph/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
