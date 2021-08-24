@@ -1,5 +1,44 @@
 # @finos/legend-studio
 
+## 0.2.11
+
+### Patch Changes
+
+- [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) Thanks [@akphi](https://github.com/akphi)! - Rename `EditorPlugin` to `StudioPlugin`.
+
+* [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) Thanks [@akphi](https://github.com/akphi)! - Move `SDLC` logic out of `ApplicationStore` into `StudioStore`. Utilize the new `useSDLCServerClient()` and `useDepotServerClient()` hooks.
+
+- [#429](https://github.com/finos/legend-studio/pull/429) [`cf0afba`](https://github.com/finos/legend-studio/commit/cf0afba6c2328b50d0ba9ebc7af312f737e88c0e) Thanks [@akphi](https://github.com/akphi)! - Update the structure of application config file, `options` field is now replaced by `extensions`.
+
+* [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) Thanks [@akphi](https://github.com/akphi)! - Rename `metadata` to `depot` in Studio config file.
+
+- [#410](https://github.com/finos/legend-studio/pull/410) [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52) Thanks [@akphi](https://github.com/akphi)! - No longer make engine re-authentication use SDLC authorize endpoint as this is very situational depending on the deployment context and how the servers are set up. We make this configurable instead.
+
+* [#422](https://github.com/finos/legend-studio/pull/422) [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc) Thanks [@akphi](https://github.com/akphi)! - Show committed reviews when the project has no release (https://github.com/finos/legend-studio/issues/426).
+
+- [#422](https://github.com/finos/legend-studio/pull/422) [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc) Thanks [@akphi](https://github.com/akphi)! - Move store provider and React hooks (e.g. `EditorStoreProvider`, `useEditorStore`, etc.) out of `/stores` and into `/components`.
+
+* [#422](https://github.com/finos/legend-studio/pull/422) [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc) Thanks [@akphi](https://github.com/akphi)! - Fix a bug with mock data generator sometimes not generating a value for `boolean` fields (https://github.com/finos/legend-studio/issues/425).
+
+- [#420](https://github.com/finos/legend-studio/pull/420) [`1fe16d1`](https://github.com/finos/legend-studio/commit/1fe16d1b47969817be5eefa532653bdbeb9ef18c) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Remove `TEMPORARY__disableSDLCProjectStructureSupport` application config flag.
+
+* [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) Thanks [@akphi](https://github.com/akphi)! - Cleanup test utilities: Add `TEST__` and `TEST_DATA__` prefixes for test utilities and test data to avoid polluting namespace. Rename methods that supply mocked store/state to `TEST__provideMocked...`.
+
+- [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) Thanks [@akphi](https://github.com/akphi)! - Move shared application logic and components such as `ApplicationStore`, `WebApplicationNavigator`, `LambdaEditor`, etc. to `@finos/legend-application`.
+
+* [#379](https://github.com/finos/legend-studio/pull/379) [`19c76946`](https://github.com/finos/legend-studio/commit/19c769468f504512882fa795d38c24410460a17e) Thanks [@umarphaarook](https://github.com/umarphaarook)! - View project configuration in viewer mode
+
+- [#413](https://github.com/finos/legend-studio/pull/413) [`72d1da75`](https://github.com/finos/legend-studio/commit/72d1da758f6b5c9c7011470ba6f58b434c6c5a12) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Handle no user input for `PackageableElementImplicitReference`.
+
+- Updated dependencies [[`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`38692e14`](https://github.com/finos/legend-studio/commit/38692e14642369d68f4dc1c26788f77aca528126), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`bb8cd369`](https://github.com/finos/legend-studio/commit/bb8cd369da33fe58523d8eddf6bb0991da72edf1), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`cf0afba6`](https://github.com/finos/legend-studio/commit/cf0afba6c2328b50d0ba9ebc7af312f737e88c0e), [`b83c2553`](https://github.com/finos/legend-studio/commit/b83c25538b157109cc0730c9e9da5da5f2b50590), [`bb8cd369`](https://github.com/finos/legend-studio/commit/bb8cd369da33fe58523d8eddf6bb0991da72edf1), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`bb8cd369`](https://github.com/finos/legend-studio/commit/bb8cd369da33fe58523d8eddf6bb0991da72edf1)]:
+  - @finos/legend-art@0.0.1
+  - @finos/legend-graph@0.0.1
+  - @finos/legend-model-storage@0.0.1
+  - @finos/legend-server-depot@0.0.1
+  - @finos/legend-server-sdlc@0.0.1
+  - @finos/legend-shared@0.0.1
+  - @finos/legend-application@0.0.1
+
 ## 0.2.10
 
 ## 0.2.9
