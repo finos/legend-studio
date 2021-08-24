@@ -1,5 +1,15 @@
 # @finos/eslint-plugin-legend-studio
 
+## 0.0.25
+
+### Patch Changes
+
+- [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b8`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) Thanks [@akphi](https://github.com/akphi)! - Fix a problem with rules incorrectly scanning the protocol version due to the _overly_ loose regex pattern.
+
+* [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) Thanks [@akphi](https://github.com/akphi)! - Update custom rules to also include `exports` and add rule to prevent importing from the same workspace using absolute imports, e.g. a file in `legend-shared` with an import from `@finos/legend-shared` is a violation.
+
+- [#410](https://github.com/finos/legend-studio/pull/410) [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52) Thanks [@akphi](https://github.com/akphi)! - Enforce new lint rule to disallow importing hidden/unexposed exports from other modules.
+
 ## 0.0.24
 
 ## 0.0.23

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-graph-preset-external-format-json-schema",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Legend Studio preset for JSON Schema external format",
   "keywords": [
     "legend",
