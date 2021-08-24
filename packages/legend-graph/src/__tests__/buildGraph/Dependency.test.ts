@@ -116,7 +116,6 @@ test(
       graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,
         entities,
-        { TEMPORARY__keepSectionIndex: true },
       ),
     );
     expect(graphManagerState.graph.buildState.hasSucceeded).toBeTrue(),
@@ -164,7 +163,6 @@ test(
       graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,
         firstDependencyEntities,
-        { TEMPORARY__keepSectionIndex: true },
       ),
     );
 

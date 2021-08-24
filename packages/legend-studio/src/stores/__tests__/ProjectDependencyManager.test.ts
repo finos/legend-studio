@@ -191,7 +191,6 @@ const testDependencyElements = async (
     editorStore.graphManagerState.graphManager.buildGraph(
       editorStore.graphManagerState.graph,
       entities,
-      { TEMPORARY__keepSectionIndex: true },
     ),
   );
   expect(

@@ -58,11 +58,7 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       new TEST__GraphPluginManager(),
       new Log(),
     );
-    await flowResult(
-      graphManager.buildGraph(graph, entities, {
-        TEMPORARY__keepSectionIndex: true,
-      }),
-    );
+    await flowResult(graphManager.buildGraph(graph, entities));
     const fn = (): void => {
       graphManager.buildValueSpecification(lambdaJson, graph);
     };

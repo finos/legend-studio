@@ -55,9 +55,7 @@ const testGeneratedElements = async (
   entities.push(buildParentElement());
   const generatedElementPaths = generatedEntities.map((e) => e.path);
   const graphManagerState = TEST__getTestGraphManagerState();
-  await TEST__buildGraphWithEntities(graphManagerState, entities, {
-    TEMPORARY__keepSectionIndex: true,
-  });
+  await TEST__buildGraphWithEntities(graphManagerState, entities);
 
   expect(graphManagerState.graph.buildState.hasSucceeded).toBeTrue();
   // build generation graph

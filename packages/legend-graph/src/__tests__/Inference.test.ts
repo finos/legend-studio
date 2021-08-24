@@ -34,9 +34,6 @@ test(unitTest('Infer default mapping element ID'), async () => {
   await TEST__buildGraphWithEntities(
     graphManagerState,
     TEST_DATA__InferenceDefaultMappingElementID as Entity[],
-    {
-      TEMPORARY__keepSectionIndex: true,
-    },
   );
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),
@@ -58,7 +55,6 @@ test(
         graphManagerState.graphManager.buildGraph(
           graphManagerState.graph,
           TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
-          { TEMPORARY__keepSectionIndex: true },
         ),
       ),
     ).rejects.toThrow(
@@ -94,9 +90,7 @@ test(
     await TEST__buildGraphWithEntities(
       graphManagerState,
       TEST_DATA__ReferenceModification.original as Entity[],
-      {
-        TEMPORARY__keepSectionIndex: true,
-      },
+      { TEMPORARY__keepSectionIndex: true },
     );
     let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(
@@ -117,9 +111,6 @@ test(
     await TEST__buildGraphWithEntities(
       graphManagerState,
       TEST_DATA__ReferenceModification.original as Entity[],
-      {
-        TEMPORARY__keepSectionIndex: true,
-      },
     );
     enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     enumeration.taggedValues[0].setTag(

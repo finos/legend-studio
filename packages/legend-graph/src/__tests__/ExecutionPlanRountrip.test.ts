@@ -47,9 +47,7 @@ describe(unitTest('Execution plan processing roundtrip test'), () => {
     const { entities } = context;
     // setup
     const graphManagerState = TEST__getTestGraphManagerState();
-    await TEST__buildGraphWithEntities(graphManagerState, entities, {
-      TEMPORARY__keepSectionIndex: true,
-    });
+    await TEST__buildGraphWithEntities(graphManagerState, entities);
     // roundtrip check
     const executionPlan = graphManagerState.graphManager.buildExecutionPlan(
       executionPlanJson,
