@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/// <reference types="jest-extended" />
 import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
   TEST_DATA__simpleDebuggingCase,
@@ -57,7 +58,7 @@ const testGeneratedElements = async (
   const graphManagerState = TEST__getTestGraphManagerState();
   await TEST__buildGraphWithEntities(graphManagerState, entities);
 
-  expect(graphManagerState.graph.buildState.hasSucceeded).toBeTrue();
+  expect(graphManagerState.graph.buildState.hasSucceeded).toBe(true);
   // build generation graph
   const generatedEntitiesMap = new Map<string, Entity[]>();
   generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);
@@ -91,7 +92,7 @@ const testGeneratedElements = async (
     );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
-    expect(elementInGraph.isReadOnly).toBeTrue();
+    expect(elementInGraph.isReadOnly).toBe(true);
     expect(elementInGraph.generationParentElement).toBe(parentElement);
   });
 

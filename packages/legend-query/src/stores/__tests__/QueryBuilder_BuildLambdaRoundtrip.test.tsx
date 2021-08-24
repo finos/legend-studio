@@ -63,6 +63,7 @@ import { integrationTest } from '@finos/legend-shared';
 import { QueryBuilderState } from '../QueryBuilderState';
 import { QueryPluginManager } from '../../application/QueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
+import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
 
 type RoundtripTestCase = [
   string,
@@ -221,7 +222,9 @@ describe(
       const { entities } = context;
       const pluginManager = QueryPluginManager.create();
       pluginManager.usePresets([new Query_GraphPreset()]).install();
-      const applicationStore = TEST__getTestApplicationStore();
+      const applicationStore = TEST__getTestApplicationStore(
+        TEST__getTestQueryConfig(),
+      );
       const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
       await TEST__buildGraphWithEntities(graphManagerState, entities);
       const queryBuilderState = new QueryBuilderState(

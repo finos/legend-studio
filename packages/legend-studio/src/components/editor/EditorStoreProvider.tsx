@@ -23,6 +23,7 @@ import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useStudioStore } from '../StudioStoreProvider';
 import { useGraphManagerState } from '@finos/legend-graph';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 const EditorStoreContext = createContext<EditorStore | undefined>(undefined);
 
@@ -31,7 +32,7 @@ export const EditorStoreProvider = ({
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();

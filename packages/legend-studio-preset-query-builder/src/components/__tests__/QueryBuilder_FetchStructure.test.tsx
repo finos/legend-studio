@@ -38,6 +38,7 @@ import {
 import { getAllByText, waitFor } from '@testing-library/dom';
 import type { EditorStore } from '@finos/legend-studio';
 import {
+  TEST__getTestStudioConfig,
   StudioPluginManager,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
@@ -65,7 +66,9 @@ const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
   pluginManager.usePresets([new QueryBuilder_StudioPreset()]).install();
 
   return TEST__provideMockedEditorStore({
-    applicationStore: TEST__provideMockedApplicationStore(),
+    applicationStore: TEST__provideMockedApplicationStore(
+      TEST__getTestStudioConfig(),
+    ),
     graphManagerState: TEST__provideMockedGraphManagerState({ pluginManager }),
     pluginManager,
   });

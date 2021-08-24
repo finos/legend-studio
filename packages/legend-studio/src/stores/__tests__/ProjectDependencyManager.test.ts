@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/// <reference types="jest-extended" />
 import type { PlainObject } from '@finos/legend-shared';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
@@ -185,7 +186,7 @@ const testDependencyElements = async (
   expect(
     editorStore.graphManagerState.graph.dependencyManager.buildState
       .hasSucceeded,
-  ).toBeTrue();
+  ).toBe(true);
 
   await flowResult(
     editorStore.graphManagerState.graphManager.buildGraph(
@@ -193,9 +194,9 @@ const testDependencyElements = async (
       entities,
     ),
   );
-  expect(
-    editorStore.graphManagerState.graph.buildState.hasSucceeded,
-  ).toBeTrue();
+  expect(editorStore.graphManagerState.graph.buildState.hasSucceeded).toBe(
+    true,
+  );
 
   Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
@@ -225,7 +226,7 @@ const testDependencyElements = async (
       );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
-    expect(elementInGraph.isReadOnly).toBeTrue();
+    expect(elementInGraph.isReadOnly).toBe(true);
   });
   if (includeDependencyInFileGenerationScopeElements) {
     const fileGeneration = guaranteeNonNullable(

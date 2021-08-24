@@ -25,7 +25,6 @@ import {
   WebApplicationNavigator,
   TEST__provideMockedApplicationStore,
   TEST__ApplicationStoreProvider,
-  TEST__getTestApplicationConfig,
 } from '@finos/legend-application';
 import { TEST__StudioStoreProvider } from '../EditorComponentTestUtils';
 import { render } from '@testing-library/react';
@@ -37,6 +36,7 @@ import {
   TEST__SDLCServerClientProvider,
 } from '@finos/legend-server-sdlc';
 import { TEST__DepotServerClientProvider } from '@finos/legend-server-depot';
+import { TEST__getTestStudioConfig } from '../../stores/EditorStoreTestUtils';
 
 test(integrationTest('App header is displayed properly'), async () => {
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
@@ -54,7 +54,7 @@ test(integrationTest('App header is displayed properly'), async () => {
 
   const { queryByText } = render(
     <MemoryRouter>
-      <TEST__ApplicationStoreProvider>
+      <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__StudioStoreProvider>
@@ -67,12 +67,14 @@ test(integrationTest('App header is displayed properly'), async () => {
   );
 
   expect(
-    queryByText(TEST__getTestApplicationConfig().env.toUpperCase()),
+    queryByText(TEST__getTestStudioConfig().env.toUpperCase()),
   ).not.toBeNull();
 });
 
 test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
-  const applicationStore = TEST__provideMockedApplicationStore();
+  const applicationStore = TEST__provideMockedApplicationStore(
+    TEST__getTestStudioConfig(),
+  );
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
   const stubURL = 'stubUrl';
 
@@ -91,7 +93,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
 
   render(
     <MemoryRouter>
-      <TEST__ApplicationStoreProvider>
+      <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__StudioStoreProvider>
@@ -131,7 +133,7 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter>
-        <TEST__ApplicationStoreProvider>
+        <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
           <TEST__SDLCServerClientProvider>
             <TEST__DepotServerClientProvider>
               <TEST__StudioStoreProvider>

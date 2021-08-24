@@ -34,6 +34,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
+import type { StudioConfig } from '../application/StudioConfig';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -67,7 +68,7 @@ const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
 });
 
 export class SetupStore {
-  applicationStore: ApplicationStore;
+  applicationStore: ApplicationStore<StudioConfig>;
   sdlcServerClient: SDLCServerClient;
 
   currentProjectId?: string;
@@ -83,7 +84,7 @@ export class SetupStore {
   importProjectSuccessReport?: ImportProjectSuccessReport;
 
   constructor(
-    applicationStore: ApplicationStore,
+    applicationStore: ApplicationStore<StudioConfig>,
     sdlcServerClient: SDLCServerClient,
   ) {
     makeAutoObservable(this, {

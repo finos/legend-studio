@@ -17,23 +17,23 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { ApplicationStore } from '../stores/ApplicationStore';
-import type { ApplicationConfig } from '../stores/ApplicationConfig';
+import type { LegendApplicationConfig } from '../stores/ApplicationConfig';
 import type { Log } from '@finos/legend-shared';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
 
-const ApplicationStoreContext = createContext<ApplicationStore | undefined>(
-  undefined,
-);
+const ApplicationStoreContext = createContext<
+  ApplicationStore<LegendApplicationConfig> | undefined
+>(undefined);
 
-export const ApplicationStoreProvider = ({
+export const ApplicationStoreProvider = <T extends LegendApplicationConfig>({
   children,
   config,
   navigator,
   log,
 }: {
   children: React.ReactNode;
-  config: ApplicationConfig;
+  config: T;
   navigator: WebApplicationNavigator;
   log: Log;
 }): React.ReactElement => {
@@ -47,8 +47,10 @@ export const ApplicationStoreProvider = ({
   );
 };
 
-export const useApplicationStore = (): ApplicationStore =>
+export const useApplicationStore = <
+  T extends LegendApplicationConfig,
+>(): ApplicationStore<T> =>
   guaranteeNonNullable(
-    useContext(ApplicationStoreContext),
+    useContext(ApplicationStoreContext) as ApplicationStore<T> | undefined,
     `Can't find application store in context`,
   );

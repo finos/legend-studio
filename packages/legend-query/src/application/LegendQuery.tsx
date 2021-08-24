@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import type {
+  LegendApplicationConfig,
+  LegendApplicationVersionData,
+} from '@finos/legend-application';
 import {
   LegendApplication,
   setupLegendApplicationUILibrary,
@@ -29,6 +33,8 @@ import { QueryPluginManager } from './QueryPluginManager';
 import { Query_GraphPreset } from '../models/Query_GraphPreset';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import type { QueryConfigurationData } from './QueryConfig';
+import { QueryConfig } from './QueryConfig';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   // Register module extensions for `ag-grid`
@@ -43,6 +49,7 @@ export const setupLegendQueryUILibrary = async (): Promise<void> => {
 };
 
 export class LegendQuery extends LegendApplication {
+  declare config: QueryConfig;
   declare pluginManager: QueryPluginManager;
 
   static create(): LegendQuery {
@@ -52,22 +59,25 @@ export class LegendQuery extends LegendApplication {
     return application;
   }
 
+  async configureApplication(
+    configData: QueryConfigurationData,
+    versionData: LegendApplicationVersionData,
+    baseUrl: string,
+  ): Promise<LegendApplicationConfig> {
+    return new QueryConfig(configData, versionData, baseUrl);
+  }
+
   async loadApplication(): Promise<void> {
     // Setup React application libraries
     await setupLegendApplicationUILibrary(this.pluginManager, this.log);
     await setupLegendQueryUILibrary();
-
-    // TODO: we can remove this in the future when we modularize core a bit better
-    // especially application config
-    this.appConfig.setSDLCServerKey('-');
-    this.appConfig.setConfigured(true);
 
     // Render React application
     ReactDOM.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
           <LegendQueryApplication
-            config={this.appConfig}
+            config={this.config}
             pluginManager={this.pluginManager}
             log={this.log}
           />

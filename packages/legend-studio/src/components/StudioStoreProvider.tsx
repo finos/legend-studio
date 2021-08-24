@@ -22,6 +22,7 @@ import { StudioStore } from '../stores/StudioStore';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
 import { useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../application/StudioConfig';
 
 const StudioStoreContext = createContext<StudioStore | undefined>(undefined);
 
@@ -32,7 +33,7 @@ export const StudioStoreProvider = ({
   pluginManager: StudioPluginManager;
   children: React.ReactNode;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
   const studioStore = useLocalObservable(

@@ -27,9 +27,7 @@ import { waitFor } from '@testing-library/dom';
 import {
   WebApplicationNavigatorProvider,
   TEST__provideMockedWebApplicationNavigator,
-  TEST_DATA__applicationConfig,
   TEST_DATA__applicationVersion,
-  ApplicationConfig,
 } from '@finos/legend-application';
 import {
   generateSetupRoute,
@@ -37,13 +35,15 @@ import {
 } from '../../stores/LegendStudioRouter';
 import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
 import { StudioPluginManager } from '../../application/StudioPluginManager';
+import { TEST_DATA__studioConfig } from '../../stores/EditorStoreTestUtils';
+import { StudioConfig } from '../../application/StudioConfig';
 
-const getTestApplicationConfigWithMultiSDLCServer = (
+const getTestStudioConfigWithMultiSDLCServer = (
   extraConfigData = {},
-): ApplicationConfig =>
-  new ApplicationConfig(
+): StudioConfig =>
+  new StudioConfig(
     {
-      ...TEST_DATA__applicationConfig,
+      ...TEST_DATA__studioConfig,
       ...extraConfigData,
     },
     TEST_DATA__applicationVersion,
@@ -70,7 +70,7 @@ test(
     'URL is properly reset with configured SDLC when only one server is specified in the config (legacy SDLC config form)',
   ),
   async () => {
-    const config = getTestApplicationConfigWithMultiSDLCServer({
+    const config = getTestStudioConfigWithMultiSDLCServer({
       sdlc: { url: 'https://testSdlcUrl1' },
     });
 
@@ -106,7 +106,7 @@ test(
     'SDLC server configuration is required when the SDLC server key in the URL is not recognised',
   ),
   async () => {
-    const config = getTestApplicationConfigWithMultiSDLCServer({
+    const config = getTestStudioConfigWithMultiSDLCServer({
       sdlc: [
         {
           label: 'Server1',
@@ -142,7 +142,7 @@ test(
 test(
   integrationTest('SDLC server configuration can be done via URL'),
   async () => {
-    const config = getTestApplicationConfigWithMultiSDLCServer({
+    const config = getTestStudioConfigWithMultiSDLCServer({
       sdlc: [
         {
           label: 'Server1',
@@ -185,7 +185,7 @@ test(
     'SDLC server configuration is not required when only one server is specified in the config',
   ),
   async () => {
-    const config = getTestApplicationConfigWithMultiSDLCServer({
+    const config = getTestStudioConfigWithMultiSDLCServer({
       sdlc: [
         {
           label: 'Server1',
@@ -218,7 +218,7 @@ test(
     'URL is properly reset with configured SDLC when only one server is specified in the config',
   ),
   async () => {
-    const config = getTestApplicationConfigWithMultiSDLCServer({
+    const config = getTestStudioConfigWithMultiSDLCServer({
       sdlc: [
         {
           label: 'Server1',

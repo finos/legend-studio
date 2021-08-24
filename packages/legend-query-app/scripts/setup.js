@@ -41,17 +41,11 @@ export const setup = (outputDir) => {
       {
         appName: 'query',
         env: 'local',
-        sdlc: {
-          url: 'http://localhost:7070/api',
-        },
         engine: {
           url: 'http://localhost:6060/api',
         },
         depot: {
           url: 'http://localhost:9090/api',
-        },
-        documentation: {
-          url: 'https://legend.finos.org',
         },
       },
       undefined,

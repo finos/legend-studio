@@ -66,6 +66,8 @@ import {
   TEST__getTestApplicationStore,
   WebApplicationNavigator,
 } from '@finos/legend-application';
+import { TEST__getTestStudioConfig } from '../stores/EditorStoreTestUtils';
+import type { StudioConfig } from '../application/StudioConfig';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {
@@ -146,7 +148,7 @@ export const TEST__StudioStoreProvider = ({
 
 export const TEST__provideMockedEditorStore = (customization?: {
   mock?: EditorStore;
-  applicationStore?: ApplicationStore;
+  applicationStore?: ApplicationStore<StudioConfig>;
   sdlcServerClient?: SDLCServerClient;
   depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
@@ -155,7 +157,8 @@ export const TEST__provideMockedEditorStore = (customization?: {
   const value =
     customization?.mock ??
     new EditorStore(
-      customization?.applicationStore ?? TEST__getTestApplicationStore(),
+      customization?.applicationStore ??
+        TEST__getTestApplicationStore(TEST__getTestStudioConfig()),
       customization?.sdlcServerClient ?? TEST__getTestSDLCServerClient(),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
       customization?.graphManagerState ??
@@ -317,7 +320,7 @@ export const TEST__setUpEditor = async (
 
   const renderResult = render(
     <Router history={history}>
-      <TEST__ApplicationStoreProvider>
+      <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__GraphManagerStateProvider>
@@ -341,25 +344,25 @@ export const TEST__setUpEditor = async (
   await waitFor(() =>
     expect(
       mockedEditorStore.graphManagerState.systemModel.buildState.hasSucceeded,
-    ).toBeTrue(),
+    ).toBe(true),
   );
   await waitFor(() =>
     expect(
       mockedEditorStore.graphManagerState.graph.dependencyManager.buildState
         .hasSucceeded,
-    ).toBeTrue(),
+    ).toBe(true),
   );
   // assert main model has been build
   await waitFor(() =>
     expect(
       mockedEditorStore.graphManagerState.graph.buildState.hasSucceeded,
-    ).toBeTrue(),
+    ).toBe(true),
   );
   // assert explorer trees have been built and rendered
   await waitFor(() =>
-    expect(
-      mockedEditorStore.explorerTreeState.buildState.hasCompleted,
-    ).toBeTrue(),
+    expect(mockedEditorStore.explorerTreeState.buildState.hasCompleted).toBe(
+      true,
+    ),
   );
   await waitFor(() => renderResult.getByTestId(STUDIO_TEST_ID.EXPLORER_TREES));
   return renderResult;

@@ -22,6 +22,7 @@ import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useGraphManagerState } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryPluginManager } from '../application/QueryPluginManager';
+import type { QueryConfig } from '../application/QueryConfig';
 
 const QueryStoreContext = createContext<QueryStore | undefined>(undefined);
 
@@ -32,7 +33,7 @@ export const QueryStoreProvider = ({
   children: React.ReactNode;
   pluginManager: QueryPluginManager;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<QueryConfig>();
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();
   const store = useLocalObservable(

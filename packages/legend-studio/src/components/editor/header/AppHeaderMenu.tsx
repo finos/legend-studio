@@ -24,13 +24,14 @@ import {
 import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
 import Dialog from '@material-ui/core/Dialog';
 import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../../../application/StudioConfig';
 
 const AboutModal: React.FC<{
   open: boolean;
   closeModal: () => void;
 }> = (props) => {
   const { open, closeModal } = props;
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const config = applicationStore.config;
 
   return (
@@ -105,7 +106,7 @@ const AboutModal: React.FC<{
 };
 
 export const AppHeaderMenu: React.FC = () => {
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const config = applicationStore.config;
   // menu
   const [openMenuDropdown, setOpenMenuDropdown] = useState(false);

@@ -110,7 +110,7 @@ test(
     );
     expect(
       graphManagerState.graph.dependencyManager.buildState.hasSucceeded,
-    ).toBeTrue();
+    ).toBe(true);
 
     await flowResult(
       graphManagerState.graphManager.buildGraph(
@@ -118,7 +118,7 @@ test(
         entities,
       ),
     );
-    expect(graphManagerState.graph.buildState.hasSucceeded).toBeTrue(),
+    expect(graphManagerState.graph.buildState.hasSucceeded).toBe(true),
       Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
         expect(dependencyManager.getModel(k)).toBeDefined(),
       );
@@ -157,7 +157,7 @@ test(
     );
     expect(
       graphManagerState.graph.dependencyManager.buildState.hasSucceeded,
-    ).toBeTrue();
+    ).toBe(true);
 
     const buildGraphPromise = flowResult(
       graphManagerState.graphManager.buildGraph(

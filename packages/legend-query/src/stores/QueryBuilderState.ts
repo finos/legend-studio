@@ -85,9 +85,10 @@ import type {
   PackageableElementOption,
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
+import type { QueryConfig } from '../application/QueryConfig';
 
 export class QueryBuilderState {
-  applicationStore: ApplicationStore;
+  applicationStore: ApplicationStore<QueryConfig>;
   graphManagerState: GraphManagerState;
 
   querySetupState: QueryBuilderSetupState;
@@ -120,7 +121,7 @@ export class QueryBuilderState {
   backdrop = false;
 
   constructor(
-    applicationStore: ApplicationStore,
+    applicationStore: ApplicationStore<QueryConfig>,
     graphManagerState: GraphManagerState,
   ) {
     makeObservable(this, {

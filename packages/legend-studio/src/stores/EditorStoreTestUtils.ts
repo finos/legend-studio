@@ -14,18 +14,56 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
 import { EditorStore } from './EditorStore';
 import { StudioPluginManager } from '../application/StudioPluginManager';
 import { TEST__getTestGraphManagerState } from '@finos/legend-graph';
 import { TEST__getTestSDLCServerClient } from '@finos/legend-server-sdlc';
 import { TEST__getTestDepotServerClient } from '@finos/legend-server-depot';
-import { TEST__getTestApplicationStore } from '@finos/legend-application';
+import {
+  TEST_DATA__applicationVersion,
+  TEST__getTestApplicationStore,
+} from '@finos/legend-application';
+import { StudioConfig } from '../application/StudioConfig';
+import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
+
+export const TEST_DATA__studioConfig = {
+  appName: 'test-studio-app',
+  env: 'test-env',
+  sdlc: {
+    url: 'https://testSdlcUrl',
+  },
+  engine: {
+    url: 'https://testEngineUrl',
+  },
+  depot: {
+    url: 'https://testMetadataUrl',
+  },
+  documentation: {
+    url: 'https://testDocUrl',
+  },
+};
+
+export const TEST__getTestStudioConfig = (
+  extraConfigData = {},
+): StudioConfig => {
+  const config = new StudioConfig(
+    {
+      ...TEST_DATA__studioConfig,
+      ...extraConfigData,
+    },
+    TEST_DATA__applicationVersion,
+    '/studio/',
+  );
+  config.setSDLCServerKey(URL_PATH_PLACEHOLDER);
+  return config;
+};
 
 export const TEST__getTestEditorStore = (
   pluginManager = StudioPluginManager.create(),
 ): EditorStore => {
-  const applicationStore = TEST__getTestApplicationStore();
+  const applicationStore = TEST__getTestApplicationStore(
+    TEST__getTestStudioConfig(),
+  );
   return new EditorStore(
     applicationStore,
     TEST__getTestSDLCServerClient(),

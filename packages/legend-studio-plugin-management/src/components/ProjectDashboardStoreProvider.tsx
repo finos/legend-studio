@@ -20,6 +20,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import { ProjectDashboardStore } from '../stores/ProjectDashboardStore';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
+import type { StudioConfig } from '@finos/legend-studio';
 
 const ProjectDashboardStoreContext = createContext<
   ProjectDashboardStore | undefined
@@ -30,7 +31,7 @@ export const ProjectDashboardStoreProvider = ({
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const store = useLocalObservable(
     () => new ProjectDashboardStore(applicationStore, sdlcServerClient),

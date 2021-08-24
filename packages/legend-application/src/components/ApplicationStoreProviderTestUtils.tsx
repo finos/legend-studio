@@ -16,19 +16,20 @@
 
 import { createMemoryHistory } from 'history';
 import { ApplicationStore } from '../stores/ApplicationStore';
-import { TEST__getTestApplicationConfig } from '../stores/ApplicationStoreTestUtils';
 import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
-import type { ApplicationConfig } from '../stores/ApplicationConfig';
+import type { LegendApplicationConfig } from '../stores/ApplicationConfig';
 import { ApplicationStoreProvider } from './ApplicationStoreProvider';
 import { Log } from '@finos/legend-shared';
 
 export const TEST__ApplicationStoreProvider = ({
   children,
+  config,
 }: {
   children: React.ReactNode;
+  config: LegendApplicationConfig;
 }): React.ReactElement => (
   <ApplicationStoreProvider
-    config={TEST__getTestApplicationConfig()}
+    config={config}
     navigator={new WebApplicationNavigator(createMemoryHistory())}
     log={new Log()}
   >
@@ -36,15 +37,19 @@ export const TEST__ApplicationStoreProvider = ({
   </ApplicationStoreProvider>
 );
 
-export const TEST__provideMockedApplicationStore = (customization?: {
-  mock?: ApplicationStore;
-  config?: ApplicationConfig;
-  navigator?: WebApplicationNavigator;
-}): ApplicationStore => {
+export const TEST__provideMockedApplicationStore = <
+  T extends LegendApplicationConfig,
+>(
+  config: T,
+  customization?: {
+    mock?: ApplicationStore<T>;
+    navigator?: WebApplicationNavigator;
+  },
+): ApplicationStore<T> => {
   const value =
     customization?.mock ??
     new ApplicationStore(
-      customization?.config ?? TEST__getTestApplicationConfig(),
+      config,
       customization?.navigator ??
         new WebApplicationNavigator(createMemoryHistory()),
       new Log(),

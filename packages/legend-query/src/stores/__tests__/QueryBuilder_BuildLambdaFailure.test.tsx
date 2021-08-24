@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
 import {
   TEST_DATA__malformedFilterExpression,
   TEST_DATA__errorInGraphLambda,
@@ -34,6 +33,7 @@ import { QueryPluginManager } from '../../application/QueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import { QueryBuilderState } from '../QueryBuilderState';
+import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
 
 const getRawLambda = (jsonRawLambda: {
   parameters?: object;
@@ -97,7 +97,9 @@ describe(
         const { entities } = context;
         const pluginManager = QueryPluginManager.create();
         pluginManager.usePresets([new Query_GraphPreset()]).install();
-        const applicationStore = TEST__getTestApplicationStore();
+        const applicationStore = TEST__getTestApplicationStore(
+          TEST__getTestQueryConfig(),
+        );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
         await TEST__buildGraphWithEntities(graphManagerState, entities);
         const queryBuilderState = new QueryBuilderState(

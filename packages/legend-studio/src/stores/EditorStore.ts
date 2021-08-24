@@ -125,6 +125,7 @@ import {
   TAB_SIZE,
 } from '@finos/legend-application';
 import { STUDIO_LOG_EVENT } from './StudioLogEvent';
+import type { StudioConfig } from '../application/StudioConfig';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -147,7 +148,7 @@ export class EditorHotkey {
 }
 
 export class EditorStore {
-  applicationStore: ApplicationStore;
+  applicationStore: ApplicationStore<StudioConfig>;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
   pluginManager: StudioPluginManager;
@@ -210,7 +211,7 @@ export class EditorStore {
   isDevToolEnabled = true;
 
   constructor(
-    applicationStore: ApplicationStore,
+    applicationStore: ApplicationStore<StudioConfig>,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
@@ -680,8 +681,6 @@ export class EditorStore {
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             enableCompression: true,
-            autoReAuthenticateUrl:
-              this.applicationStore.config.engineAutoReAuthenticationUrl,
           },
         },
         {

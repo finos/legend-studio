@@ -32,7 +32,7 @@ import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
 import { Version } from '@finos/legend-server-sdlc';
 import type { ServiceRegistrationResult } from '@finos/legend-graph';
 import { ServiceExecutionMode } from '@finos/legend-graph';
-import { ServiceRegistrationEnvInfo } from '@finos/legend-application';
+import { ServiceRegistrationEnvInfo } from '../../../../application/StudioConfig';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 

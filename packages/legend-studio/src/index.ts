@@ -17,6 +17,7 @@
 // application
 export * from './components/StudioStoreProvider';
 export * from './application/LegendStudio';
+export * from './application/StudioConfig';
 export * from './application/StudioPluginManager';
 export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
 
@@ -48,7 +49,7 @@ export {
   TEST__setUpEditor,
   TEST__setUpEditorWithDefaultSDLCData,
 } from './components/EditorComponentTestUtils';
-export { TEST__getTestEditorStore } from './stores/EditorStoreTestUtils';
+export * from './stores/EditorStoreTestUtils';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

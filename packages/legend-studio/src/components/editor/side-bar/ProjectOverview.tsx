@@ -33,6 +33,7 @@ import type { Workspace } from '@finos/legend-server-sdlc';
 import { NewVersionType } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../../../application/StudioConfig';
 
 const WorkspaceViewerContextMenu = observer<
   {
@@ -67,7 +68,7 @@ const WorkspaceViewerContextMenu = observer<
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const isActive =
     editorStore.sdlcState.currentWorkspaceId === workspace.workspaceId;
   const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
@@ -160,7 +161,7 @@ const WorkspacesViewer = observer(() => {
 
 const ReleaseEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const projectOverviewState = editorStore.projectOverviewState;
   const sdlcState = editorStore.sdlcState;
   const commitedReviews =
@@ -355,7 +356,7 @@ const ReleaseEditor = observer(() => {
 
 const VersionsViewer = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const versions = editorStore.sdlcState.projectVersions;
   const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
 

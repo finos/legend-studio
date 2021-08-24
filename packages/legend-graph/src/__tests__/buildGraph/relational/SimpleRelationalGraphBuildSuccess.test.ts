@@ -76,9 +76,9 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
   );
   expect(simpleRelationalMapping.classMappings).toHaveLength(9);
   simpleRelationalMapping.classMappings.forEach((setImpl) => {
-    expect(
-      setImpl instanceof RootRelationalInstanceSetImplementation,
-    ).toBeTrue();
+    expect(setImpl instanceof RootRelationalInstanceSetImplementation).toBe(
+      true,
+    );
     expect(
       (setImpl as RootRelationalInstanceSetImplementation).mainTableAlias,
     ).toBeDefined();

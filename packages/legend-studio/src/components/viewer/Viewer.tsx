@@ -60,12 +60,13 @@ import {
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
   const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const latestVersion = viewerStore.onLatestVersion;
   const currentRevision = viewerStore.onCurrentRevision;
   const statusBarInfo = params.revisionId ?? params.versionId ?? 'HEAD';

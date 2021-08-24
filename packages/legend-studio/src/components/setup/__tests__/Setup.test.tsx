@@ -30,6 +30,7 @@ import {
   TEST__provideMockedSDLCServerClient,
 } from '@finos/legend-server-sdlc';
 import { TEST__ApplicationStoreProvider } from '@finos/legend-application';
+import { TEST__getTestStudioConfig } from '../../../stores/EditorStoreTestUtils';
 
 let sdlcServerClient: SDLCServerClient;
 
@@ -51,7 +52,7 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter>
-        <TEST__ApplicationStoreProvider>
+        <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
           <TEST__SDLCServerClientProvider>
             <Setup />
           </TEST__SDLCServerClientProvider>
@@ -76,7 +77,7 @@ test(
 
     const { queryByText } = render(
       <MemoryRouter>
-        <TEST__ApplicationStoreProvider>
+        <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
           <TEST__SDLCServerClientProvider>
             <Setup />
           </TEST__SDLCServerClientProvider>
