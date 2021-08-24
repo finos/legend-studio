@@ -44,14 +44,13 @@ jest.mock('@finos/legend-shared', () => ({
 import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios from 'axios';
-import {
-  TEST__getTestEditorStore,
-  TEST__buildGraphBasic,
-} from '@finos/legend-studio';
 import type { PlainObject } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
-import { EntityChangeType } from '@finos/legend-server-sdlc';
 import type { V1_PackageableElement } from '@finos/legend-graph';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__checkGraphHashUnchanged,
+  TEST__getTestGraphManagerState,
+} from '@finos/legend-graph';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -110,8 +109,9 @@ const checkGrammarRoundtrip = async (
   testCase: string,
   file: string,
   options?: GrammarRoundtripOptions,
-  editorStore = TEST__getTestEditorStore(),
 ): Promise<void> => {
+  const graphManagerState = TEST__getTestGraphManagerState();
+
   if (options?.debug) {
     // eslint-disable-next-line no-console
     console.log(`Roundtrip test case: ${testCase}`);
@@ -131,28 +131,27 @@ const checkGrammarRoundtrip = async (
     },
     {},
   );
-  const entities =
-    editorStore.graphManagerState.graphManager.pureProtocolToEntities(
-      JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
-    );
-  await TEST__buildGraphBasic(entities, editorStore, {
+  const entities = graphManagerState.graphManager.pureProtocolToEntities(
+    JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
+  );
+  await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__keepSectionIndex: true,
   });
-  const transformedEntities =
-    editorStore.graphManagerState.graph.allOwnElements.map((element) =>
-      editorStore.graphManagerState.graphManager.elementToEntity(element),
-    );
+  const transformedEntities = graphManagerState.graph.allOwnElements.map(
+    (element) => graphManagerState.graphManager.elementToEntity(element),
+  );
+
   if (excludes !== SKIP && !excludes.includes(phase)) {
     // ensure that transformed entities have all fields ordered alphabetically
     expect(
       // received: transformed entity
       transformedEntities
         .map((entity) => entity.content)
-        .map(editorStore.graphManagerState.graphManager.pruneSourceInformation),
+        .map(graphManagerState.graphManager.pruneSourceInformation),
     ).toIncludeSameMembers(
       // expected: protocol JSON parsed from grammar text
       transformGrammarToJsonResult.data.modelDataContext.elements
-        .map(editorStore.graphManagerState.graphManager.pruneSourceInformation)
+        .map(graphManagerState.graphManager.pruneSourceInformation)
         .filter(
           (elementProtocol: PlainObject<V1_PackageableElement>) =>
             elementProtocol._type !== 'sectionIndex',
@@ -165,23 +164,9 @@ const checkGrammarRoundtrip = async (
   phase = ROUNTRIP_TEST_PHASES.HASH;
   logPhase(phase, excludes, options?.debug);
   // check hash computation
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
-  const protocolHashesIndex =
-    await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
-  editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
-    protocolHashesIndex,
-  );
-  await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
 
   if (excludes !== SKIP && !excludes.includes(phase)) {
-    // TODO: avoid listing section index as part of change detection for now
-    expect(
-      editorStore.changeDetectionState.workspaceLatestRevisionState.changes.filter(
-        (change) =>
-          change.entityChangeType !== EntityChangeType.DELETE ||
-          change.oldPath !== '__internal__::SectionIndex',
-      ).length,
-    ).toBe(0);
+    await TEST__checkGraphHashUnchanged(graphManagerState, entities);
     logSuccess(phase, options?.debug);
   }
 
@@ -193,10 +178,9 @@ const checkGrammarRoundtrip = async (
   // in engine already.
   // Here, we do it just so we might be able to detect problem in the grammar roundtrip in engine
   // we include the sections to guarantee the ordering of elements
-  const sectionIndices =
-    editorStore.graphManagerState.graph.ownSectionIndices.map((element) =>
-      editorStore.graphManagerState.graphManager.elementToEntity(element),
-    );
+  const sectionIndices = graphManagerState.graph.ownSectionIndices.map(
+    (element) => graphManagerState.graphManager.elementToEntity(element),
+  );
   const modelDataContext = {
     _type: 'data',
     elements: transformedEntities

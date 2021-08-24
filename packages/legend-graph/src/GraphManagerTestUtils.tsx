@@ -159,27 +159,10 @@ export const TEST__buildGraphWithEntities = async (
   );
 };
 
-export const TEST__checkBuildingElementsRoundtrip = async (
+export const TEST__checkGraphHashUnchanged = async (
+  graphManagerState: GraphManagerState,
   entities: Entity[],
-  pluginManager?: GraphPluginManager,
 ): Promise<void> => {
-  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
-  await TEST__buildGraphWithEntities(graphManagerState, entities, {
-    TEMPORARY__keepSectionIndex: true,
-  });
-
-  const transformedEntities = graphManagerState.graph.allOwnElements.map(
-    (element) => graphManagerState.graphManager.elementToEntity(element),
-  );
-  // ensure that transformed entities have all fields ordered alphabetically
-  transformedEntities.forEach((entity) =>
-    TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
-  );
-  // check if the contents are the same (i.e. roundtrip test)
-  expect(transformedEntities).toIncludeSameMembers(
-    TEST__excludeSectionIndex(entities),
-  );
-  // check hash
   await flowResult(graphManagerState.precomputeHashes());
   const originalHashesIndex =
     await graphManagerState.graphManager.buildHashesIndex(entities);
@@ -204,6 +187,29 @@ export const TEST__checkBuildingElementsRoundtrip = async (
       (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
     ),
   );
+};
+
+export const TEST__checkBuildingElementsRoundtrip = async (
+  entities: Entity[],
+  pluginManager?: GraphPluginManager,
+): Promise<void> => {
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await TEST__buildGraphWithEntities(graphManagerState, entities, {
+    TEMPORARY__keepSectionIndex: true,
+  });
+
+  const transformedEntities = graphManagerState.graph.allOwnElements.map(
+    (element) => graphManagerState.graphManager.elementToEntity(element),
+  );
+  // ensure that transformed entities have all fields ordered alphabetically
+  transformedEntities.forEach((entity) =>
+    TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
+  );
+  // check if the contents are the same (i.e. roundtrip test)
+  expect(transformedEntities).toIncludeSameMembers(
+    TEST__excludeSectionIndex(entities),
+  );
+  await TEST__checkGraphHashUnchanged(graphManagerState, entities);
 };
 
 export const TEST__checkBuildingResolvedElements = async (

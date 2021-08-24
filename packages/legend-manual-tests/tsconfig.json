@@ -7,11 +7,5 @@
     "allowJs": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
-  "references": [
-    { "path": "../legend-shared" },
-    { "path": "../legend-graph" },
-    { "path": "../legend-studio" },
-    { "path": "../legend-server-sdlc" },
-    { "path": "../legend-art" }
-  ]
+  "references": [{ "path": "../legend-shared" }, { "path": "../legend-graph" }]
 }

@@ -44,15 +44,11 @@ export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor
 
 // test
 export {
-  TEST__getTestEditorStore,
-  TEST__buildGraphBasic,
-  TEST__checkBuildingElementsRoundtrip,
-} from './stores/EditorStoreTestUtils';
-export {
   TEST__provideMockedEditorStore,
   TEST__setUpEditor,
   TEST__setUpEditorWithDefaultSDLCData,
 } from './components/EditorComponentTestUtils';
+export { TEST__getTestEditorStore } from './stores/EditorStoreTestUtils';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
