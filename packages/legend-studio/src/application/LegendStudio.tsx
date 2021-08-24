@@ -19,6 +19,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { StudioPluginManager } from './StudioPluginManager';
+import type {
+  LegendApplicationConfig,
+  LegendApplicationVersionData,
+} from '@finos/legend-application';
 import {
   LegendApplication,
   setupLegendApplicationUILibrary,
@@ -27,6 +31,8 @@ import {
 import type { Log } from '@finos/legend-shared';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
+import type { StudioConfigurationData } from './StudioConfig';
+import { StudioConfig } from './StudioConfig';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: StudioPluginManager,
@@ -50,12 +56,21 @@ const setupLegendStudioUILibrary = async (
 };
 
 export class LegendStudio extends LegendApplication {
+  declare config: StudioConfig;
   declare pluginManager: StudioPluginManager;
 
   static create(): LegendStudio {
     const application = new LegendStudio(StudioPluginManager.create());
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
     return application;
+  }
+
+  async configureApplication(
+    configData: StudioConfigurationData,
+    versionData: LegendApplicationVersionData,
+    baseUrl: string,
+  ): Promise<LegendApplicationConfig> {
+    return new StudioConfig(configData, versionData, baseUrl);
   }
 
   async loadApplication(): Promise<void> {
@@ -70,7 +85,7 @@ export class LegendStudio extends LegendApplication {
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
-            config={this.appConfig}
+            config={this.config}
             pluginManager={this.pluginManager}
             log={this.log}
           />

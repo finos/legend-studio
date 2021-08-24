@@ -54,11 +54,12 @@ import {
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const currentUserId =
     editorStore.sdlcServerClient.currentUser?.userId ?? '(unknown)';
   const currentProject = reviewStore.currentProject

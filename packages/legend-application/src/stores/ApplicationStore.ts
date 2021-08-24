@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from './ApplicationLogEvent';
-import type { ApplicationConfig } from './ApplicationConfig';
+import type { LegendApplicationConfig } from './ApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 
 export enum ActionAlertType {
@@ -93,19 +93,15 @@ export class Notification {
   }
 }
 
-export class ApplicationStore {
+export class ApplicationStore<T extends LegendApplicationConfig> {
   navigator: WebApplicationNavigator;
   notification?: Notification;
   log: Log;
   blockingAlertInfo?: BlockingAlertInfo;
   actionAlertInfo?: ActionAlertInfo;
-  config: ApplicationConfig;
+  config: T;
 
-  constructor(
-    config: ApplicationConfig,
-    navigator: WebApplicationNavigator,
-    log: Log,
-  ) {
+  constructor(config: T, navigator: WebApplicationNavigator, log: Log) {
     makeAutoObservable(this, {
       navigator: false,
       setBlockingAlert: action,

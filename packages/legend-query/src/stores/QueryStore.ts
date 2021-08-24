@@ -68,6 +68,7 @@ import {
 import type { ApplicationStore } from '@finos/legend-application';
 import { APPLICATION_LOG_EVENT, TAB_SIZE } from '@finos/legend-application';
 import type { QueryPluginManager } from '../application/QueryPluginManager';
+import type { QueryConfig } from '../application/QueryConfig';
 
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
@@ -296,7 +297,7 @@ export class QueryExportState {
 }
 
 export class QueryStore {
-  applicationStore: ApplicationStore;
+  applicationStore: ApplicationStore<QueryConfig>;
   depotServerClient: DepotServerClient;
   graphManagerState: GraphManagerState;
   pluginManager: QueryPluginManager;
@@ -309,7 +310,7 @@ export class QueryStore {
   editorInitState = ActionState.create();
 
   constructor(
-    applicationStore: ApplicationStore,
+    applicationStore: ApplicationStore<QueryConfig>,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
     pluginManager: QueryPluginManager,
@@ -620,8 +621,6 @@ export class QueryStore {
             clientConfig: {
               baseUrl: this.applicationStore.config.engineServerUrl,
               enableCompression: true,
-              autoReAuthenticateUrl:
-                this.applicationStore.config.engineAutoReAuthenticationUrl,
             },
           },
           {

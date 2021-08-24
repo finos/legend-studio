@@ -235,9 +235,6 @@ export class ViewerStore {
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
               enableCompression: true,
-              autoReAuthenticateUrl:
-                this.editorStore.applicationStore.config
-                  .engineAutoReAuthenticationUrl,
             },
           },
           {

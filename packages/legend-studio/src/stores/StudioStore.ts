@@ -39,11 +39,12 @@ import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
+import type { StudioConfig } from '../application/StudioConfig';
 
 const UNKNOWN_USER_ID = '(unknown)';
 
 export class StudioStore {
-  applicationStore: ApplicationStore;
+  applicationStore: ApplicationStore<StudioConfig>;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
   pluginManager: StudioPluginManager;
@@ -55,7 +56,7 @@ export class StudioStore {
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
   constructor(
-    applicationStore: ApplicationStore,
+    applicationStore: ApplicationStore<StudioConfig>,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     pluginManager: StudioPluginManager,

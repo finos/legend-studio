@@ -30,10 +30,10 @@ import {
   MONOSPACED_FONT_FAMILY,
 } from '../const';
 import type {
-  ConfigurationData,
+  LegendApplicationConfig,
+  LegendApplicationConfigurationData,
   LegendApplicationVersionData,
 } from '../stores/ApplicationConfig';
-import { ApplicationConfig } from '../stores/ApplicationConfig';
 import type {
   AbstractPlugin,
   AbstractPluginManager,
@@ -119,7 +119,7 @@ export const setupLegendApplicationUILibrary = async (
 };
 
 export abstract class LegendApplication {
-  protected appConfig!: ApplicationConfig;
+  protected config!: LegendApplicationConfig;
 
   protected pluginManager: AbstractPluginManager;
   protected basePresets: AbstractPreset[] = [];
@@ -129,7 +129,7 @@ export abstract class LegendApplication {
   protected baseUrl!: string;
   protected pluginRegister?: (
     pluginManager: AbstractPluginManager,
-    config: ApplicationConfig,
+    config: LegendApplicationConfig,
   ) => void;
   protected _isConfigured = false;
 
@@ -146,7 +146,7 @@ export abstract class LegendApplication {
      */
     pluginRegister?: (
       pluginManager: AbstractPluginManager,
-      config: ApplicationConfig,
+      config: LegendApplicationConfig,
     ) => void;
   }): LegendApplication {
     this.baseUrl = guaranteeNonEmptyString(
@@ -185,11 +185,11 @@ export abstract class LegendApplication {
 
   async fetchApplicationConfiguration(
     baseUrl: string,
-  ): Promise<[ApplicationConfig, Record<PropertyKey, object>]> {
+  ): Promise<[LegendApplicationConfig, Record<PropertyKey, object>]> {
     const client = new NetworkClient();
-    let configData: ConfigurationData | undefined;
+    let configData: LegendApplicationConfigurationData | undefined;
     try {
-      configData = await client.get<ConfigurationData>(
+      configData = await client.get<LegendApplicationConfigurationData>(
         `${window.location.origin}${baseUrl}config.json`,
       );
     } catch (error: unknown) {
@@ -219,10 +219,16 @@ export abstract class LegendApplication {
     }
     assertNonNullable(versionData, `Can't fetch Legend application version`);
     return [
-      new ApplicationConfig(configData, versionData, baseUrl),
-      (configData.options ?? {}) as Record<PropertyKey, object>,
+      await this.configureApplication(configData, versionData, baseUrl),
+      (configData.extensions ?? {}) as Record<PropertyKey, object>,
     ];
   }
+
+  protected abstract configureApplication(
+    configData: LegendApplicationConfigurationData,
+    versionData: LegendApplicationVersionData,
+    baseUrl: string,
+  ): Promise<LegendApplicationConfig>;
 
   protected abstract loadApplication(): Promise<void>;
 
@@ -233,13 +239,13 @@ export abstract class LegendApplication {
     );
     try {
       // Fetch application config
-      const [appConfig, pluginConfigData] =
+      const [config, extensionConfigData] =
         await this.fetchApplicationConfiguration(this.baseUrl);
-      this.appConfig = appConfig;
+      this.config = config;
 
       // Setup plugins
-      this.pluginRegister?.(this.pluginManager, this.appConfig);
-      this.pluginManager.configure(pluginConfigData);
+      this.pluginRegister?.(this.pluginManager, this.config);
+      this.pluginManager.configure(extensionConfigData);
       this.pluginManager.install();
 
       await this.loadApplication();

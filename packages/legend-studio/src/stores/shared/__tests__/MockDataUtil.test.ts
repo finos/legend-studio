@@ -59,7 +59,7 @@ test(unitTest('Class with hierarchy cycle is detected'), () => {
   const simpleClass = editorStore.graphManagerState.graph.getClass(
     'myPackage::test::shared::src::Address',
   );
-  expect(classHasCycle(cycledComplexClass, true, new Set<string>())).toBeTrue();
+  expect(classHasCycle(cycledComplexClass, true, new Set<string>())).toBe(true);
   expect(
     classHasCycle(nonComplexStyleClass, true, new Set<string>()),
   ).toBeFalse();

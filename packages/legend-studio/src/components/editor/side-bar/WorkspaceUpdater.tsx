@@ -46,10 +46,11 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
+import type { StudioConfig } from '../../../application/StudioConfig';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const sdlcState = editorStore.sdlcState;
   const currentEditorState = editorStore.currentEditorState;
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;

@@ -25,7 +25,7 @@
     { "path": "packages/legend-studio-plugin-management" },
     { "path": "packages/legend-studio-preset-dsl-text" },
     { "path": "packages/legend-studio-preset-query-builder" },
-    { "path": "packages/legend-studio-manual-tests" },
+    { "path": "packages/legend-manual-tests" },
     { "path": "packages/legend-query" },
     { "path": "packages/legend-query-app" },
     { "path": "packages/legend-query-deployment" }

@@ -41,14 +41,15 @@ import {
   useApplicationStore,
   NotificationSnackbar,
 } from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore();
-  const config = applicationStore.config;
+  const applicationStore = useApplicationStore<StudioConfig>();
   const importProjectSuccessReport = setupStore.importProjectSuccessReport;
   const projectNameInputRef = useRef<HTMLInputElement>(null);
-  const defaultType = config.options.TEMPORARY__useSDLCProductionProjectsOnly
+  const defaultType = applicationStore.config.options
+    .TEMPORARY__useSDLCProductionProjectsOnly
     ? ProjectType.PRODUCTION
     : ProjectType.PROTOTYPE;
   const [projectType, setProjectType] = useState<ProjectType>(defaultType);
@@ -216,7 +217,8 @@ const CreateProjectModal = observer(() => {
                   production project. Prototype projects should only be used as
                   playgrounds or proofs-of-concept.
                 </div>
-                {config.options.TEMPORARY__useSDLCProductionProjectsOnly ||
+                {applicationStore.config.options
+                  .TEMPORARY__useSDLCProductionProjectsOnly ||
                 Boolean(importProjectSuccessReport) ? (
                   <input
                     className="panel__content__form__section__input"
@@ -585,7 +587,7 @@ const CreateWorkspaceModal = observer(() => {
 
 const SetupSelection = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const config = applicationStore.config;
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);

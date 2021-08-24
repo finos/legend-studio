@@ -34,7 +34,6 @@ import type { Log } from '@finos/legend-shared';
 import { QueryStoreProvider, useQueryStore } from './QueryStoreProvider';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
-import type { ApplicationConfig } from '@finos/legend-application';
 import {
   ActionAlert,
   ApplicationStoreProvider,
@@ -44,6 +43,7 @@ import {
   useWebApplicationNavigator,
 } from '@finos/legend-application';
 import type { QueryPluginManager } from '../application/QueryPluginManager';
+import type { QueryConfig } from '../application/QueryConfig';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useQueryStore();
@@ -92,16 +92,13 @@ const LegendQueryApplicationInner = observer(() => {
 
 export const LegendQueryApplication = observer(
   (props: {
-    config: ApplicationConfig;
+    config: QueryConfig;
     pluginManager: QueryPluginManager;
     log: Log;
   }) => {
     const { config, pluginManager, log } = props;
     const navigator = useWebApplicationNavigator();
 
-    if (!config.isConfigured) {
-      return null;
-    }
     return (
       <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
         <DepotServerClientProvider

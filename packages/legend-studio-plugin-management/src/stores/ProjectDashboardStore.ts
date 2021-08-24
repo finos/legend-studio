@@ -19,9 +19,10 @@ import { makeAutoObservable } from 'mobx';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import { Build, Project, ProjectType } from '@finos/legend-server-sdlc';
+import type { StudioConfig } from '@finos/legend-studio';
 
 export class ProjectDashboardStore {
-  applicationStore: ApplicationStore;
+  applicationStore: ApplicationStore<StudioConfig>;
   sdlcServerClient: SDLCServerClient;
   projects: Map<string, Project> = new Map<string, Project>();
   /**
@@ -35,7 +36,7 @@ export class ProjectDashboardStore {
   isFetchingProjects = false;
 
   constructor(
-    applicationStore: ApplicationStore,
+    applicationStore: ApplicationStore<StudioConfig>,
     sdlcServerClient: SDLCServerClient,
   ) {
     makeAutoObservable(this, {

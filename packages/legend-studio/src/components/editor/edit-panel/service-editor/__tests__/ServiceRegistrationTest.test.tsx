@@ -42,7 +42,6 @@ import { ServiceEditorState } from '../../../../../stores/editor-state/element-e
 import {
   NOTIFCATION_SEVERITY,
   TEST__provideMockedApplicationStore,
-  TEST__getTestApplicationConfig,
 } from '@finos/legend-application';
 import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState';
 import { flowResult } from 'mobx';
@@ -51,6 +50,7 @@ import {
   ServiceExecutionMode,
   ServiceRegistrationResult,
 } from '@finos/legend-graph';
+import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils';
 
 let renderResult: RenderResult;
 
@@ -60,9 +60,9 @@ const setup = async (
   versions?: PlainObject<Version>[],
 ): Promise<EditorStore> => {
   const mockedEditorStore = TEST__provideMockedEditorStore({
-    applicationStore: TEST__provideMockedApplicationStore({
-      config: TEST__getTestApplicationConfig({
-        options: {
+    applicationStore: TEST__provideMockedApplicationStore(
+      TEST__getTestStudioConfig({
+        extensions: {
           core: {
             TEMPORARY__serviceRegistrationConfig: [
               {
@@ -92,7 +92,7 @@ const setup = async (
           },
         },
       }),
-    }),
+    ),
   });
   renderResult = await TEST__setUpEditor(mockedEditorStore, {
     project: project,

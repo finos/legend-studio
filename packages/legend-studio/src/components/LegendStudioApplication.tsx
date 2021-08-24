@@ -43,10 +43,6 @@ import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { StudioStoreProvider, useStudioStore } from './StudioStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
-import type {
-  ApplicationConfig,
-  SDLCServerOption,
-} from '@finos/legend-application';
 import {
   ActionAlert,
   ApplicationStoreProvider,
@@ -55,10 +51,14 @@ import {
   useApplicationStore,
   useWebApplicationNavigator,
 } from '@finos/legend-application';
+import type {
+  SDLCServerOption,
+  StudioConfig,
+} from '../application/StudioConfig';
 
 export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useStudioStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const extraApplicationPageRenderEntries = studioStore.pluginManager
     .getStudioPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? [])
@@ -148,7 +148,7 @@ export const LegendStudioApplicationRoot = observer(() => {
 });
 
 const LegendStudioApplicationConfigEditor = observer(
-  (props: { config: ApplicationConfig }) => {
+  (props: { config: StudioConfig }) => {
     const { config } = props;
     const navigator = useWebApplicationNavigator();
     const sdlcServerOptions = config.sdlcServerOptions.map((option) => ({
@@ -206,7 +206,7 @@ const LegendStudioApplicationConfigEditor = observer(
 
 export const LegendStudioApplication = observer(
   (props: {
-    config: ApplicationConfig;
+    config: StudioConfig;
     pluginManager: StudioPluginManager;
     log: Log;
   }) => {

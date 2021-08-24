@@ -23,6 +23,7 @@ import { FaPlus } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 export const WorkspaceSelector = observer(
   (
@@ -34,7 +35,7 @@ export const WorkspaceSelector = observer(
   ) => {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
-    const applicationStore = useApplicationStore();
+    const applicationStore = useApplicationStore<StudioConfig>();
     const currentWorkspaceId = setupStore.currentWorkspaceId;
     const options = setupStore.currentProjectWorkspaceOptions;
     const selectedOption =

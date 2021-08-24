@@ -14,29 +14,11 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
-import { ApplicationConfig, URL_PATH_PLACEHOLDER } from './ApplicationConfig';
 import { ApplicationStore } from './ApplicationStore';
 import { createBrowserHistory } from 'history';
 import { WebApplicationNavigator } from './WebApplicationNavigator';
 import { Log } from '@finos/legend-shared';
-
-export const TEST_DATA__applicationConfig = {
-  appName: 'test-app',
-  env: 'test-env',
-  sdlc: {
-    url: 'https://testSdlcUrl',
-  },
-  engine: {
-    url: 'https://testEngineUrl',
-  },
-  depot: {
-    url: 'https://testMetadataUrl',
-  },
-  documentation: {
-    url: 'https://testDocUrl',
-  },
-};
+import type { LegendApplicationConfig } from './ApplicationConfig';
 
 export const TEST_DATA__applicationVersion = {
   buildTime: '2001-01-01T00:00:00-0000',
@@ -44,24 +26,13 @@ export const TEST_DATA__applicationVersion = {
   commitSHA: 'test-commit-id',
 };
 
-export const TEST__getTestApplicationConfig = (
-  extraConfigData = {},
-): ApplicationConfig => {
-  const config = new ApplicationConfig(
-    {
-      ...TEST_DATA__applicationConfig,
-      ...extraConfigData,
-    },
-    TEST_DATA__applicationVersion,
-    '/studio/',
-  );
-  config.setSDLCServerKey(URL_PATH_PLACEHOLDER);
-  return config;
-};
-
-export const TEST__getTestApplicationStore = (): ApplicationStore =>
+export const TEST__getTestApplicationStore = <
+  T extends LegendApplicationConfig,
+>(
+  config: T,
+): ApplicationStore<T> =>
   new ApplicationStore(
-    TEST__getTestApplicationConfig(),
+    config,
     new WebApplicationNavigator(createBrowserHistory()),
     new Log(),
   );

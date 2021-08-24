@@ -26,12 +26,13 @@ import { FiShare } from 'react-icons/fi';
 import type { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../../../application/StudioConfig';
 
 const ShareModal = observer(
   (props: { open: boolean; closeModal: () => void }) => {
     const { open, closeModal } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
+    const applicationStore = useApplicationStore<StudioConfig>();
     const versions = editorStore.sdlcState.projectVersions;
     const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
     const isFetchingProject = editorStore.sdlcState.isFetchingProject;

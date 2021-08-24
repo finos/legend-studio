@@ -15,7 +15,7 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import { Log, unitTest } from '@finos/legend-shared';
+import { unitTest } from '@finos/legend-shared';
 import {
   TEST_DATA__M2MModel,
   TEST_DATA__complexRelationalModel,
@@ -33,8 +33,10 @@ import {
   groupByWithDerivationProjection,
   groupByWithDerivationAndAggregation,
 } from './QueryBuilder_ProcessingRoundtrip_TestDerivation';
-import { GraphManagerState } from '@finos/legend-graph';
-import { flowResult } from 'mobx';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '@finos/legend-graph';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { QueryPluginManager } from '../../application/QueryPluginManager';
 
@@ -94,18 +96,10 @@ const cases: RoundtripTestCase[] = [
 describe(unitTest('Lambda processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, lambdaJson) => {
     const { entities } = context;
-    // setup
-    const graphManagerState = new GraphManagerState(pluginManager, new Log());
-    await flowResult(graphManagerState.initializeSystem());
-    await flowResult(
-      graphManagerState.graphManager.buildGraph(
-        graphManagerState.graph,
-        entities,
-        {
-          TEMPORARY__keepSectionIndex: true,
-        },
-      ),
-    );
+    const pluginManager = QueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+    await TEST__buildGraphWithEntities(graphManagerState, entities);
     // roundtrip check
     const lambda = graphManagerState.graphManager.buildValueSpecification(
       lambdaJson,

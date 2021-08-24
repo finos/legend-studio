@@ -17,6 +17,7 @@
 // application
 export * from './components/StudioStoreProvider';
 export * from './application/LegendStudio';
+export * from './application/StudioConfig';
 export * from './application/StudioPluginManager';
 export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
 
@@ -44,15 +45,11 @@ export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor
 
 // test
 export {
-  TEST__getTestEditorStore,
-  TEST__buildGraphBasic,
-  TEST__checkBuildingElementsRoundtrip,
-} from './stores/EditorStoreTestUtils';
-export {
   TEST__provideMockedEditorStore,
   TEST__setUpEditor,
   TEST__setUpEditorWithDefaultSDLCData,
 } from './components/EditorComponentTestUtils';
+export * from './stores/EditorStoreTestUtils';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

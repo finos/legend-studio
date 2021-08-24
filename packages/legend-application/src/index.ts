@@ -32,11 +32,7 @@ export * from './components/LambdaEditor';
 
 export * from './stores/ApplicationStore';
 export { APPLICATION_LOG_EVENT } from './stores/ApplicationLogEvent';
-export type { SDLCServerOption } from './stores/ApplicationConfig';
-export {
-  ServiceRegistrationEnvInfo,
-  ApplicationConfig,
-} from './stores/ApplicationConfig';
+export * from './stores/ApplicationConfig';
 export { WebApplicationNavigator } from './stores/WebApplicationNavigator';
 export { LambdaEditorState } from './stores/LambdaEditorState';
 export * from './stores/PackageableElementOption';
