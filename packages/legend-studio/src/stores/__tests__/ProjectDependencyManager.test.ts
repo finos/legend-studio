@@ -16,7 +16,6 @@
 
 import type { PlainObject } from '@finos/legend-shared';
 import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
-import { waitFor } from '@testing-library/dom';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
@@ -183,12 +182,10 @@ const testDependencyElements = async (
       dependencyEntitiesMap,
     ),
   );
-  await waitFor(() =>
-    expect(
-      editorStore.graphManagerState.graph.dependencyManager.buildState
-        .hasSucceeded,
-    ).toBeTrue(),
-  );
+  expect(
+    editorStore.graphManagerState.graph.dependencyManager.buildState
+      .hasSucceeded,
+  ).toBeTrue();
 
   await flowResult(
     editorStore.graphManagerState.graphManager.buildGraph(
@@ -197,17 +194,17 @@ const testDependencyElements = async (
       { TEMPORARY__keepSectionIndex: true },
     ),
   );
-  await waitFor(() =>
-    expect(
-      editorStore.graphManagerState.graph.buildState.hasSucceeded,
-    ).toBeTrue(),
-  );
+  expect(
+    editorStore.graphManagerState.graph.buildState.hasSucceeded,
+  ).toBeTrue();
+
   Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
   Array.from(keys).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
+
   expect(dependencyManager.allElements.length).toBe(
     dependencyElementPaths.length,
   );

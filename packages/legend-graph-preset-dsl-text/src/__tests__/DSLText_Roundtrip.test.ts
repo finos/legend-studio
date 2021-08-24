@@ -18,8 +18,10 @@ import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import { TEST_DATA__roundtrip } from './DSLText_RoundtripTestData';
 import { DSLText_GraphPreset } from '../DSLText_GraphPreset';
-import { TEST__GraphPluginManager } from '@finos/legend-graph';
-import { TEST__checkBuildingElementsRoundtrip } from '@finos/legend-graph';
+import {
+  TEST__GraphPluginManager,
+  TEST__checkBuildingElementsRoundtrip,
+} from '@finos/legend-graph';
 
 const pluginManager = new TEST__GraphPluginManager();
 pluginManager.usePresets([new DSLText_GraphPreset()]).install();
