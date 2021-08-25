@@ -147,7 +147,7 @@ export interface StudioConfigurationData
   env: string;
   sdlc: { url: string } | SDLCServerOption[];
   depot: { url: string };
-  engine: { url: string; autoReAuthenticationUrl?: string };
+  engine: { url: string };
   documentation: { url: string };
 }
 

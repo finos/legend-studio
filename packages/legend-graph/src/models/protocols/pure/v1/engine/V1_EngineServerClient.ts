@@ -72,11 +72,23 @@ enum CORE_ENGINE_TRACER_SPAN {
 }
 
 export class V1_EngineServerClient extends AbstractServerClient {
-  private version = 'v1';
   currentUserId?: string;
   private env?: string;
 
-  constructor(config: ServerClientConfig) {
+  // NOTE: this is an attempt to follow engine's effort to be split into multiple pieces
+  // for better operational performance overall.
+  // e.g. we dedicate some servers for query, some for services, etc.
+  //
+  // if we do it like this, there might be some complications about the getting the current
+  // user, right now we assume to make some call on the query servers, for example, but
+  // getting the user from the main engine server, which seems problematic.
+  private queryBaseUrl?: string;
+
+  constructor(
+    config: ServerClientConfig & {
+      queryBaseUrl?: string;
+    },
+  ) {
     super(config);
 
     makeObservable(this, {
@@ -85,6 +97,8 @@ export class V1_EngineServerClient extends AbstractServerClient {
       setBaseUrl: action,
       setCompression: action,
     });
+
+    this.queryBaseUrl = config.queryBaseUrl;
   }
 
   setEnv = (value: string | undefined): void => {
@@ -107,12 +121,11 @@ export class V1_EngineServerClient extends AbstractServerClient {
     },
   });
 
-  _pure = (): string => `${this.networkClient.baseUrl}/pure/${this.version}`;
+  _pure = (): string => `${this.networkClient.baseUrl}/pure/v1`;
 
   // ------------------------------------------- Server -------------------------------------------
 
-  _server = (): string =>
-    `${this.networkClient.baseUrl}/server/${this.version}`;
+  _server = (): string => `${this.networkClient.baseUrl}/server/v1`;
   getCurrentUserId = (): Promise<string> =>
     this.networkClient.get(`${this._server()}/currentUser`);
 
@@ -155,6 +168,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       undefined,
       { enableCompression: true },
     );
+
   transformRelationalOperationElementJSONToGrammar = (
     input: PlainObject<V1_RelationalOperationElementJsonToGrammarInput>,
   ): Promise<PlainObject<V1_RelationalOperationElementGrammarToJsonInput>> =>
@@ -316,7 +330,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Service -------------------------------------------
 
   _service = (serviceServerUrl?: string): string =>
-    `${serviceServerUrl ?? this.networkClient.baseUrl}/service/${this.version}`;
+    `${serviceServerUrl ?? this.networkClient.baseUrl}/service/v1`;
   getServerServiceInfo = (): Promise<
     PlainObject<V1_ServiceConfigurationInfo>
   > => this.networkClient.get(`${this._server()}/info/services`);
@@ -376,7 +390,9 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Query -------------------------------------------
 
   _query = (queryId?: string): string =>
-    `${this._pure()}/query${queryId ? `/${encodeURIComponent(queryId)}` : ''}`;
+    `${this.queryBaseUrl ?? this._pure()}/query${
+      queryId ? `/${encodeURIComponent(queryId)}` : ''
+    }`;
   getQueries = (
     search: string | undefined,
     showCurrentUserQueriesOnly: boolean | undefined,

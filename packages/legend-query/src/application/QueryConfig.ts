@@ -29,12 +29,13 @@ export interface QueryConfigurationData
   appName: string;
   env: string;
   depot: { url: string };
-  engine: { url: string };
+  engine: { url: string; queryUrl?: string };
   extensions?: Record<PropertyKey, unknown>;
 }
 
 export class QueryConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
+  readonly engineQueryServerUrl?: string;
   readonly depotServerUrl: string;
 
   constructor(
@@ -52,6 +53,7 @@ export class QueryConfig extends LegendApplicationConfig {
       configData.engine.url,
       `Application configuration failure: 'engine.url' field is missing or empty`,
     );
+    this.engineQueryServerUrl = configData.engine.queryUrl;
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
       `Application configuration failure: 'depot.url' field is missing or empty`,
