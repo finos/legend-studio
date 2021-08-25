@@ -112,11 +112,18 @@ jobs:
   # artifacts to publish to Docker.
   application-test-build:
     name: Check Application Build
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        application:
-          ['@finos/legend-studio-deployment', '@finos/legend-query-deployment']
+        include:
+          - application: '@finos/legend-studio-deployment'
+            os: ubuntu-latest
+          # NOTE: here we run a build on Windows just to check how the build process work for Windows
+          # developers. Setting up an OS matrix for all applications is unnecessary.
+          - application: '@finos/legend-studio-deployment'
+            os: windows-latest
+          - application: '@finos/legend-query-deployment'
+            os: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.3.4
