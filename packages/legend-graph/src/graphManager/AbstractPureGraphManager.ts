@@ -59,7 +59,9 @@ import type { GraphPluginManager } from '../GraphPluginManager';
 export interface TEMP__EngineSetupConfig {
   env: string;
   tabSize: number;
-  clientConfig: ServerClientConfig;
+  clientConfig: ServerClientConfig & {
+    queryBaseUrl?: string;
+  };
 }
 
 export interface GraphBuilderOptions {

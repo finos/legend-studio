@@ -620,6 +620,7 @@ export class QueryStore {
             tabSize: TAB_SIZE,
             clientConfig: {
               baseUrl: this.applicationStore.config.engineServerUrl,
+              queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
               enableCompression: true,
             },
           },
