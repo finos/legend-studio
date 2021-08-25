@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { platform } from 'os';
 import { existsSync, readdirSync, copyFileSync, writeFileSync } from 'fs';
 import chalk from 'chalk';
 import { resolve, dirname } from 'path';
@@ -32,7 +33,14 @@ const workspaceName = packageJson.name;
 
 const preparePublishContent = async () => {
   const packageConfig = existsSync(resolve(workspaceDir, '_package.config.js'))
-    ? (await import(resolve(workspaceDir, '_package.config.js'))).default
+    ? (
+        await import(
+          `${platform() === 'win32' ? 'file://' : ''}${resolve(
+            workspaceDir,
+            '_package.config.js',
+          )}`
+        )
+      ).default
     : undefined;
   console.log(`Preparing publish content for workspace '${workspaceName}'...`);
 
