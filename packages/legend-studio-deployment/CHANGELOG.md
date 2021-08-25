@@ -1,5 +1,12 @@
 # @finos/legend-studio-deployment
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @finos/legend-studio-app@0.0.2
+
 ## 0.0.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-plugin-management",
-  "version": "0.0.48",
+  "version": "0.0.49",
   "description": "Legend Studio plugin for management/admin tooling",
   "keywords": [
     "legend",

@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 0.0.2
+
+### Patch Changes
+
+- [#434](https://github.com/finos/legend-studio/pull/434) [`03b6a3d3`](https://github.com/finos/legend-studio/commit/03b6a3d375965b4dbc850dbaf695dc5400c9ffb2) Thanks [@akphi](https://github.com/akphi)! - Allow configuring a separate base URL for query APIs in engine client via the settings `engine: { queryUrl?: <string> }`
+
+- Updated dependencies []:
+  - @finos/legend-model-storage@0.0.1
+  - @finos/legend-shared@0.0.1
+
 ## 0.0.1
 
 ### Patch Changes
