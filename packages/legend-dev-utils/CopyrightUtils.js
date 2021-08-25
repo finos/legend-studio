@@ -16,7 +16,7 @@
 
 import { resolve } from 'path';
 import { existsSync, lstatSync, writeFile, writeFileSync } from 'fs';
-import { EOL } from 'os';
+import { EOL, platform } from 'os';
 import micromatch from 'micromatch';
 import { execSync } from 'child_process';
 import { isBinaryFileSync } from 'isbinaryfile';
@@ -234,7 +234,10 @@ export const addCopyrightHeaderToBundledOutput = async ({
   configPath,
   file,
 }) => {
-  const config = (await import(configPath)).default;
+  // NOTE: Windows requires prefix `file://` for absolute path
+  const config = (
+    await import(`${platform() === 'win32' ? 'file://' : ''}${configPath}`)
+  ).default;
   const copyrightText = config?.build?.copyrightText;
   if (!copyrightText) {
     exitWithError(
