@@ -1,5 +1,11 @@
 # @finos/legend-dev-utils
 
+## 0.0.2
+
+### Patch Changes
+
+- [#431](https://github.com/finos/legend-studio/pull/431) [`aaab6874`](https://github.com/finos/legend-studio/commit/aaab68749d7d89bab16ad747b5b1c547c30ca1a3) Thanks [@akphi](https://github.com/akphi)! - Fix problem with Webpack build and scripts using dynamic imports not working with `Windows`.
+
 ## 0.0.1
 
 ### Patch Changes

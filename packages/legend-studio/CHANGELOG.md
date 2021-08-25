@@ -1,5 +1,18 @@
 # @finos/legend-studio
 
+## 0.2.12
+
+### Patch Changes
+
+- Updated dependencies [[`03b6a3d3`](https://github.com/finos/legend-studio/commit/03b6a3d375965b4dbc850dbaf695dc5400c9ffb2), [`03b6a3d3`](https://github.com/finos/legend-studio/commit/03b6a3d375965b4dbc850dbaf695dc5400c9ffb2)]:
+  - @finos/legend-graph@0.0.2
+  - @finos/legend-application@0.0.2
+  - @finos/legend-art@0.0.1
+  - @finos/legend-model-storage@0.0.1
+  - @finos/legend-server-depot@0.0.1
+  - @finos/legend-server-sdlc@0.0.1
+  - @finos/legend-shared@0.0.1
+
 ## 0.2.11
 
 ### Patch Changes
