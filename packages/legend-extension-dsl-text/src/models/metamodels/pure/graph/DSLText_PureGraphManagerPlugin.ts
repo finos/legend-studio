@@ -20,11 +20,12 @@ import type { Clazz } from '@finos/legend-shared';
 import type {
   GraphPluginManager,
   PackageableElement,
+  PureGrammarElementLabeler,
 } from '@finos/legend-graph';
 import { PureGraphManagerPlugin } from '@finos/legend-graph';
 
 const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
-export const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
+const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
 
 export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -45,5 +46,16 @@ export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
 
   override getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL];
+  }
+
+  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+    return [
+      (element: PackageableElement): string | undefined => {
+        if (element instanceof Text) {
+          return PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
   }
 }

@@ -19,7 +19,6 @@ import { StudioPlugin } from '@finos/legend-studio';
 import type {
   StudioPluginManager,
   NewElementFromStateCreator,
-  PureGrammarElementLabeler,
   EditorStore,
   ElementEditorState,
   ElementEditorStateCreator,
@@ -35,7 +34,6 @@ import { TextEditorState } from '../stores/TextEditorState';
 import { TextElementEditor } from './TextElementEditor';
 import type { PackageableElement } from '@finos/legend-graph';
 import { Text } from '../models/metamodels/pure/model/packageableElements/Text';
-import { PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL } from '../models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
@@ -135,16 +133,5 @@ export class DSLText_StudioPlugin
 
   getExtraGrammarTextEditorDnDTypes(): string[] {
     return [TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
-  }
-
-  getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Text) {
-          return PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
   }
 }

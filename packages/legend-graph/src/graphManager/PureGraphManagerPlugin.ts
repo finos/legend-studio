@@ -18,6 +18,10 @@ import { AbstractPlugin } from '@finos/legend-shared';
 import type { Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 
+export type PureGrammarElementLabeler = (
+  metamodel: PackageableElement,
+) => string | undefined;
+
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
 
@@ -26,6 +30,8 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   getExtraPureGrammarParserNames?(): string[];
 
   getExtraPureGrammarKeywords?(): string[];
+
+  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 
   /**
    * Many system elements are included when building the graph, but only a few should
