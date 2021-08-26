@@ -1,24 +1,21 @@
 {
-  "name": "@finos/legend-studio-preset-dsl-text",
-  "version": "0.0.49",
-  "description": "Legend Studio preset for Text DSL",
+  "name": "@finos/legend-extension-dsl-text",
+  "version": "0.0.0",
+  "description": "Legend extension for Text DSL",
   "keywords": [
     "legend",
-    "legend-studio",
-    "studio",
+    "legend-extension",
     "dsl",
-    "dsl-text",
-    "preset",
-    "preset-dsl-text"
+    "dsl-text"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-preset-dsl-text",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-text",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-studio-preset-dsl-text"
+    "directory": "packages/legend-extension-dsl-text"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -43,7 +40,6 @@
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-graph-preset-dsl-text": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
@@ -71,6 +67,9 @@
     "directory": "build/publishContent"
   },
   "extensions": {
+    "graphPreset": "@finos/legend-graph-preset-dsl-text",
+    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-text-pure-protocol-processor",
+    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-text-pure-graph-manager",
     "studioPreset": "@finos/legend-studio-preset-dsl-text",
     "studioPlugin": "@finos/legend-studio-plugin-dsl-text"
   }

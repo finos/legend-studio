@@ -18,10 +18,8 @@ import packageJson from '../package.json';
 import type { StudioPluginManager } from '@finos/legend-studio';
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSLText_StudioPlugin } from './components/DSLText_StudioPlugin';
-import {
-  DSLText_PureGraphManagerPlugin,
-  DSLText_PureProtocolProcessorPlugin,
-} from '@finos/legend-graph-preset-dsl-text';
+import { DSLText_PureGraphManagerPlugin } from './models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
+import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin';
 
 export class DSLText_StudioPreset extends AbstractPreset {
   constructor() {

@@ -24,7 +24,16 @@ export default {
   displayName: packageJson.name,
   name: packageJson.name,
   rootDir: '../..',
+  testEnvironment: 'jsdom',
+  setupFiles: [
+    ...base.setupFiles,
+    '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
+  ],
+  moduleNameMapper: {
+    ...base.moduleNameMapper,
+    '^monaco-editor$': '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
+  },
   testMatch: [
-    '<rootDir>/packages/legend-graph-preset-external-format-json-schema/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+    '<rootDir>/packages/legend-extension-dsl-text/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
 };

@@ -1,25 +1,22 @@
 {
-  "name": "@finos/legend-graph-preset-external-format-json-schema",
-  "version": "0.0.2",
-  "description": "Legend Studio preset for JSON Schema external format",
+  "name": "@finos/legend-extension-external-format-json-schema",
+  "version": "0.0.0",
+  "description": "Legend extension for JSON Schema external format",
   "keywords": [
     "legend",
-    "legend-studio",
-    "studio",
+    "legend-extension",
     "external-format",
     "external-format-json-schema",
-    "preset",
-    "preset-external-format-json-schema",
     "json-schema"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-graph-preset-external-format-json-schema",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-external-format-json-schema",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-graph-preset-external-format-json-schema"
+    "directory": "packages/legend-extension-external-format-json-schema"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

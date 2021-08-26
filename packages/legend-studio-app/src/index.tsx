@@ -16,8 +16,8 @@
 
 import { LegendStudio } from '@finos/legend-studio';
 import { QueryBuilder_StudioPreset } from '@finos/legend-studio-preset-query-builder';
-import { DSLText_StudioPreset } from '@finos/legend-studio-preset-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-graph-preset-external-format-json-schema';
+import { DSLText_StudioPreset } from '@finos/legend-extension-dsl-text';
+import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
 import { BrowserConsole } from '@finos/legend-shared';
 
 export class LegendStudioApplication {

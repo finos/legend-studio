@@ -19,7 +19,7 @@ import type { EditorStore } from '@finos/legend-studio';
 import { guaranteeType } from '@finos/legend-shared';
 import { ElementEditorState } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import { Text } from '@finos/legend-graph-preset-dsl-text';
+import { Text } from '../models/metamodels/pure/model/packageableElements/Text';
 
 export class TextEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {

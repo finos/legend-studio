@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
-export * from './DSLText_StudioPreset';
+export { DSLText_StudioPreset } from './DSLText_StudioPreset';
+export { DSLText_GraphPreset } from './DSLText_GraphPreset';

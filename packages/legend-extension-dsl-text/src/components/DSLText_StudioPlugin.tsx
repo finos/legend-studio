@@ -34,10 +34,8 @@ import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../stores/TextEditorState';
 import { TextElementEditor } from './TextElementEditor';
 import type { PackageableElement } from '@finos/legend-graph';
-import {
-  Text,
-  PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
-} from '@finos/legend-graph-preset-dsl-text';
+import { Text } from '../models/metamodels/pure/model/packageableElements/Text';
+import { PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL } from '../models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';

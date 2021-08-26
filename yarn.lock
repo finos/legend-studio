@@ -2180,21 +2180,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-graph-preset-dsl-text@workspace:*, @finos/legend-graph-preset-dsl-text@workspace:packages/legend-graph-preset-dsl-text":
+"@finos/legend-extension-dsl-text@workspace:*, @finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-graph-preset-dsl-text@workspace:packages/legend-graph-preset-dsl-text"
+  resolution: "@finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text"
   dependencies:
     "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
     "@types/react": 17.0.19
     cross-env: 7.0.3
     eslint: 7.32.0
     jest: 27.0.6
     mobx: 6.3.2
+    mobx-react-lite: 3.2.0
+    monaco-editor: 0.27.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
     rimraf: 3.0.2
+    sass: 1.38.1
     serializr: 2.0.5
     typescript: 4.3.5
   peerDependencies:
@@ -2202,9 +2209,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-graph-preset-external-format-json-schema@workspace:*, @finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema":
+"@finos/legend-extension-external-format-json-schema@workspace:*, @finos/legend-extension-external-format-json-schema@workspace:packages/legend-extension-external-format-json-schema":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-graph-preset-external-format-json-schema@workspace:packages/legend-graph-preset-external-format-json-schema"
+  resolution: "@finos/legend-extension-external-format-json-schema@workspace:packages/legend-extension-external-format-json-schema"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2277,8 +2284,8 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph-preset-dsl-text": "workspace:*"
-    "@finos/legend-graph-preset-external-format-json-schema": "workspace:*"
+    "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-query": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 17.0.19
@@ -2436,10 +2443,10 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph-preset-external-format-json-schema": "workspace:*"
+    "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-preset-dsl-text": "workspace:*"
     "@finos/legend-studio-preset-query-builder": "workspace:*"
     "@types/react": 17.0.19
     cross-env: 7.0.3
@@ -2494,36 +2501,6 @@ __metadata:
     react-router-dom: 5.2.0
     rimraf: 3.0.2
     sass: 1.38.1
-    typescript: 4.3.5
-  peerDependencies:
-    react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-preset-dsl-text@workspace:*, @finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-preset-dsl-text@workspace:packages/legend-studio-preset-dsl-text"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-graph-preset-dsl-text": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.19
-    cross-env: 7.0.3
-    eslint: 7.32.0
-    jest: 27.0.6
-    mobx: 6.3.2
-    mobx-react-lite: 3.2.0
-    monaco-editor: 0.27.0
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    rimraf: 3.0.2
-    sass: 1.38.1
-    serializr: 2.0.5
     typescript: 4.3.5
   peerDependencies:
     react: ^17.0.0

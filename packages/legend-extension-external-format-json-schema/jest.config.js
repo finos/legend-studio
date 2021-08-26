@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-export * from './DSLText_GraphPreset';
+import base from '../../scripts/jest/jest.config.base.js';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
-export {
-  TEXT_TYPE,
-  Text,
-} from './models/metamodels/pure/model/packageableElements/Text';
+const packageJson = loadJSON('./package.json');
 
-export {
-  PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
-  DSLText_PureGraphManagerPlugin,
-} from './models/metamodels/pure/graph/DSLText_PureGraphManagerPlugin';
-export { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin';
+export default {
+  ...base,
+  displayName: packageJson.name,
+  name: packageJson.name,
+  rootDir: '../..',
+  testMatch: [
+    '<rootDir>/packages/legend-extension-external-format-json-schema/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+  ],
+};

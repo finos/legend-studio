@@ -15,8 +15,8 @@
  */
 
 import { LegendQuery } from '@finos/legend-query';
-import { DSLText_GraphPreset } from '@finos/legend-graph-preset-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-graph-preset-external-format-json-schema';
+import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
+import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
 import { BrowserConsole } from '@finos/legend-shared';
 
 export class LegendQueryApplication {

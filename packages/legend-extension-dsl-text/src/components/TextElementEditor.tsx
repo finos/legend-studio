@@ -30,7 +30,7 @@ import {
   MenuContentItem,
 } from '@finos/legend-art';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { TEXT_TYPE } from '@finos/legend-graph-preset-dsl-text';
+import { TEXT_TYPE } from '../models/metamodels/pure/model/packageableElements/Text';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
   switch (type) {

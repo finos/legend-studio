@@ -11,10 +11,10 @@
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
     {
-      "path": "packages/legend-graph-preset-dsl-text"
+      "path": "packages/legend-extension-dsl-text"
     },
     {
-      "path": "packages/legend-graph-preset-external-format-json-schema"
+      "path": "packages/legend-extension-external-format-json-schema"
     },
     { "path": "packages/legend-application" },
     { "path": "packages/legend-art" },
@@ -23,7 +23,6 @@
     { "path": "packages/legend-studio-app" },
     { "path": "packages/legend-studio-deployment" },
     { "path": "packages/legend-studio-plugin-management" },
-    { "path": "packages/legend-studio-preset-dsl-text" },
     { "path": "packages/legend-studio-preset-query-builder" },
     { "path": "packages/legend-manual-tests" },
     { "path": "packages/legend-query" },
