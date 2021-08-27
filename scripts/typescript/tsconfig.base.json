@@ -29,8 +29,8 @@
     // See https://mobx.js.org/installation.html#use-spec-compliant-transpilation-for-class-properties
     // "useDefineForClassFields": true,
     // Other settings
-    "noImplicitOverride": true,
     "strict": true,
+    "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true
   }
 }

@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-import { LegendQuery } from '@finos/legend-query';
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
-import { BrowserConsole } from '@finos/legend-shared';
+import base from '../../scripts/jest/jest.config.base.js';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
-export class LegendQueryApplication {
-  static run(baseUrl: string): void {
-    LegendQuery.create()
-      .setup({ baseUrl })
-      .withPresets([new DSLText_GraphPreset(), new EFJSONSchema_GraphPreset()])
-      .withLoggers([new BrowserConsole()])
-      .start()
-      .catch((e: unknown) => {
-        throw e;
-      });
-  }
-}
+const packageJson = loadJSON('./package.json');
+
+export default {
+  ...base,
+  displayName: packageJson.name,
+  name: packageJson.name,
+  rootDir: '../..',
+  testMatch: [
+    '<rootDir>/packages/legend-extension-external-format-json-schema/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+  ],
+};

@@ -144,10 +144,6 @@ export type ElementProjectExplorerDnDTypeGetter = (
   metamodel: PackageableElement,
 ) => string | undefined;
 
-export type PureGrammarElementLabeler = (
-  metamodel: PackageableElement,
-) => string | undefined;
-
 export interface DSL_StudioPlugin_Extension extends StudioPlugin {
   getExtraSupportedElementTypes?(): string[];
 
@@ -170,8 +166,6 @@ export interface DSL_StudioPlugin_Extension extends StudioPlugin {
   getExtraElementEditorStateCreators?(): ElementEditorStateCreator[];
 
   getExtraElementProjectExplorerDnDTypeGetters?(): ElementProjectExplorerDnDTypeGetter[];
-
-  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 
   getExtraGrammarTextEditorDnDTypes?(): string[];
 }

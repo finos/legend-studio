@@ -20,6 +20,7 @@ export * from './application/LegendStudio';
 export * from './application/StudioConfig';
 export * from './application/StudioPluginManager';
 export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
+export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
 
 // stores
 export * from './stores/StudioPlugin';

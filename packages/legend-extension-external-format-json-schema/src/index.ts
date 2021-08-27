@@ -14,20 +14,4 @@
  * limitations under the License.
  */
 
-import { LegendQuery } from '@finos/legend-query';
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
-import { BrowserConsole } from '@finos/legend-shared';
-
-export class LegendQueryApplication {
-  static run(baseUrl: string): void {
-    LegendQuery.create()
-      .setup({ baseUrl })
-      .withPresets([new DSLText_GraphPreset(), new EFJSONSchema_GraphPreset()])
-      .withLoggers([new BrowserConsole()])
-      .start()
-      .catch((e: unknown) => {
-        throw e;
-      });
-  }
-}
+export * from './EFJSONSchema_Extension';

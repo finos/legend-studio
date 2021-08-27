@@ -17,7 +17,6 @@
 import type { EditorStore } from '../EditorStore';
 import { action, makeAutoObservable } from 'mobx';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { DSL_StudioPlugin_Extension } from '../StudioPlugin';
 import type { PackageableElement, EngineError } from '@finos/legend-graph';
 import {
   Profile,
@@ -134,12 +133,9 @@ export class GrammarTextEditorState {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME;
     } else {
       const extraPureGrammarElementLabelers = this.editorStore.pluginManager
-        .getStudioPlugins()
+        .getPureGraphManagerPlugins()
         .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_StudioPlugin_Extension
-            ).getExtraPureGrammarElementLabelers?.() ?? [],
+          (plugin) => plugin.getExtraPureGrammarElementLabelers?.() ?? [],
         );
       for (const labeler of extraPureGrammarElementLabelers) {
         const _typeLabel = labeler(element);
