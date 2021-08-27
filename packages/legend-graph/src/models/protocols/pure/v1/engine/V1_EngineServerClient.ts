@@ -390,7 +390,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Query -------------------------------------------
 
   _query = (queryId?: string): string =>
-    `${this.queryBaseUrl ?? this._pure()}/query${
+    `${this.queryBaseUrl ?? this.networkClient.baseUrl}/pure/v1/query${
       queryId ? `/${encodeURIComponent(queryId)}` : ''
     }`;
   getQueries = (

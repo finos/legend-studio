@@ -118,7 +118,7 @@ const getBaseWebpackConfig = (
             // NOTE: need to account for both slashes style for different OS
             /packages[/\\]legend-/,
             // Packages coming from NPM published under '@finos' scope
-            /@finos\/legend-/,
+            /@finos[/\\]legend-/,
             ...extraBabelLoaderIncludePatterns,
           ],
           use: [
