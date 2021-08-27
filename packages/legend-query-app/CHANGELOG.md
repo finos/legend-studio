@@ -1,5 +1,17 @@
 # @finos/legend-query-app
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`356eda33`](https://github.com/finos/legend-studio/commit/356eda33c4efd9345ea48ae2e81dda4ad0029a09), [`356eda33`](https://github.com/finos/legend-studio/commit/356eda33c4efd9345ea48ae2e81dda4ad0029a09), [`356eda33`](https://github.com/finos/legend-studio/commit/356eda33c4efd9345ea48ae2e81dda4ad0029a09)]:
+  - @finos/legend-application@0.0.3
+  - @finos/legend-extension-dsl-text@0.0.1
+  - @finos/legend-extension-external-format-json-schema@0.0.1
+  - @finos/legend-query@0.0.3
+  - @finos/legend-art@0.0.1
+  - @finos/legend-shared@0.0.1
+
 ## 0.0.2
 
 ### Patch Changes
