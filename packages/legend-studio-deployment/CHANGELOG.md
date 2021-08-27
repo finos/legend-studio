@@ -1,5 +1,12 @@
 # @finos/legend-studio-deployment
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`356eda33`](https://github.com/finos/legend-studio/commit/356eda33c4efd9345ea48ae2e81dda4ad0029a09)]:
+  - @finos/legend-studio-app@0.0.3
+
 ## 0.0.2
 
 ### Patch Changes
