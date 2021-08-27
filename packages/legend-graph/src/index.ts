@@ -199,7 +199,7 @@ export { getGraphManager } from './models/protocols/pure/Pure';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
 
 // V1 transformation
-export type { V1_PureModelContextData } from './models/protocols/pure/v1/model/context/V1_PureModelContextData';
+export { V1_PureModelContextData } from './models/protocols/pure/v1/model/context/V1_PureModelContextData';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';
 export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda';
