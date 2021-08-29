@@ -63,7 +63,7 @@ export abstract class ServiceExecutionState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   execution: ServiceExecution;
-  selectedSingeExecutionTestState?: SingleExecutionTestState;
+  selectedSingeExecutionTestState?: SingleExecutionTestState | undefined;
   selectedTab = SERVICE_EXECUTION_TAB.MAPPING_AND_RUNTIME;
 
   constructor(
@@ -214,12 +214,13 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   declare execution: PureExecution;
   selectedExecutionConfiguration?:
     | PureSingleExecution
-    | KeyedExecutionParameter;
-  runtimeEditorState?: RuntimeEditorState;
+    | KeyedExecutionParameter
+    | undefined;
+  runtimeEditorState?: RuntimeEditorState | undefined;
   isExecuting = false;
   isGeneratingPlan = false;
   isOpeningQueryEditor = false;
-  executionResultText?: string; // NOTE: stored as lossless JSON string
+  executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
 
   constructor(

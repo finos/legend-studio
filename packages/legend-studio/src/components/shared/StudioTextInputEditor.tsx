@@ -30,13 +30,13 @@ import { useEditorStore } from '../editor/EditorStoreProvider';
 
 export const StudioTextInputEditor: React.FC<{
   inputValue: string;
-  isReadOnly?: boolean;
+  isReadOnly?: boolean | undefined;
   language: EDITOR_LANGUAGE;
-  showMiniMap?: boolean;
-  hideGutter?: boolean;
+  showMiniMap?: boolean | undefined;
+  hideGutter?: boolean | undefined;
   extraEditorOptions?: monacoEditorAPI.IEditorOptions &
     monacoEditorAPI.IGlobalEditorOptions;
-  updateInput?: (val: string) => void;
+  updateInput?: ((val: string) => void) | undefined;
 }> = (props) => {
   const {
     inputValue,

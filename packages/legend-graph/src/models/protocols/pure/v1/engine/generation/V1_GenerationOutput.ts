@@ -20,7 +20,7 @@ import { SerializationFactory } from '@finos/legend-shared';
 export class V1_GenerationOutput {
   content!: string;
   fileName!: string;
-  format?: string;
+  format?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_GenerationOutput, {

@@ -56,8 +56,8 @@ export class ExecutionPlanState {
     | undefined = undefined;
   sqlSelectedTab: SQL_DISPLAY_TABS = SQL_DISPLAY_TABS.SQL_QUERY;
   viewMode: EXECUTION_PLAN_VIEW_MODE = EXECUTION_PLAN_VIEW_MODE.FORM;
-  rawPlan?: RawExecutionPlan;
-  plan?: ExecutionPlan;
+  rawPlan?: RawExecutionPlan | undefined;
+  plan?: ExecutionPlan | undefined;
   isGenerating = false;
 
   constructor(editorStore: EditorStore) {

@@ -29,8 +29,8 @@ export enum V1_EngineErrorType {
 
 export class V1_EngineError {
   message = '';
-  errorType?: V1_EngineErrorType;
-  sourceInformation?: V1_SourceInformation;
+  errorType?: V1_EngineErrorType | undefined;
+  sourceInformation?: V1_SourceInformation | undefined;
 
   static readonly serialization = new BasicSerializationFactory(
     createModelSchema(V1_EngineError, {

@@ -51,19 +51,23 @@ export const BlankPanelPlaceholder: React.FC<{
   /**
    * Possible values are `add` for list-type value and `modify` for single value
    */
-  clickActionType?: ClickActionType;
-  onClick?: () => void;
+  clickActionType?: ClickActionType | undefined;
+  onClick?: (() => void) | undefined;
   /**
    * The tooltip text for the add/drop zone
    */
   tooltipText: string;
-  dndProps?: {
-    canDrop: boolean;
-    isDragOver: boolean;
-  };
-  readOnlyProps?: {
-    placeholderText: string;
-  };
+  dndProps?:
+    | {
+        canDrop: boolean;
+        isDragOver: boolean;
+      }
+    | undefined;
+  readOnlyProps?:
+    | {
+        placeholderText: string;
+      }
+    | undefined;
 }> = (props) => {
   const {
     placeholderText,

@@ -131,7 +131,7 @@ export class ServiceQueryInfoState extends QueryInfoState {
   project: ProjectData;
   versionId: string;
   service: Service;
-  key?: string;
+  key?: string | undefined;
 
   constructor(
     queryStore: QueryStore,
@@ -302,9 +302,9 @@ export class QueryStore {
   graphManagerState: GraphManagerState;
   pluginManager: QueryPluginManager;
 
-  queryInfoState?: QueryInfoState;
+  queryInfoState?: QueryInfoState | undefined;
   queryBuilderState: QueryBuilderState;
-  queryExportState?: QueryExportState;
+  queryExportState?: QueryExportState | undefined;
   buildGraphState = ActionState.create();
   initState = ActionState.create();
   editorInitState = ActionState.create();

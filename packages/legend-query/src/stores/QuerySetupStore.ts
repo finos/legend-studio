@@ -52,7 +52,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
   queries: LightQuery[] = [];
   loadQueriesState = ActionState.create();
   loadQueryState = ActionState.create();
-  currentQuery?: LightQuery;
+  currentQuery?: LightQuery | undefined;
   showCurrentUserQueriesOnly = false;
 
   constructor(queryStore: QueryStore) {
@@ -118,10 +118,10 @@ export class ExistingQuerySetupState extends QuerySetupState {
 export class CreateQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
-  currentProject?: ProjectData;
-  currentVersionId?: string;
-  currentMapping?: Mapping;
-  currentRuntime?: PackageableRuntime;
+  currentProject?: ProjectData | undefined;
+  currentVersionId?: string | undefined;
+  currentMapping?: Mapping | undefined;
+  currentRuntime?: PackageableRuntime | undefined;
 
   constructor(queryStore: QueryStore) {
     super(queryStore);
@@ -190,10 +190,10 @@ export interface ServiceExecutionOption {
 export class ServiceQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
-  currentProject?: ProjectData;
-  currentVersionId?: string;
-  currentService?: Service;
-  currentServiceExecutionKey?: string;
+  currentProject?: ProjectData | undefined;
+  currentVersionId?: string | undefined;
+  currentService?: Service | undefined;
+  currentServiceExecutionKey?: string | undefined;
 
   constructor(queryStore: QueryStore) {
     super(queryStore);
@@ -270,7 +270,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
 
 export class QuerySetupStore {
   queryStore: QueryStore;
-  querySetupState?: QuerySetupState;
+  querySetupState?: QuerySetupState | undefined;
 
   constructor(queryStore: QueryStore) {
     makeAutoObservable(this, {

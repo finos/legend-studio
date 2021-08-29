@@ -32,7 +32,7 @@ export class RelationalPropertyMapping
   extends PropertyMapping
   implements Hashable
 {
-  transformer?: EnumerationMapping;
+  transformer?: EnumerationMapping | undefined;
   relationalOperation!: RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
 
   constructor(

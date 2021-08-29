@@ -23,8 +23,8 @@ import { V1_GraphFetchTree } from './V1_GraphFetchTree';
 export class V1_PropertyGraphFetchTree extends V1_GraphFetchTree {
   property!: string;
   parameters: V1_ValueSpecification[] = [];
-  alias?: string;
-  subType?: string;
+  alias?: string | undefined;
+  subType?: string | undefined;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

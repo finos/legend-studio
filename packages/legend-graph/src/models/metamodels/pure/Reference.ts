@@ -47,7 +47,7 @@
  *    but for simplicity sake, we will just swap out to use new a new reference
  */
 export abstract class Reference {
-  abstract value?: unknown;
+  abstract value?: unknown | undefined;
 
   abstract setValue(value: unknown | undefined): void;
 }

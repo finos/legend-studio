@@ -39,7 +39,7 @@ import { ModelGenerationSpecification } from './ModelGenerationSpecification';
 export class GenerationTreeNode implements Hashable {
   generationElement: PackageableElementReference<PackageableElement>;
   id: string;
-  parent?: GenerationTreeNode;
+  parent?: GenerationTreeNode | undefined;
 
   constructor(
     generationElement: PackageableElementReference<PackageableElement>,

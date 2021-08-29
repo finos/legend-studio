@@ -36,7 +36,7 @@ export class FileGenerationSpecification
   implements Hashable
 {
   type!: string;
-  generationOutputPath?: string;
+  generationOutputPath?: string | undefined;
   scopeElements: (PackageableElementReference<PackageableElement> | string)[] =
     [];
   configurationProperties: ConfigurationProperty[] = [];

@@ -72,9 +72,9 @@ export class TestContainerState {
   serviceEditorState: ServiceEditorState;
   testState: SingleExecutionTestState;
   testContainer: TestContainer;
-  assertionData?: string;
-  testPassed?: boolean;
-  textExecutionTextResult?: ServiceTestExecutionResult; // NOTE: this is lossless JSON strings
+  assertionData?: string | undefined;
+  testPassed?: boolean | undefined;
+  textExecutionTextResult?: ServiceTestExecutionResult | undefined; // NOTE: this is lossless JSON strings
   isFetchingActualResultForComparison = false;
   isGeneratingTestAssertion = false;
 
@@ -344,10 +344,10 @@ export class SingleExecutionTestState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   test: SingleExecutionTest;
-  selectedTestContainerState?: TestContainerState;
+  selectedTestContainerState?: TestContainerState | undefined;
   isRunningAllTests = false;
   isGeneratingTestData = false;
-  testSuiteRunError?: Error;
+  testSuiteRunError?: Error | undefined;
   testResults: ServiceTestResult[] = [];
   allTestRunTime = 0;
 

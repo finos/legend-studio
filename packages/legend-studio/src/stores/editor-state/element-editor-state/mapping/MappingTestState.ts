@@ -348,8 +348,8 @@ export class MappingTestState {
   test: MappingTest;
   runTime = 0;
   isSkipped = false;
-  errorRunningTest?: Error;
-  testExecutionResultText?: string; // NOTE: stored as lossless JSON object text
+  errorRunningTest?: Error | undefined;
+  testExecutionResultText?: string | undefined; // NOTE: stored as lossless JSON object text
   isRunningTest = false;
   isExecutingTest = false;
   queryState: MappingTestQueryState;

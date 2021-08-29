@@ -1009,7 +1009,7 @@ export const PackageableRuntimeEditor = observer(() => {
 
 export const EmbeddedRuntimeEditor = observer(
   (props: {
-    runtimeEditorState?: RuntimeEditorState;
+    runtimeEditorState?: RuntimeEditorState | undefined;
     isReadOnly: boolean;
     onClose: () => void;
   }) => {

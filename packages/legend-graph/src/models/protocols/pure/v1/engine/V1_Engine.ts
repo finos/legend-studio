@@ -304,7 +304,7 @@ export class V1_Engine {
 
   async compilePureModelContextData(
     model: V1_PureModelContextData,
-    options?: { onError?: () => void },
+    options?: { onError?: (() => void) | undefined } | undefined,
   ): Promise<void> {
     try {
       await this.engineServerClient.compile(

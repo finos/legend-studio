@@ -245,7 +245,10 @@ const getRelationTreeData = (
 };
 
 const RelationalOperationElementTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<TableOrViewTreeNodeData, { selectedType?: Type }>
+  TreeNodeContainerProps<
+    TableOrViewTreeNodeData,
+    { selectedType?: Type | undefined }
+  >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
   const [, dragRef] = useDrag(
@@ -314,7 +317,7 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
 
 export const TableOrViewSourceTree: React.FC<{
   relation: Table | View;
-  selectedType?: Type;
+  selectedType?: Type | undefined;
 }> = (props) => {
   const { relation, selectedType } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax

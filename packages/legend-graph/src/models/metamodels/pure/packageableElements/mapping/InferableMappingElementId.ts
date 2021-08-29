@@ -69,7 +69,7 @@ export class InferableMappingElementIdExplicitValue extends InferableMappingElem
 }
 
 export class InferableMappingElementIdImplicitValue extends InferableMappingElementIdValue {
-  private input?: string;
+  private input?: string | undefined;
 
   constructor(value: string, defaultValue: string, input: string | undefined) {
     super(value, defaultValue);

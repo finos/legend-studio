@@ -24,7 +24,7 @@ import type {
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
 
 export class FunctionType {
-  returnType?: Type;
+  returnType?: Type | undefined;
   parameters: VariableExpression[] = [];
   returnMultiplicity: Multiplicity;
 

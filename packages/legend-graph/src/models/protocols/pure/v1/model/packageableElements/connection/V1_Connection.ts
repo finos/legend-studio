@@ -45,7 +45,7 @@ export interface V1_ConnectionVisitor<T> {
 }
 
 export abstract class V1_Connection implements Hashable {
-  store?: string;
+  store?: string | undefined;
 
   abstract get hashCode(): string;
 

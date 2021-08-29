@@ -43,7 +43,7 @@ export type LambdaEditorOnKeyDownEventHandler = {
 };
 
 const LambdaErrorFeedback: React.FC<{
-  error?: EngineError;
+  error?: EngineError | undefined;
   discardChanges: () => Promise<void>;
 }> = (props) => {
   const { error, discardChanges } = props;
@@ -73,18 +73,18 @@ const LambdaErrorFeedback: React.FC<{
 
 const LambdaEditorInner = observer(
   (props: {
-    className?: string;
+    className?: string | undefined;
     disabled: boolean;
     lambdaEditorState: LambdaEditorState;
     transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | undefined;
-    expectedType?: Type;
-    matchedExpectedType?: () => boolean;
-    onExpectedTypeLabelSelect?: () => void;
-    forceExpansion?: boolean;
-    useBaseTextEditorSettings?: boolean;
-    hideErrorBar?: boolean;
+    expectedType?: Type | undefined;
+    matchedExpectedType?: (() => boolean) | undefined;
+    onExpectedTypeLabelSelect?: (() => void) | undefined;
+    forceExpansion?: boolean | undefined;
+    useBaseTextEditorSettings?: boolean | undefined;
+    hideErrorBar?: boolean | undefined;
     forceBackdrop: boolean;
-    backdropSetter?: (val: boolean) => void;
+    backdropSetter?: ((val: boolean) => void) | undefined;
     onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[];
   }) => {
     const {
@@ -403,7 +403,7 @@ const LambdaEditorInner = observer(
  */
 export const LambdaEditor = observer(
   (props: {
-    className?: string;
+    className?: string | undefined;
     disabled: boolean;
     lambdaEditorState: LambdaEditorState;
     /**
@@ -411,14 +411,14 @@ export const LambdaEditor = observer(
      * the expected type. Note that we also have to handle that relationship for Primitive type
      * See https://dzone.com/articles/covariance-and-contravariance
      */
-    expectedType?: Type;
-    matchedExpectedType?: () => boolean;
-    onExpectedTypeLabelSelect?: () => void;
+    expectedType?: Type | undefined;
+    matchedExpectedType?: (() => boolean) | undefined;
+    onExpectedTypeLabelSelect?: (() => void) | undefined;
     forceBackdrop: boolean;
-    backdropSetter?: (val: boolean) => void;
-    forceExpansion?: boolean;
-    useBaseTextEditorSettings?: boolean;
-    hideErrorBar?: boolean;
+    backdropSetter?: ((val: boolean) => void) | undefined;
+    forceExpansion?: boolean | undefined;
+    useBaseTextEditorSettings?: boolean | undefined;
+    hideErrorBar?: boolean | undefined;
     onKeyDownEventHandlers?: LambdaEditorOnKeyDownEventHandler[];
   }) => {
     const {

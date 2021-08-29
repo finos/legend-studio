@@ -62,9 +62,9 @@ export class ServiceRegistrationState {
   serviceEditorState: ServiceEditorState;
   modal = false;
   registrationState = ActionState.create();
-  serviceEnv?: string;
-  serviceExecutionMode?: ServiceExecutionMode;
-  projectVersion?: Version | string;
+  serviceEnv?: string | undefined;
+  serviceExecutionMode?: ServiceExecutionMode | undefined;
+  projectVersion?: Version | string | undefined;
   activatePostRegistration = true;
 
   constructor(

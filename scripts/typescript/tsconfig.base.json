@@ -31,7 +31,13 @@
     // Other settings
     "strict": true,
     "noImplicitOverride": true,
-    // "exactOptionalPropertyTypes": true, // specifies that optional property types should be interpreted exactly as written, meaning that `| undefined` is not added to the type
+    // ---exactOptionalPropertyTypes specifies that optional property types should be interpreted exactly as
+    // written, meaning that `| undefined` is not added to the type.
+    // This makes it possible to ensure that optional properties are never `undefined` when they're present
+    // on an object, and that `undefined` values read from optional properties unequivocally indicate that
+    // the properties are not present.
+    // See https://github.com/microsoft/TypeScript/pull/43947
+    "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true
   }
 }

@@ -20,8 +20,8 @@ import type { SQLResultColumn } from './SQLResultColumn';
 
 export class SQLExecutionNode extends ExecutionNode {
   sqlQuery!: string;
-  onConnectionCloseCommitQuery?: string;
-  onConnectionCloseRollbackQuery?: string;
+  onConnectionCloseCommitQuery?: string | undefined;
+  onConnectionCloseRollbackQuery?: string | undefined;
   resultColumns: SQLResultColumn[] = [];
   connection!: DatabaseConnection;
 }

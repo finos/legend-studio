@@ -48,7 +48,7 @@ export class GenerationProperty {
   name!: string;
   description!: string;
   type!: GenerationPropertyItemType;
-  items?: GenerationPropertyItem;
+  items?: GenerationPropertyItem | undefined;
   defaultValue!: string; // we always give string so based on the type of the property, we have to parse this to the appropriate format
   required!: boolean;
 }

@@ -27,8 +27,8 @@ export class RawLambda
   extends RawValueSpecification
   implements Hashable, Stubable
 {
-  body?: object;
-  parameters?: object;
+  body?: object | undefined;
+  parameters?: object | undefined;
 
   constructor(parameters: object | undefined, body: object | undefined) {
     super();

@@ -67,9 +67,9 @@ export abstract class PropertyMapping implements Hashable, Stubable {
   sourceSetImplementation: SetImplementation;
   // NOTE: in Pure, we actually only store `targetId` and `sourceId` instead of the reference
   // but for convenience and graph completeness validation purpose we will resolve to the actual set implementations here
-  targetSetImplementation?: SetImplementation;
-  localMappingProperty?: LocalMappingPropertyInfo;
-  // store?: Store;
+  targetSetImplementation?: SetImplementation | undefined;
+  localMappingProperty?: LocalMappingPropertyInfo | undefined;
+  // store?: Store | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,

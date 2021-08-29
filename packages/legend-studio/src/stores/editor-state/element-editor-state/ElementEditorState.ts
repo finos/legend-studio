@@ -33,7 +33,7 @@ const generateMultiLineCommentForError = (
 export abstract class ElementEditorState extends EditorState {
   element: PackageableElement;
   editMode = ELEMENT_NATIVE_VIEW_MODE.FORM;
-  generationViewMode?: string;
+  generationViewMode?: string | undefined;
   textContent = '';
   isReadOnly = false;
 

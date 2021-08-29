@@ -56,13 +56,13 @@ export interface V1_PropertyMappingVisitor<T> {
 
 export abstract class V1_PropertyMapping implements Hashable {
   property!: V1_PropertyPointer;
-  source?: string; // `source` is an information that we actually do not need to care about much as it can derived from the container/holder of the property mapping
+  source?: string | undefined; // `source` is an information that we actually do not need to care about much as it can derived from the container/holder of the property mapping
   // NOTE: `target` is required in protocol but that doesn't seem right since the value can be empty string,
   // also when we convert this to metamodel, we might not be able to identify the class mapping corresponding to the `target` ID
   // in that case we will handle the logic in Transformer to have `target` as empty, here we use `?:` because the
   // specification in the current protocol is unreasonable and will be should be changed to optional (String[0..1])
-  target?: string;
-  localMappingProperty?: V1_LocalMappingPropertyInfo;
+  target?: string | undefined;
+  localMappingProperty?: V1_LocalMappingPropertyInfo | undefined;
 
   get hashCode(): string {
     return hashArray([

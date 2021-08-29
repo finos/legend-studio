@@ -25,8 +25,8 @@ import type { RelationalInstanceSetImplementation } from './RelationalInstanceSe
 import type { FilterReference } from '../model/FilterReference';
 
 export class FilterMapping implements Hashable {
-  setMappingOwner?: RelationalInstanceSetImplementation;
-  joinTreeNode?: JoinTreeNode;
+  setMappingOwner?: RelationalInstanceSetImplementation | undefined;
+  joinTreeNode?: JoinTreeNode | undefined;
   database: Database;
   filterName: string;
   filter: FilterReference;

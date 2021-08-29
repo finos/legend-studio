@@ -30,7 +30,7 @@ export class RawInstanceValue
 {
   type: PackageableElementReference<Type>;
   multiplicity: Multiplicity;
-  values?: (string | number)[];
+  values?: (string | number)[] | undefined;
 
   constructor(
     type: PackageableElementReference<Type>,

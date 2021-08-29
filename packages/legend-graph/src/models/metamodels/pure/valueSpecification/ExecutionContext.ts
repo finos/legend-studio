@@ -17,8 +17,8 @@
 import type { LambdaFunction } from './LambdaFunction';
 
 export abstract class ExecutionContext {
-  queryTimeOutInSeconds?: number;
-  enableConstraints?: boolean;
+  queryTimeOutInSeconds?: number | undefined;
+  enableConstraints?: boolean | undefined;
 }
 
 export class AnalyticsExecutionContext extends ExecutionContext {

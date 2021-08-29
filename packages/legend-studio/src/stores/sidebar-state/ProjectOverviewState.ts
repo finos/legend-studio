@@ -50,7 +50,7 @@ export class ProjectOverviewState {
   releaseVersion: CreateVersionCommand;
   committedReviewsBetweenMostRecentVersionAndProjectLatest: Review[] = [];
   latestProjectVersion?: Version | null; // `undefined` if API is not yet called, `null` if fetched but no version exists
-  currentProjectRevision?: Revision;
+  currentProjectRevision?: Revision | undefined;
   projectWorkspaces: Workspace[] = [];
   isCreatingVersion = false;
   isFetchingProjectWorkspaces = false;

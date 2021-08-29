@@ -313,7 +313,7 @@ export class IdentifiedConnectionEditorState {
 }
 
 export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorTabState {
-  identifiedConnectionEditorState?: IdentifiedConnectionEditorState;
+  identifiedConnectionEditorState?: IdentifiedConnectionEditorState | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -563,7 +563,7 @@ export class RuntimeEditorState {
   runtimeValue: EngineRuntime;
   isEmbeddedRuntime: boolean;
   explorerTreeData: TreeData<RuntimeExplorerTreeNodeData>;
-  currentTabState?: RuntimeEditorTabState;
+  currentTabState?: RuntimeEditorTabState | undefined;
 
   constructor(
     editorStore: EditorStore,

@@ -38,7 +38,7 @@ export enum MODEL_UPDATER_INPUT_TYPE {
 export class ModelLoaderState extends EditorState {
   modelText = this.getExampleEntitiesInputText();
   currentInputType = MODEL_UPDATER_INPUT_TYPE.ENTITIES;
-  currentExternalInputType?: string;
+  currentExternalInputType?: string | undefined;
   modelImportDescriptions: ImportConfigurationDescription[] = [];
   replace = true;
   isLoadingModel = false;

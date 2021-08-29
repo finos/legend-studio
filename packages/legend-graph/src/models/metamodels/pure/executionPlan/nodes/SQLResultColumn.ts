@@ -18,5 +18,5 @@ import type { RelationalDataType } from '../../packageableElements/store/relatio
 
 export class SQLResultColumn {
   label!: string;
-  dataType?: RelationalDataType;
+  dataType?: RelationalDataType | undefined;
 }

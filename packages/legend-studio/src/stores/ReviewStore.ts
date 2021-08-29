@@ -31,10 +31,10 @@ import { TAB_SIZE } from '@finos/legend-application';
 
 export class ReviewStore {
   editorStore: EditorStore;
-  currentProjectId?: string;
-  currentProject?: Project;
-  currentReviewId?: string;
-  currentReview?: Review;
+  currentProjectId?: string | undefined;
+  currentProject?: Project | undefined;
+  currentReviewId?: string | undefined;
+  currentReview?: Review | undefined;
   isFetchingCurrentReview = false;
   isFetchingComparison = false;
   isApprovingReview = false;

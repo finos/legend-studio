@@ -146,7 +146,7 @@ const NewPureModelConnectionDriverEditor = observer(
     const editorStore = useEditorStore();
     // store
     const store = newConnectionDriver.store;
-    let storeOptions: { label: string; value?: Store }[] = [
+    let storeOptions: { label: string; value?: Store | undefined }[] = [
       { label: 'ModelStore', value: undefined },
     ];
     storeOptions = storeOptions.concat(

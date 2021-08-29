@@ -21,7 +21,7 @@ import type { V1_RelationalOperationElement } from '../../../../../model/package
 
 export class V1_Join implements Hashable {
   name!: string;
-  target?: string;
+  target?: string | undefined;
   operation!: V1_RelationalOperationElement;
 
   get hashCode(): string {

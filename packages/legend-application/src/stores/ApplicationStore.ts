@@ -78,7 +78,7 @@ export class Notification {
   severity: NOTIFCATION_SEVERITY;
   message: string;
   actions: NotificationAction[];
-  autoHideDuration?: number;
+  autoHideDuration?: number | undefined;
 
   constructor(
     severity: NOTIFCATION_SEVERITY,
@@ -95,10 +95,10 @@ export class Notification {
 
 export class ApplicationStore<T extends LegendApplicationConfig> {
   navigator: WebApplicationNavigator;
-  notification?: Notification;
+  notification?: Notification | undefined;
   log: Log;
-  blockingAlertInfo?: BlockingAlertInfo;
-  actionAlertInfo?: ActionAlertInfo;
+  blockingAlertInfo?: BlockingAlertInfo | undefined;
+  actionAlertInfo?: ActionAlertInfo | undefined;
   config: T;
 
   constructor(config: T, navigator: WebApplicationNavigator, log: Log) {

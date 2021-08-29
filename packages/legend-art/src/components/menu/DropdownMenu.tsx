@@ -19,13 +19,13 @@ import type { MenuProps } from '@material-ui/core/Menu';
 import { BaseMenu } from '../BaseMuiComponents';
 
 export const DropdownMenu: React.FC<{
-  open?: boolean;
-  menuProps?: Partial<MenuProps>;
-  content?: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
-  onOpen?: () => void;
-  onClose?: () => void;
+  open?: boolean | undefined;
+  menuProps?: Partial<MenuProps> | undefined;
+  content?: React.ReactNode | undefined;
+  className?: string | undefined;
+  disabled?: boolean | undefined;
+  onOpen?: (() => void) | undefined;
+  onClose?: (() => void) | undefined;
 }> = (props) => {
   const {
     open,
@@ -38,7 +38,7 @@ export const DropdownMenu: React.FC<{
     disabled,
   } = props;
   const triggerRef = useRef<HTMLDivElement>(null);
-  const [anchorEl, setAnchorEl] = useState<Element>();
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const onTriggerClick: React.MouseEventHandler = (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -48,7 +48,7 @@ export const DropdownMenu: React.FC<{
     if (anchorEl) {
       // if the trigger is clicked and the menu is already opened, close it
       onClose?.();
-      setAnchorEl(undefined);
+      setAnchorEl(null);
     } else if (triggerRef.current) {
       // if the trigger is clicked, open the dropdown menu
       onOpen?.();
@@ -64,7 +64,7 @@ export const DropdownMenu: React.FC<{
       if (open && !anchorEl && triggerRef.current) {
         setAnchorEl(triggerRef.current);
       } else if (!open && anchorEl) {
-        setAnchorEl(undefined);
+        setAnchorEl(null);
       }
     }
   }, [anchorEl, open]);

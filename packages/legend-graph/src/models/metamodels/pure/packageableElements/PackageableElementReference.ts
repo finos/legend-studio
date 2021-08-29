@@ -84,18 +84,18 @@ export class PackageableElementImplicitReference<
   T extends PackageableElement,
 > extends PackageableElementReference<T> {
   readonly initialResolvedPath: string;
-  readonly input?: string;
+  readonly input?: string | undefined;
   /**
    * Parent section information is only needed when the reference is resolved
    * by scanning the section imports.
    */
-  readonly parentSection?: Section;
+  readonly parentSection?: Section | undefined;
   /**
    * This flag is set to `true` when section check is not needed when resolving the reference
    * For example: when the element is implied in context, when the element is imported
    * via auto imports, etc.
    */
-  readonly skipSectionCheck?: boolean;
+  readonly skipSectionCheck?: boolean | undefined;
 
   private constructor(
     value: T,
@@ -163,7 +163,7 @@ export class PackageableElementImplicitReference<
 export abstract class OptionalPackageableElementReference<
   T extends PackageableElement,
 > extends OptionalReference {
-  value?: T;
+  value?: T | undefined;
 
   protected constructor(value: T | undefined) {
     super();
@@ -208,10 +208,10 @@ export class OptionalPackageableElementExplicitReference<
 export class OptionalPackageableElementImplicitReference<
   T extends PackageableElement,
 > extends OptionalPackageableElementReference<T> {
-  readonly initialResolvedPath?: string;
-  readonly input?: string;
-  readonly parentSection?: Section;
-  readonly skipSectionCheck?: boolean;
+  readonly initialResolvedPath?: string | undefined;
+  readonly input?: string | undefined;
+  readonly parentSection?: Section | undefined;
+  readonly skipSectionCheck?: boolean | undefined;
 
   private constructor(
     value: T | undefined,

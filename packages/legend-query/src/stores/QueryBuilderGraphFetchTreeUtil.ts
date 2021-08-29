@@ -36,12 +36,12 @@ import type { QueryBuilderExplorerTreeNodeData } from './QueryBuilderExplorerSta
 import { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
 
 export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
-  isSelected?: boolean;
-  isOpen?: boolean;
+  isSelected?: boolean | undefined;
+  isOpen?: boolean | undefined;
   id: string;
   label: string;
   childrenIds: string[] = [];
-  parentId?: string;
+  parentId?: string | undefined;
   tree: PropertyGraphFetchTree;
 
   constructor(

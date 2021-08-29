@@ -170,7 +170,7 @@ abstract class MappingExecutionInputDataState {
   uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
-  inputData?: InputData;
+  inputData?: InputData | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -406,7 +406,7 @@ export class MappingExecutionState {
   isGeneratingPlan = false;
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
-  executionResultText?: string; // NOTE: stored as lossless JSON text
+  executionResultText?: string | undefined; // NOTE: stored as lossless JSON text
   showServicePathModal = false;
   executionPlanState: ExecutionPlanState;
 

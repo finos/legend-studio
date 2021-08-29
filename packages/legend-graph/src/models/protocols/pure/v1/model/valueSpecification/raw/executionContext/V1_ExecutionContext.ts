@@ -15,6 +15,6 @@
  */
 
 export abstract class V1_ExecutionContext {
-  queryTimeOutInSeconds?: number;
-  enableConstraints?: boolean;
+  queryTimeOutInSeconds?: number | undefined;
+  enableConstraints?: boolean | undefined;
 }

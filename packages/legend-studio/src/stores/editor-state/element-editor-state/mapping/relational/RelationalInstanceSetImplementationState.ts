@@ -185,8 +185,8 @@ export class EmbeddedRelationalInstanceSetImplementationState
   // dummy lambda editor states needed because embedded flat-data should be seen as `PropertMappingState`
   lambdaPrefix = '';
   lambdaString = '';
-  parserError?: ParserError;
-  compilationError?: CompilationError;
+  parserError?: ParserError | undefined;
+  compilationError?: CompilationError | undefined;
 
   decorate(): void {
     return;

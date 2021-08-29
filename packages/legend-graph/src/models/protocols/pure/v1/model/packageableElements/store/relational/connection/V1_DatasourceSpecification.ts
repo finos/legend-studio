@@ -77,8 +77,8 @@ export class V1_SnowflakeDatasourceSpecification
   region!: string;
   warehouseName!: string;
   databaseName!: string;
-  cloudType?: string;
-  quotedIdentifiersIgnoreCase?: boolean;
+  cloudType?: string | undefined;
+  quotedIdentifiersIgnoreCase?: boolean | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -131,7 +131,7 @@ export class V1_LocalH2DataSourceSpecification
   extends V1_DatasourceSpecification
   implements Hashable
 {
-  testDataSetupCsv?: string;
+  testDataSetupCsv?: string | undefined;
   testDataSetupSqls: string[] = [];
 
   get hashCode(): string {

@@ -39,7 +39,11 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from '../editor/EditorStoreProvider';
 
 export const TextDiffView = observer(
-  (props: { language: EDITOR_LANGUAGE; from?: string; to?: string }) => {
+  (props: {
+    language: EDITOR_LANGUAGE;
+    from?: string | undefined;
+    to?: string | undefined;
+  }) => {
     const { from, to, language } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();

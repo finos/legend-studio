@@ -46,7 +46,7 @@ export class WorkspaceReviewState {
   isUpdatingWorkspace = false;
   isRefreshingWorkspaceUpdater = false;
   committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
-  workspaceReview?: Review;
+  workspaceReview?: Review | undefined;
   isFetchingCurrentWorkspaceReview = false;
   isRefreshingWorkspaceChangesDetector = false;
   isClosingWorkspaceReview = false;

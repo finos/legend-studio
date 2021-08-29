@@ -23,7 +23,7 @@ import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLa
 
 export class V1_Unit extends V1_PackageableElement implements Hashable {
   measure!: string;
-  conversionFunction?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  conversionFunction?: V1_RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   //  superType!: string; // no clear purpose to this so we won't add it for now
 
   override get hashCode(): string {
@@ -42,7 +42,7 @@ export class V1_Unit extends V1_PackageableElement implements Hashable {
 }
 
 export class V1_Measure extends V1_PackageableElement implements Hashable {
-  canonicalUnit?: V1_Unit;
+  canonicalUnit?: V1_Unit | undefined;
   nonCanonicalUnits: V1_Unit[] = [];
 
   override get hashCode(): string {

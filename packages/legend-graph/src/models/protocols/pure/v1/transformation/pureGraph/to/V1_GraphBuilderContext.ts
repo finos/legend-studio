@@ -85,11 +85,11 @@ interface ResolutionResult<T> {
   /**
    * Flag indicating if we need to use section imports to resolve the element.
    */
-  resolvedUsingSectionImports?: boolean;
+  resolvedUsingSectionImports?: boolean | undefined;
   /**
    * Flag indicating if the full path is already provided when resolving the element.
    */
-  isFullPath?: boolean;
+  isFullPath?: boolean | undefined;
 }
 
 export class V1_GraphBuilderContext {
@@ -98,8 +98,8 @@ export class V1_GraphBuilderContext {
   readonly extensions: V1_GraphBuilderExtensions;
   readonly graph: PureModel;
   readonly imports: Package[] = [];
-  readonly section?: Section;
-  readonly options?: GraphBuilderOptions;
+  readonly section?: Section | undefined;
+  readonly options?: GraphBuilderOptions | undefined;
 
   constructor(builder: V1_GraphBuilderContextBuilder) {
     this.log = builder.log;
@@ -448,8 +448,8 @@ export class V1_GraphBuilderContextBuilder {
   extensions: V1_GraphBuilderExtensions;
   graph: PureModel;
   imports: Package[] = [];
-  section?: Section;
-  options?: GraphBuilderOptions;
+  section?: Section | undefined;
+  options?: GraphBuilderOptions | undefined;
 
   constructor(
     graph: PureModel,

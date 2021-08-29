@@ -23,7 +23,7 @@ import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 
 export class EntityChangeConflictResolution {
   entityPath: string;
-  resolvedEntity?: Entity;
+  resolvedEntity?: Entity | undefined;
 
   constructor(entityPath: string, resolvedEntity: Entity | undefined) {
     makeObservable(this, {

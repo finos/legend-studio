@@ -26,7 +26,7 @@ export class V1_FileGenerationSpecification
   implements Hashable
 {
   type!: string;
-  generationOutputPath?: string;
+  generationOutputPath?: string | undefined;
   scopeElements: string[] = [];
   configurationProperties: V1_ConfigurationProperty[] = [];
 

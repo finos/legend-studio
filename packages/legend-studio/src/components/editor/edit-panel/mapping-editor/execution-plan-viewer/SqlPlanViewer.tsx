@@ -53,8 +53,9 @@ import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor'
 interface QueryProps {
   query: string;
   language: EDITOR_LANGUAGE;
-  wordWrap: 'off' | 'on' | 'wordWrapColumn' | 'bounded' | undefined;
+  wordWrap?: 'off' | 'on' | 'wordWrapColumn' | 'bounded';
 }
+
 interface resultColumnsProps {
   resultColumns: SQLResultColumn[];
 }
@@ -111,7 +112,7 @@ const QueryViewer: React.FC<QueryProps> = ({ query, language, wordWrap }) => (
       language={language}
       showMiniMap={false}
       extraEditorOptions={{
-        wordWrap: wordWrap,
+        wordWrap: wordWrap ?? 'off',
       }}
     />
   </div>

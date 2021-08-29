@@ -44,11 +44,11 @@ import { TAB_SIZE } from '@finos/legend-application';
 export class ViewerStore {
   editorStore: EditorStore;
   initState = ActionState.create();
-  currentRevision?: Revision;
-  latestVersion?: Version;
-  revision?: Revision;
-  version?: Version;
-  elementPath?: string;
+  currentRevision?: Revision | undefined;
+  latestVersion?: Version | undefined;
+  revision?: Revision | undefined;
+  version?: Version | undefined;
+  elementPath?: string | undefined;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {

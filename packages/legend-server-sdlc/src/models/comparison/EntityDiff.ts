@@ -20,8 +20,8 @@ import { EntityChangeType } from '../entity/EntityChange';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
 
 export class EntityDiff {
-  newPath?: string;
-  oldPath?: string;
+  newPath?: string | undefined;
+  oldPath?: string | undefined;
   entityChangeType: EntityChangeType;
 
   constructor(

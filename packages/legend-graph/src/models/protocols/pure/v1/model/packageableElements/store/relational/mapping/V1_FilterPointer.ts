@@ -15,6 +15,6 @@
  */
 
 export class V1_FilterPointer {
-  db?: string;
+  db?: string | undefined;
   name!: string;
 }

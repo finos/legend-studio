@@ -35,7 +35,7 @@ export interface QueryConfigurationData
 
 export class QueryConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
-  readonly engineQueryServerUrl?: string;
+  readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
 
   constructor(

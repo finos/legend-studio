@@ -27,10 +27,10 @@ export class V1_RootRelationalClassMapping
   extends V1_RelationalClassMapping
   implements Hashable
 {
-  mainTable?: V1_TablePtr;
+  mainTable?: V1_TablePtr | undefined;
   distinct!: boolean;
   groupBy: V1_RelationalOperationElement[] = [];
-  filter?: V1_FilterMapping;
+  filter?: V1_FilterMapping | undefined;
 
   override accept_ClassMappingVisitor<T>(
     visitor: V1_ClassMappingVisitor<T>,

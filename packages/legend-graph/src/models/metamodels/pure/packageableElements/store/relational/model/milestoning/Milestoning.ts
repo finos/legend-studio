@@ -22,5 +22,5 @@ export abstract class Milestoning implements Hashable {
 }
 
 export abstract class TemporalMilestoning extends Milestoning {
-  infinityDate?: RawInstanceValue;
+  infinityDate?: RawInstanceValue | undefined;
 }

@@ -59,8 +59,8 @@ export class FileGenerationState {
   fileGeneration: FileGenerationSpecification;
   isGenerating = false;
   root: GenerationDirectory;
-  directoryTreeData?: TreeData<GenerationTreeNodeData>;
-  selectedNode?: GenerationTreeNodeData;
+  directoryTreeData?: TreeData<GenerationTreeNodeData> | undefined;
+  selectedNode?: GenerationTreeNodeData | undefined;
   filesIndex = new Map<string, GenerationFile>();
 
   constructor(

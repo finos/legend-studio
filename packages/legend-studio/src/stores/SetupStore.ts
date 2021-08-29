@@ -46,7 +46,7 @@ interface ImportProjectSuccessReport {
 export interface ProjectOption {
   label: string;
   value: string;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   tag: string;
 }
 
@@ -60,7 +60,7 @@ const buildProjectOption = (project: Project): ProjectOption => ({
 export interface WorkspaceOption {
   label: string;
   value: string;
-  __isNew__?: boolean;
+  __isNew__?: boolean | undefined;
 }
 
 const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
@@ -72,9 +72,9 @@ export class SetupStore {
   applicationStore: ApplicationStore<StudioConfig>;
   sdlcServerClient: SDLCServerClient;
 
-  currentProjectId?: string;
-  currentWorkspaceId?: string;
-  projects?: Map<string, Project>;
+  currentProjectId?: string | undefined;
+  currentWorkspaceId?: string | undefined;
+  projects?: Map<string, Project> | undefined;
   workspacesByProject = new Map<string, Map<string, Workspace>>();
   loadWorkspacesState = ActionState.create();
   createWorkspaceState = ActionState.create();
@@ -82,7 +82,7 @@ export class SetupStore {
   loadProjectsState = ActionState.create();
   showCreateProjectModal = false;
   showCreateWorkspaceModal = false;
-  importProjectSuccessReport?: ImportProjectSuccessReport;
+  importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
 
   constructor(
     applicationStore: ApplicationStore<StudioConfig>,

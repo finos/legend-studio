@@ -29,7 +29,7 @@ export class Query {
   // We enforce a single owner, for collaboration on query, use Studio
   // if not owner is specified, any user can own the query
   // NOTE: the owner is managed automatically by the backend
-  owner?: string;
+  owner?: string | undefined;
   // Store query in text to be more compact and stable
   content!: string;
 
@@ -42,7 +42,7 @@ export class LightQuery {
   versionId!: string;
   groupId!: string;
   artifactId!: string;
-  owner?: string;
+  owner?: string | undefined;
 
   isCurrentUserQuery = false;
 }

@@ -33,9 +33,9 @@ export class View
   schema!: Schema;
   primaryKey: Column[] = [];
   columnMappings: ColumnMapping[] = [];
-  filter?: FilterMapping;
-  distinct?: boolean;
-  groupBy?: GroupByMapping;
+  filter?: FilterMapping | undefined;
+  distinct?: boolean | undefined;
+  groupBy?: GroupByMapping | undefined;
 
   constructor(name: string, schema: Schema) {
     super(name);

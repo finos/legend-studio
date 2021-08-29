@@ -27,9 +27,9 @@ export class Constraint implements Hashable, Stubable {
   name: string;
   owner: Class;
   functionDefinition: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  externalId?: string;
-  enforcementLevel?: string;
-  messageFunction?: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  externalId?: string | undefined;
+  enforcementLevel?: string | undefined;
+  messageFunction?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor(name: string, owner: Class, functionDefinition: RawLambda) {
     makeObservable(this, {

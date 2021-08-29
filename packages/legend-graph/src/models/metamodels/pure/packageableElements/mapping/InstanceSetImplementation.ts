@@ -30,7 +30,7 @@ export abstract class InstanceSetImplementation
   extends SetImplementation
   implements PropertyMappingsImplementation, Hashable
 {
-  mappingClass?: MappingClass;
+  mappingClass?: MappingClass | undefined;
   propertyMappings: PropertyMapping[] = [];
   // aggregateSpecification: AggregateSpecification[0..1];
 

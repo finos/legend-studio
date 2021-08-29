@@ -82,7 +82,7 @@ export class GraphGenerationState {
   // File generation output
   rootFileDirectory: GenerationDirectory;
   filesIndex = new Map<string, GenerationFile>();
-  selectedNode?: GenerationTreeNodeData;
+  selectedNode?: GenerationTreeNodeData | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable<GraphGenerationState>(this, {

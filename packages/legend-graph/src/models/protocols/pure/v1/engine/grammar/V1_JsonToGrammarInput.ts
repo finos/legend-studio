@@ -28,10 +28,10 @@ export enum V1_RenderStyle {
 }
 
 export class V1_JsonToGrammarInput {
-  modelDataContext?: V1_PureModelContextData;
-  isolatedLambdas?: V1_LambdaInput;
-  renderStyle?: V1_RenderStyle;
-  codeError?: V1_ParserError;
+  modelDataContext?: V1_PureModelContextData | undefined;
+  isolatedLambdas?: V1_LambdaInput | undefined;
+  renderStyle?: V1_RenderStyle | undefined;
+  codeError?: V1_ParserError | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_JsonToGrammarInput, {

@@ -22,8 +22,8 @@ import type { V1_RawValueSpecificationVisitor } from '../../model/rawValueSpecif
 import { V1_RawValueSpecification } from '../../model/rawValueSpecification/V1_RawValueSpecification';
 
 export class V1_RawLambda extends V1_RawValueSpecification implements Hashable {
-  body?: object;
-  parameters?: object;
+  body?: object | undefined;
+  parameters?: object | undefined;
 
   get hashCode(): string {
     return hashArray([

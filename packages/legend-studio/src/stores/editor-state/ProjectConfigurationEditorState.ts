@@ -48,9 +48,9 @@ export enum CONFIGURATION_EDITOR_TAB {
 
 export class ProjectConfigurationEditorState extends EditorState {
   sdlcState: EditorSdlcState;
-  originalProjectConfiguration?: ProjectConfiguration; // TODO: we might want to remove this when we do change detection for project configuration
+  originalProjectConfiguration?: ProjectConfiguration | undefined; // TODO: we might want to remove this when we do change detection for project configuration
   isUpdatingConfiguration = false;
-  projectConfiguration?: ProjectConfiguration;
+  projectConfiguration?: ProjectConfiguration | undefined;
   selectedTab: CONFIGURATION_EDITOR_TAB;
   isReadOnly = false;
   versionsByProject = new Map<string, Map<string, Version>>();
@@ -59,7 +59,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   isQueryingProjects = false;
   associatedProjectsAndVersionsFetched = false;
   isFetchingAssociatedProjectsAndVersions = false;
-  latestProjectStructureVersion?: ProjectStructureVersion;
+  latestProjectStructureVersion?: ProjectStructureVersion | undefined;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
     super(editorStore);

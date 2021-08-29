@@ -202,7 +202,7 @@ export class ChangeDetectionState {
   isChangeDetectionRunning = false;
   hasChangeDetectionStarted = false;
   forcedStop = false;
-  changeDetectionReaction?: IReactionDisposer;
+  changeDetectionReaction?: IReactionDisposer | undefined;
   /**
    * [1. PJL] Store the entities from project HEAD (i.e. project latest revision)
    * This can be used to compute changes for a review as well as changes and potential conflicts when updating workspace

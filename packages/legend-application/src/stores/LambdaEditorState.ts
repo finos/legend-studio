@@ -28,8 +28,8 @@ export abstract class LambdaEditorState {
   uuid = uuid();
   lambdaPrefix: string;
   lambdaString: string; // value shown in lambda editor which can be edited
-  parserError?: ParserError;
-  compilationError?: CompilationError;
+  parserError?: ParserError | undefined;
+  compilationError?: CompilationError | undefined;
 
   constructor(lambdaString: string, lambdaPrefix: string) {
     makeObservable(this, {

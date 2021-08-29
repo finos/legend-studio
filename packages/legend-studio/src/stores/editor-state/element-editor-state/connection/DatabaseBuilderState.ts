@@ -47,11 +47,11 @@ import {
 } from '@finos/legend-graph';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
-  isOpen?: boolean;
+  isOpen?: boolean | undefined;
   id: string;
   label: string;
-  parentId?: string;
-  childrenIds?: string[];
+  parentId?: string | undefined;
+  childrenIds?: string[] | undefined;
   isChecked = false;
 
   constructor(id: string, label: string, parentId: string | undefined) {
@@ -101,7 +101,7 @@ export class DatabaseBuilderState {
   isBuildingDatabase = false;
   isSavingDatabase = false;
   targetDatabasePath: string;
-  treeData?: DatabaseBuilderTreeData;
+  treeData?: DatabaseBuilderTreeData | undefined;
 
   constructor(
     editorStore: EditorStore,

@@ -26,7 +26,7 @@ export class V1_Query {
   mapping!: string;
   runtime!: string;
   content!: string;
-  owner?: string;
+  owner?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_Query, {
@@ -47,7 +47,7 @@ export class V1_LightQuery {
   name!: string;
   id!: string;
   groupId!: string;
-  owner?: string;
+  owner?: string | undefined;
   artifactId!: string;
   versionId!: string;
 

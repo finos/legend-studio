@@ -39,8 +39,8 @@ export class QueryBuilderResultState {
   queryBuilderState: QueryBuilderState;
   isExecutingQuery = false;
   isGeneratingPlan = false;
-  executionResult?: ExecutionResult;
-  executionPlan?: RawExecutionPlan;
+  executionResult?: ExecutionResult | undefined;
+  executionPlan?: RawExecutionPlan | undefined;
   showServicePathModal = false;
   previewLimit = DEFAULT_LIMIT;
 

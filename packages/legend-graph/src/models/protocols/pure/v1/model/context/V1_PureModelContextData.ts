@@ -21,8 +21,8 @@ import type { V1_PureModelContextPointer } from '../../model/context/V1_PureMode
 import type { V1_Protocol } from '../../model/V1_Protocol';
 
 export class V1_PureModelContextData extends V1_PureModelContext {
-  origin?: V1_PureModelContextPointer;
-  serializer?: V1_Protocol;
+  origin?: V1_PureModelContextPointer | undefined;
+  serializer?: V1_Protocol | undefined;
   elements: V1_PackageableElement[] = [];
 
   getElementsOfType<T extends V1_PackageableElement>(

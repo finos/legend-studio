@@ -128,10 +128,12 @@ export abstract class LegendApplication {
 
   protected log = new Log();
   protected baseUrl!: string;
-  protected pluginRegister?: (
-    pluginManager: AbstractPluginManager,
-    config: LegendApplicationConfig,
-  ) => void;
+  protected pluginRegister?:
+    | ((
+        pluginManager: AbstractPluginManager,
+        config: LegendApplicationConfig,
+      ) => void)
+    | undefined;
   protected _isConfigured = false;
 
   protected constructor(pluginManager: AbstractPluginManager) {

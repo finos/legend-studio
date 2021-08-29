@@ -28,8 +28,8 @@ export class V1_FlatDataBoolean
   extends V1_FlatDataDataType
   implements Hashable
 {
-  trueString?: string;
-  falseString?: string;
+  trueString?: string | undefined;
+  falseString?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -71,8 +71,8 @@ export class V1_FlatDataDecimal extends V1_FlatDataNumber implements Hashable {
 }
 
 export class V1_FlatDataDate extends V1_FlatDataDataType implements Hashable {
-  dateFormat?: string;
-  timeZone?: string;
+  dateFormat?: string | undefined;
+  timeZone?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -107,7 +107,7 @@ export class V1_FlatDataRecordField implements Hashable {
   label!: string;
   flatDataDataType!: V1_FlatDataDataType;
   optional!: boolean;
-  address?: string;
+  address?: string | undefined;
 
   get hashCode(): string {
     return hashArray([

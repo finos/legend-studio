@@ -479,7 +479,7 @@ export interface MappingElementSpec {
   showTarget: boolean;
   // whether or not to open the new mapping element tab as an adjacent tab, this behavior is similar to Chrome
   openInAdjacentTab: boolean;
-  target?: PackageableElement;
+  target?: PackageableElement | undefined;
   postSubmitAction?: (newMappingElement: MappingElement | undefined) => void;
 }
 
@@ -489,11 +489,11 @@ export type MappingEditorTabState =
   | MappingExecutionState;
 
 export class MappingEditorState extends ElementEditorState {
-  currentTabState?: MappingEditorTabState;
+  currentTabState?: MappingEditorTabState | undefined;
   openedTabStates: MappingEditorTabState[] = [];
 
   mappingExplorerTreeData: TreeData<MappingExplorerTreeNodeData>;
-  newMappingElementSpec?: MappingElementSpec;
+  newMappingElementSpec?: MappingElementSpec | undefined;
 
   mappingTestStates: MappingTestState[] = [];
   isRunningAllTests = false;

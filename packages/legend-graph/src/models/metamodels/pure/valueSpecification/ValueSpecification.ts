@@ -76,7 +76,7 @@ export interface ValueSpecificationVisitor<T> {
 }
 
 export abstract class ValueSpecification {
-  genericType?: GenericTypeReference;
+  genericType?: GenericTypeReference | undefined;
   multiplicity!: Multiplicity;
 
   constructor(

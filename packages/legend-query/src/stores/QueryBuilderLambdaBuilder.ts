@@ -74,8 +74,8 @@ export const buildLambdaFunction = (
      * Set queryBuilderState to `true` when we construct query for execution within the app.
      * queryBuilderState will make the lambda function building process overrides several query values, such as the row limit.
      */
-    isBuildingExecutionQuery?: boolean;
-    keepSourceInformation?: boolean;
+    isBuildingExecutionQuery?: boolean | undefined;
+    keepSourceInformation?: boolean | undefined;
   },
 ): LambdaFunction => {
   const _class = guaranteeNonNullable(

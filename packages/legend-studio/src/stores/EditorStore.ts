@@ -196,7 +196,7 @@ export class EditorStore {
   hotkeys: EditorHotkey[] = [];
 
   // Tabs
-  currentEditorState?: EditorState;
+  currentEditorState?: EditorState | undefined;
   openedEditorStates: EditorState[] = [];
   newElementState: NewElementState;
   /**

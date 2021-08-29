@@ -20,6 +20,6 @@ import type { InferableMappingElementIdValue } from './InferableMappingElementId
 export interface PropertyOwnerImplementation {
   id: InferableMappingElementIdValue;
   // TODO: consider changing this to object ref instead of ID
-  // superSetImplementationId?: string;
+  // superSetImplementationId?: string | undefined;
   parent: Mapping;
 }

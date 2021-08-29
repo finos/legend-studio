@@ -76,8 +76,8 @@ export abstract class PackageableElement implements Hashable, Stubable {
   protected _isDisposed = false;
   protected _isImmutable = false;
   name: string;
-  package?: Package;
-  generationParentElement?: PackageableElement;
+  package?: Package | undefined;
+  generationParentElement?: PackageableElement | undefined;
 
   constructor(name: string) {
     makeObservable<

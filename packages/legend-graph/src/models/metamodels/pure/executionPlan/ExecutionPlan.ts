@@ -22,7 +22,7 @@ export class ExecutionPlan {
   rootExecutionNode!: ExecutionNode;
   processingTemplateFunctions: string[] = [];
   authDependent!: boolean;
-  kerberos?: string;
+  kerberos?: string | undefined;
   // TODO: Populate fields when required
   //   func : FunctionDefinition<Any>[1];
   //   mapping : Mapping[1];

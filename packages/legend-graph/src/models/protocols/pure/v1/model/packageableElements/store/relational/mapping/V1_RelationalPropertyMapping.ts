@@ -26,7 +26,7 @@ export class V1_RelationalPropertyMapping
   extends V1_PropertyMapping
   implements Hashable
 {
-  enumMappingId?: string;
+  enumMappingId?: string | undefined;
   relationalOperation!: V1_RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {

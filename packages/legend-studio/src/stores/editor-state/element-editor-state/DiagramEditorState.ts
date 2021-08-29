@@ -165,17 +165,19 @@ export class DiagramEditorInlinePropertyEditorState {
 }
 
 export class DiagramEditorState extends ElementEditorState {
-  _renderer?: DiagramRenderer;
+  _renderer?: DiagramRenderer | undefined;
   showHotkeyInfosModal = false;
   sidePanelDisplayState = new PanelDisplayState({
     initial: 0,
     default: 500,
     snap: 100,
   });
-  sidePanelState?: DiagramEditorSidePanelState;
-  inlinePropertyEditorState?: DiagramEditorInlinePropertyEditorState;
-  inlineClassCreatorState?: DiagramEditorInlineClassCreatorState;
-  inlineClassRenamerState?: DiagramEditorInlineClassRenamerState;
+  sidePanelState?: DiagramEditorSidePanelState | undefined;
+  inlinePropertyEditorState?:
+    | DiagramEditorInlinePropertyEditorState
+    | undefined;
+  inlineClassCreatorState?: DiagramEditorInlineClassCreatorState | undefined;
+  inlineClassRenamerState?: DiagramEditorInlineClassRenamerState | undefined;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);

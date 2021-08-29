@@ -27,7 +27,7 @@ export class FlatDataSection implements Hashable {
   driverId: string;
   name: string;
   sectionProperties: FlatDataProperty[] = [];
-  recordType?: RootFlatDataRecordType;
+  recordType?: RootFlatDataRecordType | undefined;
 
   constructor(driverId: string, name: string, owner: FlatData) {
     makeObservable(this, {

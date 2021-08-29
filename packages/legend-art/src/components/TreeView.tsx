@@ -22,11 +22,11 @@ const DEFAULT_STEP_PADDING_IN_REM = 1;
 type InnerProps = Record<PropertyKey, unknown>;
 
 export interface TreeNodeData {
-  isSelected?: boolean;
-  isOpen?: boolean;
+  isSelected?: boolean | undefined;
+  isOpen?: boolean | undefined;
   id: string;
   label: string;
-  childrenIds?: string[];
+  childrenIds?: string[] | undefined;
 }
 
 export interface TreeData<T extends TreeNodeData> {
@@ -42,10 +42,10 @@ export interface TreeNodeContainerProps<
   S extends InnerProps,
 > {
   node: T;
-  classPrefix?: string;
+  classPrefix?: string | undefined;
   level: number;
-  onNodeSelect?: (node: T) => void;
-  stepPaddingInRem?: number;
+  onNodeSelect?: ((node: T) => void) | undefined;
+  stepPaddingInRem?: number | undefined;
   innerProps: S;
 }
 
@@ -102,12 +102,12 @@ export interface TreeNodeViewProps<
   S extends InnerProps,
 > {
   node: T;
-  classPrefix?: string;
+  classPrefix?: string | undefined;
   level: number;
-  components?: Partial<TreeViewComponents<T, S>>;
-  onNodeSelect?: (node: T) => void;
+  components?: Partial<TreeViewComponents<T, S>> | undefined;
+  onNodeSelect?: ((node: T) => void) | undefined;
   getChildNodes: (node: T) => T[];
-  stepPaddingInRem?: number;
+  stepPaddingInRem?: number | undefined;
   innerProps: S;
 }
 

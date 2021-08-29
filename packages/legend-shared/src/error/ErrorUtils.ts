@@ -57,7 +57,7 @@ export class EnrichedError extends Error {
         Error.captureStackTrace(this, this.constructor);
       } else {
         // otherwise, use the non-standard but defacto stack trace (available in most browser)
-        this.stack = new Error(error).stack;
+        this.stack = new Error(error).stack as string;
       }
     }
   }

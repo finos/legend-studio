@@ -36,7 +36,7 @@ export class FlatDataInstanceSetImplementation
   implements Hashable
 {
   sourceRootRecordType: RootFlatDataRecordTypeReference;
-  filter?: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  filter?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   declare propertyMappings: AbstractFlatDataPropertyMapping[];
 
   constructor(

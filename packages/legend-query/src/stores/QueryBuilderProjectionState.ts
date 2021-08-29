@@ -442,7 +442,7 @@ export class QueryBuilderProjectionState {
        * But sometimes, we can opt in to use this flag to disable this sorting behavior,
        * such as when we build/process.
        */
-      skipSorting?: boolean;
+      skipSorting?: boolean | undefined;
     },
   ): void {
     addUniqueEntry(this.columns, val);

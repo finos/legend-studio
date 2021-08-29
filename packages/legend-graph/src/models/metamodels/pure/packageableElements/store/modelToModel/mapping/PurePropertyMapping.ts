@@ -31,9 +31,9 @@ export class PurePropertyMapping
   extends PropertyMapping
   implements Hashable, Stubable
 {
-  transformer?: EnumerationMapping;
+  transformer?: EnumerationMapping | undefined;
   transform: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  explodeProperty?: boolean;
+  explodeProperty?: boolean | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,

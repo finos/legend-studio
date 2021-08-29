@@ -63,7 +63,7 @@ export interface V1_PackageableElementVisitor<T> {
 export abstract class V1_PackageableElement implements Hashable {
   package!: string;
   name!: string;
-  parentSection?: string;
+  parentSection?: string | undefined;
 
   get path(): string {
     return `${this.package}${ELEMENT_PATH_DELIMITER}${this.name}`;

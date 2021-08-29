@@ -49,9 +49,9 @@ export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
 
 export class EditorSdlcState {
   editorStore: EditorStore;
-  currentProject?: Project;
-  currentWorkspace?: Workspace;
-  currentRevision?: Revision;
+  currentProject?: Project | undefined;
+  currentWorkspace?: Workspace | undefined;
+  currentRevision?: Revision | undefined;
   isWorkspaceOutdated = false;
   workspaceBuilds: Build[] = [];
   projectVersions: Version[] = [];

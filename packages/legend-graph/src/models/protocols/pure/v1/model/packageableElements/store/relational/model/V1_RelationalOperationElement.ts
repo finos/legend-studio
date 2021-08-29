@@ -47,7 +47,7 @@ export class V1_ElementWithJoins
   implements Hashable
 {
   joins: V1_JoinPointer[] = [];
-  relationalElement?: V1_RelationalOperationElement;
+  relationalElement?: V1_RelationalOperationElement | undefined;
 
   get hashCode(): string {
     return hashArray([

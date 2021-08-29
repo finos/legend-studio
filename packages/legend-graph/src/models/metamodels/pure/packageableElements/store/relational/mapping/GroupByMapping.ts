@@ -19,7 +19,7 @@ import type { RelationalOperationElement } from '../model/RelationalOperationEle
 import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 
 export class GroupByMapping {
-  setMappingOwner?: RelationalInstanceSetImplementation;
+  setMappingOwner?: RelationalInstanceSetImplementation | undefined;
   columns: RelationalOperationElement[] = [];
 
   constructor() {

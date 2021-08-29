@@ -21,9 +21,9 @@ import { V1_pureModelContextDataPropSchema } from '../../transformation/pureProt
 import { PureClientVersion } from '../../../../../../graphManager/GraphManagerUtils';
 
 export class V1_GenerateFileInput {
-  clientVersion?: string;
+  clientVersion?: string | undefined;
   model: V1_PureModelContextData;
-  config?: Record<PropertyKey, unknown>;
+  config?: Record<PropertyKey, unknown> | undefined;
 
   constructor(
     model: V1_PureModelContextData,

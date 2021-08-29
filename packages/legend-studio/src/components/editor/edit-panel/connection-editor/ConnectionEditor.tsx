@@ -34,7 +34,7 @@ const ModelConnectionEditor = observer(
   (props: {
     connectionValueState: JsonModelConnectionValueState; // should support XMLModelConnection as well
     isReadOnly: boolean;
-    disableChangingClass?: boolean;
+    disableChangingClass?: boolean | undefined;
   }) => {
     const { connectionValueState, isReadOnly, disableChangingClass } = props;
     const connection = connectionValueState.connection;

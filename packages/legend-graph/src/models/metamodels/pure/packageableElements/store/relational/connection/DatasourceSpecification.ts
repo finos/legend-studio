@@ -127,7 +127,7 @@ export class LocalH2DatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
-  testDataSetupCsv?: string;
+  testDataSetupCsv?: string | undefined;
   testDataSetupSqls: string[] = [];
 
   constructor() {
@@ -167,8 +167,8 @@ export class SnowflakeDatasourceSpecification
   region: string;
   warehouseName: string;
   databaseName: string;
-  cloudType?: string;
-  quotedIdentifiersIgnoreCase?: boolean;
+  cloudType?: string | undefined;
+  quotedIdentifiersIgnoreCase?: boolean | undefined;
 
   constructor(
     accountName: string,

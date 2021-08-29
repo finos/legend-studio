@@ -43,9 +43,9 @@ export enum DatabaseType {
 
 export abstract class DatabaseConnection extends Connection {
   type: DatabaseType;
-  // debug?: boolean;
-  timeZone?: string;
-  quoteIdentifiers?: boolean;
+  // debug?: boolean | undefined;
+  timeZone?: string | undefined;
+  quoteIdentifiers?: boolean | undefined;
   postProcessorWithParameter: unknown[] = [];
 
   constructor(

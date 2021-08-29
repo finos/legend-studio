@@ -16,8 +16,8 @@
 
 export class V1_TDSColumn {
   name!: string;
-  type?: string;
-  doc?: string;
-  relationalType?: string;
-  enumMapping?: Map<string, string[]>;
+  type?: string | undefined;
+  doc?: string | undefined;
+  relationalType?: string | undefined;
+  enumMapping?: Map<string, string[]> | undefined;
 }

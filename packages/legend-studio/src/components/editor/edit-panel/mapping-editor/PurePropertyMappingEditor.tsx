@@ -46,8 +46,8 @@ import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 const SimplePropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget;
-    dragItem?: TransformDropTarget;
+    drop?: ConnectDropTarget | undefined;
+    dragItem?: TransformDropTarget | undefined;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;
@@ -89,8 +89,8 @@ const SimplePropertyMappingEditor = observer(
 const EnumerationPropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget;
-    dragItem?: TransformDropTarget;
+    drop?: ConnectDropTarget | undefined;
+    dragItem?: TransformDropTarget | undefined;
     dragItemType: string;
     transformProps: {
       disableTransform: boolean;
@@ -203,8 +203,8 @@ const EnumerationPropertyMappingEditor = observer(
 const ClassPropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget;
-    dragItem?: TransformDropTarget;
+    drop?: ConnectDropTarget | undefined;
+    dragItem?: TransformDropTarget | undefined;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;

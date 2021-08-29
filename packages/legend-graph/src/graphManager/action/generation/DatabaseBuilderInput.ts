@@ -22,8 +22,8 @@ export class DatabasePattern {
   uuid = uuid();
   schemaPattern = '';
   tablePattern = '';
-  escapeSchemaPattern?: boolean;
-  escapeTablePattern?: boolean;
+  escapeSchemaPattern?: boolean | undefined;
+  escapeTablePattern?: boolean | undefined;
 
   constructor(schemaPattern: string, tablePattern: string) {
     makeObservable(this, {
@@ -48,7 +48,7 @@ export class DatabasePattern {
 }
 
 export class DatabaseBuilderConfig {
-  maxTables?: number = 100000;
+  maxTables?: number | undefined = 100000;
   enrichTables = false;
   enrichPrimaryKeys = false;
   enrichColumns = false;

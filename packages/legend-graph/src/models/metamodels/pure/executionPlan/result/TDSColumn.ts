@@ -19,9 +19,9 @@ import type { PackageableElementReference } from '../../packageableElements/Pack
 
 export class TDSColumn {
   name!: string;
-  offset?: number;
-  type?: PackageableElementReference<DataType>;
-  enumMappingId?: string;
-  documentation?: string;
-  sourceDataType?: unknown;
+  offset?: number | undefined;
+  type?: PackageableElementReference<DataType> | undefined;
+  enumMappingId?: string | undefined;
+  documentation?: string | undefined;
+  sourceDataType?: unknown | undefined;
 }

@@ -27,9 +27,9 @@ import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambd
 import { V1_rawLambdaModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 
 export class V1_LambdaInput {
-  serializer?: V1_Protocol;
-  lambdas?: Map<string, V1_RawLambda>;
-  lambdaErrors?: Map<string, V1_ParserError>;
+  serializer?: V1_Protocol | undefined;
+  lambdas?: Map<string, V1_RawLambda> | undefined;
+  lambdaErrors?: Map<string, V1_ParserError> | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_LambdaInput, {

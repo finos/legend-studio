@@ -20,6 +20,6 @@ import type { V1_ResultType } from '../results/V1_ResultType';
 export abstract class V1_ExecutionNode {
   resultType!: V1_ResultType;
   executionNodes: V1_ExecutionNode[] = [];
-  resultSizeRange?: V1_Multiplicity;
+  resultSizeRange?: V1_Multiplicity | undefined;
   // globalImplementationSupport!: V1_PlatformImplementation; // TODO: this is WIP for M2M case in engine
 }

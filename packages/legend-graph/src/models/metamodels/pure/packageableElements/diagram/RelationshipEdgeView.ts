@@ -19,8 +19,8 @@ import type { ClassViewReference } from './ClassViewReference';
 
 export class RelationShipEdgeView {
   classView: ClassViewReference;
-  offsetX?: number;
-  offsetY?: number;
+  offsetX?: number | undefined;
+  offsetY?: number | undefined;
 
   constructor(classView: ClassViewReference) {
     makeObservable(this, {

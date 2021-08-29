@@ -22,7 +22,7 @@ export class V1_ServiceRegistrationResult {
   pattern!: string;
   serviceInstanceId!: string;
   newGeneration!: boolean;
-  testSuccess?: boolean;
+  testSuccess?: boolean | undefined;
   status!: string;
 
   static readonly serialization = new SerializationFactory(

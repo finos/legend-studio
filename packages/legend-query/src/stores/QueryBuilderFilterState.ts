@@ -105,7 +105,7 @@ export class FilterConditionState {
   filterState: QueryBuilderFilterState;
   propertyExpressionState: QueryBuilderPropertyExpressionState;
   operator!: QueryBuilderFilterOperator;
-  value?: ValueSpecification;
+  value?: ValueSpecification | undefined;
   existsLambdaParamNames: string[] = [];
 
   constructor(
@@ -188,8 +188,8 @@ export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
   readonly id = uuid();
   readonly label = '';
   // NOTE: we don't use the `isSelected` attribute is not used since we keep track of it from the tree data level
-  isOpen?: boolean;
-  parentId?: string;
+  isOpen?: boolean | undefined;
+  parentId?: string | undefined;
 
   constructor(parentId: string | undefined) {
     this.parentId = parentId;
@@ -399,7 +399,7 @@ export class QueryBuilderFilterState
   lambdaParameterName = DEFAULT_LAMBDA_VARIABLE_NAME;
   rootIds: string[] = [];
   nodes = new Map<string, QueryBuilderFilterTreeNodeData>();
-  selectedNode?: QueryBuilderFilterTreeNodeData;
+  selectedNode?: QueryBuilderFilterTreeNodeData | undefined;
   isRearrangingConditions = false;
   operators: QueryBuilderFilterOperator[] = [];
   private _suppressClickawayEventListener = false;

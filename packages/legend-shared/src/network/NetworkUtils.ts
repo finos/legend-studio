@@ -142,7 +142,7 @@ export const autoReAuthenticate = (url: string): Promise<void> =>
 
 export class NetworkClientError extends Error {
   response: Response & { data?: Record<PropertyKey, unknown> };
-  payload?: Payload;
+  payload?: Payload | undefined;
 
   constructor(response: Response, payload: Payload | undefined) {
     super();
@@ -153,7 +153,7 @@ export class NetworkClientError extends Error {
       Error.captureStackTrace(this, this.constructor);
     } else {
       // otherwise, use the non-standard but defacto stack trace (available in most browser)
-      this.stack = new Error().stack;
+      this.stack = new Error().stack as string;
     }
     this.name = 'Network Client Error';
     this.response = response;
@@ -202,13 +202,13 @@ const couldBeCORS = (error: Error): boolean =>
   error instanceof TypeError && error.message === 'Failed to fetch';
 
 export interface ResponseProcessConfig {
-  skipProcessing?: boolean;
-  preprocess?: (response: Response) => void;
-  autoReAuthenticateUrl?: string;
+  skipProcessing?: boolean | undefined;
+  preprocess?: (response: Response) => void | undefined;
+  autoReAuthenticateUrl?: string | undefined;
 }
 
 export interface RequestProcessConfig {
-  enableCompression?: boolean;
+  enableCompression?: boolean | undefined;
 }
 
 const processResponse = async <T>(
@@ -295,8 +295,8 @@ export const createRequestHeaders = (
 };
 
 interface NetworkClientConfig {
-  options?: Record<PropertyKey, unknown>;
-  baseUrl?: string;
+  options?: Record<PropertyKey, unknown> | undefined;
+  baseUrl?: string | undefined;
 }
 
 /**
@@ -305,7 +305,7 @@ interface NetworkClientConfig {
  */
 export class NetworkClient {
   private options = {};
-  baseUrl?: string;
+  baseUrl?: string | undefined;
 
   constructor(config?: NetworkClientConfig) {
     this.baseUrl = config?.baseUrl;
@@ -404,10 +404,10 @@ export class NetworkClient {
     url: string,
     data: unknown,
     options: RequestInit,
-    headers?: RequestHeaders,
-    parameters?: Parameters,
-    requestProcessConfig?: RequestProcessConfig,
-    responseProcessConfig?: ResponseProcessConfig,
+    headers?: RequestHeaders | undefined,
+    parameters?: Parameters | undefined,
+    requestProcessConfig?: RequestProcessConfig | undefined,
+    responseProcessConfig?: ResponseProcessConfig | undefined,
   ): Promise<T> {
     const requestUrl = makeUrl(this.baseUrl, url, parameters ?? {});
     if (data && requestProcessConfig?.enableCompression) {
@@ -434,11 +434,11 @@ export class NetworkClient {
         );
       }
     }
-    const requestInit = {
+    const requestInit: RequestInit = {
       ...this.options,
       ...options,
       method,
-      body,
+      body: body as BodyInit,
       headers: createRequestHeaders(method, headers),
     };
 
