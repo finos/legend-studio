@@ -31,6 +31,7 @@
     // Other settings
     "strict": true,
     "noImplicitOverride": true,
+    // "exactOptionalPropertyTypes": true, // specifies that optional property types should be interpreted exactly as written, meaning that `| undefined` is not added to the type
     "forceConsistentCasingInFileNames": true
   }
 }

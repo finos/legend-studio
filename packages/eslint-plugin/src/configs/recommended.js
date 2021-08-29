@@ -153,7 +153,6 @@ const TYPESCRIPT_RULES = {
     { args: 'none', ignoreRestSiblings: true },
   ],
   '@typescript-eslint/no-extra-semi': WARN,
-  '@typescript-eslint/no-implicit-any-catch': WARN,
   // NOTE: since functions are hoisted in ES6, it is then advisable to enable this rule so that we can have functions that depend on each other and not causing
   // circular module dependency. It is also said to be safe to use
   // See https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-use-before-define.md#options

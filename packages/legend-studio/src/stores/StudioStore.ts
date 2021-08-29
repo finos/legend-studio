@@ -107,7 +107,7 @@ export class StudioStore {
       );
       this.sdlcServerClient.setCurrentUser(currentUser);
       currentUserID = currentUser.userId;
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
@@ -191,7 +191,8 @@ export class StudioStore {
           });
         }
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

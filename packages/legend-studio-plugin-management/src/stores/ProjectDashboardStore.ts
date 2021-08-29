@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  GeneratorFn,
+  PlainObject,
+} from '@finos/legend-shared';
 import { makeAutoObservable } from 'mobx';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
@@ -55,7 +59,8 @@ export class ProjectDashboardStore {
         this.fetchProjectByType(ProjectType.PRODUCTION),
         this.fetchProjectByType(ProjectType.PROTOTYPE),
       ]);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notifyError(error);
     } finally {
       this.isFetchingProjects = false;
@@ -95,7 +100,8 @@ export class ProjectDashboardStore {
         project.projectId,
         builds.length !== 0 ? Build.serialization.fromJson(builds[0]) : null,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notifyError(error);
     }
   }

@@ -19,6 +19,7 @@ import type { ServiceEditorState } from '../../../editor-state/element-editor-st
 import type { EditorStore } from '../../../EditorStore';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   ActionState,
   prettyCONSTName,
@@ -224,7 +225,8 @@ export class ServiceRegistrationState {
         undefined,
         null,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,

@@ -353,9 +353,9 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
     } else {
       try {
         newConnection = this.createNewCustomConnection();
-      } catch (e: unknown) {
-        assertErrorThrown(e);
-        this.editorStore.applicationStore.notifyWarning(e.message);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.notifyWarning(error.message);
         return;
       }
     }

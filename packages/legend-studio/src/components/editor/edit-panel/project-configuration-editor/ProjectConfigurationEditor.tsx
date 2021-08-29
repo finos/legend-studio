@@ -20,6 +20,7 @@ import {
   debounce,
   prettyCONSTName,
   compareLabelFn,
+  assertErrorThrown,
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
@@ -96,7 +97,8 @@ const ProjectDependencyVersionSelector = observer(
       ) {
         try {
           projectDependency.setVersionId(val?.value ?? '');
-        } catch (error: unknown) {
+        } catch (error) {
+          assertErrorThrown(error);
           logger.error(
             LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
             error,
@@ -257,9 +259,9 @@ const ProjectStructureEditor = observer(
               disabled={isReadOnly}
               onClick={updateVersion}
               tabIndex={-1}
-              title={`Current project structure is outdated. Click to update to the latest version (v${latestVersion?.fullVersion}})`}
+              title={`Current project structure is outdated. Click to update to the latest version (v${latestVersion.fullVersion}})`}
             >
-              Update to version {latestVersion?.fullVersion}
+              Update to version {latestVersion.fullVersion}
             </button>
           )}
         </div>

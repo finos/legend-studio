@@ -18,6 +18,7 @@ import type { Entity } from '@finos/legend-model-storage';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   addUniqueEntry,
   assertNonEmptyString,
@@ -249,7 +250,8 @@ export class DatabaseBuilderState {
       });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
@@ -294,7 +296,8 @@ export class DatabaseBuilderState {
       });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
@@ -334,7 +337,8 @@ export class DatabaseBuilderState {
       if (enrichedTable) {
         this.addColumnsNodeToTableNode(tableNode, enrichedTable, treeData);
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
@@ -454,7 +458,8 @@ export class DatabaseBuilderState {
           )) as string;
         this.setDatabaseGrammarCode(dbGrammar);
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
@@ -571,7 +576,8 @@ export class DatabaseBuilderState {
           );
         }
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,

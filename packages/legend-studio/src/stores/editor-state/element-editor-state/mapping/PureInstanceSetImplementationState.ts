@@ -22,7 +22,11 @@ import {
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { LogEvent, isNonNullable } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  isNonNullable,
+} from '@finos/legend-shared';
 import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
 import type {
   PurePropertyMapping,
@@ -75,7 +79,8 @@ export class PurePropertyMappingState extends PropertyMappingState {
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.propertyMapping.transform = lambda ?? emptyLambda;
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
@@ -107,7 +112,8 @@ export class PurePropertyMappingState extends PropertyMappingState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -200,7 +206,8 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
             purePropertyMapping.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,

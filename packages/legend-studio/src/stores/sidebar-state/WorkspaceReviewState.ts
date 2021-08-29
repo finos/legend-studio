@@ -140,7 +140,7 @@ export class WorkspaceReviewState {
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
@@ -179,7 +179,7 @@ export class WorkspaceReviewState {
             review,
             `Opened review associated with HEAD revision '${currentWorkspaceRevision.id}' of workspace '${this.sdlcState.currentWorkspaceId}' found, but the retrieved review does not belong to the workspace`,
           );
-        } catch (error: unknown) {
+        } catch (error) {
           assertErrorThrown(error);
           this.editorStore.applicationStore.notifyWarning(error.message);
         }
@@ -187,7 +187,7 @@ export class WorkspaceReviewState {
       this.workspaceReview = review
         ? Review.serialization.fromJson(review)
         : undefined;
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
@@ -213,7 +213,8 @@ export class WorkspaceReviewState {
         this.sdlcState.currentWorkspaceId,
       );
       this.editorStore.applicationStore.navigator.reload();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -236,7 +237,8 @@ export class WorkspaceReviewState {
         this.workspaceReview.id,
       );
       this.workspaceReview = undefined;
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -269,7 +271,8 @@ export class WorkspaceReviewState {
           },
         )) as PlainObject<Review>,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -295,7 +298,8 @@ export class WorkspaceReviewState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.notifyWarning(
         'Failed to check if current workspace is in conflict resolution mode',
       );
@@ -335,7 +339,8 @@ export class WorkspaceReviewState {
           },
         ],
       });
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

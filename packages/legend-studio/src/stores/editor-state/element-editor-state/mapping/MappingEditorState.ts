@@ -37,6 +37,7 @@ import {
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   deleteEntry,
   generateEnumerableNameFromToken,
@@ -1140,7 +1141,8 @@ export class MappingEditorState extends ElementEditorState {
           }
         }
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.warn(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error, redirecting to text mode`,

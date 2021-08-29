@@ -180,7 +180,8 @@ export class ProjectConfigurationEditorState extends EditorState {
         .map((project) => Project.serialization.fromJson(project))
         .forEach((project) => this.projects.set(project.projectId, project));
       this.associatedProjectsAndVersionsFetched = true;
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -221,7 +222,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.editorStore.openSingletonEditorState(
         this.editorStore.projectConfigurationEditorState,
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
@@ -250,7 +251,8 @@ export class ProjectConfigurationEditorState extends EditorState {
           .map((project) => Project.serialization.fromJson(project))
           .forEach((project) => this.projects.set(project.projectId, project));
         this.queryHistory.add(query);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
@@ -273,7 +275,8 @@ export class ProjectConfigurationEditorState extends EditorState {
         .map((version) => Version.serialization.fromJson(version))
         .forEach((version) => versionMap.set(version.id.id, version));
       this.versionsByProject.set(projectId, versionMap);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -292,7 +295,8 @@ export class ProjectConfigurationEditorState extends EditorState {
           `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
         );
         yield flowResult(this.updateProjectConfiguration(updateCommand));
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
@@ -330,7 +334,8 @@ export class ProjectConfigurationEditorState extends EditorState {
       yield flowResult(
         this.updateProjectConfiguration(updateProjectConfigurationCommand),
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -347,7 +352,8 @@ export class ProjectConfigurationEditorState extends EditorState {
         ProjectStructureVersion.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getLatestProjectStructureVersion()) as PlainObject<ProjectStructureVersion>,
         );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

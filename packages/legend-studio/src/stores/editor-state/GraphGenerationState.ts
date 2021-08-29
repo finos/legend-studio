@@ -164,7 +164,8 @@ export class GraphGenerationState {
           (config) =>
             new ElementFileGenerationState(this.editorStore, config.key),
         );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
@@ -187,7 +188,7 @@ export class GraphGenerationState {
     try {
       yield flowResult(this.generateModels());
       yield flowResult(this.generateFiles());
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
@@ -224,7 +225,7 @@ export class GraphGenerationState {
               node.generationElement.value,
               this.editorStore.graphManagerState.graph,
             )) as Entity[];
-        } catch (error: unknown) {
+        } catch (error) {
           assertErrorThrown(error);
           throw new Error(
             `Can't generate models: failure occured at step ${
@@ -242,7 +243,7 @@ export class GraphGenerationState {
           this.editorStore.graphState.updateGenerationGraphAndApplication(),
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
@@ -287,7 +288,7 @@ export class GraphGenerationState {
               mode,
               this.editorStore.graphManagerState.graph,
             )) as GenerationOutput[];
-        } catch (error: unknown) {
+        } catch (error) {
           assertErrorThrown(error);
           throw new Error(
             `Can't generate files using specification '${fileGeneration.value.path}'. Error: ${error.message}`,
@@ -296,7 +297,7 @@ export class GraphGenerationState {
         generationResultMap.set(fileGeneration.value.path, result);
       }
       this.processGenerationResult(generationResultMap);
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),

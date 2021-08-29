@@ -35,6 +35,7 @@ import {
 } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
   assertTrue,
@@ -146,7 +147,8 @@ export class MappingExecutionQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -547,7 +549,8 @@ export class MappingExecutionState {
         yield flowResult(this.mappingEditorState.addTest(mappingTest));
         this.mappingEditorState.closeTab(this); // after promoting to test, remove the execution state
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
@@ -607,7 +610,8 @@ export class MappingExecutionState {
           );
         }
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
@@ -639,7 +643,8 @@ export class MappingExecutionState {
           losslessStringify(result.values, undefined, TAB_SIZE),
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
@@ -669,7 +674,8 @@ export class MappingExecutionState {
           ),
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,

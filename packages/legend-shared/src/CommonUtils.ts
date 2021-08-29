@@ -133,7 +133,10 @@ export const recursiveOmit = (
 export const pruneObject = (
   obj: Record<PropertyKey, unknown>,
 ): Record<PropertyKey, unknown> =>
-  pickBy(obj, (val: unknown): boolean => val !== undefined);
+  pickBy(obj, (val: unknown): boolean => val !== undefined) as Record<
+    PropertyKey,
+    unknown
+  >;
 
 // Stringify object shallowly
 // See https://stackoverflow.com/questions/16466220/limit-json-stringification-depth
@@ -206,7 +209,7 @@ export const promisify = <T>(func: () => T): Promise<T> =>
     setTimeout(() => {
       try {
         resolve(func());
-      } catch (error: unknown) {
+      } catch (error) {
         reject(error);
       }
     }, 0),

@@ -252,7 +252,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   ): ReturnType<T> | W | undefined => {
     try {
       return fn();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.notifyIllegalState(error.message);
       return alternative;
@@ -299,7 +299,8 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       element.select();
       try {
         document.execCommand('copy');
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.notifyError(error);
       } finally {
         element.remove();

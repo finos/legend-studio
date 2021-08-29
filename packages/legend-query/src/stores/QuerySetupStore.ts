@@ -80,7 +80,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
           (yield this.queryStore.graphManagerState.graphManager.getLightQuery(
             queryId,
           )) as LightQuery;
-      } catch (error: unknown) {
+      } catch (error) {
         assertErrorThrown(error);
         this.queryStore.applicationStore.notifyError(error);
       } finally {
@@ -107,7 +107,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
           10,
         )) as LightQuery[];
       this.loadQueriesState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.loadQueriesState.fail();
       this.queryStore.applicationStore.notifyError(error);
@@ -174,7 +174,7 @@ export class CreateQuerySetupState extends QuerySetupState {
         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       ).map((project) => ProjectData.serialization.fromJson(project));
       this.loadProjectsState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.loadProjectsState.fail();
       this.queryStore.applicationStore.notifyError(error);
@@ -260,7 +260,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       ).map((project) => ProjectData.serialization.fromJson(project));
       this.loadProjectsState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.loadProjectsState.fail();
       this.queryStore.applicationStore.notifyError(error);

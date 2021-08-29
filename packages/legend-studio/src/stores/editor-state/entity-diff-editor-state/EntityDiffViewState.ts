@@ -17,6 +17,7 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   assertNonNullable,
   guaranteeNonNullable,
@@ -182,7 +183,8 @@ export class EntityDiffViewState extends EntityDiffEditorState {
             [this.fromEntity],
           )) as string;
         this.setFromGrammarText(elementGrammar);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.setFromGrammarText(
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
@@ -204,7 +206,8 @@ export class EntityDiffViewState extends EntityDiffEditorState {
             [this.toEntity],
           )) as string;
         this.setToGrammarText(elementGrammar);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.setFromGrammarText(
           '/* Failed to transform grammar text, see JSON diff instead */',
         );

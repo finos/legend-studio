@@ -132,7 +132,7 @@ export class LocalChangesState {
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
@@ -180,7 +180,8 @@ export class LocalChangesState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.notifyWarning(
         'Failed to check if current workspace is in conflict resolution mode',
       );
@@ -250,7 +251,8 @@ export class LocalChangesState {
           ),
         );
         this.editorStore.refreshCurrentEntityDiffEditorState();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         /**
          * NOTE: there is a known problem with the SDLC server where if we try to fetch the entities right after syncing, there is a chance
          * that we get entities from the older commit (i.e. potentially some caching issue). As such, to account for this case, we will
@@ -313,7 +315,8 @@ export class LocalChangesState {
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

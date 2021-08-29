@@ -16,7 +16,11 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import type {
   RawExecutionPlan,
@@ -100,7 +104,8 @@ export class QueryBuilderResultState {
           false,
         )) as ExecutionResult;
       this.setExecutionResult(result);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
@@ -133,7 +138,7 @@ export class QueryBuilderResultState {
         )) as ExecutionResult;
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;
-    } catch (error: unknown) {
+    } catch (error) {
       this.queryBuilderState.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,

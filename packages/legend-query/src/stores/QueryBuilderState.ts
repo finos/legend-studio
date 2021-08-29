@@ -198,10 +198,10 @@ export class QueryBuilderState {
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
     try {
       this.buildStateFromRawLambda(rawLambda);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.querySetupState.setClass(undefined, true);
       this.resetData();
-      assertErrorThrown(error);
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Unable to initialize query builder: ${error.message}`,
@@ -266,7 +266,7 @@ export class QueryBuilderState {
       try {
         const rawLambda = this.getQuery();
         await onQuerySave(rawLambda);
-      } catch (error: unknown) {
+      } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.notifyError(
           `Unable to save query: ${error.message}`,
@@ -298,7 +298,7 @@ export class QueryBuilderState {
           { keepSourceInformation: true },
         )) as string;
         this.applicationStore.notifySuccess('Compiled successfully');
-      } catch (error: unknown) {
+      } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
@@ -344,7 +344,7 @@ export class QueryBuilderState {
           { keepSourceInformation: true },
         )) as string;
         this.applicationStore.notifySuccess('Compiled successfully');
-      } catch (error: unknown) {
+      } catch (error) {
         assertErrorThrown(error);
         if (error instanceof CompilationError) {
           this.applicationStore.log.error(

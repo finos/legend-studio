@@ -85,7 +85,7 @@ export abstract class ElementEditorState extends EditorState {
       this.setTextContent(
         JSON.stringify(elementEntity.content, undefined, TAB_SIZE),
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.setTextContent(
         generateMultiLineCommentForError(
@@ -112,7 +112,7 @@ export abstract class ElementEditorState extends EditorState {
           [elementEntity],
         )) as string;
       this.setTextContent(grammar);
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.setTextContent(
         generateMultiLineCommentForError(

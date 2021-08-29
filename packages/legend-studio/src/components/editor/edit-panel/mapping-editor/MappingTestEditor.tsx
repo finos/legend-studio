@@ -479,7 +479,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
           {!isValid && (
             <div
               className="panel__content__validation-error"
-              title={validationResult?.messages.join('\n') ?? ''}
+              title={validationResult.messages.join('\n')}
             >
               <VscError />
             </div>

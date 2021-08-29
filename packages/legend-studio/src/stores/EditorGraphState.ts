@@ -243,7 +243,7 @@ export class EditorGraphState {
         'ms',
       );
       this.editorStore.explorerTreeState.build();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
@@ -316,7 +316,7 @@ export class EditorGraphState {
       this.editorStore.explorerTreeState.build();
       // add generation specification if model generation elements exists in graph and no generation specification
       this.graphGenerationState.addMissingGenerationSpecifications();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
@@ -352,7 +352,7 @@ export class EditorGraphState {
               editorGrammar,
             ),
           );
-        } catch (error2: unknown) {
+        } catch (error2) {
           assertErrorThrown(error2);
           this.editorStore.applicationStore.log.error(
             LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
@@ -475,7 +475,7 @@ export class EditorGraphState {
           'Compiled successfully',
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
@@ -525,7 +525,7 @@ export class EditorGraphState {
               this.editorStore.graphManagerState.graph,
             )) as string;
           this.editorStore.grammarTextEditorState.setGraphGrammarText(code);
-        } catch (error2: unknown) {
+        } catch (error2) {
           assertErrorThrown(error2);
           this.editorStore.applicationStore.notifyWarning(
             `Can't enter text mode. Transformation to grammar text failed: ${error2.message}`,
@@ -579,7 +579,7 @@ export class EditorGraphState {
         )) as Entity[];
       this.editorStore.applicationStore.notifySuccess('Compiled successfully');
       yield flowResult(this.updateGraphAndApplication(entities));
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       if (error instanceof EngineError) {
         this.editorStore.grammarTextEditorState.setError(error);
@@ -638,7 +638,7 @@ export class EditorGraphState {
         if (this.editorStore.currentEditorState) {
           this.editorStore.openState(this.editorStore.currentEditorState);
         }
-      } catch (error: unknown) {
+      } catch (error) {
         assertErrorThrown(error);
         if (error instanceof EngineError) {
           this.editorStore.grammarTextEditorState.setError(error);
@@ -680,7 +680,8 @@ export class EditorGraphState {
           });
         }
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         error,
@@ -879,7 +880,7 @@ export class EditorGraphState {
         '[ASYNC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
@@ -945,7 +946,7 @@ export class EditorGraphState {
       this.editorStore.setCurrentEditorState(
         this.editorStore.findCurrentEditorState(currentEditorState),
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
@@ -1014,7 +1015,7 @@ export class EditorGraphState {
           dependencyProjects.add(dependencyInfo.projectId);
         });
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       const message = `Can't acquire dependency entitites. Error: ${error.message}`;
       this.editorStore.applicationStore.log.error(

@@ -26,7 +26,10 @@ import type { EditorStore } from '../../EditorStore';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { mergeDiff3 } from 'node-diff3';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
@@ -432,7 +435,8 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
         );
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (error instanceof ParserError) {
         this.mergeEditorParserError = error;
         this.editorStore.applicationStore.notifyWarning(

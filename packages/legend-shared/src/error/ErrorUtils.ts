@@ -123,7 +123,7 @@ export const decorateErrorMessageIfExists = <T extends SuperGenericFunction>(
 ): ReturnType<T> => {
   try {
     return fn();
-  } catch (error: unknown) {
+  } catch (error) {
     assertErrorThrown(error);
     error.message = errorMessageDecorator(error.message);
     throw error;

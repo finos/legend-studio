@@ -19,6 +19,7 @@ import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   ActionState,
   assertNonNullable,
@@ -176,7 +177,8 @@ export class SetupStore {
       projects.forEach((project) => projectMap.set(project.projectId, project));
       this.projects = projectMap;
       this.loadProjectsState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
@@ -221,7 +223,8 @@ export class SetupStore {
         ),
       );
       this.setCreateProjectModal(false);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
@@ -257,7 +260,8 @@ export class SetupStore {
       yield flowResult(this.fetchProjects());
       this.projects?.set(report.project.projectId, report.project);
       this.setCurrentProjectId(report.project.projectId);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
@@ -312,7 +316,8 @@ export class SetupStore {
           workspaceMap.set(workspace.workspaceId, workspace);
         });
       this.workspacesByProject.set(projectId, workspaceMap);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       // TODO handle error when fetching workspaces for an individual project
       this.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
@@ -349,7 +354,8 @@ export class SetupStore {
       this.setCurrentWorkspaceId(workspaceId);
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
         error,

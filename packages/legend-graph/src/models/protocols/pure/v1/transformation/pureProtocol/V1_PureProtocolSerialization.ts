@@ -82,7 +82,7 @@ export const V1_entitiesToPureModelContextData = async (
                       plugins,
                     ),
                   );
-                } catch (error: unknown) {
+                } catch (error) {
                   assertErrorThrown(error);
                   reject(error);
                 }
@@ -91,7 +91,7 @@ export const V1_entitiesToPureModelContextData = async (
         ),
       );
     }
-  } catch (error: unknown) {
+  } catch (error) {
     assertErrorThrown(error);
     // wrap all de-serializer error so we can handle them downstream
     throw new GraphDataDeserializationError(error);

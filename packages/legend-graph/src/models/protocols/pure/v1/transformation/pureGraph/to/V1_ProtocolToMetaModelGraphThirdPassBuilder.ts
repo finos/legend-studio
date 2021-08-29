@@ -94,7 +94,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
           if (genricTypeReference.ownerReference.value instanceof Class) {
             genricTypeReference.ownerReference.value.addSubClass(_class);
           }
-        } catch (error: unknown) {
+        } catch (error) {
           assertErrorThrown(error);
           // NOTE: reconsider this as we might need to get elements from `system` and `platform` as well
           throw new GraphBuilderError(

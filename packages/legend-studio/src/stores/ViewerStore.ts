@@ -18,6 +18,7 @@ import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   AssertionError,
   LogEvent,
   IllegalStateError,
@@ -221,7 +222,7 @@ export class ViewerStore {
           this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
             entities,
           );
-        } catch (error: unknown) {
+        } catch {
           return;
         }
       }
@@ -285,7 +286,8 @@ export class ViewerStore {
         }
       }
       onLeave(true);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

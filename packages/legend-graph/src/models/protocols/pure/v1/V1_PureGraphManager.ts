@@ -476,7 +476,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
       systemModel.buildState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       systemModel.buildState.fail();
       if (!options?.quiet) {
@@ -591,7 +591,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       if (!options?.quiet) {
         this.log.info(
@@ -828,7 +828,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       if (!options?.quiet) {
         this.log.info(
@@ -921,7 +921,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       if (!options?.quiet) {
         this.log.info(
@@ -1471,7 +1471,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return promisify(() =>
         runInAction(() => element.accept_PackageableElementVisitor(visitor)),
       );
-    } catch (err: unknown) {
+    } catch (err) {
       assertErrorThrown(err);
       const error =
         err instanceof GraphBuilderError ? err : new GraphBuilderError(err);
@@ -2517,7 +2517,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         }
       ).values[0];
       assertTrue(typeof json === 'string', `Expected value of type 'string'`);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.log.warn(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_MANAGER_FAILURE),
         `Can't extract assertion result`,

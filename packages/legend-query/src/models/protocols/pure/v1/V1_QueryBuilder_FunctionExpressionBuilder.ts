@@ -15,7 +15,6 @@
  */
 
 import {
-  assertErrorThrown,
   assertNonNullable,
   assertTrue,
   assertType,
@@ -440,8 +439,7 @@ export const V1_buildProjectFunctionExpression = (
         compileContext,
         processingContext,
       );
-    } catch (e: unknown) {
-      assertErrorThrown(e);
+    } catch {
       return new INTERNAL__UnknownValueSpecification(
         V1_serializeValueSpecification(value),
       );
@@ -559,8 +557,7 @@ export const V1_buildGroupByFunctionExpression = (
         compileContext,
         processingContext,
       );
-    } catch (e: unknown) {
-      assertErrorThrown(e);
+    } catch {
       return new INTERNAL__UnknownValueSpecification(
         V1_serializeValueSpecification(value),
       );

@@ -18,6 +18,7 @@ import { observable, action, flow, makeObservable } from 'mobx';
 import { EditorState } from '../editor-state/EditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   UnsupportedOperationError,
   guaranteeNonNullable,
@@ -191,7 +192,8 @@ export class ModelLoaderState extends EditorState {
         { replace: this.replace, entities, message },
       );
       this.editorStore.applicationStore.navigator.reload();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
         error,
@@ -214,7 +216,8 @@ export class ModelLoaderState extends EditorState {
     try {
       this.modelImportDescriptions =
         (yield this.editorStore.graphManagerState.graphManager.getAvailableImportConfigurationDescriptions()) as ImportConfigurationDescription[];
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
         error,

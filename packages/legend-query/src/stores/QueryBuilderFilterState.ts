@@ -147,7 +147,7 @@ export class FilterConditionState {
     try {
       // first, check if the new property is supported
       new FilterConditionState(this.filterState, propertyExpression);
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.filterState.queryBuilderState.applicationStore.notifyError(error);
       return;
