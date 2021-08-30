@@ -646,7 +646,7 @@ export class MappingTestState {
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.errorRunningTest = error as Error;
+      this.errorRunningTest = error;
       this.setResult(TEST_RESULT.ERROR);
     } finally {
       this.isRunningTest = false;

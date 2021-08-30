@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  assertErrorThrown,
-  GeneratorFn,
-  PlainObject,
-} from '@finos/legend-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { assertErrorThrown } from '@finos/legend-shared';
 import { makeAutoObservable } from 'mobx';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';

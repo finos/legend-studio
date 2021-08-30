@@ -491,7 +491,7 @@ export class SingleExecutionTestState {
       this.setTestResults(results);
     } catch (error) {
       assertErrorThrown(error);
-      this.testSuiteRunError = error as Error;
+      this.testSuiteRunError = error;
       this.setTestResults(
         this.test.asserts.map((assert, idx) => ({
           name: `test_${idx + 1}`,
