@@ -18,5 +18,8 @@ import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 
 export interface DSLGenerationSpecification_StudioPlugin_Extension
   extends DSL_StudioPlugin_Extension {
+  /**
+   * Get drag-and-drop type specifier for model generation specification elements.
+   */
   getExtraModelGenerationSpecificationElementDnDTypes?(): string[];
 }

@@ -81,23 +81,47 @@ export abstract class StudioPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'StudioPlugin';
 
   /**
-   * NOTE: The application will call the setup method from all editor plugins concurrently.
+   * Get the list of setup procedures to be run when booting up the application.
+   *
+   * NOTE: The application will call the setup provedures from all extensions concurrently.
    */
   getExtraApplicationSetups?(): ApplicationSetup[];
 
+  /**
+   * Get the list of application pages to be rendered.
+   */
   getExtraApplicationPageRenderEntries?(): ApplicationPageRenderEntry[];
 
+  /**
+   * Get the list of items to be rendered in the explorer context menu.
+   */
   getExtraExplorerContextMenuItemRendererConfigurations?(): ExplorerContextMenuItemRendererConfiguration[];
 
+  /**
+   * Get the list of creators for editor extension state.
+   *
+   * This is a mechanism to extend the editor store.
+   */
   getExtraEditorExtensionStateCreators?(): EditorExtensionStateCreator[];
 
+  /**
+   * Get the list of configurations for the renderer of editor extension states.
+   */
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
 
+  /**
+   * Get the list of configurations for the renderer for mapping execution query builder.
+   */
   getExtraMappingExecutionQueryEditorRendererConfigurations?(): MappingExecutionQueryEditorRendererConfiguration[];
 
+  /**
+   * Get the list of configurations for the renderer for mapping test query builder.
+   */
   getExtraMappingTestQueryEditorRendererConfigurations?(): MappingTestQueryEditorRendererConfiguration[];
 
   /**
+   * Get the list of configurations for the renderer for service execution query builder.
+   *
    * NOTE: this is temporary since we want to eventually move Service out to its own DSL
    * preset/plugin so this should also be moved there
    */
@@ -123,7 +147,7 @@ export type NewElementDriverCreator = (
   editorStore: EditorStore,
 ) => NewElementDriver<PackageableElement> | undefined;
 
-export type NewElementDriverEditorCreator = (
+export type NewElementDriverEditorRenderer = (
   type: string,
 ) => React.ReactNode | undefined;
 
@@ -131,7 +155,7 @@ export type ElementEditorPostCreationAction = (
   element: PackageableElement,
 ) => void;
 
-export type ElementEditorCreator = (
+export type ElementEditorRenderer = (
   elementEditorState: ElementEditorState,
 ) => React.ReactNode | undefined;
 
@@ -144,28 +168,67 @@ export type ElementProjectExplorerDnDTypeGetter = (
   metamodel: PackageableElement,
 ) => string | undefined;
 
+/**
+ * Studio plugins for new DSL extension.
+ */
 export interface DSL_StudioPlugin_Extension extends StudioPlugin {
+  /**
+   * Get the list of the supported packageable element type specifiers.
+   */
   getExtraSupportedElementTypes?(): string[];
 
+  /**
+   * Get the list of classifiers for a packageable element.
+   */
   getExtraElementTypeGetters?(): ElementTypeGetter[];
 
+  /**
+   * Get the list of (user-friendly) type labelers for a packageable element.
+   */
   getExtraElementTypeLabelGetters?(): ElementTypeLabelGetter[];
 
+  /**
+   * Get the list of icon renderers for a packageable element.
+   */
   getExtraElementIconGetters?(): ElementIconGetter[];
 
+  /**
+   * Get the list of creators for packageable element given the creation state.
+   */
   getExtraNewElementFromStateCreators?(): NewElementFromStateCreator[];
 
+  /**
+   * Get the list of creators for element creation state driver given the element type specifier.
+   */
   getExtraNewElementDriverCreators?(): NewElementDriverCreator[];
 
-  getExtraNewElementDriverEditorCreators?(): NewElementDriverEditorCreator[];
+  /**
+   * Get the list of renderers for the editor for an element creation state driver given the element type specifier.
+   */
+  getExtraNewElementDriverEditorRenderers?(): NewElementDriverEditorRenderer[];
 
+  /**
+   * Get the list of actions to perform after creating a new packageable element.
+   */
   getExtraElementEditorPostCreationActions?(): ElementEditorPostCreationAction[];
 
-  getExtraElementEditorCreators?(): ElementEditorCreator[];
+  /**
+   * Get the list of renderers for the editor for a packageable element.
+   */
+  getExtraElementEditorRenderers?(): ElementEditorRenderer[];
 
+  /**
+   * Get the list of creators for element editor state.
+   */
   getExtraElementEditorStateCreators?(): ElementEditorStateCreator[];
 
+  /**
+   * Get the list of the supported drag-and-drop type speficiers.
+   */
   getExtraElementProjectExplorerDnDTypeGetters?(): ElementProjectExplorerDnDTypeGetter[];
 
+  /**
+   * Get the list of the supported drag-and-drop type speficiers for grammar text editor.
+   */
   getExtraGrammarTextEditorDnDTypes?(): string[];
 }

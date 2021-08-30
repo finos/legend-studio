@@ -310,7 +310,7 @@ const renderNewElementDriver = (
           (plugin) =>
             (
               plugin as DSL_StudioPlugin_Extension
-            ).getExtraNewElementDriverEditorCreators?.() ?? [],
+            ).getExtraNewElementDriverEditorRenderers?.() ?? [],
         );
       for (const creator of extraNewElementDriverEditorCreators) {
         const editor = creator(type);

@@ -25,7 +25,7 @@ import type {
   ElementTypeGetter,
   ElementProjectExplorerDnDTypeGetter,
   ElementIconGetter,
-  ElementEditorCreator,
+  ElementEditorRenderer,
   DSL_StudioPlugin_Extension,
   NewElementState,
 } from '@finos/legend-studio';
@@ -80,7 +80,7 @@ export class DSLText_StudioPlugin
     ];
   }
 
-  getExtraElementEditorCreators(): ElementEditorCreator[] {
+  getExtraElementEditorRenderers(): ElementEditorRenderer[] {
     return [
       (elementEditorState: ElementEditorState): React.ReactNode | undefined => {
         if (elementEditorState instanceof TextEditorState) {

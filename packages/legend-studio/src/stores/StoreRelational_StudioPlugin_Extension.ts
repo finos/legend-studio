@@ -52,23 +52,49 @@ export type AuthenticationStrategyEditorRenderer = (
 
 export interface StoreRelational_StudioPlugin_Extension
   extends DSL_StudioPlugin_Extension {
-  // connection datasource specification
+  // --------------------- relational database connection datasource specification ------------------
 
+  /**
+   * Get the list of the supported type specifiers for relational database
+   * datasource specifications.
+   */
   getExtraDatasourceSpecificationTypes?(): string[];
 
+  /**
+   * Get the list of classifiers for a relational database datasource specification.
+   */
   getExtraDatasourceSpecificationTypeGetters?(): DatasourceSpecificationTypeGetter[];
 
+  /**
+   * Get the list of creators for relational database datasource specification given the type specifier.
+   */
   getExtraDatasourceSpecificationCreators?(): DatasourceSpecificationCreator[];
 
+  /**
+   * Get the list of renderers for the editor for a relational database datasource specification.
+   */
   getExtraDatasourceSpecificationEditorRenderers?(): DatasourceSpecificationEditorRenderer[];
 
-  // connection authentication strategy
+  // --------------------- relational database connection authentication strategy ------------------
 
+  /**
+   * Get the list of supported type specifiers for relational database connection
+   * authentication strategies.
+   */
   getExtraAuthenticationStrategyTypes?(): string[];
 
+  /**
+   * Get the list of classifiers for a relational database authentication strategy.
+   */
   getExtraAuthenticationStrategyTypeGetters?(): AuthenticationStrategyTypeGetter[];
 
+  /**
+   * Get the list of creators for relational database authentication strategy given the type specifier.
+   */
   getExtraAuthenticationStrategyCreators?(): AuthenticationStrategyCreator[];
 
+  /**
+   * Get the list of renderers for the editor for a relational database authentication strategy.
+   */
   getExtraAuthenticationStrategyEditorRenderers?(): AuthenticationStrategyEditorRenderer[];
 }
