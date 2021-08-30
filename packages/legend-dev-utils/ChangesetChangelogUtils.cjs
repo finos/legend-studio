@@ -40,5 +40,8 @@ const getReleaseLine = async (changeset, type, options) => {
 
 module.exports = {
   getReleaseLine,
-  getDependencyReleaseLine: githubChangelogFunctions.getDependencyReleaseLine,
+  // NOTE: due to verbosity, we would want to opt out from dependency reporting
+  // the argument here is that if we need to know this information, we would probably
+  // want to know about the upgrade for 3rd party libraris: e.g. webpack, typescript, etc.
+  getDependencyReleaseLine: () => Promise.resolve(''),
 };
