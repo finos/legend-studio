@@ -19,7 +19,7 @@ import {
   TEST_DATA__AutoImportsWithSystemProfiles,
   TEST_DATA__simpleDebuggingCase,
   TEST_DATA__AutoImportsWithAny,
-} from './roundtrip/RoundtripTestData';
+} from './roundtripTestData/TEST_DATA__GenericRoundtrip';
 import TEST_DATA__m2mGraphEntities from './buildGraph/TEST_DATA__M2MGraphEntities.json';
 import {
   TEST_DATA__ClassRoundtrip,
@@ -28,16 +28,16 @@ import {
   TEST_DATA__FunctionRoundtrip,
   TEST_DATA__MeasureRoundtrip,
   TEST_DATA__ClassWithComplexConstraint,
-} from './roundtrip/DomainRoundtripTestData';
-import { TEST_DATA__DiagramRoundtrip } from './roundtrip/DiagramRoundtripTestData';
+} from './roundtripTestData/TEST_DATA__DomainRoundtrip';
+import { TEST_DATA__DiagramRoundtrip } from './roundtripTestData/TEST_DATA__DiagramRoundtrip';
 import {
   testConnectionRoundtrip,
   testModelChainConnectionRoundtrip,
-} from './roundtrip/ConnectionRoundtripTestdata';
+} from './roundtripTestData/TEST_DATA__ConnectionRoundtrip';
 import {
   TEST_DATA__FileGenerationRoundtrip,
   TEST_DATA__FileGenerationWithPackageSameAsSystemElement,
-} from './roundtrip/FileGenerationRoundtripTestData';
+} from './roundtripTestData/TEST_DATA__FileGenerationRoundtrip';
 import {
   TEST_DATA__FlatDataRoundtrip,
   TEST_DATA__FlatDataMappingRoundtrip,
@@ -45,8 +45,8 @@ import {
   TEST_DATA__FlatDataInputDataRoundtrip,
   TEST_DATA__FlatDataRoundtrip2,
   TEST_DATA__EmbeddedFlatDataMappingRoundtrip,
-} from './roundtrip/FlatDataRoundtripTestData';
-import { TEST_DATA__GenerationSpecificationRoundtrip } from './roundtrip/GenerationSpecificationTestData';
+} from './roundtripTestData/TEST_DATA__FlatDataRoundtrip';
+import { TEST_DATA__GenerationSpecificationRoundtrip } from './roundtripTestData/TEST_DATA__GenerationSpecification';
 import {
   TEST_DATA__DatabaseRoundtrip,
   TEST_DATA__RelationalDatabaseConnectionRoundtrip,
@@ -55,14 +55,14 @@ import {
   TEST_DATA__multiLevelEmbeddedRelationalRoundtrip,
   TEST_DATA__RelationalAssociationMapping,
   TEST_DATA__XStoreAssociationMapping,
-} from './roundtrip/RelationalRoundtripTestData';
-import { TEST_DATA__ServiceRoundtrip } from './roundtrip/ServiceRoundtripTestData';
+} from './roundtripTestData/TEST_DATA__RelationalRoundtrip';
+import { TEST_DATA__ServiceRoundtrip } from './roundtripTestData/TEST_DATA__ServiceRoundtrip';
 import {
   TEST_DATA__AggregationAwareMappingRoundtrip,
   TEST_DATA__MappingRoundtrip,
   TEST_DATA__LocalPropertyMapping,
-} from './roundtrip/MappingRoundtripTestData';
-import { TEST_DATA__RuntimeRoundtrip } from './roundtrip/RuntimeRoundtripTestData';
+} from './roundtripTestData/TEST_DATA__MappingRoundtrip';
+import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip';
 import { TEST__checkBuildingElementsRoundtrip } from '../GraphManagerTestUtils';
 
 describe(unitTest('M2M graph roundtrip'), () => {

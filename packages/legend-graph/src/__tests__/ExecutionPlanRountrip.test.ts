@@ -20,7 +20,7 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '../GraphManagerTestUtils';
-import { TEST_DATA__simpleRelationalPlan } from './roundtrip/executionPlan/SimpleRelationalPlanTestData';
+import { TEST_DATA__simpleRelationalPlan } from './roundtripTestData/executionPlan/TEST_DATA__SimpleRelationalPlan';
 
 type RoundtripTestCase = [
   string,

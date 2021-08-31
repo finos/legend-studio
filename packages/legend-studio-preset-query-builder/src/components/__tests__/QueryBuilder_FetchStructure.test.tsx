@@ -25,7 +25,7 @@ import {
   TEST_DATA__projectWithDerivedProperty,
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
-} from './QueryBuilder_TestData';
+} from './TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import {

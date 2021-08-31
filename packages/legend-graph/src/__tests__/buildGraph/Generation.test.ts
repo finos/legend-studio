@@ -20,9 +20,9 @@ import {
   TEST_DATA__simpleDebuggingCase,
   TEST_DATA__AutoImportsWithAny,
   TEST_DATA__AutoImportsWithSystemProfiles,
-} from '../roundtrip/RoundtripTestData';
+} from '../roundtripTestData/TEST_DATA__GenericRoundtrip';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
-import { TEST_DATA__SimpleGraph } from './CoreTestData';
+import { TEST_DATA__SimpleGraph } from './TEST_DATA__Core';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import {

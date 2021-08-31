@@ -20,7 +20,7 @@ import {
   TEST_DATA__ImportResolutionMultipleMatchesFound,
   TEST_DATA__ReferenceWithoutSection,
   TEST_DATA__ReferenceModification,
-} from '../__tests__/InferenceTestData';
+} from './TEST_DATA__Inference';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import {

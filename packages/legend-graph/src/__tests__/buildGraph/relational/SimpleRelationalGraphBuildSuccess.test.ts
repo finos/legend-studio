@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { TEST_DATA__relationalCompleteGraphEntities } from './RelationalEntitiesTestData';
+import { TEST_DATA__relationalCompleteGraphEntities } from './TEST_DATA__RelationalEntities';
 import { unitTest, guaranteeType } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphManagerState } from '../../../GraphManagerState';

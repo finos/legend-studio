@@ -24,7 +24,7 @@ import {
 } from '../../../../../../../../graph/PureModel';
 import { TEST__GraphPluginManager } from '../../../../../../../../GraphManagerTestUtils';
 import { getGraphManager } from '../../../../../Pure';
-import { V1_TEST_DATA__unsupportedFunctionExpression } from './V1_ValueSpecificationBuilderTestData';
+import { V1_TEST_DATA__unsupportedFunctionExpression } from './V1_TEST_DATA__ValueSpecificationBuilder';
 
 type RoundtripTestCase = [
   string,

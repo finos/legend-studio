@@ -25,7 +25,7 @@ import {
   TEST_DATA__MissingClassInDiagram,
   TEST_DATA__MissingClassMapping,
   TEST_DATA__MissingClassMappingWithTargetId,
-} from './GraphBuildFailureTestData';
+} from './TEST_DATA__GraphBuildFailure';
 import { unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
