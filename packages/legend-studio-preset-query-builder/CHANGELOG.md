@@ -10,9 +10,9 @@
 
 ### Patch Changes
 
-- [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show mapped association properties in query builder (fixes https://github.com/finos/legend-studio/issues/406).
+- [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show mapped association properties in query builder (fixes [#406](https://github.com/finos/legend-studio/issues/406)).
 
-* [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show auto mapped properties in query builder (fixes https://github.com/finos/legend-studio/issues/387).
+* [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show auto mapped properties in query builder (fixes [#387](https://github.com/finos/legend-studio/issues/387)).
 
 ## 0.0.32
 
@@ -70,13 +70,13 @@
 
 - [#311](https://github.com/finos/legend-studio/pull/311) [`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `@finos/legend-studio-plugin-query-builder` to `@finos/legend-studio-preset-query-builder`. `SUPPORTED_FUNCTIONS` is no-longer exported from core, but is not part of query builder preset.
 
-* [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Support usage of `derivation` in projection mode. This gives user more flexibility when creating the column expression (as right now the only form we support is simple property expression), for example, now user can specify the following lambda `x|$x.lastName->toUpper() + ', ' + $x.firstName->toLower()` for a projection column :tada:. See https://github.com/finos/legend-studio/issues/254 for more details.
+* [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Support usage of `derivation` in projection mode. This gives user more flexibility when creating the column expression (as right now the only form we support is simple property expression), for example, now user can specify the following lambda `x|$x.lastName->toUpper() + ', ' + $x.firstName->toLower()` for a projection column :tada:. See [#254](https://github.com/finos/legend-studio/issues/254) for more details.
 
 - [#311](https://github.com/finos/legend-studio/pull/311) [`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc) ([@akphi](https://github.com/akphi)) - Support matching supported function when its full path is specified, e.g. both `startsWith('some_string')` and `meta::pure::functions::string::startsWith('some_string')` are now considered valid.
 
-* [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Support `compilation` in form mode, user now can click the hammer icon on the status bar or use the hotkey `F9` to run compilation on the current query. This is particularly helpful when user works with `derivation` (see https://github.com/finos/legend-studio/issues/254).
+* [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Support `compilation` in form mode, user now can click the hammer icon on the status bar or use the hotkey `F9` to run compilation on the current query. This is particularly helpful when user works with `derivation` (see [#254](https://github.com/finos/legend-studio/issues/254)).
 
-- [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Add support for aggregation in projection mode using `groupBy()`: user now can use aggregate operators like `count()`, `distinct()`, `sum()`, `average()`, `min()`, `max()`, `stdDev()`, etc.. See https://github.com/finos/legend-studio/issues/253 for more details.
+- [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Add support for aggregation in projection mode using `groupBy()`: user now can use aggregate operators like `count()`, `distinct()`, `sum()`, `average()`, `min()`, `max()`, `stdDev()`, etc.. See [#253](https://github.com/finos/legend-studio/issues/253) for more details.
 
 ## 0.0.17
 
@@ -106,7 +106,7 @@
 
 ### Patch Changes
 
-- [#237](https://github.com/finos/legend-studio/pull/237) [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341) ([@akphi](https://github.com/akphi)) - Rework graph-fetch tree editor: instead of showing the full tree and allow picking the properties using radio buttons, we let users drag-and-drop the properties from the explorer tree. This makes the behavior more in-synced with projection. See https://github.com/finos/legend-studio/issues/204 for more details.
+- [#237](https://github.com/finos/legend-studio/pull/237) [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341) ([@akphi](https://github.com/akphi)) - Rework graph-fetch tree editor: instead of showing the full tree and allow picking the properties using radio buttons, we let users drag-and-drop the properties from the explorer tree. This makes the behavior more in-synced with projection. See [#204](https://github.com/finos/legend-studio/issues/204) for more details.
 
 * [#239](https://github.com/finos/legend-studio/pull/239) [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66) ([@akphi](https://github.com/akphi)) - Support `PackageableElementPtr` in response to [change in engine](https://github.com/finos/legend-engine/pull/255).
 

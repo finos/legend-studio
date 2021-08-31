@@ -68,7 +68,7 @@ We now use [Typescript 4.4](https://www.typescriptlang.org/docs/handbook/release
 
 ## Notable fixes
 
+- [442](https://github.com/finos/legend-studio/issues/442) `meta::pure::profiles::doc` is hidden from profile selector in Studio model editors.
 - [425](https://github.com/finos/legend-studio/issues/425) Mock data generator for models sometimes fail to generate for properties of type `Boolean`
 - [426](https://github.com/finos/legend-studio/issues/426) Committed reviews are not shown when there is no previous releases
-- Viewer mode does not allow viewing project configuration
-- `meta::pure::profiles::doc` is hidden from profile selector in Studio model editors.
+- [354](https://github.com/finos/legend-studio/issues/354) Viewer mode does not allow viewing project configuration

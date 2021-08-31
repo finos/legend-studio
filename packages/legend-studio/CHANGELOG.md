@@ -26,7 +26,7 @@
 
 - [#420](https://github.com/finos/legend-studio/pull/420) [`1fe16d1`](https://github.com/finos/legend-studio/commit/1fe16d1b47969817be5eefa532653bdbeb9ef18c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove `TEMPORARY__disableSDLCProjectStructureSupport` application config flag.
 
-* [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) ([@akphi](https://github.com/akphi)) - Cleanup test utilities: Add `TEST__` and `TEST_DATA__` prefixes for test utilities and test data to avoid polluting namespace. Rename methods that supply mocked store/state to `TEST__provideMocked...`.
+* [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) ([@akphi](https://github.com/akphi)) - Cleanup test utilities: Add `TEST__` and `TEST_DATA__` prefixes for test utilities and test data to avoid polluting namespace. Rename methods that supply mocked store/state to `TEST__provideMocked...`
 
 - [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) ([@akphi](https://github.com/akphi)) - Move shared application logic and components such as `ApplicationStore`, `WebApplicationNavigator`, `LambdaEditor`, etc. to `@finos/legend-application`.
 
@@ -76,15 +76,15 @@
 
 - [#364](https://github.com/finos/legend-studio/pull/364) [`73e5fa2`](https://github.com/finos/legend-studio/commit/73e5fa241ccc3b7464bb7c767316f37cd1c08a6e) ([@varunmaddipati](https://github.com/varunmaddipati)) - Add support for `Redshift` connection.
 
-* [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) ([@akphi](https://github.com/akphi)) - Refactor codebase to use new syntax for `Mobx` `flow` and `flowResult` (related to https://github.com/finos/legend-studio/issues/83).
+* [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) ([@akphi](https://github.com/akphi)) - Refactor codebase to use new syntax for `Mobx` `flow` and `flowResult` (related to [#83](https://github.com/finos/legend-studio/issues/83)).
 
   **BREAKING CHANGE:** A fair amount of core methods are now nolonger returning `Promise<...>`, but instead `GeneratorFn<...>` due to the new `flow` syntax. This does not affect the functionality, just the syntax.
 
-- [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) ([@akphi](https://github.com/akphi)) - Refactor graphs to use `ActionState` (See https://github.com/finos/legend-studio/issues/283).
+- [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) ([@akphi](https://github.com/akphi)) - Refactor graphs to use `ActionState` (See [#283](https://github.com/finos/legend-studio/issues/283)).
 
 * [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed application class `Studio` to `LegendStudio`.
 
-- [#368](https://github.com/finos/legend-studio/pull/368) [`f7c181d`](https://github.com/finos/legend-studio/commit/f7c181dbc779e896726be7af535006f50c082345) ([@nayanika2](https://github.com/nayanika2)) - Execution plan viewer MVP (See https://github.com/finos/legend-studio/issues/289).
+- [#368](https://github.com/finos/legend-studio/pull/368) [`f7c181d`](https://github.com/finos/legend-studio/commit/f7c181dbc779e896726be7af535006f50c082345) ([@nayanika2](https://github.com/nayanika2)) - Execution plan viewer MVP (See [#289](https://github.com/finos/legend-studio/issues/289)).
 
 * [#355](https://github.com/finos/legend-studio/pull/355) [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523) ([@akphi](https://github.com/akphi)) - Refactor tests to use a shared method for building simple graph for testing.
 
@@ -96,7 +96,7 @@
 
 - [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename methods in `BasicModel`: add `own` to methods name to avoid confusion on when consumers are interacting with elements from the whole graph (in `PureModel`) or elements just from the graph itself.
 
-* [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) ([@akphi](https://github.com/akphi)) - Support filtering system elements from selection dropdown to make forms more user-friendly (see https://github.com/finos/legend-studio/issues/280).
+* [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) ([@akphi](https://github.com/akphi)) - Support filtering system elements from selection dropdown to make forms more user-friendly (see [#280](https://github.com/finos/legend-studio/issues/280)).
 
 - [#363](https://github.com/finos/legend-studio/pull/363) [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e) ([@akphi](https://github.com/akphi)) - Remove unnecessary usage of `*ExplicitReference` in protocol building process.
 
@@ -131,26 +131,25 @@
 
 * [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) ([@akphi](https://github.com/akphi)) - Support renaming element (https://github.com/finos/legend-studio/issues/322). User can access this funtionality via the element context menu in the explorer tree. Diagram editor now also allows renaming classes.
 
-- [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) ([@akphi](https://github.com/akphi)) - Fix a bug where classes coming from immutable graphs (system, generation, dependencies) are automatically removed in diagrams (a regrssion introduced by https://github.com/finos/legend-studio/pull/351).
+- [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) ([@akphi](https://github.com/akphi)) - Fix a bug where classes coming from immutable graphs (system, generation, dependencies) are automatically removed in diagrams (a regression introduced by [#351](https://github.com/finos/legend-studio/pull/351)).
 
 * [#359](https://github.com/finos/legend-studio/pull/359) [`cd78be6`](https://github.com/finos/legend-studio/commit/cd78be6e6669b5253c12ea9a9ceacef908a1686c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable query builder for generated and dependency elements.
 
 - [#350](https://github.com/finos/legend-studio/pull/350) [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8) ([@akphi](https://github.com/akphi)) - Rework how zooming works in diagram editor. Now, upon scrolling, zoom will use the pointer location as the zoom center rather than using the canvas center. Also, we allow user to be able to choose the zoom level or do a zoom to fit. Also, we now disallow negative zoom level and cap at the minimum level of 5%.
 
-* [#351](https://github.com/finos/legend-studio/pull/351) [`7561184`](https://github.com/finos/legend-studio/commit/75611843191f31d35dac51267b25de4298f48f4b) ([@pierredebelen](https://github.com/pierredebelen)) - Fix issue: https://github.com/finos/legend-studio/issues/335
-  Ensure the diagram is updated if:
+* [#351](https://github.com/finos/legend-studio/pull/351) [`7561184`](https://github.com/finos/legend-studio/commit/75611843191f31d35dac51267b25de4298f48f4b) ([@pierredebelen](https://github.com/pierredebelen)) - Fixes [#335](https://github.com/finos/legend-studio/issues/335). Ensure the diagram is updated if:
 
   - A Class is deleted
   - A property is removed from a Class
   - A supertype is removed from a Class
 
-- [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) ([@akphi](https://github.com/akphi)) - Fix a regression (introduced by https://github.com/finos/legend-studio/pull/350) with DnD to add class and ejecting property position in diagram editor.
+- [#360](https://github.com/finos/legend-studio/pull/360) [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0) ([@akphi](https://github.com/akphi)) - Fix a regression introduced by [#350](https://github.com/finos/legend-studio/pull/350) where DnD to add class and ejecting property position in diagram editor.
 
 * [#362](https://github.com/finos/legend-studio/pull/362) [`8df01ce`](https://github.com/finos/legend-studio/commit/8df01ceb5d45aba42ab8541ae12d01e731b0c988) ([@pierredebelen](https://github.com/pierredebelen)) - Fix the inheritance view layout by ensuring the bounding rectangle is computed for the inital class
 
 - [#341](https://github.com/finos/legend-studio/pull/341) [`b45e1ca`](https://github.com/finos/legend-studio/commit/b45e1ca06b7b3017972607c06c099bfa9fcd640f) ([@umarphaarook](https://github.com/umarphaarook)) - Enable query builder in viewer mode.
 
-* [#349](https://github.com/finos/legend-studio/pull/349) [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3) ([@akphi](https://github.com/akphi)) - Rework diagram editor layout and state management. Allow user to edit property in-place (see https://github.com/finos/legend-studio/issues/300).
+* [#349](https://github.com/finos/legend-studio/pull/349) [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3) ([@akphi](https://github.com/akphi)) - Rework diagram editor layout and state management. Allow user to edit property in-place (see [#300](https://github.com/finos/legend-studio/issues/300)).
 
 ## 0.1.18
 
@@ -160,7 +159,7 @@
 
 * [#290](https://github.com/finos/legend-studio/pull/290) [`cb0ff2b`](https://github.com/finos/legend-studio/commit/cb0ff2b7aecfaf2a89d4ddc98e04854c25624ce8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add database builder in the relational connection editor to support generating a database from a connection specification.
 
-- [#340](https://github.com/finos/legend-studio/pull/340) [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb) ([@akphi](https://github.com/akphi)) - Improve diagram editor modelling capabilities (related to https://github.com/finos/legend-studio/issues/300). In diagram editor, users now have can see all supported hotkeys and have the tools to create new classes, properties, inheritance relationships, etc. All of this is made possible thanks to @pierredebelen for contributing to the core diagram renderer in https://github.com/finos/legend-studio/pull/338.
+- [#340](https://github.com/finos/legend-studio/pull/340) [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb) ([@akphi](https://github.com/akphi)) - Improve diagram editor modelling capabilities (related to [#300](https://github.com/finos/legend-studio/issues/300)). In diagram editor, users now have can see all supported hotkeys and have the tools to create new classes, properties, inheritance relationships, etc. All of this is made possible thanks to the core diagram renderer `auto-healing` improvements made in [#338](https://github.com/finos/legend-studio/pull/338).
 
 - [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) ([@epsstan](https://github.com/epsstan)) - Add support for `BigQuery` connection.
 
@@ -334,9 +333,9 @@
 
 * [#171](https://github.com/finos/legend-studio/pull/171) [`2d1f8a7`](https://github.com/finos/legend-studio/commit/2d1f8a78c38121e96b745939b23ba5cc46c7a53c) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE** Studio router is reorganized to be more consistent and to accomondate more use cases.
 
-  - All routes now are to be prefixed with the SDLC server key, if there is only one SDLC server specified in the config file (with legacy SDLC field config form: `sdlc: { url: string }`), then the server key is `-`, i.e. `/studio/-/...`, else the server key is the key to the SDLC instance, i.e. `/studio/sdlc1/...`.
+  - All routes now are to be prefixed with the SDLC server key, if there is only one SDLC server specified in the config file (with legacy SDLC field config form: `sdlc: { url: string }`), then the server key is `-`, i.e. `/studio/-/...`, else the server key is the key to the SDLC instance, i.e. `/studio/sdlc1/...`
   - If the server key specified in the URL is not recognised, the user will be redirected to the setup page if there is only one SDLC server in the config or the SDLC server configuration page if there are multiple SDLC servers in the config.
-  - Some basic routes are now renamed to be more consistent with others: e.g. setup page route is `/studio/-/setup/...`, editor page route is `/studio/-/edit/...`, and viewer page route is `/studio/-/view/...`.
+  - Some basic routes are now renamed to be more consistent with others: e.g. setup page route is `/studio/-/setup/...`, editor page route is `/studio/-/edit/...`, and viewer page route is `/studio/-/view/...`
 
 ### Patch Changes
 
@@ -422,13 +421,9 @@
 
 ### Patch Changes
 
-- [#104](https://github.com/finos/legend-studio/pull/104) [`10e8f9f`](https://github.com/finos/legend-studio/commit/10e8f9f714d9376600ae8c4260405573372a24b4) ([@akphi](https://github.com/akphi)) - Add `@testing-library/react` as dependencies for `@finos/legend-studio`.
+- [#104](https://github.com/finos/legend-studio/pull/104) [`10e8f9f`](https://github.com/finos/legend-studio/commit/10e8f9f714d9376600ae8c4260405573372a24b4) ([@akphi](https://github.com/akphi)) - Add `@testing-library/react` as dependencies for `@finos/legend-studio`
 
 ## 0.0.4
-
-### Patch Changes
-
-- [#102](https://github.com/finos/legend-studio/pull/102) [`492e022`](https://github.com/finos/legend-studio/commit/492e02229d27fc5ef0e1bafbbd8672de0449081f) ([@akphi](https://github.com/akphi)) - Update publish content avoid list.
 
 ## 0.0.3
 
@@ -446,6 +441,4 @@
 
 * [`68d35b5`](https://github.com/finos/legend-studio/commit/68d35b5a03797dabc7ef3315952cc38d0b55ad25) [#72](https://github.com/finos/legend-studio/pull/72) ([@akphi](https://github.com/akphi)) - Change how `setupEngine()` is being called: now, it initializes the engine instance of graph manager instead of just configuring it.
 
-- [`68d35b5`](https://github.com/finos/legend-studio/commit/68d35b5a03797dabc7ef3315952cc38d0b55ad25) [#72](https://github.com/finos/legend-studio/pull/72) ([@akphi](https://github.com/akphi)) - Use a workaround when handling JSON test data and expected result to not break grammar in text mode (see https://github.com/finos/legend-studio/issues/68).
-
-* [`2bbf5ba`](https://github.com/finos/legend-studio/commit/2bbf5baf337350d4deae7c28032cc4d473ffc600) [#82](https://github.com/finos/legend-studio/pull/82) ([@akphi](https://github.com/akphi)) - Cleanup codesmells.
+- [`68d35b5`](https://github.com/finos/legend-studio/commit/68d35b5a03797dabc7ef3315952cc38d0b55ad25) [#72](https://github.com/finos/legend-studio/pull/72) ([@akphi](https://github.com/akphi)) - Use a workaround when handling JSON test data and expected result to not break grammar in text mode (see [#68](https://github.com/finos/legend-studio/issues/68)).

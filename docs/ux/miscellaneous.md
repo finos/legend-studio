@@ -17,7 +17,7 @@ Understand the differences between `ALL CAPS CASE`, `Title Case`, and `Sentence 
 
 ## Panel/List Placeholder
 
-- Do not leave empty panel or empty list blank, it creates confusion and waste screen real-estate. Instead, show something like `Click to choose something...` or `Drop element here to start`, `Add a new item...`. In read-only mode, show indicator like `No property`, `Source is not set`. We have built some components for these use-case which container resize-aware capability, we should leverage these as much as possible.
+- Do not leave empty panel or empty list blank, it creates confusion and waste screen real-estate. Instead, show something like `Click to choose something...` or `Drop element here to start`, `Add a new item...`, etc. In read-only mode, show indicator like `No property`, `Source is not set`. We have built some components for these use-case which container resize-aware capability, we should leverage these as much as possible.
 
 ## Tooltip on flip-flop button/toggler
 
