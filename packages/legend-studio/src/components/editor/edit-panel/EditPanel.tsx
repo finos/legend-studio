@@ -284,7 +284,7 @@ export const EditPanel = observer(() => {
               (plugin) =>
                 (
                   plugin as DSL_StudioPlugin_Extension
-                ).getExtraElementEditorCreators?.() ?? [],
+                ).getExtraElementEditorRenderers?.() ?? [],
             );
           for (const elementEditorCreators of extraElementEditorCreators) {
             const elementEditor = elementEditorCreators(currentEditorState);

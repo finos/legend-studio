@@ -54,14 +54,14 @@ export enum ExplorerTreeRootPackageLabel {
 
 export class ExplorerTreeState {
   editorStore: EditorStore;
-  treeData?: TreeData<PackageTreeNodeData>;
-  generationTreeData?: TreeData<PackageTreeNodeData>;
-  systemTreeData?: TreeData<PackageTreeNodeData>;
-  legalTreeData?: TreeData<PackageTreeNodeData>;
-  dependencyTreeData?: TreeData<PackageTreeNodeData>;
-  selectedNode?: PackageTreeNodeData;
-  fileGenerationTreeData?: TreeData<GenerationTreeNodeData>;
-  elementToRename?: PackageableElement;
+  treeData?: TreeData<PackageTreeNodeData> | undefined;
+  generationTreeData?: TreeData<PackageTreeNodeData> | undefined;
+  systemTreeData?: TreeData<PackageTreeNodeData> | undefined;
+  legalTreeData?: TreeData<PackageTreeNodeData> | undefined;
+  dependencyTreeData?: TreeData<PackageTreeNodeData> | undefined;
+  selectedNode?: PackageTreeNodeData | undefined;
+  fileGenerationTreeData?: TreeData<GenerationTreeNodeData> | undefined;
+  elementToRename?: PackageableElement | undefined;
   buildState = ActionState.create();
 
   constructor(editorStore: EditorStore) {

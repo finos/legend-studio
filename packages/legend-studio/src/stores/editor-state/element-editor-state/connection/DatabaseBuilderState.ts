@@ -18,6 +18,7 @@ import type { Entity } from '@finos/legend-model-storage';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   addUniqueEntry,
   assertNonEmptyString,
@@ -46,11 +47,11 @@ import {
 } from '@finos/legend-graph';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
-  isOpen?: boolean;
+  isOpen?: boolean | undefined;
   id: string;
   label: string;
-  parentId?: string;
-  childrenIds?: string[];
+  parentId?: string | undefined;
+  childrenIds?: string[] | undefined;
   isChecked = false;
 
   constructor(id: string, label: string, parentId: string | undefined) {
@@ -100,7 +101,7 @@ export class DatabaseBuilderState {
   isBuildingDatabase = false;
   isSavingDatabase = false;
   targetDatabasePath: string;
-  treeData?: DatabaseBuilderTreeData;
+  treeData?: DatabaseBuilderTreeData | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -249,7 +250,8 @@ export class DatabaseBuilderState {
       });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
@@ -294,7 +296,8 @@ export class DatabaseBuilderState {
       });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
@@ -334,7 +337,8 @@ export class DatabaseBuilderState {
       if (enrichedTable) {
         this.addColumnsNodeToTableNode(tableNode, enrichedTable, treeData);
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
@@ -454,7 +458,8 @@ export class DatabaseBuilderState {
           )) as string;
         this.setDatabaseGrammarCode(dbGrammar);
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
@@ -571,7 +576,8 @@ export class DatabaseBuilderState {
           );
         }
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,

@@ -25,7 +25,7 @@ import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 
 export class Unit extends DataType implements Hashable {
   measure: Measure;
-  conversionFunction?: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  conversionFunction?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor(
     name: string,
@@ -72,7 +72,7 @@ export class Unit extends DataType implements Hashable {
 }
 
 export class Measure extends Type implements Hashable {
-  canonicalUnit?: Unit;
+  canonicalUnit?: Unit | undefined;
   nonCanonicalUnits: Unit[] = [];
 
   constructor(name: string) {

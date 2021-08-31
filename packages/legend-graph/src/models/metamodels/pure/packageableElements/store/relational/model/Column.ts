@@ -26,7 +26,7 @@ export class Column extends RelationalOperationElement implements Hashable {
   owner!: Relation;
   name!: string;
   type!: RelationalDataType;
-  nullable?: boolean;
+  nullable?: boolean | undefined;
 
   constructor() {
     super();

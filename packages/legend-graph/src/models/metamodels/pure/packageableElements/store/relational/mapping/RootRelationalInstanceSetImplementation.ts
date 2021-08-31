@@ -39,9 +39,9 @@ export class RootRelationalInstanceSetImplementation
   implements RelationalMappingSpecification, Hashable
 {
   columnMappings: ColumnMapping[] = [];
-  filter?: FilterMapping;
-  distinct?: boolean;
-  groupBy?: GroupByMapping;
+  filter?: FilterMapping | undefined;
+  distinct?: boolean | undefined;
+  groupBy?: GroupByMapping | undefined;
   mainTableAlias!: TableAlias;
 
   constructor(

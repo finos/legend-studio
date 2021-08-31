@@ -20,7 +20,7 @@ import { V1_ExecutionPlan } from './V1_ExecutionPlan';
 
 export class V1_SimpleExecutionPlan extends V1_ExecutionPlan {
   authDependent!: boolean;
-  kerberos?: string;
+  kerberos?: string | undefined;
   serializer!: V1_Protocol;
   templateFunctions: string[] = [];
   rootExecutionNode!: V1_ExecutionNode;

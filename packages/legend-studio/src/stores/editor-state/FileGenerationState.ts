@@ -34,6 +34,7 @@ import {
 } from '../shared/FileGenerationTreeUtil';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   addUniqueEntry,
   deepEqual,
   isEmpty,
@@ -58,8 +59,8 @@ export class FileGenerationState {
   fileGeneration: FileGenerationSpecification;
   isGenerating = false;
   root: GenerationDirectory;
-  directoryTreeData?: TreeData<GenerationTreeNodeData>;
-  selectedNode?: GenerationTreeNodeData;
+  directoryTreeData?: TreeData<GenerationTreeNodeData> | undefined;
+  selectedNode?: GenerationTreeNodeData | undefined;
   filesIndex = new Map<string, GenerationFile>();
 
   constructor(
@@ -122,7 +123,8 @@ export class FileGenerationState {
           this.editorStore.graphManagerState.graph,
         )) as GenerationOutput[];
       this.processGenerationResult(result);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.selectedNode = undefined;
       this.processGenerationResult([]);
       this.editorStore.applicationStore.log.error(

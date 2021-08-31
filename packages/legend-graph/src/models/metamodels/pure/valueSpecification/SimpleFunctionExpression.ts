@@ -25,7 +25,7 @@ import type { AbstractProperty } from '../packageableElements/domain/AbstractPro
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
 export class Expression extends ValueSpecification {
-  classifierGenericType?: GenericTypeReference;
+  classifierGenericType?: GenericTypeReference | undefined;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -62,7 +62,7 @@ export class FunctionExpression extends Expression {
 }
 
 export class SimpleFunctionExpression extends FunctionExpression {
-  func?: PackageableElementReference<Function>;
+  func?: PackageableElementReference<Function> | undefined;
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,

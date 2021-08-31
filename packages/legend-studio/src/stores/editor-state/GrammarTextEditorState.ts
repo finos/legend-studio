@@ -58,8 +58,8 @@ const getGrammarElementTypeLabelRegexString = (
 export class GrammarTextEditorState {
   editorStore: EditorStore;
   graphGrammarText = '';
-  currentElementLabelRegexString?: string;
-  error?: EngineError;
+  currentElementLabelRegexString?: string | undefined;
+  error?: EngineError | undefined;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {

@@ -43,6 +43,12 @@ jobs:
           # NOTE: right now the prepare publish content step would run for even
           # packages that might not get published, we can consider using NPM
           # `prepublish` script to narrow down the scope
+          #
+          # NOTE: this is currently creating tags on Github and creating release note.
+          # This is fine except for the fact that it might be creating a lot of tags
+          # and release on our repository. We are trying to opt out by asking for a
+          # a flag to turn off this feature on changesets
+          # See https://github.com/changesets/action/issues/87
           publish: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

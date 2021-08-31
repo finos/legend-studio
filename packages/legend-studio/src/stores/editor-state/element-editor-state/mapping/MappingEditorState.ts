@@ -37,6 +37,7 @@ import {
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   deleteEntry,
   generateEnumerableNameFromToken,
@@ -478,7 +479,7 @@ export interface MappingElementSpec {
   showTarget: boolean;
   // whether or not to open the new mapping element tab as an adjacent tab, this behavior is similar to Chrome
   openInAdjacentTab: boolean;
-  target?: PackageableElement;
+  target?: PackageableElement | undefined;
   postSubmitAction?: (newMappingElement: MappingElement | undefined) => void;
 }
 
@@ -488,11 +489,11 @@ export type MappingEditorTabState =
   | MappingExecutionState;
 
 export class MappingEditorState extends ElementEditorState {
-  currentTabState?: MappingEditorTabState;
+  currentTabState?: MappingEditorTabState | undefined;
   openedTabStates: MappingEditorTabState[] = [];
 
   mappingExplorerTreeData: TreeData<MappingExplorerTreeNodeData>;
-  newMappingElementSpec?: MappingElementSpec;
+  newMappingElementSpec?: MappingElementSpec | undefined;
 
   mappingTestStates: MappingTestState[] = [];
   isRunningAllTests = false;
@@ -1140,7 +1141,8 @@ export class MappingEditorState extends ElementEditorState {
           }
         }
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.warn(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error, redirecting to text mode`,

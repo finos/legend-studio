@@ -20,5 +20,5 @@ import type { PackageableElementReference } from '../../packageableElements/Pack
 
 export class ResultType {
   type!: PackageableElementReference<Type>;
-  genericType?: GenericTypeReference;
+  genericType?: GenericTypeReference | undefined;
 }

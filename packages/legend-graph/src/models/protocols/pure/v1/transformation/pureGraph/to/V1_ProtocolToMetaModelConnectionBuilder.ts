@@ -53,7 +53,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
   implements V1_ConnectionVisitor<Connection>
 {
   context: V1_GraphBuilderContext;
-  embeddedConnectionStore?: PackageableElementReference<Store>;
+  embeddedConnectionStore?: PackageableElementReference<Store> | undefined;
 
   constructor(
     context: V1_GraphBuilderContext,

@@ -21,7 +21,7 @@ import type { V1_EnumValueMapping } from '../../../model/packageableElements/map
 import { V1_getEnumValueMappingSourceValueType } from '../../../model/packageableElements/mapping/V1_EnumValueMapping';
 
 export class V1_EnumerationMapping implements Hashable {
-  id?: string;
+  id?: string | undefined;
   enumeration!: string;
   /**
    * NOTE: the order is important, during deserialization, we want sourceType to be already available
@@ -29,7 +29,7 @@ export class V1_EnumerationMapping implements Hashable {
    * This flag is convenient but after all it's not a good design for protocol because deserializer while processing the source value
    * might not have access to parent context to know the source type. As such, structured source value is preferred.
    */
-  sourceType?: string;
+  sourceType?: string | undefined;
   enumValueMappings: V1_EnumValueMapping[] = [];
 
   get hashCode(): string {

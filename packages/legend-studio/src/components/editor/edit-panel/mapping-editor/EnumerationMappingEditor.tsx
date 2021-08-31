@@ -139,7 +139,7 @@ const EnumerationMappingSourceSelectorModal = observer(
 export const SourceValueInput = observer(
   (props: {
     sourceValue: SourceValue;
-    expectedType?: Type;
+    expectedType?: Type | undefined;
     updateSourceValue: (val: Enum | string | undefined) => void;
     deleteSourceValue: () => void;
     isReadOnly: boolean;

@@ -16,7 +16,11 @@
 
 import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { makeAutoObservable, action, flowResult } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import { ACTIVITY_MODE } from './EditorConfig';
@@ -27,10 +31,10 @@ import { TAB_SIZE } from '@finos/legend-application';
 
 export class ReviewStore {
   editorStore: EditorStore;
-  currentProjectId?: string;
-  currentProject?: Project;
-  currentReviewId?: string;
-  currentReview?: Review;
+  currentProjectId?: string | undefined;
+  currentProject?: Project | undefined;
+  currentReviewId?: string | undefined;
+  currentReview?: Review | undefined;
   isFetchingCurrentReview = false;
   isFetchingComparison = false;
   isApprovingReview = false;
@@ -80,7 +84,8 @@ export class ReviewStore {
           },
         ),
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -130,7 +135,8 @@ export class ReviewStore {
       yield flowResult(
         this.editorStore.changeDetectionState.computeAggregatedWorkspaceChanges(),
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -148,7 +154,8 @@ export class ReviewStore {
           this.projectId,
         )) as PlainObject<Project>,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -166,7 +173,8 @@ export class ReviewStore {
           this.reviewId,
         )) as PlainObject<Review>,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -186,7 +194,8 @@ export class ReviewStore {
           this.review.id,
         )) as PlainObject<Review>,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -207,7 +216,8 @@ export class ReviewStore {
           { message: `${this.review.title} [review]` },
         )) as PlainObject<Review>,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -227,7 +237,8 @@ export class ReviewStore {
           this.review.id,
         )) as PlainObject<Review>,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -247,7 +258,8 @@ export class ReviewStore {
           this.review.id,
         )) as PlainObject<Review>,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

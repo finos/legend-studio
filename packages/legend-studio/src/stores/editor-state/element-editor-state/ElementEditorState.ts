@@ -33,7 +33,7 @@ const generateMultiLineCommentForError = (
 export abstract class ElementEditorState extends EditorState {
   element: PackageableElement;
   editMode = ELEMENT_NATIVE_VIEW_MODE.FORM;
-  generationViewMode?: string;
+  generationViewMode?: string | undefined;
   textContent = '';
   isReadOnly = false;
 
@@ -85,7 +85,7 @@ export abstract class ElementEditorState extends EditorState {
       this.setTextContent(
         JSON.stringify(elementEntity.content, undefined, TAB_SIZE),
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.setTextContent(
         generateMultiLineCommentForError(
@@ -112,7 +112,7 @@ export abstract class ElementEditorState extends EditorState {
           [elementEntity],
         )) as string;
       this.setTextContent(grammar);
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.setTextContent(
         generateMultiLineCommentForError(

@@ -57,8 +57,8 @@ export interface QueryBuilderExplorerTreeDragSource {
 }
 
 export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
-  isSelected?: boolean;
-  isOpen?: boolean;
+  isSelected?: boolean | undefined;
+  isOpen?: boolean | undefined;
   id: string;
   label: string;
   dndText: string;
@@ -73,7 +73,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   skipMappingCheck: boolean;
   isPartOfDerivedPropertyBranch: boolean;
   type: Type;
-  setImpl?: SetImplementation;
+  setImpl?: SetImplementation | undefined;
 
   constructor(
     id: string,
@@ -220,7 +220,7 @@ const getPropertyMappedData = (
 ): {
   mapped: boolean;
   skipMappingCheck: boolean;
-  setImpl?: SetImplementation;
+  setImpl?: SetImplementation | undefined;
 } => {
   const parentSetImpl = parentNode.setImpl;
   // For now, derived properties will be considered mapped if its parent class is mapped.
@@ -362,7 +362,7 @@ const getQueryBuilderTreeData = (
 export class QueryBuilderExplorerPreviewDataState {
   isGeneratingPreviewData = false;
   propertyName = '(unknown)';
-  previewData?: QueryBuilderPreviewData;
+  previewData?: QueryBuilderPreviewData | undefined;
 
   constructor() {
     makeAutoObservable(this, {
@@ -389,7 +389,7 @@ export class QueryBuilderExplorerPreviewDataState {
 export class QueryBuilderExplorerState {
   queryBuilderState: QueryBuilderState;
   previewDataState = new QueryBuilderExplorerPreviewDataState();
-  treeData?: TreeData<QueryBuilderExplorerTreeNodeData>;
+  treeData?: TreeData<QueryBuilderExplorerTreeNodeData> | undefined;
   humanizePropertyName = true;
   showUnmappedProperties = false;
 

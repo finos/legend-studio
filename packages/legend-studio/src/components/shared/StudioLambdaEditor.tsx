@@ -29,7 +29,7 @@ import { useEditorStore } from '../editor/EditorStoreProvider';
 
 export const StudioLambdaEditor = observer(
   (props: {
-    className?: string;
+    className?: string | undefined;
     disabled: boolean;
     lambdaEditorState: LambdaEditorState;
     /**
@@ -37,13 +37,13 @@ export const StudioLambdaEditor = observer(
      * the expected type. Note that we also have to handle that relationship for Primitive type
      * See https://dzone.com/articles/covariance-and-contravariance
      */
-    expectedType?: Type;
-    matchedExpectedType?: () => boolean;
-    onExpectedTypeLabelSelect?: () => void;
+    expectedType?: Type | undefined;
+    matchedExpectedType?: (() => boolean) | undefined;
+    onExpectedTypeLabelSelect?: (() => void) | undefined;
     forceBackdrop: boolean;
-    forceExpansion?: boolean;
-    useBaseTextEditorSettings?: boolean;
-    hideErrorBar?: boolean;
+    forceExpansion?: boolean | undefined;
+    useBaseTextEditorSettings?: boolean | undefined;
+    hideErrorBar?: boolean | undefined;
   }) => {
     const {
       className,

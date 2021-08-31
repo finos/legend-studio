@@ -20,8 +20,8 @@ import type { RawLambda } from '@finos/legend-graph';
 
 export class QueryBuilderUnsupportedState {
   queryBuilderState: QueryBuilderState;
-  rawLambda?: RawLambda;
-  lambdaError?: Error;
+  rawLambda?: RawLambda | undefined;
+  lambdaError?: Error | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {

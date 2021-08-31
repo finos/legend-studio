@@ -139,7 +139,7 @@ const getTypeTreeData = (type: Type): TreeData<TypeTreeNodeData> => {
 };
 
 const TypeTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<TypeTreeNodeData, { selectedType?: Type }>
+  TreeNodeContainerProps<TypeTreeNodeData, { selectedType?: Type | undefined }>
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
   const { selectedType } = innerProps;
@@ -205,7 +205,7 @@ const TypeTreeNodeContainer: React.FC<
 
 export const TypeTree: React.FC<{
   type: Type;
-  selectedType?: Type;
+  selectedType?: Type | undefined;
 }> = (props) => {
   const { type, selectedType } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax

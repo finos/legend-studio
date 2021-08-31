@@ -17,7 +17,7 @@
 export class GenerationOutput {
   content!: string;
   fileName!: string;
-  format?: string;
+  format?: string | undefined;
 
   cleanFileName(rootFolder?: string): void {
     this.fileName =

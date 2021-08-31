@@ -163,7 +163,8 @@ export class WorkspaceUpdaterState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
@@ -221,7 +222,7 @@ export class WorkspaceUpdaterState {
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
@@ -253,7 +254,8 @@ export class WorkspaceUpdaterState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.notifyWarning(
         'Failed to check if current workspace is in conflict resolution mode',
       );
@@ -288,7 +290,8 @@ export class WorkspaceUpdaterState {
         default:
           break;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -343,7 +346,8 @@ export class WorkspaceUpdaterState {
       )
         .map((review) => Review.serialization.fromJson(review))
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

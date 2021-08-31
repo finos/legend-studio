@@ -21,8 +21,8 @@ export class PanelDisplayState {
   size: number;
   _initialDefaultSize: number;
   defaultSize: number;
-  snapSize?: number;
-  maxSize?: number;
+  snapSize?: number | undefined;
+  maxSize?: number | undefined;
 
   constructor(size: {
     initial: number;

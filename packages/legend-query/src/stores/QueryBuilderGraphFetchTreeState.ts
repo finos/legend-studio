@@ -29,7 +29,7 @@ import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExp
 
 export class QueryBuilderGraphFetchTreeState {
   queryBuilderState: QueryBuilderState;
-  treeData?: QueryBuilderGraphFetchTreeData;
+  treeData?: QueryBuilderGraphFetchTreeData | undefined;
   /**
    * If set to `true` we will use `graphFetchChecked` function instead of `graphFetch`.
    * `graphFetchChecked` will do extra checks on constraints and only work on M2M use case for now.

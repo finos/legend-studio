@@ -18,13 +18,13 @@ import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecifica
 import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
 
 export class V1_SerializationConfig extends V1_ValueSpecification {
-  includeType?: boolean;
+  includeType?: boolean | undefined;
   typeKeyName!: string;
-  includeEnumType?: boolean;
-  removePropertiesWithNullValues?: boolean;
-  removePropertiesWithEmptySets?: boolean;
-  fullyQualifiedTypePath?: boolean;
-  includeObjectReference?: boolean;
+  includeEnumType?: boolean | undefined;
+  removePropertiesWithNullValues?: boolean | undefined;
+  removePropertiesWithEmptySets?: boolean | undefined;
+  fullyQualifiedTypePath?: boolean | undefined;
+  includeObjectReference?: boolean | undefined;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

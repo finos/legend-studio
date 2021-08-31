@@ -16,7 +16,11 @@
 
 import { observable, action, flow, makeObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { LogEvent, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore';
 import type { Class, Constraint, DerivedProperty } from '@finos/legend-graph';
 import {
@@ -73,7 +77,8 @@ export class DerivedPropertyState extends LambdaEditorState {
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.setBodyAndParameters(lambda ?? emptyLambda);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
@@ -111,7 +116,8 @@ export class DerivedPropertyState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -160,7 +166,8 @@ export class ConstraintState extends LambdaEditorState {
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.constraint.functionDefinition = lambda ?? emptyFunctionDefinition;
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
@@ -192,7 +199,8 @@ export class ConstraintState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -332,7 +340,8 @@ export class ClassState {
             constraintState.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -369,7 +378,8 @@ export class ClassState {
             derivedPropertyState.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,

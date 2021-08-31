@@ -19,7 +19,7 @@ import { observable, action, makeObservable } from 'mobx';
 import type { SourceInformation } from '../action/SourceInformation';
 
 export class EngineError extends ApplicationError {
-  sourceInformation?: SourceInformation;
+  sourceInformation?: SourceInformation | undefined;
 
   // TODO: remove this since we should have an MM equivalent
   constructor() {

@@ -17,8 +17,12 @@
 import { useState, useRef } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
-import { CustomSelectorInput, createFilter } from '@finos/legend-art';
 import type { SelectComponent } from '@finos/legend-art';
+import {
+  CustomSelectorInput,
+  createFilter,
+  compareLabelFn,
+} from '@finos/legend-art';
 import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   createClassMapping,
@@ -26,10 +30,7 @@ import {
   getAllMappingElements,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import {
-  UnsupportedOperationError,
-  compareLabelFn,
-} from '@finos/legend-shared';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { PackageableElement } from '@finos/legend-graph';

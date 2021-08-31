@@ -28,7 +28,7 @@ export class V1_RootFlatDataClassMapping
 {
   flatData!: string;
   sectionName!: string;
-  filter?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  filter?: V1_RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   propertyMappings: V1_AbstractFlatDataPropertyMapping[] = [];
 
   override get hashCode(): string {

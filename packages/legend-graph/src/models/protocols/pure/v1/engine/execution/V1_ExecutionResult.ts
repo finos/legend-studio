@@ -31,7 +31,7 @@ export abstract class V1_ExecutionActivity {}
 
 export abstract class V1_ExecutionResult {
   builder!: V1_ResultBuilder;
-  activities?: V1_ExecutionActivity[];
+  activities?: V1_ExecutionActivity[] | undefined;
 }
 
 export class V1_JsonExecutionResult extends V1_ExecutionResult {
@@ -59,9 +59,9 @@ export class V1_RelationalExecutionActivity extends V1_ExecutionActivity {
 
 export class V1_TDSColumn {
   name!: string;
-  doc?: string;
-  type?: string;
-  relationalType?: string;
+  doc?: string | undefined;
+  type?: string | undefined;
+  relationalType?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_TDSColumn, {

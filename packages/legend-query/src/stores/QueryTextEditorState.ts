@@ -22,7 +22,7 @@ import {
   RawLambda,
 } from '@finos/legend-graph';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { LogEvent } from '@finos/legend-shared';
+import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
@@ -104,7 +104,8 @@ export class QueryTextEditorState extends LambdaEditorState {
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.rawLambdaState.setLambda(lambda ?? emptyLambda);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
@@ -144,7 +145,8 @@ export class QueryTextEditorState extends LambdaEditorState {
         );
         this.clearErrors();
         this.isConvertingLambdaToString = false;
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.queryBuilderState.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,

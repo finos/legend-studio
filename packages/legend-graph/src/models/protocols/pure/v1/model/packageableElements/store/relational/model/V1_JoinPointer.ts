@@ -21,7 +21,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 export class V1_JoinPointer implements Hashable {
   db!: string;
   name!: string;
-  joinType?: string;
+  joinType?: string | undefined;
 
   get hashCode(): string {
     return hashArray([

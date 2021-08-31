@@ -43,7 +43,7 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
   path: string;
   isMapped: boolean;
   children: React.ReactElement;
-  placement: TooltipProps['placement'];
+  placement: NonNullable<TooltipProps['placement']>;
 }> = (props) => {
   const { property, path, isMapped, children, placement } = props;
   return (

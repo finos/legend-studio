@@ -17,6 +17,7 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   assertNonNullable,
   guaranteeNonNullable,
@@ -44,18 +45,22 @@ export enum DIFF_VIEW_MODE {
 
 export class EntityDiffViewState extends EntityDiffEditorState {
   diffMode = DIFF_VIEW_MODE.GRAMMAR;
-  fromEntityPath?: string;
-  toEntityPath?: string;
+  fromEntityPath?: string | undefined;
+  toEntityPath?: string | undefined;
   fromRevision: SPECIAL_REVISION_ALIAS | string;
   toRevision: SPECIAL_REVISION_ALIAS | string;
   // to and from entities
-  fromEntity?: Entity;
-  toEntity?: Entity;
-  fromGrammarText?: string;
-  toGrammarText?: string;
+  fromEntity?: Entity | undefined;
+  toEntity?: Entity | undefined;
+  fromGrammarText?: string | undefined;
+  toGrammarText?: string | undefined;
   // functions to get to and from entities
-  fromEntityGetter?: (entityPath: string | undefined) => Entity | undefined;
-  toEntityGetter?: (entityPath: string | undefined) => Entity | undefined;
+  fromEntityGetter?:
+    | ((entityPath: string | undefined) => Entity | undefined)
+    | undefined;
+  toEntityGetter?:
+    | ((entityPath: string | undefined) => Entity | undefined)
+    | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -182,7 +187,8 @@ export class EntityDiffViewState extends EntityDiffEditorState {
             [this.fromEntity],
           )) as string;
         this.setFromGrammarText(elementGrammar);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.setFromGrammarText(
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
@@ -204,7 +210,8 @@ export class EntityDiffViewState extends EntityDiffEditorState {
             [this.toEntity],
           )) as string;
         this.setToGrammarText(elementGrammar);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.setFromGrammarText(
           '/* Failed to transform grammar text, see JSON diff instead */',
         );

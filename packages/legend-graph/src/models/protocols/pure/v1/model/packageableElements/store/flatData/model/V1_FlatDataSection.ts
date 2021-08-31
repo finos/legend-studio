@@ -24,7 +24,7 @@ export class V1_FlatDataSection implements Hashable {
   driverId!: string;
   name!: string;
   sectionProperties: V1_FlatDataProperty[] = [];
-  recordType?: V1_RootFlatDataRecordType;
+  recordType?: V1_RootFlatDataRecordType | undefined;
 
   get hashCode(): string {
     return hashArray([

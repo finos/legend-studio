@@ -104,10 +104,10 @@ export class DynaFunction extends Operation {
 }
 
 export interface RelationalMappingSpecification {
-  filter?: FilterMapping;
-  distinct?: boolean;
-  groupBy?: GroupByMapping;
-  mainTableAlias?: TableAlias;
+  filter?: FilterMapping | undefined;
+  distinct?: boolean | undefined;
+  groupBy?: GroupByMapping | undefined;
+  mainTableAlias?: TableAlias | undefined;
 }
 
 export enum JoinType {
@@ -134,10 +134,10 @@ export const getJoinType = (type: string): JoinType => {
 // TODO: create RelationalTreeNode like in PURE?
 export class JoinTreeNode {
   // FIXME: required in PURE
-  alias?: TableAlias;
+  alias?: TableAlias | undefined;
   children: JoinTreeNode[] = [];
   join: JoinReference;
-  joinType?: JoinType;
+  joinType?: JoinType | undefined;
 
   constructor(join: JoinReference, joinType?: JoinType, alias?: TableAlias) {
     makeObservable(this, {
@@ -171,8 +171,8 @@ export const extractLine = (joinTreeNode: JoinTreeNode): JoinTreeNode[] =>
   );
 
 export class RelationalOperationElementWithJoin extends RelationalOperationElement {
-  relationalOperationElement?: RelationalOperationElement;
-  joinTreeNode?: JoinTreeNode;
+  relationalOperationElement?: RelationalOperationElement | undefined;
+  joinTreeNode?: JoinTreeNode | undefined;
 
   constructor() {
     super();
@@ -194,10 +194,10 @@ export class RelationalOperationElementWithJoin extends RelationalOperationEleme
 }
 
 export class TableAlias extends RelationalOperationElement implements Hashable {
-  // setMappingOwner?: PropertyMappingsImplementation;
+  // setMappingOwner?: PropertyMappingsImplementation | undefined;
   relation!: TableReference | ViewReference;
   name!: string;
-  database?: Database;
+  database?: Database | undefined;
   isSelfJoinTarget = false;
 
   constructor() {
@@ -217,10 +217,10 @@ export class TableAlias extends RelationalOperationElement implements Hashable {
 }
 
 export class TableAliasColumn extends RelationalOperationElement {
-  // setMappingOwner?: PropertyMappingsImplementation;
+  // setMappingOwner?: PropertyMappingsImplementation | undefined;
   alias!: TableAlias;
   column!: ColumnReference;
-  columnName?: string;
+  columnName?: string | undefined;
 
   constructor() {
     super();

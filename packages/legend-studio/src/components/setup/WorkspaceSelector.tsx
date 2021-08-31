@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WorkspaceOption } from '../../stores/SetupStore';
 import type { SelectComponent } from '@finos/legend-art';
-import { CustomSelectorInput } from '@finos/legend-art';
+import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import { FaPlus } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
@@ -37,7 +37,8 @@ export const WorkspaceSelector = observer(
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore<StudioConfig>();
     const currentWorkspaceId = setupStore.currentWorkspaceId;
-    const options = setupStore.currentProjectWorkspaceOptions;
+    const options =
+      setupStore.currentProjectWorkspaceOptions.sort(compareLabelFn);
     const selectedOption =
       options.find((option) => option.value === currentWorkspaceId) ?? null;
     const isLoadingOptions =

@@ -35,14 +35,15 @@ export type TextInputEditorOnKeyDownEventHandler = {
 
 export const TextInputEditor: React.FC<{
   inputValue: string;
-  isReadOnly?: boolean;
+  isReadOnly?: boolean | undefined;
   language: EDITOR_LANGUAGE;
-  showMiniMap?: boolean;
-  hideGutter?: boolean;
-  extraEditorOptions?: monacoEditorAPI.IEditorOptions &
-    monacoEditorAPI.IGlobalEditorOptions;
-  updateInput?: (val: string) => void;
-  onKeyDownEventHandlers?: TextInputEditorOnKeyDownEventHandler[];
+  showMiniMap?: boolean | undefined;
+  hideGutter?: boolean | undefined;
+  extraEditorOptions?:
+    | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
+    | undefined;
+  updateInput?: ((val: string) => void) | undefined;
+  onKeyDownEventHandlers?: TextInputEditorOnKeyDownEventHandler[] | undefined;
 }> = (props) => {
   const {
     inputValue,

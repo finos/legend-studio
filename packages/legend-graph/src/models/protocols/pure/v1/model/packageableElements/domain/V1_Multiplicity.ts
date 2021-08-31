@@ -23,7 +23,7 @@ import type { Hashable } from '@finos/legend-shared';
 
 export class V1_Multiplicity implements Hashable {
   lowerBound = 0;
-  upperBound?: number;
+  upperBound?: number | undefined;
 
   get str(): string {
     if (this.lowerBound === this.upperBound) {

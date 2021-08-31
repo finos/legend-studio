@@ -17,6 +17,7 @@
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   losslessStringify,
   tryToFormatLosslessJSONString,
@@ -62,7 +63,7 @@ export abstract class ServiceExecutionState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   execution: ServiceExecution;
-  selectedSingeExecutionTestState?: SingleExecutionTestState;
+  selectedSingeExecutionTestState?: SingleExecutionTestState | undefined;
   selectedTab = SERVICE_EXECUTION_TAB.MAPPING_AND_RUNTIME;
 
   constructor(
@@ -189,7 +190,8 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -212,12 +214,13 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   declare execution: PureExecution;
   selectedExecutionConfiguration?:
     | PureSingleExecution
-    | KeyedExecutionParameter;
-  runtimeEditorState?: RuntimeEditorState;
+    | KeyedExecutionParameter
+    | undefined;
+  runtimeEditorState?: RuntimeEditorState | undefined;
   isExecuting = false;
   isGeneratingPlan = false;
   isOpeningQueryEditor = false;
-  executionResultText?: string; // NOTE: stored as lossless JSON string
+  executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
 
   constructor(
@@ -283,7 +286,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
           this.selectedExecutionConfiguration.runtime,
         ),
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
@@ -313,7 +317,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,

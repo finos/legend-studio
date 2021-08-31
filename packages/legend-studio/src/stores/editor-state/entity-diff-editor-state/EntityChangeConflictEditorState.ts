@@ -26,7 +26,10 @@ import type { EditorStore } from '../../EditorStore';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { mergeDiff3 } from 'node-diff3';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
@@ -40,14 +43,14 @@ const END_FOOTER_MARKER = '>>>>>>>';
 
 interface PotentialMergeConflict {
   startHeader: number;
-  commonBase?: number;
-  splitter?: number;
-  endFooter?: number;
+  commonBase?: number | undefined;
+  splitter?: number | undefined;
+  endFooter?: number | undefined;
 }
 
 export interface MergeConflict {
   startHeader: number;
-  commonBase?: number;
+  commonBase?: number | undefined;
   splitter: number;
   endFooter: number;
 }
@@ -109,8 +112,8 @@ const scanMergeConflict = (text: string): MergeConflict[] => {
 
 export interface MergeEditorComparisonViewInfo {
   label: string;
-  fromGrammarText?: string;
-  toGrammarText?: string;
+  fromGrammarText?: string | undefined;
+  toGrammarText?: string | undefined;
   fromRevision: SPECIAL_REVISION_ALIAS | string;
   toRevision: SPECIAL_REVISION_ALIAS | string;
 }
@@ -129,29 +132,31 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
   currentChangeRevision: SPECIAL_REVISION_ALIAS | string;
   incomingChangeRevision: SPECIAL_REVISION_ALIAS | string;
   // entity
-  baseEntity?: Entity;
-  currentChangeEntity?: Entity;
-  incomingChangeEntity?: Entity;
+  baseEntity?: Entity | undefined;
+  currentChangeEntity?: Entity | undefined;
+  incomingChangeEntity?: Entity | undefined;
   // grammar
-  baseGrammarText?: string;
-  currentChangeGrammarText?: string;
-  incomingChangeGrammarText?: string;
+  baseGrammarText?: string | undefined;
+  currentChangeGrammarText?: string | undefined;
+  incomingChangeGrammarText?: string | undefined;
   // entity getter/updater function
-  baseEntityGetter?: (entityPath: string | undefined) => Entity | undefined;
-  currentChangeEntityGetter?: (
-    entityPath: string | undefined,
-  ) => Entity | undefined;
-  incomingChangeEntityGetter?: (
-    entityPath: string | undefined,
-  ) => Entity | undefined;
+  baseEntityGetter?:
+    | ((entityPath: string | undefined) => Entity | undefined)
+    | undefined;
+  currentChangeEntityGetter?:
+    | ((entityPath: string | undefined) => Entity | undefined)
+    | undefined;
+  incomingChangeEntityGetter?:
+    | ((entityPath: string | undefined) => Entity | undefined)
+    | undefined;
   // editor
-  mergedText?: string;
+  mergedText?: string | undefined;
   mergeSucceeded = true;
   mergeConflicts: MergeConflict[] = [];
   isReadOnly = false;
-  currentMergeEditorConflict?: MergeConflict;
-  currentMergeEditorLine?: number;
-  mergeEditorParserError?: ParserError;
+  currentMergeEditorConflict?: MergeConflict | undefined;
+  currentMergeEditorLine?: number | undefined;
+  mergeEditorParserError?: ParserError | undefined;
   currentMode = ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.MERGE_VIEW;
 
   constructor(
@@ -432,7 +437,8 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
         );
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (error instanceof ParserError) {
         this.mergeEditorParserError = error;
         this.editorStore.applicationStore.notifyWarning(

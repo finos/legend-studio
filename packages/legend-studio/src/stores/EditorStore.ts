@@ -196,7 +196,7 @@ export class EditorStore {
   hotkeys: EditorHotkey[] = [];
 
   // Tabs
-  currentEditorState?: EditorState;
+  currentEditorState?: EditorState | undefined;
   openedEditorStates: EditorState[] = [];
   newElementState: NewElementState;
   /**
@@ -616,7 +616,8 @@ export class EditorStore {
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
           );
           this.applicationStore.navigator.reload();
-        } catch (error: unknown) {
+        } catch (error) {
+          assertErrorThrown(error);
           this.applicationStore.log.error(
             LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
             error,
@@ -793,7 +794,7 @@ export class EditorStore {
         Date.now() - startTime,
         'ms',
       );
-    } catch (error: unknown) {
+    } catch {
       return;
     }
 
@@ -1218,7 +1219,7 @@ export class EditorStore {
         yield flowResult(
           this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
         );
-      } catch (error: unknown) {
+      } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.notifyWarning(
           `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,

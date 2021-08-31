@@ -20,6 +20,7 @@ import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/
 import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   losslessStringify,
   uuid,
@@ -71,9 +72,9 @@ export class TestContainerState {
   serviceEditorState: ServiceEditorState;
   testState: SingleExecutionTestState;
   testContainer: TestContainer;
-  assertionData?: string;
-  testPassed?: boolean;
-  textExecutionTextResult?: ServiceTestExecutionResult; // NOTE: this is lossless JSON strings
+  assertionData?: string | undefined;
+  testPassed?: boolean | undefined;
+  textExecutionTextResult?: ServiceTestExecutionResult | undefined; // NOTE: this is lossless JSON strings
   isFetchingActualResultForComparison = false;
   isGeneratingTestAssertion = false;
 
@@ -279,7 +280,8 @@ export class TestContainerState {
       } else {
         throw new UnsupportedOperationError();
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.setAssertionData(tryToFormatJSONString('{}'));
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
@@ -324,7 +326,8 @@ export class TestContainerState {
       } else {
         throw new UnsupportedOperationError();
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.setTestExecutionResultText(undefined);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
@@ -341,10 +344,10 @@ export class SingleExecutionTestState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   test: SingleExecutionTest;
-  selectedTestContainerState?: TestContainerState;
+  selectedTestContainerState?: TestContainerState | undefined;
   isRunningAllTests = false;
   isGeneratingTestData = false;
-  testSuiteRunError?: Error;
+  testSuiteRunError?: Error | undefined;
   testResults: ServiceTestResult[] = [];
   allTestRunTime = 0;
 
@@ -454,7 +457,8 @@ export class SingleExecutionTestState {
             executionInput.runtime,
             PureClientVersion.VX_X_X,
           )) as string;
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
           error,
@@ -485,8 +489,9 @@ export class SingleExecutionTestState {
           this.serviceEditorState.editorStore.graphManagerState.graph,
         )) as ServiceTestResult[];
       this.setTestResults(results);
-    } catch (error: unknown) {
-      this.testSuiteRunError = error as Error;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.testSuiteRunError = error;
       this.setTestResults(
         this.test.asserts.map((assert, idx) => ({
           name: `test_${idx + 1}`,

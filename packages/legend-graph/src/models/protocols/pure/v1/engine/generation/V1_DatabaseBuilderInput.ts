@@ -31,8 +31,8 @@ import type { V1_RelationalDatabaseConnection } from '../../model/packageableEle
 export class V1_DatabasePattern {
   schemaPattern!: string;
   tablePattern!: string;
-  escapeSchemaPattern?: boolean;
-  escapeTablePattern?: boolean;
+  escapeSchemaPattern?: boolean | undefined;
+  escapeTablePattern?: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_DatabasePattern, {
@@ -45,10 +45,10 @@ export class V1_DatabasePattern {
 }
 
 export class V1_DatabaseBuilderConfig {
-  maxTables?: number;
-  enrichTables?: boolean;
-  enrichPrimaryKeys?: boolean;
-  enrichColumns?: boolean;
+  maxTables?: number | undefined;
+  enrichTables?: boolean | undefined;
+  enrichPrimaryKeys?: boolean | undefined;
+  enrichColumns?: boolean | undefined;
   patterns: V1_DatabasePattern[] = [];
 
   static readonly serialization = new SerializationFactory(

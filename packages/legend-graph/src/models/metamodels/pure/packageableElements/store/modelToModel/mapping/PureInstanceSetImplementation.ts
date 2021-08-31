@@ -38,7 +38,7 @@ export class PureInstanceSetImplementation
   implements Hashable, Stubable
 {
   srcClass: OptionalPackageableElementReference<Class>;
-  filter?: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  filter?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   declare propertyMappings: PurePropertyMapping[];
 
   constructor(

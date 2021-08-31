@@ -25,7 +25,7 @@ export class V1_EmbeddedRelationalPropertyMapping
   extends V1_PropertyMapping
   implements Hashable
 {
-  id?: string;
+  id?: string | undefined;
   classMapping!: V1_RelationalClassMapping;
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {

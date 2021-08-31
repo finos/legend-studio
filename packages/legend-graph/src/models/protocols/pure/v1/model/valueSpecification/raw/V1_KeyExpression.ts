@@ -18,7 +18,7 @@ import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecifica
 import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
 
 export class V1_KeyExpression extends V1_ValueSpecification {
-  add?: boolean;
+  add?: boolean | undefined;
   expression!: V1_ValueSpecification;
   key!: V1_ValueSpecification;
 

@@ -357,7 +357,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 filterState.queryBuilderState.graphManagerState.graph,
               ),
             );
-          } catch (error: unknown) {
+          } catch (error) {
             assertErrorThrown(error);
             applicationStore.notifyWarning(error.message);
             return;
@@ -673,7 +673,7 @@ export const QueryBuilderFilterPanel = observer(
               filterState.queryBuilderState.graphManagerState.graph,
             ),
           );
-        } catch (error: unknown) {
+        } catch (error) {
           assertErrorThrown(error);
           applicationStore.notifyWarning(error.message);
           return;

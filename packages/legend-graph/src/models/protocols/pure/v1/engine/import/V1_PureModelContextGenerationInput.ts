@@ -18,8 +18,8 @@ import { list, createModelSchema, optional, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 
 class FileImportContent {
-  fileName?: string;
-  content?: string;
+  fileName?: string | undefined;
+  content?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(FileImportContent, {
@@ -30,8 +30,8 @@ class FileImportContent {
 }
 
 export class V1_PureModelContextGenerationInput {
-  package?: string;
-  imports?: FileImportContent[];
+  package?: string | undefined;
+  imports?: FileImportContent[] | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_PureModelContextGenerationInput, {

@@ -33,7 +33,7 @@ export class V1_GenerationProperty {
   name!: string;
   description!: string;
   type!: string;
-  items?: V1_GenerationPropertyItem;
+  items?: V1_GenerationPropertyItem | undefined;
   defaultValue!: string; // we always give string so based on the type of the property, we have to parse this to the appropriate format
   required!: boolean;
 

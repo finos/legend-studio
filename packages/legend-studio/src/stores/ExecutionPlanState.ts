@@ -21,7 +21,7 @@ import type {
   ExecutionPlanViewTreeNodeData,
 } from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { LogEvent } from '@finos/legend-shared';
+import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import type {
   RawExecutionPlan,
   Mapping,
@@ -56,8 +56,8 @@ export class ExecutionPlanState {
     | undefined = undefined;
   sqlSelectedTab: SQL_DISPLAY_TABS = SQL_DISPLAY_TABS.SQL_QUERY;
   viewMode: EXECUTION_PLAN_VIEW_MODE = EXECUTION_PLAN_VIEW_MODE.FORM;
-  rawPlan?: RawExecutionPlan;
-  plan?: ExecutionPlan;
+  rawPlan?: RawExecutionPlan | undefined;
+  plan?: ExecutionPlan | undefined;
   isGenerating = false;
 
   constructor(editorStore: EditorStore) {
@@ -155,7 +155,8 @@ export class ExecutionPlanState {
           PureClientVersion.VX_X_X,
         )) as object;
       this.buildExecutionPlan(rawPlan);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,

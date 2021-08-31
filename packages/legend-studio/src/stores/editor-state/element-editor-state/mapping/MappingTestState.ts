@@ -143,7 +143,8 @@ export class MappingTestQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -347,8 +348,8 @@ export class MappingTestState {
   test: MappingTest;
   runTime = 0;
   isSkipped = false;
-  errorRunningTest?: Error;
-  testExecutionResultText?: string; // NOTE: stored as lossless JSON object text
+  errorRunningTest?: Error | undefined;
+  testExecutionResultText?: string | undefined; // NOTE: stored as lossless JSON object text
   isRunningTest = false;
   isExecutingTest = false;
   queryState: MappingTestQueryState;
@@ -575,7 +576,8 @@ export class MappingTestState {
       } else {
         throw new UnsupportedOperationError();
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
@@ -638,12 +640,13 @@ export class MappingTestState {
       this.setResult(
         assertionMatched ? TEST_RESULT.PASSED : TEST_RESULT.FAILED,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.errorRunningTest = error as Error;
+      this.errorRunningTest = error;
       this.setResult(TEST_RESULT.ERROR);
     } finally {
       this.isRunningTest = false;
@@ -668,7 +671,7 @@ export class MappingTestState {
       if (openTab) {
         this.setSelectedTab(openTab);
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
@@ -692,7 +695,8 @@ export class MappingTestState {
           this.inputDataState.runtime,
         ),
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,

@@ -66,7 +66,7 @@ const getRecordTypeTreeData = (
 const RecordFieldTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     FlatDataRecordTypeTreeNodeData,
-    { selectedType?: Type }
+    { selectedType?: Type | undefined }
   >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
@@ -120,7 +120,7 @@ const RecordFieldTreeNodeContainer: React.FC<
 
 export const FlatDataRecordTypeTree: React.FC<{
   recordType: RootFlatDataRecordType;
-  selectedType?: Type;
+  selectedType?: Type | undefined;
 }> = (props) => {
   const { recordType, selectedType } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax

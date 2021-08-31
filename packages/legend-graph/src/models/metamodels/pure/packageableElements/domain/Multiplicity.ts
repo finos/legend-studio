@@ -24,7 +24,7 @@ import type { Hashable } from '@finos/legend-shared';
 
 export class Multiplicity implements Hashable {
   lowerBound: number;
-  upperBound?: number;
+  upperBound?: number | undefined;
 
   constructor(lowerBound: number, upperBound: number | undefined) {
     makeObservable(this, {

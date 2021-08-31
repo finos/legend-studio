@@ -72,8 +72,8 @@ enum CORE_ENGINE_TRACER_SPAN {
 }
 
 export class V1_EngineServerClient extends AbstractServerClient {
-  currentUserId?: string;
-  private env?: string;
+  currentUserId?: string | undefined;
+  private env?: string | undefined;
 
   // NOTE: this is an attempt to follow engine's effort to be split into multiple pieces
   // for better operational performance overall.
@@ -82,11 +82,11 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // if we do it like this, there might be some complications about the getting the current
   // user, right now we assume to make some call on the query servers, for example, but
   // getting the user from the main engine server, which seems problematic.
-  private queryBaseUrl?: string;
+  private queryBaseUrl?: string | undefined;
 
   constructor(
     config: ServerClientConfig & {
-      queryBaseUrl?: string;
+      queryBaseUrl?: string | undefined;
     },
   ) {
     super(config);

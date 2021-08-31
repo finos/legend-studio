@@ -21,6 +21,7 @@ import {
 } from './MappingElementState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   UnsupportedOperationError,
   guaranteeType,
@@ -89,7 +90,8 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         if (this.propertyMapping instanceof FlatDataPropertyMapping) {
           this.propertyMapping.transform = lambda ?? emptyLambda;
         }
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
@@ -124,7 +126,8 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
               : '',
           );
           this.clearErrors();
-        } catch (error: unknown) {
+        } catch (error) {
+          assertErrorThrown(error);
           this.editorStore.applicationStore.log.error(
             LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
             error,
@@ -228,7 +231,8 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
             flatDataPropertyMappingState.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -317,8 +321,8 @@ export class EmbeddedFlatDataInstanceSetImplementationState
   // dummy lambda editor states needed because embedded flat-data should be seen as `PropertMappingState`
   lambdaPrefix = '';
   lambdaString = '';
-  parserError?: ParserError;
-  compilationError?: CompilationError;
+  parserError?: ParserError | undefined;
+  compilationError?: CompilationError | undefined;
 
   setLambdaString(val: string): void {
     return;

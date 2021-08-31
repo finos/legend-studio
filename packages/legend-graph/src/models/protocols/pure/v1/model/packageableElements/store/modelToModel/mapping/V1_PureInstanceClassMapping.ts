@@ -26,9 +26,9 @@ export class V1_PureInstanceClassMapping
   extends V1_ClassMapping
   implements Hashable
 {
-  srcClass?: string;
+  srcClass?: string | undefined;
   propertyMappings: V1_PropertyMapping[] = [];
-  filter?: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  filter?: V1_RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   override get hashCode(): string {
     return hashArray([

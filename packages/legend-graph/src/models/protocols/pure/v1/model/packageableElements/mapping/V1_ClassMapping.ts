@@ -40,12 +40,12 @@ export interface V1_ClassMappingVisitor<T> {
 }
 
 export abstract class V1_ClassMapping implements Hashable {
-  id?: string;
+  id?: string | undefined;
   // NOTE: In Pure protocol, this property is required, but for cases like embedded property mapping,
   // this should not be set, so most likely we will change Pure protocol to match this eventually.
-  class?: string;
+  class?: string | undefined;
   root!: boolean;
-  mappingClass?: V1_MappingClass;
+  mappingClass?: V1_MappingClass | undefined;
 
   get hashCode(): string {
     return hashArray([

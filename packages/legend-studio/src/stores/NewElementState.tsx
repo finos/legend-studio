@@ -111,7 +111,7 @@ export abstract class NewElementDriver<T extends PackageableElement> {
 }
 
 export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRuntime> {
-  mapping?: Mapping;
+  mapping?: Mapping | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -161,7 +161,7 @@ export abstract class NewConnectionValueDriver<T extends Connection> {
 
 /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
 export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureModelConnection> {
-  class?: Class;
+  class?: Class | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -261,7 +261,7 @@ const getConnectionType = (
 };
 
 export class NewPackageableConnectionDriver extends NewElementDriver<PackageableConnection> {
-  store?: Store;
+  store?: Store | undefined;
   newConnectionValueDriver: NewConnectionValueDriver<Connection>;
 
   constructor(editorStore: EditorStore) {
@@ -336,7 +336,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 }
 
 export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpecification> {
-  typeOption?: FileGenerationTypeOption;
+  typeOption?: FileGenerationTypeOption | undefined;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -399,9 +399,9 @@ export class NewElementState {
   modal = false;
   showType = false;
   type: string;
-  _package?: Package;
+  _package?: Package | undefined;
   name = '';
-  newElementDriver?: NewElementDriver<PackageableElement>;
+  newElementDriver?: NewElementDriver<PackageableElement> | undefined;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {

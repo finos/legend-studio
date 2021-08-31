@@ -52,8 +52,8 @@ export abstract class AbstractServerClient {
   protected networkClient: NetworkClient;
   private readonly tracerService = new TracerService();
   enableCompression: boolean;
-  baseUrl?: string;
-  autoReAuthenticateUrl?: string;
+  baseUrl?: string | undefined;
+  autoReAuthenticateUrl?: string | undefined;
 
   constructor(config: ServerClientConfig) {
     this.networkClient = new NetworkClient({
@@ -259,11 +259,11 @@ export abstract class AbstractServerClient {
     url: string,
     data: unknown,
     options: RequestInit,
-    headers?: RequestHeaders,
-    parameters?: Parameters,
-    requestProcessConfig?: RequestProcessConfig,
-    responseProcessConfig?: ResponseProcessConfig,
-    traceData?: TraceData,
+    headers?: RequestHeaders | undefined,
+    parameters?: Parameters | undefined,
+    requestProcessConfig?: RequestProcessConfig | undefined,
+    responseProcessConfig?: ResponseProcessConfig | undefined,
+    traceData?: TraceData | undefined,
   ): Promise<T> {
     const requestUrl = makeUrl(
       this.networkClient.baseUrl,

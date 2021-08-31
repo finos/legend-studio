@@ -18,7 +18,11 @@ import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { LogEvent, getNullableFirstElement } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  getNullableFirstElement,
+} from '@finos/legend-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
 import type { NewVersionType } from '@finos/legend-server-sdlc';
 import {
@@ -46,7 +50,7 @@ export class ProjectOverviewState {
   releaseVersion: CreateVersionCommand;
   committedReviewsBetweenMostRecentVersionAndProjectLatest: Review[] = [];
   latestProjectVersion?: Version | null; // `undefined` if API is not yet called, `null` if fetched but no version exists
-  currentProjectRevision?: Revision;
+  currentProjectRevision?: Revision | undefined;
   projectWorkspaces: Workspace[] = [];
   isCreatingVersion = false;
   isFetchingProjectWorkspaces = false;
@@ -79,7 +83,8 @@ export class ProjectOverviewState {
           this.sdlcState.currentProjectId,
         )) as PlainObject<Workspace>[]
       ).map((workspace) => Workspace.serialization.fromJson(workspace));
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -112,7 +117,8 @@ export class ProjectOverviewState {
           ),
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -143,7 +149,8 @@ export class ProjectOverviewState {
       yield flowResult(
         this.sdlcState.fetchCurrentProject(this.sdlcState.currentProjectId),
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isUpdatingProject = false;
@@ -228,7 +235,8 @@ export class ProjectOverviewState {
           )) as PlainObject<Review>[]
         ).map((review) => Review.serialization.fromJson(review));
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -250,7 +258,8 @@ export class ProjectOverviewState {
         )) as PlainObject<Version>,
       );
       yield flowResult(this.fetchLatestProjectVersion());
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

@@ -331,7 +331,7 @@ const indexPureModelContextData = (
 interface V1_GraphBuilderInput {
   model: BasicModel;
   data: V1_PureModelContextDataIndex;
-  parentElementPath?: string;
+  parentElementPath?: string | undefined;
 }
 
 export interface V1_EngineSetupConfig {
@@ -401,7 +401,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   *initialize(
     config: TEMP__EngineSetupConfig,
     options: {
-      tracerServicePlugins?: TracerServicePlugin<unknown>[];
+      tracerServicePlugins?: TracerServicePlugin<unknown>[] | undefined;
     },
   ): GeneratorFn<void> {
     this.engine = new V1_Engine(config.clientConfig, this.log);
@@ -476,7 +476,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         );
       }
       systemModel.buildState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       systemModel.buildState.fail();
       if (!options?.quiet) {
@@ -591,7 +591,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       if (!options?.quiet) {
         this.log.info(
@@ -828,7 +828,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       if (!options?.quiet) {
         this.log.info(
@@ -921,7 +921,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           'ms',
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       if (!options?.quiet) {
         this.log.info(
@@ -1013,9 +1013,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private *postProcess(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
-    options?: {
-      TEMPORARY__keepSectionIndex?: boolean;
-    },
+    options?:
+      | {
+          TEMPORARY__keepSectionIndex?: boolean | undefined;
+        }
+      | undefined,
   ): GeneratorFn<void> {
     yield Promise.all(
       inputs.flatMap((input) =>
@@ -1471,7 +1473,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return promisify(() =>
         runInAction(() => element.accept_PackageableElementVisitor(visitor)),
       );
-    } catch (err: unknown) {
+    } catch (err) {
       assertErrorThrown(err);
       const error =
         err instanceof GraphBuilderError ? err : new GraphBuilderError(err);
@@ -1572,7 +1574,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async compileGraph(
     graph: PureModel,
-    options?: { onError?: () => void; keepSourceInformation?: boolean },
+    options?:
+      | {
+          onError?: (() => void) | undefined;
+          keepSourceInformation?: boolean | undefined;
+        }
+      | undefined,
   ): Promise<void> {
     await this.engine.compilePureModelContextData(
       this.getFullGraphModelData(graph, {
@@ -2235,7 +2242,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private getFullGraphModelData(
     graph: PureModel,
-    options?: { keepSourceInformation?: boolean },
+    options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): V1_PureModelContextData {
     const contextData1 = this.graphToPureModelContextData(graph, {
       keepSourceInformation: options?.keepSourceInformation,
@@ -2250,7 +2257,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private elementToProtocol = <T extends V1_PackageableElement>(
     element: PackageableElement,
-    options?: { keepSourceInformation?: boolean },
+    options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): T =>
     element.accept_PackageableElementVisitor(
       new V1_PackageableElementTransformer(
@@ -2360,7 +2367,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private graphToPureModelContextData = (
     graph: PureModel,
-    options?: { keepSourceInformation?: boolean },
+    options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): V1_PureModelContextData => {
     const startTime = Date.now();
     const graphData = new V1_PureModelContextData();
@@ -2517,7 +2524,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         }
       ).values[0];
       assertTrue(typeof json === 'string', `Expected value of type 'string'`);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.log.warn(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_MANAGER_FAILURE),
         `Can't extract assertion result`,

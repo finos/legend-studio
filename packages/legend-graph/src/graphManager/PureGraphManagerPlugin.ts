@@ -25,15 +25,29 @@ export type PureGrammarElementLabeler = (
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
 
+  /**
+   * Get the list of supported packageabl element classes.
+   */
   getExtraPureGraphExtensionClasses?(): Clazz<PackageableElement>[];
 
+  /**
+   * Get the list of supported Pure grammar parsers.
+   */
   getExtraPureGrammarParserNames?(): string[];
 
+  /**
+   * Get the list of supported Pure grammar keywords.
+   */
   getExtraPureGrammarKeywords?(): string[];
 
+  /**
+   * Get the list of Pure grammar type labelers for packageable elements.
+   */
   getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 
   /**
+   * Get the list of system element qualified paths to be exposed for common usages.
+   *
    * Many system elements are included when building the graph, but only a few should
    * be presented in the form view to user as selection options. This method will
    * provide the allowed list of system element paths that we want the users to be

@@ -185,14 +185,16 @@ export class DiagramRenderer {
   selectionBoxBorderColor: string;
 
   // Selection
-  selection?: PositionedRectangle;
-  selectionStart?: Point;
-  selectedClassCorner?: ClassView; // the class view which we currently select the bottom right corner
-  selectedClassProperty?: { property: AbstractProperty; selectionPoint: Point };
+  selection?: PositionedRectangle | undefined;
+  selectionStart?: Point | undefined;
+  selectedClassCorner?: ClassView | undefined; // the class view which we currently select the bottom right corner
+  selectedClassProperty?:
+    | { property: AbstractProperty; selectionPoint: Point }
+    | undefined;
   selectedClasses: ClassView[];
-  selectedPropertyOrAssociation?: PropertyHolderView;
-  selectedInheritance?: GeneralizationView;
-  selectedPoint?: Point;
+  selectedPropertyOrAssociation?: PropertyHolderView | undefined;
+  selectedInheritance?: GeneralizationView | undefined;
+  selectedPoint?: Point | undefined;
 
   private _selectedClassesInitialPositions: {
     classView: ClassView;
@@ -200,17 +202,16 @@ export class DiagramRenderer {
   }[];
 
   // Relationship
-  startClassView?: ClassView;
-  addRelationshipToDiagramFn?: (
-    start: ClassView,
-    target: ClassView,
-  ) => RelationshipView | undefined;
+  startClassView?: ClassView | undefined;
+  addRelationshipToDiagramFn?:
+    | ((start: ClassView, target: ClassView) => RelationshipView | undefined)
+    | undefined;
 
-  mouseOverClassCorner?: ClassView;
-  mouseOverClassName?: ClassView;
-  mouseOverClassView?: ClassView;
-  mouseOverClassProperty?: AbstractProperty;
-  mouseOverPropertyHolderViewLabel?: PropertyHolderView;
+  mouseOverClassCorner?: ClassView | undefined;
+  mouseOverClassName?: ClassView | undefined;
+  mouseOverClassView?: ClassView | undefined;
+  mouseOverClassProperty?: AbstractProperty | undefined;
+  mouseOverPropertyHolderViewLabel?: PropertyHolderView | undefined;
   cursorPosition: Point;
 
   leftClick: boolean;

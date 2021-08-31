@@ -22,9 +22,9 @@ import { V1_PositionedRectangle } from './geometry/V1_PositionedRectangle';
 export class V1_ClassView extends V1_PositionedRectangle implements Hashable {
   id!: string;
   class!: string;
-  hideProperties?: boolean;
-  hideTaggedValues?: boolean;
-  hideStereotypes?: boolean;
+  hideProperties?: boolean | undefined;
+  hideTaggedValues?: boolean | undefined;
+  hideStereotypes?: boolean | undefined;
 
   override get hashCode(): string {
     return hashArray([

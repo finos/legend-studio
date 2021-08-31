@@ -21,7 +21,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 export class V1_PropertyPointer implements Hashable {
   // NOTE: In Pure protocol, this property is required, but for cases like embedded property mapping,
   // this should not be set, so most likely we will change Pure protocol to match this eventually.
-  class?: string;
+  class?: string | undefined;
   property!: string;
 
   get hashCode(): string {

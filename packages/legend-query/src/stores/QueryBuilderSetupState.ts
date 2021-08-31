@@ -35,12 +35,12 @@ import {
 
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
-  _class?: Class;
-  mapping?: Mapping;
-  runtime?: Runtime;
+  _class?: Class | undefined;
+  mapping?: Mapping | undefined;
+  runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
-  onSave?: (lambda: RawLambda) => Promise<void>;
+  onSave?: ((lambda: RawLambda) => Promise<void>) | undefined;
   showSetupPanel = true;
 
   constructor(queryBuilderState: QueryBuilderState) {

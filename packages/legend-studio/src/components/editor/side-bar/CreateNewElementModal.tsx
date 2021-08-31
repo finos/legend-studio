@@ -26,9 +26,9 @@ import {
   resolvePackageAndElementName,
   CONNECTION_TYPE,
 } from '../../../stores/NewElementState';
-import { CustomSelectorInput } from '@finos/legend-art';
+import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
-import { compareLabelFn, prettyCONSTName } from '@finos/legend-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';
@@ -146,7 +146,7 @@ const NewPureModelConnectionDriverEditor = observer(
     const editorStore = useEditorStore();
     // store
     const store = newConnectionDriver.store;
-    let storeOptions: { label: string; value?: Store }[] = [
+    let storeOptions: { label: string; value?: Store | undefined }[] = [
       { label: 'ModelStore', value: undefined },
     ];
     storeOptions = storeOptions.concat(
@@ -310,7 +310,7 @@ const renderNewElementDriver = (
           (plugin) =>
             (
               plugin as DSL_StudioPlugin_Extension
-            ).getExtraNewElementDriverEditorCreators?.() ?? [],
+            ).getExtraNewElementDriverEditorRenderers?.() ?? [],
         );
       for (const creator of extraNewElementDriverEditorCreators) {
         const editor = creator(type);

@@ -206,7 +206,8 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.derivationProjectionColumnState.setLambda(lambda ?? emptyLambda);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
@@ -244,7 +245,8 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.queryBuilderState.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -346,7 +348,8 @@ export class QueryBuilderProjectionState {
             ),
           );
         });
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.queryBuilderState.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -439,7 +442,7 @@ export class QueryBuilderProjectionState {
        * But sometimes, we can opt in to use this flag to disable this sorting behavior,
        * such as when we build/process.
        */
-      skipSorting?: boolean;
+      skipSorting?: boolean | undefined;
     },
   ): void {
     addUniqueEntry(this.columns, val);
@@ -693,10 +696,10 @@ export class QueryBuilderProjectionState {
             `No preview support for property of type '${propertyType.path}'`,
           );
       }
-    } catch (e: unknown) {
-      assertErrorThrown(e);
+    } catch (error) {
+      assertErrorThrown(error);
       this.queryBuilderState.applicationStore.notifyWarning(
-        `Can't preview data for property '${node.property.name}'. Error: ${e.message}`,
+        `Can't preview data for property '${node.property.name}'. Error: ${error.message}`,
       );
       this.queryBuilderState.explorerState.previewDataState.setPreviewData(
         undefined,

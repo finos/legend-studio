@@ -159,14 +159,14 @@ class RevisionChangeDetectionState {
           'ms',
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_FAILURE),
         `Can't build hashes index`,
       );
       this.setEntityHashesIndex(new Map<string, string>());
       this.setIsBuildingEntityHashesIndex(false);
-      assertErrorThrown(error);
       throw new IllegalStateError(error);
     } finally {
       this.setIsBuildingEntityHashesIndex(false);
@@ -202,7 +202,7 @@ export class ChangeDetectionState {
   isChangeDetectionRunning = false;
   hasChangeDetectionStarted = false;
   forcedStop = false;
-  changeDetectionReaction?: IReactionDisposer;
+  changeDetectionReaction?: IReactionDisposer | undefined;
   /**
    * [1. PJL] Store the entities from project HEAD (i.e. project latest revision)
    * This can be used to compute changes for a review as well as changes and potential conflicts when updating workspace

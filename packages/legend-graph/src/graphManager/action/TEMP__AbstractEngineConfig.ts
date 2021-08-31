@@ -19,10 +19,10 @@ import { action, makeObservable, observable } from 'mobx';
 const DEFAULT_TAB_SIZE = 2;
 
 export class TEMP__AbstractEngineConfig {
-  env?: string;
+  env?: string | undefined;
   tabSize = DEFAULT_TAB_SIZE;
-  currentUserId?: string;
-  baseUrl?: string;
+  currentUserId?: string | undefined;
+  baseUrl?: string | undefined;
   useClientRequestPayloadCompression = false;
   useBase64ForAdhocConnectionDataUrls = false;
 

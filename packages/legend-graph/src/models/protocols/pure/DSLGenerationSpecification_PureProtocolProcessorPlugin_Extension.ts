@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-import type { PackageableElement } from '../../metamodels/pure/packageableElements/PackageableElement';
+import type { ModelGenerationSpecification } from '../../metamodels/pure/packageableElements/generationSpecification/ModelGenerationSpecification';
 import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
 import type { V1_Engine } from './v1/engine/V1_Engine';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData';
 
 export type V1_ModelGenerator = (
-  generationElement: PackageableElement,
+  generationElement: ModelGenerationSpecification,
   model: V1_PureModelContextData,
   engine: V1_Engine,
 ) => Promise<V1_PureModelContextData | undefined>;
 
 export interface DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
+  /**
+   * Get generators for model generation specification.
+   */
   V1_getExtraModelGenerators?(): V1_ModelGenerator[];
 }

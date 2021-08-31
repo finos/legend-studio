@@ -29,7 +29,7 @@ export class DelegatedKerberosAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
-  serverPrincipal?: string;
+  serverPrincipal?: string | undefined;
   constructor() {
     super();
 

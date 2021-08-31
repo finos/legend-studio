@@ -63,7 +63,7 @@ export abstract class SetImplementationState extends MappingElementState {
 export abstract class InstanceSetImplementationState extends SetImplementationState {
   declare mappingElement: InstanceSetImplementation;
   propertyMappingStates: PropertyMappingState[] = [];
-  selectedType?: Type;
+  selectedType?: Type | undefined;
 
   constructor(
     editorStore: EditorStore,

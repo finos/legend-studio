@@ -27,7 +27,7 @@ export class V1_RawInstanceValue
 {
   type!: string;
   multiplicity!: V1_Multiplicity;
-  values?: (string | number)[]; // to be revised?
+  values?: (string | number)[] | undefined; // to be revised?
 
   get hashCode(): string {
     return hashArray([

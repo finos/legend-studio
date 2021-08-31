@@ -101,7 +101,7 @@ export class SortColumnState {
 export class QueryResultSetModifierState {
   queryBuilderState: QueryBuilderState;
   showModal = false;
-  limit?: number;
+  limit?: number | undefined;
   distinct = false;
   sortColumns: SortColumnState[] = [];
 
@@ -152,9 +152,11 @@ export class QueryResultSetModifierState {
    */
   processModifiersOnLambda(
     lambda: LambdaFunction,
-    options?: {
-      overridingLimit?: number;
-    },
+    options?:
+      | {
+          overridingLimit?: number | undefined;
+        }
+      | undefined,
   ): LambdaFunction {
     const multiplicityOne =
       this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(

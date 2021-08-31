@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { FaPlus } from 'react-icons/fa';
 import type { ProjectOption } from '../../stores/SetupStore';
 import type { SelectComponent } from '@finos/legend-art';
-import { clsx, CustomSelectorInput } from '@finos/legend-art';
+import { compareLabelFn, clsx, CustomSelectorInput } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useSetupStore } from './SetupStoreProvider';
@@ -52,7 +52,7 @@ export const ProjectSelector = observer(
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore<StudioConfig>();
     const currentProjectId = setupStore.currentProjectId;
-    const options = setupStore.projectOptions;
+    const options = setupStore.projectOptions.sort(compareLabelFn);
     const selectedOption =
       options.find((option) => option.value === currentProjectId) ?? null;
     const isLoadingOptions = setupStore.loadProjectsState.isInProgress;

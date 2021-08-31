@@ -19,12 +19,12 @@ import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
 export class V1_MappingInclude implements Hashable {
-  includedMapping?: string;
+  includedMapping?: string | undefined;
   // TODO: the below two are for backward compatability
-  includedMappingName?: string;
-  includedMappingPackage?: string;
-  sourceDatabasePath?: string;
-  targetDatabasePath?: string;
+  includedMappingName?: string | undefined;
+  includedMappingPackage?: string | undefined;
+  sourceDatabasePath?: string | undefined;
+  targetDatabasePath?: string | undefined;
 
   get hashCode(): string {
     return hashArray([

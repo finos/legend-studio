@@ -114,8 +114,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   private allEnumerationMappings: EnumerationMapping[] = [];
   private tableAliasMap: Map<string, TableAlias>;
   private allClassMappings: SetImplementation[];
-  private xStoreParent?: XStoreAssociationImplementation;
-  private aggregationAwareParent?: AggregationAwareSetImplementation;
+  private xStoreParent?: XStoreAssociationImplementation | undefined;
+  private aggregationAwareParent?:
+    | AggregationAwareSetImplementation
+    | undefined;
 
   constructor(
     context: V1_GraphBuilderContext,

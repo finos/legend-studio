@@ -20,8 +20,8 @@ import { Class } from '../domain/Class';
 import type { Property } from '../domain/Property';
 
 export class MappingClass extends Class {
-  setImplementation?: SetImplementation;
-  class?: Class;
+  setImplementation?: SetImplementation | undefined;
+  class?: Class | undefined;
   localProperties: Property[] = [];
 
   constructor(name: string) {

@@ -90,7 +90,7 @@ export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     GenerationTreeNodeData,
     {
-      selectedNode?: TreeNodeData;
+      selectedNode?: TreeNodeData | undefined;
     }
   >
 > = (props) => {
@@ -159,7 +159,7 @@ export const FileGenerationTreeNodeContainer: React.FC<
 
 export const FileGenerationTree = observer(
   (props: {
-    selectedNode?: TreeNodeData;
+    selectedNode?: TreeNodeData | undefined;
     directoryTreeData: TreeData<GenerationTreeNodeData>;
     onNodeSelect: (node: GenerationTreeNodeData) => void;
     getFileElementTreeChildNodes: (

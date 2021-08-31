@@ -265,7 +265,7 @@ const V1_flatDataSectionSchema = createModelSchema(V1_FlatDataSection, {
 function V1_flatDataSectionDeserializer(value: {
   driverId: string;
   name: string;
-  recordType?: V1_RootFlatDataRecordType;
+  recordType?: V1_RootFlatDataRecordType | undefined;
   recordTypes?: V1_RootFlatDataRecordType[];
   sectionProperties: V1_FlatDataProperty[];
 }): V1_FlatDataSection {

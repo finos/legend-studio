@@ -16,7 +16,11 @@
 
 import { computed, observable, makeObservable, override } from 'mobx';
 import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState';
-import { LogEvent, guaranteeType } from '@finos/legend-shared';
+import {
+  LogEvent,
+  guaranteeType,
+  assertErrorThrown,
+} from '@finos/legend-shared';
 import {
   ClassState,
   CONSTRAINT_SOURCE_ID_LABEL,
@@ -85,7 +89,8 @@ export class ClassEditorState extends UMLEditorState {
           }
         }
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.warn(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error`,

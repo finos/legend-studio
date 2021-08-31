@@ -63,7 +63,7 @@ export class RootGraphFetchTree extends GraphFetchTree {
 
 export class PropertyGraphFetchTree extends GraphFetchTree {
   property: PropertyReference;
-  alias?: string;
+  alias?: string | undefined;
   parameters: ValueSpecification[] = []; //TODO
   subType: OptionalPackageableElementReference<Class>;
 

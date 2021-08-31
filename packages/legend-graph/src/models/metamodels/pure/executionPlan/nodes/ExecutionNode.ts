@@ -20,10 +20,10 @@ import type { ResultType } from '../result/ResultType';
 export class ExecutionNode {
   // fromCluster : ClusteredValueSpecification[0..1];
   resultType!: ResultType;
-  resultSizeRange?: Multiplicity;
+  resultSizeRange?: Multiplicity | undefined;
   executionNodes: ExecutionNode[] = [];
-  authDependent?: boolean;
-  kerberos?: string;
+  authDependent?: boolean | undefined;
+  kerberos?: string | undefined;
   supportFunctions: string[] = [];
   // implementation : PlatformImplementation[0..1];
 }

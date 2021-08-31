@@ -489,9 +489,9 @@ const IdentifiedConnectionEditor = observer(
         try {
           customConnection =
             currentRuntimeEditorTabState.createNewCustomConnection();
-        } catch (e: unknown) {
-          assertErrorThrown(e);
-          applicationStore.notifyWarning(e.message);
+        } catch (error) {
+          assertErrorThrown(error);
+          applicationStore.notifyWarning(error.message);
           return;
         }
         const newIdentifiedConnection = new IdentifiedConnection(
@@ -1009,7 +1009,7 @@ export const PackageableRuntimeEditor = observer(() => {
 
 export const EmbeddedRuntimeEditor = observer(
   (props: {
-    runtimeEditorState?: RuntimeEditorState;
+    runtimeEditorState?: RuntimeEditorState | undefined;
     isReadOnly: boolean;
     onClose: () => void;
   }) => {

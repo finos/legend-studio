@@ -19,9 +19,9 @@ import type { V1_ValueSpecificationVisitor } from '../../model/valueSpecificatio
 import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity';
 
 export class V1_Variable extends V1_ValueSpecification {
-  class?: string;
+  class?: string | undefined;
   name!: string;
-  multiplicity?: V1_Multiplicity;
+  multiplicity?: V1_Multiplicity | undefined;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

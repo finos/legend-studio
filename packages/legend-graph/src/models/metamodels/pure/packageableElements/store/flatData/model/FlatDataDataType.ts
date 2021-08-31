@@ -22,7 +22,7 @@ import type { FlatDataSection } from './FlatDataSection';
 import type { PrimitiveType } from '../../../domain/PrimitiveType';
 
 export abstract class FlatDataDataType {
-  correspondingPrimitiveType?: PrimitiveType;
+  correspondingPrimitiveType?: PrimitiveType | undefined;
 
   constructor(correspondingPrimitiveType?: PrimitiveType) {
     this.correspondingPrimitiveType = correspondingPrimitiveType;
@@ -32,8 +32,8 @@ export abstract class FlatDataDataType {
 }
 
 export class FlatDataBoolean extends FlatDataDataType implements Hashable {
-  trueString?: string;
-  falseString?: string;
+  trueString?: string | undefined;
+  falseString?: string | undefined;
 
   constructor(correspondingPrimitiveType?: PrimitiveType) {
     super(correspondingPrimitiveType);
@@ -101,8 +101,8 @@ export class FlatDataDecimal extends FlatDataNumber implements Hashable {
 }
 
 export class FlatDataDate extends FlatDataDataType implements Hashable {
-  dateFormat?: string;
-  timeZone?: string;
+  dateFormat?: string | undefined;
+  timeZone?: string | undefined;
 
   constructor(correspondingPrimitiveType?: PrimitiveType) {
     super(correspondingPrimitiveType);
@@ -156,7 +156,7 @@ export class FlatDataRecordField implements Hashable {
   label: string;
   flatDataDataType: FlatDataDataType;
   optional: boolean;
-  address?: string;
+  address?: string | undefined;
 
   constructor(
     label: string,

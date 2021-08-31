@@ -22,8 +22,8 @@ import {
 } from '@finos/legend-shared';
 
 export class V1_GrammarToJsonInput {
-  isolatedLambdas?: Map<string, string>;
-  code?: string;
+  isolatedLambdas?: Map<string, string> | undefined;
+  code?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_GrammarToJsonInput, {

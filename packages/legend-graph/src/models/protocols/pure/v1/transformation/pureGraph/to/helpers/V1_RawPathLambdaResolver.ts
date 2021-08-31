@@ -359,9 +359,9 @@ const V1_resolveLambdaElementPaths = (
           V1_serializeValueSpecification(lambdaProtocol),
         ) as V1_RawLambda)
       : rawLambdaProtocol;
-  } catch (error: unknown) {
-    // return orginal lambda if anything goes wrong
+  } catch (error) {
     assertErrorThrown(error);
+    // return orginal lambda if anything goes wrong
     error.message = `Can't resolve element paths for lambda:\n${error.message}`;
     _context.log.warn(
       LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),

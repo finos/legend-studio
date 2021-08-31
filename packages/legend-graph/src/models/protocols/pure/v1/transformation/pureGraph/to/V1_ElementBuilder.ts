@@ -59,15 +59,15 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
   private _class: GenericClazz<T>;
   private prerequisites: GenericClazz<V1_PackageableElement>[] = [];
   private firstPass: V1_ElementFirstPassBuilder;
-  private secondPass?: V1_ElementSecondPassBuilder;
-  private thirdPass?: V1_ElementThirdPassBuilder;
-  private fourthPass?: V1_ElementFourthPassBuilder;
-  private fifthPass?: V1_ElementFifthPassBuilder;
+  private secondPass?: V1_ElementSecondPassBuilder | undefined;
+  private thirdPass?: V1_ElementThirdPassBuilder | undefined;
+  private fourthPass?: V1_ElementFourthPassBuilder | undefined;
+  private fifthPass?: V1_ElementFifthPassBuilder | undefined;
 
   constructor(props: {
     elementClassName: string;
     _class: GenericClazz<T>;
-    prerequisites?: GenericClazz<V1_PackageableElement>[];
+    prerequisites?: GenericClazz<V1_PackageableElement>[] | undefined;
     /**
      * We aim to build the basic element and index it.
      *

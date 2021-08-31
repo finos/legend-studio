@@ -19,10 +19,10 @@ import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   ActionState,
   assertNonNullable,
-  compareLabelFn,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from './LegendStudioRouter';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
@@ -45,7 +45,7 @@ interface ImportProjectSuccessReport {
 export interface ProjectOption {
   label: string;
   value: string;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   tag: string;
 }
 
@@ -59,7 +59,7 @@ const buildProjectOption = (project: Project): ProjectOption => ({
 export interface WorkspaceOption {
   label: string;
   value: string;
-  __isNew__?: boolean;
+  __isNew__?: boolean | undefined;
 }
 
 const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
@@ -71,9 +71,9 @@ export class SetupStore {
   applicationStore: ApplicationStore<StudioConfig>;
   sdlcServerClient: SDLCServerClient;
 
-  currentProjectId?: string;
-  currentWorkspaceId?: string;
-  projects?: Map<string, Project>;
+  currentProjectId?: string | undefined;
+  currentWorkspaceId?: string | undefined;
+  projects?: Map<string, Project> | undefined;
   workspacesByProject = new Map<string, Map<string, Workspace>>();
   loadWorkspacesState = ActionState.create();
   createWorkspaceState = ActionState.create();
@@ -81,7 +81,7 @@ export class SetupStore {
   loadProjectsState = ActionState.create();
   showCreateProjectModal = false;
   showCreateWorkspaceModal = false;
-  importProjectSuccessReport?: ImportProjectSuccessReport;
+  importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
 
   constructor(
     applicationStore: ApplicationStore<StudioConfig>,
@@ -176,7 +176,8 @@ export class SetupStore {
       projects.forEach((project) => projectMap.set(project.projectId, project));
       this.projects = projectMap;
       this.loadProjectsState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
@@ -221,7 +222,8 @@ export class SetupStore {
         ),
       );
       this.setCreateProjectModal(false);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
@@ -257,7 +259,8 @@ export class SetupStore {
       yield flowResult(this.fetchProjects());
       this.projects?.set(report.project.projectId, report.project);
       this.setCurrentProjectId(report.project.projectId);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
@@ -266,23 +269,21 @@ export class SetupStore {
 
   get projectOptions(): ProjectOption[] {
     return this.projects
-      ? Array.from(this.projects.values())
-          .map((project) => ({
-            ...buildProjectOption(project),
-            disabled:
-              project.projectType === ProjectType.PROTOTYPE &&
-              this.applicationStore.config.options
-                .TEMPORARY__useSDLCProductionProjectsOnly,
-          }))
-          .sort(compareLabelFn)
+      ? Array.from(this.projects.values()).map((project) => ({
+          ...buildProjectOption(project),
+          disabled:
+            project.projectType === ProjectType.PROTOTYPE &&
+            this.applicationStore.config.options
+              .TEMPORARY__useSDLCProductionProjectsOnly,
+        }))
       : [];
   }
 
   get currentProjectWorkspaceOptions(): WorkspaceOption[] {
     return this.currentProjectWorkspaces
-      ? Array.from(this.currentProjectWorkspaces.values())
-          .map(buildWorkspaceOption)
-          .sort(compareLabelFn)
+      ? Array.from(this.currentProjectWorkspaces.values()).map(
+          buildWorkspaceOption,
+        )
       : [];
   }
 
@@ -312,7 +313,8 @@ export class SetupStore {
           workspaceMap.set(workspace.workspaceId, workspace);
         });
       this.workspacesByProject.set(projectId, workspaceMap);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       // TODO handle error when fetching workspaces for an individual project
       this.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
@@ -349,7 +351,8 @@ export class SetupStore {
       this.setCurrentWorkspaceId(workspaceId);
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
         error,

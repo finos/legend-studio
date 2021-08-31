@@ -19,7 +19,7 @@ import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
 export abstract class V1_AssociationMapping implements Hashable {
-  id?: string;
+  id?: string | undefined;
   association!: string;
   stores: string[] = [];
 

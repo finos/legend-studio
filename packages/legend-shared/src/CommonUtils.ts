@@ -17,7 +17,6 @@
 import { cloneDeep as deepClone, mergeWith, pickBy } from 'lodash-es';
 import { UnsupportedOperationError } from './error/ErrorUtils';
 import { format as prettyPrintObject } from 'pretty-format';
-import { assertTrue } from './error/AssertionUtils';
 
 // NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
 // in case we want to swap out the implementation
@@ -133,7 +132,10 @@ export const recursiveOmit = (
 export const pruneObject = (
   obj: Record<PropertyKey, unknown>,
 ): Record<PropertyKey, unknown> =>
-  pickBy(obj, (val: unknown): boolean => val !== undefined);
+  pickBy(obj, (val: unknown): boolean => val !== undefined) as Record<
+    PropertyKey,
+    unknown
+  >;
 
 // Stringify object shallowly
 // See https://stackoverflow.com/questions/16466220/limit-json-stringification-depth
@@ -150,10 +152,11 @@ export const generateEnumerableNameFromToken = (
   existingNames: string[],
   token: string,
 ): string => {
-  assertTrue(
-    Boolean(token.match(/^[\w_-]+$/)),
-    'Token must only contain digits, letters, or special characters _ and -',
-  );
+  if (!token.match(/^[\w_-]+$/)) {
+    throw new Error(
+      `Token must only contain digits, letters, or special characters _ and -`,
+    );
+  }
   const maxCounter = existingNames
     .map((name) => {
       const matchingCount = name.match(new RegExp(`^${token}_(?<count>\\d+)$`));
@@ -164,11 +167,6 @@ export const generateEnumerableNameFromToken = (
     .reduce((max, num) => Math.max(max, num), 0);
   return `${token}_${maxCounter + 1}`;
 };
-
-export const compareLabelFn = (
-  a: { label: string },
-  b: { label: string },
-): number => a.label.localeCompare(b.label);
 
 export const getNullableFirstElement = <T>(array: T[]): T | undefined =>
   array.length ? array[0] : undefined;
@@ -206,7 +204,7 @@ export const promisify = <T>(func: () => T): Promise<T> =>
     setTimeout(() => {
       try {
         resolve(func());
-      } catch (error: unknown) {
+      } catch (error) {
         reject(error);
       }
     }, 0),

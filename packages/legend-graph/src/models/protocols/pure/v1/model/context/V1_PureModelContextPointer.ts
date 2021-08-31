@@ -20,7 +20,7 @@ import { V1_PureModelContext } from './V1_PureModelContext';
 
 export class V1_PureModelContextPointer extends V1_PureModelContext {
   serializer: V1_Protocol;
-  sdlcInfo?: V1_Sdlc;
+  sdlcInfo?: V1_Sdlc | undefined;
 
   constructor(protocol: V1_Protocol, sdlc?: V1_Sdlc) {
     super();

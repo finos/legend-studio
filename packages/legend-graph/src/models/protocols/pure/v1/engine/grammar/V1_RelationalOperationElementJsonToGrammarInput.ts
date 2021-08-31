@@ -25,8 +25,8 @@ import type { V1_RawRelationalOperationElement } from '../../model/packageableEl
 
 export class V1_RelationalOperationElementJsonToGrammarInput {
   operations!: Map<string, V1_RawRelationalOperationElement>;
-  operationErrors?: Map<string, V1_ParserError>;
-  // renderStyle?: V1_RenderStyle;
+  operationErrors?: Map<string, V1_ParserError> | undefined;
+  // renderStyle?: V1_RenderStyle | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_RelationalOperationElementJsonToGrammarInput, {

@@ -17,7 +17,12 @@
 import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { LogEvent, guaranteeType, assertType } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  guaranteeType,
+  assertType,
+} from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { CompilationError, PackageableElement } from '@finos/legend-graph';
 import {
@@ -70,7 +75,8 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.functionElement.body = lambda ? (lambda.body as object[]) : [];
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
@@ -129,7 +135,8 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           this.clearErrors();
         }
         this.isConvertingFunctionBodyToString = false;
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
@@ -189,7 +196,8 @@ export class FunctionEditorState extends ElementEditorState {
         this.functionBodyEditorState.setCompilationError(compilationError);
         revealed = true;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.warn(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error`,

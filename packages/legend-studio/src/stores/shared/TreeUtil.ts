@@ -42,8 +42,8 @@ export interface RuntimeExplorerTreeNodeData extends TreeNodeData {
 }
 
 export interface TypeTreeNodeData extends TreeNodeData {
-  type?: Type;
-  property?: AbstractProperty;
+  type?: Type | undefined;
+  property?: AbstractProperty | undefined;
   dndType: CORE_DND_TYPE;
   parent: Type;
 }

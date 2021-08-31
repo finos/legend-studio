@@ -83,10 +83,10 @@ export class GraphManagerState {
       );
       this.systemModel.initializeAutoImports();
       this.initSystemState.pass();
-    } catch (e: unknown) {
-      assertErrorThrown(e);
-      this.initSystemState.pass();
-      throw e;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.initSystemState.fail();
+      throw error;
     }
   }
 

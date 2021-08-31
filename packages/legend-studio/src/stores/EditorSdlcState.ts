@@ -18,6 +18,7 @@ import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import type { PlainObject, GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   NetworkClientError,
   HttpStatus,
@@ -48,9 +49,9 @@ export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
 
 export class EditorSdlcState {
   editorStore: EditorStore;
-  currentProject?: Project;
-  currentWorkspace?: Workspace;
-  currentRevision?: Revision;
+  currentProject?: Project | undefined;
+  currentWorkspace?: Workspace | undefined;
+  currentRevision?: Revision | undefined;
   isWorkspaceOutdated = false;
   workspaceBuilds: Build[] = [];
   projectVersions: Version[] = [];
@@ -116,7 +117,8 @@ export class EditorSdlcState {
           projectId,
         )) as PlainObject<Project>,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -149,7 +151,8 @@ export class EditorSdlcState {
         this.currentWorkspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
         this.editorStore.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -168,7 +171,8 @@ export class EditorSdlcState {
           this.currentProjectId,
         )) as PlainObject<Version>[]
       ).map((version) => Version.serialization.fromJson(version));
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -203,7 +207,8 @@ export class EditorSdlcState {
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>),
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -224,7 +229,8 @@ export class EditorSdlcState {
             this.currentProjectId,
             this.currentWorkspaceId,
           )) as boolean);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -295,7 +301,8 @@ export class EditorSdlcState {
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -324,7 +331,8 @@ export class EditorSdlcState {
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -352,7 +360,8 @@ export class EditorSdlcState {
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -370,7 +379,8 @@ export class EditorSdlcState {
           RevisionAlias.CURRENT,
         )) as PlainObject<Build>[]
       ).map((build) => Build.serialization.fromJson(build));
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,

@@ -28,7 +28,7 @@ export class V1_DelegatedKerberosAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable
 {
-  serverPrincipal?: string;
+  serverPrincipal?: string | undefined;
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DELEGRATED_KEREBEROS_AUTHENTICATION_STRATEGY,

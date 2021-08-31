@@ -270,7 +270,7 @@ export class QueryBuilderLambdaProcessor
   implements ValueSpecificationVisitor<void>
 {
   queryBuilderState: QueryBuilderState;
-  precedingExpression?: SimpleFunctionExpression;
+  precedingExpression?: SimpleFunctionExpression | undefined;
 
   constructor(
     queryBuilderState: QueryBuilderState,

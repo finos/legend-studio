@@ -18,12 +18,12 @@ import { InstanceValue } from './InstanceValue';
 
 export class AlloySerializationConfig {
   typeKeyName: string;
-  includeType?: boolean;
-  includeEnumType?: boolean;
-  removePropertiesWithNullValues?: boolean;
-  removePropertiesWithEmptySets?: boolean;
-  fullyQualifiedTypePath?: boolean;
-  includeObjectReference?: boolean;
+  includeType?: boolean | undefined;
+  includeEnumType?: boolean | undefined;
+  removePropertiesWithNullValues?: boolean | undefined;
+  removePropertiesWithEmptySets?: boolean | undefined;
+  fullyQualifiedTypePath?: boolean | undefined;
+  includeObjectReference?: boolean | undefined;
 
   constructor(typeKeyName: string) {
     this.typeKeyName = typeKeyName;

@@ -215,7 +215,7 @@ export const V1_getRelation = (
 };
 
 const buildJoinTreeNode = (
-  joins: { joinReference: JoinReference; joinType?: JoinType }[],
+  joins: { joinReference: JoinReference; joinType?: JoinType | undefined }[],
   context: V1_GraphBuilderContext,
 ): JoinTreeNode => {
   const joinWithJoinType = joins[0];

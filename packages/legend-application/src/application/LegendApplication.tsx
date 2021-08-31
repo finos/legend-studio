@@ -41,6 +41,7 @@ import type {
   Logger,
 } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   Log,
   guaranteeNonEmptyString,
@@ -127,10 +128,12 @@ export abstract class LegendApplication {
 
   protected log = new Log();
   protected baseUrl!: string;
-  protected pluginRegister?: (
-    pluginManager: AbstractPluginManager,
-    config: LegendApplicationConfig,
-  ) => void;
+  protected pluginRegister?:
+    | ((
+        pluginManager: AbstractPluginManager,
+        config: LegendApplicationConfig,
+      ) => void)
+    | undefined;
   protected _isConfigured = false;
 
   protected constructor(pluginManager: AbstractPluginManager) {
@@ -192,7 +195,8 @@ export abstract class LegendApplication {
       configData = await client.get<LegendApplicationConfigurationData>(
         `${window.location.origin}${baseUrl}config.json`,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.log.error(
         LogEvent.create(
           APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
@@ -209,7 +213,8 @@ export abstract class LegendApplication {
       versionData = await client.get<LegendApplicationVersionData>(
         `${window.location.origin}${baseUrl}version.json`,
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.log.error(
         LogEvent.create(
           APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
@@ -254,7 +259,8 @@ export abstract class LegendApplication {
         LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_LOADED),
         'Legend application loaded',
       );
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.log.error(
         LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_FAILURE),
         'Failed to load Legend application',

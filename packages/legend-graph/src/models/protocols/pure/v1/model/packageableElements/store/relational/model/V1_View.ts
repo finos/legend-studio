@@ -23,9 +23,9 @@ import type { V1_ColumnMapping } from '../../../../../model/packageableElements/
 
 export class V1_View {
   name!: string;
-  mainTable?: V1_TablePtr;
-  distinct?: boolean;
-  filter?: V1_FilterMapping;
+  mainTable?: V1_TablePtr | undefined;
+  distinct?: boolean | undefined;
+  filter?: V1_FilterMapping | undefined;
   primaryKey: string[] = [];
   columnMappings: V1_ColumnMapping[] = [];
   groupBy: V1_RelationalOperationElement[] = [];

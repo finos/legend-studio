@@ -25,7 +25,7 @@ export class V1_FlatDataPropertyMapping
   extends V1_AbstractFlatDataPropertyMapping
   implements Hashable
 {
-  enumMappingId?: string;
+  enumMappingId?: string | undefined;
   transform!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   override get hashCode(): string {

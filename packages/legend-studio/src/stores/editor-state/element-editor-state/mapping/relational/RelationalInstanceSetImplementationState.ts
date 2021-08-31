@@ -21,6 +21,7 @@ import {
 } from '../MappingElementState';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
   LogEvent,
   IllegalStateError,
   isNonNullable,
@@ -91,7 +92,8 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         if (this.propertyMapping instanceof RelationalPropertyMapping) {
           this.propertyMapping.relationalOperation = operation ?? stubOperation;
         }
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
@@ -128,7 +130,8 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
               : '',
           );
           this.clearErrors();
-        } catch (error: unknown) {
+        } catch (error) {
+          assertErrorThrown(error);
           this.editorStore.applicationStore.log.error(
             LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
             error,
@@ -182,8 +185,8 @@ export class EmbeddedRelationalInstanceSetImplementationState
   // dummy lambda editor states needed because embedded flat-data should be seen as `PropertMappingState`
   lambdaPrefix = '';
   lambdaString = '';
-  parserError?: ParserError;
-  compilationError?: CompilationError;
+  parserError?: ParserError | undefined;
+  compilationError?: CompilationError | undefined;
 
   decorate(): void {
     return;
@@ -332,7 +335,8 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
             relationalPropertyMappingState.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,

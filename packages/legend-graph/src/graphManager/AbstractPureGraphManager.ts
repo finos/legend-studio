@@ -60,7 +60,7 @@ export interface TEMP__EngineSetupConfig {
   env: string;
   tabSize: number;
   clientConfig: ServerClientConfig & {
-    queryBaseUrl?: string;
+    queryBaseUrl?: string | undefined;
   };
 }
 

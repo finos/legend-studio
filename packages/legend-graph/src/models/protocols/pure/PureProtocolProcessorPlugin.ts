@@ -65,27 +65,63 @@ export type V1_ExecutionInputGetter = (
 export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureProtocolProcessorPlugin';
 
+  /**
+   * Get the list of supported system element models.
+   *
+   * NOTE: since this set of element is meant to be kept small at the moment,
+   * we can store them as part of the codebase; however, when this set grows,
+   * we should consider having a backend exposed an end point to collect these models.
+   */
   V1_getExtraSystemModels?(): PlainObject<V1_PureModelContextData>[];
 
+  /**
+   * Get the list of builders for a packageable element: i.e. protocol model -> metamodel.
+   */
   V1_getExtraElementBuilders?(): V1_ElementBuilder<V1_PackageableElement>[];
 
+  /**
+   * Get the list of methods to derive the classifier path of a packageable element.
+   */
   V1_getExtraElementClassifierPathGetters?(): V1_ElementProtocolClassifierPathGetter[];
 
+  /**
+   * Get the list of serializers for a packageable element: i.e. protocol model -> JSON.
+   */
   V1_getExtraElementProtocolSerializers?(): V1_ElementProtocolSerializer[];
 
+  /**
+   * Get the list of de-serializers for a packageable element: i.e. JSON -> protocol model.
+   */
   V1_getExtraElementProtocolDeserializers?(): V1_ElementProtocolDeserializer[];
 
+  /**
+   * Get the list of transformers for a packageable element: i.e. metamodel -> protocol model.
+   */
   V1_getExtraElementTransformers?(): V1_ElementTransformer[];
 
+  /**
+   * Get the list of fields in element JSON which hold source information
+   * (a product of the grammar parsing process).
+   */
   V1_getExtraSourceInformationKeys?(): string[];
 
+  /**
+   * Get the list of builders for function expression.
+   *
+   * NOTE: this process is complicated, as it involes advanced procedures like type inferencing,
+   * function matching, handling generics, etc. so our graph manager never intends to even try to
+   * do this. However, occassionally, when there is needs to understand some particular lambda
+   * (such as while building a query), we would need this method.
+   */
   V1_getExtraFunctionExpressionBuilders?(): V1_FunctionExpressionBuilder[];
 
   /**
-   * Used to specify any additional packageable elements added to the graph that is
-   * used when executing a query against the engine server. We prune the graph to avoid
-   * sending the server additional elements not needed for execution. This would provide a mechanism
-   * to add more elements in this reduced graph.
+   * Get the list of collectors of graph elements to build execution input.
+   *
+   * In particular, such collector is used to specify any additional packageable elements
+   * added to the graph that is used when executing a query against the engine server.
+   * We prune the graph to avoid sending the server additional elements not needed for execution.
+   * This would provide a mechanism to add more elements in this reduced graph.
    */
   V1_getExtraExecutionInputGetters?(): V1_ExecutionInputGetter[];
 }

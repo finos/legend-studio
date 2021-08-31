@@ -23,6 +23,7 @@ import type { V1_JoinPointer } from '../../../../../model/packageableElements/st
 export class V1_FilterMapping implements Hashable {
   filter!: V1_FilterPointer;
   joins?: V1_JoinPointer[] = [];
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FILTER_MAPPING,

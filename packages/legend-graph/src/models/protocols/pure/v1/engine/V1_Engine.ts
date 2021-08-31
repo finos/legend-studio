@@ -304,13 +304,13 @@ export class V1_Engine {
 
   async compilePureModelContextData(
     model: V1_PureModelContextData,
-    options?: { onError?: () => void },
+    options?: { onError?: (() => void) | undefined } | undefined,
   ): Promise<void> {
     try {
       await this.engineServerClient.compile(
         this.serializePureModelContextData(model),
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       options?.onError?.();
       if (
@@ -346,7 +346,7 @@ export class V1_Engine {
     try {
       await this.engineServerClient.compile(pureModelContextDataJson);
       return V1_deserializePureModelContextData(mainGraph);
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       options?.onError?.();
       if (
@@ -374,7 +374,7 @@ export class V1_Engine {
           this.serializePureModelContextData(model),
         )) as unknown as V1_LambdaReturnTypeResult
       ).returnType;
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&

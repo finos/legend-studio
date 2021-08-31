@@ -32,7 +32,7 @@ export class Join implements Hashable {
    * Target is used to show the direction of the join. Since cross table join is symmetrical in nature,
    * the direction is not required at all, whereas for self-join, the direction really matters
    */
-  target?: TableAlias;
+  target?: TableAlias | undefined;
   /**
    * This is an optimization for looking up tables/views involved in a join.
    * Normally, it has 2 pairs (A,B) and (B,A)

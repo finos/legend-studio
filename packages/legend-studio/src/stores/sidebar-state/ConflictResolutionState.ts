@@ -246,7 +246,7 @@ export class ConflictResolutionState {
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
@@ -330,7 +330,8 @@ export class ConflictResolutionState {
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -376,7 +377,8 @@ export class ConflictResolutionState {
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -409,7 +411,8 @@ export class ConflictResolutionState {
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -431,7 +434,8 @@ export class ConflictResolutionState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
@@ -474,7 +478,8 @@ export class ConflictResolutionState {
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -498,7 +503,8 @@ export class ConflictResolutionState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
@@ -528,7 +534,8 @@ export class ConflictResolutionState {
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -552,7 +559,8 @@ export class ConflictResolutionState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
@@ -582,7 +590,8 @@ export class ConflictResolutionState {
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
@@ -599,7 +608,7 @@ export class ConflictResolutionState {
     ): Entity | undefined =>
       entityPath
         ? this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.entities.find(
-            (e) => e.path === entityPath,
+            (entity) => entity.path === entityPath,
           )
         : undefined;
     const toEntityGetter = (
@@ -633,7 +642,7 @@ export class ConflictResolutionState {
       }
       // if the change is not from a conflict resolution, it must be from the list of entities of the latest revision in the workspace
       return this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.entities.find(
-        (e) => e.path === entityPath,
+        (entity) => entity.path === entityPath,
       );
     };
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)

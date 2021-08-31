@@ -175,8 +175,8 @@ const ElementRenamer = observer(() => {
 const ExplorerContextMenu = observer(
   (
     props: {
-      node?: PackageTreeNodeData;
-      nodeIsImmutable?: boolean;
+      node?: PackageTreeNodeData | undefined;
+      nodeIsImmutable?: boolean | undefined;
     },
     ref: React.Ref<HTMLDivElement>,
   ) => {

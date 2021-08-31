@@ -45,7 +45,7 @@ export abstract class ExecutionActivity {
 
 export abstract class ExecutionResult {
   builder!: ResultBuilder;
-  activities?: ExecutionActivity[];
+  activities?: ExecutionActivity[] | undefined;
   values!: object;
 }
 
@@ -70,9 +70,9 @@ export class RelationalExecutionActivity extends ExecutionActivity {
 }
 export class TDSColumn {
   name!: string;
-  type?: string;
-  relationalType?: string;
-  doc?: string;
+  type?: string | undefined;
+  relationalType?: string | undefined;
+  doc?: string | undefined;
 }
 
 export class TdsBuilder extends ResultBuilder {

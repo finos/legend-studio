@@ -52,7 +52,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
   queries: LightQuery[] = [];
   loadQueriesState = ActionState.create();
   loadQueryState = ActionState.create();
-  currentQuery?: LightQuery;
+  currentQuery?: LightQuery | undefined;
   showCurrentUserQueriesOnly = false;
 
   constructor(queryStore: QueryStore) {
@@ -80,7 +80,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
           (yield this.queryStore.graphManagerState.graphManager.getLightQuery(
             queryId,
           )) as LightQuery;
-      } catch (error: unknown) {
+      } catch (error) {
         assertErrorThrown(error);
         this.queryStore.applicationStore.notifyError(error);
       } finally {
@@ -107,7 +107,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
           10,
         )) as LightQuery[];
       this.loadQueriesState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.loadQueriesState.fail();
       this.queryStore.applicationStore.notifyError(error);
@@ -118,10 +118,10 @@ export class ExistingQuerySetupState extends QuerySetupState {
 export class CreateQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
-  currentProject?: ProjectData;
-  currentVersionId?: string;
-  currentMapping?: Mapping;
-  currentRuntime?: PackageableRuntime;
+  currentProject?: ProjectData | undefined;
+  currentVersionId?: string | undefined;
+  currentMapping?: Mapping | undefined;
+  currentRuntime?: PackageableRuntime | undefined;
 
   constructor(queryStore: QueryStore) {
     super(queryStore);
@@ -174,7 +174,7 @@ export class CreateQuerySetupState extends QuerySetupState {
         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       ).map((project) => ProjectData.serialization.fromJson(project));
       this.loadProjectsState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.loadProjectsState.fail();
       this.queryStore.applicationStore.notifyError(error);
@@ -190,10 +190,10 @@ export interface ServiceExecutionOption {
 export class ServiceQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
-  currentProject?: ProjectData;
-  currentVersionId?: string;
-  currentService?: Service;
-  currentServiceExecutionKey?: string;
+  currentProject?: ProjectData | undefined;
+  currentVersionId?: string | undefined;
+  currentService?: Service | undefined;
+  currentServiceExecutionKey?: string | undefined;
 
   constructor(queryStore: QueryStore) {
     super(queryStore);
@@ -260,7 +260,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       ).map((project) => ProjectData.serialization.fromJson(project));
       this.loadProjectsState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.loadProjectsState.fail();
       this.queryStore.applicationStore.notifyError(error);
@@ -270,7 +270,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
 
 export class QuerySetupStore {
   queryStore: QueryStore;
-  querySetupState?: QuerySetupState;
+  querySetupState?: QuerySetupState | undefined;
 
   constructor(queryStore: QueryStore) {
     makeAutoObservable(this, {

@@ -131,7 +131,7 @@ export class ServiceQueryInfoState extends QueryInfoState {
   project: ProjectData;
   versionId: string;
   service: Service;
-  key?: string;
+  key?: string | undefined;
 
   constructor(
     queryStore: QueryStore,
@@ -246,7 +246,7 @@ export class QueryExportState {
         await this.queryStore.graphManagerState.graphManager.lambdaToPureCode(
           this.lambda,
         );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.queryStore.applicationStore.log.error(
         LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
@@ -282,7 +282,7 @@ export class QueryExportState {
           `Successfully updated query!`,
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.queryStore.applicationStore.log.error(
         LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
@@ -302,9 +302,9 @@ export class QueryStore {
   graphManagerState: GraphManagerState;
   pluginManager: QueryPluginManager;
 
-  queryInfoState?: QueryInfoState;
+  queryInfoState?: QueryInfoState | undefined;
   queryBuilderState: QueryBuilderState;
-  queryExportState?: QueryExportState;
+  queryExportState?: QueryExportState | undefined;
   buildGraphState = ActionState.create();
   initState = ActionState.create();
   editorInitState = ActionState.create();
@@ -412,7 +412,7 @@ export class QueryStore {
           );
         },
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
@@ -507,7 +507,7 @@ export class QueryStore {
           );
         },
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
@@ -580,7 +580,7 @@ export class QueryStore {
           );
         },
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
@@ -633,7 +633,8 @@ export class QueryStore {
       yield flowResult(this.graphManagerState.initializeSystem());
 
       this.initState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
@@ -691,7 +692,8 @@ export class QueryStore {
       );
 
       this.buildGraphState.pass();
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
@@ -737,7 +739,8 @@ export class QueryStore {
             );
           });
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.applicationStore.log.error(
         LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
         error,
