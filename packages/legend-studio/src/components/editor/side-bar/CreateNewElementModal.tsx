@@ -26,9 +26,9 @@ import {
   resolvePackageAndElementName,
   CONNECTION_TYPE,
 } from '../../../stores/NewElementState';
-import { CustomSelectorInput } from '@finos/legend-art';
+import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
-import { compareLabelFn, prettyCONSTName } from '@finos/legend-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';

@@ -23,7 +23,6 @@ import {
   LogEvent,
   ActionState,
   assertNonNullable,
-  compareLabelFn,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from './LegendStudioRouter';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
@@ -270,23 +269,21 @@ export class SetupStore {
 
   get projectOptions(): ProjectOption[] {
     return this.projects
-      ? Array.from(this.projects.values())
-          .map((project) => ({
-            ...buildProjectOption(project),
-            disabled:
-              project.projectType === ProjectType.PROTOTYPE &&
-              this.applicationStore.config.options
-                .TEMPORARY__useSDLCProductionProjectsOnly,
-          }))
-          .sort(compareLabelFn)
+      ? Array.from(this.projects.values()).map((project) => ({
+          ...buildProjectOption(project),
+          disabled:
+            project.projectType === ProjectType.PROTOTYPE &&
+            this.applicationStore.config.options
+              .TEMPORARY__useSDLCProductionProjectsOnly,
+        }))
       : [];
   }
 
   get currentProjectWorkspaceOptions(): WorkspaceOption[] {
     return this.currentProjectWorkspaces
-      ? Array.from(this.currentProjectWorkspaces.values())
-          .map(buildWorkspaceOption)
-          .sort(compareLabelFn)
+      ? Array.from(this.currentProjectWorkspaces.values()).map(
+          buildWorkspaceOption,
+        )
       : [];
   }
 

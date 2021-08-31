@@ -16,6 +16,7 @@
 
 import { Fragment, useState, useRef, useCallback } from 'react';
 import { flowResult } from 'mobx';
+import type { SelectComponent } from '@finos/legend-art';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -29,10 +30,10 @@ import {
   PlayIcon,
   FlaskIcon,
   ResizablePanelSplitterLine,
+  compareLabelFn,
 } from '@finos/legend-art';
 import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   getMappingElementSource,
@@ -43,12 +44,7 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { NewServiceModal } from '../service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import {
-  guaranteeType,
-  uniq,
-  compareLabelFn,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { guaranteeType, uniq, isNonNullable } from '@finos/legend-shared';
 import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,

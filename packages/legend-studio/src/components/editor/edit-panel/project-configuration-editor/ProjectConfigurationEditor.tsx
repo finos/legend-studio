@@ -19,7 +19,6 @@ import {
   LogEvent,
   debounce,
   prettyCONSTName,
-  compareLabelFn,
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -34,7 +33,7 @@ import {
   CONFIGURATION_EDITOR_TAB,
 } from '../../../../stores/editor-state/ProjectConfigurationEditorState';
 import type { SelectComponent } from '@finos/legend-art';
-import { clsx, CustomSelectorInput } from '@finos/legend-art';
+import { compareLabelFn, clsx, CustomSelectorInput } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { ProjectDependency } from '@finos/legend-server-sdlc';
 import type {

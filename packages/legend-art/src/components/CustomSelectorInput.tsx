@@ -203,3 +203,8 @@ export const CustomSelectorInput = forwardRef<
 });
 
 CustomSelectorInput.displayName = 'CustomSelectorInput';
+
+export const compareLabelFn = (
+  a: { label: string },
+  b: { label: string },
+): number => a.label.localeCompare(b.label);

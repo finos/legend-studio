@@ -20,7 +20,11 @@ import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-art';
-import { CustomSelectorInput, PanelLoadingIndicator } from '@finos/legend-art';
+import {
+  compareLabelFn,
+  CustomSelectorInput,
+  PanelLoadingIndicator,
+} from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
@@ -480,7 +484,7 @@ const CreateWorkspaceModal = observer(() => {
     setupStore.currentProjectId,
   );
   const [workspaceName, setWorkspaceName] = useState('');
-  const projectOptions = setupStore.projectOptions;
+  const projectOptions = setupStore.projectOptions.sort(compareLabelFn);
   const selectedOption =
     projectOptions.find((option) => option.value === currentProjectId) ?? null;
   const dispatchingActions =

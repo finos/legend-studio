@@ -168,12 +168,6 @@ export const generateEnumerableNameFromToken = (
   return `${token}_${maxCounter + 1}`;
 };
 
-// TODO: move this to `@finos/legend-art`
-export const compareLabelFn = (
-  a: { label: string },
-  b: { label: string },
-): number => a.label.localeCompare(b.label);
-
 export const getNullableFirstElement = <T>(array: T[]): T | undefined =>
   array.length ? array[0] : undefined;
 
