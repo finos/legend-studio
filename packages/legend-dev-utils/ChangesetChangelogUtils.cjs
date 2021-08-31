@@ -31,17 +31,34 @@
 const githubChangelogFunctions =
   require('@changesets/changelog-github').default;
 
-const getReleaseLine = async (changeset, type, options) => {
-  if (!changeset.summary) {
-    return undefined; // do not show change log release line without content
-  }
-  return githubChangelogFunctions.getReleaseLine(changeset, type, options);
-};
-
 module.exports = {
-  getReleaseLine,
+  getReleaseLine: async (changeset, type, options) => {
+    if (!changeset.summary) {
+      return undefined; // do not show changelog release line without content
+    }
+    let line = await githubChangelogFunctions.getReleaseLine(
+      changeset,
+      type,
+      options,
+    );
+
+    // Replace the author pattern to be more succint
+    const authorMatchPattern =
+      /Thanks (?<author>\[@.+?\]\(https:\/\/github.com\/.+?\))!/u;
+    if (line.match(authorMatchPattern)?.groups?.author) {
+      line = line.replace(
+        authorMatchPattern,
+        `(${line.match(authorMatchPattern).groups.author})`,
+      );
+    }
+
+    return line;
+  },
   // NOTE: due to verbosity, we would want to opt out from dependency reporting
-  // the argument here is that if we need to know this information, we would probably
-  // want to know about the upgrade for 3rd party libraris: e.g. webpack, typescript, etc.
+  // the argument here is that:
+  // 1. if we need to know this information, we would probably want to know
+  //    about the upgrade for 3rd party libraris: e.g. webpack, typescript, etc.
+  // 2. we can sort of trace out the versions of dependencies by looking at the
+  //    package's manifest file - package.json
   getDependencyReleaseLine: () => Promise.resolve(''),
 };

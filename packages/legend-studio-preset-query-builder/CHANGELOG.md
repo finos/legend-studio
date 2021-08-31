@@ -2,56 +2,17 @@
 
 ## 0.0.36
 
-### Patch Changes
-
-- Updated dependencies [[`356eda33`](https://github.com/finos/legend-studio/commit/356eda33c4efd9345ea48ae2e81dda4ad0029a09), [`356eda33`](https://github.com/finos/legend-studio/commit/356eda33c4efd9345ea48ae2e81dda4ad0029a09)]:
-  - @finos/legend-application@0.0.3
-  - @finos/legend-graph@0.0.3
-  - @finos/legend-query@0.0.3
-  - @finos/legend-studio@0.2.13
-  - @finos/legend-art@0.0.1
-  - @finos/legend-model-storage@0.0.1
-  - @finos/legend-server-depot@0.0.1
-  - @finos/legend-shared@0.0.1
-
 ## 0.0.35
 
-### Patch Changes
-
-- Updated dependencies [[`03b6a3d3`](https://github.com/finos/legend-studio/commit/03b6a3d375965b4dbc850dbaf695dc5400c9ffb2), [`03b6a3d3`](https://github.com/finos/legend-studio/commit/03b6a3d375965b4dbc850dbaf695dc5400c9ffb2)]:
-  - @finos/legend-graph@0.0.2
-  - @finos/legend-query@0.0.2
-  - @finos/legend-studio@0.2.12
-  - @finos/legend-application@0.0.2
-  - @finos/legend-art@0.0.1
-  - @finos/legend-model-storage@0.0.1
-  - @finos/legend-server-depot@0.0.1
-  - @finos/legend-shared@0.0.1
-
 ## 0.0.34
-
-### Patch Changes
-
-- Updated dependencies [[`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`cf0afba6`](https://github.com/finos/legend-studio/commit/cf0afba6c2328b50d0ba9ebc7af312f737e88c0e), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`38692e14`](https://github.com/finos/legend-studio/commit/38692e14642369d68f4dc1c26788f77aca528126), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`bb8cd369`](https://github.com/finos/legend-studio/commit/bb8cd369da33fe58523d8eddf6bb0991da72edf1), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`cf0afba6`](https://github.com/finos/legend-studio/commit/cf0afba6c2328b50d0ba9ebc7af312f737e88c0e), [`b83c2553`](https://github.com/finos/legend-studio/commit/b83c25538b157109cc0730c9e9da5da5f2b50590), [`bb8cd369`](https://github.com/finos/legend-studio/commit/bb8cd369da33fe58523d8eddf6bb0991da72edf1), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`985eef5d`](https://github.com/finos/legend-studio/commit/985eef5def2e4c115ba2ac25dbb851e084758ddc), [`1fe16d1b`](https://github.com/finos/legend-studio/commit/1fe16d1b47969817be5eefa532653bdbeb9ef18c), [`3df52415`](https://github.com/finos/legend-studio/commit/3df52415c091610474a3e6fb9473e092a73038f1), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd), [`19c76946`](https://github.com/finos/legend-studio/commit/19c769468f504512882fa795d38c24410460a17e), [`72d1da75`](https://github.com/finos/legend-studio/commit/72d1da758f6b5c9c7011470ba6f58b434c6c5a12), [`bb8cd369`](https://github.com/finos/legend-studio/commit/bb8cd369da33fe58523d8eddf6bb0991da72edf1)]:
-  - @finos/legend-studio@0.2.11
-  - @finos/legend-art@0.0.1
-  - @finos/legend-graph@0.0.1
-  - @finos/legend-model-storage@0.0.1
-  - @finos/legend-server-depot@0.0.1
-  - @finos/legend-shared@0.0.1
-  - @finos/legend-query@0.0.1
-  - @finos/legend-application@0.0.1
 
 ## 0.0.33
 
 ### Patch Changes
 
-- [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Show mapped association properties in query builder (fixes https://github.com/finos/legend-studio/issues/406).
+- [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show mapped association properties in query builder (fixes https://github.com/finos/legend-studio/issues/406).
 
-* [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Show auto mapped properties in query builder (fixes https://github.com/finos/legend-studio/issues/387).
-
-* Updated dependencies [[`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82)]:
-  - @finos/legend-studio@0.2.10
+* [#409](https://github.com/finos/legend-studio/pull/409) [`034e34d`](https://github.com/finos/legend-studio/commit/034e34d9ea9fa1fc17db71e26c22e16bee3c5e82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show auto mapped properties in query builder (fixes https://github.com/finos/legend-studio/issues/387).
 
 ## 0.0.32
 
@@ -59,189 +20,95 @@
 
 ### Patch Changes
 
-- [#400](https://github.com/finos/legend-studio/pull/400) [`8303f1b`](https://github.com/finos/legend-studio/commit/8303f1bdfed2d46bd0425b45d727a9b203cec229) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Fetch dependency entities in Legend Query.
-
-- Updated dependencies [[`8303f1b`](https://github.com/finos/legend-studio/commit/8303f1bdfed2d46bd0425b45d727a9b203cec229), [`3175301`](https://github.com/finos/legend-studio/commit/3175301a3919d25557a2d975df75f95886d11a53)]:
-  - @finos/legend-studio@0.2.9
-  - @finos/legend-studio-shared@0.0.26
-  - @finos/legend-studio-components@0.0.30
+- [#400](https://github.com/finos/legend-studio/pull/400) [`8303f1b`](https://github.com/finos/legend-studio/commit/8303f1bdfed2d46bd0425b45d727a9b203cec229) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fetch dependency entities in Legend Query.
 
 ## 0.0.30
 
 ### Patch Changes
 
-- [#396](https://github.com/finos/legend-studio/pull/396) [`44748ea`](https://github.com/finos/legend-studio/commit/44748eaaee6062211d5607109fd0834d92f6cc91) Thanks [@akphi](https://github.com/akphi)! - Avoid initializing application store in Query, as it will try to authenticate against SDLC.
-
-- Updated dependencies [[`44748ea`](https://github.com/finos/legend-studio/commit/44748eaaee6062211d5607109fd0834d92f6cc91)]:
-  - @finos/legend-studio@0.2.8
-  - @finos/legend-studio-components@0.0.29
-  - @finos/legend-studio-shared@0.0.25
+- [#396](https://github.com/finos/legend-studio/pull/396) [`44748ea`](https://github.com/finos/legend-studio/commit/44748eaaee6062211d5607109fd0834d92f6cc91) ([@akphi](https://github.com/akphi)) - Avoid initializing application store in Query, as it will try to authenticate against SDLC.
 
 ## 0.0.29
 
 ### Patch Changes
 
-- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) Thanks [@akphi](https://github.com/akphi)! - Support loading existing queries and service query in standalone query editor.
+- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) ([@akphi](https://github.com/akphi)) - Support loading existing queries and service query in standalone query editor.
 
-* [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) Thanks [@akphi](https://github.com/akphi)! - Improve the UX of Legend Query. Use metadata server instead of SDLC server for fetching projects and entities.
-
-* Updated dependencies [[`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb), [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb), [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb)]:
-  - @finos/legend-studio@0.2.7
-  - @finos/legend-studio-components@0.0.29
-  - @finos/legend-studio-shared@0.0.25
+* [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) ([@akphi](https://github.com/akphi)) - Improve the UX of Legend Query. Use metadata server instead of SDLC server for fetching projects and entities.
 
 ## 0.0.28
 
-### Patch Changes
-
-- Updated dependencies [[`19274f5`](https://github.com/finos/legend-studio/commit/19274f50c5bcb7aec5e2a94c35be3c74f5b3c5e1)]:
-  - @finos/legend-studio@0.2.6
-
 ## 0.0.27
-
-### Patch Changes
-
-- Updated dependencies [[`56481ff`](https://github.com/finos/legend-studio/commit/56481ffa9efceff47cfb11e3bb9a11103e6c17cc), [`6815fcf`](https://github.com/finos/legend-studio/commit/6815fcfba58d0123dbed0e188224eeeda35d4ea9), [`fece600`](https://github.com/finos/legend-studio/commit/fece600d582fd4bb8185d31235d60c2d1d2e46b8), [`13fe9da`](https://github.com/finos/legend-studio/commit/13fe9dace3aa5aa54a936710e32a46a35a4971c3), [`f01f274`](https://github.com/finos/legend-studio/commit/f01f2741c7df7528dec8593bfb87692497b5f56b)]:
-  - @finos/legend-studio@0.2.5
 
 ## 0.0.26
 
-### Patch Changes
-
-- Updated dependencies [[`f0dd419`](https://github.com/finos/legend-studio/commit/f0dd4192cdb032579faebf833f78c06020055b28), [`25e8287`](https://github.com/finos/legend-studio/commit/25e8287c67375fc6d824aee679396e704c7f060f)]:
-  - @finos/legend-studio@0.2.4
-
 ## 0.0.25
-
-### Patch Changes
-
-- Updated dependencies [[`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523), [`73e5fa2`](https://github.com/finos/legend-studio/commit/73e5fa241ccc3b7464bb7c767316f37cd1c08a6e), [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523), [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523), [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523), [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523), [`f7c181d`](https://github.com/finos/legend-studio/commit/f7c181dbc779e896726be7af535006f50c082345), [`0f1c685`](https://github.com/finos/legend-studio/commit/0f1c6858b08e32447fc3bfef4a9043f0fe30a523)]:
-  - @finos/legend-studio@0.2.3
-  - @finos/legend-studio-components@0.0.28
-  - @finos/legend-studio-shared@0.0.24
 
 ## 0.0.24
 
-### Patch Changes
-
-- Updated dependencies [[`7f9fbbe`](https://github.com/finos/legend-studio/commit/7f9fbbe72dee6cb8fd2c9a7d128cc117ce8ba5eb)]:
-  - @finos/legend-studio@0.2.2
-  - @finos/legend-studio-components@0.0.27
-  - @finos/legend-studio-shared@0.0.23
-
 ## 0.0.23
-
-### Patch Changes
-
-- Updated dependencies [[`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e), [`bce6f04`](https://github.com/finos/legend-studio/commit/bce6f04d4f90bcf0e4f7980e412e45362a15a36e)]:
-  - @finos/legend-studio@0.2.1
-  - @finos/legend-studio-components@0.0.26
-  - @finos/legend-studio-shared@0.0.22
 
 ## 0.0.22
 
-### Patch Changes
-
-- Updated dependencies [[`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`1feb9ce`](https://github.com/finos/legend-studio/commit/1feb9cef1408cfe8a0a98a9e0390a1f1fb004a71), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`5106c25`](https://github.com/finos/legend-studio/commit/5106c256f598dc960a084b4367fc9e1cf842f887), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`7fc24dc`](https://github.com/finos/legend-studio/commit/7fc24dc5b9aaf9b350ed863bc51c4e76ffc270a9), [`cd78be6`](https://github.com/finos/legend-studio/commit/cd78be6e6669b5253c12ea9a9ceacef908a1686c), [`e0acc32`](https://github.com/finos/legend-studio/commit/e0acc325457a7836b6d2ca82cbad025bed39ab86), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`7561184`](https://github.com/finos/legend-studio/commit/75611843191f31d35dac51267b25de4298f48f4b), [`e568574`](https://github.com/finos/legend-studio/commit/e568574339d61035c99df0f4f29669cda73819f0), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8), [`8df01ce`](https://github.com/finos/legend-studio/commit/8df01ceb5d45aba42ab8541ae12d01e731b0c988), [`b45e1ca`](https://github.com/finos/legend-studio/commit/b45e1ca06b7b3017972607c06c099bfa9fcd640f), [`178e955`](https://github.com/finos/legend-studio/commit/178e9559eab06b8fff471cbbcd59124570948506), [`0c37922`](https://github.com/finos/legend-studio/commit/0c37922f4b848725aca3b574e55f9236e6b883c3), [`56a089d`](https://github.com/finos/legend-studio/commit/56a089dca25e24d890b52f0810e2ff3219ff46e8)]:
-  - @finos/legend-studio@0.2.0
-  - @finos/legend-studio-components@0.0.25
-  - @finos/legend-studio-shared@0.0.21
-
 ## 0.0.21
-
-### Patch Changes
-
-- Updated dependencies [[`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb), [`e3c0c75`](https://github.com/finos/legend-studio/commit/e3c0c752c15a85ca9370794099a177ccf63b4958), [`d545580`](https://github.com/finos/legend-studio/commit/d5455804b7895947dc167834c87300267e1cdde0), [`cb0ff2b`](https://github.com/finos/legend-studio/commit/cb0ff2b7aecfaf2a89d4ddc98e04854c25624ce8), [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb), [`44386e4`](https://github.com/finos/legend-studio/commit/44386e4180710e3294febdbfc5b87dc4267d8bb1), [`c2d3afd`](https://github.com/finos/legend-studio/commit/c2d3afd32fad0a680169443056155235adfc96cb), [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d)]:
-  - @finos/legend-studio@0.1.18
-  - @finos/legend-studio-components@0.0.24
-  - @finos/legend-studio-shared@0.0.20
 
 ## 0.0.20
 
 ### Patch Changes
 
-- [#332](https://github.com/finos/legend-studio/pull/332) [`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where after an execution, a newly added projection column is always shown as the last column in result panel regardless of its type (with or without aggregation).
-
-- Updated dependencies [[`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2), [`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2), [`65966ef`](https://github.com/finos/legend-studio/commit/65966ef8e6fa8152fcc5c39501fda9c62646aecc)]:
-  - @finos/legend-studio@0.1.17
-  - @finos/legend-studio-components@0.0.23
-  - @finos/legend-studio-shared@0.0.19
+- [#332](https://github.com/finos/legend-studio/pull/332) [`375a5e3`](https://github.com/finos/legend-studio/commit/375a5e3479e865baf4dffb6d77cf4c7cf3de7ba2) ([@akphi](https://github.com/akphi)) - Fix a bug where after an execution, a newly added projection column is always shown as the last column in result panel regardless of its type (with or without aggregation).
 
 ## 0.0.19
 
 ### Patch Changes
 
-- [#328](https://github.com/finos/legend-studio/pull/328) [`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371) Thanks [@akphi](https://github.com/akphi)! - Allow previewing data for mapped properties in explorer tree: for numeric fields, information such as `count`, `sum`, `average`, `max`, `min`, `standard deviation`, etc. are shown, whereas for non-numeric fields, we only show the top-10 most common values.
-
-- Updated dependencies [[`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371), [`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371)]:
-  - @finos/legend-studio@0.1.16
-  - @finos/legend-studio-components@0.0.22
-  - @finos/legend-studio-shared@0.0.18
+- [#328](https://github.com/finos/legend-studio/pull/328) [`7ac0688`](https://github.com/finos/legend-studio/commit/7ac0688f99ba9328677eb71b5c811ab52bc3f371) ([@akphi](https://github.com/akphi)) - Allow previewing data for mapped properties in explorer tree: for numeric fields, information such as `count`, `sum`, `average`, `max`, `min`, `standard deviation`, etc. are shown, whereas for non-numeric fields, we only show the top-10 most common values.
 
 ## 0.0.18
 
 ### Patch Changes
 
-- [#311](https://github.com/finos/legend-studio/pull/311) [`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc) Thanks [@akphi](https://github.com/akphi)! - **BREAKING CHANGE:** Rename `@finos/legend-studio-plugin-query-builder` to `@finos/legend-studio-preset-query-builder`. `SUPPORTED_FUNCTIONS` is no-longer exported from core, but is not part of query builder preset.
+- [#311](https://github.com/finos/legend-studio/pull/311) [`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `@finos/legend-studio-plugin-query-builder` to `@finos/legend-studio-preset-query-builder`. `SUPPORTED_FUNCTIONS` is no-longer exported from core, but is not part of query builder preset.
 
-* [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) Thanks [@akphi](https://github.com/akphi)! - Support usage of `derivation` in projection mode. This gives user more flexibility when creating the column expression (as right now the only form we support is simple property expression), for example, now user can specify the following lambda `x|$x.lastName->toUpper() + ', ' + $x.firstName->toLower()` for a projection column :tada:. See https://github.com/finos/legend-studio/issues/254 for more details.
+* [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Support usage of `derivation` in projection mode. This gives user more flexibility when creating the column expression (as right now the only form we support is simple property expression), for example, now user can specify the following lambda `x|$x.lastName->toUpper() + ', ' + $x.firstName->toLower()` for a projection column :tada:. See https://github.com/finos/legend-studio/issues/254 for more details.
 
-- [#311](https://github.com/finos/legend-studio/pull/311) [`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc) Thanks [@akphi](https://github.com/akphi)! - Support matching supported function when its full path is specified, e.g. both `startsWith('some_string')` and `meta::pure::functions::string::startsWith('some_string')` are now considered valid.
+- [#311](https://github.com/finos/legend-studio/pull/311) [`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc) ([@akphi](https://github.com/akphi)) - Support matching supported function when its full path is specified, e.g. both `startsWith('some_string')` and `meta::pure::functions::string::startsWith('some_string')` are now considered valid.
 
-* [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) Thanks [@akphi](https://github.com/akphi)! - Support `compilation` in form mode, user now can click the hammer icon on the status bar or use the hotkey `F9` to run compilation on the current query. This is particularly helpful when user works with `derivation` (see https://github.com/finos/legend-studio/issues/254).
+* [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Support `compilation` in form mode, user now can click the hammer icon on the status bar or use the hotkey `F9` to run compilation on the current query. This is particularly helpful when user works with `derivation` (see https://github.com/finos/legend-studio/issues/254).
 
-- [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) Thanks [@akphi](https://github.com/akphi)! - Add support for aggregation in projection mode using `groupBy()`: user now can use aggregate operators like `count()`, `distinct()`, `sum()`, `average()`, `min()`, `max()`, `stdDev()`, etc.. See https://github.com/finos/legend-studio/issues/253 for more details.
-
-- Updated dependencies [[`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc), [`49b407f`](https://github.com/finos/legend-studio/commit/49b407fafe3f4eac3a012d1815167c40a8914cdc), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502), [`547089b`](https://github.com/finos/legend-studio/commit/547089b71ec534be6d2362369748d08d63cd8243), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a), [`7aaa969`](https://github.com/finos/legend-studio/commit/7aaa969a1f2eba8a3f20cddb89455b3087907502)]:
-  - @finos/legend-studio@0.1.15
-  - @finos/legend-studio-components@0.0.21
-  - @finos/legend-studio-shared@0.0.17
+- [#314](https://github.com/finos/legend-studio/pull/314) [`88795fc`](https://github.com/finos/legend-studio/commit/88795fc5a36eea288b2b7ca8a659eec938aff31a) ([@akphi](https://github.com/akphi)) - Add support for aggregation in projection mode using `groupBy()`: user now can use aggregate operators like `count()`, `distinct()`, `sum()`, `average()`, `min()`, `max()`, `stdDev()`, etc.. See https://github.com/finos/legend-studio/issues/253 for more details.
 
 ## 0.0.17
 
 ### Patch Changes
 
-- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Support for `take()` function only for execution using `graphFetch()`, not actual result modifier. This is because we want make it clear that there are 2 distinct `take()` functions being used: `meta::pure::tds::take()` in projection query and `meta::pure::functions::collection::take()` in graph fetch query. The latter works on the collection of instances itself and therefore, not so useful, whereas the former actually affects execution performance.
+- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) ([@akphi](https://github.com/akphi)) - Support for `take()` function only for execution using `graphFetch()`, not actual result modifier. This is because we want make it clear that there are 2 distinct `take()` functions being used: `meta::pure::tds::take()` in projection query and `meta::pure::functions::collection::take()` in graph fetch query. The latter works on the collection of instances itself and therefore, not so useful, whereas the former actually affects execution performance.
 
-* [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - In query builder, we now allow adding all simple properties of the root class to the fetch structure (https://github.com/finos/legend-studio/issues/270).
+* [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) ([@akphi](https://github.com/akphi)) - In query builder, we now allow adding all simple properties of the root class to the fetch structure (https://github.com/finos/legend-studio/issues/270).
 
-- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Relax the mapped property check for the explorer tree. When we encounter derived properties or mapped properties whose target set implementation is of type `OperationSetImplementation`, we will skip mappedness checking for the whole branch. The rationale here is that Studio would not try to analyze the mappedness of those complicated cases as Studio will never fully try to understand the lambdas (used in derived properties and operation class mappings). This way, the user can drilled down to these branches. The validation on execution will be handled by the engine. _NOTE: we can potentially show some indicator to let user know mappedness checking has been disabled for branch, but that is for future discussions._
+- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) ([@akphi](https://github.com/akphi)) - Relax the mapped property check for the explorer tree. When we encounter derived properties or mapped properties whose target set implementation is of type `OperationSetImplementation`, we will skip mappedness checking for the whole branch. The rationale here is that Studio would not try to analyze the mappedness of those complicated cases as Studio will never fully try to understand the lambdas (used in derived properties and operation class mappings). This way, the user can drilled down to these branches. The validation on execution will be handled by the engine. _NOTE: we can potentially show some indicator to let user know mappedness checking has been disabled for branch, but that is for future discussions._
 
-* [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Do strict checks on parameters of supported function while processing lambda. With this, functions like `project()`, `distinct()`, `take()`, etc. must be placed in very specific order to be supported in form mode, otherwise, we will fallback to text-mode.
+* [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) ([@akphi](https://github.com/akphi)) - Do strict checks on parameters of supported function while processing lambda. With this, functions like `project()`, `distinct()`, `take()`, etc. must be placed in very specific order to be supported in form mode, otherwise, we will fallback to text-mode.
 
-- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) Thanks [@akphi](https://github.com/akphi)! - Make sure user cannot access Studio editor global hotkey while working in query builder.
-
-- Updated dependencies [[`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`f08d984`](https://github.com/finos/legend-studio/commit/f08d9845ace8dbbd54a8ab228ceb23b3bca1aca3), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693), [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693)]:
-  - @finos/legend-studio@0.1.14
-  - @finos/legend-studio-components@0.0.20
-  - @finos/legend-studio-shared@0.0.16
+- [#255](https://github.com/finos/legend-studio/pull/255) [`713405b`](https://github.com/finos/legend-studio/commit/713405bdbcbdbb4247d6885fd2d843a30d26d693) ([@akphi](https://github.com/akphi)) - Make sure user cannot access Studio editor global hotkey while working in query builder.
 
 ## 0.0.16
 
 ### Patch Changes
 
-- [#241](https://github.com/finos/legend-studio/pull/241) [`76092dd`](https://github.com/finos/legend-studio/commit/76092dd5f6a31a30e18ca6e711c0f0f5a9e195ef) Thanks [@akphi](https://github.com/akphi)! - Rework mapping editor: mapping execution builder and test editor have been moved from the auxiliary panel to the screen of the mapping editor.
+- [#241](https://github.com/finos/legend-studio/pull/241) [`76092dd`](https://github.com/finos/legend-studio/commit/76092dd5f6a31a30e18ca6e711c0f0f5a9e195ef) ([@akphi](https://github.com/akphi)) - Rework mapping editor: mapping execution builder and test editor have been moved from the auxiliary panel to the screen of the mapping editor.
 
-* [#252](https://github.com/finos/legend-studio/pull/252) [`cdc4c3c`](https://github.com/finos/legend-studio/commit/cdc4c3c92f9cc66a1304666429a721731c8466b0) Thanks [@akphi](https://github.com/akphi)! - Fix a bug where `take()` result set modifier is built into the graph fetch query during execution causing failure.
+* [#252](https://github.com/finos/legend-studio/pull/252) [`cdc4c3c`](https://github.com/finos/legend-studio/commit/cdc4c3c92f9cc66a1304666429a721731c8466b0) ([@akphi](https://github.com/akphi)) - Fix a bug where `take()` result set modifier is built into the graph fetch query during execution causing failure.
 
-- [#248](https://github.com/finos/legend-studio/pull/248) [`a35e4d2`](https://github.com/finos/legend-studio/commit/a35e4d229e113c491ef51f9ad126ead98979a32f) Thanks [@akphi](https://github.com/akphi)! - Default to use `graphFetch` function instead of `graphFetchChecked` as the latter does not work out-of-the-box for relational mapping.
-
-- Updated dependencies [[`cdc4c3c`](https://github.com/finos/legend-studio/commit/cdc4c3c92f9cc66a1304666429a721731c8466b0), [`ab15166`](https://github.com/finos/legend-studio/commit/ab15166f9f60a51d48e2c02b45a937f1dcb8f642), [`cdc4c3c`](https://github.com/finos/legend-studio/commit/cdc4c3c92f9cc66a1304666429a721731c8466b0), [`a35e4d2`](https://github.com/finos/legend-studio/commit/a35e4d229e113c491ef51f9ad126ead98979a32f), [`ab15166`](https://github.com/finos/legend-studio/commit/ab15166f9f60a51d48e2c02b45a937f1dcb8f642), [`76092dd`](https://github.com/finos/legend-studio/commit/76092dd5f6a31a30e18ca6e711c0f0f5a9e195ef), [`76092dd`](https://github.com/finos/legend-studio/commit/76092dd5f6a31a30e18ca6e711c0f0f5a9e195ef), [`ab15166`](https://github.com/finos/legend-studio/commit/ab15166f9f60a51d48e2c02b45a937f1dcb8f642), [`cdc4c3c`](https://github.com/finos/legend-studio/commit/cdc4c3c92f9cc66a1304666429a721731c8466b0), [`a35e4d2`](https://github.com/finos/legend-studio/commit/a35e4d229e113c491ef51f9ad126ead98979a32f), [`a35e4d2`](https://github.com/finos/legend-studio/commit/a35e4d229e113c491ef51f9ad126ead98979a32f)]:
-  - @finos/legend-studio@0.1.13
-  - @finos/legend-studio-components@0.0.19
-  - @finos/legend-studio-shared@0.0.15
+- [#248](https://github.com/finos/legend-studio/pull/248) [`a35e4d2`](https://github.com/finos/legend-studio/commit/a35e4d229e113c491ef51f9ad126ead98979a32f) ([@akphi](https://github.com/akphi)) - Default to use `graphFetch` function instead of `graphFetchChecked` as the latter does not work out-of-the-box for relational mapping.
 
 ## 0.0.15
 
 ### Patch Changes
 
-- [#237](https://github.com/finos/legend-studio/pull/237) [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341) Thanks [@akphi](https://github.com/akphi)! - Rework graph-fetch tree editor: instead of showing the full tree and allow picking the properties using radio buttons, we let users drag-and-drop the properties from the explorer tree. This makes the behavior more in-synced with projection. See https://github.com/finos/legend-studio/issues/204 for more details.
+- [#237](https://github.com/finos/legend-studio/pull/237) [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341) ([@akphi](https://github.com/akphi)) - Rework graph-fetch tree editor: instead of showing the full tree and allow picking the properties using radio buttons, we let users drag-and-drop the properties from the explorer tree. This makes the behavior more in-synced with projection. See https://github.com/finos/legend-studio/issues/204 for more details.
 
-* [#239](https://github.com/finos/legend-studio/pull/239) [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66) Thanks [@akphi](https://github.com/akphi)! - Support `PackageableElementPtr` in response to [change in engine](https://github.com/finos/legend-engine/pull/255).
-
-* Updated dependencies [[`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341), [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341), [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66), [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66), [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341), [`f66159e`](https://github.com/finos/legend-studio/commit/f66159e21a66b1224061ac3da2f7ac3e3050e341)]:
-  - @finos/legend-studio@0.1.12
-  - @finos/legend-studio-components@0.0.18
+* [#239](https://github.com/finos/legend-studio/pull/239) [`21e2a3f`](https://github.com/finos/legend-studio/commit/21e2a3fb4c1b950c492d17178a5f7380fd52dc66) ([@akphi](https://github.com/akphi)) - Support `PackageableElementPtr` in response to [change in engine](https://github.com/finos/legend-engine/pull/255).
 
 ## 0.0.14
 
@@ -249,114 +116,55 @@
 
 ## 0.0.12
 
-### Patch Changes
-
-- Updated dependencies [[`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8), [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8), [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8), [`df3f3b6`](https://github.com/finos/legend-studio/commit/df3f3b67aed33ad510711694e3a3f299927626a8)]:
-  - @finos/legend-studio@0.1.11
-  - @finos/legend-studio-components@0.0.17
-  - @finos/legend-studio-shared@0.0.14
-
 ## 0.0.11
-
-### Patch Changes
-
-- Updated dependencies [[`de511da`](https://github.com/finos/legend-studio/commit/de511daf935680ce1a61a2eb85d445c2d3c5dcba), [`8159c1f`](https://github.com/finos/legend-studio/commit/8159c1f02eafcd52fbbb3add7358afc718cf03d2), [`8159c1f`](https://github.com/finos/legend-studio/commit/8159c1f02eafcd52fbbb3add7358afc718cf03d2)]:
-  - @finos/legend-studio@0.1.10
-  - @finos/legend-studio-components@0.0.16
-  - @finos/legend-studio-shared@0.0.13
 
 ## 0.0.10
 
 ### Patch Changes
 
-- [#214](https://github.com/finos/legend-studio/pull/214) [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221) Thanks [@akphi](https://github.com/akphi)! - Remove `TEMPORARY__enableGraphFetch` flag and allow editing mapping execution query in query builder.
-
-- Updated dependencies [[`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221), [`16696ae`](https://github.com/finos/legend-studio/commit/16696ae2513806e8128cff6a4d50c364601f0275), [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221), [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221)]:
-  - @finos/legend-studio@0.1.9
-  - @finos/legend-studio-components@0.0.15
-  - @finos/legend-studio-shared@0.0.12
+- [#214](https://github.com/finos/legend-studio/pull/214) [`c90cfc6`](https://github.com/finos/legend-studio/commit/c90cfc6c1a1a69d97fba5336d0c1b7f9e0b63221) ([@akphi](https://github.com/akphi)) - Remove `TEMPORARY__enableGraphFetch` flag and allow editing mapping execution query in query builder.
 
 ## 0.0.9
 
 ### Patch Changes
 
-- [#218](https://github.com/finos/legend-studio/pull/218) [`0bd1fd9`](https://github.com/finos/legend-studio/commit/0bd1fd96f9f4db85700df2cdf99fd6bc3bc0c524) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Add `V1_getExtraExecutionInputElements` to send additional elements as part of query execution call.
-
-- Updated dependencies [[`0bd1fd9`](https://github.com/finos/legend-studio/commit/0bd1fd96f9f4db85700df2cdf99fd6bc3bc0c524)]:
-  - @finos/legend-studio@0.1.8
+- [#218](https://github.com/finos/legend-studio/pull/218) [`0bd1fd9`](https://github.com/finos/legend-studio/commit/0bd1fd96f9f4db85700df2cdf99fd6bc3bc0c524) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `V1_getExtraExecutionInputElements` to send additional elements as part of query execution call.
 
 ## 0.0.8
 
 ### Patch Changes
 
-- [#216](https://github.com/finos/legend-studio/pull/216) [`5c35ef1`](https://github.com/finos/legend-studio/commit/5c35ef132a1cf60a5a067895e68b54f4cb363c3a) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Use meta::legend::service::metamodel::Service for service classifierPath.
-
-- Updated dependencies [[`5c35ef1`](https://github.com/finos/legend-studio/commit/5c35ef132a1cf60a5a067895e68b54f4cb363c3a)]:
-  - @finos/legend-studio@0.1.7
+- [#216](https://github.com/finos/legend-studio/pull/216) [`5c35ef1`](https://github.com/finos/legend-studio/commit/5c35ef132a1cf60a5a067895e68b54f4cb363c3a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use meta::legend::service::metamodel::Service for service classifierPath.
 
 ## 0.0.7
 
-### Patch Changes
-
-- Updated dependencies [[`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1), [`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1), [`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1), [`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1)]:
-  - @finos/legend-studio@0.1.6
-  - @finos/legend-studio-components@0.0.14
-  - @finos/legend-studio-shared@0.0.11
-
 ## 0.0.6
 
-### Patch Changes
-
-- Updated dependencies [[`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a), [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a), [`b358e7f`](https://github.com/finos/legend-studio/commit/b358e7f212d90467b6536331b450f7234a970516), [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a), [`6be621e`](https://github.com/finos/legend-studio/commit/6be621eb840ae2200ce791641475ee882dcbf33a)]:
-  - @finos/legend-studio@0.1.5
-  - @finos/legend-studio-shared@0.0.10
-  - @finos/legend-studio-components@0.0.13
-
 ## 0.0.5
-
-### Patch Changes
-
-- Updated dependencies [[`0d8c766`](https://github.com/finos/legend-studio/commit/0d8c7660f3a70d75e7d6d5265bf894ddb7088d02), [`e6b0425`](https://github.com/finos/legend-studio/commit/e6b04259c33ee8563391fd6833cd337b83b77d44)]:
-  - @finos/legend-studio@0.1.4
 
 ## 0.0.4
 
 ### Patch Changes
 
-- [#199](https://github.com/finos/legend-studio/pull/199) [`2aab88e`](https://github.com/finos/legend-studio/commit/2aab88e797eec37760a646f7c6ee9d9f612d31cc) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Use meta::alloy::service::metamodel::Service for service classifierPath.
-
-- Updated dependencies [[`2aab88e`](https://github.com/finos/legend-studio/commit/2aab88e797eec37760a646f7c6ee9d9f612d31cc), [`20b4e8f`](https://github.com/finos/legend-studio/commit/20b4e8f21d4c4abc1fd8ef06e826b9b8df883bc5), [`20b4e8f`](https://github.com/finos/legend-studio/commit/20b4e8f21d4c4abc1fd8ef06e826b9b8df883bc5)]:
-  - @finos/legend-studio@0.1.3
-  - @finos/legend-studio-components@0.0.12
-  - @finos/legend-studio-shared@0.0.9
+- [#199](https://github.com/finos/legend-studio/pull/199) [`2aab88e`](https://github.com/finos/legend-studio/commit/2aab88e797eec37760a646f7c6ee9d9f612d31cc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use meta::alloy::service::metamodel::Service for service classifierPath.
 
 ## 0.0.3
 
 ### Patch Changes
 
-- [#187](https://github.com/finos/legend-studio/pull/187) [`cbccdc0`](https://github.com/finos/legend-studio/commit/cbccdc0fcb81cf873d50a9d41b04054a6efbf5fd) Thanks [@MauricioUyaguari](https://github.com/MauricioUyaguari)! - Use `meta::legend::service::metamodel::Service` for service classifierPath.
-
-- Updated dependencies [[`1deb5ab`](https://github.com/finos/legend-studio/commit/1deb5ab5b398c5da55bc482695457804f8407be8), [`c4ef316`](https://github.com/finos/legend-studio/commit/c4ef3165b7d344e771e1bb741ddc48ed5786cb04), [`26568d0`](https://github.com/finos/legend-studio/commit/26568d03bd59f451bf60e175c796980af4be02f8), [`cf36a42`](https://github.com/finos/legend-studio/commit/cf36a42f658ac8bbab9a054010948b29707255d0), [`1ace102`](https://github.com/finos/legend-studio/commit/1ace102d50364645ec5d9efdbde2d4ca778f0544), [`80bd86a`](https://github.com/finos/legend-studio/commit/80bd86a5add9011f1ce7df33d700a1c1f28d5e08), [`38a25d3`](https://github.com/finos/legend-studio/commit/38a25d3973ae771097ebfc169a21e021c24a4179), [`cbccdc0`](https://github.com/finos/legend-studio/commit/cbccdc0fcb81cf873d50a9d41b04054a6efbf5fd), [`80bd86a`](https://github.com/finos/legend-studio/commit/80bd86a5add9011f1ce7df33d700a1c1f28d5e08), [`80bd86a`](https://github.com/finos/legend-studio/commit/80bd86a5add9011f1ce7df33d700a1c1f28d5e08), [`46a6c4a`](https://github.com/finos/legend-studio/commit/46a6c4a761e6a8b7f1291e574524fd85e7124b08), [`1ace102`](https://github.com/finos/legend-studio/commit/1ace102d50364645ec5d9efdbde2d4ca778f0544), [`1ace102`](https://github.com/finos/legend-studio/commit/1ace102d50364645ec5d9efdbde2d4ca778f0544), [`6705d7f`](https://github.com/finos/legend-studio/commit/6705d7f38982dcac70fb7a5586c1cd18d21a33e0)]:
-  - @finos/legend-studio@0.1.2
-  - @finos/legend-studio-components@0.0.11
-  - @finos/legend-studio-shared@0.0.9
+- [#187](https://github.com/finos/legend-studio/pull/187) [`cbccdc0`](https://github.com/finos/legend-studio/commit/cbccdc0fcb81cf873d50a9d41b04054a6efbf5fd) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `meta::legend::service::metamodel::Service` for service classifierPath.
 
 ## 0.0.2
 
 ### Patch Changes
 
-- [#176](https://github.com/finos/legend-studio/pull/176) [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d) Thanks [@akphi](https://github.com/akphi)! - Fix the issue with the flag `TEMPORARY__enableGraphFetch` where this option is being ignored when query builder is closed and re-opened.
-
-- Updated dependencies [[`2f0991a`](https://github.com/finos/legend-studio/commit/2f0991a15e50cb3c5ecbe3a4ca46c7ec26d09415), [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d)]:
-  - @finos/legend-studio@0.1.1
-  - @finos/legend-studio-components@0.0.10
-  - @finos/legend-studio-shared@0.0.8
+- [#176](https://github.com/finos/legend-studio/pull/176) [`6592e02`](https://github.com/finos/legend-studio/commit/6592e02f8a8b00d5150aabf6160d98dd20b5a80d) ([@akphi](https://github.com/akphi)) - Fix the issue with the flag `TEMPORARY__enableGraphFetch` where this option is being ignored when query builder is closed and re-opened.
 
 ## 0.0.1
 
 ### Patch Changes
 
-- [#174](https://github.com/finos/legend-studio/pull/174) [`4167a8b`](https://github.com/finos/legend-studio/commit/4167a8b68766beab60b98d5b3a6b23fbbce4847b) Thanks [@akphi](https://github.com/akphi)! - Stabilize query builder MVP (see #174 for more details): This includes some minor UX improvements as well as support for:
+- [#174](https://github.com/finos/legend-studio/pull/174) [`4167a8b`](https://github.com/finos/legend-studio/commit/4167a8b68766beab60b98d5b3a6b23fbbce4847b) ([@akphi](https://github.com/akphi)) - Stabilize query builder MVP (see #174 for more details): This includes some minor UX improvements as well as support for:
 
   - Handling property with multiplicity many `[*]` in filter with `exists()`.
   - Properly handling group operations with more than 2 clauses.
@@ -374,9 +182,4 @@ We also added a config flag to enable experimental graph-fetch mode:
   }
 ```
 
-- [#166](https://github.com/finos/legend-studio/pull/166) [`913e90e`](https://github.com/finos/legend-studio/commit/913e90e3e30279debf3e0526e1ed5f3bf4cea19b) Thanks [@akphi](https://github.com/akphi)! - Introduce query builder plugin
-
-- Updated dependencies [[`7709ab3`](https://github.com/finos/legend-studio/commit/7709ab3b2a3e66a5d44864e1ce694e696dddba69), [`b04b0f9`](https://github.com/finos/legend-studio/commit/b04b0f9abbecf886d0c864a8484717bf26ff22dc), [`2d1f8a7`](https://github.com/finos/legend-studio/commit/2d1f8a78c38121e96b745939b23ba5cc46c7a53c), [`4167a8b`](https://github.com/finos/legend-studio/commit/4167a8b68766beab60b98d5b3a6b23fbbce4847b), [`e9c97c4`](https://github.com/finos/legend-studio/commit/e9c97c41b18d79d2676e48e12ae4e92d528b1819)]:
-  - @finos/legend-studio@0.1.0
-  - @finos/legend-studio-components@0.0.9
-  - @finos/legend-studio-shared@0.0.7
+- [#166](https://github.com/finos/legend-studio/pull/166) [`913e90e`](https://github.com/finos/legend-studio/commit/913e90e3e30279debf3e0526e1ed5f3bf4cea19b) ([@akphi](https://github.com/akphi)) - Introduce query builder plugin
