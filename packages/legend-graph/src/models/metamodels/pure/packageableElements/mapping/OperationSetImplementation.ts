@@ -98,21 +98,38 @@ export class OperationSetImplementation
     deleteEntry(this.parameters, value);
   }
 
+  /**
+   * Get all leaf impls of an operation Set Implementation. Accounts for loops and duplication (which should be caught by compiler).
+   */
   get leafSetImplementations(): SetImplementation[] {
-    switch (this.operation) {
-      case OperationType.STORE_UNION:
-        return this.parameters
-          .map((parameter) => {
-            const setImp = parameter.setImplementation.value;
-            if (setImp instanceof OperationSetImplementation) {
-              return setImp.leafSetImplementations;
-            }
-            return setImp;
-          })
-          .flat();
-      default:
-        return [];
-    }
+    return this.childSetImplementations.filter(
+      (si) => !(si instanceof OperationSetImplementation),
+    );
+  }
+
+  get childSetImplementations(): SetImplementation[] {
+    const visitedOperations = new Set<OperationSetImplementation>();
+    visitedOperations.add(this);
+    const _leaves = new Set<SetImplementation>();
+    const resolveleafSetImps = (
+      _opSetImpl: OperationSetImplementation,
+    ): void => {
+      _opSetImpl.parameters.forEach((p) => {
+        const setImp = p.setImplementation.value;
+        if (
+          setImp instanceof OperationSetImplementation &&
+          !visitedOperations.has(setImp)
+        ) {
+          visitedOperations.add(setImp);
+          resolveleafSetImps(setImp);
+        } else {
+          _leaves.add(setImp);
+        }
+      });
+    };
+    resolveleafSetImps(this);
+    visitedOperations.delete(this);
+    return Array.from(_leaves).concat(Array.from(visitedOperations));
   }
 
   override get isStub(): boolean {
