@@ -43,10 +43,13 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
+    "@material-ui/core": "4.12.3",
     "@types/react": "17.0.19",
     "mobx": "6.3.2",
     "mobx-react-lite": "3.2.0",
     "react": "17.0.2",
+    "react-dnd": "14.0.3",
+    "react-icons": "4.2.0",
     "react-resize-detector": "6.7.6",
     "serializr": "2.0.5"
   },
@@ -71,6 +74,7 @@
     "graphPreset": "@finos/legend-graph-preset-dsl-diagram",
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph-manager",
+    "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph",
     "studioPreset": "@finos/legend-studio-preset-dsl-diagram",
     "studioPlugin": "@finos/legend-studio-plugin-dsl-diagram"
   }

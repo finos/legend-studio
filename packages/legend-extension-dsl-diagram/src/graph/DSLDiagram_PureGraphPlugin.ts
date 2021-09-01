@@ -15,41 +15,38 @@
  */
 
 import packageJson from '../../package.json';
+import type { Clazz } from '@finos/legend-shared';
 import type {
+  DeadReferencesCleaner,
   GraphPluginManager,
   PackageableElement,
-  PureGrammarElementLabeler,
+  PureModel,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
+import { PureGraphPlugin } from '@finos/legend-graph';
 import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
+import { cleanUpDeadReferencesInDiagram } from '../helpers/DiagramHelper';
 
-const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
-const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
-
-export class DSLDiagram_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class DSLDiagram_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
-    super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
+    super(packageJson.extensions.pureGraphPlugin, packageJson.version);
   }
 
   install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
+    pluginManager.registerPureGraphPlugins(this);
   }
 
-  override getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_DIAGRAM_PARSER_NAME];
+  override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
+    return [Diagram];
   }
 
-  override getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL];
-  }
-
-  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
+  override getExtraDeadReferencesCleaners(): DeadReferencesCleaner[] {
     return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Diagram) {
-          return PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
+      (graph: PureModel): void => {
+        graph
+          .getExtensionForElementClass(Diagram)
+          .elements.forEach((diagram) =>
+            cleanUpDeadReferencesInDiagram(diagram, graph),
+          );
       },
     ];
   }

@@ -62,6 +62,15 @@ export type V1_ExecutionInputGetter = (
   protocolGraph: V1_PureModelContextData,
 ) => V1_PackageableElement[];
 
+/**
+ * Plugins for protocol processors. Technically, this is a sub-part of `PureGraphManagerPlugin`
+ * but due to the way we encapsulate the protocol code and the way we organize graph managers,
+ * we want to keep `PureGraphManagerPlugin` to operate at metamodel level where as this allows
+ * extension mechanism on the protocol models.
+ *
+ * When we introduce another version of protocol models, e.g. v2_0_0, we would just add another set
+ * of plugin methods here without having to modify the abstract layer of graph manager.
+ */
 export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureProtocolProcessorPlugin';
 

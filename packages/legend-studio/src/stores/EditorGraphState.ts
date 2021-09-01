@@ -17,7 +17,7 @@
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
-import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertType,
@@ -49,7 +49,6 @@ import {
   CompilationError,
   EngineError,
   extractSourceInformationCoordinates,
-  GenerationModel,
   Package,
   SET_IMPLEMENTATION_TYPE,
   PureInstanceSetImplementation,
@@ -77,7 +76,6 @@ import {
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
   PACKAGEABLE_ELEMENT_TYPE,
-  DependencyManager,
   AggregationAwareSetImplementation,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
@@ -110,12 +108,6 @@ export class EditorGraphState {
 
     this.editorStore = editorStore;
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
-  }
-
-  private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {
-    return this.editorStore.pluginManager
-      .getPureGraphManagerPlugins()
-      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
   }
 
   get hasCompilationError(): boolean {
@@ -211,9 +203,8 @@ export class EditorGraphState {
           )) as PlainObject<ProjectConfiguration>,
         ),
       );
-      const dependencyManager = new DependencyManager(
-        this.getPureGraphExtensionElementClasses(),
-      );
+      const dependencyManager =
+        this.editorStore.graphManagerState.createEmptyDependencyManager();
       yield flowResult(
         this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
@@ -264,9 +255,8 @@ export class EditorGraphState {
       // reset
       this.editorStore.graphManagerState.resetGraph();
       // build compile context
-      const dependencyManager = new DependencyManager(
-        this.getPureGraphExtensionElementClasses(),
-      );
+      const dependencyManager =
+        this.editorStore.graphManagerState.createEmptyDependencyManager();
       yield flowResult(
         this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
@@ -774,9 +764,8 @@ export class EditorGraphState {
             )) as PlainObject<ProjectConfiguration>,
           ),
         );
-        const dependencyManager = new DependencyManager(
-          this.getPureGraphExtensionElementClasses(),
-        );
+        const dependencyManager =
+          this.editorStore.graphManagerState.createEmptyDependencyManager();
         yield flowResult(
           this.editorStore.graphManagerState.graphManager.buildDependencies(
             this.editorStore.graphManagerState.coreModel,
@@ -921,7 +910,7 @@ export class EditorGraphState {
       );
       // we reset the generation model
       this.editorStore.graphManagerState.graph.generationModel =
-        new GenerationModel(this.getPureGraphExtensionElementClasses());
+        this.editorStore.graphManagerState.createEmptyGenerationModel();
       yield flowResult(
         this.editorStore.graphManagerState.graphManager.buildGenerations(
           this.editorStore.graphManagerState.graph,

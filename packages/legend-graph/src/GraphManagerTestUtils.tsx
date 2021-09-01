@@ -25,6 +25,7 @@ import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PurePr
 import type { Entity } from '@finos/legend-model-storage';
 import { SECTION_INDEX_ELEMENT_PATH } from './MetaModelConst';
 import type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager';
+import type { PureGraphPlugin } from './graph/PureGraphPlugin';
 
 export class TEST__GraphPluginManager
   extends AbstractPluginManager
@@ -32,6 +33,7 @@ export class TEST__GraphPluginManager
 {
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
+  private pureGraphPlugins: PureGraphPlugin[] = [];
 
   registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
     this.pureGraphManagerPlugins.push(plugin);
@@ -43,12 +45,20 @@ export class TEST__GraphPluginManager
     this.pureProtocolProcessorPlugins.push(plugin);
   }
 
+  registerPureGraphPlugins(plugin: PureGraphPlugin): void {
+    this.pureGraphPlugins.push(plugin);
+  }
+
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
     return this.pureGraphManagerPlugins;
   }
 
   getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[] {
     return this.pureProtocolProcessorPlugins;
+  }
+
+  getPureGraphPlugins(): PureGraphPlugin[] {
+    return this.pureGraphPlugins;
   }
 }
 

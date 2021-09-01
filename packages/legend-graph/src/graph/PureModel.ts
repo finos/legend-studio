@@ -57,6 +57,7 @@ import {
   Unit,
 } from '../models/metamodels/pure/packageableElements/domain/Measure';
 import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
+import type { PureGraphPlugin } from './PureGraphPlugin';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -167,12 +168,16 @@ export class PureModel extends BasicModel {
   systemModel: SystemModel;
   generationModel: GenerationModel;
   dependencyManager: DependencyManager; // used to manage the elements from dependency projects
+  graphPlugins: PureGraphPlugin[] = [];
 
   constructor(
     coreModel: CoreModel,
     systemModel: SystemModel,
-    extensionElementClasses: Clazz<PackageableElement>[],
+    graphPlugins: PureGraphPlugin[],
   ) {
+    const extensionElementClasses = graphPlugins.flatMap(
+      (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+    );
     super(ROOT_PACKAGE_NAME.MAIN, extensionElementClasses);
 
     makeObservable(this, {
@@ -182,6 +187,7 @@ export class PureModel extends BasicModel {
       addElement: action,
     });
 
+    this.graphPlugins = graphPlugins;
     this.coreModel = coreModel;
     this.systemModel = systemModel;
     this.generationModel = new GenerationModel(extensionElementClasses);
@@ -467,12 +473,13 @@ export class PureModel extends BasicModel {
 
   deleteElement(element: PackageableElement): void {
     super.deleteOwnElement(element);
-    // this.cleanUpDeadReferences();
-  }
 
-  // cleanUpDeadReferences(): void {
-  //   this.ownDiagrams.forEach((diagram) =>
-  //     cleanUpDeadReferencesInDiagram(diagram, this),
-  //   );
-  // }
+    const deadReferencesCleaners = this.graphPlugins.flatMap(
+      (plugin) => plugin.getExtraDeadReferencesCleaners?.() ?? [],
+    );
+
+    for (const cleaner of deadReferencesCleaners) {
+      cleaner(this);
+    }
+  }
 }

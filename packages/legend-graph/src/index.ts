@@ -151,6 +151,7 @@ export {
   PureModel,
 } from './graph/PureModel';
 export * from './graph/PureGraphExtension';
+export * from './graph/PureGraphPlugin';
 
 // --------------------------------------------- GRAPH MANAGER --------------------------------------------------
 

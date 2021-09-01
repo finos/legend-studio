@@ -15,20 +15,19 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
-import type { Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 
+/**
+ * Unlike `PureGraphPlugin`, this is for plugins of graph manager, i.e. operations acting
+ * on the graph instead of within the graph. As such processes involving grammar, compilation,
+ * generation,etc. should be placed here.
+ */
 export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
-
-  /**
-   * Get the list of supported packageabl element classes.
-   */
-  getExtraPureGraphExtensionClasses?(): Clazz<PackageableElement>[];
 
   /**
    * Get the list of supported Pure grammar parsers.

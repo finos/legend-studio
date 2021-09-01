@@ -16,41 +16,23 @@
 
 import packageJson from '../../package.json';
 import { Text } from '../models/metamodels/pure/model/packageableElements/text/Text';
+import type { Clazz } from '@finos/legend-shared';
 import type {
   GraphPluginManager,
   PackageableElement,
-  PureGrammarElementLabeler,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
+import { PureGraphPlugin } from '@finos/legend-graph';
 
-const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
-const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
-
-export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class DSLText_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
-    super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
+    super(packageJson.extensions.pureGraphPlugin, packageJson.version);
   }
 
   install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
+    pluginManager.registerPureGraphPlugins(this);
   }
 
-  override getExtraPureGrammarParserNames(): string[] {
-    return [PURE_GRAMMAR_TEXT_PARSER_NAME];
-  }
-
-  override getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL];
-  }
-
-  override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
-    return [
-      (element: PackageableElement): string | undefined => {
-        if (element instanceof Text) {
-          return PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL;
-        }
-        return undefined;
-      },
-    ];
+  override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
+    return [Text];
   }
 }

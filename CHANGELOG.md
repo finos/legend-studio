@@ -38,11 +38,15 @@ This marks the official release of the stand-alone version of query builder, als
   - Removed `getExtraPureGrammarKeywords()`
   - Removed `getExtraPureGrammarElementLabelers()`
   - Removed `getExtraExposedSystemElementPath()`
-- In `PureGraphManagerPlugin`
+- In `PureGraphManagerPlugin`:
   - Added `getExtraPureGrammarParserNames()`
   - Added `getExtraPureGrammarKeywords()`
   - Added `getExtraPureGrammarElementLabelers()`
   - Added `getExtraExposedSystemElementPath()`
+  - Remove `getExtraPureGraphExtensionClasses()`
+- Introduced `PureGraphPlugin` to handle internal `Pure` graph processes:
+  - Added `getExtraPureGraphExtensionClasses()`
+  - Added `getExtraDeadReferencesCleaners()`
 - We made a decision to change the prefix of extensions package names to `@finos/legend-extension-*` to make it more simple extension maintainers. _Prior to this, we considered an option to split each plugin by the layers they serve, for example, `@finos/legend-studio-preset-dsl-text` is meant for holding Studio components extension for `DSL Text`, whereas `@finos/legend-graph-preset-dsl-text` holds the metamodels, graph manager extension of `DSL Text`. However, doing this way will make the codebase hard to maintain._
 - We also added documentation to each extension methods to help with the extension development process.
 
@@ -70,6 +74,7 @@ Some new essential packages are introduced in an effort to make core more modula
 - [@finos/legend-query](https://www.npmjs.com/package/@finos/legend-query): Core components of `Legend Query`
 - [@finos/legend-studio-app](https://www.npmjs.com/package/@finos/studio-app): `Legend Studio` application with default set of extensions. **This library's version will be considered the main release version**
 - [@finos/legend-query-app](https://www.npmjs.com/package/@finos/legend-query-app): `Legend Query` application with default set of extensions
+- [@finos/legend-extension-dsl-diagram](https://www.npmjs.com/package/@finos/legend-extension-dsl-diagram): Extension for DSL Diagram
 
 ### Legend application testing improvements
 

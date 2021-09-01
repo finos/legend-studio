@@ -419,11 +419,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graph = new PureModel(
       coreModel,
       systemModel,
-      this.pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-        ),
+      this.pluginManager.getPureGraphPlugins(),
     );
     try {
       const systemData = new V1_PureModelContextData();
@@ -499,11 +495,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const graph = new PureModel(
       coreModel,
       systemModel,
-      this.pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-        ),
+      this.pluginManager.getPureGraphPlugins(),
     );
     graph.setDependencyManager(dependencyManager);
     try {
