@@ -19,6 +19,7 @@ import { QueryBuilder_StudioPreset } from '@finos/legend-studio-preset-query-bui
 import { DSLText_StudioPreset } from '@finos/legend-extension-dsl-text';
 import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
 import { BrowserConsole } from '@finos/legend-shared';
+import { DSLDiagram_StudioPreset } from '@finos/legend-extension-dsl-diagram';
 
 export class LegendStudioApplication {
   static run(baseUrl: string): void {
@@ -26,6 +27,7 @@ export class LegendStudioApplication {
       .setup({ baseUrl })
       .withPresets([
         new DSLText_StudioPreset(),
+        new DSLDiagram_StudioPreset(),
         new EFJSONSchema_GraphPreset(),
         new QueryBuilder_StudioPreset(),
       ])
