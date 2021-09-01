@@ -65,7 +65,13 @@ export const OperationSetImplementationEditor = observer(
       mapping,
       setImplementation.class.value,
     )
-      .filter((si) => si.id.value !== setImplementation.id.value)
+      .filter(
+        (si) =>
+          // filter out the current set impl
+          si.id.value !== setImplementation.id.value &&
+          // filter out set impls already included through a container or the actual container itself
+          !setImplementation.childSetImplementations.includes(si),
+      )
       .map((si) => ({ value: si, label: si.id.value }));
     const filterOption = createFilter({
       stringify: (option: SetImplementationOption): string => option.label,
