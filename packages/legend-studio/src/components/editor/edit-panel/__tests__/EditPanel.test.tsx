@@ -49,7 +49,6 @@ test(integrationTest('Test navigation between element states'), async () => {
   );
   fireEvent.click(getByText(packageExplorer, 'TestClass'));
   fireEvent.click(getByText(packageExplorer, 'TestEnumeration'));
-  fireEvent.click(getByText(packageExplorer, 'testDiagram'));
   fireEvent.click(getByText(packageExplorer, 'Anyone'));
   fireEvent.click(getByText(packageExplorer, 'Dog'));
   fireEvent.click(getByText(packageExplorer, 'Something'));
@@ -61,7 +60,6 @@ test(integrationTest('Test navigation between element states'), async () => {
 
   const openElements = [
     'TestEnumeration',
-    'testDiagram',
     'TestClass',
     'Anyone',
     'Dog',

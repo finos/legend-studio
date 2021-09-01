@@ -38,7 +38,6 @@ import {
   ServiceIcon,
   ConnectionIcon,
   FunctionIcon,
-  DiagramIcon,
   DatabaseIcon,
   FlatDataStoreIcon,
   FileGenerationIcon,
@@ -92,8 +91,6 @@ export const getElementTypeIcon = (
       return <DatabaseIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.MAPPING:
       return <MappingIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.DIAGRAM:
-      return <DiagramIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
       return <ServiceIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:

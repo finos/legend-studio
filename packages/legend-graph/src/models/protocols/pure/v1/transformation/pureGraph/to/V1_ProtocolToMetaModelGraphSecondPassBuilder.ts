@@ -41,17 +41,11 @@ import type { V1_FlatData } from '../../../model/packageableElements/store/flatD
 import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database';
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service';
-import type { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
 import {
   V1_buildVariable,
   V1_buildUnit,
   V1_buildTaggedValue,
 } from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
-import {
-  V1_buildClassView,
-  V1_buildPropertyView,
-  V1_buildGeneralizationView,
-} from '../../../transformation/pureGraph/to/helpers/V1_DiagramBuilderHelper';
 import {
   V1_buildServiceTest,
   V1_buildServiceExecution,
@@ -265,22 +259,6 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       V1_buildServiceExecution(element.execution, this.context, service),
     );
     service.test = V1_buildServiceTest(element.test, this.context, service);
-  }
-
-  visit_Diagram(element: V1_Diagram): void {
-    const diagram = this.context.graph.getDiagram(
-      this.context.graph.buildPath(element.package, element.name),
-    );
-    diagram.classViews = element.classViews.map((classView) =>
-      V1_buildClassView(classView, this.context, diagram),
-    );
-    diagram.propertyViews = element.propertyViews.map((propertyView) =>
-      V1_buildPropertyView(propertyView, this.context, diagram),
-    );
-    diagram.generalizationViews = element.generalizationViews.map(
-      (generalizationView) =>
-        V1_buildGeneralizationView(generalizationView, diagram),
-    );
   }
 
   visit_SectionIndex(element: V1_SectionIndex): void {

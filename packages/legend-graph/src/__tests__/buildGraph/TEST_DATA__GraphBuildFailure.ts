@@ -720,59 +720,6 @@ export const TEST_DATA__MissingSetImp = [
   },
 ];
 
-export const TEST_DATA__MissingClassInDiagram = [
-  {
-    classifierPath: 'meta::pure::metamodel::type::Class',
-    path: 'ui::test1::Cat',
-    content: {
-      _type: 'class',
-      name: 'Cat',
-      package: 'ui::test1',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 0,
-          },
-          name: 'fullName',
-          type: 'String',
-        },
-        {
-          multiplicity: {
-            lowerBound: 0,
-          },
-          name: 'age',
-          type: 'Integer',
-        },
-      ],
-    },
-  },
-  {
-    classifierPath: 'meta::pure::metamodel::diagram::Diagram',
-    path: 'ui::test1::testDiagram',
-    content: {
-      _type: 'diagram',
-      classViews: [
-        {
-          class: 'ui::test1::NotFound',
-          id: '2baa3ad1-37b3-434c-89ab-5ad5df455aa1',
-          position: {
-            x: 771.9999961853027,
-            y: 191.9857940673828,
-          },
-          rectangle: {
-            height: 55,
-            width: 112.2861328125,
-          },
-        },
-      ],
-      generalizationViews: [],
-      name: 'testDiagram',
-      package: 'ui::test1',
-      propertyViews: [],
-    },
-  },
-];
-
 export const TEST_DATA__MissingClassMapping = [
   {
     path: 'ui::Employeer',

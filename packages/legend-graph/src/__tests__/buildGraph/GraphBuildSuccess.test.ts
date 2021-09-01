@@ -26,7 +26,6 @@ import type { OperationSetImplementation } from '../../models/metamodels/pure/pa
 import type { PureInstanceSetImplementation } from '../../models/metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { fromElementPathToMappingElementId } from '../../MetaModelUtils';
 import { Enum } from '../../models/metamodels/pure/packageableElements/domain/Enum';
-import type { Class } from '../../models/metamodels/pure/packageableElements/domain/Class';
 
 const graphManagerState = TEST__getTestGraphManagerState();
 
@@ -119,25 +118,4 @@ test(unitTest('Mapping is loaded properly'), () => {
       ),
     ),
   );
-});
-
-test(unitTest('Diagram is loaded properly'), () => {
-  const graph = graphManagerState.graph;
-  const assertClassInGraph = (_class: Class): void =>
-    expect(_class).toEqual(graph.getClass(_class.path));
-  const simpleDiagram = graph.getDiagram('ui::testDiagram');
-  expect(simpleDiagram.classViews).toHaveLength(4);
-  expect(simpleDiagram.generalizationViews).toHaveLength(2);
-  expect(simpleDiagram.propertyViews).toHaveLength(2);
-  simpleDiagram.classViews.forEach((classView) =>
-    assertClassInGraph(classView.class.value),
-  );
-  simpleDiagram.propertyViews.forEach((propertyView) => {
-    assertClassInGraph(propertyView.from.classView.value.class.value);
-    assertClassInGraph(propertyView.to.classView.value.class.value);
-  });
-  simpleDiagram.generalizationViews.forEach((generationView) => {
-    assertClassInGraph(generationView.from.classView.value.class.value);
-    assertClassInGraph(generationView.to.classView.value.class.value);
-  });
 });

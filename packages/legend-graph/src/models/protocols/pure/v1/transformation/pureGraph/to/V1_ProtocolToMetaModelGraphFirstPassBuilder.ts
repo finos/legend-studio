@@ -31,7 +31,6 @@ import { Database } from '../../../../../../metamodels/pure/packageableElements/
 import { ServiceStore } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
-import { Diagram } from '../../../../../../metamodels/pure/packageableElements/diagram/Diagram';
 import { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime';
 import { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection';
@@ -52,7 +51,6 @@ import type { V1_FlatData } from '../../../model/packageableElements/store/flatD
 import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database';
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service';
-import type { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
 import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
@@ -311,25 +309,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       .addElement(service);
     this.context.currentSubGraph.setOwnService(path, service);
     return service;
-  }
-
-  visit_Diagram(element: V1_Diagram): PackageableElement {
-    assertNonEmptyString(element.package, 'Diagram package is missing');
-    assertNonEmptyString(element.name, 'Diagram name is missing');
-    const diagram = new Diagram(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(diagram);
-    this.context.currentSubGraph.setOwnDiagram(path, diagram);
-    return diagram;
   }
 
   visit_FileGeneration(

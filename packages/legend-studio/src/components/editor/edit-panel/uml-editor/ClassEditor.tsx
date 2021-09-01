@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useResizeDetector } from 'react-resize-detector';
-import { InheritanceDiagramRenderer } from '../../../shared/diagram-viewer/InheritanceDiagramRenderer';
+import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { prettyCONSTName } from '@finos/legend-shared';
+import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import type {
   ElementDragSource,
@@ -1092,7 +1090,7 @@ export const ClassFormEditor = observer(
         editorStore.openElement(_class.generationParentElement);
       }
     };
-    // On change (this is used for diagram editor when users click on a class)
+    // On change handler (this is used for other editors which embeds editor)
     useEffect(() => {
       onHashChange?.();
     }, [_class, classHash, onHashChange]);
@@ -1338,78 +1336,24 @@ export const ClassFormEditor = observer(
   },
 );
 
-const ClassPreview = observer((props: { _class: Class }) => {
-  const { _class } = props;
-  const applicationStore = useApplicationStore();
-  const classHash = _class.isReadOnly
-    ? undefined
-    : applicationStore.notifyAndReturnAlternativeOnError(
-        () => _class.hashCode,
-        undefined,
-      ); // attempting to read the hashCode of immutable element will throw an error
-  const [diagramRenderer, setDiagramRenderer] =
-    useState<InheritanceDiagramRenderer>();
-  const canvas = useRef<HTMLDivElement>(null);
-  const resizeDiagram = useCallback((): void => {
-    if (diagramRenderer) {
-      diagramRenderer.refresh();
-      diagramRenderer.autoRecenter();
-    }
-  }, [diagramRenderer]);
-  const { ref, height, width } = useResizeDetector<HTMLDivElement>({
-    refreshMode: 'debounce',
-    refreshRate: 50,
-  });
-
-  useEffect(() => {
-    resizeDiagram();
-  }, [resizeDiagram, height, width]);
-
-  useEffect(() => {
-    if (canvas.current) {
-      let currentRenderer = diagramRenderer;
-      if (!currentRenderer) {
-        const newRender = new InheritanceDiagramRenderer(
-          canvas.current,
-          _class,
-        );
-        setDiagramRenderer(newRender);
-        currentRenderer = newRender;
-      }
-      currentRenderer.render();
-      currentRenderer.autoRecenter();
-    }
-  }, [diagramRenderer, _class]);
-
-  useEffect(() => {
-    if (diagramRenderer) {
-      diagramRenderer.loadClass(_class);
-      diagramRenderer.render();
-      diagramRenderer.autoRecenter();
-    }
-  }, [_class, classHash, diagramRenderer]);
-
-  return (
-    <div ref={ref} className="class-editor__diagram-viewer">
-      <div
-        ref={canvas}
-        className="diagram-canvas"
-        tabIndex={0}
-        onContextMenu={(event): void => event.preventDefault()}
-      />
-    </div>
-  );
-});
-
 export const ClassEditor = observer((props: { _class: Class }) => {
   const { _class } = props;
   const editorStore = useEditorStore();
   const editorState = editorStore.getCurrentEditorState(ClassEditorState);
 
+  const extraElementEditorPostDeleteActions = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap((plugin) => plugin.getExtraClassPreviewRenderers?.() ?? [])
+    .filter(isNonNullable);
+
   return (
     <ResizablePanelGroup orientation="vertical" className="class-editor">
       <ResizablePanel size={500} minSize={450}>
-        <ClassPreview _class={_class} />
+        {extraElementEditorPostDeleteActions.length !== 0 &&
+          extraElementEditorPostDeleteActions[0](_class)}
+        {extraElementEditorPostDeleteActions.length === 0 && (
+          <BlankPanelContent>No preview</BlankPanelContent>
+        )}
       </ResizablePanel>
       <ResizablePanelSplitter />
       <ResizablePanel minSize={450}>

@@ -29,7 +29,6 @@ import type { V1_FlatData } from '../../../model/packageableElements/store/flatD
 import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database';
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service';
-import type { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
 import {
   V1_buildConstraint,
   V1_buildDerivedProperty,
@@ -119,10 +118,6 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
   }
 
   visit_Service(element: V1_Service): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_Diagram(element: V1_Diagram): void {
     throw new UnsupportedOperationError();
   }
 

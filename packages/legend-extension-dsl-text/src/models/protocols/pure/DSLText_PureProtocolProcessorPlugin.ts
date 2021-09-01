@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../../package.json';
-import { V1_Text } from './v1/model/packageableElements/V1_Text';
+import { V1_Text } from './v1/model/packageableElements/text/V1_Text';
 import type { PlainObject } from '@finos/legend-shared';
 import { assertType } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
@@ -23,11 +23,11 @@ import {
   V1_textModelSchema,
   V1_TEXT_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelper';
-import { getText } from '../../metamodels/pure/graph/DSLText_GraphManagerHelper';
+import { getText } from '../../../graphManager/DSLText_GraphManagerHelper';
 import {
   Text,
   TEXT_TYPE,
-} from '../../metamodels/pure/model/packageableElements/Text';
+} from '../../metamodels/pure/model/packageableElements/text/Text';
 import type {
   GraphPluginManager,
   PackageableElement,

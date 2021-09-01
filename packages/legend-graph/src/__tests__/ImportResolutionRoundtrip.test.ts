@@ -29,7 +29,6 @@ import {
   TEST_DATA__MeasureRoundtrip,
   TEST_DATA__ClassWithComplexConstraint,
 } from './roundtripTestData/TEST_DATA__DomainRoundtrip';
-import { TEST_DATA__DiagramRoundtrip } from './roundtripTestData/TEST_DATA__DiagramRoundtrip';
 import {
   testConnectionRoundtrip,
   testModelChainConnectionRoundtrip,
@@ -197,15 +196,6 @@ describe(
     });
   },
 );
-
-describe(unitTest('Diagram import resolution roundtrip'), () => {
-  test.each([['Simple diagram specification', TEST_DATA__DiagramRoundtrip]])(
-    '%s',
-    async (testName, entities) => {
-      await TEST__checkBuildingElementsRoundtrip(entities);
-    },
-  );
-});
 
 describe(unitTest('Service import resolution roundtrip'), () => {
   test.each([['Simple service', TEST_DATA__ServiceRoundtrip]])(

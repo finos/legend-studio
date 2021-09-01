@@ -60,7 +60,6 @@ import {
   Class,
   Association,
   Mapping,
-  Diagram,
   ConcreteFunctionDefinition,
   Service,
   FlatData,
@@ -1069,8 +1068,6 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE;
     } else if (element instanceof Mapping) {
       return PACKAGEABLE_ELEMENT_TYPE.MAPPING;
-    } else if (element instanceof Diagram) {
-      return PACKAGEABLE_ELEMENT_TYPE.DIAGRAM;
     } else if (element instanceof Service) {
       return PACKAGEABLE_ELEMENT_TYPE.SERVICE;
     } else if (element instanceof PackageableConnection) {

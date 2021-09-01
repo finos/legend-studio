@@ -15,5 +15,5 @@
  */
 
 export enum TEXT_HASH_STRUCTURE {
-  ELEMENT = 'TEXT',
+  TEXT = 'TEXT',
 }

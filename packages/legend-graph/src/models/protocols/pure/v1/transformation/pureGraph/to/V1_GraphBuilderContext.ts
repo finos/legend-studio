@@ -38,7 +38,6 @@ import type { Enumeration } from '../../../../../../metamodels/pure/packageableE
 import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Profile } from '../../../../../../metamodels/pure/packageableElements/domain/Profile';
-import type { Diagram } from '../../../../../../metamodels/pure/packageableElements/diagram/Diagram';
 import type { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
 import type { Store } from '../../../../../../metamodels/pure/packageableElements/store/Store';
 import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
@@ -415,10 +414,6 @@ export class V1_GraphBuilderContext {
     path: string,
   ): PackageableElementImplicitReference<PackageableRuntime> =>
     this.createImplicitPackageableElementReference(path, this.graph.getRuntime);
-  resolveDiagram = (
-    path: string,
-  ): PackageableElementImplicitReference<Diagram> =>
-    this.createImplicitPackageableElementReference(path, this.graph.getDiagram);
   resolveGenerationSpecification = (
     path: string,
   ): PackageableElementImplicitReference<GenerationSpecification> =>

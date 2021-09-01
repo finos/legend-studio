@@ -22,7 +22,7 @@ import type { MappingTestState } from './editor-state/element-editor-state/mappi
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
-import type { PackageableElement } from '@finos/legend-graph';
+import type { Class, PackageableElement } from '@finos/legend-graph';
 
 export type ApplicationSetup = (
   pluginManager: StudioPluginManager,
@@ -49,6 +49,10 @@ export type EditorExtensionComponentRendererConfiguration = {
 export type EditorExtensionStateCreator = (
   editorStore: EditorStore,
 ) => EditorExtensionState | undefined;
+
+export type ClassPreviewRenderer = (
+  _class: Class,
+) => React.ReactNode | undefined;
 
 export type MappingExecutionQueryEditorRendererConfiguration = {
   key: string;
@@ -105,6 +109,11 @@ export abstract class StudioPlugin extends AbstractPlugin {
   getExtraEditorExtensionStateCreators?(): EditorExtensionStateCreator[];
 
   /**
+   * Get the list of renderers for the preview panel of a class.
+   */
+  getExtraClassPreviewRenderers?(): ClassPreviewRenderer[];
+
+  /**
    * Get the list of configurations for the renderer of editor extension states.
    */
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
@@ -151,8 +160,20 @@ export type NewElementDriverEditorRenderer = (
   type: string,
 ) => React.ReactNode | undefined;
 
-export type ElementEditorPostCreationAction = (
+export type ElementEditorPostCreateAction = (
+  editorStore: EditorStore,
   element: PackageableElement,
+) => void;
+
+export type ElementEditorPostRenameAction = (
+  editorStore: EditorStore,
+  element: PackageableElement,
+) => void;
+
+export type ElementEditorPostDeleteAction = (
+  editorStore: EditorStore,
+  element: PackageableElement,
+  // newPath?
 ) => void;
 
 export type ElementEditorRenderer = (
@@ -161,11 +182,11 @@ export type ElementEditorRenderer = (
 
 export type ElementEditorStateCreator = (
   editorStore: EditorStore,
-  metamodel: PackageableElement,
+  element: PackageableElement,
 ) => ElementEditorState | undefined;
 
 export type ElementProjectExplorerDnDTypeGetter = (
-  metamodel: PackageableElement,
+  element: PackageableElement,
 ) => string | undefined;
 
 /**
@@ -210,7 +231,17 @@ export interface DSL_StudioPlugin_Extension extends StudioPlugin {
   /**
    * Get the list of actions to perform after creating a new packageable element.
    */
-  getExtraElementEditorPostCreationActions?(): ElementEditorPostCreationAction[];
+  getExtraElementEditorPostCreateActions?(): ElementEditorPostCreateAction[];
+
+  /**
+   * Get the list of actions to perform after renaming a packageable element.
+   */
+  getExtraElementEditorPostRenameActions?(): ElementEditorPostRenameAction[];
+
+  /**
+   * Get the list of actions to perform after deleting a packageable element.
+   */
+  getExtraElementEditorPostDeleteActions?(): ElementEditorPostDeleteAction[];
 
   /**
    * Get the list of renderers for the editor for a packageable element.

@@ -28,8 +28,21 @@ This marks the official release of the stand-alone version of query builder, als
 ## Extension authoring
 
 - Renamed `EditorPlugin` to `StudioPlugin`
-- Renamed `getExtraNewElementDriverEditorCreators()` to `getExtraNewElementDriverEditorRenderers()` and `getExtraElementEditorCreators()` to `getExtraElementEditorRenderers()` in `StudioPlugin`
-- Moved `getExtraPureGrammarParserNames()`, `getExtraPureGrammarKeywords()`, `getExtraPureGrammarElementLabelers()`, and `getExtraExposedSystemElementPath()` to `PureGraphManagerPlugin`
+- In `StudioPlugin`:
+  - Added `getExtraElementEditorPostRenameActions()`
+  - Added `getExtraElementEditorPostDeleteActions()`
+  - Renamed `getExtraElementEditorPostCreationActions()` to `getExtraElementEditorPostCreateActions()`
+  - Renamed `getExtraNewElementDriverEditorCreators()` to `getExtraNewElementDriverEditorRenderers()`
+  - Renamed `getExtraElementEditorCreators()` to `getExtraElementEditorRenderers()`
+  - Removed `getExtraPureGrammarParserNames()`
+  - Removed `getExtraPureGrammarKeywords()`
+  - Removed `getExtraPureGrammarElementLabelers()`
+  - Removed `getExtraExposedSystemElementPath()`
+- In `PureGraphManagerPlugin`
+  - Added `getExtraPureGrammarParserNames()`
+  - Added `getExtraPureGrammarKeywords()`
+  - Added `getExtraPureGrammarElementLabelers()`
+  - Added `getExtraExposedSystemElementPath()`
 - We made a decision to change the prefix of extensions package names to `@finos/legend-extension-*` to make it more simple extension maintainers. _Prior to this, we considered an option to split each plugin by the layers they serve, for example, `@finos/legend-studio-preset-dsl-text` is meant for holding Studio components extension for `DSL Text`, whereas `@finos/legend-graph-preset-dsl-text` holds the metamodels, graph manager extension of `DSL Text`. However, doing this way will make the codebase hard to maintain._
 - We also added documentation to each extension methods to help with the extension development process.
 

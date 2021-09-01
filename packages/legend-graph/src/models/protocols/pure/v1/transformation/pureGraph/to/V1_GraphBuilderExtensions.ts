@@ -25,7 +25,6 @@ import {
 } from '@finos/legend-shared';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
-import { V1_Diagram } from '../../../model/packageableElements/diagram/V1_Diagram';
 import { V1_Association } from '../../../model/packageableElements/domain/V1_Association';
 import { V1_Class } from '../../../model/packageableElements/domain/V1_Class';
 import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration';
@@ -62,7 +61,6 @@ const FORBIDDEN_BUILDER_PROTOCOL_CLASSES = new Set<
   V1_PackageableConnection,
   V1_PackageableRuntime,
   V1_Service,
-  V1_Diagram,
   V1_FileGenerationSpecification,
   V1_GenerationSpecification,
 ]);

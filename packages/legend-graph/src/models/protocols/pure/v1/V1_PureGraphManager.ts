@@ -133,7 +133,6 @@ import { V1_FileGenerationSpecification } from './model/packageableElements/file
 import { V1_SectionIndex } from './model/packageableElements/section/V1_SectionIndex';
 import { V1_GenerationSpecification } from './model/packageableElements/generationSpecification/V1_GenerationSpecification';
 import { V1_Mapping } from './model/packageableElements/mapping/V1_Mapping';
-import { V1_Diagram } from './model/packageableElements/diagram/V1_Diagram';
 import { V1_ConcreteFunctionDefinition } from './model/packageableElements/function/V1_ConcreteFunctionDefinition';
 import { V1_PureModelContextComposite } from './model/context/V1_PureModelContextComposite';
 import { V1_AlloySdlc } from './model/context/V1_AlloySdlc';
@@ -246,7 +245,6 @@ class V1_PureModelContextDataIndex {
   sectionIndices: V1_SectionIndex[] = [];
 
   services: V1_Service[] = [];
-  diagrams: V1_Diagram[] = [];
 
   fileGenerations: V1_FileGenerationSpecification[] = [];
   generationSpecifications: V1_GenerationSpecification[] = [];
@@ -296,8 +294,6 @@ const indexPureModelContextData = (
       index.sectionIndices.push(el);
     } else if (el instanceof V1_Service) {
       index.services.push(el);
-    } else if (el instanceof V1_Diagram) {
-      index.diagrams.push(el);
     } else if (el instanceof V1_FileGenerationSpecification) {
       index.fileGenerations.push(el);
     } else if (el instanceof V1_GenerationSpecification) {
@@ -358,7 +354,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       | 'buildSectionIndex'
       | 'buildOtherElements'
       | 'buildServices'
-      | 'buildDiagrams'
       | 'buildFileGenerations'
       | 'buildGenerationSpecificationss'
     >(this, {
@@ -376,7 +371,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildSectionIndex: flow,
       buildOtherElements: flow,
       buildServices: flow,
-      buildDiagrams: flow,
       buildFileGenerations: flow,
       buildGenerationSpecificationss: flow,
     });
@@ -557,7 +551,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.buildConnectionsAndRuntimes(graph, graphBuilderInput, options),
       );
       yield flowResult(this.buildServices(graph, graphBuilderInput, options));
-      yield flowResult(this.buildDiagrams(graph, graphBuilderInput, options));
       yield flowResult(
         this.buildFileGenerations(graph, graphBuilderInput, options),
       );
@@ -752,19 +745,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
       stepStartTime = stepFinishedTime;
 
-      // Diagrams
-      yield flowResult(this.buildDiagrams(graph, graphBuilderInput, options));
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DIAGRAMS_BUILT),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[diagram: ${graph.ownDiagrams.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-
       // File Generation
       yield flowResult(
         this.buildFileGenerations(graph, graphBuilderInput, options),
@@ -898,7 +878,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.buildConnectionsAndRuntimes(graph, generationGraphBuilderInput),
       );
       yield flowResult(this.buildServices(graph, generationGraphBuilderInput));
-      yield flowResult(this.buildDiagrams(graph, generationGraphBuilderInput));
       yield flowResult(
         this.buildFileGenerations(graph, generationGraphBuilderInput),
       );
@@ -1295,25 +1274,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.services.map((element) =>
-          this.visitWithErrorHandling(
-            element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  private *buildDiagrams(
-    graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
-    options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
-      inputs.flatMap((input) =>
-        input.data.diagrams.map((element) =>
           this.visitWithErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
@@ -2184,10 +2144,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         // domain
         'profileSourceInformation',
         'propertyTypeSourceInformation',
-        // diagram
-        'classSourceInformation',
-        'sourceViewSourceInformation',
-        'targetViewSourceInformation',
         // connection
         'elementSourceInformation',
         'classSourceInformation',
@@ -2341,8 +2297,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_ELEMENT_PATH.SERVICE_STORE;
     } else if (protocol instanceof V1_Service) {
       return CORE_ELEMENT_PATH.SERVICE;
-    } else if (protocol instanceof V1_Diagram) {
-      return CORE_ELEMENT_PATH.DIAGRAM;
     } else if (protocol instanceof V1_FileGenerationSpecification) {
       return CORE_ELEMENT_PATH.FILE_GENERATION;
     } else if (protocol instanceof V1_GenerationSpecification) {

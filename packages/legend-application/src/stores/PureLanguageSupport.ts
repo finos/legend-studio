@@ -31,7 +31,6 @@ export enum GRAMMAR_ELEMENT_TYPE_LABEL {
   MAPPING = 'Mapping',
   DATABASE = 'Database',
   SERVICE_STORE = 'ServiceStore',
-  DIAGRAM = 'Diagram',
   FUNCTION = 'function',
   SERVICE = 'Service',
   RUNTIME = 'Runtime',
@@ -131,7 +130,6 @@ export const generateLanguageMonarch = (
       GRAMMAR_ELEMENT_TYPE_LABEL.DATABASE,
       GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE_STORE,
       GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING,
-      GRAMMAR_ELEMENT_TYPE_LABEL.DIAGRAM,
       GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE,
       GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME,
       GRAMMAR_ELEMENT_TYPE_LABEL.CONNECTION,
@@ -177,7 +175,6 @@ export const generateLanguageMonarch = (
       ...extraParsers.map((parser) => `###${parser}`),
       /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
       '###Pure',
-      '###Diagram',
       '###Connection',
       '###Runtime',
       '###Mapping',

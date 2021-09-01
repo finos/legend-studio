@@ -54,7 +54,6 @@ import {
   Profile,
   Mapping,
   FlatData,
-  Diagram,
   Service,
   PackageableConnection,
   PackageableRuntime,
@@ -579,6 +578,18 @@ export class NewElementState {
       }
       generationSpec.addGenerationElement(generationElement);
     }
+
+    const extraElementEditorPostCreateActions = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_StudioPlugin_Extension
+          ).getExtraElementEditorPostCreateActions?.() ?? [],
+      );
+    for (const action of extraElementEditorPostCreateActions) {
+      action(this.editorStore, element);
+    }
   }
 
   /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
@@ -625,9 +636,6 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE:
         element = new ServiceStore(name);
-        break;
-      case PACKAGEABLE_ELEMENT_TYPE.DIAGRAM:
-        element = new Diagram(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
         const service = new Service(name);

@@ -24,7 +24,6 @@ import {
   Class,
   Association,
   Mapping,
-  Diagram,
   ConcreteFunctionDefinition,
   Service,
   FlatData,
@@ -108,8 +107,6 @@ export class GrammarTextEditorState {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE_STORE;
     } else if (element instanceof Mapping) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING;
-    } else if (element instanceof Diagram) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.DIAGRAM;
     } else if (element instanceof Service) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE;
     } else if (element instanceof FileGenerationSpecification) {
