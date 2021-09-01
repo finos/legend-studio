@@ -1341,7 +1341,7 @@ export const ClassEditor = observer((props: { _class: Class }) => {
   const editorStore = useEditorStore();
   const editorState = editorStore.getCurrentEditorState(ClassEditorState);
 
-  const extraElementEditorPostDeleteActions = editorStore.pluginManager
+  const classPreviewRenderers = editorStore.pluginManager
     .getStudioPlugins()
     .flatMap((plugin) => plugin.getExtraClassPreviewRenderers?.() ?? [])
     .filter(isNonNullable);
@@ -1349,9 +1349,8 @@ export const ClassEditor = observer((props: { _class: Class }) => {
   return (
     <ResizablePanelGroup orientation="vertical" className="class-editor">
       <ResizablePanel size={500} minSize={450}>
-        {extraElementEditorPostDeleteActions.length !== 0 &&
-          extraElementEditorPostDeleteActions[0](_class)}
-        {extraElementEditorPostDeleteActions.length === 0 && (
+        {classPreviewRenderers.length !== 0 && classPreviewRenderers[0](_class)}
+        {classPreviewRenderers.length === 0 && (
           <BlankPanelContent>No preview</BlankPanelContent>
         )}
       </ResizablePanel>

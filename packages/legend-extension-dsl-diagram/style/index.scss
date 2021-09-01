@@ -16,6 +16,8 @@
 
 @use 'mixins' as *;
 
+@forward './diagram-editor';
+
 :root {
   --color-diagram: var(--color-magenta-100);
 }
