@@ -167,7 +167,7 @@ export const V1_transformTableAliasToTablePointer = (
   tableAlias: TableAlias,
 ): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
-  tablePtr.database = tableAlias.relation.ownerReference.value.path ?? '';
+  tablePtr.database = tableAlias.relation.ownerReference.value.path;
   /* @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph */
   tablePtr.mainTableDb = tablePtr.database;
   tablePtr.schema = tableAlias.isSelfJoinTarget
