@@ -229,7 +229,7 @@ export const V1_transformRelationalOperationElement = (
     elementWithJoin.joins = operation.joinTreeNode
       ? extractLine(operation.joinTreeNode).map((node) => {
           const joinPtr = new V1_JoinPointer();
-          joinPtr.db = node.join.ownerReference.value.path ?? '';
+          joinPtr.db = node.join.ownerReference.value.path;
           joinPtr.joinType = node.joinType;
           joinPtr.name = node.join.value.name;
           return joinPtr;
