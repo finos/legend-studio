@@ -20,6 +20,7 @@ import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import type { Class } from '@finos/legend-graph';
 import { InheritanceDiagramRenderer } from './diagram-viewer/InheritanceDiagramRenderer';
+import { DSL_DIAGRAM_TEST_ID } from './DSLDiagram_TestID';
 
 export const ClassDiagramPreview = observer((props: { _class: Class }) => {
   const { _class } = props;
@@ -73,7 +74,11 @@ export const ClassDiagramPreview = observer((props: { _class: Class }) => {
   }, [_class, classHash, diagramRenderer]);
 
   return (
-    <div ref={ref} className="class-editor__diagram-preview">
+    <div
+      ref={ref}
+      className="class-editor__diagram-preview"
+      data-testid={DSL_DIAGRAM_TEST_ID.CLASS_DIAGRAM_PREVIEW}
+    >
       <div
         ref={canvas}
         className="diagram-canvas"

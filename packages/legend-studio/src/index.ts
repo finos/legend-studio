@@ -51,7 +51,9 @@ export {
   TEST__provideMockedEditorStore,
   TEST__setUpEditor,
   TEST__setUpEditorWithDefaultSDLCData,
+  TEST__openElementFromExplorerTree,
 } from './components/EditorComponentTestUtils';
+export { STUDIO_TEST_ID } from './components/StudioTestID';
 export * from './stores/EditorStoreTestUtils';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------

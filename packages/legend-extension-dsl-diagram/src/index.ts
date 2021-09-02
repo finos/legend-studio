@@ -15,3 +15,21 @@
  */
 
 export * from './DSLDiagram_Extension';
+
+export { DiagramRenderer } from './components/diagram-viewer/DiagramRenderer';
+
+export { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
+export { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
+export {
+  RelationshipView,
+  manageInsidePointsDynamically,
+} from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
+export { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
+export { PropertyView } from './models/metamodels/pure/packageableElements/diagram/PropertyView';
+export { AssociationView } from './models/metamodels/pure/packageableElements/diagram/AssociationView';
+export { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/GeneralizationView';
+export { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/Point';
+export { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/Rectangle';
+export { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/PositionedRectangle';
+
+export * from './helpers/DiagramHelper';
