@@ -23,10 +23,6 @@ export enum BuilderType {
   JSON_BUILDER = 'json',
 }
 
-enum ExecutionActivityType {
-  REALTIONAL = 'relational',
-}
-
 export class ResultBuilder {
   _type: BuilderType;
 
@@ -35,17 +31,9 @@ export class ResultBuilder {
   }
 }
 
-export abstract class ExecutionActivity {
-  _type: ExecutionActivityType;
-
-  constructor(type: ExecutionActivityType) {
-    this._type = type;
-  }
-}
-
 export abstract class ExecutionResult {
   builder!: ResultBuilder;
-  activities?: ExecutionActivity[] | undefined;
+  activities: object | undefined;
   values!: object;
 }
 
@@ -61,13 +49,6 @@ export class JsonExecutionResult extends ExecutionResult {
 }
 
 // TDS
-export class RelationalExecutionActivity extends ExecutionActivity {
-  sql!: string;
-
-  constructor() {
-    super(ExecutionActivityType.REALTIONAL);
-  }
-}
 export class TDSColumn {
   name!: string;
   type?: string | undefined;
@@ -95,7 +76,6 @@ export class TabularDataSet {
 export class TdsExecutionResult extends ExecutionResult {
   uuid = uuid();
   override builder = new TdsBuilder();
-  override activities: RelationalExecutionActivity[] = [];
   result = new TabularDataSet();
 }
 
@@ -105,7 +85,6 @@ export class ClassBuilder extends ResultBuilder {
 
 export class ClassExecutionResult extends ExecutionResult {
   override builder = new ClassBuilder(BuilderType.CLASS_BUILDER);
-  override activities: RelationalExecutionActivity[] = [];
 }
 
 export class INTERNAL__UnknownExecutionResult extends ExecutionResult {
