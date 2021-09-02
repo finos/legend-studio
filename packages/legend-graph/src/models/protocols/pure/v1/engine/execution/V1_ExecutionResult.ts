@@ -27,11 +27,9 @@ export class V1_ResultBuilder {
   );
 }
 
-export abstract class V1_ExecutionActivity {}
-
 export abstract class V1_ExecutionResult {
   builder!: V1_ResultBuilder;
-  activities?: V1_ExecutionActivity[] | undefined;
+  activities: object | undefined;
 }
 
 export class V1_JsonExecutionResult extends V1_ExecutionResult {
@@ -42,17 +40,6 @@ export class V1_JsonExecutionResult extends V1_ExecutionResult {
       _type: primitive(),
       builder: usingModelSchema(V1_ResultBuilder.builderSerialization.schema),
       values: raw(),
-    }),
-  );
-}
-
-export class V1_RelationalExecutionActivity extends V1_ExecutionActivity {
-  sql!: string;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_RelationalExecutionActivity, {
-      _type: primitive(),
-      sql: primitive(),
     }),
   );
 }
@@ -86,32 +73,26 @@ export class V1_TdsBuilder extends V1_ResultBuilder {
 
 export class V1_TdsExecutionResult extends V1_ExecutionResult {
   declare builder: V1_TdsBuilder;
-  declare activities: V1_RelationalExecutionActivity[];
   result!: object;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_TdsExecutionResult, {
       _type: primitive(),
       builder: usingModelSchema(V1_TdsBuilder.serialization.schema),
-      activities: list(
-        usingModelSchema(V1_RelationalExecutionActivity.serialization.schema),
-      ),
+      activities: raw(),
       result: raw(),
     }),
   );
 }
 
 export class V1_ClassExecutionResult extends V1_ExecutionResult {
-  override activities: V1_RelationalExecutionActivity[] = [];
   objects!: object;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_ClassExecutionResult, {
       _type: primitive(),
       builder: usingModelSchema(V1_ResultBuilder.builderSerialization.schema),
-      activities: list(
-        usingModelSchema(V1_RelationalExecutionActivity.serialization.schema),
-      ),
+      activities: raw(),
       objects: raw(),
     }),
   );

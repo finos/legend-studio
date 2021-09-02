@@ -23,7 +23,6 @@ import {
   INTERNAL__UnknownExecutionResult,
   ClassExecutionResult,
   JsonExecutionResult,
-  RelationalExecutionActivity,
   TdsExecutionResult,
   TdsBuilder,
   TDSColumn,
@@ -31,7 +30,6 @@ import {
 import type { ExecutionResult } from '../../../../../graphManager/action/execution/ExecutionResult';
 import type {
   V1_ExecutionResult,
-  V1_RelationalExecutionActivity,
   V1_TdsBuilder,
 } from './execution/V1_ExecutionResult';
 import {
@@ -68,17 +66,6 @@ const buildTDSBuilder = (protocol: V1_TdsBuilder): TdsBuilder => {
   return builder;
 };
 
-const buildRelationalExecutionActivity = (
-  protocol: V1_RelationalExecutionActivity,
-): RelationalExecutionActivity => {
-  const metamodel = new RelationalExecutionActivity();
-  metamodel.sql = guaranteeNonNullable(
-    protocol.sql,
-    `Relational execution activity SQL is missing`,
-  );
-  return metamodel;
-};
-
 const buildTDSExecutionResult = (
   protocol: V1_TdsExecutionResult,
 ): TdsExecutionResult => {
@@ -93,9 +80,7 @@ const buildTDSExecutionResult = (
       `TDS execution result builder is missing`,
     ),
   );
-  metamodel.activities = protocol.activities.map(
-    buildRelationalExecutionActivity,
-  );
+  metamodel.activities = protocol.activities;
   metamodel.result.columns = (
     protocol.result as {
       columns: string[];
@@ -121,9 +106,7 @@ const buildClassExecutionResult = (
     protocol.objects,
     `Class execution result value is missing`,
   );
-  metamodel.activities = protocol.activities.map(
-    buildRelationalExecutionActivity,
-  );
+  metamodel.activities = protocol.activities;
   return metamodel;
 };
 
