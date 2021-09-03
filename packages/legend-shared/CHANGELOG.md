@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 0.0.2
+
+### Patch Changes
+
+- [#439](https://github.com/finos/legend-studio/pull/439) [`4bcb2af5`](https://github.com/finos/legend-studio/commit/4bcb2af5ea2ddc0bfa77b24582b8cf504456ee97) ([@akphi](https://github.com/akphi)) - Fix a potential circular-dependency issue with the package that could mess up usage with `Webpack`.
+
 ## 0.0.1
 
 ### Patch Changes

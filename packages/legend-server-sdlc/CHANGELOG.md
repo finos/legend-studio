@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 0.0.2
+
+### Patch Changes
+
+- [#451](https://github.com/finos/legend-studio/pull/451) [`e696205c`](https://github.com/finos/legend-studio/commit/e696205c2d09722ea5d9d1d75daac24e6c279c4e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `workspaceType` to create review command and default to `USER` type.
+
 ## 0.0.1
 
 ### Patch Changes
