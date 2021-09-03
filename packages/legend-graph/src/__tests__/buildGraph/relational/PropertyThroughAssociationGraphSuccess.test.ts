@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { TEST_DATA__targetSetImplementationThroughAssociation } from './RelationalEntitiesTestData';
+import { TEST_DATA__targetSetImplementationThroughAssociation } from './TEST_DATA__RelationalEntities';
 import {
   unitTest,
   guaranteeNonNullable,

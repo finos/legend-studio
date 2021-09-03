@@ -15,10 +15,14 @@
  */
 
 import type { AbstractPluginManager } from '@finos/legend-shared';
+import type { PureGraphPlugin } from './graph/PureGraphPlugin';
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
 import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
 
 export interface GraphPluginManager extends AbstractPluginManager {
+  getPureGraphPlugins(): PureGraphPlugin[];
+  registerPureGraphPlugins(plugin: PureGraphPlugin): void;
+
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[];
   registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void;
 

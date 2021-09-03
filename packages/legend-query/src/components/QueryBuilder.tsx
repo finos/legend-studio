@@ -32,7 +32,7 @@ import { QueryBuilderTextEditor } from './QueryBuilderTextEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
 import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
 import {

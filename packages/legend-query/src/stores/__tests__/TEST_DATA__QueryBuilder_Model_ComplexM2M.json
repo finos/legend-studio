@@ -441,5 +441,41 @@
       "tests": []
     },
     "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "model::MyRuntime",
+    "content": {
+      "_type": "runtime",
+      "name": "MyRuntime",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "ModelStore",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "JsonModelConnection",
+                  "class": "model::Person",
+                  "url": "data:application/json,%7B%7D"
+                },
+                "id": "connection_1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "model::MyMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    "classifierPath": "meta::pure::runtime::PackageableRuntime"
   }
 ]

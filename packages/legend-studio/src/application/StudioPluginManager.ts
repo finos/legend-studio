@@ -17,6 +17,7 @@
 import type {
   GraphPluginManager,
   PureGraphManagerPlugin,
+  PureGraphPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
 import type {
@@ -39,6 +40,7 @@ export class StudioPluginManager
   private tracerServicePlugins: TracerServicePlugin<unknown>[] = [];
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
+  private pureGraphPlugins: PureGraphPlugin[] = [];
   private studioPlugins: StudioPlugin[] = [];
 
   private constructor() {
@@ -67,6 +69,10 @@ export class StudioPluginManager
     this.pureGraphManagerPlugins.push(plugin);
   }
 
+  registerPureGraphPlugins(plugin: PureGraphPlugin): void {
+    this.pureGraphPlugins.push(plugin);
+  }
+
   registerStudioPlugin(plugin: StudioPlugin): void {
     this.studioPlugins.push(plugin);
   }
@@ -85,6 +91,10 @@ export class StudioPluginManager
 
   getPureProtocolProcessorPlugins(): PureProtocolProcessorPlugin[] {
     return [...this.pureProtocolProcessorPlugins];
+  }
+
+  getPureGraphPlugins(): PureGraphPlugin[] {
+    return [...this.pureGraphPlugins];
   }
 
   getStudioPlugins(): StudioPlugin[] {

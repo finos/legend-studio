@@ -30,7 +30,7 @@ import {
 } from '@finos/legend-art';
 import type { TreeNodeContainerProps } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { isNonNullable } from '@finos/legend-shared';
 import type {
   QueryBuilderGraphFetchTreeData,

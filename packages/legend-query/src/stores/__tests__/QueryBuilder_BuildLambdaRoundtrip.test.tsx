@@ -25,7 +25,7 @@ import {
   TEST_DATA__fullComplexProjectionQuery,
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
-} from './QueryBuilder_TestData';
+} from './TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
@@ -39,11 +39,11 @@ import {
   TEST_DATA__lambda_notOperatorFilter,
   TEST_DATA__lambda_setOperatorFilter,
   TEST_DATA__lambda_simpleSingleConditionFilter,
-} from './QueryBuilder_Roundtrip_TestFilterQueries';
+} from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries';
 import {
   TEST_DATA__lambda_input_filterWithExists,
   lambda_output_filterWithExists,
-} from './QueryBuilder_TestFilterQueriesWithExists';
+} from './TEST_DATA__QueryBuilder_TestFilterQueriesWithExists';
 import {
   TEST_DATA__lambda_input_graphFetchWithFullPathFunctions,
   TEST_DATA__lambda_output_graphFetchWithFullPathFunctions,
@@ -51,7 +51,7 @@ import {
   TEST_DATA__lambda_output_filterWithFullPathFunctions,
   TEST_DATA__lambda_input_projectionWithFullPathFunctions,
   TEST_DATA__lambda_output_projectionWithFullPathFunctions,
-} from './QueryBuilder_TestQueriesWithFullPathFunctions';
+} from './TEST_DATA__QueryBuilder_TestQueriesWithFullPathFunctions';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   RawLambda,

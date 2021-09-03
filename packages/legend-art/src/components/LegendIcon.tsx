@@ -20,7 +20,6 @@ import {
   FaLayerGroup,
   FaRobot,
   FaBusinessTime,
-  FaShapes,
   FaFileCode,
   FaDatabase,
   FaServer,
@@ -96,11 +95,6 @@ export const MappingIcon: React.FC = () => (
 );
 export const GenerationSpecificationIcon: React.FC = () => (
   <div className="icon">G</div>
-);
-export const DiagramIcon: React.FC = () => (
-  <div className="icon color--diagram">
-    <FaShapes />
-  </div>
 );
 export const FileGenerationIcon: React.FC = () => (
   <div className="icon color--file-generation">

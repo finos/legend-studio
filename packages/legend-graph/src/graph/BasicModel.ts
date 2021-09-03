@@ -35,7 +35,6 @@ import { Class } from '../models/metamodels/pure/packageableElements/domain/Clas
 import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
 import { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
-import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
 import { Service } from '../models/metamodels/pure/packageableElements/service/Service';
 import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
 import { Store } from '../models/metamodels/pure/packageableElements/store/Store';
@@ -79,7 +78,6 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableConnection,
   PackageableRuntime,
   Service,
-  Diagram,
   GenerationSpecification,
   FileGenerationSpecification,
 ]);
@@ -121,7 +119,6 @@ export abstract class BasicModel {
     string,
     FileGenerationSpecification
   >();
-  private readonly diagramsIndex = new Map<string, Diagram>();
 
   constructor(
     rootPackageName: ROOT_PACKAGE_NAME,
@@ -142,7 +139,6 @@ export abstract class BasicModel {
       | 'servicesIndex'
       | 'generationSpecificationsIndex'
       | 'fileGenerationsIndex'
-      | 'diagramsIndex'
       | 'extensions'
     >(this, {
       elementSectionMap: observable,
@@ -158,7 +154,6 @@ export abstract class BasicModel {
       servicesIndex: observable,
       generationSpecificationsIndex: observable,
       fileGenerationsIndex: observable,
-      diagramsIndex: observable,
       extensions: observable,
 
       ownSectionIndices: computed,
@@ -176,7 +171,6 @@ export abstract class BasicModel {
       ownServiceStores: computed,
       ownMappings: computed,
       ownServices: computed,
-      ownDiagrams: computed,
       ownRuntimes: computed,
       ownConnections: computed,
       ownFileGenerations: computed,
@@ -198,7 +192,6 @@ export abstract class BasicModel {
       setOwnService: action,
       setOwnGenerationSpecification: action,
       setOwnFileGeneration: action,
-      setOwnDiagram: action,
       deleteOwnElement: action,
       renameOwnElement: action,
       TEMP__deleteOwnSectionIndex: action,
@@ -281,9 +274,6 @@ export abstract class BasicModel {
   get ownServices(): Service[] {
     return Array.from(this.servicesIndex.values());
   }
-  get ownDiagrams(): Diagram[] {
-    return Array.from(this.diagramsIndex.values());
-  }
   get ownRuntimes(): PackageableRuntime[] {
     return Array.from(this.runtimesIndex.values());
   }
@@ -360,8 +350,6 @@ export abstract class BasicModel {
     path: string,
   ): FileGenerationSpecification | undefined =>
     this.fileGenerationsIndex.get(path);
-  getOwnDiagram = (path: string): Diagram | undefined =>
-    this.diagramsIndex.get(path);
 
   getOwnExtensionElement<T extends PackageableElement>(
     path: string,
@@ -414,9 +402,6 @@ export abstract class BasicModel {
   setOwnFileGeneration(path: string, val: FileGenerationSpecification): void {
     this.fileGenerationsIndex.set(path, val);
   }
-  setOwnDiagram(path: string, val: Diagram): void {
-    this.diagramsIndex.set(path, val);
-  }
 
   setOwnElementInExtension<T extends PackageableElement>(
     path: string,
@@ -440,7 +425,6 @@ export abstract class BasicModel {
       ...this.ownStores,
       ...this.ownMappings,
       ...this.ownServices,
-      ...this.ownDiagrams,
       ...this.ownRuntimes,
       ...this.ownConnections,
       ...this.ownGenerationSpecifications,
@@ -507,7 +491,6 @@ export abstract class BasicModel {
       this.storesIndex.get(path) ??
       this.mappingsIndex.get(path) ??
       this.servicesIndex.get(path) ??
-      this.diagramsIndex.get(path) ??
       this.runtimesIndex.get(path) ??
       this.connectionsIndex.get(path) ??
       this.fileGenerationsIndex.get(path) ??
@@ -552,8 +535,6 @@ export abstract class BasicModel {
       this.profilesIndex.delete(element.path);
     } else if (element instanceof ConcreteFunctionDefinition) {
       this.functionsIndex.delete(element.path);
-    } else if (element instanceof Diagram) {
-      this.diagramsIndex.delete(element.path);
     } else if (element instanceof Service) {
       this.servicesIndex.delete(element.path);
     } else if (element instanceof PackageableRuntime) {
@@ -656,9 +637,6 @@ export abstract class BasicModel {
     } else if (element instanceof ConcreteFunctionDefinition) {
       this.functionsIndex.delete(elementCurrentPath);
       this.functionsIndex.set(newPath, element);
-    } else if (element instanceof Diagram) {
-      this.diagramsIndex.delete(elementCurrentPath);
-      this.diagramsIndex.set(newPath, element);
     } else if (element instanceof Service) {
       this.servicesIndex.delete(elementCurrentPath);
       this.servicesIndex.set(newPath, element);

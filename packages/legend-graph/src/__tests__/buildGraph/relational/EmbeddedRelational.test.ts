@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { TEST_DATA__embeddedRelationalTestData } from './RelationalEntitiesTestData';
+import { TEST_DATA__embeddedRelationalTestData } from './TEST_DATA__RelationalEntities';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {

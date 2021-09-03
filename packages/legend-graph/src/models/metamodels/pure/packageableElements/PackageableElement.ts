@@ -36,7 +36,6 @@ import type { ConcreteFunctionDefinition } from './domain/ConcreteFunctionDefini
 import type { FlatData } from './store/flatData/model/FlatData';
 import type { Mapping } from './mapping/Mapping';
 import type { Service } from './service/Service';
-import type { Diagram } from './diagram/Diagram';
 import type { PrimitiveType } from './domain/PrimitiveType';
 import type { Database } from './store/relational/model/Database';
 import type { PackageableConnection } from './connection/PackageableConnection';
@@ -49,6 +48,7 @@ import type { ServiceStore } from './store/relational/model/ServiceStore';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
+  visit_SectionIndex(element: SectionIndex): T;
   visit_Package(element: Package): T;
   visit_PrimitiveType(element: PrimitiveType): T;
   visit_Profile(element: Profile): T;
@@ -56,16 +56,15 @@ export interface PackageableElementVisitor<T> {
   visit_Measure(element: Measure): T;
   visit_Class(element: Class): T;
   visit_Association(element: Association): T;
-  visit_SectionIndex(element: SectionIndex): T;
   visit_ConcreteFunctionDefinition(element: ConcreteFunctionDefinition): T;
+  visit_PackageableConnection(element: PackageableConnection): T;
+  visit_Mapping(element: Mapping): T;
+  visit_PackageableRuntime(element: PackageableRuntime): T;
+
   visit_FlatData(element: FlatData): T;
   visit_Database(element: Database): T;
   visit_ServiceStore(element: ServiceStore): T;
-  visit_Mapping(element: Mapping): T;
   visit_Service(element: Service): T;
-  visit_Diagram(element: Diagram): T;
-  visit_PackageableRuntime(element: PackageableRuntime): T;
-  visit_PackageableConnection(element: PackageableConnection): T;
   visit_FileGenerationSpecification(element: FileGenerationSpecification): T;
   visit_GenerationSpecification(element: GenerationSpecification): T;
 }
@@ -230,7 +229,6 @@ export enum PACKAGEABLE_ELEMENT_TYPE {
   SERVICE_STORE = 'SERVICE_STORE',
   MAPPING = 'MAPPING',
   SERVICE = 'SERVICE',
-  DIAGRAM = 'DIAGRAM',
   CONNECTION = 'CONNECTION',
   RUNTIME = 'RUNTIME',
   FILE_GENERATION = 'FILE_GENERATION',

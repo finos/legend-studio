@@ -18,7 +18,6 @@ import { serialize, deserialize } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { V1_PackageableConnection } from '../../model/packageableElements/connection/V1_PackageableConnection';
-import type { V1_Diagram } from '../../model/packageableElements/diagram/V1_Diagram';
 import type { V1_Association } from '../../model/packageableElements/domain/V1_Association';
 import type { V1_Class } from '../../model/packageableElements/domain/V1_Class';
 import type { V1_Enumeration } from '../../model/packageableElements/domain/V1_Enumeration';
@@ -48,10 +47,6 @@ import {
   V1_mappingModelSchema,
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_MappingSerializationHelper';
-import {
-  V1_diagramModelSchema,
-  V1_DIAGRAM_ELEMENT_PROTOCOL_TYPE,
-} from './serializationHelpers/V1_DiagramSerializationHelper';
 import {
   V1_servicedModelSchema,
   V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
@@ -176,10 +171,6 @@ export class V1_PackageableElementSerializer
     return serialize(V1_servicedModelSchema, element);
   }
 
-  visit_Diagram(element: V1_Diagram): PlainObject<V1_PackageableElement> {
-    return serialize(V1_diagramModelSchema, element);
-  }
-
   visit_PackageableRuntime(
     element: V1_PackageableRuntime,
   ): PlainObject<V1_PackageableElement> {
@@ -242,8 +233,6 @@ export const V1_deserializePackageableElement = (
       return deserialize(V1_mappingModelSchema, json);
     case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_servicedModelSchema, json);
-    case V1_DIAGRAM_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_diagramModelSchema, json);
     case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_packageableConnectionModelSchema, json);
     case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:

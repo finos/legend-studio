@@ -142,7 +142,12 @@ export class PackageableElementImplicitReference<
 
   get valueForSerialization(): string | undefined {
     const currentElementPath = this.value.path;
-    if (this.skipSectionCheck) {
+    // NOTE: `skipSectionCheck` flag's effect should only kick in if the value
+    // is not different than the original value
+    if (
+      this.skipSectionCheck &&
+      this.initialResolvedPath === currentElementPath
+    ) {
       return this.input;
     }
     // when the parent section does not exist or has been deleted
@@ -262,7 +267,12 @@ export class OptionalPackageableElementImplicitReference<
 
   get valueForSerialization(): string | undefined {
     const currentElementPath = this.value?.path;
-    if (this.skipSectionCheck) {
+    // NOTE: `skipSectionCheck` flag's effect should only kick in if the value
+    // is not different than the original value
+    if (
+      this.skipSectionCheck &&
+      this.initialResolvedPath === currentElementPath
+    ) {
       return this.input;
     }
     // when the parent section does not exist or has been deleted

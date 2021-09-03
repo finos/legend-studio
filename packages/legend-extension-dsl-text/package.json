@@ -44,8 +44,8 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@types/react": "17.0.19",
-    "mobx": "6.3.2",
-    "mobx-react-lite": "3.2.0",
+    "mobx": "6.3.3",
+    "mobx-react-lite": "3.2.1",
     "monaco-editor": "0.27.0",
     "react": "17.0.2",
     "serializr": "2.0.5"
@@ -57,7 +57,7 @@
     "jest": "27.1.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.38.2",
+    "sass": "1.39.0",
     "typescript": "4.4.2"
   },
   "peerDependencies": {
@@ -70,6 +70,7 @@
     "graphPreset": "@finos/legend-graph-preset-dsl-text",
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-text-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-text-pure-graph-manager",
+    "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-text-pure-graph",
     "studioPreset": "@finos/legend-studio-preset-dsl-text",
     "studioPlugin": "@finos/legend-studio-plugin-dsl-text"
   }

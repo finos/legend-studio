@@ -22,7 +22,13 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import { CoreModel, PureModel, SystemModel } from './graph/PureModel';
+import { DependencyManager } from './graph/DependencyManager';
+import {
+  CoreModel,
+  GenerationModel,
+  PureModel,
+  SystemModel,
+} from './graph/PureModel';
 import type { AbstractPureGraphManager } from './graphManager/AbstractPureGraphManager';
 import { GRAPH_MANAGER_LOG_EVENT } from './graphManager/GraphManagerLogEvent';
 import type { GraphPluginManager } from './GraphPluginManager';
@@ -59,7 +65,7 @@ export class GraphManagerState {
     this.log = log;
 
     const extensionElementClasses = this.pluginManager
-      .getPureGraphManagerPlugins()
+      .getPureGraphPlugins()
       .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
     this.systemModel = new SystemModel(extensionElementClasses);
     this.coreModel = new CoreModel(extensionElementClasses);
@@ -111,8 +117,24 @@ export class GraphManagerState {
     return new PureModel(
       this.coreModel,
       this.systemModel,
+      this.pluginManager.getPureGraphPlugins(),
+    );
+  }
+
+  createEmptyDependencyManager(): DependencyManager {
+    return new DependencyManager(
       this.pluginManager
-        .getPureGraphManagerPlugins()
+        .getPureGraphPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+        ),
+    );
+  }
+
+  createEmptyGenerationModel(): GenerationModel {
+    return new GenerationModel(
+      this.pluginManager
+        .getPureGraphPlugins()
         .flatMap(
           (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
         ),

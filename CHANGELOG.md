@@ -28,8 +28,25 @@ This marks the official release of the stand-alone version of query builder, als
 ## Extension authoring
 
 - Renamed `EditorPlugin` to `StudioPlugin`
-- Renamed `getExtraNewElementDriverEditorCreators()` to `getExtraNewElementDriverEditorRenderers()` and `getExtraElementEditorCreators()` to `getExtraElementEditorRenderers()` in `StudioPlugin`
-- Moved `getExtraPureGrammarParserNames()`, `getExtraPureGrammarKeywords()`, `getExtraPureGrammarElementLabelers()`, and `getExtraExposedSystemElementPath()` to `PureGraphManagerPlugin`
+- In `StudioPlugin`:
+  - Added `getExtraElementEditorPostRenameActions()`
+  - Added `getExtraElementEditorPostDeleteActions()`
+  - Renamed `getExtraElementEditorPostCreationActions()` to `getExtraElementEditorPostCreateActions()`
+  - Renamed `getExtraNewElementDriverEditorCreators()` to `getExtraNewElementDriverEditorRenderers()`
+  - Renamed `getExtraElementEditorCreators()` to `getExtraElementEditorRenderers()`
+  - Removed `getExtraPureGrammarParserNames()`
+  - Removed `getExtraPureGrammarKeywords()`
+  - Removed `getExtraPureGrammarElementLabelers()`
+  - Removed `getExtraExposedSystemElementPath()`
+- In `PureGraphManagerPlugin`:
+  - Added `getExtraPureGrammarParserNames()`
+  - Added `getExtraPureGrammarKeywords()`
+  - Added `getExtraPureGrammarElementLabelers()`
+  - Added `getExtraExposedSystemElementPath()`
+  - Remove `getExtraPureGraphExtensionClasses()`
+- Introduced `PureGraphPlugin` to handle internal `Pure` graph processes:
+  - Added `getExtraPureGraphExtensionClasses()`
+  - Added `getExtraDeadReferencesCleaners()`
 - We made a decision to change the prefix of extensions package names to `@finos/legend-extension-*` to make it more simple extension maintainers. _Prior to this, we considered an option to split each plugin by the layers they serve, for example, `@finos/legend-studio-preset-dsl-text` is meant for holding Studio components extension for `DSL Text`, whereas `@finos/legend-graph-preset-dsl-text` holds the metamodels, graph manager extension of `DSL Text`. However, doing this way will make the codebase hard to maintain._
 - We also added documentation to each extension methods to help with the extension development process.
 
@@ -57,6 +74,7 @@ Some new essential packages are introduced in an effort to make core more modula
 - [@finos/legend-query](https://www.npmjs.com/package/@finos/legend-query): Core components of `Legend Query`
 - [@finos/legend-studio-app](https://www.npmjs.com/package/@finos/studio-app): `Legend Studio` application with default set of extensions. **This library's version will be considered the main release version**
 - [@finos/legend-query-app](https://www.npmjs.com/package/@finos/legend-query-app): `Legend Query` application with default set of extensions
+- [@finos/legend-extension-dsl-diagram](https://www.npmjs.com/package/@finos/legend-extension-dsl-diagram): Extension for DSL Diagram
 
 ### Legend application testing improvements
 
@@ -68,7 +86,9 @@ We now use [Typescript 4.4](https://www.typescriptlang.org/docs/handbook/release
 
 ## Notable fixes
 
+- [442](https://github.com/finos/legend-studio/issues/442) `meta::pure::profiles::doc` is hidden from profile selector in Studio model editors
 - [425](https://github.com/finos/legend-studio/issues/425) Mock data generator for models sometimes fail to generate for properties of type `Boolean`
 - [426](https://github.com/finos/legend-studio/issues/426) Committed reviews are not shown when there is no previous releases
-- Viewer mode does not allow viewing project configuration
-- `meta::pure::profiles::doc` is hidden from profile selector in Studio model editors.
+- [399](https://github.com/finos/legend-studio/issues/399) Multiple mapped properties disappear in mapping editor
+- [354](https://github.com/finos/legend-studio/issues/354) Viewer mode does not allow viewing project configuration
+- [298](https://github.com/finos/legend-studio/issues/298) Operation class mapping editor allows cycle

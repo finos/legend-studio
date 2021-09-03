@@ -37,7 +37,6 @@ import { LocalChangesState } from './sidebar-state/LocalChangesState';
 import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState';
 import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
-import { DiagramEditorState } from './editor-state/element-editor-state/DiagramEditorState';
 import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
@@ -102,7 +101,6 @@ import {
   ServiceStore,
   FlatData,
   Mapping,
-  Diagram,
   Service,
   PackageableRuntime,
   PackageableConnection,
@@ -1006,8 +1004,6 @@ export class EditorStore {
       return new PackageableConnectionEditorState(this, element);
     } else if (element instanceof Mapping) {
       return new MappingEditorState(this, element);
-    } else if (element instanceof Diagram) {
-      return new DiagramEditorState(this, element);
     } else if (element instanceof Service) {
       return new ServiceEditorState(this, element);
     } else if (element instanceof GenerationSpecification) {
@@ -1082,10 +1078,19 @@ export class EditorStore {
       this.graphManagerState.graph.generationModel.deleteOwnElement(el),
     );
     this.graphManagerState.graph.deleteElement(element);
-    // rerender currently opened diagram
-    if (this.currentEditorState instanceof DiagramEditorState) {
-      this.currentEditorState.renderer.render();
+
+    const extraElementEditorPostDeleteActions = this.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_StudioPlugin_Extension
+          ).getExtraElementEditorPostDeleteActions?.() ?? [],
+      );
+    for (const action of extraElementEditorPostDeleteActions) {
+      action(this, element);
     }
+
     // reprocess project explorer tree
     this.explorerTreeState.reprocess();
     // recompile
@@ -1104,10 +1109,19 @@ export class EditorStore {
       return;
     }
     this.graphManagerState.graph.renameOwnElement(element, newPath);
-    // rerender currently opened diagram
-    if (this.currentEditorState instanceof DiagramEditorState) {
-      this.currentEditorState.renderer.render();
+
+    const extraElementEditorPostRenameActions = this.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_StudioPlugin_Extension
+          ).getExtraElementEditorPostRenameActions?.() ?? [],
+      );
+    for (const action of extraElementEditorPostRenameActions) {
+      action(this, element);
     }
+
     // reprocess project explorer tree
     this.explorerTreeState.reprocess();
     if (element instanceof Package) {
@@ -1339,7 +1353,6 @@ export class EditorStore {
         PACKAGEABLE_ELEMENT_TYPE.PROFILE,
         PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION,
         PACKAGEABLE_ELEMENT_TYPE.FUNCTION,
-        PACKAGEABLE_ELEMENT_TYPE.DIAGRAM,
         PACKAGEABLE_ELEMENT_TYPE.MEASURE,
         PACKAGEABLE_ELEMENT_TYPE.MAPPING,
         PACKAGEABLE_ELEMENT_TYPE.RUNTIME,

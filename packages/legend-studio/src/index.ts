@@ -26,8 +26,9 @@ export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
 export * from './stores/StudioPlugin';
 export * from './stores/EditorStore';
 export * from './stores/EditorConfig';
-export * from './stores/editor-state/element-editor-state/ElementEditorState';
-export * from './stores/editor-state/UnsupportedElementEditorState';
+export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState';
+export { ElementEditorState } from './stores/editor-state/element-editor-state/ElementEditorState';
+export { UnsupportedElementEditorState } from './stores/editor-state/UnsupportedElementEditorState';
 export { NewElementState, NewElementDriver } from './stores/NewElementState';
 export type { TransformDropTarget } from './stores/shared/DnDUtil';
 export {
@@ -40,6 +41,7 @@ export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 // components
 export * from './components/editor/EditorStoreProvider';
 export * from './components/shared/AppHeader';
+export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor';
 export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
 export { TypeTree } from './components/shared/TypeTree';
 export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor';
@@ -49,7 +51,9 @@ export {
   TEST__provideMockedEditorStore,
   TEST__setUpEditor,
   TEST__setUpEditorWithDefaultSDLCData,
+  TEST__openElementFromExplorerTree,
 } from './components/EditorComponentTestUtils';
+export { STUDIO_TEST_ID } from './components/StudioTestID';
 export * from './stores/EditorStoreTestUtils';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------

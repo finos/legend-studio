@@ -37,7 +37,6 @@ import { Type } from '../models/metamodels/pure/packageableElements/domain/Type'
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
-import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
 import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
 import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
@@ -58,7 +57,7 @@ import {
   Unit,
 } from '../models/metamodels/pure/packageableElements/domain/Measure';
 import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
-import { cleanUpDeadReferencesInDiagram } from '../helpers/DiagramHelper';
+import type { PureGraphPlugin } from './PureGraphPlugin';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -168,13 +167,17 @@ export class PureModel extends BasicModel {
   private coreModel: CoreModel;
   systemModel: SystemModel;
   generationModel: GenerationModel;
-  dependencyManager: DependencyManager; // used to manage the elements from pependency projects
+  dependencyManager: DependencyManager; // used to manage the elements from dependency projects
+  graphPlugins: PureGraphPlugin[] = [];
 
   constructor(
     coreModel: CoreModel,
     systemModel: SystemModel,
-    extensionElementClasses: Clazz<PackageableElement>[],
+    graphPlugins: PureGraphPlugin[],
   ) {
+    const extensionElementClasses = graphPlugins.flatMap(
+      (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+    );
     super(ROOT_PACKAGE_NAME.MAIN, extensionElementClasses);
 
     makeObservable(this, {
@@ -184,6 +187,7 @@ export class PureModel extends BasicModel {
       addElement: action,
     });
 
+    this.graphPlugins = graphPlugins;
     this.coreModel = coreModel;
     this.systemModel = systemModel;
     this.generationModel = new GenerationModel(extensionElementClasses);
@@ -336,14 +340,6 @@ export class PureModel extends BasicModel {
         this.systemModel.getOwnRuntime(path),
       `Can't find runtime '${path}'`,
     );
-  getDiagram = (path: string): Diagram =>
-    guaranteeNonNullable(
-      this.getOwnDiagram(path) ??
-        this.generationModel.getOwnDiagram(path) ??
-        this.dependencyManager.getOwnDiagram(path) ??
-        this.systemModel.getOwnDiagram(path),
-      `Can't find diagram '${path}'`,
-    );
   getGenerationSpecification = (path: string): GenerationSpecification =>
     guaranteeNonNullable(
       this.getOwnGenerationSpecification(path) ??
@@ -455,8 +451,6 @@ export class PureModel extends BasicModel {
       this.setOwnProfile(element.path, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
       this.setOwnFunction(element.path, element);
-    } else if (element instanceof Diagram) {
-      this.setOwnDiagram(element.path, element);
     } else if (element instanceof Service) {
       this.setOwnService(element.path, element);
     } else if (element instanceof PackageableConnection) {
@@ -479,12 +473,13 @@ export class PureModel extends BasicModel {
 
   deleteElement(element: PackageableElement): void {
     super.deleteOwnElement(element);
-    this.cleanUpDeadReferences();
-  }
 
-  cleanUpDeadReferences(): void {
-    this.ownDiagrams.forEach((diagram) =>
-      cleanUpDeadReferencesInDiagram(diagram, this),
+    const deadReferencesCleaners = this.graphPlugins.flatMap(
+      (plugin) => plugin.getExtraDeadReferencesCleaners?.() ?? [],
     );
+
+    for (const cleaner of deadReferencesCleaners) {
+      cleaner(this);
+    }
   }
 }

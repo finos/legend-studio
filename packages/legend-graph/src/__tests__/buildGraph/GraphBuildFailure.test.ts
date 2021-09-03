@@ -22,10 +22,9 @@ import {
   TEST_DATA__MissingTagValue,
   TEST_DATA__MissingTargetClassinMapping,
   TEST_DATA__MissingSetImp,
-  TEST_DATA__MissingClassInDiagram,
   TEST_DATA__MissingClassMapping,
   TEST_DATA__MissingClassMappingWithTargetId,
-} from './GraphBuildFailureTestData';
+} from './TEST_DATA__GraphBuildFailure';
 import { unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
@@ -145,17 +144,5 @@ test.skip(unitTest('Missing set implementation'), async () => {
   );
   await expect(buildGraph).rejects.toThrowError(
     `Can't find set implementation 'targetClassAMissing'`,
-  );
-});
-
-test(unitTest('Missing class in diagram class view'), async () => {
-  const buildGraph = flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      TEST_DATA__MissingClassInDiagram as Entity[],
-    ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
-    `Can't find type 'ui::test1::NotFound'`,
   );
 });

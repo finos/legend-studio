@@ -27,12 +27,12 @@ import {
   TEST_DATA__simpleGroupBy,
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__firmPersonGraphFetch,
-} from './QueryBuilder_LambdaProcessingRoundtripTestData';
+} from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
 import {
   simpleDerivationProjection,
   groupByWithDerivationProjection,
   groupByWithDerivationAndAggregation,
-} from './QueryBuilder_ProcessingRoundtrip_TestDerivation';
+} from './TEST_DATA__QueryBuilder_ProcessingRoundtrip_TestDerivation';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,

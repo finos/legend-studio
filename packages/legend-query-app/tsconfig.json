@@ -12,6 +12,7 @@
     { "path": "../legend-application" },
     { "path": "../legend-art" },
     { "path": "../legend-query" },
+    { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-external-format-json-schema" }
   ]

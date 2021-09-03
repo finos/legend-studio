@@ -43,6 +43,7 @@ export {
   FaArrowLeft as ArrowLeftIcon,
   FaArrowRight as ArrowRightIcon,
   FaUser as UserIcon,
+  FaShapes as ShapesIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

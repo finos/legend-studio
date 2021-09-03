@@ -29,7 +29,6 @@ import type { Class } from '../models/metamodels/pure/packageableElements/domain
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
-import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
 import type { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
 import type { Store } from '../models/metamodels/pure/packageableElements/store/Store';
 import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
@@ -80,7 +79,6 @@ export class DependencyManager {
       stores: computed,
       mappings: computed,
       services: computed,
-      diagrams: computed,
       runtimes: computed,
       connections: computed,
       fileGenerations: computed,
@@ -155,8 +153,6 @@ export class DependencyManager {
     this.models
       .map((dep) => dep.getOwnFileGeneration(path))
       .find(isNonNullable);
-  getOwnDiagram = (path: string): Diagram | undefined =>
-    this.models.map((dep) => dep.getOwnDiagram(path)).find(isNonNullable);
   getOwnSectionIndex = (path: string): SectionIndex | undefined =>
     this.models.map((dep) => dep.getOwnSectionIndex(path)).find(isNonNullable);
 
@@ -204,9 +200,6 @@ export class DependencyManager {
   }
   get services(): Service[] {
     return this.models.map((dep) => Array.from(dep.ownServices)).flat();
-  }
-  get diagrams(): Diagram[] {
-    return this.models.map((dep) => Array.from(dep.ownDiagrams)).flat();
   }
   get runtimes(): PackageableRuntime[] {
     return this.models.map((dep) => Array.from(dep.ownRuntimes)).flat();

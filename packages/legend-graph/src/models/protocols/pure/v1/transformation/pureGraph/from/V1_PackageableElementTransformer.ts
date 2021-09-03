@@ -30,7 +30,6 @@ import type { Database } from '../../../../../../metamodels/pure/packageableElem
 import type { ServiceStore } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
-import type { Diagram } from '../../../../../../metamodels/pure/packageableElements/diagram/Diagram';
 import type { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime';
 import type { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection';
 import type { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
@@ -57,7 +56,6 @@ import { V1_transformServiceStore } from './V1_ServiceStoreTransformer';
 import { V1_transformDatabase } from './V1_DatabaseTransformer';
 import { V1_transformMapping } from './V1_MappingTransformer';
 import { V1_transformService } from './V1_ServiceTransformer';
-import { V1_transformDiagram } from './V1_DiagramTransformer';
 import { V1_transformPackageableRuntime } from './V1_RuntimeTransformer';
 import { V1_transformPackageableConnection } from './V1_ConnectionTransformer';
 import type {
@@ -155,10 +153,6 @@ export class V1_PackageableElementTransformer
 
   visit_Service(element: Service): V1_PackageableElement {
     return V1_transformService(element, this.context);
-  }
-
-  visit_Diagram(element: Diagram): V1_PackageableElement {
-    return V1_transformDiagram(element);
   }
 
   visit_PackageableRuntime(element: PackageableRuntime): V1_PackageableElement {

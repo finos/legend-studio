@@ -28,7 +28,6 @@ export default {
   setupFiles: [
     ...base.setupFiles,
     '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
-    'jest-canvas-mock',
   ],
   moduleNameMapper: {
     ...base.moduleNameMapper,

@@ -22,7 +22,6 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import type { V1_Profile } from './domain/V1_Profile';
 import type { V1_Class } from './domain/V1_Class';
-import type { V1_Diagram } from './diagram/V1_Diagram';
 import type { V1_Enumeration } from './domain/V1_Enumeration';
 import type { V1_FlatData } from './store/flatData/model/V1_FlatData';
 import type { V1_Database } from './store/relational/model/V1_Database';
@@ -41,23 +40,23 @@ import type { V1_ServiceStore } from './store/relational/V1_ServiceStore';
 /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
+  visit_SectionIndex(element: V1_SectionIndex): T;
   visit_Profile(element: V1_Profile): T;
   visit_Enumeration(element: V1_Enumeration): T;
   visit_Measure(element: V1_Measure): T;
   visit_Class(element: V1_Class): T;
   visit_Association(element: V1_Association): T;
   visit_ConcreteFunctionDefinition(element: V1_ConcreteFunctionDefinition): T;
+  visit_PackageableConnection(element: V1_PackageableConnection): T;
+  visit_Mapping(element: V1_Mapping): T;
+  visit_PackageableRuntime(element: V1_PackageableRuntime): T;
+
   visit_FlatData(element: V1_FlatData): T;
   visit_Database(element: V1_Database): T;
   visit_ServiceStore(element: V1_ServiceStore): T;
-  visit_Mapping(element: V1_Mapping): T;
   visit_Service(element: V1_Service): T;
-  visit_Diagram(element: V1_Diagram): T;
-  visit_PackageableRuntime(element: V1_PackageableRuntime): T;
-  visit_PackageableConnection(element: V1_PackageableConnection): T;
-  visit_FileGeneration(element: V1_FileGenerationSpecification): T;
   visit_GenerationSpecification(element: V1_GenerationSpecification): T;
-  visit_SectionIndex(element: V1_SectionIndex): T;
+  visit_FileGeneration(element: V1_FileGenerationSpecification): T;
 }
 
 export abstract class V1_PackageableElement implements Hashable {

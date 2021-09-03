@@ -35,7 +35,6 @@ import {
   ServiceStore,
   FlatData,
   Mapping,
-  Diagram,
   Service,
   PackageableRuntime,
   PackageableConnection,
@@ -68,8 +67,6 @@ const getElementProjectExplorerDnDType = (
     return CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE;
   } else if (element instanceof ServiceStore) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE_STORE;
-  } else if (element instanceof Diagram) {
-    return CORE_DND_TYPE.PROJECT_EXPLORER_DIAGRAM;
   } else if (element instanceof Mapping) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING;
   } else if (element instanceof PackageableRuntime) {

@@ -20,7 +20,7 @@ import {
   TEST_DATA__unsupportedFunction,
   TEST_DATA__misplacedTakeFunction,
   TEST_DATA__unsupportedFunctionWithFullPath,
-} from './QueryBuilder_FailureTestData';
+} from './TEST_DATA__QueryBuilder_Failure';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';

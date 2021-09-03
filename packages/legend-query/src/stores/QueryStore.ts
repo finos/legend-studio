@@ -22,7 +22,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
   assertErrorThrown,
@@ -38,7 +38,6 @@ import type {
   PackageableRuntime,
   RawLambda,
   Service,
-  PackageableElement,
   GraphManagerState,
 } from '@finos/legend-graph';
 import {
@@ -49,7 +48,6 @@ import {
   PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
-  DependencyManager,
 } from '@finos/legend-graph';
 import { QueryBuilderState } from './QueryBuilderState';
 import type {
@@ -669,9 +667,8 @@ export class QueryStore {
       // build graph
       this.graphManagerState.resetGraph();
       // build dependencies
-      const dependencyManager = new DependencyManager(
-        this.getPureGraphExtensionElementClasses(),
-      );
+      const dependencyManager =
+        this.graphManagerState.createEmptyDependencyManager();
       yield flowResult(
         this.graphManagerState.graphManager.buildDependencies(
           this.graphManagerState.coreModel,
@@ -749,13 +746,5 @@ export class QueryStore {
       this.buildGraphState.fail();
     }
     return dependencyEntitiesMap;
-  }
-
-  private getPureGraphExtensionElementClasses(): Clazz<PackageableElement>[] {
-    const pureGraphManagerPlugins =
-      this.pluginManager.getPureGraphManagerPlugins();
-    return pureGraphManagerPlugins.flatMap(
-      (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-    );
   }
 }

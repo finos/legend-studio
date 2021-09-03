@@ -17,6 +17,7 @@
 // --------------------------------------------- PACKAGEABLE ELEMENT --------------------------------------------------
 
 // metamodels
+export * from './models/metamodels/pure/Reference';
 export * from './models/metamodels/pure/packageableElements/PackageableElement';
 export * from './models/metamodels/pure/packageableElements/PackageableElementReference';
 export { SectionIndex } from './models/metamodels/pure/packageableElements/section/SectionIndex';
@@ -64,20 +65,6 @@ export {
   StereotypeReference,
   StereotypeExplicitReference,
 } from './models/metamodels/pure/packageableElements/domain/StereotypeReference';
-
-export { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
-export { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
-export {
-  RelationshipView,
-  manageInsidePointsDynamically,
-} from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
-export { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
-export { PropertyView } from './models/metamodels/pure/packageableElements/diagram/PropertyView';
-export { AssociationView } from './models/metamodels/pure/packageableElements/diagram/AssociationView';
-export { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/GeneralizationView';
-export { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/Point';
-export { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/Rectangle';
-export { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/PositionedRectangle';
 
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
@@ -147,7 +134,6 @@ export * from './MetaModelUtils';
 export * from './MetaModelConst';
 
 export * from './helpers/ServiceHelper';
-export * from './helpers/DiagramHelper';
 export * from './helpers/DatabaseHelper';
 export * from './helpers/MappingHelper';
 export * from './helpers/MappingResolutionHelper';
@@ -165,6 +151,7 @@ export {
   PureModel,
 } from './graph/PureModel';
 export * from './graph/PureGraphExtension';
+export * from './graph/PureGraphPlugin';
 
 // --------------------------------------------- GRAPH MANAGER --------------------------------------------------
 
@@ -214,6 +201,7 @@ export {
   V1_transformRawLambda,
 } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 export { V1_rawLambdaModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
+export { V1_transformPropertyReference } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_MappingTransformer';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
 export {
