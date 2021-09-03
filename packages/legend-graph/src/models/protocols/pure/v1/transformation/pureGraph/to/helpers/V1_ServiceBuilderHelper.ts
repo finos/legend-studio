@@ -62,7 +62,7 @@ import {
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
 } from '../../../../model/packageableElements/V1_PackageableElement';
-import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
 
 export const V1_buildServiceTest = (

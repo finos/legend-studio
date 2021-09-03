@@ -41,7 +41,7 @@ import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/
 import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper';
-import { V1_resolvePathsInRawLambda } from './helpers/V1_RawPathLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './helpers/V1_ValueSpecificationPathResolver';
 import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
 import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 

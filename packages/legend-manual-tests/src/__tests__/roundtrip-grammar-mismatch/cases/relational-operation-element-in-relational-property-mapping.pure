@@ -1,0 +1,105 @@
+--- BEFORE ---
+###Relational
+Database model::Test
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+
+###Pure
+Class model::Firm
+{
+  name: String[1];
+  employees: model::Person[1..*];
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+
+###Mapping
+import model::*;
+Mapping model::NewMapping
+(
+  *model::Firm: Relational
+  {
+    name: [Test]FirmTable.id,
+    employees[model_Person]: [Test]@FirmPerson
+  }
+  *model::Person: Relational
+  {
+    firstName: [Test]PersonTable.firstName
+  }
+)
+--- AFTER ---
+###Relational
+Database model::Test
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+
+###Pure
+Class model::Firm
+{
+  name: String[1];
+  employees: model::Person[1..*];
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+
+###Mapping
+Mapping model::NewMapping
+(
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [model::Test]FirmTable.id
+    )
+    ~mainTable [model::Test]FirmTable
+    name: [model::Test]FirmTable.id,
+    employees[model_Person]: [model::Test]@FirmPerson
+  }
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [model::Test]PersonTable.id
+    )
+    ~mainTable [model::Test]PersonTable
+    firstName: [model::Test]PersonTable.firstName
+  }
+)

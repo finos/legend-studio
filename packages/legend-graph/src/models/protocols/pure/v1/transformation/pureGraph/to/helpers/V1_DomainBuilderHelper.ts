@@ -43,7 +43,7 @@ import type { V1_Property } from '../../../../model/packageableElements/domain/V
 import type { V1_DerivedProperty } from '../../../../model/packageableElements/domain/V1_DerivedProperty';
 import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure';
 import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
-import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
