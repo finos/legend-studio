@@ -19,8 +19,7 @@ import type { PlainObject } from '@finos/legend-shared';
 import { AbstractServerClient } from '@finos/legend-shared';
 import type { ProjectData } from './models/ProjectData';
 import type {
-  DeprecatedProjectVersion,
-  DeprecatedProjectVersionEntities,
+  ProjectDependencyCoordinates,
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities';
 
@@ -42,6 +41,8 @@ export class DepotServerClient extends AbstractServerClient {
     `${this._projects()}/${encodeURIComponent(groupId)}/${encodeURIComponent(
       artifactId,
     )}`;
+  private _projectById = (projectId: string): string =>
+    `${this._projects()}/${encodeURIComponent(projectId)}`;
 
   getProjects = (): Promise<PlainObject<ProjectData>[]> =>
     this.get(this._projects());
@@ -50,6 +51,8 @@ export class DepotServerClient extends AbstractServerClient {
     artifactId: string,
   ): Promise<PlainObject<ProjectData>> =>
     this.get(this._project(groupId, artifactId));
+  getProjectById = (projectId: string): Promise<PlainObject<ProjectData>[]> =>
+    this.get(this._projectById(projectId));
 
   // ------------------------------------------- Entities -------------------------------------------
 
@@ -129,7 +132,7 @@ export class DepotServerClient extends AbstractServerClient {
     /**
      * List of (direct) dependencies.
      */
-    dependencies: PlainObject<DeprecatedProjectVersion>[],
+    dependencies: PlainObject<ProjectDependencyCoordinates>[],
     /**
      * Flag indicating if transitive dependencies should be returned.
      */
@@ -138,9 +141,9 @@ export class DepotServerClient extends AbstractServerClient {
      * Flag indicating whether to return the root of the dependency tree.
      */
     includeOrigin: boolean,
-  ): Promise<PlainObject<DeprecatedProjectVersionEntities>[]> =>
+  ): Promise<PlainObject<ProjectVersionEntities>[]> =>
     this.post(
-      `${this._projects()}/versions/dependencies`,
+      `${this._projects()}/dependencies`,
       dependencies,
       undefined,
       undefined,

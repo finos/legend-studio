@@ -18,40 +18,25 @@ import { list, createModelSchema, primitive, raw } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 
-/**
- * @deprecated This will be removed when we update SDLC project dependency
- * to use `groupId` and `artifactId` to be consistent with metadata server.
- */
-export interface DeprecatedProjectVersion {
-  projectId: string;
+export class ProjectDependencyCoordinates {
+  groupId: string;
+  artifactId: string;
   versionId: string;
-}
 
-/**
- * @deprecated This will be removed when we update SDLC project dependency
- * to use `groupId` and `artifactId` to be consistent with metadata server.
- */
-export class DeprecatedProjectVersionEntities {
-  projectId!: string;
-  versionId!: string;
-  entities: Entity[] = [];
+  constructor(groupId: string, artifactId: string, versionId: string) {
+    this.groupId = groupId;
+    this.artifactId = artifactId;
+    this.versionId = versionId;
+  }
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(DeprecatedProjectVersionEntities, {
-      projectId: primitive(),
+    createModelSchema(ProjectDependencyCoordinates, {
+      groupId: primitive(),
+      artifactId: primitive(),
       versionId: primitive(),
-      entities: list(raw()),
     }),
   );
-
-  get projectVersion(): DeprecatedProjectVersion {
-    return {
-      projectId: this.projectId,
-      versionId: this.versionId,
-    };
-  }
 }
-
 export class ProjectVersionEntities {
   groupId!: string;
   artifactId!: string;
@@ -66,13 +51,6 @@ export class ProjectVersionEntities {
       entities: list(raw()),
     }),
   );
-
-  get projectVersion(): DeprecatedProjectVersion {
-    return {
-      projectId: `${this.id}`,
-      versionId: this.versionId,
-    };
-  }
 
   get id(): string {
     return `${this.groupId}:${this.artifactId}`;
