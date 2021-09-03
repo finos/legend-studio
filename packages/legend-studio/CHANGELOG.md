@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.2.15
+
+### Patch Changes
+
+- [#447](https://github.com/finos/legend-studio/pull/447) [`26d4dd14`](https://github.com/finos/legend-studio/commit/26d4dd14d7010fb5141c009b494673ec97566873) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use dependency `groupId` and `artifactId` when fetching dependency entities from the depot server.
+
 ## 0.2.14
 
 ### Patch Changes
