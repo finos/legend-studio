@@ -39,3 +39,5 @@ export * from './components/menu/DropdownMenu';
 export * from './components/panel/BlankPanelContent';
 export * from './components/panel/BlankPanelPlaceholder';
 export * from './components/panel/PanelLoadingIndicator';
+
+export * from './testMocks/MonacoEditorMockUtils';

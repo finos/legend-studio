@@ -67,6 +67,7 @@ export const MockedMonacoEditorInstance = {
 
 export const MockedMonacoEditorAPI = {
   create: (): typeof MockedMonacoEditorInstance => MockedMonacoEditorInstance,
+  focus: jest.fn(),
   createModel: jest.fn(),
   createDiffEditor: (): Record<PropertyKey, unknown> => ({
     getOriginalEditor: (): typeof MockedMonacoEditorInstance =>
@@ -75,6 +76,7 @@ export const MockedMonacoEditorAPI = {
       MockedMonacoEditorInstance,
   }),
   setModelMarkers: jest.fn(),
+  setModelLanguage: jest.fn(),
   defineTheme: jest.fn(),
 };
 

@@ -51,7 +51,7 @@ import {
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState';
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';

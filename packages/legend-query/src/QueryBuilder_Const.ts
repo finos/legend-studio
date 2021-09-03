@@ -19,14 +19,6 @@ export enum QUERY_BUILDER_SOURCE_ID_LABEL {
   PROJECTION = 'projection',
 }
 
-export enum QUERY_BUILDER_TEST_ID {
-  QUERY_BUILDER = 'query__builder',
-  QUERY_BUILDER_SETUP = 'query__builder__setup',
-  QUERY_BUILDER_PROJECTION = 'query__builder__projection',
-  QUERY_BUILDER_GRAPH_FETCH = 'query__builder__graph__fetch',
-  QUERY_BUILDER_FILTER = 'query__builder__filter',
-}
-
 export enum SUPPORTED_FUNCTIONS {
   AND = 'meta::pure::functions::boolean::and',
   EXISTS = 'meta::pure::functions::collection::exists',

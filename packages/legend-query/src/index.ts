@@ -16,7 +16,7 @@
 
 export * from './application/LegendQuery';
 
-export { QUERY_BUILDER_TEST_ID } from './QueryBuilder_Const';
+export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID';
 
 export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pure/QueryBuilder_PureProtocolProcessorPlugin';
 

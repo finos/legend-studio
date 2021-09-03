@@ -53,6 +53,7 @@
     "@types/react-dom": "17.0.9",
     "@types/react-router-dom": "5.1.8",
     "date-fns": "2.23.0",
+    "history": "5.0.1",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
     "monaco-editor": "0.27.0",

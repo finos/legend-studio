@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import type { Class, Mapping, Runtime } from '@finos/legend-graph';
 import {
   PackageableElementExplicitReference,

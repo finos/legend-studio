@@ -2549,6 +2549,7 @@ __metadata:
     cross-env: 7.0.3
     date-fns: 2.23.0
     eslint: 7.32.0
+    history: 5.0.1
     jest: 27.1.0
     mobx: 6.3.3
     mobx-react-lite: 3.2.1

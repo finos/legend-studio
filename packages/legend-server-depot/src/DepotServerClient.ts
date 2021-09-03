@@ -48,7 +48,7 @@ export class DepotServerClient extends AbstractServerClient {
   getProject = (
     groupId: string,
     artifactId: string,
-  ): Promise<PlainObject<ProjectData>[]> =>
+  ): Promise<PlainObject<ProjectData>> =>
     this.get(this._project(groupId, artifactId));
 
   // ------------------------------------------- Entities -------------------------------------------
