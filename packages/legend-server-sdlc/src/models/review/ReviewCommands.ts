@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-export enum WorkspaceType {
-  USER,
-  GROUP,
-}
+import type { WorkspaceType } from '../workspace/Workspace';
 
 export interface CreateReviewCommand {
   workspaceId: string;
