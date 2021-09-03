@@ -165,10 +165,15 @@ const transformRelationalDataType = (
 
 export const V1_transformTableAliasToTablePointer = (
   tableAlias: TableAlias,
+  options?: {
+    // TODO?: to be deleted when we delete the option in `V1_transformRelationalOperationElement()`
+    TEMPORARY__resolveToFullPath?: boolean;
+  },
 ): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
-  tablePtr.database =
-    tableAlias.relation.ownerReference.valueForSerialization ?? '';
+  tablePtr.database = options?.TEMPORARY__resolveToFullPath
+    ? tableAlias.relation.ownerReference.value.path
+    : tableAlias.relation.ownerReference.valueForSerialization ?? '';
   /* @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph */
   tablePtr.mainTableDb = tablePtr.database;
   tablePtr.schema = tableAlias.isSelfJoinTarget
@@ -193,12 +198,22 @@ export const V1_transformTableToTablePointer = (table: Table): V1_TablePtr => {
 export const V1_transformRelationalOperationElement = (
   operation: RelationalOperationElement,
   context: V1_GraphTransformerContext,
+  options?: {
+    /**
+     * If this is set to `true`, we will always resolve to full for any paths
+     * found within the relational operation element. This is needed in case we
+     * don't keep the section index, it should be delete when we officially support
+     * storing `SectionIndex`, similar to the rationale for flags like
+     * `TEMPORARY__keepSectionIndex`
+     */
+    TEMPORARY__resolveToFullPath?: boolean;
+  },
 ): V1_RelationalOperationElement => {
   if (operation instanceof DynaFunction) {
     const _dynaFunc = new V1_DynaFunc();
     _dynaFunc.funcName = operation.name;
     _dynaFunc.parameters = operation.parameters.map((param) =>
-      V1_transformRelationalOperationElement(param, context),
+      V1_transformRelationalOperationElement(param, context, options),
     );
     return _dynaFunc;
   } else if (operation instanceof TableAliasColumn) {
@@ -206,6 +221,7 @@ export const V1_transformRelationalOperationElement = (
     _tableAliasCol.column = operation.column.value.name;
     _tableAliasCol.table = V1_transformTableAliasToTablePointer(
       operation.alias,
+      options,
     );
     _tableAliasCol.tableAlias = operation.alias.isSelfJoinTarget
       ? SELF_JOIN_TABLE_NAME
@@ -215,14 +231,22 @@ export const V1_transformRelationalOperationElement = (
     const _literal = new V1_Literal();
     _literal.value =
       operation.value instanceof RelationalOperationElement
-        ? V1_transformRelationalOperationElement(operation.value, context)
+        ? V1_transformRelationalOperationElement(
+            operation.value,
+            context,
+            options,
+          )
         : operation.value;
     return _literal;
   } else if (operation instanceof LiteralList) {
     const _literalList = new V1_LiteralList();
     _literalList.values = operation.values.map(
       (val) =>
-        V1_transformRelationalOperationElement(val, context) as V1_Literal,
+        V1_transformRelationalOperationElement(
+          val,
+          context,
+          options,
+        ) as V1_Literal,
     );
     return _literalList;
   } else if (operation instanceof RelationalOperationElementWithJoin) {
@@ -230,7 +254,9 @@ export const V1_transformRelationalOperationElement = (
     elementWithJoin.joins = operation.joinTreeNode
       ? extractLine(operation.joinTreeNode).map((node) => {
           const joinPtr = new V1_JoinPointer();
-          joinPtr.db = node.join.ownerReference.valueForSerialization ?? '';
+          joinPtr.db = options?.TEMPORARY__resolveToFullPath
+            ? node.join.ownerReference.value.path
+            : node.join.ownerReference.valueForSerialization ?? '';
           joinPtr.joinType = node.joinType;
           joinPtr.name = node.join.value.name;
           return joinPtr;
@@ -240,6 +266,7 @@ export const V1_transformRelationalOperationElement = (
       ? V1_transformRelationalOperationElement(
           operation.relationalOperationElement,
           context,
+          options,
         )
       : undefined;
     return elementWithJoin;

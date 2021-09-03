@@ -26,7 +26,7 @@ import { GroupByFunctionSpecification } from '../../../../../../../metamodels/pu
 import { AggregationFunctionSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationFunctionSpecification';
 import type { V1_AggregateFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction';
 import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from '../V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
-import { V1_resolvePathsInRawLambda } from './V1_RawPathLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
 
 const buildGroupByFunction = (
   groupByFunction: V1_GroupByFunction,

@@ -86,8 +86,10 @@ We now use [Typescript 4.4](https://www.typescriptlang.org/docs/handbook/release
 
 ## Notable fixes
 
+- [449](https://github.com/finos/legend-studio/issues/449) Changing class properties' type in form mode, especially when the type if `primitive` is not working
 - [442](https://github.com/finos/legend-studio/issues/442) `meta::pure::profiles::doc` is hidden from profile selector in Studio model editors
 - [425](https://github.com/finos/legend-studio/issues/425) Mock data generator for models sometimes fail to generate for properties of type `Boolean`
+- [424](https://github.com/finos/legend-studio/issues/424) Paths in transform function of relational property mapping are not resolved properly after switching in and out of text-mode.
 - [426](https://github.com/finos/legend-studio/issues/426) Committed reviews are not shown when there is no previous releases
 - [399](https://github.com/finos/legend-studio/issues/399) Multiple mapped properties disappear in mapping editor
 - [354](https://github.com/finos/legend-studio/issues/354) Viewer mode does not allow viewing project configuration

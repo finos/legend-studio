@@ -72,7 +72,7 @@ import { MappingClass } from '../../../../../../metamodels/pure/packageableEleme
 import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/packageableElements/mapping/LocalMappingPropertyInfo';
 import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
-import { V1_resolvePathsInRawLambda } from './helpers/V1_RawPathLambdaResolver';
+import { V1_resolvePathsInRawLambda } from './helpers/V1_ValueSpecificationPathResolver';
 import {
   V1_deserializeRelationalOperationElement,
   V1_serializeRelationalOperationElement,
@@ -499,6 +499,12 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             new V1_GraphTransformerContextBuilder(
               this.context.extensions.plugins,
             ).build(),
+            {
+              // NOTE: here we will always resolve paths found in the operation to full
+              // since right now we still delete the section index, which will cause
+              // these paths to be potentially become corrupted.
+              TEMPORARY__resolveToFullPath: true,
+            },
           ),
         );
     } catch {
