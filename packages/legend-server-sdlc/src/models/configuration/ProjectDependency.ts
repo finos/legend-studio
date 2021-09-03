@@ -60,6 +60,24 @@ export class ProjectDependency implements Hashable {
     this.versionId.setId(id);
   }
 
+  get isLegacyDependency(): boolean {
+    return !this.projectId.includes(':');
+  }
+
+  get groupId(): string | undefined {
+    if (this.isLegacyDependency) {
+      return undefined;
+    }
+    return this.projectId.split(':')[0];
+  }
+
+  get artifactId(): string | undefined {
+    if (this.isLegacyDependency) {
+      return undefined;
+    }
+    return this.projectId.split(':')[1];
+  }
+
   get hashCode(): string {
     return hashArray([
       PROJECT_DEPENDENCY_HASH_STRUCTURE,

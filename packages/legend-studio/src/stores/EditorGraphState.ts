@@ -26,6 +26,7 @@ import {
   assertTrue,
   isNonNullable,
   NetworkClientError,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
@@ -33,13 +34,19 @@ import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
 import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
-import type { EntityChange } from '@finos/legend-server-sdlc';
+import type {
+  EntityChange,
+  ProjectDependency,
+} from '@finos/legend-server-sdlc';
 import {
   EntityChangeType,
   ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
-import type { DeprecatedProjectVersion } from '@finos/legend-server-depot';
-import { DeprecatedProjectVersionEntities } from '@finos/legend-server-depot';
+import {
+  ProjectVersionEntities,
+  ProjectData,
+  ProjectDependencyCoordinates,
+} from '@finos/legend-server-depot';
 import type {
   SetImplementation,
   PackageableElement,
@@ -955,28 +962,29 @@ export class EditorGraphState {
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration;
-    const directDependencies = currentConfiguration.projectDependencies.map(
-      (dependency) => ({
-        projectId: dependency.projectId,
-        versionId: dependency.versionId.id,
-      }),
-    );
     try {
-      if (directDependencies.length) {
+      if (currentConfiguration.projectDependencies.length) {
+        const dependencyCoordinates = (yield flowResult(
+          this.buildProjectDependencyCoordinates(
+            currentConfiguration.projectDependencies,
+          ),
+        )) as ProjectDependencyCoordinates[];
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
           (yield this.editorStore.depotServerClient.getProjectVersionsDependencyEntities(
-            directDependencies as PlainObject<DeprecatedProjectVersion>[],
+            dependencyCoordinates.map((e) =>
+              ProjectDependencyCoordinates.serialization.toJson(e),
+            ),
             true,
             true,
-          )) as PlainObject<DeprecatedProjectVersionEntities>[];
+          )) as PlainObject<ProjectVersionEntities>[];
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
-          DeprecatedProjectVersionEntities.serialization.fromJson(e),
+          ProjectVersionEntities.serialization.fromJson(e),
         );
         const dependencyProjects = new Set<string>();
         dependencyEntities.forEach((dependencyInfo) => {
-          const projectId = dependencyInfo.projectId;
+          const projectId = dependencyInfo.id;
           // There are a few validations that must be done:
           // 1. Unlike above, if in the depdendency graph, we have both A@v1 and A@v2
           //    then we need to throw. Both SDLC and metadata server should handle this
@@ -988,7 +996,7 @@ export class EditorGraphState {
           //    But this is a rare and advanced use-case which we will not attempt to handle now.
           if (dependencyProjects.has(projectId)) {
             const projectVersions = dependencyEntities
-              .filter((e) => e.projectId === projectId)
+              .filter((e) => e.id === projectId)
               .map((e) => e.versionId);
             throw new UnsupportedOperationError(
               `Depending on multiple versions of a project is not supported. Found dependency on project '${projectId}' with versions: ${projectVersions.join(
@@ -996,11 +1004,8 @@ export class EditorGraphState {
               )}.`,
             );
           }
-          dependencyEntitiesMap.set(
-            dependencyInfo.projectId,
-            dependencyInfo.entities,
-          );
-          dependencyProjects.add(dependencyInfo.projectId);
+          dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
+          dependencyProjects.add(dependencyInfo.id);
         });
       }
     } catch (error) {
@@ -1014,6 +1019,50 @@ export class EditorGraphState {
       throw new DependencyGraphBuilderError(error);
     }
     return dependencyEntitiesMap;
+  }
+
+  *buildProjectDependencyCoordinates(
+    projectDependencies: ProjectDependency[],
+  ): GeneratorFn<ProjectDependencyCoordinates[]> {
+    return (yield Promise.all(
+      projectDependencies.map((dep) => {
+        // legacyDependencies
+        // We do this for backward compatible reasons as we expect current dependency ids to be in the format of {groupId}:{artifactId}.
+        // For the legacy dependency we must fetch the corresponding coordinates (group, artifact ids) from the depot server
+        if (dep.isLegacyDependency) {
+          return this.editorStore.depotServerClient
+            .getProjectById(dep.projectId)
+            .then((projects) => {
+              const projectsData = projects.map((p) =>
+                ProjectData.serialization.fromJson(p),
+              );
+              if (projectsData.length !== 1) {
+                throw new Error(
+                  `Expected 1 project for project id '${dep.projectId}'. Got ${
+                    projectsData.length
+                  } projects with coordinates ${projectsData
+                    .map((i) => `'${i.groupId}:${i.artifactId}'`)
+                    .join(', ')}.`,
+                );
+              }
+              const projectData = projectsData[0];
+              return new ProjectDependencyCoordinates(
+                projectData.groupId,
+                projectData.artifactId,
+                dep.versionId.id,
+              );
+            });
+        } else {
+          return Promise.resolve(
+            new ProjectDependencyCoordinates(
+              guaranteeNonNullable(dep.groupId),
+              guaranteeNonNullable(dep.artifactId),
+              dep.versionId.id,
+            ),
+          );
+        }
+      }),
+    )) as ProjectDependencyCoordinates[];
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------

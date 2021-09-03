@@ -21,7 +21,8 @@ import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
-import { DeprecatedProjectVersionEntities } from '@finos/legend-server-depot';
+import { ProjectVersionEntities } from '@finos/legend-server-depot';
+import type { ProjectData } from '@finos/legend-server-depot';
 import {
   DependencyManager,
   PackageableElementReference,
@@ -30,13 +31,15 @@ import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 
 const testDependingOnDifferentProjectVersions = [
   {
-    projectId: 'PROD-A',
+    groupId: 'org.finos.legend',
+    artifactId: 'prod-a',
     versionId: '1.0.0',
     versionedEntity: false,
     entities: [],
   },
   {
-    projectId: 'PROD-A',
+    groupId: 'org.finos.legend',
+    artifactId: 'prod-a',
     versionId: '2.0.0',
     versionedEntity: false,
     entities: [],
@@ -45,7 +48,8 @@ const testDependingOnDifferentProjectVersions = [
 
 const testDependingOnMoreThanOneproject = [
   {
-    projectId: 'PROD-A',
+    groupId: 'org.finos.legend',
+    artifactId: 'prod-a',
     versionId: '2.0.0',
     versionedEntity: false,
     entities: [
@@ -63,7 +67,8 @@ const testDependingOnMoreThanOneproject = [
     ],
   },
   {
-    projectId: 'PROD-B',
+    groupId: 'org.finos.legend',
+    artifactId: 'prod-b',
     versionId: '2.0.0',
     versionedEntity: false,
     entities: [
@@ -81,7 +86,8 @@ const testDependingOnMoreThanOneproject = [
     ],
   },
   {
-    projectId: 'PROD-C',
+    groupId: 'org.finos.legend',
+    artifactId: 'prod-c',
     versionId: '3.0.0',
     versionedEntity: false,
     entities: [
@@ -117,9 +123,47 @@ const PROJECT_CONFIG = {
         patchVersion: 0,
       },
     },
+    {
+      projectId: 'groupId:artifactId',
+      versionId: {
+        majorVersion: 1,
+        minorVersion: 0,
+        patchVersion: 0,
+      },
+    },
   ],
   metamodelDependencies: [],
 };
+
+const PROJECT_DATA = [
+  {
+    id: 'PROD_1',
+    projectId: 'PROD_1',
+    groupId: 'org.finos.legend',
+    artifactId: 'my-artifact',
+    versions: ['1.0.0'],
+    latestVersion: '1.0.0',
+  },
+];
+
+const MULTI_PROJECT_DATA = [
+  {
+    id: '1',
+    projectId: 'PROD_1',
+    groupId: 'org.finos.legend',
+    artifactId: 'my-artifact',
+    versions: ['1.0.0'],
+    latestVersion: '1.0.0',
+  },
+  {
+    id: '2',
+    projectId: 'PROD_1',
+    groupId: 'org.finos.legend',
+    artifactId: 'my-artifact-diff',
+    versions: ['1.0.0', '2.0.0'],
+    latestVersion: '2.0.0',
+  },
+];
 
 const FILE_GENERATION_PATH = 'model::myFileGeneration';
 const buildFileGenerationDepentOnDependencyElements = (
@@ -143,13 +187,14 @@ const buildFileGenerationDepentOnDependencyElements = (
 
 const testDependencyElements = async (
   entities: Entity[],
-  dependencyEntities: PlainObject<DeprecatedProjectVersionEntities>[],
+  dependencyEntities: PlainObject<ProjectVersionEntities>[],
+  projectsData?: PlainObject<ProjectData>[],
   includeDependencyInFileGenerationScopeElements?: boolean,
 ): Promise<void> => {
   const projectVersionEntities = dependencyEntities.map((e) =>
-    DeprecatedProjectVersionEntities.serialization.fromJson(e),
+    ProjectVersionEntities.serialization.fromJson(e),
   );
-  const keys = projectVersionEntities.map((e) => e.projectId);
+  const keys = projectVersionEntities.map((e) => e.id);
   const dependencyElementPaths = projectVersionEntities
     .flatMap((e) => e.entities)
     .map((e) => e.path);
@@ -162,13 +207,21 @@ const testDependencyElements = async (
   editorStore.projectConfigurationEditorState.setProjectConfiguration(
     ProjectConfiguration.serialization.fromJson(PROJECT_CONFIG),
   );
-  // mock version entities api return
+  // mock depot responses
   jest
     .spyOn(
       guaranteeNonNullable(editorStore.depotServerClient),
       'getProjectVersionsDependencyEntities',
     )
     .mockResolvedValue(dependencyEntities);
+  if (projectsData) {
+    jest
+      .spyOn(
+        guaranteeNonNullable(editorStore.depotServerClient),
+        'getProjectById',
+      )
+      .mockResolvedValue(projectsData);
+  }
   await flowResult(editorStore.graphManagerState.initializeSystem());
   const dependencyManager = new DependencyManager([]);
   const dependencyEntitiesMap = await flowResult(
@@ -262,7 +315,7 @@ const testDependencyElements = async (
 
 const buildProjectVersionEntities = (
   entities: Entity[],
-): PlainObject<DeprecatedProjectVersionEntities>[] => [
+): PlainObject<ProjectVersionEntities>[] => [
   {
     projectId: TEST_DEPENDENCY_PROJECT_ID,
     versionId: '1.0.0',
@@ -275,6 +328,7 @@ test(unitTest('Build dependency check'), async () => {
   await testDependencyElements(
     [] as Entity[],
     buildProjectVersionEntities(TEST_DATA__M2MGraphEntities as Entity[]),
+    PROJECT_DATA,
     true,
   );
 });
@@ -285,7 +339,24 @@ test(
     await testDependencyElements(
       [] as Entity[],
       testDependingOnMoreThanOneproject,
+      PROJECT_DATA,
       true,
+    );
+  },
+);
+
+test(
+  unitTest('Legacy project not returning singular project from depot'),
+  async () => {
+    await expect(
+      testDependencyElements(
+        [] as Entity[],
+        testDependingOnDifferentProjectVersions,
+        MULTI_PROJECT_DATA,
+        true,
+      ),
+    ).rejects.toThrowError(
+      "Expected 1 project for project id 'PROD_1'. Got 2 projects with coordinates 'org.finos.legend:my-artifact', 'org.finos.legend:my-artifact-diff'.",
     );
   },
 );
@@ -297,10 +368,11 @@ test(
       testDependencyElements(
         [] as Entity[],
         testDependingOnDifferentProjectVersions,
+        PROJECT_DATA,
         true,
       ),
     ).rejects.toThrowError(
-      "Depending on multiple versions of a project is not supported. Found dependency on project 'PROD-A' with versions: 1.0.0, 2.0.0.",
+      "Depending on multiple versions of a project is not supported. Found dependency on project 'org.finos.legend:prod-a' with versions: 1.0.0, 2.0.0.",
     );
   },
 );
