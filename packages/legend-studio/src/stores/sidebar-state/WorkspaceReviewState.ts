@@ -36,6 +36,7 @@ import {
   Review,
   ReviewState,
   RevisionAlias,
+  WorkspaceType,
 } from '@finos/legend-server-sdlc';
 import { ActionAlertActionType } from '@finos/legend-application';
 
@@ -267,6 +268,7 @@ export class WorkspaceReviewState {
           {
             workspaceId: this.sdlcState.currentWorkspaceId,
             title,
+            workspaceType: WorkspaceType.USER,
             description,
           },
         )) as PlainObject<Review>,

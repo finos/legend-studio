@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
+export enum WorkspaceType {
+  USER,
+  GROUP,
+}
+
 export interface CreateReviewCommand {
   workspaceId: string;
   title: string;
+  workspaceType: WorkspaceType;
   description: string;
 }
 
