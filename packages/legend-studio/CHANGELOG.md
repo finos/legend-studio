@@ -1,5 +1,15 @@
 # @finos/legend-studio
 
+## 0.2.14
+
+### Patch Changes
+
+- [#443](https://github.com/finos/legend-studio/pull/443) [`c408f16`](https://github.com/finos/legend-studio/commit/c408f16dc60474ef6c28e5e4484053b4928c2afc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Operation class mapping editor will now help user avoid creating cycle (fixes [#298](https://github.com/finos/legend-studio/issues/298)).
+
+* [#444](https://github.com/finos/legend-studio/pull/444) [`9c6c7386`](https://github.com/finos/legend-studio/commit/9c6c7386bb5c884fdf0077a1dcba6b46dfa840ce) ([@akphi](https://github.com/akphi)) - Move `DSL Diagram` logic to a new separate extension package `@finos/legend-extension-dsl-diagram`.
+
+- [#451](https://github.com/finos/legend-studio/pull/451) [`e696205c`](https://github.com/finos/legend-studio/commit/e696205c2d09722ea5d9d1d75daac24e6c279c4e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `workspaceType` to create review command and default to `USER` type.
+
 ## 0.2.13
 
 ## 0.2.12

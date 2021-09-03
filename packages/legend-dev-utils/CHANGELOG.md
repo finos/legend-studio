@@ -1,5 +1,11 @@
 # @finos/legend-dev-utils
 
+## 0.0.4
+
+### Patch Changes
+
+- [#439](https://github.com/finos/legend-studio/pull/439) [`4bcb2af5`](https://github.com/finos/legend-studio/commit/4bcb2af5ea2ddc0bfa77b24582b8cf504456ee97) ([@akphi](https://github.com/akphi)) - Add a small modification to the changelog generator tool. The generated changelog will nolonger include `updated dependencies` section and be slightly more succinct in the author info part.
+
 ## 0.0.3
 
 ## 0.0.2
