@@ -23,6 +23,11 @@ export enum WorkspaceAccessType {
   // BACKUP = 'BACKUP',
 }
 
+export enum WorkspaceType {
+  USER = 'USER',
+  GROUP = 'GROUP',
+}
+
 export class Workspace {
   projectId!: string;
   workspaceId!: string;
