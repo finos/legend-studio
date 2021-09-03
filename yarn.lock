@@ -2325,7 +2325,7 @@ __metadata:
     css-loader: 6.2.0
     cssnano: 5.0.8
     eslint: 7.32.0
-    fork-ts-checker-webpack-plugin: 6.3.2
+    fork-ts-checker-webpack-plugin: 6.3.3
     html-webpack-plugin: 5.3.2
     isbinaryfile: 4.0.8
     jest: 27.1.0
@@ -2346,7 +2346,7 @@ __metadata:
     strip-ansi: 7.0.0
     text-table: 0.2.0
     typescript: 4.4.2
-    webpack: 5.51.2
+    webpack: 5.52.0
     wrap-ansi: 8.0.0
   languageName: unknown
   linkType: soft
@@ -2518,7 +2518,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.2
-    webpack: 5.51.2
+    webpack: 5.52.0
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.8.0
     webpack-dev-server: 4.1.0
@@ -2680,7 +2680,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.2
-    webpack: 5.51.2
+    webpack: 5.52.0
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.8.0
     webpack-dev-server: 4.1.0
@@ -7551,9 +7551,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fork-ts-checker-webpack-plugin@npm:6.3.2":
-  version: 6.3.2
-  resolution: "fork-ts-checker-webpack-plugin@npm:6.3.2"
+"fork-ts-checker-webpack-plugin@npm:6.3.3":
+  version: 6.3.3
+  resolution: "fork-ts-checker-webpack-plugin@npm:6.3.3"
   dependencies:
     "@babel/code-frame": ^7.8.3
     "@types/json-schema": ^7.0.5
@@ -7568,7 +7568,7 @@ __metadata:
     schema-utils: 2.7.0
     semver: ^7.3.2
     tapable: ^1.0.0
-  checksum: bd3e4745bbb629cf9d01c658eb4aabe9dbb5c6a959c416ec6a4bb9a4c092120f91622d8cd85a2c0af56adfbc8cf39e8815322f115dc524671cb802d1dc13c6e6
+  checksum: 22bcbf08fc6c1d31daa521e4b59495ee0e4ec51a7e5728dfd4212835f461002a92910b0bc1a1c62cfe569f7b907fdb81875f108ee922113050deca042f06df8d
   languageName: node
   linkType: hard
 
@@ -15635,9 +15635,9 @@ typescript@4.4.2:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.51.2":
-  version: 5.51.2
-  resolution: "webpack@npm:5.51.2"
+"webpack@npm:5.52.0":
+  version: 5.52.0
+  resolution: "webpack@npm:5.52.0"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -15668,7 +15668,7 @@ typescript@4.4.2:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: f767bf26afb89e6105757462a0d2d829583699aca0b76894339e2c60fc6dc0fbfc569fc070ef2d5e295f47b4ec649ab68db16bbc1fb593de9f5bb771afd85aca
+  checksum: fe7cbb761b251a6885d67971f8763a9675ca4777ff863be4cbe76a6ab22a3f810be2728fe7b9c31f74259001859a3915ad581f0e4aca5255cdb13ccab3472f00
   languageName: node
   linkType: hard
 
