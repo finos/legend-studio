@@ -43,7 +43,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@babel/core": "7.15.4",
+    "@babel/core": "7.15.5",
     "@changesets/changelog-github": "0.4.1",
     "@changesets/config": "1.6.1",
     "@changesets/get-release-plan": "3.0.1",

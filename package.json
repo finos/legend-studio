@@ -36,6 +36,7 @@
     "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\"",
     "publish:prepare": "cross-env FORCE_COLOR=1 yarn build && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:prepare",
     "release": "yarn publish:prepare && changeset publish",
+    "release:github": "node ./scripts/release/createGithubVersion.js",
     "setup": "yarn install && node ./scripts/workflow/checkNodeVersion.js && yarn git:install-hooks && yarn workspaces foreach --topological-dev --verbose run setup && yarn build",
     "start": "yarn dev",
     "test": "jest",
@@ -66,7 +67,8 @@
     "last 2 Chrome versions"
   ],
   "devDependencies": {
-    "@babel/core": "7.15.4",
+    "@actions/github": "5.0.0",
+    "@babel/core": "7.15.5",
     "@changesets/cli": "2.17.0",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
