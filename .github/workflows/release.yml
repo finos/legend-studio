@@ -33,26 +33,31 @@ jobs:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
-      - name: Create Release Pull Request or Publish to NPM
+      - name: Create new release pull request or Publish to NPM
         id: changesets
         uses: changesets/action@master
         with:
           version: yarn version
           commit: 'chore: bump versions and release'
           title: 'New Release'
-          # NOTE: right now the prepare publish content step would run for even
-          # packages that might not get published, we can consider using NPM
-          # `prepublish` script to narrow down the scope
-          #
-          # NOTE: this is currently creating tags on Github and creating release note.
-          # This is fine except for the fact that it might be creating a lot of tags
-          # and release on our repository. We are trying to opt out by asking for a
-          # a flag to turn off this feature on changesets
-          # See https://github.com/changesets/action/issues/87
           publish: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # NOTE: this is currently creating tags on Github and creating release note.
+      # This is proper except for the fact that it might be creating a lot of tags
+      # and release on our repository. This requires substantial changes on `changesets`
+      # side and thus, we cannot rely on them doing that any time soon. Meanwhile
+      # we will do the following cleanup step and manually create a release on Github
+      # See https://github.com/changesets/action/issues/87
+      - name: Create Github release
+        # If publish never happened, there's no point in uploading this content
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAIN_PACKAGE: '@finos/legend-studio-app'
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: yarn release:github
       - name: Login to Docker Hub
         if: steps.changesets.outputs.published == 'true'
         uses: docker/login-action@v1

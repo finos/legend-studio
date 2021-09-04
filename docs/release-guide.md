@@ -12,11 +12,14 @@ We use `changesets` to automate our versioning and release process via [github a
 Merging the PR `New Release` created by `changesets` will _effectively_ create a new release. This PR will have a fairly good summary of the changes that happen in the release. However, these are library changelogs and are meant for technical users (e.g. `@finos/legend-shared`, `@finos/legend-dev-utils`, etc.). For the applications, we need to create separate release notes, which are more user-friendly on our [documentation site](http://github.com/finos/legend).
 
 > Since this repository contains `libraries` as well as `applications`, versioning can be tricky. As such, we use `changesets` to link the application packages together so that all the apps will be versioned together. This way, we could have a version of the applications with each release, and thus, it's more clear and convenient for writing the release notes. _Also note that this is application so the versioning here does not need to follow `semver` strictly._
+>
+> By default, `changesets` create tags and Github release for each published library, this is appropriate since it links the version of the library with its source code. However, this accumulates and quickly create a lot of tags per release. With other projects like `babel` or `react`, all libraries _move_ versions together,
+> this means that they don't bump into the same problems as ours. As such, we have decided to clean all tags and releases created by `changesets` and publish a single version on Github with a version corresponding to the version of the main application package `@finos/legend-studio-app`. Since version bump is managed automatically, it's still possible to trace Git commit corresponding to a release of each library. _In the future, we will publish this as part of the changelog of the application_.
 
 For each new release, we should:
 
+- Update the release note on Github for the latest tag created by the release workflow
 - Add an entry in the root [CHANGELOG.md](../CHANGELOG.md) for the version of the application and the link to the documentation site
-- Create a release on Github that points at an application tag, here we can pick `@finos/legend-studio-app`.
 
 ## Manual Release Process
 
@@ -42,13 +45,13 @@ npm publish --tag <publish-tag>
 
 # ------------ Only if we need to push to Github -------------
 
-# 3. Create a git annotated tag
+# 3. Create a Git annotated tag for the new version
+# <!> This is the version of @finos/legend-studio-app prefixed with `v`
 # <!> Need to do this step if we wish to push this version to Github
 git -a <version> -m <version>
 git push --follow-tags
 
-# 4. Create a release for the version on Github, use the change in
-# `CHANGELOG.md` as release note
+# 4. Update the release note for the version on Github
 
 # ---------------------------- Docker ----------------------------
 
