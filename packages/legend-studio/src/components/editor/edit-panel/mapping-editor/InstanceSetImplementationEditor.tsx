@@ -65,7 +65,6 @@ import type {
   Property,
   PackageableElement,
 } from '@finos/legend-graph';
-import { PureInstanceSetImplementation } from '@finos/legend-graph';
 import {
   Class,
   Type,
@@ -74,6 +73,7 @@ import {
   View,
   Table,
   Database,
+  PureInstanceSetImplementation,
 } from '@finos/legend-graph';
 
 export const InstanceSetImplementationSourceExplorer = observer(
