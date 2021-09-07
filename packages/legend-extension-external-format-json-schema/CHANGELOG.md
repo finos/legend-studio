@@ -1,5 +1,11 @@
 # @finos/legend-extension-external-format-json-schema
 
+## 0.0.3
+
+### Patch Changes
+
+- [#458](https://github.com/finos/legend-studio/pull/458) [`77fdb301`](https://github.com/finos/legend-studio/commit/77fdb301c0e6e4b484a127199140d689e4a86683) ([@akphi](https://github.com/akphi)) - Expose `JSON schema` system profiles in editor dropdown menus.
+
 ## 0.0.2
 
 ## 0.0.1
