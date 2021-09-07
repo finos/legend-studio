@@ -114,6 +114,7 @@ jobs:
     name: Check Application Build
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - application: '@finos/legend-studio-deployment'

@@ -53,6 +53,7 @@
   },
   "extensions": {
     "graphPreset": "@finos/legend-graph-preset-external-format-json-schema",
+    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-external-format-json-schema-pure-graph-manager",
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-external-format-json-schema-pure-protocol-processor"
   }
 }
