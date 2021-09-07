@@ -75,6 +75,7 @@ import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../../graphManager/AbstractPureGraphManager';
 import { DataType } from '../../../../../../metamodels/pure/packageableElements/domain/DataType';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
+import type { Binding } from '../../../../../../metamodels/pure/packageableElements/store/externalFormat/model/Binding';
 
 interface ResolutionResult<T> {
   /**
@@ -387,6 +388,13 @@ export class V1_GraphBuilderContext {
     this.createImplicitPackageableElementReference(
       path,
       this.graph.getFlatDataStore,
+    );
+  resolveBinding = (
+    path: string,
+  ): PackageableElementImplicitReference<Binding> =>
+    this.createImplicitPackageableElementReference(
+      path,
+      this.graph.getBindingStore,
     );
   resolveDatabase = (
     path: string,

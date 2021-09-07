@@ -27,6 +27,7 @@ import { ConnectionPointer } from '../../../../../../metamodels/pure/packageable
 import type { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
 import type { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
 import type { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
+import type { ExternalFormatConnection } from '../../../../../../metamodels/pure/packageableElements/store/externalFormat/connection/ExternalFormatConnection';
 import type { RelationalDatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import type { AuthenticationStrategy } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
@@ -78,6 +79,7 @@ import { V1_RelationalDatabaseConnection } from '../../../model/packageableEleme
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
+import { V1_ExternalFormatConnection } from '../../../model/packageableElements/store/externalFormat/V1_ExternalFormatConnection';
 import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_transformPostProcessor } from './V1_PostProcessorTransformer';
@@ -299,6 +301,15 @@ const transformXmlModelConnection = (
   return connection;
 };
 
+const transformExternalFormatConnection = (
+  element: ExternalFormatConnection,
+): V1_ExternalFormatConnection => {
+  const connection = new V1_ExternalFormatConnection();
+  connection.store = V1_transformElementReference(element.store);
+  connection.externalSource = element.externalSource;
+  return connection;
+};
+
 const transformFlatDataConnection = (
   element: FlatDataConnection,
 ): V1_FlatDataConnection => {
@@ -325,6 +336,12 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
 
   visit_JsonModelConnection(connection: JsonModelConnection): V1_Connection {
     return transformJsonModelConnection(connection);
+  }
+
+  visit_ExternalFormatConnection(
+    connection: ExternalFormatConnection,
+  ): V1_Connection {
+    return transformExternalFormatConnection(connection);
   }
 
   visit_XmlModelConnection(connection: XmlModelConnection): V1_Connection {

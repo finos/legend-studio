@@ -42,6 +42,7 @@
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-text": "workspace:*",
     "@finos/legend-extension-external-format-json-schema": "workspace:*",
+    "@finos/legend-extension-external-shared-format-model": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-preset-query-builder": "workspace:*",

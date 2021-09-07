@@ -63,6 +63,8 @@ import {
   RelationalDatabaseConnection,
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
+  Binding,
+  ExternalFormatConnection,
 } from '@finos/legend-graph';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
@@ -429,6 +431,10 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
   createNewCustomConnection(): Connection {
     if (this.store instanceof FlatData) {
       return new FlatDataConnection(
+        PackageableElementExplicitReference.create(this.store),
+      );
+    } else if (this.store instanceof Binding) {
+      return new ExternalFormatConnection(
         PackageableElementExplicitReference.create(this.store),
       );
     } else if (this.store instanceof Database) {

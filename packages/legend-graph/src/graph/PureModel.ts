@@ -58,6 +58,7 @@ import {
 } from '../models/metamodels/pure/packageableElements/domain/Measure';
 import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import type { PureGraphPlugin } from './PureGraphPlugin';
+import { Binding } from '../models/metamodels/pure/packageableElements/store/externalFormat/model/Binding';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -296,6 +297,8 @@ export class PureModel extends BasicModel {
       FlatData,
       `Can't find flat-data store '${path}'`,
     );
+  getBindingStore = (path: string): Binding =>
+    guaranteeType(this.getStore(path), Binding, `Can't find binding '${path}'`);
   getDatabase = (path: string): Database =>
     guaranteeType(
       this.getStore(path),

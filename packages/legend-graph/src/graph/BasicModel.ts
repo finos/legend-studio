@@ -39,6 +39,7 @@ import { Service } from '../models/metamodels/pure/packageableElements/service/S
 import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
 import { Store } from '../models/metamodels/pure/packageableElements/store/Store';
 import { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
+import { Binding } from '../models/metamodels/pure/packageableElements/store/externalFormat/model/Binding';
 import { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
 import { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
 import { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
@@ -167,6 +168,7 @@ export abstract class BasicModel {
       ownFunctions: computed,
       ownStores: computed,
       ownFlatDatas: computed,
+      ownBindings: computed,
       ownDatabases: computed,
       ownServiceStores: computed,
       ownMappings: computed,
@@ -256,6 +258,11 @@ export abstract class BasicModel {
   get ownFlatDatas(): FlatData[] {
     return Array.from(this.storesIndex.values()).filter(
       (store: Store): store is FlatData => store instanceof FlatData,
+    );
+  }
+  get ownBindings(): Binding[] {
+    return Array.from(this.storesIndex.values()).filter(
+      (store: Store): store is Binding => store instanceof Binding,
     );
   }
   get ownDatabases(): Database[] {
