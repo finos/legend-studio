@@ -54,7 +54,11 @@ import {
   TEST__getTestGraphManagerState,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import type {
+  DepotServerClient,
+  ProjectData,
+  ProjectVersionEntities,
+} from '@finos/legend-server-depot';
 import {
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
@@ -227,6 +231,9 @@ export const TEST__setUpEditor = async (
     latestProjectStructureVersion: PlainObject<ProjectStructureVersion>;
     availableGenerationDescriptions: GenerationConfigurationDescription[];
     availableImportDescriptions: ImportConfigurationDescription[];
+    projects: PlainObject<ProjectData>[];
+    projectData: PlainObject<ProjectData>[];
+    projectDependency: PlainObject<ProjectVersionEntities>[];
   },
 ): Promise<RenderResult> => {
   const {
@@ -239,6 +246,9 @@ export const TEST__setUpEditor = async (
     latestProjectStructureVersion,
     availableGenerationDescriptions,
     availableImportDescriptions,
+    projectData,
+    projects,
+    projectDependency,
   } = data;
   // mock editor initialization data
 
@@ -276,6 +286,20 @@ export const TEST__setUpEditor = async (
       'getLatestProjectStructureVersion',
     )
     .mockResolvedValue(latestProjectStructureVersion);
+
+  // depot
+  jest
+    .spyOn(mockedEditorStore.depotServerClient, 'getProjects')
+    .mockResolvedValue(projects);
+  jest
+    .spyOn(mockedEditorStore.depotServerClient, 'getProjectById')
+    .mockResolvedValue(projectData);
+  jest
+    .spyOn(
+      mockedEditorStore.depotServerClient,
+      'getProjectVersionsDependencyEntities',
+    )
+    .mockResolvedValue(projectDependency);
 
   // TODO: we need to think of how we will mock these calls when we modularize
   mockedEditorStore.graphManagerState.graphManager.initialize = jest.fn();
@@ -380,6 +404,9 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     latestProjectStructureVersion?: PlainObject<ProjectStructureVersion>;
     availableGenerationDescriptions?: GenerationConfigurationDescription[];
     availableImportDescriptions?: ImportConfigurationDescription[];
+    projects?: PlainObject<ProjectData>[];
+    projectData?: PlainObject<ProjectData>[];
+    projectDependency?: PlainObject<ProjectVersionEntities>[];
   },
 ): Promise<RenderResult> =>
   TEST__setUpEditor(mockedEditorStore, {
@@ -399,5 +426,8 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
       ...TEST_DATA__DefaultSDLCInfo.availableSchemaImports,
       ...TEST_DATA__DefaultSDLCInfo.availableCodeImports,
     ],
+    projects: [],
+    projectData: [],
+    projectDependency: [],
     ...overrides,
   });

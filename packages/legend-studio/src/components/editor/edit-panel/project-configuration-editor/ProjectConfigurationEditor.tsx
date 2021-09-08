@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   LogEvent,
-  debounce,
   prettyCONSTName,
   assertErrorThrown,
 } from '@finos/legend-shared';
@@ -36,11 +35,7 @@ import type { SelectComponent } from '@finos/legend-art';
 import { compareLabelFn, clsx, CustomSelectorInput } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { ProjectDependency } from '@finos/legend-server-sdlc';
-import type {
-  ProjectConfiguration,
-  Version,
-  Project,
-} from '@finos/legend-server-sdlc';
+import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   ActionAlertActionType,
@@ -48,153 +43,21 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import type { ProjectData } from '@finos/legend-server-depot';
 
 interface VersionOption {
   label: string;
   value: string;
 }
-
-const buildVersionOption = (version: Version): VersionOption => ({
-  label: version.id.id,
-  value: version.id.id,
-});
-
 interface ProjectOption {
   label: string;
-  value: string;
+  value: ProjectData;
 }
 
-const buildProjectOption = (project: Project): ProjectOption => ({
-  label: project.name,
-  value: project.projectId,
+const buildProjectOption = (project: ProjectData): ProjectOption => ({
+  label: project.coordinates,
+  value: project,
 });
-
-const ProjectDependencyVersionSelector = observer(
-  (
-    props: {
-      projectDependency: ProjectDependency;
-      selectedVersionOption: VersionOption | null;
-      versionOptions: VersionOption[] | null;
-      disabled: boolean;
-    },
-    ref: React.Ref<SelectComponent>,
-  ) => {
-    const editorStore = useEditorStore();
-    const logger = editorStore.applicationStore.log;
-    const {
-      projectDependency,
-      disabled,
-      selectedVersionOption,
-      versionOptions,
-    } = props;
-    const onSelectionChange = (val: ProjectOption | null): void => {
-      if (
-        (val !== null || selectedVersionOption !== null) &&
-        (!val ||
-          !selectedVersionOption ||
-          val.value !== selectedVersionOption.value)
-      ) {
-        try {
-          projectDependency.setVersionId(val?.value ?? '');
-        } catch (error) {
-          assertErrorThrown(error);
-          logger.error(
-            LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-            error,
-          );
-        }
-      }
-    };
-    const projectSelectorPlaceholder = !projectDependency.projectId.length
-      ? 'Choose project'
-      : disabled
-      ? 'No project version found. Please create a new one.'
-      : 'Select version';
-    return (
-      <CustomSelectorInput
-        className="project-dependency-editor__selector"
-        ref={ref}
-        options={versionOptions}
-        isClearable={true}
-        escapeClearsValue={true}
-        onChange={onSelectionChange}
-        value={selectedVersionOption}
-        disabled={disabled}
-        placeholder={projectSelectorPlaceholder}
-        isLoading={
-          editorStore.projectConfigurationEditorState
-            .isFetchingAssociatedProjectsAndVersions
-        }
-        darkMode={true}
-      />
-    );
-  },
-  { forwardRef: true },
-);
-
-const ProjectDependencyProjectQuerySelector = observer(
-  (
-    props: {
-      projectDependency: ProjectDependency;
-      selectedProjectOption: ProjectOption | null;
-      disabled: boolean;
-    },
-    ref: React.Ref<SelectComponent>,
-  ) => {
-    const { projectDependency, selectedProjectOption, disabled } = props;
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const configurationEditorState =
-      editorStore.projectConfigurationEditorState;
-    const debouncedQueryProject = useMemo(
-      () =>
-        debounce((input: string): void => {
-          flowResult(configurationEditorState.queryProjects(input)).catch(
-            applicationStore.alertIllegalUnhandledError,
-          );
-        }, 500),
-      [applicationStore, configurationEditorState],
-    );
-    const options = Array.from(configurationEditorState.projects.values())
-      .map(buildProjectOption)
-      .sort(compareLabelFn);
-    const onSelectionChange = (val: ProjectOption | null): void => {
-      if (
-        (val !== null || selectedProjectOption !== null) &&
-        (!val ||
-          !selectedProjectOption ||
-          val.value !== selectedProjectOption.value)
-      ) {
-        projectDependency.setProjectId(val?.value ?? '');
-        if (val && !configurationEditorState.versionsByProject.get(val.value)) {
-          flowResult(
-            configurationEditorState.getProjectVersions(val.value),
-          ).catch(applicationStore.alertIllegalUnhandledError);
-        }
-      }
-    };
-
-    return (
-      <CustomSelectorInput
-        className="project-dependency-editor__selector"
-        ref={ref}
-        disabled={disabled}
-        options={options}
-        isClearable={true}
-        escapeClearsValue={true}
-        onChange={onSelectionChange}
-        value={selectedProjectOption}
-        onInputChange={debouncedQueryProject}
-        isLoading={
-          configurationEditorState.isFetchingAssociatedProjectsAndVersions ||
-          configurationEditorState.isQueryingProjects
-        }
-        darkMode={true}
-      />
-    );
-  },
-  { forwardRef: true },
-);
 
 const ProjectStructureEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
@@ -306,54 +169,123 @@ const ProjectStructureEditor = observer(
   },
 );
 
+const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
+  <div className="project-dependency-editor__label">
+    <div
+      className={clsx([
+        `project-dependency-editor__label__tag project-dependency-editor__label__tag--production`,
+      ])}
+    >
+      {option.value.projectId}
+    </div>
+    <div className="project-dependency-editor__label__name">
+      {option.value.coordinates}
+    </div>
+  </div>
+);
+
 const ProjectDependencyEditor = observer(
   (props: {
     projectDependency: ProjectDependency;
     deleteValue: () => void;
     isReadOnly: boolean;
   }) => {
-    const editorStore = useEditorStore();
-    const configurationEditorState =
-      editorStore.projectConfigurationEditorState;
+    // init
     const { projectDependency, deleteValue, isReadOnly } = props;
-    const version = projectDependency.versionId;
-    const selectedProject = configurationEditorState.projects.get(
-      projectDependency.projectId,
-    );
+    const editorStore = useEditorStore();
+    const logger = editorStore.applicationStore.log;
+    const projectSelectorRef = useRef<SelectComponent>(null);
+    const versionSelectorRef = useRef<SelectComponent>(null);
+    const configState = editorStore.projectConfigurationEditorState;
+    // project
+    const selectedProject =
+      configState.getProjectDataFromDependency(projectDependency);
     const selectedProjectOption = selectedProject
       ? buildProjectOption(selectedProject)
       : null;
-    const versionMap = configurationEditorState.versionsByProject.get(
-      projectDependency.projectId,
-    );
-    const versionOptions = versionMap
-      ? Array.from(versionMap.values()).map(buildVersionOption)
-      : [];
-    const selectedVersion: Version | undefined = versionMap?.get(version.id);
-    const selectedVersionOption = selectedVersion
-      ? buildVersionOption(selectedVersion)
-      : null;
-    const versionDisabled =
-      Boolean(
-        (versionMap && !versionMap.size) || !projectDependency.projectId.length,
-      ) ||
-      !configurationEditorState.associatedProjectsAndVersionsFetched ||
-      isReadOnly;
     const projectDisabled =
-      !configurationEditorState.associatedProjectsAndVersionsFetched ||
-      configurationEditorState.isReadOnly;
+      !configState.associatedProjectsAndVersionsFetched ||
+      configState.isReadOnly;
+    const projectsOptions = Array.from(configState.projects.values())
+      .map(buildProjectOption)
+      .sort(compareLabelFn);
+    const onProjectSelectionChange = (val: ProjectOption | null): void => {
+      if (
+        (val !== null || selectedProjectOption !== null) &&
+        (!val ||
+          !selectedProjectOption ||
+          val.value !== selectedProjectOption.value)
+      ) {
+        projectDependency.setProjectId(val?.value.coordinates ?? '');
+        if (val) {
+          projectDependency.setVersionId(val.value.latestVersion);
+        }
+      }
+    };
+    // version
+    const version = projectDependency.versionId;
+    const versions = selectedProject?.versions ?? [];
+    const versionOptions = versions.map((v) => ({ value: v, label: v }));
+    const selectedVersionOption: VersionOption | null =
+      versionOptions.find((v) => v.value === version.id) ?? null;
+    const versionDisabled =
+      Boolean(!versions.length || !projectDependency.projectId.length) ||
+      !configState.associatedProjectsAndVersionsFetched ||
+      isReadOnly;
+
+    const onVersionSelectionChange = (val: VersionOption | null): void => {
+      if (
+        (val !== null || selectedVersionOption !== null) &&
+        (!val ||
+          !selectedVersionOption ||
+          val.value !== selectedVersionOption.value)
+      ) {
+        try {
+          projectDependency.setVersionId(val?.value ?? '');
+        } catch (error) {
+          assertErrorThrown(error);
+          logger.error(
+            LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+            error,
+          );
+        }
+      }
+    };
+    const projectSelectorPlaceholder = !projectDependency.projectId.length
+      ? 'Choose project'
+      : versionDisabled
+      ? 'No project version found. Please create a new one.'
+      : 'Select version';
     return (
       <div className="project-dependency-editor">
-        <ProjectDependencyProjectQuerySelector
-          projectDependency={projectDependency}
-          selectedProjectOption={selectedProjectOption}
+        <CustomSelectorInput
+          className="project-dependency-editor__selector"
+          ref={projectSelectorRef}
           disabled={projectDisabled}
+          options={projectsOptions}
+          isClearable={true}
+          escapeClearsValue={true}
+          onChange={onProjectSelectionChange}
+          value={selectedProjectOption}
+          isLoading={configState.isFetchingAssociatedProjectsAndVersions}
+          formatOptionLabel={formatOptionLabel}
+          darkMode={true}
         />
-        <ProjectDependencyVersionSelector
-          projectDependency={projectDependency}
-          selectedVersionOption={selectedVersionOption}
-          versionOptions={versionOptions}
+        <CustomSelectorInput
+          className="project-dependency-editor__selector"
+          ref={versionSelectorRef}
+          options={versionOptions}
+          isClearable={true}
+          escapeClearsValue={true}
+          onChange={onVersionSelectionChange}
+          value={selectedVersionOption}
           disabled={versionDisabled}
+          placeholder={projectSelectorPlaceholder}
+          isLoading={
+            editorStore.projectConfigurationEditorState
+              .isFetchingAssociatedProjectsAndVersions
+          }
+          darkMode={true}
         />
         <button
           className="project-dependency-editor__remove-btn"
@@ -372,12 +304,12 @@ const ProjectDependencyEditor = observer(
 export const ProjectConfigurationEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const configurationEditorState = editorStore.getCurrentEditorState(
+  const configState = editorStore.getCurrentEditorState(
     ProjectConfigurationEditorState,
   );
   const sdlcState = editorStore.sdlcState;
   const isReadOnly = editorStore.isInViewerMode;
-  const selectedTab = configurationEditorState.selectedTab;
+  const selectedTab = configState.selectedTab;
   const tabs = [
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
@@ -385,7 +317,7 @@ export const ProjectConfigurationEditor = observer(() => {
   const changeTab =
     (tab: CONFIGURATION_EDITOR_TAB): (() => void) =>
     (): void =>
-      configurationEditorState.setSelectedTab(tab);
+      configState.setSelectedTab(tab);
   let addButtonTitle = '';
   switch (selectedTab) {
     case CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES:
@@ -394,8 +326,7 @@ export const ProjectConfigurationEditor = observer(() => {
     default:
       break;
   }
-  const currentProjectConfiguration =
-    configurationEditorState.currentProjectConfiguration;
+  const currentProjectConfiguration = configState.currentProjectConfiguration;
   const deleteProjectDependency =
     (val: ProjectDependency): (() => void) =>
     (): void =>
@@ -403,9 +334,19 @@ export const ProjectConfigurationEditor = observer(() => {
   const addValue = (): void => {
     if (!isReadOnly) {
       if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
-        currentProjectConfiguration.addProjectDependency(
-          new ProjectDependency(''),
-        );
+        const currentProjects = Array.from(configState.projects.values());
+        if (currentProjects.length) {
+          const projectToAdd = currentProjects[0];
+          const dependencyToAdd = new ProjectDependency(
+            projectToAdd.coordinates,
+          );
+          dependencyToAdd.setVersionId(projectToAdd.latestVersion);
+          currentProjectConfiguration.addProjectDependency(dependencyToAdd);
+        } else {
+          currentProjectConfiguration.addProjectDependency(
+            new ProjectDependency(''),
+          );
+        }
       }
     }
   };
@@ -426,7 +367,7 @@ export const ProjectConfigurationEditor = observer(() => {
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
               editorStore.setIgnoreNavigationBlocking(true);
-              flowResult(configurationEditorState.updateConfigs()).catch(
+              flowResult(configState.updateConfigs()).catch(
                 applicationStore.alertIllegalUnhandledError,
               );
             },
@@ -439,7 +380,7 @@ export const ProjectConfigurationEditor = observer(() => {
         ],
       });
     } else {
-      flowResult(configurationEditorState.updateConfigs()).catch(
+      flowResult(configState.updateConfigs()).catch(
         applicationStore.alertIllegalUnhandledError,
       );
     }
@@ -447,18 +388,16 @@ export const ProjectConfigurationEditor = observer(() => {
 
   useEffect(() => {
     if (
-      configurationEditorState.projectConfiguration &&
-      !configurationEditorState.associatedProjectsAndVersionsFetched
+      configState.projectConfiguration &&
+      !configState.associatedProjectsAndVersionsFetched
     ) {
-      flowResult(
-        configurationEditorState.fectchAssociatedProjectsAndVersions(
-          configurationEditorState.projectConfiguration,
-        ),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
     }
-  }, [applicationStore, configurationEditorState]);
+  }, [applicationStore, configState]);
 
-  if (!configurationEditorState.projectConfiguration) {
+  if (!configState.projectConfiguration) {
     return null;
   }
   return (
@@ -479,7 +418,7 @@ export const ProjectConfigurationEditor = observer(() => {
             disabled={
               isReadOnly ||
               currentProjectConfiguration.hashCode ===
-                configurationEditorState.originalConfig.hashCode
+                configState.originalConfig.hashCode
             }
             onClick={updateConfigs}
             tabIndex={-1}

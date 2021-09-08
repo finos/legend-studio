@@ -111,6 +111,9 @@ const setup = async (
       ...TEST_DATA__DefaultSDLCInfo.availableSchemaImports,
       ...TEST_DATA__DefaultSDLCInfo.availableCodeImports,
     ],
+    projects: [],
+    projectData: [],
+    projectDependency: [],
   });
   return mockedEditorStore;
 };
