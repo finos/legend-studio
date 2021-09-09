@@ -30,6 +30,7 @@
 
     background: var(--color-dark-grey-80);
     flex: 1 0 auto;
+    width: calc(100% - 5rem);
   }
 
   &__content {
