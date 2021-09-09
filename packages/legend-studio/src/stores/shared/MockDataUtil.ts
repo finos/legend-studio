@@ -16,10 +16,14 @@
 
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
-import { Randomizer, UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  Randomizer,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore';
 import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState';
-import type { PrimitiveType, Enumeration, Enum } from '@finos/legend-graph';
+import type { PrimitiveType, Enumeration } from '@finos/legend-graph';
 import {
   PRIMITIVE_TYPE,
   Class,
@@ -35,14 +39,14 @@ export const createMockPrimitiveProperty = (
   const randomizer = new Randomizer();
   switch (primitiveType.name) {
     case PRIMITIVE_TYPE.BOOLEAN:
-      return randomizer.getRandomItemInCollection<boolean>([true, false]);
+      return randomizer.getRandomItemInCollection([true, false]) ?? true;
     case PRIMITIVE_TYPE.FLOAT:
       return randomizer.getRandomFloat();
     case PRIMITIVE_TYPE.DECIMAL:
       return randomizer.getRandomDouble();
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.INTEGER:
-      return randomizer.getRandomPositiveInteger(100);
+      return randomizer.getRandomWholeNumber(100);
     // NOTE that `Date` is the umbrella type that comprises `StrictDate` and `DateTime`, but for simplicity, we will generate `Date` as `StrictDate`
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
@@ -63,14 +67,14 @@ export const createMockPrimitiveProperty = (
       );
     case PRIMITIVE_TYPE.STRING:
     default:
-      return `${propertyName} ${randomizer.getRandomPositiveInteger(100)}`;
+      return `${propertyName} ${randomizer.getRandomWholeNumber(100)}`;
   }
 };
 
 export const createMockEnumerationProperty = (
   enumeration: Enumeration,
 ): string =>
-  new Randomizer().getRandomItemInCollection<Enum>(enumeration.values).name;
+  new Randomizer().getRandomItemInCollection(enumeration.values)?.name ?? '';
 
 export const createMockClassInstance = (
   _class: Class,
@@ -166,7 +170,15 @@ export const createMockDataForMappingElementSource = (
   editorStore: EditorStore,
 ): string => {
   if (srcElement instanceof Class) {
-    return JSON.stringify(createMockDataForClass(srcElement), undefined, 2);
+    try {
+      return JSON.stringify(createMockDataForClass(srcElement), undefined, 2);
+    } catch (error) {
+      assertErrorThrown(error);
+      editorStore.applicationStore.notifyWarning(
+        `Can't generate test data for class '${srcElement}'. Error:\n${error.message}`,
+      );
+      return '';
+    }
   }
   editorStore.applicationStore.notifyWarning(
     new UnsupportedOperationError(

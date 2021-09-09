@@ -46,8 +46,8 @@ import { useApplicationStore } from '@finos/legend-application';
 import { SetImplementation } from '@finos/legend-graph';
 
 const addTestPromps = [
-  "Let's add some test!",
-  '"A test a day keeps the QA away"',
+  `Let's add some test!`,
+  `"A test a day keeps the QA away"`,
 ];
 
 export const MappingTestExplorerContextMenu = observer(
@@ -486,7 +486,8 @@ export const MappingTestsExplorer = observer(
                 onClick={showClassMappingSelectorModal}
               >
                 <div className="mapping-test-explorer__content__adder__text">
-                  {new Randomizer().getRandomItemInCollection(addTestPromps)}
+                  {new Randomizer().getRandomItemInCollection(addTestPromps) ??
+                    addTestPromps[0]}
                 </div>
                 <div className="mapping-test-explorer__content__adder__action">
                   <MdVerticalAlignBottom className="mapping-test-explorer__content__adder__action__dnd-icon" />
