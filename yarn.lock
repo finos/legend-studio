@@ -3871,10 +3871,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.7.13":
-  version: 16.7.13
-  resolution: "@types/node@npm:16.7.13"
-  checksum: 15dc28aa44674d3f49dcca4a6523b6ab1ef9bbea5c659057bec13153e1873718d6b62ab0ea57a3d57ee37f0f1136ae30e3ea503df43b0afa3ae437c8750be7f5
+"@types/node@npm:16.9.0":
+  version: 16.9.0
+  resolution: "@types/node@npm:16.9.0"
+  checksum: cb210bcfe201d6506f1ace9e940cf45307c1fc845ad1e67bb4a2dc39a2e3441382973e96b78568844c6f324cd0d2dddcb07639313d75cdb1ac5776c9255349fb
   languageName: node
   linkType: hard
 
@@ -10359,7 +10359,7 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 27.0.1
-    "@types/node": 16.7.13
+    "@types/node": 16.9.0
     chalk: 4.1.2
     cross-env: 7.0.3
     eslint: 7.32.0
