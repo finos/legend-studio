@@ -1,5 +1,13 @@
 # @finos/legend-studio
 
+## 0.2.18
+
+### Patch Changes
+
+- [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Fix layout problem when there are many items being opened causing the tab bar to overflow and activity bar to disappear ([#462](https://github.com/finos/legend-studio/issues/462)).
+
+* [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Fix problem where model test data generation fails when encoutering enumeration with 0 or 1 enum value (fixes [#463](https://github.com/finos/legend-studio/issues/463)). Also, we ensure this kind of error is handled gracefully and do not crash the application.
+
 ## 0.2.17
 
 ## 0.2.16
