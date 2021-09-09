@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 0.0.3
+
+### Patch Changes
+
+- [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Document and fix `Randomizer` bug with `getRandomItemInCollection()` and `getRandomPositiveInteger()` methods (related to [#463](https://github.com/finos/legend-studio/issues/463)). Rename `getRandomPositiveInteger()` to `getRandomWholeNumber()`.
+
 ## 0.0.2
 
 ### Patch Changes

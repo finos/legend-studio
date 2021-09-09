@@ -1,5 +1,7 @@
 # @finos/legend-extension-external-format-json-schema
 
+## 0.0.4
+
 ## 0.0.3
 
 ### Patch Changes
