@@ -31,32 +31,45 @@ export class Randomizer {
     this.rng = seedrandom(seed);
   }
 
+  /**
+   * Get a random float in internal [0,1]
+   */
   getRandomFloat(): number {
-    return this.rng.quick();
+    // NOTE: the randomizer library we use automatically guarantee the value lies within the interval [0,1]
+    // but we do this just in case
+    return Math.abs(this.rng.quick() % 1);
   }
 
+  /**
+   * Get a random double in internal [0,1]
+   */
   getRandomDouble(): number {
-    return this.rng.double();
+    // NOTE: the randomizer library we use automatically guarantee the value lies within the interval [0,1]
+    // but we do this just in case
+    return Math.abs(this.rng.double() % 1);
   }
 
   getRandomSignedInteger(): number {
     return this.rng.int32();
   }
 
-  getRandomPositiveInteger(max?: number): number {
-    return max
-      ? Math.floor(this.getRandomFloat() * Math.floor(max))
+  /**
+   * Return whole number in internal [0, max] if `max` is specified, or otherwise, [0, Infinity)
+   */
+  getRandomWholeNumber(max?: number): number {
+    return max !== undefined
+      ? Math.abs(Math.floor(this.getRandomFloat() * Math.floor(max)))
       : Math.abs(this.getRandomSignedInteger());
   }
 
-  getRandomItemInCollection<T>(collection: T[]): T {
-    return collection[this.getRandomPositiveInteger(collection.length - 1)];
+  getRandomItemInCollection<T>(collection: T[]): T | undefined {
+    return collection[this.getRandomWholeNumber(collection.length - 1)];
   }
 
   getRandomDate(start: Date, end: Date): Date {
     return new Date(
       start.getTime() +
-        Math.round(this.getRandomFloat() * (end.getTime() - start.getTime())),
+        Math.floor(this.getRandomFloat() * (end.getTime() - start.getTime())),
     );
   }
 }
