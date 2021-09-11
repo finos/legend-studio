@@ -117,7 +117,7 @@ export async function validateChangesets(cwd, sinceRef) {
         .join('\n')}`,
     );
     error(
-      `Run \`yarn changeset "e.g. some message ..."\` to quickly add a changeset.`,
+      `Run \`yarn changeset:new "e.g. some message ..."\` to quickly add a changeset`,
     );
     process.exit(1);
   }

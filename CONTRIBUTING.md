@@ -73,7 +73,7 @@ To create the changeset, you can use the following commands:
 # To quickly generate a changeset
 # NOTE: you can provide an optional message. If no message is provided,
 # the summary part of your changeset will be left blank.
-yarn changeset "e.g. some message ..."
+yarn changeset:new "e.g. some message ..."
 
 # To open an interactive prompt to build more advanced changeset
 yarn changeset:cli
@@ -184,8 +184,7 @@ yarn fix
 Make sure to [create a changeset](#changeset) if you make significant code logic changes. Commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
 
 ```sh
-# Bring up the interactive tool to build changeset.
-yarn changeset
+yarn changeset:new
 ```
 
 #### :package: Releasing
