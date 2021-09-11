@@ -116,24 +116,20 @@ Each workspace in the monorepo should have a `dev` script. Run these (in separat
 
 ```sh
 # Clean and build all workspaces.
-yarn build
-
-# NOTE: Building top-level workspaces can take more time due to bundling
-# and minification, so it's best to avoid rebuilding these. The tip is to keep the rebuilding scope as close to your changes as possible.
+#
+# NOTE: To save time, keep the build scope as close to your changes as possible.
 #
 # In general, you can call a script from a particular workspace using
 # the following command construct
-#   yarn worksapce <workspact-name> <workspace-script>
+#   yarn workspace <workspace-name> <workspace-script>
 # e.g. To call `build` script of workspace `lib1`:
 #   yarn workspace lib1 build
 #
-# There are also other build scripts that target a smaller build scopes.
-
-# Clean and build all workspaces other than the top-level ones.
-yarn build:setup
+# There are also other build scripts within each workspace which targets a smaller build scopes.
+yarn build
 
 # Using project reference, build and develop Typescript files in all workspaces.
-# This is usually suficient if you make code change not related to styling.
+# This is usually sufficient if you make code change not related to styling.
 yarn build:tsc
 yarn dev:tsc
 ```

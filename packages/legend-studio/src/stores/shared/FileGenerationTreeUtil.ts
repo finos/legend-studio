@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   isNonNullable,
   returnUndefOnError,
   addUniqueEntry,
-} from '@finos/legend-studio-shared';
-import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
+} from '@finos/legend-shared';
+import type { GenerationOutput } from '@finos/legend-graph';
 
 export interface GenerationOutputResult {
   generationOutput: GenerationOutput;
-  parentId?: string;
+  parentId?: string | undefined;
 }
 export const DIRECTORY_PATH_DELIMITER = '/';
 export const GENERATION_FILE_ROOT_NAME = 'GENERATION_FILE_ROOT';
@@ -32,8 +32,8 @@ export const GENERATION_FILE_ROOT_NAME = 'GENERATION_FILE_ROOT';
 // Generation Directory Model
 class GenerationFileNodeElement {
   name: string;
-  directory?: GenerationDirectory;
-  parentId?: string;
+  directory?: GenerationDirectory | undefined;
+  parentId?: string | undefined;
 
   constructor(name: string, fileGenerationParent?: string) {
     this.name = name;
@@ -121,7 +121,7 @@ export class GenerationDirectory extends GenerationFileNodeElement {
 
 export class GenerationFile extends GenerationFileNodeElement {
   content!: string;
-  format?: string;
+  format?: string | undefined;
 
   constructor(
     name: string,

@@ -16,7 +16,6 @@
 
 import { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   FaInfoCircle,
   FaTimes,
@@ -26,21 +25,23 @@ import {
 import { Link } from 'react-router-dom';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import type { EntityDiff } from '../../../models/sdlc/models/comparison/EntityDiff';
-import { entityDiffSorter } from '../../../models/sdlc/models/comparison/EntityDiff';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
 import { MdRefresh } from 'react-icons/md';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { formatDistanceToNow } from 'date-fns';
 import { FiGitMerge } from 'react-icons/fi';
+import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { flowResult } from 'mobx';
+import type { EntityDiff } from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
-} from '../../../stores/ApplicationStore';
-import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { CORE_TEST_ID } from '../../../const';
-import { flowResult } from 'mobx';
+} from '@finos/legend-application';
+import type { StudioConfig } from '../../../application/StudioConfig';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
@@ -70,7 +71,7 @@ export const WorkspaceReviewDiffs = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
         >
           {changes.length}
         </div>
@@ -94,7 +95,7 @@ export const WorkspaceReviewDiffs = observer(() => {
 
 export const WorkspaceReview = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const workspaceReviewState = editorStore.workspaceReviewState;
   const workspaceReview = workspaceReviewState.workspaceReview;
   // Review Title
@@ -232,36 +233,38 @@ export const WorkspaceReview = observer(() => {
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div className="panel workspace-review">
           {!workspaceReview && (
-            <form
-              className="workspace-review__title"
-              onSubmit={(e): void => {
-                e.preventDefault();
-              }}
-            >
-              <div className="workspace-review__title__content">
-                <input
-                  className="workspace-review__title__content__input input--dark"
-                  ref={reviewTitleInputRef}
-                  spellCheck={false}
-                  value={workspaceReviewState.reviewTitle}
-                  disabled={Boolean(workspaceReview)}
-                  onChange={editReviewTitle}
-                  placeholder={'Title'}
-                />
-              </div>
-              <button
-                className="btn--dark btn--sm"
-                onClick={createReview}
-                disabled={
-                  isDispatchingAction ||
-                  Boolean(workspaceReview) ||
-                  !workspaceReviewState.reviewTitle
-                }
-                title={'Create review'}
+            <>
+              <form
+                className="workspace-review__title"
+                onSubmit={(e): void => {
+                  e.preventDefault();
+                }}
               >
-                <FaPlus />
-              </button>
-            </form>
+                <div className="workspace-review__title__content">
+                  <input
+                    className="workspace-review__title__content__input input--dark"
+                    ref={reviewTitleInputRef}
+                    spellCheck={false}
+                    value={workspaceReviewState.reviewTitle}
+                    disabled={Boolean(workspaceReview)}
+                    onChange={editReviewTitle}
+                    placeholder={'Title'}
+                  />
+                </div>
+                <button
+                  className="btn--dark btn--sm"
+                  onClick={createReview}
+                  disabled={
+                    isDispatchingAction ||
+                    Boolean(workspaceReview) ||
+                    !workspaceReviewState.reviewTitle
+                  }
+                  title={'Create review'}
+                >
+                  <FaPlus />
+                </button>
+              </form>
+            </>
           )}
           {workspaceReview && (
             <>

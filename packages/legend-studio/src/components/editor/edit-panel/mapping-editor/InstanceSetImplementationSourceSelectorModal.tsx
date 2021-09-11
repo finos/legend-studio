@@ -16,25 +16,27 @@
 
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import {
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-studio-components';
-import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
+import type { SelectComponent } from '@finos/legend-art';
+import { CustomSelectorInput, createFilter } from '@finos/legend-art';
+import type {
+  MappingEditorState,
+  MappingElementSource,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import { getMappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import Dialog from '@material-ui/core/Dialog';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { MappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { getMappingElementSource } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../models/MetaModelConst';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
+import type { InstanceSetImplementation } from '@finos/legend-graph';
+import {
+  Class,
+  RootFlatDataRecordType,
+  View,
+  Table,
+  DEFAULT_DATABASE_SCHEMA_NAME,
+} from '@finos/legend-graph';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSourceFilterText = (
@@ -81,7 +83,7 @@ export const buildMappingElementSourceOption = (
   source: MappingElementSource | undefined,
 ): MappingElementSourceSelectOption | null => {
   if (source instanceof Class) {
-    return source.selectOption as MappingElementSourceSelectOption;
+    return buildElementOption(source) as MappingElementSourceSelectOption;
   } else if (source instanceof RootFlatDataRecordType) {
     return {
       label: `${source.owner.owner.name}.${source.owner.name}`,
@@ -121,13 +123,15 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     const applicationStore = useApplicationStore();
     /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const options = (
-      editorStore.graphState.graph.ownClasses as MappingElementSource[]
+      editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
     )
       .concat(
-        editorStore.graphState.graph.ownFlatDatas.flatMap((e) => e.recordTypes),
+        editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
+          (e) => e.recordTypes,
+        ),
       )
       .concat(
-        editorStore.graphState.graph.ownDatabases.flatMap((e) =>
+        editorStore.graphManagerState.graph.ownDatabases.flatMap((e) =>
           e.schemas.flatMap((schema) =>
             (schema.tables as (Table | View)[]).concat(schema.views),
           ),

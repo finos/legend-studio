@@ -16,18 +16,14 @@
 
 import { FaTimes } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import {
-  clsx,
-  DropdownMenu,
-  ContextMenu,
-} from '@finos/legend-studio-components';
+import { clsx, DropdownMenu, ContextMenu } from '@finos/legend-art';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,
 } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffView } from '../editor/edit-panel/diff-editor/EntityDiffView';
-import { useEditorStore } from '../../stores/EditorStore';
 import type { EditorState } from '../../stores/editor-state/EditorState';
+import { useEditorStore } from '../editor/EditorStoreProvider';
 
 export const ReviewPanelSplashScreen: React.FC = () => (
   <div className="review-panel__splash-screen"></div>

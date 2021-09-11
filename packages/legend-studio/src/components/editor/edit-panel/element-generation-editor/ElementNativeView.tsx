@@ -17,13 +17,13 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
-import {
-  EDITOR_LANGUAGE,
-  ELEMENT_NATIVE_VIEW_MODE,
-} from '../../../../stores/EditorConfig';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { ELEMENT_NATIVE_VIEW_MODE } from '../../../../stores/EditorConfig';
 import { flowResult } from 'mobx';
+import {
+  useApplicationStore,
+  EDITOR_LANGUAGE,
+} from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 export const ElementNativeView = observer(
   (props: { currentElementState: ElementEditorState }) => {
@@ -51,7 +51,7 @@ export const ElementNativeView = observer(
     }, [applicationStore, currentElementState, currentElementState.editMode]);
 
     return (
-      <TextInputEditor
+      <StudioTextInputEditor
         inputValue={generatedText}
         language={editorLanguage}
         isReadOnly={true}

@@ -17,11 +17,7 @@
 const ERROR = 2;
 
 const IMPORT_RULES = {
-  // NOTE: this rule prevents using dependencies not listed in `package.json`
-  // We temporarily disable it due to the following issue
-  // See https://github.com/benmosher/eslint-plugin-import/issues/2120
-  // See https://github.com/benmosher/eslint-plugin-import/pull/2121
-  // 'import/no-extraneous-dependencies': ERROR,
+  'import/no-extraneous-dependencies': ERROR,
   // See https://github.com/benmosher/eslint-plugin-import/blob/master/config/warnings.js
   'import/no-named-as-default': ERROR,
   'import/no-named-as-default-member': ERROR,

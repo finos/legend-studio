@@ -16,7 +16,6 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,
@@ -24,13 +23,16 @@ import {
 import { TextDiffView, JsonDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
 import { VscGoToFile } from 'react-icons/vsc';
-import type { EntityDiff } from '../../../../models/sdlc/models/comparison/EntityDiff';
-import { EntityChangeType } from '../../../../models/sdlc/models/entity/EntityChange';
-import { clsx } from '@finos/legend-studio-components';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
+import { clsx } from '@finos/legend-art';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import type { EntityDiff } from '@finos/legend-server-sdlc';
+import { EntityChangeType } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../../EditorStoreProvider';
+import {
+  useApplicationStore,
+  EDITOR_LANGUAGE,
+} from '@finos/legend-application';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {

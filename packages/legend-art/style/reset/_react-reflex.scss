@@ -1,0 +1,148 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// This is adapted from `react-reflex` native style
+// See https://github.com/leefsmp/Re-Flex/blob/master/src/lib/reflex-styles.scss
+
+.reflex-col-resize {
+  cursor: col-resize;
+}
+
+.reflex-row-resize {
+  cursor: row-resize;
+}
+
+.reflex-container {
+  justify-content: flex-start; /* align items in Main Axis */
+  align-items: stretch; /* align items in Cross Axis */
+  align-content: stretch;
+  display: flex;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.reflex-container.horizontal {
+  flex-direction: column;
+  min-height: 0; // default is 1px
+}
+
+.reflex-container.vertical {
+  flex-direction: row;
+  min-width: 0; // default is 1px
+}
+
+.reflex-container > .reflex-element {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.reflex-container.reflex-resizing > .reflex-element {
+  pointer-events: none;
+  user-select: none;
+}
+
+.reflex-container > .reflex-element > .reflex-size-aware {
+  height: 100%;
+  width: 100%;
+}
+
+.reflex-container > .reflex-splitter {
+  background: transparent;
+  position: relative;
+  z-index: 100;
+}
+
+.horizontal > .reflex-splitter {
+  border-bottom: none;
+  border-top: none;
+  cursor: row-resize;
+  width: 100%;
+  height: 0.4rem;
+  min-height: 0.4rem;
+  margin: -0.2rem 0;
+}
+
+.reflex-container > .reflex-splitter.active,
+.reflex-container > .reflex-splitter:hover {
+  transition: all 1s ease;
+}
+
+.reflex-element.horizontal .reflex-handle {
+  cursor: row-resize;
+  user-select: none;
+}
+
+.reflex-container.horizontal
+  > .reflex-splitter
+  > .resizable-panel__splitter-line {
+  height: 0.1rem;
+  width: 100%;
+  position: absolute;
+  top: 0.2rem;
+}
+
+.reflex-container.vertical > .reflex-splitter {
+  border-right: none;
+  border-left: none;
+  cursor: col-resize;
+  height: 100%;
+  width: 0.4rem;
+  min-width: 0.4rem;
+  margin: 0 -0.2rem;
+}
+
+.reflex-container.horizontal > .reflex-splitter:hover,
+.reflex-container.horizontal > .reflex-splitter.active {
+  background: var(--color-dark-grey-300);
+  border-bottom: none;
+  border-top: none;
+
+  .resizable-panel__splitter-line {
+    background: transparent !important;
+  }
+}
+
+.reflex-element.vertical .reflex-handle {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.reflex-container.vertical
+  > .reflex-splitter
+  > .resizable-panel__splitter-line {
+  width: 0.1rem;
+  height: 100%;
+  position: absolute;
+  left: 0.2rem;
+}
+
+.reflex-container.vertical > .reflex-splitter:hover,
+.reflex-container.vertical > .reflex-splitter.active {
+  background: var(--color-dark-grey-300);
+  border-right: none;
+  border-left: none;
+
+  .resizable-panel__splitter-line {
+    background: transparent !important;
+  }
+}
+
+.reflex-element.resizable-panel--minimized {
+  visibility: hidden;
+}

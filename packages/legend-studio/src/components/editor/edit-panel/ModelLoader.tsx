@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   ModelLoaderState,
   MODEL_UPDATER_INPUT_TYPE,
@@ -26,21 +25,18 @@ import {
   FaCheckSquare,
   FaTruckLoading,
 } from 'react-icons/fa';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { EDITOR_LANGUAGE } from '../../../stores/EditorConfig';
-import { TextInputEditor } from '../../shared/TextInputEditor';
+import { prettyCONSTName } from '@finos/legend-shared';
+import { DropdownMenu, MenuContent, MenuContentItem } from '@finos/legend-art';
+import type { ImportConfigurationDescription } from '@finos/legend-graph';
+import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
-} from '../../../stores/ApplicationStore';
-import {
-  DropdownMenu,
-  MenuContent,
-  MenuContentItem,
-} from '@finos/legend-studio-components';
-import type { ImportConfigurationDescription } from '../../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
-import { flowResult } from 'mobx';
+  EDITOR_LANGUAGE,
+} from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -204,7 +200,7 @@ export const ModelLoader = observer(() => {
         </div>
       </div>
       <div className="panel__content model-loader__editor">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={modelLoaderState.modelText}
           updateInput={updateModel}

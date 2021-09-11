@@ -15,21 +15,14 @@
  */
 
 import type { EditorStore } from '../../EditorStore';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
-import {
-  observable,
-  action,
-  flow,
-  computed,
-  makeObservable,
-  flowResult,
-} from 'mobx';
-import { ELEMENT_NATIVE_VIEW_MODE, TAB_SIZE } from '../../EditorConfig';
+import { observable, action, flow, computed, makeObservable } from 'mobx';
+import { ELEMENT_NATIVE_VIEW_MODE } from '../../EditorConfig';
 import { EditorState } from '../../editor-state/EditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { assertErrorThrown } from '@finos/legend-studio-shared';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { LogEvent, assertErrorThrown } from '@finos/legend-shared';
+import type { CompilationError, PackageableElement } from '@finos/legend-graph';
+import { GRAPH_MANAGER_LOG_EVENT } from '@finos/legend-graph';
+import { TAB_SIZE } from '@finos/legend-application';
 
 const generateMultiLineCommentForError = (
   message: string,
@@ -40,7 +33,7 @@ const generateMultiLineCommentForError = (
 export abstract class ElementEditorState extends EditorState {
   element: PackageableElement;
   editMode = ELEMENT_NATIVE_VIEW_MODE.FORM;
-  generationViewMode?: string;
+  generationViewMode?: string | undefined;
   textContent = '';
   isReadOnly = false;
 
@@ -85,14 +78,14 @@ export abstract class ElementEditorState extends EditorState {
   generateElementProtocol(): void {
     try {
       const elementEntity =
-        this.editorStore.graphState.graphManager.elementToEntity(
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
           this.element,
           true,
         );
       this.setTextContent(
         JSON.stringify(elementEntity.content, undefined, TAB_SIZE),
       );
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.setTextContent(
         generateMultiLineCommentForError(
@@ -100,8 +93,8 @@ export abstract class ElementEditorState extends EditorState {
           error,
         ),
       );
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.PARSING_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
         error,
       );
     }
@@ -110,17 +103,16 @@ export abstract class ElementEditorState extends EditorState {
   *generateElementGrammar(): GeneratorFn<void> {
     try {
       const elementEntity =
-        this.editorStore.graphState.graphManager.elementToEntity(
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
           this.element,
           false,
         );
-      const grammar = (yield flowResult(
-        this.editorStore.graphState.graphManager.entitiesToPureCode([
-          elementEntity,
-        ]),
-      )) as string;
+      const grammar =
+        (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+          [elementEntity],
+        )) as string;
       this.setTextContent(grammar);
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
       this.setTextContent(
         generateMultiLineCommentForError(
@@ -128,8 +120,8 @@ export abstract class ElementEditorState extends EditorState {
           error,
         ),
       );
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.PARSING_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
         error,
       );
     }

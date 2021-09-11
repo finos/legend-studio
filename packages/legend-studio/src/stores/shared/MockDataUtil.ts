@@ -14,64 +14,67 @@
  * limitations under the License.
  */
 
-import { DATE_TIME_FORMAT, DATE_FORMAT } from '../../const';
-import { PRIMITIVE_TYPE } from '../../models/MetaModelConst';
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
-import type { PrimitiveType } from '../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import type { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import type { Enum } from '../../models/metamodels/pure/model/packageableElements/domain/Enum';
 import {
+  assertErrorThrown,
+  Randomizer,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import type { EditorStore } from '../EditorStore';
+import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState';
+import type { PrimitiveType, Enumeration } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
   Class,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { MappingElementSource } from '../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import {
-  getRandomDate,
-  getRandomDouble,
-  getRandomFloat,
-  getRandomPositiveInteger,
-  getRandomItemInCollection,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
-import type { EditorStore } from '../EditorStore';
+} from '@finos/legend-graph';
+import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,
   propertyName: string,
 ): string | number | boolean => {
+  const randomizer = new Randomizer();
   switch (primitiveType.name) {
     case PRIMITIVE_TYPE.BOOLEAN:
-      return getRandomItemInCollection<boolean>([true, false]);
+      return randomizer.getRandomItemInCollection([true, false]) ?? true;
     case PRIMITIVE_TYPE.FLOAT:
-      return getRandomFloat();
+      return randomizer.getRandomFloat();
     case PRIMITIVE_TYPE.DECIMAL:
-      return getRandomDouble();
+      return randomizer.getRandomDouble();
     case PRIMITIVE_TYPE.NUMBER:
     case PRIMITIVE_TYPE.INTEGER:
-      return getRandomPositiveInteger(100);
+      return randomizer.getRandomWholeNumber(100);
     // NOTE that `Date` is the umbrella type that comprises `StrictDate` and `DateTime`, but for simplicity, we will generate `Date` as `StrictDate`
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
       return format(
-        getRandomDate(new Date(Date.now()), addDays(Date.now(), 100)),
+        randomizer.getRandomDate(
+          new Date(Date.now()),
+          addDays(Date.now(), 100),
+        ),
         DATE_FORMAT,
       );
     case PRIMITIVE_TYPE.DATETIME:
       return format(
-        getRandomDate(new Date(Date.now()), addDays(Date.now(), 100)),
+        randomizer.getRandomDate(
+          new Date(Date.now()),
+          addDays(Date.now(), 100),
+        ),
         DATE_TIME_FORMAT,
       );
     case PRIMITIVE_TYPE.STRING:
     default:
-      return `${propertyName} ${getRandomPositiveInteger(100)}`;
+      return `${propertyName} ${randomizer.getRandomWholeNumber(100)}`;
   }
 };
 
 export const createMockEnumerationProperty = (
   enumeration: Enumeration,
-): string => getRandomItemInCollection<Enum>(enumeration.values).name;
+): string =>
+  new Randomizer().getRandomItemInCollection(enumeration.values)?.name ?? '';
 
 export const createMockClassInstance = (
   _class: Class,
@@ -167,7 +170,15 @@ export const createMockDataForMappingElementSource = (
   editorStore: EditorStore,
 ): string => {
   if (srcElement instanceof Class) {
-    return JSON.stringify(createMockDataForClass(srcElement), undefined, 2);
+    try {
+      return JSON.stringify(createMockDataForClass(srcElement), undefined, 2);
+    } catch (error) {
+      assertErrorThrown(error);
+      editorStore.applicationStore.notifyWarning(
+        `Can't generate test data for class '${srcElement}'. Error:\n${error.message}`,
+      );
+      return '';
+    }
   }
   editorStore.applicationStore.notifyWarning(
     new UnsupportedOperationError(

@@ -16,10 +16,12 @@
 
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   assertTrue,
   guaranteeNonNullable,
@@ -28,23 +30,23 @@ import {
   HttpStatus,
   hashObject,
   deleteEntry,
-} from '@finos/legend-studio-shared';
-import { ProjectConfiguration } from '../../models/sdlc/models/configuration/ProjectConfiguration';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
-import {
-  RevisionAlias,
-  Revision,
-} from '../../models/sdlc/models/revision/Revision';
-import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
+} from '@finos/legend-shared';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
+import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import { ACTIVITY_MODE } from '../EditorConfig';
+import type { Entity } from '@finos/legend-model-storage';
 import type {
   EntityChangeConflict,
   EntityChangeConflictResolution,
-} from '../../models/sdlc/models/entity/EntityChangeConflict';
-import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { EntityChangeType } from '../../models/sdlc/models/entity/EntityChange';
-import { ACTIVITY_MODE } from '../EditorConfig';
+} from '@finos/legend-server-sdlc';
+import {
+  EntityChangeType,
+  EntityDiff,
+  ProjectConfiguration,
+  Revision,
+  RevisionAlias,
+} from '@finos/legend-server-sdlc';
 
 export class ConflictResolutionState {
   editorStore: EditorStore;
@@ -204,7 +206,7 @@ export class ConflictResolutionState {
       'Editor must be in conflict resolution mode to call this method',
     );
     const projectConfiguration =
-      (yield this.sdlcState.sdlcClient.getConfigurationOfWorkspaceInConflictResolutionMode(
+      (yield this.editorStore.sdlcServerClient.getConfigurationOfWorkspaceInConflictResolutionMode(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       )) as PlainObject<ProjectConfiguration>;
@@ -238,16 +240,16 @@ export class ConflictResolutionState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - startTime,
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -256,7 +258,7 @@ export class ConflictResolutionState {
     }
   }
 
-  *init(): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInConflictResolutionMode,
       'Editor must be in conflict resolution mode to call this method',
@@ -318,23 +320,20 @@ export class ConflictResolutionState {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.editorStore.changeDetectionState.stop();
-      yield flowResult(
-        this.editorStore.graphState.graph.precomputeHashes(
-          this.editorStore.applicationStore.logger,
-        ),
-      );
+      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -349,7 +348,7 @@ export class ConflictResolutionState {
     try {
       // fetch latest revision
       const latestRevision = Revision.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.getConflictResolutionRevision(
+        (yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.CURRENT,
@@ -361,7 +360,7 @@ export class ConflictResolutionState {
         `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
       );
       const entities =
-        (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+        (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           this.sdlcState.currentRevisionId,
@@ -372,13 +371,16 @@ export class ConflictResolutionState {
       yield flowResult(
         this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.buildEntityHashesIndex(
           entities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -392,7 +394,7 @@ export class ConflictResolutionState {
     );
     try {
       const workspaceBaseEntities =
-        (yield this.sdlcState.sdlcClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
+        (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.BASE,
@@ -403,13 +405,16 @@ export class ConflictResolutionState {
       yield flowResult(
         this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.buildEntityHashesIndex(
           workspaceBaseEntities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          ),
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -429,7 +434,8 @@ export class ConflictResolutionState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
@@ -455,7 +461,7 @@ export class ConflictResolutionState {
       });
       const entityChanges =
         this.editorStore.graphState.computeLocalEntityChanges();
-      yield this.sdlcState.sdlcClient.acceptConflictResolution(
+      yield this.editorStore.sdlcServerClient.acceptConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
         {
@@ -471,10 +477,11 @@ export class ConflictResolutionState {
         },
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.navigator.reload();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -496,7 +503,8 @@ export class ConflictResolutionState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
@@ -520,15 +528,16 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.sdlcState.sdlcClient.discardConflictResolutionChanges(
+      yield this.editorStore.sdlcServerClient.discardConflictResolutionChanges(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.navigator.reload();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -550,7 +559,8 @@ export class ConflictResolutionState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
@@ -574,15 +584,16 @@ export class ConflictResolutionState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      yield this.sdlcState.sdlcClient.abortConflictResolution(
+      yield this.editorStore.sdlcServerClient.abortConflictResolution(
         this.sdlcState.currentProjectId,
         this.sdlcState.currentWorkspaceId,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
-      window.location.reload();
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.navigator.reload();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -597,7 +608,7 @@ export class ConflictResolutionState {
     ): Entity | undefined =>
       entityPath
         ? this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.entities.find(
-            (e) => e.path === entityPath,
+            (entity) => entity.path === entityPath,
           )
         : undefined;
     const toEntityGetter = (
@@ -609,14 +620,17 @@ export class ConflictResolutionState {
       if (this.hasResolvedAllConflicts) {
         // if the editor has already built the graph, we will get live entity
         const element =
-          this.editorStore.graphState.graph.getNullableElement(entityPath);
+          this.editorStore.graphManagerState.graph.getNullableElement(
+            entityPath,
+          );
         if (!element) {
           return undefined;
         }
-        const entity = this.editorStore.graphState.graphManager.elementToEntity(
-          element,
-          true,
-        );
+        const entity =
+          this.editorStore.graphManagerState.graphManager.elementToEntity(
+            element,
+            true,
+          );
         return entity;
       }
       // if the editor is still in conflict resolution phase (i.e. graph is not built yet), we will get entity from change detection or conflict resolutions
@@ -628,7 +642,7 @@ export class ConflictResolutionState {
       }
       // if the change is not from a conflict resolution, it must be from the list of entities of the latest revision in the workspace
       return this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.entities.find(
-        (e) => e.path === entityPath,
+        (entity) => entity.path === entityPath,
       );
     };
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)

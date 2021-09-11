@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { checkProjectReferenceConfig } from '@finos/legend-studio-dev-utils/ProjectReferenceConfigChecker';
+import { checkProjectReferenceConfig } from '@finos/legend-dev-utils/ProjectReferenceConfigChecker';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 

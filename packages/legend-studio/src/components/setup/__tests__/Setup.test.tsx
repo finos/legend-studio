@@ -20,22 +20,22 @@ import {
   integrationTest,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
-} from '@finos/legend-studio-shared';
-import {
-  getApplicationNavigationHistory,
-  getMockedApplicationStore,
-  SDLC_TestData,
-} from '../../ComponentTestUtils';
-import type { ApplicationStore } from '../../../stores/ApplicationStore';
-import { ApplicationStoreProvider } from '../../../stores/ApplicationStore';
-import { getTestApplicationConfig } from '../../../stores/StoreTestUtils';
-import { Router } from 'react-router-dom';
-import { PluginManager } from '../../../application/PluginManager';
+} from '@finos/legend-shared';
+import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils';
+import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
+import {
+  TEST__SDLCServerClientProvider,
+  TEST__provideMockedSDLCServerClient,
+} from '@finos/legend-server-sdlc';
+import { TEST__ApplicationStoreProvider } from '@finos/legend-application';
+import { TEST__getTestStudioConfig } from '../../../stores/EditorStoreTestUtils';
 
-let appStore: ApplicationStore;
+let sdlcServerClient: SDLCServerClient;
+
 beforeEach(() => {
-  appStore = getMockedApplicationStore(getTestApplicationConfig());
+  sdlcServerClient = TEST__provideMockedSDLCServerClient();
 });
 
 test(
@@ -45,22 +45,19 @@ test(
   async () => {
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(appStore.networkClientManager.sdlcClient, 'getProjects')
-      .mockResolvedValueOnce([SDLC_TestData.project])
+      .spyOn(sdlcServerClient, 'getProjects')
+      .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
       .mockResolvedValueOnce([]);
     MOBX__disableSpyOrMock();
 
-    const history = getApplicationNavigationHistory();
     const { queryByText } = render(
-      <ApplicationStoreProvider
-        config={getTestApplicationConfig()}
-        history={history}
-        pluginManager={PluginManager.create()}
-      >
-        <Router history={history}>
-          <Setup />
-        </Router>
-      </ApplicationStoreProvider>,
+      <MemoryRouter>
+        <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+          <TEST__SDLCServerClientProvider>
+            <Setup />
+          </TEST__SDLCServerClientProvider>
+        </TEST__ApplicationStoreProvider>
+      </MemoryRouter>,
     );
 
     // NOTE: react-select is not like a normal input box where we could set the placeholder, so we just
@@ -75,22 +72,17 @@ test(
   integrationTest('Disable project selector when there is no projects'),
   async () => {
     MOBX__enableSpyOrMock();
-    jest
-      .spyOn(appStore.networkClientManager.sdlcClient, 'getProjects')
-      .mockResolvedValue([]);
+    jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
     MOBX__disableSpyOrMock();
 
-    const history = getApplicationNavigationHistory();
     const { queryByText } = render(
-      <ApplicationStoreProvider
-        config={getTestApplicationConfig()}
-        history={history}
-        pluginManager={PluginManager.create()}
-      >
-        <Router history={history}>
-          <Setup />
-        </Router>
-      </ApplicationStoreProvider>,
+      <MemoryRouter>
+        <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+          <TEST__SDLCServerClientProvider>
+            <Setup />
+          </TEST__SDLCServerClientProvider>
+        </TEST__ApplicationStoreProvider>
+      </MemoryRouter>,
     );
 
     await waitFor(() =>

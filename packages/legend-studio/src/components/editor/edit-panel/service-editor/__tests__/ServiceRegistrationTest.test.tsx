@@ -22,45 +22,47 @@ import {
   getByText,
   fireEvent,
 } from '@testing-library/react';
-import serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/ServiceRegistrationTestData.json';
+import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/TEST_DATA__ServiceRegistration.json';
 import {
   integrationTest,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
   prettyCONSTName,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
-  SDLC_TestData,
-  openElementFromExplorerTree,
-  getMockedEditorStore,
-  setUpEditor,
-  getMockedApplicationStore,
-} from '../../../../ComponentTestUtils';
-import { CORE_TEST_ID } from '../../../../../const';
-import type { Project } from '../../../../../models/sdlc/models/project/Project';
-import type { Workspace } from '../../../../../models/sdlc/models/workspace/Workspace';
-import type { PlainObject } from '@finos/legend-studio-shared';
+  TEST_DATA__DefaultSDLCInfo,
+  TEST__openElementFromExplorerTree,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditor,
+} from '../../../../EditorComponentTestUtils';
+import { STUDIO_TEST_ID } from '../../../../StudioTestID';
+import type { PlainObject } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { NOTIFCATION_SEVERITY } from '../../../../../stores/ApplicationStore';
+import {
+  NOTIFCATION_SEVERITY,
+  TEST__provideMockedApplicationStore,
+} from '@finos/legend-application';
 import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState';
-import type { Version } from '../../../../../models/sdlc/models/version/Version';
-import { ServiceExecutionMode } from '../../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
-import { ServiceRegistrationResult } from '../../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
-import { getTestApplicationConfig } from '../../../../../stores/StoreTestUtils';
 import { flowResult } from 'mobx';
+import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
+import {
+  ServiceExecutionMode,
+  ServiceRegistrationResult,
+} from '@finos/legend-graph';
+import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils';
 
 let renderResult: RenderResult;
 
-const init = async (
+const setup = async (
   project: PlainObject<Project>,
   workspace: PlainObject<Workspace>,
   versions?: PlainObject<Version>[],
 ): Promise<EditorStore> => {
-  const mockedEditorStore = getMockedEditorStore(
-    getMockedApplicationStore(
-      getTestApplicationConfig({
-        options: {
+  const mockedEditorStore = TEST__provideMockedEditorStore({
+    applicationStore: TEST__provideMockedApplicationStore(
+      TEST__getTestStudioConfig({
+        extensions: {
           core: {
             TEMPORARY__serviceRegistrationConfig: [
               {
@@ -91,22 +93,23 @@ const init = async (
         },
       }),
     ),
-  );
-  renderResult = await setUpEditor(mockedEditorStore, {
+  });
+  renderResult = await TEST__setUpEditor(mockedEditorStore, {
     project: project,
     workspace: workspace,
-    curentRevision: SDLC_TestData.currentRevision,
+    curentRevision: TEST_DATA__DefaultSDLCInfo.currentRevision,
     projectVersions: versions ?? [],
-    entities: serviceEntities,
-    projectConfiguration: SDLC_TestData.projectConfig,
-    latestProjectStructureVersion: SDLC_TestData.latestProjectStructureVersion,
+    entities: TEST_DATA__serviceEntities,
+    projectConfiguration: TEST_DATA__DefaultSDLCInfo.projectConfig,
+    latestProjectStructureVersion:
+      TEST_DATA__DefaultSDLCInfo.latestProjectStructureVersion,
     availableGenerationDescriptions: [
-      ...SDLC_TestData.availableSchemaGenerations,
-      ...SDLC_TestData.availableCodeGenerations,
+      ...TEST_DATA__DefaultSDLCInfo.availableSchemaGenerations,
+      ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
     ],
     availableImportDescriptions: [
-      ...SDLC_TestData.availableSchemaImports,
-      ...SDLC_TestData.availableCodeImports,
+      ...TEST_DATA__DefaultSDLCInfo.availableSchemaImports,
+      ...TEST_DATA__DefaultSDLCInfo.availableCodeImports,
     ],
   });
   return mockedEditorStore;
@@ -117,7 +120,7 @@ test(
     'Service Editor basic registration functionality for PRODUCTION projects',
   ),
   async () => {
-    const mockedEditorStore = await init(
+    const mockedEditorStore = await setup(
       {
         projectId: 'PROD-19481',
         description: 'sdlcTesting',
@@ -153,25 +156,31 @@ test(
     );
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(mockedEditorStore.graphState.graphManager, 'registerService')
-      .mockResolvedValue(flowResult(result));
+      .spyOn(
+        mockedEditorStore.graphManagerState.graphManager,
+        'registerService',
+      )
+      .mockResolvedValue(result);
     jest
-      .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
-      .mockResolvedValue(flowResult(0));
+      .spyOn(
+        mockedEditorStore.graphManagerState.graphManager,
+        'activateService',
+      )
+      .mockResolvedValue();
     MOBX__disableSpyOrMock();
-    await openElementFromExplorerTree('test::myService', renderResult);
+    await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL__HEADER_TABS),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );
     await waitFor(() => getByText(editPanelHeader, 'myService'));
     const editPanel = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL),
     );
     fireEvent.click(getByTitle(editPanel, 'Register service...'));
     const serviceEditorState =
       mockedEditorStore.getCurrentEditorState(ServiceEditorState);
     const registrationModal = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.SERVICE_REGISTRATION_MODAL),
+      renderResult.getByTestId(STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL),
     );
     await waitFor(() =>
       getByText(
@@ -226,9 +235,9 @@ test(
     'Service Editor basic general and registration functionality for PROTOTYPE projects',
   ),
   async () => {
-    const mockedEditorStore = await init(
-      SDLC_TestData.project,
-      SDLC_TestData.workspace,
+    const mockedEditorStore = await setup(
+      TEST_DATA__DefaultSDLCInfo.project,
+      TEST_DATA__DefaultSDLCInfo.workspace,
     );
     const result = new ServiceRegistrationResult(
       '/example/myTestUrl/testing',
@@ -237,19 +246,25 @@ test(
     );
     MOBX__enableSpyOrMock();
     jest
-      .spyOn(mockedEditorStore.graphState.graphManager, 'registerService')
-      .mockResolvedValue(flowResult(result));
+      .spyOn(
+        mockedEditorStore.graphManagerState.graphManager,
+        'registerService',
+      )
+      .mockResolvedValue(result);
     jest
-      .spyOn(mockedEditorStore.graphState.graphManager, 'activateService')
-      .mockResolvedValue(flowResult(0));
+      .spyOn(
+        mockedEditorStore.graphManagerState.graphManager,
+        'activateService',
+      )
+      .mockResolvedValue();
     MOBX__disableSpyOrMock();
-    await openElementFromExplorerTree('test::myService', renderResult);
+    await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL__HEADER_TABS),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );
     await waitFor(() => getByText(editPanelHeader, 'myService'));
     const editPanel = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.EDIT_PANEL),
+      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL),
     );
     // labels + values
     await waitFor(() => getByText(editPanel, 'URL Pattern'));
@@ -281,7 +296,7 @@ test(
     // registration
     fireEvent.click(getByTitle(editPanel, 'Register service...'));
     const registrationModal = await waitFor(() =>
-      renderResult.getByTestId(CORE_TEST_ID.SERVICE_REGISTRATION_MODAL),
+      renderResult.getByTestId(STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL),
     );
     await waitFor(() =>
       getByText(

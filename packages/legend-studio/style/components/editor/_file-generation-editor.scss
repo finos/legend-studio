@@ -21,14 +21,6 @@
   width: 100%;
   background: var(--color-dark-grey-50);
 
-  .Resizer.vertical {
-    background: padding-box var(--color-dark-grey-100);
-    width: 1.1rem;
-    min-width: 1.1rem;
-    border-left: 0.5rem solid transparent;
-    border-right: 0.5rem solid transparent;
-  }
-
   .panel {
     height: 100%;
     width: 100%;
@@ -113,14 +105,6 @@
       height: calc(100% - 2.8rem);
       position: relative;
     }
-  }
-
-  &__content .Resizer.vertical {
-    background: padding-box var(--color-dark-grey-100);
-    width: 1.1rem;
-    min-width: 1.1rem;
-    border-left: 0.5rem solid transparent;
-    border-right: 0.5rem solid transparent;
   }
 }
 

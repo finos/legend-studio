@@ -16,7 +16,6 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import type {
   MappingExplorerDropTarget,
   ElementDragSource,
@@ -25,13 +24,21 @@ import {
   CORE_DND_TYPE,
   MappingElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
-import { clsx, TreeView, ContextMenu } from '@finos/legend-studio-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
+import { clsx, TreeView, ContextMenu } from '@finos/legend-art';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { useDrop, useDrag } from 'react-dnd';
-import { toSentenceCase } from '@finos/legend-studio-shared';
-import type { MappingExplorerTreeNodeData } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import { toSentenceCase } from '@finos/legend-shared';
+import type {
+  MappingElement,
+  MappingExplorerTreeNodeData,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  getAllMappingElements,
+  getMappingElementTarget,
+  getMappingElementType,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
 import {
   FaPlus,
@@ -41,21 +48,19 @@ import {
   FaChevronRight,
   FaChevronDown,
 } from 'react-icons/fa';
-import { CORE_TEST_ID } from '../../../../const';
-import { getElementIcon } from '../../../shared/Icon';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import {
-  getMappingElementType,
-  getMappingElementTarget,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type { PackageableElement } from '@finos/legend-graph';
+import {
+  SetImplementation,
+  EnumerationMapping,
+  PropertyMapping,
+} from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingExplorerContextMenu = observer(
   (
@@ -345,13 +350,11 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
   const mappingEditorState =
     editorStore.getCurrentEditorState(MappingEditorState);
   const mapping = mappingEditorState.mapping;
-  const mappingElements = mapping
-    .getAllMappingElements()
-    .sort((a, b) =>
-      getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
-        getMappingIdentitySortString(b, getMappingElementTarget(b)),
-      ),
-    );
+  const mappingElements = getAllMappingElements(mapping).sort((a, b) =>
+    getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
+      getMappingIdentitySortString(b, getMappingElementTarget(b)),
+    ),
+  );
   const openNewMapingModal = (): void =>
     mappingEditorState.createMappingElement({
       showTarget: true,
@@ -402,7 +405,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
 
   return (
     <div
-      data-testid={CORE_TEST_ID.MAPPING_EXPLORER}
+      data-testid={STUDIO_TEST_ID.MAPPING_EXPLORER}
       className="panel mapping-explorer"
     >
       <div className="panel__header">

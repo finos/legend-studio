@@ -15,20 +15,22 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
-import type { EntityDiff } from '../../../models/sdlc/models/comparison/EntityDiff';
-import { entityDiffSorter } from '../../../models/sdlc/models/comparison/EntityDiff';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import { GoCloudDownload } from 'react-icons/go';
 import { FaCheck, FaTimes, FaBan, FaInfoCircle } from 'react-icons/fa';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
+import { PanelLoadingIndicator } from '@finos/legend-art';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
-import type { EntityChangeConflict } from '../../../models/sdlc/models/entity/EntityChangeConflict';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
+import type {
+  EntityChangeConflict,
+  EntityDiff,
+} from '@finos/legend-server-sdlc';
+import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const ConflictResolution = observer(() => {
   const editorStore = useEditorStore();
@@ -139,7 +141,7 @@ export const ConflictResolution = observer(() => {
             </div>
             <div
               className="side-bar__panel__header__changes-count"
-              data-testid={CORE_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+              data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
             >
               {changes.length +
                 (conflictResolutionState.hasResolvedAllConflicts

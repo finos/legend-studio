@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './components/ManagementEditorPlugin';
+export * from './components/Management_StudioPlugin';

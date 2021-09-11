@@ -21,27 +21,22 @@ import {
   assertType,
   addUniqueEntry,
   printObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-} from '@finos/legend-studio-components';
-import { clsx, TreeView } from '@finos/legend-studio-components';
+import type { TreeNodeContainerProps, TreeData } from '@finos/legend-art';
+import { EnumValueIcon, clsx, TreeView } from '@finos/legend-art';
 import { useDrag } from 'react-dnd';
 import { TypeDragSource, CORE_DND_TYPE } from '../../stores/shared/DnDUtil';
-import { EnumValueIcon, getClassPropertyIcon } from './Icon';
+import { getClassPropertyIcon } from './ElementIconUtils';
 import type { TypeTreeNodeData } from '../../stores/shared/TreeUtil';
-import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../models/MetaModelConst';
-import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import type { Enum } from '../../models/metamodels/pure/model/packageableElements/domain/Enum';
+import type { Type, Enum, AbstractProperty } from '@finos/legend-graph';
 import {
+  Enumeration,
   Class,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { AbstractProperty } from '../../models/metamodels/pure/model/packageableElements/domain/AbstractProperty';
+  DEFAULT_SOURCE_PARAMETER_NAME,
+} from '@finos/legend-graph';
 
 const getEnumTypeTreeNodeData = (
   _enum: Enum,
@@ -144,7 +139,7 @@ const getTypeTreeData = (type: Type): TreeData<TypeTreeNodeData> => {
 };
 
 const TypeTreeNodeContainer: React.FC<
-  TreeNodeContainerProps<TypeTreeNodeData, { selectedType?: Type }>
+  TreeNodeContainerProps<TypeTreeNodeData, { selectedType?: Type | undefined }>
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
   const { selectedType } = innerProps;
@@ -210,7 +205,7 @@ const TypeTreeNodeContainer: React.FC<
 
 export const TypeTree: React.FC<{
   type: Type;
-  selectedType?: Type;
+  selectedType?: Type | undefined;
 }> = (props) => {
   const { type, selectedType } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax

@@ -16,7 +16,6 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
@@ -27,10 +26,17 @@ import type {
   UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import SplitPane from 'react-split-pane';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { clsx } from '@finos/legend-studio-components';
-import { CORE_TEST_ID } from '../../../../const';
+import { prettyCONSTName } from '@finos/legend-shared';
+import {
+  BlankPanelContent,
+  clsx,
+  getControlledResizablePanelProps,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-art';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import {
@@ -41,14 +47,16 @@ import {
   FaFire,
   FaArrowCircleRight,
 } from 'react-icons/fa';
-import type { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Enum } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enum';
-import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type { Enumeration, StereotypeReference } from '@finos/legend-graph';
+import {
+  Enum,
+  Profile,
+  Tag,
+  TaggedValue,
+  Stereotype,
+  StereotypeExplicitReference,
+} from '@finos/legend-graph';
 
 const EnumBasicEditor = observer(
   (props: {
@@ -191,7 +199,7 @@ const EnumEditor = observer(
 
     return (
       <div className="uml-element-editor enum-editor">
-        <div data-testid={CORE_TEST_ID.PANEL} className="panel">
+        <div data-testid={STUDIO_TEST_ID.PANEL} className="panel">
           <div className="panel__header">
             <div className="panel__header__title">
               {isReadOnly && (
@@ -214,7 +222,7 @@ const EnumEditor = observer(
             </div>
           </div>
           <div
-            data-testid={CORE_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+            data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
             className="panel__header uml-element-editor__tabs__header"
           >
             <div className="uml-element-editor__tabs">
@@ -414,135 +422,143 @@ export const EnumerationEditor = observer(
 
     return (
       <div
-        data-testid={CORE_TEST_ID.ENUMERATION_EDITOR}
+        data-testid={STUDIO_TEST_ID.ENUMERATION_EDITOR}
         className="uml-element-editor enumeration-editor"
       >
-        <SplitPane
-          split="horizontal"
-          primary="second"
-          size={selectedEnum ? 250 : 0}
-          minSize={250}
-          maxSize={0}
-        >
-          <div className="panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__label">enumeration</div>
-                <div className="panel__header__title__content">
-                  {enumeration.name}
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel minSize={56}>
+            <div className="panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__label">enumeration</div>
+                  <div className="panel__header__title__content">
+                    {enumeration.name}
+                  </div>
+                </div>
+                <div className="panel__header__actions">
+                  {enumeration.generationParentElement && (
+                    <button
+                      className="uml-element-editor__header__generation-origin"
+                      onClick={visitGenerationParentElement}
+                      tabIndex={-1}
+                      title={`Visit generation parent '${enumeration.generationParentElement.path}'`}
+                    >
+                      <div className="uml-element-editor__header__generation-origin__label">
+                        <FaFire />
+                      </div>
+                      <div className="uml-element-editor__header__generation-origin__parent-name">
+                        {enumeration.generationParentElement.name}
+                      </div>
+                      <div className="uml-element-editor__header__generation-origin__visit-btn">
+                        <FaArrowCircleRight />
+                      </div>
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="panel__header__actions">
-                {enumeration.generationParentElement && (
+              <div
+                data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                className="panel__header uml-element-editor__tabs__header"
+              >
+                <div className="uml-element-editor__tabs">
+                  {tabs.map((tab) => (
+                    <div
+                      key={tab}
+                      onClick={changeTab(tab)}
+                      className={clsx('uml-element-editor__tab', {
+                        'uml-element-editor__tab--active': tab === selectedTab,
+                      })}
+                    >
+                      {prettyCONSTName(tab)}
+                    </div>
+                  ))}
+                </div>
+                <div className="panel__header__actions">
                   <button
-                    className="uml-element-editor__header__generation-origin"
-                    onClick={visitGenerationParentElement}
+                    className="panel__header__action"
+                    onClick={add}
                     tabIndex={-1}
-                    title={`Visit generation parent '${enumeration.generationParentElement.path}'`}
+                    title={addButtonTitle}
                   >
-                    <div className="uml-element-editor__header__generation-origin__label">
-                      <FaFire />
-                    </div>
-                    <div className="uml-element-editor__header__generation-origin__parent-name">
-                      {enumeration.generationParentElement.name}
-                    </div>
-                    <div className="uml-element-editor__header__generation-origin__visit-btn">
-                      <FaArrowCircleRight />
-                    </div>
+                    <FaPlus />
                   </button>
+                </div>
+              </div>
+              <div className="panel__content">
+                {selectedTab === UML_EDITOR_TAB.ENUM_VALUES && (
+                  <div className="panel__content__lists">
+                    {enumeration.values.map((enumValue) => (
+                      <EnumBasicEditor
+                        key={enumValue.uuid}
+                        _enum={enumValue}
+                        deleteValue={deleteValue(enumValue)}
+                        selectValue={selectValue(enumValue)}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
+                  </div>
+                )}
+                {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
+                  <div
+                    ref={dropTaggedValueRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isTaggedValueDragOver && !isReadOnly,
+                    })}
+                  >
+                    {enumeration.taggedValues.map((taggedValue) => (
+                      <TaggedValueEditor
+                        key={taggedValue.uuid}
+                        taggedValue={taggedValue}
+                        deleteValue={deleteTaggedValue(taggedValue)}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
+                  </div>
+                )}
+                {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
+                  <div
+                    ref={dropStereotypeRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isStereotypeDragOver && !isReadOnly,
+                    })}
+                  >
+                    {enumeration.stereotypes.map((stereotype) => (
+                      <StereotypeSelector
+                        key={stereotype.value.uuid}
+                        stereotype={stereotype}
+                        deleteStereotype={deleteStereotype(stereotype)}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
-            <div
-              data-testid={CORE_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
-              className="panel__header uml-element-editor__tabs__header"
-            >
-              <div className="uml-element-editor__tabs">
-                {tabs.map((tab) => (
-                  <div
-                    key={tab}
-                    onClick={changeTab(tab)}
-                    className={clsx('uml-element-editor__tab', {
-                      'uml-element-editor__tab--active': tab === selectedTab,
-                    })}
-                  >
-                    {prettyCONSTName(tab)}
-                  </div>
-                ))}
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel
+            {...getControlledResizablePanelProps(!selectedEnum)}
+            flex={0}
+            direction={-1}
+            size={selectedEnum ? 250 : 0}
+          >
+            {selectedEnum ? (
+              <EnumEditor
+                _enum={selectedEnum}
+                deselectValue={deselectValue}
+                isReadOnly={isReadOnly}
+              />
+            ) : (
+              <div className="uml-element-editor__sub-editor">
+                <BlankPanelContent>No enum selected</BlankPanelContent>
               </div>
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action"
-                  onClick={add}
-                  tabIndex={-1}
-                  title={addButtonTitle}
-                >
-                  <FaPlus />
-                </button>
-              </div>
-            </div>
-            <div className="panel__content">
-              {selectedTab === UML_EDITOR_TAB.ENUM_VALUES && (
-                <div className="panel__content__lists">
-                  {enumeration.values.map((enumValue) => (
-                    <EnumBasicEditor
-                      key={enumValue.uuid}
-                      _enum={enumValue}
-                      deleteValue={deleteValue(enumValue)}
-                      selectValue={selectValue(enumValue)}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
-                <div
-                  ref={dropTaggedValueRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isTaggedValueDragOver && !isReadOnly,
-                  })}
-                >
-                  {enumeration.taggedValues.map((taggedValue) => (
-                    <TaggedValueEditor
-                      key={taggedValue.uuid}
-                      taggedValue={taggedValue}
-                      deleteValue={deleteTaggedValue(taggedValue)}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-                <div
-                  ref={dropStereotypeRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isStereotypeDragOver && !isReadOnly,
-                  })}
-                >
-                  {enumeration.stereotypes.map((stereotype) => (
-                    <StereotypeSelector
-                      key={stereotype.value.uuid}
-                      stereotype={stereotype}
-                      deleteStereotype={deleteStereotype(stereotype)}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          {selectedEnum ? (
-            <EnumEditor
-              _enum={selectedEnum}
-              deselectValue={deselectValue}
-              isReadOnly={isReadOnly}
-            />
-          ) : (
-            <div />
-          )}
-        </SplitPane>
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

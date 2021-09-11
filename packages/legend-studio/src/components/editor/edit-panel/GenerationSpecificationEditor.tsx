@@ -16,7 +16,6 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import type {
   GenerationSpecNodeDragSource,
   GenerationSpecNodeDropTarget,
@@ -27,32 +26,40 @@ import { FaFire, FaTimes, FaPlus, FaLongArrowAltRight } from 'react-icons/fa';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import { useDragLayer, useDrag, useDrop } from 'react-dnd';
-import { FileGenerationIcon, getElementIcon } from '../../shared/Icon';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 import { MdRefresh } from 'react-icons/md';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
-import SplitPane from 'react-split-pane';
 import {
   clsx,
   BlankPanelContent,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+  FileGenerationIcon,
+} from '@finos/legend-art';
 import type {
   ElementDragSource,
   FileGenerationSourceDropTarget,
 } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
-import { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { getNullableFirstElement } from '@finos/legend-shared';
+import type { DSLGenerationSpecification_StudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_StudioPlugin_Extension';
+import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
 import type {
   PackageableElement,
-  PackageableElementSelectOption,
-} from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { GenerationTreeNode } from '../../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import { getNullableFirstElement } from '@finos/legend-studio-shared';
-import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../../models/metamodels/pure/graph/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
-import type { DSLGenerationSpecification_EditorPlugin_Extension } from '../../../stores/DSLGenerationSpecification_EditorPlugin_Extension';
-import { flowResult } from 'mobx';
+  PackageableElementReference,
+  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+} from '@finos/legend-graph';
+import {
+  FileGenerationSpecification,
+  PackageableElementExplicitReference,
+  GenerationTreeNode,
+} from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -91,7 +98,7 @@ const ModelGenerationItem = observer(
   (props: {
     specState: GenerationSpecificationEditorState;
     nodeState: GenerationTreeNodeState;
-    options: PackageableElementSelectOption<PackageableElement>[];
+    options: PackageableElementOption<PackageableElement>[];
     isRearrangingNodes: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
@@ -102,7 +109,7 @@ const ModelGenerationItem = observer(
     const modelGeneration = modelGenerationRef.value;
     const value = { label: modelGeneration.name, value: modelGeneration };
     const onChange = (
-      val: PackageableElementSelectOption<FileGenerationSpecification> | null,
+      val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
       if (val !== null) {
         modelGenerationRef.setValue(val.value);
@@ -248,28 +255,26 @@ const ModelGenerationSpecifications = observer(
     const { specState } = props;
     const specNodesStates = specState.generationTreeNodeStates;
     const editorStore = useEditorStore();
-    const modelGenerationElementsInGraph =
-      editorStore.applicationStore.pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
-            ).getExtraModelGenerationElementGetters?.() ?? [],
-        )
-        .flatMap((getter) => getter(editorStore.graphState.graph));
+    const modelGenerationElementsInGraph = editorStore.pluginManager
+      .getPureGraphManagerPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+          ).getExtraModelGenerationElementGetters?.() ?? [],
+      )
+      .flatMap((getter) => getter(editorStore.graphManagerState.graph));
     const extraModelGenerationSpecificationElementDnDTypes =
-      editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
+      editorStore.pluginManager
+        .getStudioPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGenerationSpecification_EditorPlugin_Extension
+              plugin as DSLGenerationSpecification_StudioPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
-    const modelGenerationElementOptions = modelGenerationElementsInGraph.map(
-      (f) => f.selectOption,
-    );
+    const modelGenerationElementOptions =
+      modelGenerationElementsInGraph.map(buildElementOption);
     const addModelGeneration = (): void => {
       const option = getNullableFirstElement(modelGenerationElementOptions);
       if (option) {
@@ -366,7 +371,7 @@ const FileGenerationItem = observer(
   (props: {
     generationSpecificationEditorState: GenerationSpecificationEditorState;
     fileGeneraitonRef: PackageableElementReference<FileGenerationSpecification>;
-    options: PackageableElementSelectOption<FileGenerationSpecification>[];
+    options: PackageableElementOption<FileGenerationSpecification>[];
   }) => {
     const { fileGeneraitonRef, generationSpecificationEditorState, options } =
       props;
@@ -374,7 +379,7 @@ const FileGenerationItem = observer(
     const fileGeneration = fileGeneraitonRef.value;
     const value = { label: fileGeneration.name, value: fileGeneration };
     const onChange = (
-      val: PackageableElementSelectOption<FileGenerationSpecification> | null,
+      val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
       if (val !== null) {
         fileGeneraitonRef.setValue(val.value);
@@ -430,12 +435,12 @@ const FileGenerationSpecifications = observer(
         (f) => f.value,
       );
     const fileGenerationInGraph =
-      editorStore.graphState.graph.ownFileGenerations;
+      editorStore.graphManagerState.graph.ownFileGenerations;
     const fileGenerationsOptions = fileGenerationInGraph
       .filter((f) => !fileGenerations.includes(f))
       .map(
-        (f) => f.selectOption,
-      ) as PackageableElementSelectOption<FileGenerationSpecification>[];
+        buildElementOption,
+      ) as PackageableElementOption<FileGenerationSpecification>[];
     const addFileGeneration = (): void => {
       const option = getNullableFirstElement(fileGenerationsOptions);
       if (option) {
@@ -581,19 +586,23 @@ export const GenerationSpecificationEditor = observer(() => {
           </div>
         </div>
         <div className="panel__content generation-spec-editor__content">
-          <SplitPane
-            split="horizontal"
-            defaultSize={'50%'}
-            minSize={25}
-            maxSize={'90%'}
-          >
-            <ModelGenerationSpecifications
-              specState={generationSpecificationState}
-            />
-            <FileGenerationSpecifications
-              generationSpecificationEditorState={generationSpecificationState}
-            />
-          </SplitPane>
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel size={400} minSize={25}>
+              <ModelGenerationSpecifications
+                specState={generationSpecificationState}
+              />
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel>
+              <FileGenerationSpecifications
+                generationSpecificationEditorState={
+                  generationSpecificationState
+                }
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       </div>
     </div>

@@ -16,9 +16,8 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ReviewStoreProvider, useReviewStore } from '../../stores/ReviewStore';
+import { ReviewStoreProvider, useReviewStore } from './ReviewStoreProvider';
 import { useParams } from 'react-router';
-import SplitPane from 'react-split-pane';
 import { ReviewSideBar } from './ReviewSideBar';
 import { ReviewPanel } from './ReviewPanel';
 import {
@@ -27,12 +26,18 @@ import {
   FaUser,
   FaRegWindowMaximize,
 } from 'react-icons/fa';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
-import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-studio-components';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
+import {
+  getControlledResizablePanelProps,
+  clsx,
+  PanelLoadingIndicator,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+} from '@finos/legend-art';
 import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
   generateViewProjectRoute,
@@ -40,16 +45,23 @@ import {
 } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import {
+  EditorStoreProvider,
+  useEditorStore,
+} from '../editor/EditorStoreProvider';
+import {
+  NotificationSnackbar,
+  useApplicationStore,
+} from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const currentUserId =
-    applicationStore.networkClientManager.sdlcClient.currentUser?.userId ??
-    '(unknown)';
+    editorStore.sdlcServerClient.currentUser?.userId ?? '(unknown)';
   const currentProject = reviewStore.currentProject
     ? reviewStore.currentProject.name
     : reviewStore.projectId;
@@ -136,11 +148,10 @@ const ReviewExplorer = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const resizeSideBar = (newSize: number | undefined): void => {
-    if (newSize !== undefined) {
-      editorStore.sideBarDisplayState.setSize(newSize);
-    }
-  };
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
+    editorStore.sideBarDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
+    );
 
   useEffect(() => {
     flowResult(reviewStore.fetchReviewComparison()).catch(
@@ -149,17 +160,27 @@ const ReviewExplorer = observer(() => {
   }, [applicationStore, reviewStore]);
 
   return (
-    <SplitPane
+    <ResizablePanelGroup
+      orientation="vertical"
       className="review-explorer__content"
-      split="vertical"
-      onDragFinished={resizeSideBar}
-      size={editorStore.sideBarDisplayState.size}
-      minSize={0}
-      maxSize={-600}
     >
-      <ReviewSideBar />
-      <ReviewPanel />
-    </SplitPane>
+      <ResizablePanel
+        {...getControlledResizablePanelProps(
+          editorStore.sideBarDisplayState.size === 0,
+          {
+            onStopResize: resizeSideBar,
+          },
+        )}
+        direction={1}
+        size={editorStore.sideBarDisplayState.size}
+      >
+        <ReviewSideBar />
+      </ResizablePanel>
+      <ResizablePanelSplitter />
+      <ResizablePanel minSize={300}>
+        <ReviewPanel />
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 });
 
@@ -177,7 +198,7 @@ const ReviewInner = observer(() => {
 
   useEffect(() => {
     reviewStore.setProjectIdAndReviewId(projectId, reviewId);
-    flowResult(reviewStore.init()).catch(
+    flowResult(reviewStore.initialize()).catch(
       applicationStore.alertIllegalUnhandledError,
     );
     flowResult(reviewStore.getReview()).catch(

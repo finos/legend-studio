@@ -16,14 +16,16 @@
 
 import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
-import { resolvePackagePathAndElementName } from '../../../../models/MetaModelUtils';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import Dialog from '@material-ui/core/Dialog';
-import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
+import type { Mapping } from '@finos/legend-graph';
+import {
+  ELEMENT_PATH_DELIMITER,
+  resolvePackagePathAndElementName,
+  Package,
+} from '@finos/legend-graph';
 
 export const NewServiceModal = observer(
   (props: {
@@ -58,9 +60,10 @@ export const NewServiceModal = observer(
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
-    const elementAlreadyExists = editorStore.graphState.graph.allOwnElements
-      .map((s) => s.path)
-      .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
+    const elementAlreadyExists =
+      editorStore.graphManagerState.graph.allOwnElements
+        .map((s) => s.path)
+        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
     return (
       <Dialog
         open={showModal}

@@ -23,26 +23,29 @@ import {
   flow,
   makeObservable,
 } from 'mobx';
-import { CORE_LOG_EVENT } from '../utils/Logger';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  LogEvent,
   IllegalStateError,
   shallowStringify,
   noop,
   assertErrorThrown,
   hashObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
-import type { GraphState } from './GraphState';
-import { EntityDiff } from '../models/sdlc/models/comparison/EntityDiff';
-import { EntityChangeType } from '../models/sdlc/models/entity/EntityChange';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
-import type { EntityChangeConflictResolution } from '../models/sdlc/models/entity/EntityChangeConflict';
-import { EntityChangeConflict } from '../models/sdlc/models/entity/EntityChangeConflict';
+import type { EditorGraphState } from './EditorGraphState';
+import type { Entity } from '@finos/legend-model-storage';
+import type { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
+import {
+  EntityChangeConflict,
+  EntityChangeType,
+  EntityDiff,
+} from '@finos/legend-server-sdlc';
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;
-  graphState: GraphState;
+  graphState: EditorGraphState;
   changes: EntityDiff[] = [];
   entityHashesIndex = new Map<string, string>();
   isBuildingEntityHashesIndex = false;
@@ -58,7 +61,7 @@ class RevisionChangeDetectionState {
     this.entities = entities;
   }
 
-  constructor(editorStore: EditorStore, graphState: GraphState) {
+  constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       changes: observable.ref,
       entityHashesIndex: observable.ref,
@@ -80,9 +83,9 @@ class RevisionChangeDetectionState {
     let changes: EntityDiff[] = [];
     if (!this.isBuildingEntityHashesIndex) {
       const originalPaths = new Set(Array.from(this.entityHashesIndex.keys()));
-      if (this.graphState.graph.allOwnElements.length) {
+      if (this.editorStore.graphManagerState.graph.allOwnElements.length) {
         yield Promise.all<void>(
-          this.graphState.graph.allOwnElements.map(
+          this.editorStore.graphManagerState.graph.allOwnElements.map(
             (element) =>
               new Promise((resolve) =>
                 setTimeout(() => {
@@ -121,8 +124,10 @@ class RevisionChangeDetectionState {
     }
     this.changes = changes;
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -131,7 +136,7 @@ class RevisionChangeDetectionState {
 
   *buildEntityHashesIndex(
     entities: Entity[],
-    logEvent: CORE_LOG_EVENT,
+    logEvent: LogEvent,
     quiet?: boolean,
   ): GeneratorFn<void> {
     if (!this.entities.length && !this.entityHashesIndex.size) {
@@ -140,27 +145,28 @@ class RevisionChangeDetectionState {
     const startTime = Date.now();
     this.setIsBuildingEntityHashesIndex(true);
     try {
-      const hashesIndex = (yield flowResult(
-        this.graphState.graphManager.buildHashesIndex(entities),
-      )) as Map<string, string>;
+      const hashesIndex =
+        (yield this.editorStore.graphManagerState.graphManager.buildHashesIndex(
+          entities,
+        )) as Map<string, string>;
       this.setEntityHashesIndex(hashesIndex);
       this.setIsBuildingEntityHashesIndex(false);
       if (!quiet) {
-        this.editorStore.applicationStore.logger.info(
+        this.editorStore.applicationStore.log.info(
           logEvent,
           '[ASYNC]',
           Date.now() - startTime,
           'ms',
         );
       }
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.CHANGE_DETECTION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_FAILURE),
         `Can't build hashes index`,
       );
       this.setEntityHashesIndex(new Map<string, string>());
       this.setIsBuildingEntityHashesIndex(false);
-      assertErrorThrown(error);
       throw new IllegalStateError(error);
     } finally {
       this.setIsBuildingEntityHashesIndex(false);
@@ -192,11 +198,11 @@ class RevisionChangeDetectionState {
  */
 export class ChangeDetectionState {
   editorStore: EditorStore;
-  graphState: GraphState;
+  graphState: EditorGraphState;
   isChangeDetectionRunning = false;
   hasChangeDetectionStarted = false;
   forcedStop = false;
-  changeDetectionReaction?: IReactionDisposer;
+  changeDetectionReaction?: IReactionDisposer | undefined;
   /**
    * [1. PJL] Store the entities from project HEAD (i.e. project latest revision)
    * This can be used to compute changes for a review as well as changes and potential conflicts when updating workspace
@@ -249,7 +255,7 @@ export class ChangeDetectionState {
   conflicts: EntityChangeConflict[] = []; // conflicts in conflict resolution mode (derived from aggregated workspace changes and conflict resolution changes)
   resolutions: EntityChangeConflictResolution[] = [];
 
-  constructor(editorStore: EditorStore, graphState: GraphState) {
+  constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       isChangeDetectionRunning: observable,
       hasChangeDetectionStarted: observable,
@@ -387,12 +393,14 @@ export class ChangeDetectionState {
   snapshotLocalEntityHashesIndex(quiet?: boolean): Map<string, string> {
     const startTime = Date.now();
     const snapshot = new Map<string, string>();
-    this.graphState.graph.allOwnElements.forEach((el) =>
+    this.editorStore.graphManagerState.graph.allOwnElements.forEach((el) =>
       snapshot.set(el.path, el.hashCode),
     );
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_HASH_SNAPSHOTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -450,8 +458,10 @@ export class ChangeDetectionState {
         ),
       );
       if (!quiet) {
-        this.editorStore.applicationStore.logger.info(
-          CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+        this.editorStore.applicationStore.log.info(
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          ),
           Date.now() - startTime,
           'ms',
         );
@@ -510,8 +520,10 @@ export class ChangeDetectionState {
       ),
     )) as EntityChangeConflict[];
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -540,8 +552,10 @@ export class ChangeDetectionState {
       ),
     )) as EntityChangeConflict[];
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );
@@ -672,8 +686,10 @@ export class ChangeDetectionState {
       this.conflictResolutionBaseRevisionState.computeChanges(quiet), // for conflict resolution changes detection
     ]);
     if (!quiet) {
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.GRAPH_CHANGES_DETECTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(
+          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+        ),
         Date.now() - startTime,
         'ms',
       );

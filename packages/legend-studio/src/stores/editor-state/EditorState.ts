@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import { uuid } from '@finos/legend-studio-shared';
+import { uuid } from '@finos/legend-shared';
 
 export abstract class EditorState {
   uuid = uuid(); // NOTE: used to detect when an element editor state changes so we can force a remount of the editor component

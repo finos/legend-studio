@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
-import SplitPane from 'react-split-pane';
 import {
   FaList,
   FaCodeBranch,
@@ -30,27 +29,44 @@ import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
-import { CORE_TEST_ID } from '../../const';
-import { ACTIVITY_MODE, HOTKEY, HOTKEY_MAP } from '../../stores/EditorConfig';
-import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import { clsx } from '@finos/legend-studio-components';
-import { isNonNullable } from '@finos/legend-studio-shared';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
+import { STUDIO_TEST_ID } from '../StudioTestID';
+import {
+  ACTIVITY_MODE,
+  STUDIO_HOTKEY,
+  STUDIO_HOTKEY_MAP,
+} from '../../stores/EditorConfig';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
+import {
+  clsx,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  getControlledResizablePanelProps,
+} from '@finos/legend-art';
+import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { useViewerStore, ViewerStoreProvider } from '../../stores/ViewerStore';
+import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
 import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import {
+  EditorStoreProvider,
+  useEditorStore,
+} from '../editor/EditorStoreProvider';
+import {
+  NotificationSnackbar,
+  useApplicationStore,
+} from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
   const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const latestVersion = viewerStore.onLatestVersion;
   const currentRevision = viewerStore.onCurrentRevision;
   const statusBarInfo = params.revisionId ?? params.versionId ?? 'HEAD';
@@ -78,7 +94,7 @@ const ViewerStatusBar = observer(() => {
 
   return (
     <div
-      data-testid={CORE_TEST_ID.STATUS_BAR}
+      data-testid={STUDIO_TEST_ID.STATUS_BAR}
       className="editor__status-bar viewer__status-bar"
     >
       <div className="editor__status-bar__left">
@@ -174,41 +190,40 @@ export const ViewerInner = observer(() => {
   const applicationStore = useApplicationStore();
   const allowOpeningElement =
     editorStore.sdlcState.currentProject &&
-    editorStore.graphState.graph.buildState.hasSucceeded;
-  const resizeSideBar = (newSize: number | undefined): void => {
-    if (newSize !== undefined) {
-      editorStore.sideBarDisplayState.setSize(newSize);
-    }
-  };
+    editorStore.graphManagerState.graph.buildState.hasSucceeded;
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
+    editorStore.sideBarDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
+    );
   // Extensions
-  const extraEditorExtensionComponents =
-    editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
-          [],
-      )
-      .filter(isNonNullable)
-      .map((config) => (
-        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
-      ));
+  const extraEditorExtensionComponents = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],
+    )
+    .filter(isNonNullable)
+    .map((config) => (
+      <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+    ));
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys
   const keyMap = {
-    [HOTKEY.OPEN_ELEMENT]: [HOTKEY_MAP.OPEN_ELEMENT],
-    [HOTKEY.TOGGLE_TEXT_MODE]: [HOTKEY_MAP.TOGGLE_TEXT_MODE],
+    [STUDIO_HOTKEY.OPEN_ELEMENT]: [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
+    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
   };
   const handlers = {
-    [HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
+    [STUDIO_HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
       editorStore.searchElementCommandState.open(),
     ),
-    [HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(() => {
-      flowResult(editorStore.toggleTextMode()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
-    }),
+    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(
+      () => {
+        flowResult(editorStore.toggleTextMode()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      },
+    ),
   };
 
   useEffect(() => {
@@ -223,7 +238,7 @@ export const ViewerInner = observer(() => {
   // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
   // on the second call when we remove entity path from the route
   useEffect(() => {
-    flowResult(viewerStore.init(projectId, versionId, revisionId)).catch(
+    flowResult(viewerStore.initialize(projectId, versionId, revisionId)).catch(
       applicationStore.alertIllegalUnhandledError,
     );
   }, [applicationStore, viewerStore, projectId, versionId, revisionId]);
@@ -245,19 +260,28 @@ export const ViewerInner = observer(() => {
                     'editor__content--expanded': editorStore.isInExpandedMode,
                   })}
                 >
-                  <SplitPane
-                    split="vertical"
-                    onDragFinished={resizeSideBar}
-                    size={editorStore.sideBarDisplayState.size}
-                    minSize={0}
-                    maxSize={-600}
+                  <ResizablePanelGroup
+                    orientation="vertical"
+                    className="review-explorer__content"
                   >
-                    <SideBar />
-                    {editorStore.isInFormMode && <EditPanel />}
-                    {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
-                    <div />
-                    <div />
-                  </SplitPane>
+                    <ResizablePanel
+                      {...getControlledResizablePanelProps(
+                        editorStore.sideBarDisplayState.size === 0,
+                        {
+                          onStopResize: resizeSideBar,
+                        },
+                      )}
+                      direction={1}
+                      size={editorStore.sideBarDisplayState.size}
+                    >
+                      <SideBar />
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel minSize={300}>
+                      {editorStore.isInFormMode && <EditPanel />}
+                      {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </div>
               </div>
             </div>

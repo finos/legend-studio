@@ -14,42 +14,44 @@
  * limitations under the License.
  */
 
-import type { TreeData, TreeNodeData } from '@finos/legend-studio-components';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { Entity } from '@finos/legend-model-storage';
+import type { TreeData, TreeNodeData } from '@finos/legend-art';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
   addUniqueEntry,
   assertNonEmptyString,
   assertTrue,
   guaranteeNonNullable,
   isNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import type { EditorStore } from '../../../EditorStore';
+import type {
+  RelationalDatabaseConnection,
+  Schema,
+  Table,
+} from '@finos/legend-graph';
 import {
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
-} from '../../../../models/metamodels/pure/action/generation/DatabaseBuilderInput';
-import { getDbNullableTable } from '../../../../models/metamodels/pure/model/helpers/store/relational/model/DatabaseHelper';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { Column } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Column';
-import { Database } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import type { Schema } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Schema';
-import type { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import {
+  getDbNullableTable,
+  PackageableElementExplicitReference,
+  Column,
+  Database,
   isValidFullPath,
   resolvePackagePathAndElementName,
-} from '../../../../models/MetaModelUtils';
-import type { Entity } from '../../../../models/sdlc/models/entity/Entity';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
-import type { EditorStore } from '../../../EditorStore';
+} from '@finos/legend-graph';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
-  isOpen?: boolean;
+  isOpen?: boolean | undefined;
   id: string;
   label: string;
-  parentId?: string;
-  childrenIds?: string[];
+  parentId?: string | undefined;
+  childrenIds?: string[] | undefined;
   isChecked = false;
 
   constructor(id: string, label: string, parentId: string | undefined) {
@@ -99,7 +101,7 @@ export class DatabaseBuilderState {
   isBuildingDatabase = false;
   isSavingDatabase = false;
   targetDatabasePath: string;
-  treeData?: DatabaseBuilderTreeData;
+  treeData?: DatabaseBuilderTreeData | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -248,9 +250,10 @@ export class DatabaseBuilderState {
       });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -293,9 +296,10 @@ export class DatabaseBuilderState {
       });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -333,9 +337,10 @@ export class DatabaseBuilderState {
       if (enrichedTable) {
         this.addColumnsNodeToTableNode(tableNode, enrichedTable, treeData);
       }
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -443,19 +448,20 @@ export class DatabaseBuilderState {
               }
             }
           });
-        const entities = (yield flowResult(
-          this.editorStore.graphState.graphManager.buildDatabase(
+        const entities =
+          (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
             databaseBuilderInput,
-          ),
-        )) as Entity[];
-        const dbGrammar = (yield flowResult(
-          this.editorStore.graphState.graphManager.entitiesToPureCode(entities),
-        )) as string;
+          )) as Entity[];
+        const dbGrammar =
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+            entities,
+          )) as string;
         this.setDatabaseGrammarCode(dbGrammar);
       }
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);
@@ -476,14 +482,19 @@ export class DatabaseBuilderState {
   }
 
   private *buildDatabaseGrammar(grammar: string): GeneratorFn<Database> {
-    const entities = (yield flowResult(
-      this.editorStore.graphState.graphManager.pureCodeToEntities(grammar),
-    )) as Entity[];
-    const dbGraph = this.editorStore.graphState.createEmptyGraph();
+    const entities =
+      (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
+        grammar,
+      )) as Entity[];
+    const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
     (yield flowResult(
-      this.editorStore.graphState.graphManager.buildGraph(dbGraph, entities, {
-        quiet: true,
-      }),
+      this.editorStore.graphManagerState.graphManager.buildGraph(
+        dbGraph,
+        entities,
+        {
+          quiet: true,
+        },
+      ),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -495,16 +506,19 @@ export class DatabaseBuilderState {
   private *buildDatabaseFromInput(
     databaseBuilderInput: DatabaseBuilderInput,
   ): GeneratorFn<Database> {
-    const entities = (yield flowResult(
-      this.editorStore.graphState.graphManager.buildDatabase(
+    const entities =
+      (yield this.editorStore.graphManagerState.graphManager.buildDatabase(
         databaseBuilderInput,
-      ),
-    )) as Entity[];
-    const dbGraph = this.editorStore.graphState.createEmptyGraph();
+      )) as Entity[];
+    const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
     (yield flowResult(
-      this.editorStore.graphState.graphManager.buildGraph(dbGraph, entities, {
-        quiet: true,
-      }),
+      this.editorStore.graphManagerState.graphManager.buildGraph(
+        dbGraph,
+        entities,
+        {
+          quiet: true,
+        },
+      ),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -535,9 +549,11 @@ export class DatabaseBuilderState {
           'Database package is missing',
         );
         const databasePackage =
-          this.editorStore.graphState.graph.getOrCreatePackage(PackagePath);
+          this.editorStore.graphManagerState.graph.getOrCreatePackage(
+            PackagePath,
+          );
         databasePackage.addElement(newDatabase);
-        this.editorStore.graphState.graph.addElement(newDatabase);
+        this.editorStore.graphManagerState.graph.addElement(newDatabase);
         currentDatabase = newDatabase;
         this.editorStore.explorerTreeState.reprocess();
       } else {
@@ -560,9 +576,10 @@ export class DatabaseBuilderState {
           );
         }
       }
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, 3000);

@@ -5,17 +5,34 @@
   // See https://github.com/RyanCavanaugh/learn-a
   "files": [],
   "references": [
-    { "path": "packages/legend-studio-shared" },
-    { "path": "packages/legend-studio-components" },
-    { "path": "packages/legend-studio-network" },
+    { "path": "packages/legend-manual-tests" },
+    { "path": "packages/legend-shared" },
+    { "path": "packages/legend-tracer-plugin-zipkin" },
+    { "path": "packages/legend-model-storage" },
+    { "path": "packages/legend-server-sdlc" },
+    { "path": "packages/legend-server-depot" },
+    { "path": "packages/legend-graph" },
+    { "path": "packages/legend-art" },
+    { "path": "packages/legend-application" },
+    // studio
     { "path": "packages/legend-studio" },
     { "path": "packages/legend-studio-app" },
-    { "path": "packages/legend-studio-plugin-tracer-zipkin" },
+    { "path": "packages/legend-studio-deployment" },
     { "path": "packages/legend-studio-plugin-management" },
-    { "path": "packages/legend-studio-preset-dsl-text" },
     { "path": "packages/legend-studio-preset-query-builder" },
-    { "path": "packages/legend-studio-preset-external-format-json-schema" },
-    { "path": "packages/legend-studio-manual-tests" },
-    { "path": "packages/legend-query-app" }
+    // query
+    { "path": "packages/legend-query" },
+    { "path": "packages/legend-query-app" },
+    { "path": "packages/legend-query-deployment" },
+    // extension
+    {
+      "path": "packages/legend-extension-dsl-text"
+    },
+    {
+      "path": "packages/legend-extension-dsl-diagram"
+    },
+    {
+      "path": "packages/legend-extension-external-format-json-schema"
+    }
   ]
 }

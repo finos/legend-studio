@@ -16,7 +16,6 @@
 
 import { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import SplitPane from 'react-split-pane';
 import type { ServiceExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
 import {
   FaPlay,
@@ -33,29 +32,35 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
   tryToFormatLosslessJSONString,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import {
   clsx,
   ContextMenu,
   BlankPanelContent,
   BlankPanelPlaceholder,
   PanelLoadingIndicator,
-} from '@finos/legend-studio-components';
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-art';
 import type { TestContainerState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
 import { MdRefresh, MdCompareArrows } from 'react-icons/md';
 import { LinearProgress } from '@material-ui/core';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import { VscError } from 'react-icons/vsc';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import type { TestContainer } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import {
+  EDITOR_LANGUAGE,
+  useApplicationStore,
+} from '@finos/legend-application';
+import type { TestContainer } from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const TestContainerContextMenu = observer(
   (
@@ -415,99 +420,101 @@ export const ServiceTestEditorEditPanel = observer(
             </>
           )}
           {selectedTab === SERVICE_TEST_TAB.DETAIL && (
-            <SplitPane
-              split="vertical"
-              defaultSize={200}
-              minSize={200}
-              maxSize={-300}
-            >
-              <div className="panel service-test-editor__parameters">
-                <div className="panel__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__label service-editor__execution__sub-label--test">
-                      parameter values
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel size={200} minSize={150}>
+                <div className="panel service-test-editor__parameters">
+                  <div className="panel__header">
+                    <div className="panel__header__title">
+                      <div className="panel__header__title__label service-editor__execution__sub-label--test">
+                        parameter values
+                      </div>
                     </div>
                   </div>
+                  <div className="panel__content">
+                    <BlankPanelContent>Work in progress</BlankPanelContent>
+                  </div>
                 </div>
-                <div className="panel__content">
-                  <BlankPanelContent>Work in progress</BlankPanelContent>
-                </div>
-              </div>
-              <div className="panel service-test-editor__expected-result">
-                <div className="panel__header">
-                  <div className="panel__header__title">
-                    <div className="panel__header__title__label service-editor__execution__sub-label--test">
-                      expected result
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel minSize={150}>
+                <div className="panel service-test-editor__expected-result">
+                  <div className="panel__header">
+                    <div className="panel__header__title">
+                      <div className="panel__header__title__label service-editor__execution__sub-label--test">
+                        expected result
+                      </div>
+                      <div
+                        className="service-editor__header__hint"
+                        title="Specifies the expected execution result JSON"
+                      >
+                        <FaInfoCircle />
+                      </div>
                     </div>
-                    <div
-                      className="service-editor__header__hint"
-                      title="Specifies the expected execution result JSON"
-                    >
-                      <FaInfoCircle />
+                    <div className="panel__header__actions">
+                      <button
+                        className="panel__header__action service-test-editor__test__generate-expected-result-btn"
+                        tabIndex={-1}
+                        onClick={generateAssertion}
+                        disabled={
+                          isReadOnly ||
+                          selectedTestContainerState.isGeneratingTestAssertion
+                        }
+                        title={'Generate expected result'}
+                      >
+                        <MdRefresh />
+                      </button>
+                      <button
+                        className="panel__header__action"
+                        disabled={isReadOnly}
+                        tabIndex={-1}
+                        onClick={formatExpectedResultJSONString}
+                        title={'Format JSON (Alt + Shift + F)'}
+                      >
+                        <FaWrench />
+                      </button>
                     </div>
                   </div>
-                  <div className="panel__header__actions">
-                    <button
-                      className="panel__header__action service-test-editor__test__generate-expected-result-btn"
-                      tabIndex={-1}
-                      onClick={generateAssertion}
-                      disabled={
-                        isReadOnly ||
+                  <div className="panel__content service-test-editor__expected-result__editor">
+                    <PanelLoadingIndicator
+                      isLoading={
                         selectedTestContainerState.isGeneratingTestAssertion
                       }
-                      title={'Generate expected result'}
-                    >
-                      <MdRefresh />
-                    </button>
-                    <button
-                      className="panel__header__action"
-                      disabled={isReadOnly}
-                      tabIndex={-1}
-                      onClick={formatExpectedResultJSONString}
-                      title={'Format JSON (Alt + Shift + F)'}
-                    >
-                      <FaWrench />
-                    </button>
-                  </div>
-                </div>
-                <div className="panel__content service-test-editor__expected-result__editor">
-                  <PanelLoadingIndicator
-                    isLoading={
-                      selectedTestContainerState.isGeneratingTestAssertion
-                    }
-                  />
-                  {!isExpectedResultValidJSON && expectedResult && (
-                    <div
-                      className="panel__content__validation-error"
-                      title={'Expected result must be a valid JSON'}
-                    >
-                      <VscError />
-                    </div>
-                  )}
-                  {expectedResult && (
-                    <TextInputEditor
-                      inputValue={expectedResult}
-                      isReadOnly={
-                        isReadOnly ||
-                        selectedTestContainerState.isFetchingActualResultForComparison ||
-                        selectedTestContainerState.isGeneratingTestAssertion
-                      }
-                      updateInput={updateExpectedResult}
-                      language={EDITOR_LANGUAGE.JSON}
                     />
-                  )}
-                  {!expectedResult && (
-                    <div className="panel__content">
-                      {' '}
-                      <UnsupportedEditorPanel
-                        text={`Can't display assertion in form-mode`}
-                        isReadOnly={isReadOnly}
-                      />{' '}
-                    </div>
-                  )}
+                    {!isExpectedResultValidJSON && expectedResult && (
+                      <div
+                        className="panel__content__validation-error"
+                        title={'Expected result must be a valid JSON'}
+                      >
+                        <VscError />
+                      </div>
+                    )}
+                    {expectedResult && (
+                      <StudioTextInputEditor
+                        inputValue={expectedResult}
+                        isReadOnly={
+                          isReadOnly ||
+                          selectedTestContainerState.isFetchingActualResultForComparison ||
+                          selectedTestContainerState.isGeneratingTestAssertion
+                        }
+                        updateInput={updateExpectedResult}
+                        language={EDITOR_LANGUAGE.JSON}
+                      />
+                    )}
+                    {!expectedResult && (
+                      <div className="panel__content">
+                        {' '}
+                        <UnsupportedEditorPanel
+                          text={`Can't display assertion in form-mode`}
+                          isReadOnly={isReadOnly}
+                        />{' '}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </SplitPane>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           )}
         </div>
       </div>
@@ -559,83 +566,85 @@ export const ServiceTestAssertEditor = observer(
 
     return (
       <div className="service-test-editor">
-        <SplitPane
-          split="vertical"
-          defaultSize={230}
-          minSize={230}
-          maxSize={-300}
-        >
-          <div className="panel service-test-editor__explorer">
-            <div className="panel__header">
-              <div className="panel__header__title" title={testReportSummary}>
-                <div className="panel__header__title__content service-test-editor__explorer__report">
-                  <div className="service-test-editor__explorer__report__overview">
-                    <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--total">
-                      {numberOfTests} total
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel size={250} minSize={250}>
+            <div className="panel service-test-editor__explorer">
+              <div className="panel__header">
+                <div className="panel__header__title" title={testReportSummary}>
+                  <div className="panel__header__title__content service-test-editor__explorer__report">
+                    <div className="service-test-editor__explorer__report__overview">
+                      <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--total">
+                        {numberOfTests} total
+                      </div>
+                      <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--passed">
+                        {numberOfTestsPassed} <FaCheckCircle />
+                      </div>
+                      <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--failed">
+                        {numberOfTestsFailed} <FaTimesCircle />
+                      </div>
                     </div>
-                    <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--passed">
-                      {numberOfTestsPassed} <FaCheckCircle />
-                    </div>
-                    <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--failed">
-                      {numberOfTestsFailed} <FaTimesCircle />
-                    </div>
+                    {testState.testSuiteResult !== TEST_RESULT.NONE && (
+                      <div className="service-test-editor__explorer__report__time">
+                        {testState.allTestRunTime}ms
+                      </div>
+                    )}
                   </div>
-                  {testState.testSuiteResult !== TEST_RESULT.NONE && (
-                    <div className="service-test-editor__explorer__report__time">
-                      {testState.allTestRunTime}ms
-                    </div>
-                  )}
+                </div>
+                <div className="panel__header__actions">
+                  <button
+                    className="panel__header__action"
+                    tabIndex={-1}
+                    disabled={isReadOnly}
+                    onClick={addTestContainer}
+                    title="Add Test"
+                  >
+                    <FaPlus />
+                  </button>
+                  <button
+                    className="panel__header__action"
+                    tabIndex={-1}
+                    disabled={isReadOnly || !numberOfTests}
+                    onClick={runAsserts}
+                    title="Run All Tests"
+                  >
+                    <FaPlay />
+                  </button>
                 </div>
               </div>
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action"
-                  tabIndex={-1}
-                  disabled={isReadOnly}
-                  onClick={addTestContainer}
-                  title="Add Test"
-                >
-                  <FaPlus />
-                </button>
-                <button
-                  className="panel__header__action"
-                  tabIndex={-1}
-                  disabled={isReadOnly || !numberOfTests}
-                  onClick={runAsserts}
-                  title="Run All Tests"
-                >
-                  <FaPlay />
-                </button>
+              <div className="service-test-editor__header__status">
+                <LinearProgress
+                  className={`service-test-editor__progress-bar service-test-editor__progress-bar--${testState.testSuiteResult.toLowerCase()}`}
+                  classes={{
+                    bar: `service-test-editor__progress-bar__bar service-test-editor__progress-bar__bar--${testState.testSuiteResult.toLowerCase()}`,
+                  }}
+                  variant="determinate"
+                  value={percentageTestRun}
+                />
               </div>
+              <TestContainerStateExplorer testState={testState} />
             </div>
-            <div className="service-test-editor__header__status">
-              <LinearProgress
-                className={`service-test-editor__progress-bar service-test-editor__progress-bar--${testState.testSuiteResult.toLowerCase()}`}
-                classes={{
-                  bar: `service-test-editor__progress-bar__bar service-test-editor__progress-bar__bar--${testState.testSuiteResult.toLowerCase()}`,
-                }}
-                variant="determinate"
-                value={percentageTestRun}
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={300}>
+            {selectedTestContainerState && (
+              <ServiceTestEditorEditPanel
+                executionState={executionState}
+                testState={testState}
+                selectedTestContainerState={selectedTestContainerState}
               />
-            </div>
-            <TestContainerStateExplorer testState={testState} />
-          </div>
-          {selectedTestContainerState && (
-            <ServiceTestEditorEditPanel
-              executionState={executionState}
-              testState={testState}
-              selectedTestContainerState={selectedTestContainerState}
-            />
-          )}
-          {!selectedTestContainerState && (
-            <div className="panel">
-              <div className="panel__header"></div>
-              <div className="panel__content">
-                <BlankPanelContent>No test selected</BlankPanelContent>
+            )}
+            {!selectedTestContainerState && (
+              <div className="panel">
+                <div className="panel__header"></div>
+                <div className="panel__content">
+                  <BlankPanelContent>No test selected</BlankPanelContent>
+                </div>
               </div>
-            </div>
-          )}
-        </SplitPane>
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },
@@ -663,53 +672,55 @@ export const ServiceTestEditor = observer(
     };
     return (
       <div className="panel__content service-execution-editor__test__content">
-        <SplitPane
-          split="horizontal"
-          defaultSize="40%"
-          minSize={28}
-          maxSize={-28}
-        >
-          <div className="panel service-execution-editor__test-data">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__label service-editor__execution__sub-label--test">
-                  test data
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel minSize={28}>
+            <div className="panel service-execution-editor__test-data">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__label service-editor__execution__sub-label--test">
+                    test data
+                  </div>
+                  <div
+                    className="service-editor__header__hint"
+                    title="Test data is shared between all test cases"
+                  >
+                    <FaInfoCircle />
+                  </div>
                 </div>
-                <div
-                  className="service-editor__header__hint"
-                  title="Test data is shared between all test cases"
-                >
-                  <FaInfoCircle />
+                <div className="panel__header__actions">
+                  <button
+                    className="panel__header__action service-execution-editor__test-data__generate-btn"
+                    onClick={generateTestData}
+                    tabIndex={-1}
+                    title={'Generate test data'}
+                  >
+                    <MdRefresh />
+                  </button>
                 </div>
               </div>
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action service-execution-editor__test-data__generate-btn"
-                  onClick={generateTestData}
-                  tabIndex={-1}
-                  title={'Generate test data'}
-                >
-                  <MdRefresh />
-                </button>
+              <div className="panel__content service-execution-editor__test-data__editor">
+                <PanelLoadingIndicator
+                  isLoading={selectedTestState.isGeneratingTestData}
+                />
+                <StudioTextInputEditor
+                  inputValue={selectedTest.data}
+                  updateInput={updateTestData}
+                  isReadOnly={isReadOnly}
+                  language={EDITOR_LANGUAGE.TEXT}
+                />
               </div>
             </div>
-            <div className="panel__content service-execution-editor__test-data__editor">
-              <PanelLoadingIndicator
-                isLoading={selectedTestState.isGeneratingTestData}
-              />
-              <TextInputEditor
-                inputValue={selectedTest.data}
-                updateInput={updateTestData}
-                isReadOnly={isReadOnly}
-                language={EDITOR_LANGUAGE.TEXT}
-              />
-            </div>
-          </div>
-          <ServiceTestAssertEditor
-            executionState={executionState}
-            testState={selectedTestState}
-          />
-        </SplitPane>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={28}>
+            <ServiceTestAssertEditor
+              executionState={executionState}
+              testState={selectedTestState}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

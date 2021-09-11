@@ -15,17 +15,17 @@
  */
 
 import type { CORE_DND_TYPE } from '../shared/DnDUtil';
-import type { Type } from '../../models/metamodels/pure/model/packageableElements/domain/Type';
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { Runtime } from '../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import type { Store } from '../../models/metamodels/pure/model/packageableElements/store/Store';
-import type { Class } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
+import type { TreeNodeData } from '@finos/legend-art';
 import type {
+  Type,
+  PackageableElement,
+  Runtime,
+  Store,
+  Class,
   FlatDataRecordField,
   RootFlatDataRecordType,
-} from '../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import type { AbstractProperty } from '../../models/metamodels/pure/model/packageableElements/domain/AbstractProperty';
-import type { TreeNodeData } from '@finos/legend-studio-components';
+  AbstractProperty,
+} from '@finos/legend-graph';
 
 export interface PackageTreeNodeData extends TreeNodeData {
   dndType: string;
@@ -42,8 +42,8 @@ export interface RuntimeExplorerTreeNodeData extends TreeNodeData {
 }
 
 export interface TypeTreeNodeData extends TreeNodeData {
-  type?: Type;
-  property?: AbstractProperty;
+  type?: Type | undefined;
+  property?: AbstractProperty | undefined;
   dndType: CORE_DND_TYPE;
   parent: Type;
 }

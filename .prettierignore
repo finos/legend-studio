@@ -10,4 +10,4 @@
 .pnp.*
 
 # Exceptions
-/packages/legend-studio-dev-utils/__tests__/fixtures/testTsConfigWithTrailingCommas.json
+/packages/legend-dev-utils/__tests__/fixtures/testTsConfigWithTrailingCommas.json

@@ -21,26 +21,27 @@ import type {
   RootRelationalInstanceSetImplementationState,
 } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 import { EmbeddedRelationalInstanceSetImplementationState } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
-import {
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
-} from '../../../../../models/metamodels/pure/model/packageableElements/domain/Class';
+import type { MappingElement } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../../../../stores/EditorStore';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import { clsx, CustomSelectorInput } from '@finos/legend-art';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { LambdaEditor } from '../../../../shared/LambdaEditor';
-import { guaranteeType } from '@finos/legend-studio-shared';
-import type { MappingElement } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Enumeration } from '../../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { EnumerationMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
+import { guaranteeType } from '@finos/legend-shared';
 import {
   TableOrViewTreeNodeDragSource,
   TABLE_ELEMENT_DND_TYPE,
 } from './TableOrViewSourceTree';
-import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import { useEditorStore } from '../../../EditorStoreProvider';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+  Enumeration,
+  EnumerationMapping,
+  RelationalPropertyMapping,
+  getEnumerationMappingsByEnumeration,
+} from '@finos/legend-graph';
+import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -56,7 +57,7 @@ const SimplePropertyMappingEditor = observer(
     return (
       <div className="property-mapping-editor__entry__container">
         <div ref={drop} className="property-mapping-editor__entry">
-          <LambdaEditor
+          <StudioLambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}
@@ -89,9 +90,10 @@ const EnumerationPropertyMappingEditor = observer(
     const enumeration =
       propertyMapping.property.value.genericType.value.getRawType(Enumeration);
     // Enumeration Mapping Selector
-    const options = mappingEditorState.mapping
-      .enumerationMappingsByEnumeration(enumeration)
-      .map((em) => ({ value: em, label: em.id.value }));
+    const options = getEnumerationMappingsByEnumeration(
+      mappingEditorState.mapping,
+      enumeration,
+    ).map((em) => ({ value: em, label: em.id.value }));
     const transformer = propertyMapping.transformer?.id.value ?? '';
     const handleSelectionChange = (
       val: { label: string; value: EnumerationMapping } | null,
@@ -139,7 +141,7 @@ const EnumerationPropertyMappingEditor = observer(
               <FaArrowAltCircleRight />
             </button>
           </div>
-          <LambdaEditor
+          <StudioLambdaEditor
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
             )}
@@ -212,7 +214,7 @@ const ClassPropertyMappingEditor = observer(
               <FaArrowAltCircleRight />
             </button>
           </div>
-          <LambdaEditor
+          <StudioLambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}

@@ -22,15 +22,15 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  LogEvent,
   assertTrue,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
-} from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+} from '@finos/legend-shared';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type {
   GenerationTreeNodeData,
   GenerationOutputResult,
@@ -45,25 +45,33 @@ import {
   buildGenerationDirectory,
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
-import type { TreeData } from '@finos/legend-studio-components';
+import type { TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState';
 import { FileGenerationViewerState } from './FileGenerationViewerState';
 import type { EditorState } from './EditorState';
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
-import type { GenerationConfigurationDescription } from '../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { Entity } from '@finos/legend-model-storage';
+import type {
+  GenerationConfigurationDescription,
+  GenerationOutput,
+  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+} from '@finos/legend-graph';
 import {
-  DEFAULT_GENERATION_SPECIFICATION_NAME,
   GenerationSpecification,
-} from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import type { FileGenerationTypeOption } from '../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { Class } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
-import type { DSLGenerationSpecification_PureGraphManagerPlugin_Extension } from '../../models/metamodels/pure/graph/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
-import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
+  Class,
+  Enumeration,
+  ELEMENT_PATH_DELIMITER,
+} from '@finos/legend-graph';
+
+export const DEFAULT_GENERATION_SPECIFICATION_NAME =
+  'MyGenerationSpecification';
+
+export type FileGenerationTypeOption = {
+  value: string;
+  label: string;
+};
 
 export class GraphGenerationState {
   editorStore: EditorStore;
@@ -74,7 +82,7 @@ export class GraphGenerationState {
   // File generation output
   rootFileDirectory: GenerationDirectory;
   filesIndex = new Map<string, GenerationFile>();
-  selectedNode?: GenerationTreeNodeData;
+  selectedNode?: GenerationTreeNodeData | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable<GraphGenerationState>(this, {
@@ -100,7 +108,6 @@ export class GraphGenerationState {
       generateModels: flow,
       generateFiles: flow,
       clearGenerations: flow,
-      generateGenerationElement: flow,
     });
 
     this.editorStore = editorStore;
@@ -149,18 +156,18 @@ export class GraphGenerationState {
 
   *fetchAvailableFileGenerationDescriptions(): GeneratorFn<void> {
     try {
-      const availableFileGenerationDescriptions = (yield flowResult(
-        this.editorStore.graphState.graphManager.getAvailableGenerationConfigurationDescriptions(),
-      )) as GenerationConfigurationDescription[];
+      const availableFileGenerationDescriptions =
+        (yield this.editorStore.graphManagerState.graphManager.getAvailableGenerationConfigurationDescriptions()) as GenerationConfigurationDescription[];
       this.setFileGenerationConfigurations(availableFileGenerationDescriptions);
       this.editorStore.elementGenerationStates =
         this.fileGenerationConfigurations.map(
           (config) =>
             new ElementFileGenerationState(this.editorStore, config.key),
         );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -181,10 +188,10 @@ export class GraphGenerationState {
     try {
       yield flowResult(this.generateModels());
       yield flowResult(this.generateFiles());
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -199,7 +206,7 @@ export class GraphGenerationState {
     try {
       this.generatedEntities = new Map<string, Entity[]>(); // reset the map of generated entities
       const generationSpecs =
-        this.editorStore.graphState.graph.ownGenerationSpecifications;
+        this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -213,10 +220,12 @@ export class GraphGenerationState {
         const node = generationNodes[i];
         let generatedEntities: Entity[] = [];
         try {
-          generatedEntities = (yield flowResult(
-            this.generateGenerationElement(node.generationElement.value),
-          )) as Entity[];
-        } catch (error: unknown) {
+          generatedEntities =
+            (yield this.editorStore.graphManagerState.graphManager.generateModel(
+              node.generationElement.value,
+              this.editorStore.graphManagerState.graph,
+            )) as Entity[];
+        } catch (error) {
           assertErrorThrown(error);
           throw new Error(
             `Can't generate models: failure occured at step ${
@@ -234,10 +243,10 @@ export class GraphGenerationState {
           this.editorStore.graphState.updateGenerationGraphAndApplication(),
         );
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -255,7 +264,7 @@ export class GraphGenerationState {
       this.emptyFileGeneration();
       const generationResultMap = new Map<string, GenerationOutput[]>();
       const generationSpecs =
-        this.editorStore.graphState.graph.ownGenerationSpecifications;
+        this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
         return;
       }
@@ -273,14 +282,13 @@ export class GraphGenerationState {
             this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
               fileGeneration.value.type,
             ).generationMode;
-          result = (yield flowResult(
-            this.editorStore.graphState.graphManager.generateFile(
+          result =
+            (yield this.editorStore.graphManagerState.graphManager.generateFile(
               fileGeneration.value,
               mode,
-              this.editorStore.graphState.graph,
-            ),
-          )) as GenerationOutput[];
-        } catch (error: unknown) {
+              this.editorStore.graphManagerState.graph,
+            )) as GenerationOutput[];
+        } catch (error) {
           assertErrorThrown(error);
           throw new Error(
             `Can't generate files using specification '${fileGeneration.value.path}'. Error: ${error.message}`,
@@ -289,10 +297,10 @@ export class GraphGenerationState {
         generationResultMap.set(fileGeneration.value.path, result);
       }
       this.processGenerationResult(generationResultMap);
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -315,38 +323,26 @@ export class GraphGenerationState {
   }
 
   /**
-   * Method takes a generation element, defined as a packageable element that generates another model, and returns generated entities
-   */
-  *generateGenerationElement(
-    generationElement: PackageableElement,
-  ): GeneratorFn<Entity[]> {
-    return (yield flowResult(
-      this.editorStore.graphState.graphManager.generateModel(
-        generationElement,
-        this.editorStore.graphState.graph,
-      ),
-    )) as Entity[];
-  }
-
-  /**
    * Method adds generation specification if
    * 1. no generation specification has been defined in graph
    * 2. there exists a generation element
    */
   addMissingGenerationSpecifications(): void {
-    if (!this.editorStore.graphState.graph.ownGenerationSpecifications.length) {
-      const modelGenerationElements =
-        this.editorStore.applicationStore.pluginManager
-          .getPureGraphManagerPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
-              ).getExtraModelGenerationElementGetters?.() ?? [],
-          )
-          .flatMap((getter) => getter(this.editorStore.graphState.graph));
+    if (
+      !this.editorStore.graphManagerState.graph.ownGenerationSpecifications
+        .length
+    ) {
+      const modelGenerationElements = this.editorStore.pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+            ).getExtraModelGenerationElementGetters?.() ?? [],
+        )
+        .flatMap((getter) => getter(this.editorStore.graphManagerState.graph));
       const fileGenerations =
-        this.editorStore.graphState.graph.ownFileGenerations;
+        this.editorStore.graphManagerState.graph.ownFileGenerations;
       if (modelGenerationElements.length || fileGenerations.length) {
         const generationSpec = new GenerationSpecification(
           DEFAULT_GENERATION_SPECIFICATION_NAME,
@@ -361,7 +357,7 @@ export class GraphGenerationState {
           [...modelGenerationElements, ...fileGenerations][0].package,
         );
         specPackage.addElement(generationSpec);
-        this.editorStore.graphState.graph.addElement(generationSpec);
+        this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
     }
   }
@@ -384,7 +380,9 @@ export class GraphGenerationState {
     const generationResultMap = new Map<string, GenerationOutputResult>();
     Array.from(fileGenerationOutputMap.entries()).forEach((entry) => {
       const fileGeneration =
-        this.editorStore.graphState.graph.getNullableFileGeneration(entry[0]);
+        this.editorStore.graphManagerState.graph.getNullableFileGeneration(
+          entry[0],
+        );
       const rootFolder =
         fileGeneration?.generationOutputPath ??
         fileGeneration?.path.split(ELEMENT_PATH_DELIMITER).join('_');
@@ -392,8 +390,8 @@ export class GraphGenerationState {
       generationOutputs.forEach((genOutput) => {
         genOutput.cleanFileName(rootFolder);
         if (generationResultMap.has(genOutput.fileName)) {
-          this.editorStore.applicationStore.logger.warn(
-            CORE_LOG_EVENT.CODE_GENERATION_PROBLEM,
+          this.editorStore.applicationStore.log.warn(
+            LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );
         }

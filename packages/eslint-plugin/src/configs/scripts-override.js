@@ -32,7 +32,6 @@ const config = {
         'import/no-default-export': OFF, // export default from script so we can use `require()` syntax
         '@typescript-eslint/explicit-function-return-type': OFF,
         '@typescript-eslint/explicit-module-boundary-types': OFF,
-        '@typescript-eslint/no-implicit-any-catch': OFF,
         ...Object.keys(COMPUTATIONALLY_EXPENSIVE_RULES).reduce((acc, val) => {
           acc[val] = OFF;
           return acc;

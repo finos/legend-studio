@@ -16,22 +16,21 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { compareLabelFn } from '@finos/legend-studio-shared';
 import { FaCaretDown } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
-import { useEditorStore } from '../../../stores/EditorStore';
-import type { SelectComponent } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-art';
 import {
+  compareLabelFn,
   DropdownMenu,
   NonBlockingDialog,
   createFilter,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
-import { getElementTypeIcon } from '../../shared/Icon';
-import type {
-  PackageableElementSelectOption,
-  PackageableElement,
-} from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+} from '@finos/legend-art';
+import { getElementTypeIcon } from '../../shared/ElementIconUtils';
+import type { PackageableElement } from '@finos/legend-graph';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../EditorStoreProvider';
 
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();
@@ -43,25 +42,23 @@ export const ProjectSearchCommand = observer(() => {
     (type: string | undefined): (() => void) =>
     (): void =>
       setElementType(type);
-  const options = editorStore.graphState.graph.allOwnElements
+  const options = editorStore.graphManagerState.graph.allOwnElements
     .filter(
       (element) =>
         !elementType ||
         editorStore.graphState.getPackageableElementType(element) ===
           elementType,
     )
-    .map((element) => element.selectOption)
-    // .getElementOptions(elementType)
+    .map(buildElementOption)
     .sort(compareLabelFn);
   const filterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (
-      option: PackageableElementSelectOption<PackageableElement>,
-    ): string => option.value.path,
+    stringify: (option: PackageableElementOption<PackageableElement>): string =>
+      option.value.path,
   });
   const openElement = (
-    val: PackageableElementSelectOption<PackageableElement> | null,
+    val: PackageableElementOption<PackageableElement> | null,
   ): void => {
     if (val?.value) {
       closeModal();

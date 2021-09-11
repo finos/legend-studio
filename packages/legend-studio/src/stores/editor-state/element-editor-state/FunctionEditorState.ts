@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, makeObservable, flowResult } from 'mobx';
+import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
-import { LambdaEditorState } from './LambdaEditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { guaranteeType, assertType } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  guaranteeType,
+  assertType,
+} from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
-import { LAMBDA_START } from '../../../models/MetaModelConst';
-import type { CompilationError } from '../../../models/metamodels/pure/action/EngineError';
-import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/action/SourceInformationHelper';
+import type { CompilationError, PackageableElement } from '@finos/legend-graph';
+import {
+  GRAPH_MANAGER_LOG_EVENT,
+  LAMBDA_PIPE,
+  ParserError,
+  ConcreteFunctionDefinition,
+  RawLambda,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export enum FUNCTION_SPEC_TAB {
   GENERAL = 'GENERAL',
@@ -44,7 +50,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
     functionElement: ConcreteFunctionDefinition,
     editorStore: EditorStore,
   ) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       functionElement: observable,
@@ -62,20 +68,20 @@ export class FunctionBodyEditorState extends LambdaEditorState {
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
     if (this.lambdaString) {
       try {
-        const lambda = (yield flowResult(
-          this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          ),
-        )) as RawLambda | undefined;
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.functionElement.body = lambda ? (lambda.body as object[]) : [];
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -98,12 +104,11 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           this.functionElement.body as object,
         );
         lambdas.set(this.lambdaId, functionLamba);
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         if (grammarText) {
           let grammarString = this.extractLambdaString(grammarText);
@@ -130,9 +135,10 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           this.clearErrors();
         }
         this.isConvertingFunctionBodyToString = false;
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
         this.isConvertingFunctionBodyToString = false;
@@ -190,9 +196,10 @@ export class FunctionEditorState extends ElementEditorState {
         this.functionBodyEditorState.setCompilationError(compilationError);
         revealed = true;
       }
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.warn(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.warn(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error`,
         error,
       );

@@ -16,7 +16,7 @@
 
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getBaseConfig } from '@finos/legend-studio-dev-utils/JestConfigUtils';
+import { getBaseConfig } from '@finos/legend-dev-utils/JestConfigUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -40,7 +40,7 @@ export default {
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
     // mock since Jest@26 does not support ESM
-    // TODO: remove this and `lodash` dependency when we upgrade to Jest@27
+    // TODO: remove this and `lodash` dependency when we upgrade to Jest@27 and use ESM for Jest
     '^lodash-es$': 'lodash',
   },
   modulePathIgnorePatterns: ['packages/.*/lib'],
@@ -62,8 +62,8 @@ export default {
     '!**/__tests__/**',
     '!**/vendor/**',
     '!**/scripts/**',
-    '!<rootDir>/packages/legend-studio-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
-    '!<rootDir>/packages/legend-studio-app/cypress/**', // TODO: update this when restructure `e2e` test suite
+    '!<rootDir>/packages/legend-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
+    '!<rootDir>/packages/legend-manual-tests/cypress/**', // TODO: update this when restructure `e2e` test suite
   ],
   coverageDirectory: '<rootDir>/build/coverage',
   watchPathIgnorePatterns: [

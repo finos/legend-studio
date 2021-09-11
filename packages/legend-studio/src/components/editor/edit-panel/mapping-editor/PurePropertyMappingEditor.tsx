@@ -21,32 +21,33 @@ import {
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
+import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import { clsx, CustomSelectorInput } from '@finos/legend-art';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
 import type { ConnectDropTarget } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { LambdaEditor } from '../../../shared/LambdaEditor';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
+import { useEditorStore } from '../../EditorStoreProvider';
 import {
+  Enumeration,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
+  EnumerationMapping,
+  PureInstanceSetImplementation,
+  DerivedProperty,
+  getEnumerationMappingsByEnumeration,
+} from '@finos/legend-graph';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget;
-    dragItem?: TransformDropTarget;
+    drop?: ConnectDropTarget | undefined;
+    dragItem?: TransformDropTarget | undefined;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;
@@ -70,7 +71,7 @@ const SimplePropertyMappingEditor = observer(
     return (
       <div className="property-mapping-editor__entry__container">
         <div ref={drop} className="property-mapping-editor__entry">
-          <LambdaEditor
+          <StudioLambdaEditor
             className={clsx({ 'lambda-editor--dnd-match': canDrop })}
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
@@ -88,8 +89,8 @@ const SimplePropertyMappingEditor = observer(
 const EnumerationPropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget;
-    dragItem?: TransformDropTarget;
+    drop?: ConnectDropTarget | undefined;
+    dragItem?: TransformDropTarget | undefined;
     dragItemType: string;
     transformProps: {
       disableTransform: boolean;
@@ -123,9 +124,10 @@ const EnumerationPropertyMappingEditor = observer(
       propertyMappingState.instanceSetImplementationState.selectedType ===
         expectedType;
     // Enumeration Mapping Selector
-    const options = mappingEditorState.mapping
-      .enumerationMappingsByEnumeration(enumeration)
-      .map((em) => ({ value: em, label: em.id.value }));
+    const options = getEnumerationMappingsByEnumeration(
+      mappingEditorState.mapping,
+      enumeration,
+    ).map((em) => ({ value: em, label: em.id.value }));
     const transformer = propertyMapping.transformer?.id.value ?? '';
     const handleSelectionChange = (
       val: { label: string; value: EnumerationMapping } | null,
@@ -180,7 +182,7 @@ const EnumerationPropertyMappingEditor = observer(
               <FaArrowAltCircleRight />
             </button>
           </div>
-          <LambdaEditor
+          <StudioLambdaEditor
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
               { 'lambda-editor--dnd-match': canDrop },
@@ -201,8 +203,8 @@ const EnumerationPropertyMappingEditor = observer(
 const ClassPropertyMappingEditor = observer(
   (props: {
     propertyMappingState: PurePropertyMappingState;
-    drop?: ConnectDropTarget;
-    dragItem?: TransformDropTarget;
+    drop?: ConnectDropTarget | undefined;
+    dragItem?: TransformDropTarget | undefined;
     transformProps: {
       disableTransform: boolean;
       forceBackdrop: boolean;
@@ -272,7 +274,7 @@ const ClassPropertyMappingEditor = observer(
               <FaArrowAltCircleRight />
             </button>
           </div>
-          <LambdaEditor
+          <StudioLambdaEditor
             className={clsx({ 'lambda-editor--dnd-match': canDrop })}
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}

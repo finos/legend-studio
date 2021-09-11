@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import type { MappingEditorState } from './MappingEditorState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type {
+  MappingEditorState,
+  MappingElementSource,
+} from './MappingEditorState';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  LogEvent,
   hashObject,
   UnsupportedOperationError,
   guaranteeNonNullable,
@@ -32,9 +36,8 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToMinifyJSONString,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
 import {
   observable,
   flow,
@@ -43,52 +46,43 @@ import {
   makeAutoObservable,
   flowResult,
 } from 'mobx';
-import { TAB_SIZE } from '../../../EditorConfig';
-import {
-  CLIENT_VERSION,
-  LAMBDA_START,
-} from '../../../../models/MetaModelConst';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
-import type { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import type {
+  MappingTest,
+  RawLambda,
+  Runtime,
+  InputData,
+  MappingTestAssert,
+  Mapping,
+  ExecutionResult,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
+  LAMBDA_PIPE,
+  Class,
+  ExpectedOutputMappingTestAssert,
   ObjectInputData,
   ObjectInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
   IdentifiedConnection,
   EngineRuntime,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import type { InputData } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InputData';
-import { FlatDataInputData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
-import type { MappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTestAssert';
-import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import type {
-  MappingElementSource,
-  Mapping,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
-import {
+  FlatDataInputData,
+  JsonModelConnection,
+  FlatDataConnection,
+  RootFlatDataRecordType,
+  PackageableElementExplicitReference,
   RelationalInputData,
   RelationalInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
-import {
   DatabaseType,
   RelationalDatabaseConnection,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { LocalH2DatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { LambdaEditorState } from '../LambdaEditorState';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
+  LocalH2DatasourceSpecification,
+  DefaultH2AuthenticationStrategy,
+  Table,
+  View,
+  buildSourceInformationSourceId,
+  PureClientVersion,
+} from '@finos/legend-graph';
+import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -104,7 +98,7 @@ export class MappingTestQueryState extends LambdaEditorState {
   query: RawLambda;
 
   constructor(editorStore: EditorStore, test: MappingTest, query: RawLambda) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       query: observable,
@@ -137,12 +131,11 @@ export class MappingTestQueryState extends LambdaEditorState {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -150,9 +143,10 @@ export class MappingTestQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -216,14 +210,14 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphState.graphManager.getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new JsonModelConnection(
       PackageableElementExplicitReference.create(
-        this.editorStore.graphState.graph.modelStore,
+        this.editorStore.graphManagerState.graph.modelStore,
       ),
       PackageableElementExplicitReference.create(
         this.inputData.sourceClass.value,
@@ -249,7 +243,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphState.graphManager.getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -354,8 +348,8 @@ export class MappingTestState {
   test: MappingTest;
   runTime = 0;
   isSkipped = false;
-  errorRunningTest?: Error;
-  testExecutionResultText?: string; // NOTE: stored as lossless JSON object text
+  errorRunningTest?: Error | undefined;
+  testExecutionResultText?: string | undefined; // NOTE: stored as lossless JSON object text
   isRunningTest = false;
   isExecutingTest = false;
   queryState: MappingTestQueryState;
@@ -563,16 +557,15 @@ export class MappingTestState {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
       this.isExecutingTest = true;
-      const result = (yield flowResult(
-        this.editorStore.graphState.graphManager.executeMapping(
-          this.editorStore.graphState.graph,
+      const result =
+        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+          this.editorStore.graphManagerState.graph,
           this.mappingEditorState.mapping,
           query,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           true,
-        ),
-      )) as ExecutionResult;
+        )) as ExecutionResult;
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
@@ -583,7 +576,8 @@ export class MappingTestState {
       } else {
         throw new UnsupportedOperationError();
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
@@ -592,8 +586,8 @@ export class MappingTestState {
       } else {
         throw new UnsupportedOperationError();
       }
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -618,16 +612,15 @@ export class MappingTestState {
     try {
       const runtime = this.inputDataState.runtime;
       this.isRunningTest = true;
-      const result = (yield flowResult(
-        this.editorStore.graphState.graphManager.executeMapping(
-          this.editorStore.graphState.graph,
+      const result =
+        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+          this.editorStore.graphManagerState.graph,
           this.mappingEditorState.mapping,
           this.test.query,
           runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           true,
-        ),
-      )) as ExecutionResult;
+        )) as ExecutionResult;
       this.testExecutionResultText = losslessStringify(
         result.values,
         undefined,
@@ -647,12 +640,13 @@ export class MappingTestState {
       this.setResult(
         assertionMatched ? TEST_RESULT.PASSED : TEST_RESULT.FAILED,
       );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.errorRunningTest = error as Error;
+      this.errorRunningTest = error;
       this.setResult(TEST_RESULT.ERROR);
     } finally {
       this.isRunningTest = false;
@@ -677,10 +671,10 @@ export class MappingTestState {
       if (openTab) {
         this.setSelectedTab(openTab);
       }
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error.message,
       );
       yield flowResult(this.editorStore.graphState.globalCompileInFormMode()); // recompile graph if there is problem with the deep fetch tree of a test
@@ -701,9 +695,10 @@ export class MappingTestState {
           this.inputDataState.runtime,
         ),
       );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

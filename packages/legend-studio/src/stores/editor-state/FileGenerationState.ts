@@ -15,9 +15,9 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
-import type { TreeData } from '@finos/legend-studio-components';
+import { observable, action, makeAutoObservable } from 'mobx';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import type { TreeData } from '@finos/legend-art';
 import type {
   GenerationTreeNodeData,
   GenerationFile,
@@ -32,23 +32,35 @@ import {
   buildGenerationDirectory,
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
-import type { FileGenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  addUniqueEntry,
+  deepEqual,
+  isEmpty,
+  LogEvent,
+} from '@finos/legend-shared';
+import type {
+  FileGenerationSpecification,
+  GenerationOutput,
+  GenerationProperty,
+} from '@finos/legend-graph';
+import {
+  ConfigurationProperty,
+  GenerationPropertyItemType,
+  PackageableElement,
   PackageableElementReference,
   PackageableElementExplicitReference,
-} from '../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { GenerationOutput } from '../../models/metamodels/pure/action/generation/GenerationOutput';
-import { ELEMENT_PATH_DELIMITER } from '../../models/MetaModelConst';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+  ELEMENT_PATH_DELIMITER,
+} from '@finos/legend-graph';
 
 export class FileGenerationState {
   editorStore: EditorStore;
   fileGeneration: FileGenerationSpecification;
   isGenerating = false;
   root: GenerationDirectory;
-  directoryTreeData?: TreeData<GenerationTreeNodeData>;
-  selectedNode?: GenerationTreeNodeData;
+  directoryTreeData?: TreeData<GenerationTreeNodeData> | undefined;
+  selectedNode?: GenerationTreeNodeData | undefined;
   filesIndex = new Map<string, GenerationFile>();
 
   constructor(
@@ -69,6 +81,7 @@ export class FileGenerationState {
       onTreeNodeSelect: action,
       addScopeElement: action,
       deleteScopeElement: action,
+      updateFileGenerationParameters: action,
     });
 
     this.editorStore = editorStore;
@@ -103,19 +116,19 @@ export class FileGenerationState {
         this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
           this.fileGeneration.type,
         ).generationMode;
-      const result = (yield flowResult(
-        this.editorStore.graphState.graphManager.generateFile(
+      const result =
+        (yield this.editorStore.graphManagerState.graphManager.generateFile(
           this.fileGeneration,
           mode,
-          this.editorStore.graphState.graph,
-        ),
-      )) as GenerationOutput[];
+          this.editorStore.graphManagerState.graph,
+        )) as GenerationOutput[];
       this.processGenerationResult(result);
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.selectedNode = undefined;
       this.processGenerationResult([]);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.GENERATION_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -139,8 +152,8 @@ export class FileGenerationState {
     output.forEach((entry) => {
       entry.cleanFileName(rootFolder);
       if (generationResultMap.has(entry.fileName)) {
-        this.editorStore.applicationStore.logger.warn(
-          CORE_LOG_EVENT.CODE_GENERATION_PROBLEM,
+        this.editorStore.applicationStore.log.warn(
+          LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
           'Found 2 generation outputs with same path',
         );
       }
@@ -209,14 +222,15 @@ export class FileGenerationState {
     this.setDirectoryTreeData({ ...treeData });
   }
 
-  getScopeElement = (
+  getScopeElement(
     element: PackageableElement | string,
-  ): PackageableElementReference<PackageableElement> | string | undefined =>
-    this.fileGeneration.scopeElements.find((el) =>
+  ): PackageableElementReference<PackageableElement> | string | undefined {
+    return this.fileGeneration.scopeElements.find((el) =>
       el instanceof PackageableElementReference
         ? el.value === element
         : element === el,
     );
+  }
 
   addScopeElement(element: PackageableElement | string): void {
     const el = this.getScopeElement(element);
@@ -233,6 +247,63 @@ export class FileGenerationState {
     const el = this.getScopeElement(element);
     if (el) {
       this.fileGeneration.deleteScopeElement(el);
+    }
+  }
+
+  updateFileGenerationParameters(
+    fileGeneration: FileGenerationSpecification,
+    generationProperty: GenerationProperty,
+    newValue: unknown,
+  ): void {
+    if (generationProperty.type === GenerationPropertyItemType.MAP) {
+      if (
+        !newValue ||
+        isEmpty(newValue) ||
+        deepEqual(newValue, generationProperty.defaultValue)
+      ) {
+        fileGeneration.configurationProperties =
+          fileGeneration.configurationProperties.filter(
+            (e) => e.name !== generationProperty.name,
+          );
+      } else {
+        const configProperty = fileGeneration.getConfig(
+          generationProperty.name,
+        );
+        if (configProperty) {
+          configProperty.setValue({ ...(newValue as object) });
+        } else {
+          const newItem = new ConfigurationProperty(
+            generationProperty.name,
+            newValue,
+          );
+          addUniqueEntry(fileGeneration.configurationProperties, newItem);
+        }
+      }
+    } else {
+      const configProperty = fileGeneration.getConfig(generationProperty.name);
+      let useDefaultValue = generationProperty.defaultValue === newValue;
+      if (generationProperty.type === GenerationPropertyItemType.BOOLEAN) {
+        useDefaultValue =
+          (generationProperty.defaultValue === 'true') ===
+          (newValue as boolean);
+      }
+      const newConfigValue = useDefaultValue ? undefined : newValue;
+      if (newConfigValue !== undefined) {
+        if (configProperty) {
+          configProperty.setValue(newConfigValue);
+        } else {
+          const newItem = new ConfigurationProperty(
+            generationProperty.name,
+            newConfigValue,
+          );
+          addUniqueEntry(fileGeneration.configurationProperties, newItem);
+        }
+      } else {
+        fileGeneration.configurationProperties =
+          fileGeneration.configurationProperties.filter(
+            (e) => e.name !== generationProperty.name,
+          );
+      }
     }
   }
 }

@@ -1,5 +1,27 @@
 # @finos/eslint-plugin-legend-studio
 
+## 0.0.29
+
+## 0.0.28
+
+## 0.0.27
+
+## 0.0.26
+
+## 0.0.25
+
+### Patch Changes
+
+- [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b8`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) ([@akphi](https://github.com/akphi)) - Fix a problem with rules incorrectly scanning the protocol version due to the _overly_ loose regex pattern.
+
+* [#427](https://github.com/finos/legend-studio/pull/427) [`23b59b89`](https://github.com/finos/legend-studio/commit/23b59b8962c5049d1605bcb262c16cd3c012a1dd) ([@akphi](https://github.com/akphi)) - Update custom rules to also include `exports` and add rule to prevent importing from the same workspace using absolute imports, e.g. a file in `legend-shared` with an import from `@finos/legend-shared` is a violation.
+
+- [#410](https://github.com/finos/legend-studio/pull/410) [`a1dfc165`](https://github.com/finos/legend-studio/commit/a1dfc165dcf98eeea624400abc9f3c97eb2fda52) ([@akphi](https://github.com/akphi)) - Enforce new lint rule to disallow importing hidden/unexposed exports from other modules.
+
+## 0.0.24
+
+## 0.0.23
+
 ## 0.0.22
 
 ## 0.0.21
@@ -7,10 +29,6 @@
 ## 0.0.20
 
 ## 0.0.19
-
-### Patch Changes
-
-- [#336](https://github.com/finos/legend-studio/pull/336) [`acd7d99`](https://github.com/finos/legend-studio/commit/acd7d99c844161d16dd8e64d828d2361de06815d) Thanks [@epsstan](https://github.com/epsstan)! -
 
 ## 0.0.18
 
@@ -30,7 +48,7 @@
 
 ### Patch Changes
 
-- [#211](https://github.com/finos/legend-studio/pull/211) [`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1) Thanks [@akphi](https://github.com/akphi)! - As we upgraded to `prettier@2.3.0` we will disable `eslint(brace-style)` rule due to conflict and let `prettier` manage this.
+- [#211](https://github.com/finos/legend-studio/pull/211) [`86cd535`](https://github.com/finos/legend-studio/commit/86cd535e1df97f722bcd69270e84d82a6d1ff6e1) ([@akphi](https://github.com/akphi)) - As we upgraded to `prettier@2.3.0` we will disable `eslint(brace-style)` rule due to conflict and let `prettier` manage this.
 
 ## 0.0.10
 
@@ -46,16 +64,8 @@
 
 ## 0.0.4
 
-### Patch Changes
-
-- [#102](https://github.com/finos/legend-studio/pull/102) [`492e022`](https://github.com/finos/legend-studio/commit/492e02229d27fc5ef0e1bafbbd8672de0449081f) Thanks [@akphi](https://github.com/akphi)! - Update publish content avoid list.
-
 ## 0.0.3
 
 ## 0.0.2
 
 ## 0.0.1
-
-### Patch Changes
-
-- [`9fc7d5c`](https://github.com/finos/legend-studio/commit/9fc7d5c26ddb441b2c6d1f9759132cb7d33f0c8d) [#59](https://github.com/finos/legend-studio/pull/59) Thanks [@akphi](https://github.com/akphi)! - Change V1 engine client to not prefix the urls with `/api`, that should be moved to the config.

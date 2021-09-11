@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-@forward 'query-builder';
-@forward 'query-builder-explorer';
-@forward 'query-builder-filter';
-@forward 'query-builder-projection';
+@forward 'deps';
+
+@forward 'query-builder-dialog';
 @forward 'service-query-builder';
 @forward 'mapping-execution-query-builder';
 @forward 'mapping-test-query-builder';
-@forward 'graph-fetch-tree';
-@forward 'query-setup';

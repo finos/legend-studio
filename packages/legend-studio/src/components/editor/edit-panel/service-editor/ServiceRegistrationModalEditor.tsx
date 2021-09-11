@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import {
   clsx,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-art';
 import { Dialog } from '@material-ui/core';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { Version } from '../../../../models/sdlc/models/version/Version';
-import { CORE_TEST_ID } from '../../../../const';
-import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
+import { prettyCONSTName } from '@finos/legend-shared';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { ServiceExecutionMode } from '@finos/legend-graph';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
+import { Version } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const ServiceRegistrationModalEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -83,7 +83,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
   ): void => {
     registrationState.setProjectVersion(val?.value);
   };
-  const versionPlaceHolder =
+  const versionPlaceholder =
     registrationState.versionOptions === undefined
       ? `Only valid for ${prettyCONSTName(
           ServiceExecutionMode.SEMI_INTERACTIVE,
@@ -123,7 +123,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <div
-        data-testid={CORE_TEST_ID.SERVICE_REGISTRATION_MODAL}
+        data-testid={STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL}
         className="modal modal--dark service-registration-modal"
       >
         <div className="service-registration-modal__heading">
@@ -210,7 +210,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
                   value={selectedVersion}
                   darkMode={true}
                   disabled={registrationState.versionOptions === undefined}
-                  placeholder={versionPlaceHolder}
+                  placeholder={versionPlaceholder}
                   isLoading={editorStore.sdlcState.isFetchingProjectVersions}
                 />
               </div>

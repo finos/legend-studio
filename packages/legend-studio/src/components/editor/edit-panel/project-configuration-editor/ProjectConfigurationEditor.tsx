@@ -15,8 +15,12 @@
  */
 
 import { useEffect, useMemo } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import { debounce, prettyCONSTName } from '@finos/legend-studio-shared';
+import {
+  LogEvent,
+  debounce,
+  prettyCONSTName,
+  assertErrorThrown,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
   FaPlus,
@@ -24,50 +28,66 @@ import {
   FaCheckCircle,
   FaExclamationCircle,
 } from 'react-icons/fa';
-import { ProjectDependency } from '../../../../models/sdlc/models/configuration/ProjectDependency';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
 } from '../../../../stores/editor-state/ProjectConfigurationEditorState';
-import type { ProjectConfiguration } from '../../../../models/sdlc/models/configuration/ProjectConfiguration';
+import type { SelectComponent } from '@finos/legend-art';
+import { compareLabelFn, clsx, CustomSelectorInput } from '@finos/legend-art';
+import { flowResult } from 'mobx';
+import { ProjectDependency } from '@finos/legend-server-sdlc';
 import type {
+  ProjectConfiguration,
   Version,
-  VersionSelectOption,
-} from '../../../../models/sdlc/models/version/Version';
-import type { SelectComponent } from '@finos/legend-studio-components';
+  Project,
+} from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../../EditorStoreProvider';
 import {
-  clsx,
-  BlankPanelContent,
-  CustomSelectorInput,
-} from '@finos/legend-studio-components';
-import type { ProjectSelectOption } from '../../../../models/sdlc/models/project/Project';
-import {
-  useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
-} from '../../../../stores/ApplicationStore';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
-import { flowResult } from 'mobx';
+  useApplicationStore,
+} from '@finos/legend-application';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+
+interface VersionOption {
+  label: string;
+  value: string;
+}
+
+const buildVersionOption = (version: Version): VersionOption => ({
+  label: version.id.id,
+  value: version.id.id,
+});
+
+interface ProjectOption {
+  label: string;
+  value: string;
+}
+
+const buildProjectOption = (project: Project): ProjectOption => ({
+  label: project.name,
+  value: project.projectId,
+});
 
 const ProjectDependencyVersionSelector = observer(
   (
     props: {
       projectDependency: ProjectDependency;
-      selectedVersionOption: VersionSelectOption | null;
-      versionOptions: VersionSelectOption[] | null;
+      selectedVersionOption: VersionOption | null;
+      versionOptions: VersionOption[] | null;
       disabled: boolean;
     },
     ref: React.Ref<SelectComponent>,
   ) => {
     const editorStore = useEditorStore();
-    const logger = editorStore.applicationStore.logger;
+    const logger = editorStore.applicationStore.log;
     const {
       projectDependency,
       disabled,
       selectedVersionOption,
       versionOptions,
     } = props;
-    const onSelectionChange = (val: ProjectSelectOption | null): void => {
+    const onSelectionChange = (val: ProjectOption | null): void => {
       if (
         (val !== null || selectedVersionOption !== null) &&
         (!val ||
@@ -76,12 +96,16 @@ const ProjectDependencyVersionSelector = observer(
       ) {
         try {
           projectDependency.setVersionId(val?.value ?? '');
-        } catch (error: unknown) {
-          logger.error(CORE_LOG_EVENT.SDLC_PROBLEM, error);
+        } catch (error) {
+          assertErrorThrown(error);
+          logger.error(
+            LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+            error,
+          );
         }
       }
     };
-    const projectSelectorPlaceHolder = !projectDependency.projectId.length
+    const projectSelectorPlaceholder = !projectDependency.projectId.length
       ? 'Choose project'
       : disabled
       ? 'No project version found. Please create a new one.'
@@ -96,7 +120,7 @@ const ProjectDependencyVersionSelector = observer(
         onChange={onSelectionChange}
         value={selectedVersionOption}
         disabled={disabled}
-        placeholder={projectSelectorPlaceHolder}
+        placeholder={projectSelectorPlaceholder}
         isLoading={
           editorStore.projectConfigurationEditorState
             .isFetchingAssociatedProjectsAndVersions
@@ -112,7 +136,7 @@ const ProjectDependencyProjectQuerySelector = observer(
   (
     props: {
       projectDependency: ProjectDependency;
-      selectedProjectOption: ProjectSelectOption | null;
+      selectedProjectOption: ProjectOption | null;
       disabled: boolean;
     },
     ref: React.Ref<SelectComponent>,
@@ -131,7 +155,10 @@ const ProjectDependencyProjectQuerySelector = observer(
         }, 500),
       [applicationStore, configurationEditorState],
     );
-    const onSelectionChange = (val: ProjectSelectOption | null): void => {
+    const options = Array.from(configurationEditorState.projects.values())
+      .map(buildProjectOption)
+      .sort(compareLabelFn);
+    const onSelectionChange = (val: ProjectOption | null): void => {
       if (
         (val !== null || selectedProjectOption !== null) &&
         (!val ||
@@ -152,7 +179,7 @@ const ProjectDependencyProjectQuerySelector = observer(
         className="project-dependency-editor__selector"
         ref={ref}
         disabled={disabled}
-        options={configurationEditorState.projectOptions}
+        options={options}
         isClearable={true}
         escapeClearsValue={true}
         onChange={onSelectionChange}
@@ -231,9 +258,9 @@ const ProjectStructureEditor = observer(
               disabled={isReadOnly}
               onClick={updateVersion}
               tabIndex={-1}
-              title={`Current project structure is outdated. Click to update to the latest version (v${latestVersion?.fullVersion}})`}
+              title={`Current project structure is outdated. Click to update to the latest version (v${latestVersion.fullVersion}})`}
             >
-              Update to version {latestVersion?.fullVersion}
+              Update to version {latestVersion.fullVersion}
             </button>
           )}
         </div>
@@ -250,7 +277,7 @@ const ProjectStructureEditor = observer(
               className="panel__content__form__section__input"
               spellCheck={false}
               disabled={isReadOnly}
-              value={projectConfig.groupId ?? ''}
+              value={projectConfig.groupId}
               onChange={changeGroupId}
             />
           </div>
@@ -269,7 +296,7 @@ const ProjectStructureEditor = observer(
               className="panel__content__form__section__input"
               spellCheck={false}
               disabled={isReadOnly}
-              value={projectConfig.artifactId ?? ''}
+              value={projectConfig.artifactId}
               onChange={changeArtifactId}
             />
           </div>
@@ -290,19 +317,21 @@ const ProjectDependencyEditor = observer(
       editorStore.projectConfigurationEditorState;
     const { projectDependency, deleteValue, isReadOnly } = props;
     const version = projectDependency.versionId;
-    const selectedProjectOption =
-      configurationEditorState.projectOptions.find(
-        (option) => option.value === projectDependency.projectId,
-      ) ?? null;
+    const selectedProject = configurationEditorState.projects.get(
+      projectDependency.projectId,
+    );
+    const selectedProjectOption = selectedProject
+      ? buildProjectOption(selectedProject)
+      : null;
     const versionMap = configurationEditorState.versionsByProject.get(
       projectDependency.projectId,
     );
     const versionOptions = versionMap
-      ? Array.from(versionMap.values()).map((v) => v.versionOption)
+      ? Array.from(versionMap.values()).map(buildVersionOption)
       : [];
     const selectedVersion: Version | undefined = versionMap?.get(version.id);
     const selectedVersionOption = selectedVersion
-      ? selectedVersion.versionOption
+      ? buildVersionOption(selectedVersion)
       : null;
     const versionDisabled =
       Boolean(
@@ -347,11 +376,8 @@ export const ProjectConfigurationEditor = observer(() => {
     ProjectConfigurationEditorState,
   );
   const sdlcState = editorStore.sdlcState;
+  const isReadOnly = editorStore.isInViewerMode;
   const selectedTab = configurationEditorState.selectedTab;
-  const isReadOnly = configurationEditorState.isReadOnly;
-  const isInitialVersion =
-    configurationEditorState.projectConfiguration?.projectStructureVersion
-      .isInitialVersion;
   const tabs = [
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
@@ -447,86 +473,69 @@ export const ProjectConfigurationEditor = observer(() => {
               {sdlcState.currentProject?.name ?? '(unknown)'}
             </div>
           </div>
-          {!isInitialVersion && (
-            <button
-              // TODO: remove this ugly button when we integrate project configuration into change detection flow
-              className="project-configuration-editor__update-btn"
-              disabled={
-                isReadOnly ||
-                currentProjectConfiguration.hashCode ===
-                  configurationEditorState.originalConfig.hashCode
-              }
-              onClick={updateConfigs}
-              tabIndex={-1}
-            >
-              Update
-            </button>
-          )}
+          <button
+            // TODO: remove this ugly button when we integrate project configuration into change detection flow
+            className="project-configuration-editor__update-btn"
+            disabled={
+              isReadOnly ||
+              currentProjectConfiguration.hashCode ===
+                configurationEditorState.originalConfig.hashCode
+            }
+            onClick={updateConfigs}
+            tabIndex={-1}
+          >
+            Update
+          </button>
         </div>
-        {isInitialVersion && (
-          // TODO: put a link to the review for initial project configuration
-          <div className="project-configuration-editor__content--not-initialized">
-            <BlankPanelContent>
-              Project configuration has not been initialized
-            </BlankPanelContent>
+        <div className="panel__header project-configuration-editor__tabs__header">
+          <div className="project-configuration-editor__tabs">
+            {tabs.map((tab) => (
+              <div
+                key={tab}
+                onClick={changeTab(tab)}
+                className={clsx('project-configuration-editor__tab', {
+                  'project-configuration-editor__tab--active':
+                    tab === selectedTab,
+                })}
+              >
+                {prettyCONSTName(tab)}
+              </div>
+            ))}
           </div>
-        )}
-        {!isInitialVersion && (
-          <>
-            <div className="panel__header project-configuration-editor__tabs__header">
-              <div className="project-configuration-editor__tabs">
-                {tabs.map((tab) => (
-                  <div
-                    key={tab}
-                    onClick={changeTab(tab)}
-                    className={clsx('project-configuration-editor__tab', {
-                      'project-configuration-editor__tab--active':
-                        tab === selectedTab,
-                    })}
-                  >
-                    {prettyCONSTName(tab)}
-                  </div>
-                ))}
-              </div>
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action"
-                  disabled={disableAddButton}
-                  tabIndex={-1}
-                  onClick={addValue}
-                  title={addButtonTitle}
-                >
-                  <FaPlus />
-                </button>
-              </div>
-            </div>
-            <div className="panel__content project-configuration-editor__content">
-              {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE && (
-                <div className="panel__content__lists">
-                  <ProjectStructureEditor
-                    projectConfig={currentProjectConfiguration}
+          <div className="panel__header__actions">
+            <button
+              className="panel__header__action"
+              disabled={disableAddButton}
+              tabIndex={-1}
+              onClick={addValue}
+              title={addButtonTitle}
+            >
+              <FaPlus />
+            </button>
+          </div>
+        </div>
+        <div className="panel__content project-configuration-editor__content">
+          {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE && (
+            <ProjectStructureEditor
+              projectConfig={currentProjectConfiguration}
+              isReadOnly={isReadOnly}
+            />
+          )}
+          {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
+            <div className="panel__content__lists">
+              {currentProjectConfiguration.projectDependencies.map(
+                (projectDependency) => (
+                  <ProjectDependencyEditor
+                    key={projectDependency.uuid}
+                    projectDependency={projectDependency}
+                    deleteValue={deleteProjectDependency(projectDependency)}
                     isReadOnly={isReadOnly}
                   />
-                </div>
-              )}
-              {selectedTab ===
-                CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
-                <div className="panel__content__lists">
-                  {currentProjectConfiguration.projectDependencies.map(
-                    (projectDependency) => (
-                      <ProjectDependencyEditor
-                        key={projectDependency.uuid}
-                        projectDependency={projectDependency}
-                        deleteValue={deleteProjectDependency(projectDependency)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ),
-                  )}
-                </div>
+                ),
               )}
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

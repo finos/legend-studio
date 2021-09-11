@@ -17,28 +17,31 @@
 import { useState, useRef } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
-import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
-import { useEditorStore } from '../../../../stores/EditorStore';
+import type { SelectComponent } from '@finos/legend-art';
 import {
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import {
-  UnsupportedOperationError,
   compareLabelFn,
-} from '@finos/legend-studio-shared';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
-import type {
-  PackageableElementSelectOption,
-  PackageableElement,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+} from '@finos/legend-art';
+import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  createClassMapping,
+  createEnumerationMapping,
+  getAllMappingElements,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import { UnsupportedOperationError } from '@finos/legend-shared';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type { PackageableElement } from '@finos/legend-graph';
+import {
+  PRIMITIVE_TYPE,
+  fromElementPathToMappingElementId,
+  Class,
+  Enumeration,
+  Association,
+  BASIC_SET_IMPLEMENTATION_TYPE,
+} from '@finos/legend-graph';
 
 interface ClassMappingSubTypeOption {
   label: string;
@@ -57,9 +60,9 @@ export const NewMappingElementModal = observer(() => {
   const handleIdChange: React.ChangeEventHandler<HTMLInputElement> = (event) =>
     setId(event.target.value);
   const mapping = mappingEditorState.mapping;
-  const mappingIds = mapping
-    .getAllMappingElements()
-    .map((mappingElement) => mappingElement.id.value);
+  const mappingIds = getAllMappingElements(mapping).map(
+    (mappingElement) => mappingElement.id.value,
+  );
   const isMappingIdUnique = !mappingIds.includes(id);
   const showId =
     spec?.target &&
@@ -67,7 +70,7 @@ export const NewMappingElementModal = observer(() => {
 
   // Target
   const targetSelectorRef = useRef<SelectComponent>(null);
-  const options: PackageableElementSelectOption<PackageableElement>[] = [
+  const options: PackageableElementOption<PackageableElement>[] = [
     ...editorStore.enumerationOptions,
     ...editorStore.associationOptions,
     ...editorStore.classOptions,
@@ -75,15 +78,14 @@ export const NewMappingElementModal = observer(() => {
   const filterOption = createFilter({
     ignoreCase: true,
     ignoreAccents: false,
-    stringify: (
-      option: PackageableElementSelectOption<PackageableElement>,
-    ): string => option.value.path,
+    stringify: (option: PackageableElementOption<PackageableElement>): string =>
+      option.value.path,
   });
   const selectedOption = spec?.target
     ? { label: spec.target.name, value: spec.target.path }
     : null;
   const handleTargetChange = (
-    val: PackageableElementSelectOption<PackageableElement> | null,
+    val: PackageableElementOption<PackageableElement> | null,
   ): void => {
     mappingEditorState.createMappingElement({
       target: val?.value,
@@ -146,17 +148,19 @@ export const NewMappingElementModal = observer(() => {
         let newMappingElement: MappingElement | undefined = undefined;
         if (spec.target instanceof Class) {
           if (classMappingType?.value) {
-            newMappingElement = mapping.createClassMapping(
+            newMappingElement = createClassMapping(
+              mapping,
               id,
               spec.target,
               classMappingType.value,
             );
           }
         } else if (spec.target instanceof Enumeration) {
-          newMappingElement = mapping.createEnumerationMapping(
+          newMappingElement = createEnumerationMapping(
+            mapping,
             id,
             spec.target,
-            editorStore.graphState.graph.getPrimitiveType(
+            editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.STRING,
             ),
           );

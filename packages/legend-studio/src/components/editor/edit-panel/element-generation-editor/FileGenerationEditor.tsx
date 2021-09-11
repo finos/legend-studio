@@ -17,32 +17,35 @@
 import { useState, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
-import { getElementIcon } from '../../../shared/Icon';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { useDrop } from 'react-dnd';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   getTextContent,
   getEditorLanguageFromFormat,
 } from '../../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
-import type { DebouncedFunc } from '@finos/legend-studio-shared';
+import type { DebouncedFunc } from '@finos/legend-shared';
 import {
   UnsupportedOperationError,
   debounce,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-art';
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
   clsx,
   TreeView,
   BlankPanelContent,
   PanelLoadingIndicator,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-art';
 import {
   FaTimes,
   FaCheckSquare,
@@ -59,8 +62,6 @@ import { MdModeEdit, MdRefresh } from 'react-icons/md';
 import type { FileGenerationSourceDropTarget } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState';
-import SplitPane from 'react-split-pane';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { GenerationTreeNodeData } from '../../../../stores/shared/FileGenerationTreeUtil';
 import {
@@ -68,26 +69,28 @@ import {
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import { CORE_TEST_ID } from '../../../../const';
-import type { GenerationProperty } from '../../../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
-import { GenerationPropertyItemType } from '../../../../models/metamodels/pure/action/generation/GenerationConfigurationDescription';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { FileGenerationSpecification } from '../../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type {
+  GenerationProperty,
+  PackageableElement,
+  FileGenerationSpecification,
+} from '@finos/legend-graph';
 import {
+  GenerationPropertyItemType,
   PackageableElementReference,
   PackageableElementExplicitReference,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import {
   isValidFullPath,
   resolvePackagePathAndElementName,
-} from '../../../../models/MetaModelUtils';
+} from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     GenerationTreeNodeData,
     {
-      selectedNode?: TreeNodeData;
+      selectedNode?: TreeNodeData | undefined;
     }
   >
 > = (props) => {
@@ -156,7 +159,7 @@ export const FileGenerationTreeNodeContainer: React.FC<
 
 export const FileGenerationTree = observer(
   (props: {
-    selectedNode?: TreeNodeData;
+    selectedNode?: TreeNodeData | undefined;
     directoryTreeData: TreeData<GenerationTreeNodeData>;
     onNodeSelect: (node: GenerationTreeNodeData) => void;
     getFileElementTreeChildNodes: (
@@ -225,78 +228,80 @@ export const GenerationResultViewer = observer(
     );
 
     return (
-      <SplitPane
-        split="vertical"
-        defaultSize={250}
-        minSize={250}
-        maxSize={-300}
-      >
-        <div className="generation-result-viewer__side-bar">
-          <div className="panel generation-result-viewer__explorer">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                <div className="panel__header__title__label">result</div>
-              </div>
-              <div className="panel__header__actions">
-                <button
-                  className={clsx(
-                    'panel__header__action  generation-result-viewer__regenerate-btn',
-                    {
-                      ' generation-result-viewer__regenerate-btn--loading':
-                        fileGenerationState.isGenerating,
-                    },
-                  )}
-                  tabIndex={-1}
-                  disabled={fileGenerationState.isGenerating}
-                  onClick={regenerate}
-                  title={'Re-generate'}
-                >
-                  <MdRefresh />
-                </button>
-              </div>
-            </div>
-            <div className="panel__content">
-              <PanelLoadingIndicator
-                isLoading={fileGenerationState.isGenerating}
-              />
-              {Boolean(fileGenerationState.directoryTreeData) && (
-                <GenerationResultExplorer
-                  fileGenerationState={fileGenerationState}
-                />
-              )}
-              {Boolean(!fileGenerationState.directoryTreeData) && (
-                <BlankPanelContent>
-                  Generation result not available
-                </BlankPanelContent>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="panel generation-result-viewer__file">
-          <div className="panel__header">
-            {fileNode && !(fileNode instanceof GenerationDirectory) && (
-              <div className="panel__header__title">
-                <div className="panel__header__title__label">file</div>
-                <div className="panel__header__title__content generation-result-viewer__file__header-name">
-                  {fileNode.name}
+      <ResizablePanelGroup orientation="vertical">
+        <ResizablePanel size={250} minSize={250}>
+          <div className="generation-result-viewer__side-bar">
+            <div className="panel generation-result-viewer__explorer">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__label">result</div>
+                </div>
+                <div className="panel__header__actions">
+                  <button
+                    className={clsx(
+                      'panel__header__action  generation-result-viewer__regenerate-btn',
+                      {
+                        ' generation-result-viewer__regenerate-btn--loading':
+                          fileGenerationState.isGenerating,
+                      },
+                    )}
+                    tabIndex={-1}
+                    disabled={fileGenerationState.isGenerating}
+                    onClick={regenerate}
+                    title={'Re-generate'}
+                  >
+                    <MdRefresh />
+                  </button>
                 </div>
               </div>
-            )}
+              <div className="panel__content">
+                <PanelLoadingIndicator
+                  isLoading={fileGenerationState.isGenerating}
+                />
+                {Boolean(fileGenerationState.directoryTreeData) && (
+                  <GenerationResultExplorer
+                    fileGenerationState={fileGenerationState}
+                  />
+                )}
+                {Boolean(!fileGenerationState.directoryTreeData) && (
+                  <BlankPanelContent>
+                    Generation result not available
+                  </BlankPanelContent>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="panel__content">
-            {fileNode instanceof GenerationFile && (
-              <TextInputEditor
-                inputValue={getTextContent(fileNode.content, fileNode.format)}
-                isReadOnly={true}
-                language={getEditorLanguageFromFormat(fileNode.format)}
-              />
-            )}
-            {!(fileNode instanceof GenerationFile) && (
-              <BlankPanelContent>No file selected</BlankPanelContent>
-            )}
+        </ResizablePanel>
+        <ResizablePanelSplitter>
+          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+        </ResizablePanelSplitter>
+        <ResizablePanel>
+          <div className="panel generation-result-viewer__file">
+            <div className="panel__header">
+              {fileNode && !(fileNode instanceof GenerationDirectory) && (
+                <div className="panel__header__title">
+                  <div className="panel__header__title__label">file</div>
+                  <div className="panel__header__title__content generation-result-viewer__file__header-name">
+                    {fileNode.name}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="panel__content">
+              {fileNode instanceof GenerationFile && (
+                <StudioTextInputEditor
+                  inputValue={getTextContent(fileNode.content, fileNode.format)}
+                  isReadOnly={true}
+                  language={getEditorLanguageFromFormat(fileNode.format)}
+                />
+              )}
+              {!(fileNode instanceof GenerationFile) && (
+                <BlankPanelContent>No file selected</BlankPanelContent>
+              )}
+            </div>
           </div>
-        </div>
-      </SplitPane>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     );
   },
 );
@@ -357,7 +362,7 @@ const FileGenerationScopeEditor = observer(
     const addValue = (): void => {
       if (itemValue && !isReadOnly) {
         regenerate.cancel();
-        const element = editorStore.graphState.graph.getNullableElement(
+        const element = editorStore.graphManagerState.graph.getNullableElement(
           itemValue,
           true,
         );
@@ -378,10 +383,11 @@ const FileGenerationScopeEditor = observer(
             .map((element) => scopeElementPath(element))
             .includes(itemValue)
         ) {
-          const element = editorStore.graphState.graph.getNullableElement(
-            itemValue,
-            true,
-          );
+          const element =
+            editorStore.graphManagerState.graph.getNullableElement(
+              itemValue,
+              true,
+            );
           if (element) {
             regenerate.cancel();
             fileGeneration.changeScopeElement(
@@ -406,7 +412,7 @@ const FileGenerationScopeEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {scopeElements.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -803,7 +809,7 @@ const GenerationArrayPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {arrayValues.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -1011,7 +1017,7 @@ const GenerationMapPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
           >
             {Array.from(Object.entries(mapValues)).map(([key, value], idx) => (
               // NOTE: since the key must be unique, we will use it to generate the key
@@ -1254,11 +1260,15 @@ export const FileGenerationConfigurationEditor = observer(
       [fileGenerationState],
     );
     const update = (
-      AbstractGenerationProperty: GenerationProperty,
+      generationProperty: GenerationProperty,
       newValue: object,
     ): void => {
       debouncedRegenerate.cancel();
-      fileGeneration.updateParameters(AbstractGenerationProperty, newValue);
+      fileGenerationState.updateFileGenerationParameters(
+        fileGeneration,
+        generationProperty,
+        newValue,
+      );
       debouncedRegenerate()?.catch(applicationStore.alertIllegalUnhandledError);
     };
     const showFileGenerationModal = (): void => {
@@ -1423,24 +1433,26 @@ export const FileGenerationEditor = observer(() => {
           </div>
         </div>
         <div className="panel__content file-generation-editor__content">
-          <SplitPane
-            split="vertical"
-            defaultSize={400}
-            minSize={300}
-            maxSize={-550}
-          >
-            <FileGenerationConfigurationEditor
-              isReadOnly={isReadOnly}
-              fileGenerationState={
-                fileGenerationEditorState.fileGenerationState
-              }
-            />
-            <GenerationResultViewer
-              fileGenerationState={
-                fileGenerationEditorState.fileGenerationState
-              }
-            />
-          </SplitPane>
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel size={400} minSize={300}>
+              <FileGenerationConfigurationEditor
+                isReadOnly={isReadOnly}
+                fileGenerationState={
+                  fileGenerationEditorState.fileGenerationState
+                }
+              />
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel>
+              <GenerationResultViewer
+                fileGenerationState={
+                  fileGenerationEditorState.fileGenerationState
+                }
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       </div>
     </div>

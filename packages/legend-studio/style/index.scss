@@ -17,17 +17,9 @@
 // Mixins
 @use 'mixins' as *;
 
-// Dependencies
-@forward 'deps';
-@forward 'extensions';
-
-// Reset (override library styles)
-@forward 'reset/react-reflex';
-@forward 'reset/react-split-pane';
-@forward 'reset/monaco-editor';
-
 // Components
-@forward 'components/shared';
+@forward 'components/shared/multiplicity-badge';
+
 @forward 'components/app';
 @forward 'components/setup';
 @forward 'components/editor';

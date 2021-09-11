@@ -1,21 +1,19 @@
 {
   "extends": "../../scripts/typescript/tsconfig.base.json",
   "compilerOptions": {
+    "outDir": "lib",
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
-    "noEmit": true,
-    "jsx": "react-jsxdev",
-    "allowJs": true
+    "rootDir": "src",
+    "jsx": "react-jsxdev"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.json",
-    "studio.config.js"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [
-    { "path": "../legend-studio" },
-    { "path": "../legend-studio-shared" },
-    { "path": "../legend-studio-preset-dsl-text" },
-    { "path": "../legend-studio-preset-query-builder" }
+    { "path": "../legend-shared" },
+    { "path": "../legend-application" },
+    { "path": "../legend-art" },
+    { "path": "../legend-query" },
+    { "path": "../legend-extension-dsl-diagram" },
+    { "path": "../legend-extension-dsl-text" },
+    { "path": "../legend-extension-external-format-json-schema" }
   ]
 }

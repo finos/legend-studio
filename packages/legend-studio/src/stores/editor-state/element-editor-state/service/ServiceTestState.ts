@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  observable,
-  action,
-  flow,
-  computed,
-  makeObservable,
-  flowResult,
-} from 'mobx';
+import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
-import { CLIENT_VERSION } from '../../../../models/MetaModelConst';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
   losslessStringify,
   uuid,
   guaranteeType,
@@ -38,34 +32,34 @@ import {
   toGrammarString,
   fromGrammarString,
   createUrlStringFromData,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import type { ServiceTestResult } from '../../../../models/metamodels/pure/action/service/ServiceTestResult';
-import type { KeyedSingleExecutionTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
+import type {
+  ServiceTestResult,
+  KeyedSingleExecutionTest,
+  Runtime,
+  ExecutionResult,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
   TestContainer,
   SingleExecutionTest,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
-import { PureSingleExecution } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
+  PureSingleExecution,
   IdentifiedConnection,
   EngineRuntime,
   RuntimePointer,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { JsonModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { XmlModelConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/XmlModelConnection';
-import { FlatDataConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import {
+  JsonModelConnection,
+  XmlModelConnection,
+  FlatDataConnection,
   RelationalDatabaseConnection,
   DatabaseType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { StaticDatasourceSpecification } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
-import { DefaultH2AuthenticationStrategy } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import { ConnectionPointer } from '../../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
-import { TAB_SIZE } from '../../../EditorConfig';
+  StaticDatasourceSpecification,
+  DefaultH2AuthenticationStrategy,
+  ConnectionPointer,
+  PackageableElementExplicitReference,
+  PureClientVersion,
+} from '@finos/legend-graph';
+import { TAB_SIZE } from '@finos/legend-application';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -78,9 +72,9 @@ export class TestContainerState {
   serviceEditorState: ServiceEditorState;
   testState: SingleExecutionTestState;
   testContainer: TestContainer;
-  assertionData?: string;
-  testPassed?: boolean;
-  textExecutionTextResult?: ServiceTestExecutionResult; // NOTE: this is lossless JSON strings
+  assertionData?: string | undefined;
+  testPassed?: boolean | undefined;
+  textExecutionTextResult?: ServiceTestExecutionResult | undefined; // NOTE: this is lossless JSON strings
   isFetchingActualResultForComparison = false;
   isGeneratingTestAssertion = false;
 
@@ -137,7 +131,7 @@ export class TestContainerState {
   updateTestAssert(): void {
     if (this.assertionData) {
       this.testContainer.assert =
-        this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
+        this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
         );
@@ -146,7 +140,7 @@ export class TestContainerState {
 
   private initializeAssertionData(testContainter: TestContainer): void {
     const expectedResultAssertionString =
-      this.editorStore.graphState.graphManager.HACKY_extractServiceTestAssertionData(
+      this.editorStore.graphManagerState.graphManager.HACKY_extractServiceTestAssertionData(
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
@@ -176,7 +170,7 @@ export class TestContainerState {
                 .connectionValue
             : identifiedConnection.connection;
         const engineConfig =
-          this.editorStore.graphState.graphManager.getEngineConfig();
+          this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
 
         if (connection instanceof JsonModelConnection) {
           newRuntime.addIdentifiedConnection(
@@ -184,7 +178,7 @@ export class TestContainerState {
               newRuntime.generateIdentifiedConnectionId(),
               new JsonModelConnection(
                 PackageableElementExplicitReference.create(
-                  this.editorStore.graphState.graph.modelStore,
+                  this.editorStore.graphManagerState.graph.modelStore,
                 ),
                 connection.class,
                 createUrlStringFromData(
@@ -202,7 +196,7 @@ export class TestContainerState {
               newRuntime.generateIdentifiedConnectionId(),
               new XmlModelConnection(
                 PackageableElementExplicitReference.create(
-                  this.editorStore.graphState.graph.modelStore,
+                  this.editorStore.graphManagerState.graph.modelStore,
                 ),
                 connection.class,
                 createUrlStringFromData(
@@ -267,16 +261,15 @@ export class TestContainerState {
             execution.runtime,
             test.data,
           );
-        const result = (yield flowResult(
-          this.editorStore.graphState.graphManager.executeMapping(
-            this.serviceEditorState.editorStore.graphState.graph,
+        const result =
+          (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+            this.serviceEditorState.editorStore.graphManagerState.graph,
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
             true,
-          ),
-        )) as ExecutionResult;
+          )) as ExecutionResult;
         this.setAssertionData(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           tryToFormatLosslessJSONString(
@@ -287,10 +280,11 @@ export class TestContainerState {
       } else {
         throw new UnsupportedOperationError();
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.setAssertionData(tryToFormatJSONString('{}'));
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -313,16 +307,15 @@ export class TestContainerState {
             execution.runtime,
             test.data,
           );
-        const result = (yield flowResult(
-          this.editorStore.graphState.graphManager.executeMapping(
-            this.serviceEditorState.editorStore.graphState.graph,
+        const result =
+          (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+            this.serviceEditorState.editorStore.graphManagerState.graph,
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            CLIENT_VERSION.VX_X_X,
+            PureClientVersion.VX_X_X,
             true,
-          ),
-        )) as ExecutionResult;
+          )) as ExecutionResult;
         this.setTestExecutionResultText({
           expected: this.assertionData ?? '',
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
@@ -333,10 +326,11 @@ export class TestContainerState {
       } else {
         throw new UnsupportedOperationError();
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.setTestExecutionResultText(undefined);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -350,10 +344,10 @@ export class SingleExecutionTestState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   test: SingleExecutionTest;
-  selectedTestContainerState?: TestContainerState;
+  selectedTestContainerState?: TestContainerState | undefined;
   isRunningAllTests = false;
   isGeneratingTestData = false;
-  testSuiteRunError?: Error;
+  testSuiteRunError?: Error | undefined;
   testResults: ServiceTestResult[] = [];
   allTestRunTime = 0;
 
@@ -404,7 +398,7 @@ export class SingleExecutionTestState {
 
   addNewTestContainer(): void {
     const testContainer = new TestContainer(
-      this.editorStore.graphState.graphManager.HACKY_createServiceTestAssertLambda(
+      this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
         '{}',
       ),
       this.test,
@@ -455,18 +449,18 @@ export class SingleExecutionTestState {
       this.serviceEditorState.executionState.serviceExecutionParameters;
     if (executionInput) {
       try {
-        generatedTestData = (yield flowResult(
-          this.editorStore.graphState.graphManager.generateTestData(
-            this.editorStore.graphState.graph,
+        generatedTestData =
+          (yield this.editorStore.graphManagerState.graphManager.generateMappingTestData(
+            this.editorStore.graphManagerState.graph,
             executionInput.mapping,
             executionInput.query,
             executionInput.runtime,
-            CLIENT_VERSION.VX_X_X,
-          ),
-        )) as string;
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.EXECUTION_PROBLEM,
+            PureClientVersion.VX_X_X,
+          )) as string;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
           error,
         );
       }
@@ -489,23 +483,23 @@ export class SingleExecutionTestState {
       this.allTestRunTime = 0;
       this.isRunningAllTests = true;
       this.setTestResults([]);
-      const results = (yield flowResult(
-        this.editorStore.graphState.graphManager.runServiceTests(
+      const results =
+        (yield this.editorStore.graphManagerState.graphManager.runServiceTests(
           this.serviceEditorState.service,
-          this.serviceEditorState.editorStore.graphState.graph,
-        ),
-      )) as ServiceTestResult[];
+          this.serviceEditorState.editorStore.graphManagerState.graph,
+        )) as ServiceTestResult[];
       this.setTestResults(results);
-    } catch (error: unknown) {
-      this.testSuiteRunError = error as Error;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.testSuiteRunError = error;
       this.setTestResults(
         this.test.asserts.map((assert, idx) => ({
           name: `test_${idx + 1}`,
           result: false,
         })),
       );
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_TEST_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
     } finally {

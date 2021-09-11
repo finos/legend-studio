@@ -14,31 +14,37 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, flowResult } from 'mobx';
+import { observable, action, computed, makeObservable } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from '../MappingElementState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
   IllegalStateError,
   isNonNullable,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore';
-import type { PropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import type { RelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
-import { RelationalPropertyMapping } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import type { RawRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import { createStubRelationalOperationElement } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import type { CompilationError } from '../../../../../models/metamodels/pure/action/EngineError';
-import { ParserError } from '../../../../../models/metamodels/pure/action/EngineError';
-import { CORE_LOG_EVENT } from '../../../../../utils/Logger';
 import { MappingElementDecorator } from '../MappingElementDecorator';
-import { SOURCE_ID_LABEL } from '../../../../../models/MetaModelConst';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import type { SourceInformation } from '../../../../../models/metamodels/pure/action/SourceInformation';
-import { buildSourceInformationSourceId } from '../../../../../models/metamodels/pure/action/SourceInformationHelper';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from '../MappingEditorState';
+import type {
+  PropertyMapping,
+  RelationalInstanceSetImplementation,
+  RawRelationalOperationElement,
+  CompilationError,
+  SourceInformation,
+} from '@finos/legend-graph';
+import {
+  RelationalPropertyMapping,
+  createStubRelationalOperationElement,
+  ParserError,
+  GRAPH_MANAGER_LOG_EVENT,
+  EmbeddedRelationalInstanceSetImplementation,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -64,7 +70,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     return buildSourceInformationSourceId(
       [
         this.propertyMapping.owner.parent.path,
-        SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING,
+        MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING,
         this.propertyMapping.owner.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,
@@ -77,22 +83,22 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     const stubOperation = createStubRelationalOperationElement();
     if (this.lambdaString) {
       try {
-        const operation = (yield flowResult(
-          this.editorStore.graphState.graphManager.pureCodeToRelationalOperationElement(
+        const operation =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToRelationalOperationElement(
             this.fullLambdaString,
             this.lambdaId,
-          ),
-        )) as RawRelationalOperationElement | undefined;
+          )) as RawRelationalOperationElement | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof RelationalPropertyMapping) {
           this.propertyMapping.relationalOperation = operation ?? stubOperation;
         }
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -113,11 +119,10 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
             this.lambdaId,
             this.propertyMapping.relationalOperation,
           );
-          const operationsInText = (yield flowResult(
-            this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+          const operationsInText =
+            (yield this.editorStore.graphManagerState.graphManager.relationalOperationElementToPureCode(
               operations,
-            ),
-          )) as Map<string, string>;
+            )) as Map<string, string>;
           const grammarText = operationsInText.get(this.lambdaId);
           this.setLambdaString(
             grammarText !== undefined
@@ -125,9 +130,10 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
               : '',
           );
           this.clearErrors();
-        } catch (error: unknown) {
-          this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.PARSING_PROBLEM,
+        } catch (error) {
+          assertErrorThrown(error);
+          this.editorStore.applicationStore.log.error(
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
             error,
           );
         }
@@ -179,8 +185,8 @@ export class EmbeddedRelationalInstanceSetImplementationState
   // dummy lambda editor states needed because embedded flat-data should be seen as `PropertMappingState`
   lambdaPrefix = '';
   lambdaString = '';
-  parserError?: ParserError;
-  compilationError?: CompilationError;
+  parserError?: ParserError | undefined;
+  compilationError?: CompilationError | undefined;
 
   decorate(): void {
     return;
@@ -319,20 +325,20 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
     if (operations.size) {
       this.isConvertingTransformLambdaObjects = true;
       try {
-        const operationsInText = (yield flowResult(
-          this.editorStore.graphState.graphManager.relationalOperationElementToPureCode(
+        const operationsInText =
+          (yield this.editorStore.graphManagerState.graphManager.relationalOperationElementToPureCode(
             operations,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         operationsInText.forEach((grammarText, key) => {
           const relationalPropertyMappingState = propertyMappingStates.get(key);
           relationalPropertyMappingState?.setLambdaString(
             relationalPropertyMappingState.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

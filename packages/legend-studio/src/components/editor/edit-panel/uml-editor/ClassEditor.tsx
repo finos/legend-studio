@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useResizeDetector } from 'react-resize-detector';
-import { InheritanceDiagramRenderer } from '../../../shared/diagram-viewer/InheritanceDiagramRenderer';
+import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import SplitPane from 'react-split-pane';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { LambdaEditor } from '../../../shared/LambdaEditor';
+import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import type {
   ElementDragSource,
@@ -41,43 +36,51 @@ import {
   clsx,
   CustomSelectorInput,
   createFilter,
-} from '@finos/legend-studio-components';
-import { CORE_TEST_ID } from '../../../../const';
-import {
-  PRIMITIVE_TYPE,
-  MULTIPLICITY_INFINITE,
-} from '../../../../models/MetaModelConst';
-import { getElementIcon } from '../../../shared/Icon';
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+  BlankPanelContent,
+  getControlledResizablePanelProps,
+} from '@finos/legend-art';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { PropertyEditor } from './PropertyEditor';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type {
+  StereotypeReference,
+  GenericTypeReference,
+} from '@finos/legend-graph';
 import {
+  PRIMITIVE_TYPE,
+  MULTIPLICITY_INFINITE,
   Class,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { DerivedProperty } from '../../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import { GenericType } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericType';
-import { Profile } from '../../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Tag } from '../../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import { TaggedValue } from '../../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Stereotype } from '../../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Multiplicity } from '../../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
-import { Constraint } from '../../../../models/metamodels/pure/model/packageableElements/domain/Constraint';
-import { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { PrimitiveType } from '../../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Unit } from '../../../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import type { StereotypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import type { GenericTypeReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
-import { GenericTypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
-import { Association } from '../../../../models/metamodels/pure/model/packageableElements/domain/Association';
-import { flowResult } from 'mobx';
+  Property,
+  DerivedProperty,
+  GenericType,
+  Profile,
+  Tag,
+  TaggedValue,
+  Stereotype,
+  Multiplicity,
+  Constraint,
+  Type,
+  PrimitiveType,
+  Unit,
+  StereotypeExplicitReference,
+  GenericTypeExplicitReference,
+  Association,
+} from '@finos/legend-graph';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
+import { useApplicationStore } from '@finos/legend-application';
+import { getElementIcon } from '../../../shared/ElementIconUtils';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -105,16 +108,14 @@ const PropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Type>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Type>): void => {
       property.setGenericType(new GenericType(val.value));
       setIsEditingType(false);
     };
@@ -219,7 +220,7 @@ const PropertyBasicEditor = observer(
             </div>
             <div
               data-testid={
-                CORE_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
               }
               className="property-basic-editor__type__label property-basic-editor__type__label--hover"
               onClick={(): void => setIsEditingType(true)}
@@ -228,7 +229,7 @@ const PropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -260,7 +261,7 @@ const PropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -368,16 +369,14 @@ const DerivedPropertyBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedPropertyType = {
       value: propertyType,
       label: propertyType.name,
     };
-    const changePropertyType = (
-      val: PackageableElementSelectOption<Type>,
-    ): void => {
+    const changePropertyType = (val: PackageableElementOption<Type>): void => {
       derivedProperty.setGenericType(new GenericType(val.value));
       setIsEditingType(false);
     };
@@ -491,7 +490,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               <div
                 data-testid={
-                  CORE_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                  STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
                 }
                 className="property-basic-editor__type__label property-basic-editor__type__label--hover"
                 onClick={(): void => setIsEditingType(true)}
@@ -500,7 +499,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <button
-                  data-testid={CORE_TEST_ID.TYPE_VISIT}
+                  data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
@@ -532,7 +531,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <button
-                  data-testid={CORE_TEST_ID.TYPE_VISIT}
+                  data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
@@ -595,7 +594,7 @@ const DerivedPropertyBasicEditor = observer(
             </button>
           )}
         </div>
-        <LambdaEditor
+        <StudioLambdaEditor
           disabled={
             editorState.classState.isConvertingDerivedPropertyLambdaObjects ||
             isInheritedProperty ||
@@ -690,7 +689,7 @@ const ConstraintEditor = observer(
             </button>
           )}
         </div>
-        <LambdaEditor
+        <StudioLambdaEditor
           disabled={
             editorState.classState.isConvertingConstraintLambdaObjects ||
             isReadOnly ||
@@ -698,7 +697,7 @@ const ConstraintEditor = observer(
           }
           lambdaEditorState={constraintState}
           forceBackdrop={hasParserError}
-          expectedType={editorStore.graphState.graph.getPrimitiveType(
+          expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
             PRIMITIVE_TYPE.BOOLEAN,
           )}
         />
@@ -731,11 +730,11 @@ const SuperTypeEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Class>): string =>
+      stringify: (option: PackageableElementOption<Class>): string =>
         option.value.path,
     });
     const selectedType = { value: rawType, label: rawType.name };
-    const changeType = (val: PackageableElementSelectOption<Class>): void =>
+    const changeType = (val: PackageableElementOption<Class>): void =>
       superType.setValue(new GenericType(val.value));
     const visitDerivationSource = (): void => editorStore.openElement(rawType);
 
@@ -791,7 +790,7 @@ export const ClassFormEditor = observer(
         ); // attempting to read the hashCode of immutable element will throw an error
     const classState = editorState.classState;
     const isReadOnly = editorState.isReadOnly;
-    const defaultType = editorStore.graphState.graph.getPrimitiveType(
+    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
     // Selected property
@@ -864,15 +863,16 @@ export const ClassFormEditor = observer(
           superType.value.rawType.deleteSubClass(_class);
         }
       };
-    const possibleSupertypes = editorStore.graphState.graph.ownClasses.filter(
-      (superType) =>
-        // Exclude current class
-        superType !== _class &&
-        // Exclude super types of the class
-        !_class.allSuperClasses.includes(superType) &&
-        // Ensure there is no loop (might be expensive)
-        !superType.allSuperClasses.includes(_class),
-    );
+    const possibleSupertypes =
+      editorStore.graphManagerState.graph.ownClasses.filter(
+        (superType) =>
+          // Exclude current class
+          superType !== _class &&
+          // Exclude super types of the class
+          !_class.allSuperClasses.includes(superType) &&
+          // Ensure there is no loop (might be expensive)
+          !superType.allSuperClasses.includes(_class),
+      );
     // Derived properties
     const indirectDerivedProperties = _class
       .getAllDerivedProperties()
@@ -1090,7 +1090,7 @@ export const ClassFormEditor = observer(
         editorStore.openElement(_class.generationParentElement);
       }
     };
-    // On change (this is used for diagram editor when users click on a class)
+    // On change handler (this is used for other editors which embeds editor)
     useEffect(() => {
       onHashChange?.();
     }, [_class, classHash, onHashChange]);
@@ -1107,222 +1107,230 @@ export const ClassFormEditor = observer(
 
     return (
       <div
-        data-testid={CORE_TEST_ID.CLASS_FORM_EDITOR}
+        data-testid={STUDIO_TEST_ID.CLASS_FORM_EDITOR}
         className="uml-element-editor class-form-editor"
       >
-        <SplitPane
-          split="horizontal"
-          primary="second"
-          size={selectedProperty ? 250 : 0}
-          minSize={250}
-          maxSize={-56}
-        >
-          <div className="panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                {isReadOnly && (
-                  <div className="uml-element-editor__header__lock">
-                    <FaLock />
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel minSize={56}>
+            <div className="panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  {isReadOnly && (
+                    <div className="uml-element-editor__header__lock">
+                      <FaLock />
+                    </div>
+                  )}
+                  <div className="panel__header__title__label">class</div>
+                  <div className="panel__header__title__content">
+                    {_class.name}
                   </div>
-                )}
-                <div className="panel__header__title__label">class</div>
-                <div className="panel__header__title__content">
-                  {_class.name}
+                </div>
+                <div className="panel__header__actions">
+                  {_class.generationParentElement && (
+                    <button
+                      className="uml-element-editor__header__generation-origin"
+                      onClick={visitGenerationParentElement}
+                      tabIndex={-1}
+                      title={`Visit generation parent '${_class.generationParentElement.path}'`}
+                    >
+                      <div className="uml-element-editor__header__generation-origin__label">
+                        <FaFire />
+                      </div>
+                      <div className="uml-element-editor__header__generation-origin__parent-name">
+                        {_class.generationParentElement.name}
+                      </div>
+                      <div className="uml-element-editor__header__generation-origin__visit-btn">
+                        <FaArrowCircleRight />
+                      </div>
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="panel__header__actions">
-                {_class.generationParentElement && (
+              <div
+                data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                className="panel__header uml-element-editor__tabs__header"
+              >
+                <div className="uml-element-editor__tabs">
+                  {tabs.map((tab) => (
+                    <div
+                      key={tab}
+                      onClick={changeTab(tab)}
+                      className={clsx('uml-element-editor__tab', {
+                        'uml-element-editor__tab--active': tab === selectedTab,
+                      })}
+                    >
+                      {prettyCONSTName(tab)}
+                    </div>
+                  ))}
+                </div>
+                <div className="panel__header__actions">
                   <button
-                    className="uml-element-editor__header__generation-origin"
-                    onClick={visitGenerationParentElement}
+                    className="panel__header__action"
+                    disabled={isAddButtonDisabled}
+                    onClick={add}
                     tabIndex={-1}
-                    title={`Visit generation parent '${_class.generationParentElement.path}'`}
+                    title={addButtonTitle}
                   >
-                    <div className="uml-element-editor__header__generation-origin__label">
-                      <FaFire />
-                    </div>
-                    <div className="uml-element-editor__header__generation-origin__parent-name">
-                      {_class.generationParentElement.name}
-                    </div>
-                    <div className="uml-element-editor__header__generation-origin__visit-btn">
-                      <FaArrowCircleRight />
-                    </div>
+                    <FaPlus />
                   </button>
-                )}
+                </div>
               </div>
-            </div>
-            <div
-              data-testid={CORE_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
-              className="panel__header uml-element-editor__tabs__header"
-            >
-              <div className="uml-element-editor__tabs">
-                {tabs.map((tab) => (
+              <div
+                className={clsx('panel__content', {
+                  'panel__content--with-backdrop-element':
+                    selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES ||
+                    selectedTab === UML_EDITOR_TAB.CONSTRAINTS,
+                })}
+              >
+                {selectedTab === UML_EDITOR_TAB.PROPERTIES && (
                   <div
-                    key={tab}
-                    onClick={changeTab(tab)}
-                    className={clsx('uml-element-editor__tab', {
-                      'uml-element-editor__tab--active': tab === selectedTab,
+                    ref={dropPropertyRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isPropertyDragOver && !isReadOnly,
                     })}
                   >
-                    {prettyCONSTName(tab)}
+                    {_class.properties
+                      .concat(indirectProperties)
+                      .map((property) => (
+                        <PropertyBasicEditor
+                          key={property.uuid}
+                          property={property}
+                          _class={_class}
+                          deleteProperty={deleteProperty(property)}
+                          selectProperty={selectProperty(property)}
+                          isReadOnly={isReadOnly}
+                        />
+                      ))}
                   </div>
-                ))}
-              </div>
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action"
-                  disabled={isAddButtonDisabled}
-                  onClick={add}
-                  tabIndex={-1}
-                  title={addButtonTitle}
-                >
-                  <FaPlus />
-                </button>
+                )}
+                {selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES && (
+                  <div
+                    ref={dropDerivedPropertyRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isDerivedPropertyDragOver && !isReadOnly,
+                    })}
+                  >
+                    {_class.derivedProperties
+                      .concat(indirectDerivedProperties)
+                      .filter((dp): dp is DerivedProperty =>
+                        Boolean(classState.getNullableDerivedPropertyState(dp)),
+                      )
+                      .map((dp) => (
+                        <DerivedPropertyBasicEditor
+                          key={dp.uuid}
+                          derivedProperty={dp}
+                          _class={_class}
+                          editorState={editorState}
+                          deleteDerivedProperty={deleteDerivedProperty(dp)}
+                          selectDerivedProperty={selectProperty(dp)}
+                          isReadOnly={isReadOnly}
+                        />
+                      ))}
+                  </div>
+                )}
+                {selectedTab === UML_EDITOR_TAB.CONSTRAINTS && (
+                  <div className="panel__content__lists">
+                    {_class.constraints
+                      .concat(inheritedConstraints)
+                      .filter((constraint): constraint is Constraint =>
+                        Boolean(
+                          classState.getNullableConstraintState(constraint),
+                        ),
+                      )
+                      .map((constraint) => (
+                        <ConstraintEditor
+                          key={constraint.uuid}
+                          constraint={constraint}
+                          _class={_class}
+                          editorState={editorState}
+                          deleteConstraint={deleteConstraint(constraint)}
+                          isReadOnly={isReadOnly}
+                        />
+                      ))}
+                  </div>
+                )}
+                {selectedTab === UML_EDITOR_TAB.SUPER_TYPES && (
+                  <div
+                    ref={dropSuperTypeRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isSuperTypeDragOver && !isReadOnly,
+                    })}
+                  >
+                    {_class.generalizations.map((superType) => (
+                      <SuperTypeEditor
+                        key={superType.value.uuid}
+                        superType={superType}
+                        _class={_class}
+                        deleteSuperType={deleteSuperType(superType)}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
+                  </div>
+                )}
+                {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
+                  <div
+                    ref={dropTaggedValueRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isTaggedValueDragOver && !isReadOnly,
+                    })}
+                  >
+                    {_class.taggedValues.map((taggedValue) => (
+                      <TaggedValueEditor
+                        key={taggedValue.uuid}
+                        taggedValue={taggedValue}
+                        deleteValue={deleteTaggedValue(taggedValue)}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
+                  </div>
+                )}
+                {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
+                  <div
+                    ref={dropStereotypeRef}
+                    className={clsx('panel__content__lists', {
+                      'panel__content__lists--dnd-over':
+                        isStereotypeDragOver && !isReadOnly,
+                    })}
+                  >
+                    {_class.stereotypes.map((stereotype) => (
+                      <StereotypeSelector
+                        key={stereotype.value.uuid}
+                        stereotype={stereotype}
+                        deleteStereotype={deleteStereotype(stereotype)}
+                        isReadOnly={isReadOnly}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-            <div
-              className={clsx('panel__content', {
-                'panel__content--with-backdrop-element':
-                  selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES ||
-                  selectedTab === UML_EDITOR_TAB.CONSTRAINTS,
-              })}
-            >
-              {selectedTab === UML_EDITOR_TAB.PROPERTIES && (
-                <div
-                  ref={dropPropertyRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isPropertyDragOver && !isReadOnly,
-                  })}
-                >
-                  {_class.properties
-                    .concat(indirectProperties)
-                    .map((property) => (
-                      <PropertyBasicEditor
-                        key={property.uuid}
-                        property={property}
-                        _class={_class}
-                        deleteProperty={deleteProperty(property)}
-                        selectProperty={selectProperty(property)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES && (
-                <div
-                  ref={dropDerivedPropertyRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isDerivedPropertyDragOver && !isReadOnly,
-                  })}
-                >
-                  {_class.derivedProperties
-                    .concat(indirectDerivedProperties)
-                    .filter((dp): dp is DerivedProperty =>
-                      Boolean(classState.getNullableDerivedPropertyState(dp)),
-                    )
-                    .map((dp) => (
-                      <DerivedPropertyBasicEditor
-                        key={dp.uuid}
-                        derivedProperty={dp}
-                        _class={_class}
-                        editorState={editorState}
-                        deleteDerivedProperty={deleteDerivedProperty(dp)}
-                        selectDerivedProperty={selectProperty(dp)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.CONSTRAINTS && (
-                <div className="panel__content__lists">
-                  {_class.constraints
-                    .concat(inheritedConstraints)
-                    .filter((constraint): constraint is Constraint =>
-                      Boolean(
-                        classState.getNullableConstraintState(constraint),
-                      ),
-                    )
-                    .map((constraint) => (
-                      <ConstraintEditor
-                        key={constraint.uuid}
-                        constraint={constraint}
-                        _class={_class}
-                        editorState={editorState}
-                        deleteConstraint={deleteConstraint(constraint)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.SUPER_TYPES && (
-                <div
-                  ref={dropSuperTypeRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isSuperTypeDragOver && !isReadOnly,
-                  })}
-                >
-                  {_class.generalizations.map((superType) => (
-                    <SuperTypeEditor
-                      key={superType.value.uuid}
-                      superType={superType}
-                      _class={_class}
-                      deleteSuperType={deleteSuperType(superType)}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
-                <div
-                  ref={dropTaggedValueRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isTaggedValueDragOver && !isReadOnly,
-                  })}
-                >
-                  {_class.taggedValues.map((taggedValue) => (
-                    <TaggedValueEditor
-                      key={taggedValue.uuid}
-                      taggedValue={taggedValue}
-                      deleteValue={deleteTaggedValue(taggedValue)}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-              {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-                <div
-                  ref={dropStereotypeRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isStereotypeDragOver && !isReadOnly,
-                  })}
-                >
-                  {_class.stereotypes.map((stereotype) => (
-                    <StereotypeSelector
-                      key={stereotype.value.uuid}
-                      stereotype={stereotype}
-                      deleteStereotype={deleteStereotype(stereotype)}
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          {selectedProperty ? (
-            <PropertyEditor
-              property={selectedProperty}
-              deselectProperty={deselectProperty}
-              isReadOnly={isReadOnly}
-            />
-          ) : (
-            <div />
-          )}
-        </SplitPane>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel
+            {...getControlledResizablePanelProps(!selectedProperty)}
+            flex={0}
+            direction={-1}
+            size={selectedProperty ? 250 : 0}
+          >
+            {selectedProperty ? (
+              <PropertyEditor
+                property={selectedProperty}
+                deselectProperty={deselectProperty}
+                isReadOnly={isReadOnly}
+              />
+            ) : (
+              <div className="uml-element-editor__sub-editor">
+                <BlankPanelContent>No property selected</BlankPanelContent>
+              </div>
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },
@@ -1331,73 +1339,25 @@ export const ClassFormEditor = observer(
 export const ClassEditor = observer((props: { _class: Class }) => {
   const { _class } = props;
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const classHash = _class.isReadOnly
-    ? undefined
-    : applicationStore.notifyAndReturnAlternativeOnError(
-        () => _class.hashCode,
-        undefined,
-      ); // attempting to read the hashCode of immutable element will throw an error
-  const [diagramRenderer, setDiagramRenderer] =
-    useState<InheritanceDiagramRenderer>();
   const editorState = editorStore.getCurrentEditorState(ClassEditorState);
-  const canvas = useRef<HTMLDivElement>(null);
-  const resizeDiagram = useCallback((): void => {
-    if (diagramRenderer) {
-      diagramRenderer.refresh();
-      diagramRenderer.autoRecenter();
-    }
-  }, [diagramRenderer]);
-  const { ref, height, width } = useResizeDetector<HTMLDivElement>({
-    refreshMode: 'debounce',
-    refreshRate: 50,
-  });
 
-  useEffect(() => {
-    resizeDiagram();
-  }, [resizeDiagram, height, width]);
-
-  useEffect(() => {
-    if (canvas.current) {
-      let currentRenderer = diagramRenderer;
-      if (!currentRenderer) {
-        const newRender = new InheritanceDiagramRenderer(
-          canvas.current,
-          _class,
-        );
-        setDiagramRenderer(newRender);
-        currentRenderer = newRender;
-      }
-      currentRenderer.render();
-      currentRenderer.autoRecenter();
-    }
-  }, [diagramRenderer, _class]);
-
-  useEffect(() => {
-    if (diagramRenderer) {
-      diagramRenderer.loadClass(_class);
-      diagramRenderer.render();
-      diagramRenderer.autoRecenter();
-    }
-  }, [_class, classHash, diagramRenderer]);
+  const classPreviewRenderers = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap((plugin) => plugin.getExtraClassPreviewRenderers?.() ?? [])
+    .filter(isNonNullable);
 
   return (
-    <SplitPane
-      split="vertical"
-      onDragFinished={resizeDiagram}
-      defaultSize={500}
-      minSize={450}
-      maxSize={-450}
-    >
-      <div ref={ref} className="class-editor__diagram-viewer">
-        <div
-          ref={canvas}
-          className="diagram-canvas"
-          tabIndex={0}
-          onContextMenu={(event): void => event.preventDefault()}
-        />
-      </div>
-      <ClassFormEditor _class={_class} editorState={editorState} />
-    </SplitPane>
+    <ResizablePanelGroup orientation="vertical" className="class-editor">
+      <ResizablePanel size={500} minSize={450}>
+        {classPreviewRenderers.length !== 0 && classPreviewRenderers[0](_class)}
+        {classPreviewRenderers.length === 0 && (
+          <BlankPanelContent>No preview</BlankPanelContent>
+        )}
+      </ResizablePanel>
+      <ResizablePanelSplitter />
+      <ResizablePanel minSize={450}>
+        <ClassFormEditor _class={_class} editorState={editorState} />
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 });

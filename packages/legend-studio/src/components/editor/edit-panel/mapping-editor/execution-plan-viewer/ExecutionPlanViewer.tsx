@@ -15,31 +15,34 @@
  */
 
 import { useState } from 'react';
-
 import type {
   TreeNodeContainerProps,
   TreeData,
   TreeNodeData,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-art';
 import {
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanel,
+  ResizablePanelSplitterLine,
   clsx,
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
-} from '@finos/legend-studio-components';
-
-import { ExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/ExecutionNode';
-import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
-import { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
-import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
-import { addUniqueEntry, isNonNullable } from '@finos/legend-studio-shared';
+} from '@finos/legend-art';
+import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { observer } from 'mobx-react-lite';
-import SplitPane from 'react-split-pane';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
 import Dialog from '@material-ui/core/Dialog';
-import { TextInputEditor } from '../../../../shared/TextInputEditor';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../../../stores/EditorConfig';
+import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
+import type { ExecutionPlan } from '@finos/legend-graph';
+import {
+  ExecutionNode,
+  SQLExecutionNode,
+  RelationalTDSInstantiationExecutionNode,
+} from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;
@@ -323,17 +326,19 @@ export const ExecutionPlanViewer = observer(
   (props: { executionPlanState: ExecutionPlanState }) => {
     const { executionPlanState } = props;
     const closePlanViewer = (): void => {
-      executionPlanState.setExecutionPlan(undefined);
+      executionPlanState.setRawPlan(undefined);
+      executionPlanState.setPlan(undefined);
       executionPlanState.setExecutionPlanDisplayData('');
       executionPlanState.setSelectedNode(undefined);
     };
+    const rawPlan = executionPlanState.rawPlan;
     const plan = executionPlanState.plan;
-    if (!plan) {
+    if (!rawPlan) {
       return null;
     }
     return (
       <Dialog
-        open={Boolean(executionPlanState.plan)}
+        open={Boolean(executionPlanState.rawPlan)}
         onClose={closePlanViewer}
         classes={{
           root: 'editor-modal__root-container',
@@ -345,40 +350,45 @@ export const ExecutionPlanViewer = observer(
           <div className="modal__header">
             <div className="modal__title">Execution Plan</div>
           </div>
-          {plan instanceof ExecutionPlan ? (
+          {plan ? (
             <div className="modal__body">
-              <SplitPane
-                className="review-explorer__content"
-                split="vertical"
-                size={350}
-                minSize={350}
-                maxSize={-600}
-              >
-                <div className="panel explorer">
-                  <div className="panel__header side-bar__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__content side-bar__header__title__content">
-                        EXECUTION PLAN EXPLORER
+              <ResizablePanelGroup orientation="vertical">
+                <ResizablePanel
+                  size={350}
+                  minSize={350}
+                  className="review-explorer__content"
+                >
+                  <div className="panel explorer">
+                    <div className="panel__header side-bar__header">
+                      <div className="panel__header__title">
+                        <div className="panel__header__title__content side-bar__header__title__content">
+                          EXECUTION PLAN EXPLORER
+                        </div>
                       </div>
                     </div>
+                    <div className="panel__content explorer__content__container">
+                      <ExecutionPlanTree
+                        executionPlanState={executionPlanState}
+                        executionPlan={plan}
+                      />
+                    </div>
                   </div>
-                  <div className="panel__content explorer__content__container">
-                    <ExecutionPlanTree
-                      executionPlanState={executionPlanState}
-                      executionPlan={plan}
-                    />
-                  </div>
-                </div>
-                <ExecutionNodesViewer
-                  displayData={executionPlanState.displayData}
-                  executionPlanState={executionPlanState}
-                />
-              </SplitPane>
+                </ResizablePanel>
+                <ResizablePanelSplitter>
+                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                </ResizablePanelSplitter>
+                <ResizablePanel>
+                  <ExecutionNodesViewer
+                    displayData={executionPlanState.displayData}
+                    executionPlanState={executionPlanState}
+                  />
+                </ResizablePanel>
+              </ResizablePanelGroup>
             </div>
           ) : (
             <div className="modal__body">
-              <TextInputEditor
-                inputValue={JSON.stringify(plan, undefined, TAB_SIZE)}
+              <StudioTextInputEditor
+                inputValue={JSON.stringify(rawPlan, undefined, TAB_SIZE)}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.JSON}
                 showMiniMap={true}

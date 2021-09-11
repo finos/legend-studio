@@ -16,31 +16,30 @@
 
 import type { EditorStore } from '../EditorStore';
 import { action, makeAutoObservable } from 'mobx';
-import { GRAMMAR_ELEMENT_TYPE_LABEL } from '../PureLanguageSupport';
-import { UnsupportedOperationError } from '@finos/legend-studio-shared';
-import type { PackageableElement } from '../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Profile } from '../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Enumeration } from '../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Class } from '../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Association } from '../../models/metamodels/pure/model/packageableElements/domain/Association';
-import { Mapping } from '../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { Diagram } from '../../models/metamodels/pure/model/packageableElements/diagram/Diagram';
-import { ConcreteFunctionDefinition } from '../../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { Service } from '../../models/metamodels/pure/model/packageableElements/service/Service';
-import { FlatData } from '../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatData';
-import { PackageableConnection } from '../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import { PackageableRuntime } from '../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
-import { JsonModelConnection } from '../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { XmlModelConnection } from '../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/XmlModelConnection';
-import { FlatDataConnection } from '../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import { FileGenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import { GenerationSpecification } from '../../models/metamodels/pure/model/packageableElements/generationSpecification/GenerationSpecification';
-import { Measure } from '../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import { Database } from '../../models/metamodels/pure/model/packageableElements/store/relational/model/Database';
-import { RelationalDatabaseConnection } from '../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { ServiceStore } from '../../models/metamodels/pure/model/packageableElements/store/relational/model/ServiceStore';
-import type { DSL_EditorPlugin_Extension } from '../EditorPlugin';
-import type { EngineError } from '../../models/metamodels/pure/action/EngineError';
+import { UnsupportedOperationError } from '@finos/legend-shared';
+import type { PackageableElement, EngineError } from '@finos/legend-graph';
+import {
+  Profile,
+  Enumeration,
+  Class,
+  Association,
+  Mapping,
+  ConcreteFunctionDefinition,
+  Service,
+  FlatData,
+  PackageableConnection,
+  PackageableRuntime,
+  JsonModelConnection,
+  XmlModelConnection,
+  FlatDataConnection,
+  FileGenerationSpecification,
+  GenerationSpecification,
+  Measure,
+  Database,
+  RelationalDatabaseConnection,
+  ServiceStore,
+} from '@finos/legend-graph';
+import { GRAMMAR_ELEMENT_TYPE_LABEL } from '@finos/legend-application';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -58,8 +57,8 @@ const getGrammarElementTypeLabelRegexString = (
 export class GrammarTextEditorState {
   editorStore: EditorStore;
   graphGrammarText = '';
-  currentElementLabelRegexString?: string;
-  error?: EngineError;
+  currentElementLabelRegexString?: string | undefined;
+  error?: EngineError | undefined;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
@@ -108,8 +107,6 @@ export class GrammarTextEditorState {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE_STORE;
     } else if (element instanceof Mapping) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING;
-    } else if (element instanceof Diagram) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.DIAGRAM;
     } else if (element instanceof Service) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE;
     } else if (element instanceof FileGenerationSpecification) {
@@ -132,15 +129,11 @@ export class GrammarTextEditorState {
     } else if (element instanceof PackageableRuntime) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME;
     } else {
-      const extraPureGrammarElementLabelers =
-        this.editorStore.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSL_EditorPlugin_Extension
-              ).getExtraPureGrammarElementLabelers?.() ?? [],
-          );
+      const extraPureGrammarElementLabelers = this.editorStore.pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGrammarElementLabelers?.() ?? [],
+        );
       for (const labeler of extraPureGrammarElementLabelers) {
         const _typeLabel = labeler(element);
         if (_typeLabel) {

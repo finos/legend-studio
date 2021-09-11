@@ -16,22 +16,29 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { Dialog } from '@material-ui/core';
-import SplitPane from 'react-split-pane';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
-import { ELEMENT_PATH_DELIMITER } from '../../../../models/MetaModelConst';
-import { resolvePackagePathAndElementName } from '../../../../models/MetaModelUtils';
+import {
+  ELEMENT_PATH_DELIMITER,
+  resolvePackagePathAndElementName,
+  Package,
+} from '@finos/legend-graph';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
 import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
-import { guaranteeType } from '@finos/legend-studio-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import {
   GenerationResultViewer,
   FileGenerationConfigurationEditor,
 } from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { FaArrowAltCircleLeft } from 'react-icons/fa';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
-import { Package } from '../../../../models/metamodels/pure/model/packageableElements/domain/Package';
 import { flowResult } from 'mobx';
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-art';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
 
 const NewFileGenerationModal = observer(
   (props: {
@@ -70,9 +77,10 @@ const NewFileGenerationModal = observer(
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
-    const elementAlreadyExists = editorStore.graphState.graph.allOwnElements
-      .map((el) => el.path)
-      .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
+    const elementAlreadyExists =
+      editorStore.graphManagerState.graph.allOwnElements
+        .map((el) => el.path)
+        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
 
     return (
       <Dialog
@@ -149,22 +157,31 @@ export const ElementGenerationEditor = observer(
         </div>
         <div className="panel__content element-generation-editor__content">
           <div className="file-generation-editor">
-            <SplitPane
-              className="file-generation-editor__split-pane"
-              split="vertical"
-              defaultSize={300}
-              minSize={300}
-              maxSize={-550}
-            >
-              <FileGenerationConfigurationEditor
-                fileGenerationState={elementGenerationState.fileGenerationState}
-                isReadOnly={isReadOnly}
-                elementGenerationState={elementGenerationState}
-              />
-              <GenerationResultViewer
-                fileGenerationState={elementGenerationState.fileGenerationState}
-              />
-            </SplitPane>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel
+                size={300}
+                minSize={300}
+                className="file-generation-editor__split-pane"
+              >
+                <FileGenerationConfigurationEditor
+                  fileGenerationState={
+                    elementGenerationState.fileGenerationState
+                  }
+                  isReadOnly={isReadOnly}
+                  elementGenerationState={elementGenerationState}
+                />
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel>
+                <GenerationResultViewer
+                  fileGenerationState={
+                    elementGenerationState.fileGenerationState
+                  }
+                />
+              </ResizablePanel>
+            </ResizablePanelGroup>
             <NewFileGenerationModal
               elementGenerationState={elementGenerationState}
               currentElementState={currentElementState}

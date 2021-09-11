@@ -15,18 +15,14 @@
  */
 
 import { observable, computed, action, makeObservable } from 'mobx';
-import {
-  guaranteeType,
-  UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceExecutionState } from './ServiceExecutionState';
 import { ServicePureExecutionState } from './ServiceExecutionState';
 import { ServiceRegistrationState } from '../../../editor-state/element-editor-state/service/ServiceRegistrationState';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Service } from '../../../../models/metamodels/pure/model/packageableElements/service/Service';
-import { PureExecution } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
+import type { PackageableElement } from '@finos/legend-graph';
+import { Service, PureExecution } from '@finos/legend-graph';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',

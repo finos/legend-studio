@@ -15,7 +15,7 @@
  */
 
 import { useRef } from 'react';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
 import {
@@ -26,18 +26,18 @@ import {
   resolvePackageAndElementName,
   CONNECTION_TYPE,
 } from '../../../stores/NewElementState';
-import { CustomSelectorInput } from '@finos/legend-studio-components';
-import { ELEMENT_PATH_DELIMITER } from '../../../models/MetaModelConst';
+import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
-import { useEditorStore } from '../../../stores/EditorStore';
-import { compareLabelFn, prettyCONSTName } from '@finos/legend-studio-shared';
-import type { FileGenerationTypeOption } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { Mapping } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
-import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import { prettyCONSTName } from '@finos/legend-shared';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
+import { useEditorStore } from '../EditorStoreProvider';
+import type { Mapping, Store, Class } from '@finos/legend-graph';
+import {
+  ELEMENT_PATH_DELIMITER,
+  PACKAGEABLE_ELEMENT_TYPE,
+} from '@finos/legend-graph';
+import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,
@@ -51,7 +51,6 @@ export const getElementTypeLabel = (
     case PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION:
     case PACKAGEABLE_ELEMENT_TYPE.MEASURE:
     case PACKAGEABLE_ELEMENT_TYPE.PROFILE:
-    case PACKAGEABLE_ELEMENT_TYPE.DIAGRAM:
     case PACKAGEABLE_ELEMENT_TYPE.FUNCTION:
     case PACKAGEABLE_ELEMENT_TYPE.MAPPING:
     case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:
@@ -70,15 +69,14 @@ export const getElementTypeLabel = (
       return 'generation specification';
     default: {
       if (type) {
-        const extraElementTypeLabelGetters =
-          editorStore.applicationStore.pluginManager
-            .getEditorPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as DSL_EditorPlugin_Extension
-                ).getExtraElementTypeLabelGetters?.() ?? [],
-            );
+        const extraElementTypeLabelGetters = editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_StudioPlugin_Extension
+              ).getExtraElementTypeLabelGetters?.() ?? [],
+          );
         for (const typeLabelGetter of extraElementTypeLabelGetters) {
           const label = typeLabelGetter(type);
           if (label) {
@@ -112,7 +110,7 @@ const NewRuntimeDriverEditor = observer(() => {
   const mappingOptions = editorStore.mappingOptions;
   const selectedMappingOption = { label: mapping?.path ?? '', value: mapping };
   const onMappingSelectionChange = (
-    val: PackageableElementSelectOption<Mapping>,
+    val: PackageableElementOption<Mapping>,
   ): void => {
     if (val.value !== mapping) {
       newRuntimeDriver.setMapping(val.value);
@@ -147,7 +145,7 @@ const NewPureModelConnectionDriverEditor = observer(
     const editorStore = useEditorStore();
     // store
     const store = newConnectionDriver.store;
-    let storeOptions: { label: string; value?: Store }[] = [
+    let storeOptions: { label: string; value?: Store | undefined }[] = [
       { label: 'ModelStore', value: undefined },
     ];
     storeOptions = storeOptions.concat(
@@ -305,15 +303,14 @@ const renderNewElementDriver = (
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
       return <NewFileGenerationDriverEditor />;
     default: {
-      const extraNewElementDriverEditorCreators =
-        editorStore.applicationStore.pluginManager
-          .getEditorPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSL_EditorPlugin_Extension
-              ).getExtraNewElementDriverEditorCreators?.() ?? [],
-          );
+      const extraNewElementDriverEditorCreators = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_StudioPlugin_Extension
+            ).getExtraNewElementDriverEditorRenderers?.() ?? [],
+        );
       for (const creator of extraNewElementDriverEditorCreators) {
         const editor = creator(type);
         if (editor) {
@@ -342,7 +339,7 @@ export const CreateNewElementModal = observer(() => {
     .filter(
       // NOTE: we can only create package in root
       (type) =>
-        selectedPackage !== editorStore.graphState.graph.root ||
+        selectedPackage !== editorStore.graphManagerState.graph.root ||
         type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
     )
     .map(buildElementTypeOption);
@@ -354,11 +351,11 @@ export const CreateNewElementModal = observer(() => {
   const closeModal = (): void => newElementState.closeModal();
   const [packagePath, elementName] = resolvePackageAndElementName(
     selectedPackage,
-    selectedPackage === editorStore.graphState.graph.root,
+    selectedPackage === editorStore.graphManagerState.graph.root,
     name,
   );
   const resolvedPackage =
-    editorStore.graphState.graph.getNullablePackage(packagePath);
+    editorStore.graphManagerState.graph.getNullablePackage(packagePath);
   const needsToOverride = Boolean(
     resolvedPackage?.children.find((child) => child.name === elementName),
   );
@@ -389,7 +386,7 @@ export const CreateNewElementModal = observer(() => {
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <form
-        data-testid={CORE_TEST_ID.NEW_ELEMENT_MODAL}
+        data-testid={STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
         onSubmit={handleSubmit}
         className="modal search-modal"
       >

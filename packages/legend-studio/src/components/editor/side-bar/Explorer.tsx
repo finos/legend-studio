@@ -16,7 +16,6 @@
 
 import React, { Fragment, useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   FaChevronDown,
   FaChevronRight,
@@ -41,38 +40,41 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   TreeView,
-} from '@finos/legend-studio-components';
-import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
+  ProjectConfigurationIcon,
+} from '@finos/legend-art';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
   getElementIcon,
   getElementTypeIcon,
-  ProjectConfigurationIcon,
-} from '../../shared/Icon';
+} from '../../shared/ElementIconUtils';
 import {
   getElementTypeLabel,
   CreateNewElementModal,
 } from './CreateNewElementModal';
 import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtil';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
-import {
-  ELEMENT_PATH_DELIMITER,
-  ROOT_PACKAGE_NAME,
-} from '../../../models/MetaModelConst';
 import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
 import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerationTreeUtil';
 import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerationTreeUtil';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
-import { isNonNullable, toTitleCase } from '@finos/legend-studio-shared';
-import { Package } from '../../../models/metamodels/pure/model/packageableElements/domain/Package';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { isNonNullable, toTitleCase } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
-import { isValidFullPath, isValidPath } from '../../../models/MetaModelUtils';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
+import {
+  ELEMENT_PATH_DELIMITER,
+  ROOT_PACKAGE_NAME,
+  Package,
+  PACKAGEABLE_ELEMENT_TYPE,
+  isValidFullPath,
+  isValidPath,
+} from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../../../application/StudioConfig';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;
@@ -98,10 +100,8 @@ const ElementRenamer = observer(() => {
     element instanceof Package || path.includes(ELEMENT_PATH_DELIMITER);
   const isValidElementPath =
     (element instanceof Package && isValidPath(path)) || isValidFullPath(path);
-  const existingElement = editorStore.graphState.graph.getNullableElement(
-    path,
-    true,
-  );
+  const existingElement =
+    editorStore.graphManagerState.graph.getNullableElement(path, true);
   const isElementUnique = !existingElement || existingElement === element;
   const elementRenameValidationErrorMessage = !isElementPathNonEmpty
     ? `Element path cannot be empty`
@@ -175,35 +175,34 @@ const ElementRenamer = observer(() => {
 const ExplorerContextMenu = observer(
   (
     props: {
-      node?: PackageTreeNodeData;
-      nodeIsImmutable?: boolean;
+      node?: PackageTreeNodeData | undefined;
+      nodeIsImmutable?: boolean | undefined;
     },
     ref: React.Ref<HTMLDivElement>,
   ) => {
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const extraExplorerContextMenuItems =
-      editorStore.applicationStore.pluginManager
-        .getEditorPlugins()
-        .flatMap(
-          (plugin) =>
-            plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
-            [],
-        )
-        .filter(isNonNullable)
-        .map((config) => (
-          <Fragment key={config.key}>
-            {config.renderer(editorStore, node?.packageableElement)}
-          </Fragment>
-        ));
+    const applicationStore = useApplicationStore<StudioConfig>();
+    const extraExplorerContextMenuItems = editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
+          [],
+      )
+      .filter(isNonNullable)
+      .map((config) => (
+        <Fragment key={config.key}>
+          {config.renderer(editorStore, node?.packageableElement)}
+        </Fragment>
+      ));
     const projectId = editorStore.sdlcState.currentProjectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const _package = node
       ? node.packageableElement instanceof Package
         ? node.packageableElement
         : undefined
-      : editorStore.graphState.graph.root;
+      : editorStore.graphManagerState.graph.root;
     const deleteElement = (): void => {
       if (node) {
         flowResult(editorStore.deleteElement(node.packageableElement)).catch(
@@ -220,14 +219,14 @@ const ExplorerContextMenu = observer(
     };
     const openElementInViewerMode = (): void => {
       if (node) {
-        window.open(
-          applicationStore.historyApiClient.createHref({
-            pathname: generateViewEntityRoute(
+        applicationStore.navigator.openNewWindow(
+          applicationStore.navigator.generateLocation(
+            generateViewEntityRoute(
               applicationStore.config.sdlcServerKey,
               projectId,
               node.packageableElement.path,
             ),
-          }),
+          ),
         );
       }
     };
@@ -235,15 +234,13 @@ const ExplorerContextMenu = observer(
       if (node) {
         applicationStore
           .copyTextToClipboard(
-            `${
-              window.location.origin
-            }${applicationStore.historyApiClient.createHref({
-              pathname: generateViewEntityRoute(
+            applicationStore.navigator.generateLocation(
+              generateViewEntityRoute(
                 applicationStore.config.sdlcServerKey,
                 projectId,
                 node.packageableElement.path,
               ),
-            })}`,
+            ),
           )
           .then(() =>
             applicationStore.notifySuccess('Copied element link to clipboard'),
@@ -262,13 +259,13 @@ const ExplorerContextMenu = observer(
       .filter(
         // NOTE: we can only create package in root
         (type) =>
-          _package !== editorStore.graphState.graph.root ||
+          _package !== editorStore.graphManagerState.graph.root ||
           type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
       );
 
     if (_package && !isReadOnly) {
       return (
-        <MenuContent data-testid={CORE_TEST_ID.EXPLORER_CONTEXT_MENU}>
+        <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
           {elementTypes.map((type) => (
             <MenuContentItem key={type} onClick={createNewElement(type)}>
               <MenuContentItemIcon>
@@ -293,7 +290,7 @@ const ExplorerContextMenu = observer(
       );
     }
     return (
-      <MenuContent data-testid={CORE_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {extraExplorerContextMenuItems}
         {!isReadOnly && node && (
           <>
@@ -471,12 +468,12 @@ const ExplorerDropdownMenu = observer(
       .filter(
         // NOTE: we can only create package in root
         (type) =>
-          _package !== editorStore.graphState.graph.root ||
+          _package !== editorStore.graphManagerState.graph.root ||
           type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
       );
 
     return (
-      <MenuContent data-testid={CORE_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {elementTypes.map((type) => (
           <MenuContentItem key={type} onClick={createNewElement(type)}>
             <MenuContentItemIcon>
@@ -495,11 +492,10 @@ const ExplorerDropdownMenu = observer(
 
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
-  const config = editorStore.applicationStore.config;
   const { isInGrammarTextMode, isInViewerMode } = editorStore;
   const openModelLoader = (): void =>
     editorStore.openSingletonEditorState(editorStore.modelLoaderState);
-  const graph = editorStore.graphState.graph;
+  const graph = editorStore.graphManagerState.graph;
   // Explorer tree
   const treeData = editorStore.explorerTreeState.getTreeData();
   const selectedTreeNode = editorStore.explorerTreeState.selectedNode;
@@ -581,7 +577,7 @@ const ExplorerTrees = observer(() => {
       content={<ExplorerContextMenu />}
       menuProps={{ elevation: 7 }}
     >
-      <div data-testid={CORE_TEST_ID.EXPLORER_TREES}>
+      <div data-testid={STUDIO_TEST_ID.EXPLORER_TREES}>
         {editorStore.explorerTreeState.buildState.hasCompleted &&
           showPackageTrees && (
             <>
@@ -598,13 +594,10 @@ const ExplorerTrees = observer(() => {
                 }}
               />
               <ElementRenamer />
-              {!config.options
-                .TEMPORARY__disableSDLCProjectStructureSupport && (
-                <ProjectConfig />
-              )}
+              <ProjectConfig />
               {/* SYSTEM TREE */}
               {Boolean(
-                editorStore.graphState.systemModel.allOwnElements.length,
+                editorStore.graphManagerState.systemModel.allOwnElements.length,
               ) && (
                 <TreeView
                   components={{
@@ -619,22 +612,20 @@ const ExplorerTrees = observer(() => {
                 />
               )}
               {/* DEPENDENCY TREE */}
-              {graph.dependencyManager.hasDependencies &&
-                !config.options
-                  .TEMPORARY__disableSDLCProjectStructureSupport && (
-                  <TreeView
-                    components={{
-                      TreeNodeContainer: PackageTreeNodeContainer,
-                    }}
-                    treeData={dependencyTreeData}
-                    onNodeSelect={onDependencyTreeSelect}
-                    getChildNodes={getDependencyTreeChildNodes}
-                    innerProps={{
-                      disableContextMenu: isInGrammarTextMode,
-                      isContextImmutable: true,
-                    }}
-                  />
-                )}
+              {graph.dependencyManager.hasDependencies && (
+                <TreeView
+                  components={{
+                    TreeNodeContainer: PackageTreeNodeContainer,
+                  }}
+                  treeData={dependencyTreeData}
+                  onNodeSelect={onDependencyTreeSelect}
+                  getChildNodes={getDependencyTreeChildNodes}
+                  innerProps={{
+                    disableContextMenu: isInGrammarTextMode,
+                    isContextImmutable: true,
+                  }}
+                />
+              )}
               {/* GENERATION SPECIFICATION */}
               {Boolean(graph.generationModel.allOwnElements.length) && (
                 <TreeView
@@ -783,11 +774,11 @@ export const Explorer = observer(() => {
     ((!editorStore.explorerTreeState.buildState.hasCompleted &&
       !editorStore.isInGrammarTextMode) ||
       editorStore.graphState.isUpdatingGraph) &&
-    !editorStore.graphState.graph.buildState.hasFailed;
+    !editorStore.graphManagerState.graph.buildState.hasFailed;
   const showExplorerTrees =
     sdlcState.currentProject &&
     sdlcState.currentWorkspace &&
-    editorStore.graphState.graph.buildState.hasSucceeded &&
+    editorStore.graphManagerState.graph.buildState.hasSucceeded &&
     editorStore.explorerTreeState.buildState.hasCompleted;
   // conflict resolution
   const showConflictResolutionContent =
@@ -881,7 +872,7 @@ export const Explorer = observer(() => {
                 <PanelLoadingIndicator isLoading={isLoading} />
                 {showExplorerTrees && <ExplorerTrees />}
                 {!showExplorerTrees &&
-                  editorStore.graphState.graph.buildState.hasFailed && (
+                  editorStore.graphManagerState.graph.buildState.hasFailed && (
                     <BlankPanelContent>
                       <div className="explorer__content__failure-notice">
                         <div className="explorer__content__failure-notice__icon">

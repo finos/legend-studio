@@ -17,16 +17,16 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaPlus } from 'react-icons/fa';
-import { useSetupStore } from '../../stores/SetupStore';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
-import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
+import type { ProjectOption } from '../../stores/SetupStore';
+import type { SelectComponent } from '@finos/legend-art';
+import { compareLabelFn, clsx, CustomSelectorInput } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
-import { useApplicationStore } from '../../stores/ApplicationStore';
-import { ACTION_STATE } from '@finos/legend-studio-shared';
 import { flowResult } from 'mobx';
+import { useSetupStore } from './SetupStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
-const formatOptionLabel = (option: ProjectSelectOption): React.ReactNode => (
+const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   <div className="setup__project__label">
     <div
       className={clsx([
@@ -50,15 +50,14 @@ export const ProjectSelector = observer(
   ) => {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
-    const applicationStore = useApplicationStore();
+    const applicationStore = useApplicationStore<StudioConfig>();
     const currentProjectId = setupStore.currentProjectId;
-    const options = setupStore.projectOptions;
+    const options = setupStore.projectOptions.sort(compareLabelFn);
     const selectedOption =
       options.find((option) => option.value === currentProjectId) ?? null;
-    const isLoadingOptions =
-      setupStore.loadProjectsState === ACTION_STATE.IN_PROGRESS;
+    const isLoadingOptions = setupStore.loadProjectsState.isInProgress;
 
-    const onSelectionChange = (val: ProjectSelectOption | null): void => {
+    const onSelectionChange = (val: ProjectOption | null): void => {
       if (
         (val !== null || selectedOption !== null) &&
         (!val || !selectedOption || val.value !== selectedOption.value)
@@ -70,7 +69,7 @@ export const ProjectSelector = observer(
             applicationStore.alertIllegalUnhandledError,
           );
         }
-        applicationStore.historyApiClient.push(
+        applicationStore.navigator.goTo(
           generateSetupRoute(
             applicationStore.config.sdlcServerKey,
             val?.value ?? '',
@@ -83,7 +82,7 @@ export const ProjectSelector = observer(
       if (setupStore.projects && !setupStore.currentProject) {
         if (currentProjectId) {
           // For first load, if the project is not found, reset the URL
-          applicationStore.historyApiClient.push(
+          applicationStore.navigator.goTo(
             generateSetupRoute(
               applicationStore.config.sdlcServerKey,
               undefined,
@@ -100,10 +99,10 @@ export const ProjectSelector = observer(
       onChange,
     ]);
 
-    const projectSelectorPlaceHolder = isLoadingOptions
+    const projectSelectorPlaceholder = isLoadingOptions
       ? 'Loading projects'
-      : setupStore.loadProjectsState === ACTION_STATE.FAILED
-      ? 'Error fetching Projects'
+      : setupStore.loadProjectsState.hasFailed
+      ? 'Error fetching projects'
       : options.length
       ? 'Choose an existing project'
       : 'You have no projects, please create or acquire access for at least one';
@@ -130,7 +129,7 @@ export const ProjectSelector = observer(
           isLoading={isLoadingOptions}
           onChange={onSelectionChange}
           value={selectedOption}
-          placeholder={projectSelectorPlaceHolder}
+          placeholder={projectSelectorPlaceholder}
           isClearable={true}
           escapeClearsValue={true}
           darkMode={true}

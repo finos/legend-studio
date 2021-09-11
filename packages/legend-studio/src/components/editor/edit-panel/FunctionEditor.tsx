@@ -16,7 +16,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../stores/EditorStore';
 import {
   FunctionEditorState,
   FUNCTION_SPEC_TAB,
@@ -29,40 +28,39 @@ import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import {
   prettyCONSTName,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import { FaLock, FaPlus, FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
-import { LambdaEditor } from '../../shared/LambdaEditor';
-import {
-  clsx,
-  CustomSelectorInput,
-  createFilter,
-} from '@finos/legend-studio-components';
-import { CORE_TEST_ID } from '../../../const';
+import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { StereotypeSelector } from './uml-editor/StereotypeSelector';
+import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
+import type {
+  ConcreteFunctionDefinition,
+  StereotypeReference,
+} from '@finos/legend-graph';
 import {
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
-} from '../../../models/MetaModelConst';
-import { getElementIcon } from '../../shared/Icon';
-import { StereotypeSelector } from './uml-editor/StereotypeSelector';
-import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
-import { TaggedValue } from '../../../models/metamodels/pure/model/packageableElements/domain/TaggedValue';
-import { Tag } from '../../../models/metamodels/pure/model/packageableElements/domain/Tag';
-import { Profile } from '../../../models/metamodels/pure/model/packageableElements/domain/Profile';
-import { Stereotype } from '../../../models/metamodels/pure/model/packageableElements/domain/Stereotype';
-import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Type } from '../../../models/metamodels/pure/model/packageableElements/domain/Type';
-import { RawVariableExpression } from '../../../models/metamodels/pure/model/rawValueSpecification/RawVariableExpression';
-import { Multiplicity } from '../../../models/metamodels/pure/model/packageableElements/domain/Multiplicity';
-import { Enumeration } from '../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/model/packageableElements/domain/ConcreteFunctionDefinition';
-import { PrimitiveType } from '../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import { Unit } from '../../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import type { StereotypeReference } from '../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { StereotypeExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/domain/StereotypeReference';
-import { flowResult } from 'mobx';
+  TaggedValue,
+  Tag,
+  Profile,
+  Stereotype,
+  Unit,
+  RawVariableExpression,
+  Type,
+  Multiplicity,
+  Enumeration,
+  Class,
+  PrimitiveType,
+  StereotypeExplicitReference,
+} from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
+import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -105,11 +103,11 @@ const ParameterBasicEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedType = { value: paramType, label: paramType.name };
-    const changeType = (val: PackageableElementSelectOption<Type>): void => {
+    const changeType = (val: PackageableElementOption<Type>): void => {
       parameter.setType(val.value);
       setIsEditingType(false);
     };
@@ -207,7 +205,7 @@ const ParameterBasicEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -239,7 +237,7 @@ const ParameterBasicEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -298,11 +296,11 @@ const ReturnTypeEditor = observer(
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Type>): string =>
+      stringify: (option: PackageableElementOption<Type>): string =>
         option.value.path,
     });
     const selectedType = { value: returnType, label: returnType.value.name };
-    const changeType = (val: PackageableElementSelectOption<Type>): void => {
+    const changeType = (val: PackageableElementOption<Type>): void => {
       functionElement.setReturnType(val.value);
       setIsEditingType(false);
     };
@@ -390,7 +388,7 @@ const ReturnTypeEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -422,7 +420,7 @@ const ReturnTypeEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={CORE_TEST_ID.TYPE_VISIT}
+                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -469,7 +467,7 @@ export const FunctionMainEditor = observer(
     functionEditorState: FunctionEditorState;
   }) => {
     const editorStore = useEditorStore();
-    const defaultType = editorStore.graphState.graph.getPrimitiveType(
+    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
     const { functionElement, isReadOnly, functionEditorState } = props;
@@ -560,7 +558,7 @@ export const FunctionMainEditor = observer(
               ),
             })}
           >
-            <LambdaEditor
+            <StudioLambdaEditor
               className={'function-editor__element__lambda-editor'}
               disabled={
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly
@@ -670,7 +668,7 @@ export const FunctionEditor = observer(() => {
   useEffect(() => {
     flowResult(
       functionEditorState.functionBodyEditorState.convertLambdaObjectToGrammarString(
-        false,
+        true,
         true,
       ),
     ).catch(applicationStore.alertIllegalUnhandledError);

@@ -18,7 +18,7 @@ import type { EditorStore } from '../EditorStore';
 import { EditorState } from './EditorState';
 import { observable, makeObservable, computed } from 'mobx';
 import type { GenerationFile } from '../shared/FileGenerationTreeUtil';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '../EditorConfig';
+import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 
 export const getTextContent = (
   content: string,

@@ -14,15 +14,25 @@
  * limitations under the License.
  */
 
-import { LegendQuery } from '@finos/legend-studio-preset-query-builder';
-import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
-import studioConfig from '../studio.config';
-import './index.scss';
+import { LegendQuery } from '@finos/legend-query';
+import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
+import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
+import { BrowserConsole } from '@finos/legend-shared';
+import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
 
-LegendQuery.create()
-  .setup({ baseUrl: studioConfig.baseUrl })
-  .withPresets([new DSLText_Preset()])
-  .start()
-  .catch((e) => {
-    throw e;
-  });
+export class LegendQueryApplication {
+  static run(baseUrl: string): void {
+    LegendQuery.create()
+      .setup({ baseUrl })
+      .withPresets([
+        new DSLText_GraphPreset(),
+        new DSLDiagram_GraphPreset(),
+        new EFJSONSchema_GraphPreset(),
+      ])
+      .withLoggers([new BrowserConsole()])
+      .start()
+      .catch((e: unknown) => {
+        throw e;
+      });
+  }
+}

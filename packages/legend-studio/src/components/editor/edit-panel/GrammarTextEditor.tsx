@@ -17,31 +17,31 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
-import { useEditorStore } from '../../../stores/EditorStore';
-import { ContextMenu } from '@finos/legend-studio-components';
 import {
+  ContextMenu,
   revealError,
   setErrorMarkers,
   disposeEditor,
   baseTextEditorSettings,
   disableEditorHotKeys,
   resetLineNumberGutterWidth,
-} from '../../../utils/TextEditorUtil';
+} from '@finos/legend-art';
 import {
   TAB_SIZE,
   EDITOR_THEME,
   EDITOR_LANGUAGE,
-} from '../../../stores/EditorConfig';
+  useApplicationStore,
+} from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import { FaUserSecret } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
 import type { ElementDragSource } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../EditorStoreProvider';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   (props: {}, ref: React.Ref<HTMLDivElement>) => {
@@ -127,12 +127,12 @@ export const GrammarTextEditor = observer(() => {
   }, [editorStore, applicationStore, editor, grammarTextEditorState]);
 
   // Drag and Drop
-  const extraDnDTypes = applicationStore.pluginManager
-    .getEditorPlugins()
+  const extraDnDTypes = editorStore.pluginManager
+    .getStudioPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_EditorPlugin_Extension
+          plugin as DSL_StudioPlugin_Extension
         ).getExtraGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(
@@ -160,7 +160,6 @@ export const GrammarTextEditor = observer(() => {
         CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
         CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE_STORE,
         CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
-        CORE_DND_TYPE.PROJECT_EXPLORER_DIAGRAM,
         CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE,
         CORE_DND_TYPE.PROJECT_EXPLORER_CONNECTION,
         CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME,
@@ -186,7 +185,14 @@ export const GrammarTextEditor = observer(() => {
     if (editorModel) {
       editorModel.updateOptions({ tabSize: TAB_SIZE });
       if (error?.sourceInformation) {
-        setErrorMarkers(editorModel, error.sourceInformation, error.message);
+        setErrorMarkers(
+          editorModel,
+          error.message,
+          error.sourceInformation.startLine,
+          error.sourceInformation.startColumn,
+          error.sourceInformation.endLine,
+          error.sourceInformation.endColumn,
+        );
       } else {
         monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
       }
@@ -209,7 +215,11 @@ export const GrammarTextEditor = observer(() => {
   useEffect(() => {
     if (editor) {
       if (error?.sourceInformation) {
-        revealError(editor, error.sourceInformation);
+        revealError(
+          editor,
+          error.sourceInformation.startLine,
+          error.sourceInformation.startColumn,
+        );
       }
     }
   }, [editor, error, error?.sourceInformation]);

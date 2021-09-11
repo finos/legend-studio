@@ -16,34 +16,42 @@
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
+import type { PlainObject, GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
   NetworkClientError,
   HttpStatus,
   guaranteeNonNullable,
   assertTrue,
-} from '@finos/legend-studio-shared';
-import type { PlainObject, GeneratorFn } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../utils/Logger';
-import { Project, ProjectType } from '../models/sdlc/models/project/Project';
-import {
-  Workspace,
-  WORKSPACE_TYPE,
-} from '../models/sdlc/models/workspace/Workspace';
-import { Version } from '../models/sdlc/models/version/Version';
-import {
-  RevisionAlias,
-  Revision,
-} from '../models/sdlc/models/revision/Revision';
-import type { Entity } from '../models/sdlc/models/entity/Entity';
-import { Build } from '../models/sdlc/models/build/Build';
+} from '@finos/legend-shared';
+import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
-import type { SDLCServerClient } from '../models/sdlc/SDLCServerClient';
+import type { Entity } from '@finos/legend-model-storage';
+import { extractEntityNameFromPath } from '@finos/legend-model-storage';
+import type { EntityDiff } from '@finos/legend-server-sdlc';
+import {
+  Build,
+  Project,
+  ProjectType,
+  Revision,
+  RevisionAlias,
+  Version,
+  Workspace,
+  WorkspaceAccessType,
+} from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from './StudioLogEvent';
+
+export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
+  extractEntityNameFromPath(a.newPath ?? a.oldPath ?? '').localeCompare(
+    extractEntityNameFromPath(b.newPath ?? b.oldPath ?? ''),
+  );
 
 export class EditorSdlcState {
   editorStore: EditorStore;
-  currentProject?: Project;
-  currentWorkspace?: Workspace;
-  currentRevision?: Revision;
+  currentProject?: Project | undefined;
+  currentWorkspace?: Workspace | undefined;
+  currentRevision?: Revision | undefined;
   isWorkspaceOutdated = false;
   workspaceBuilds: Build[] = [];
   projectVersions: Version[] = [];
@@ -57,7 +65,6 @@ export class EditorSdlcState {
       currentProjectId: false,
       currentWorkspaceId: false,
       currentRevisionId: false,
-      sdlcClient: false,
       setCurrentProject: action,
       setCurrentWorkspace: action,
       setCurrentRevision: action,
@@ -68,9 +75,6 @@ export class EditorSdlcState {
 
   get isCurrentProjectInProduction(): boolean {
     return this.currentProject?.projectType === ProjectType.PRODUCTION;
-  }
-  get sdlcClient(): SDLCServerClient {
-    return this.editorStore.applicationStore.networkClientManager.sdlcClient;
   }
 
   get currentProjectId(): string {
@@ -109,11 +113,14 @@ export class EditorSdlcState {
     try {
       this.isFetchingProject = true;
       this.currentProject = Project.serialization.fromJson(
-        (yield this.sdlcClient.getProject(projectId)) as PlainObject<Project>,
+        (yield this.editorStore.sdlcServerClient.getProject(
+          projectId,
+        )) as PlainObject<Project>,
       );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (!options?.suppressNotification) {
@@ -131,7 +138,7 @@ export class EditorSdlcState {
   ): GeneratorFn<void> {
     try {
       this.currentWorkspace = Workspace.serialization.fromJson(
-        (yield this.sdlcClient.getWorkspace(
+        (yield this.editorStore.sdlcServerClient.getWorkspace(
           projectId,
           workspaceId,
         )) as PlainObject<Workspace>,
@@ -141,12 +148,13 @@ export class EditorSdlcState {
       )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setMode(EDITOR_MODE.CONFLICT_RESOLUTION);
-        this.currentWorkspace.type = WORKSPACE_TYPE.CONFLICT_RESOLUTION;
+        this.currentWorkspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
         this.editorStore.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
       }
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (!options?.suppressNotification) {
@@ -159,13 +167,14 @@ export class EditorSdlcState {
     try {
       this.isFetchingProjectVersions = true;
       this.projectVersions = (
-        (yield this.sdlcClient.getVersions(
+        (yield this.editorStore.sdlcServerClient.getVersions(
           this.currentProjectId,
         )) as PlainObject<Version>[]
       ).map((version) => Version.serialization.fromJson(version));
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -174,7 +183,7 @@ export class EditorSdlcState {
   }
 
   *checkIfCurrentWorkspaceIsInConflictResolutionMode(): GeneratorFn<boolean> {
-    return (yield this.sdlcClient.checkIfWorkspaceIsInConflictResolutionMode(
+    return (yield this.editorStore.sdlcServerClient.checkIfWorkspaceIsInConflictResolutionMode(
       this.currentProjectId,
       this.currentWorkspaceId,
     )) as boolean;
@@ -187,20 +196,21 @@ export class EditorSdlcState {
     try {
       this.currentRevision = Revision.serialization.fromJson(
         this.editorStore.isInConflictResolutionMode
-          ? ((yield this.sdlcClient.getConflictResolutionRevision(
+          ? ((yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
               projectId,
               workspaceId,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>)
-          : ((yield this.sdlcClient.getRevision(
+          : ((yield this.editorStore.sdlcServerClient.getRevision(
               projectId,
               workspaceId,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>),
       );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -211,17 +221,18 @@ export class EditorSdlcState {
     try {
       this.isCheckingIfWorkspaceIsOutdated = true;
       this.isWorkspaceOutdated = this.editorStore.isInConflictResolutionMode
-        ? ((yield this.sdlcClient.isConflictResolutionOutdated(
+        ? ((yield this.editorStore.sdlcServerClient.isConflictResolutionOutdated(
             this.currentProjectId,
             this.currentWorkspaceId,
           )) as boolean)
-        : ((yield this.sdlcClient.isWorkspaceOutdated(
+        : ((yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
             this.currentProjectId,
             this.currentWorkspaceId,
           )) as boolean);
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -253,7 +264,7 @@ export class EditorSdlcState {
         // fetch latest revision
         // NOTE: this check is already covered in conflict resolution mode so we don't need to do it here
         const latestRevision = Revision.serialization.fromJson(
-          (yield this.sdlcClient.getRevision(
+          (yield this.editorStore.sdlcServerClient.getRevision(
             this.currentProjectId,
             this.currentWorkspaceId,
             RevisionAlias.CURRENT,
@@ -264,17 +275,19 @@ export class EditorSdlcState {
           latestRevision.id === this.currentRevisionId,
           `Can't run local change detection: current workspace revision is not the latest. Please backup your work and refresh the application`,
         );
-        entities = (yield this.sdlcClient.getEntitiesByRevision(
-          this.currentProjectId,
-          this.currentWorkspaceId,
-          this.currentRevisionId,
-        )) as Entity[];
+        entities =
+          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+            this.currentProjectId,
+            this.currentWorkspaceId,
+            this.currentRevisionId,
+          )) as Entity[];
       } else {
-        entities = (yield this.sdlcClient.getEntitiesByRevision(
-          this.currentProjectId,
-          this.currentWorkspaceId,
-          RevisionAlias.CURRENT,
-        )) as Entity[];
+        entities =
+          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+            this.currentProjectId,
+            this.currentWorkspaceId,
+            RevisionAlias.CURRENT,
+          )) as Entity[];
       }
       this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
         entities,
@@ -282,13 +295,16 @@ export class EditorSdlcState {
       yield flowResult(
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
           entities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -298,7 +314,7 @@ export class EditorSdlcState {
   *buildWorkspaceBaseRevisionEntityHashesIndex(): GeneratorFn<void> {
     try {
       const workspaceBaseEntities =
-        (yield this.sdlcClient.getEntitiesByRevision(
+        (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
           this.currentProjectId,
           this.currentWorkspaceId,
           RevisionAlias.BASE,
@@ -309,13 +325,16 @@ export class EditorSdlcState {
       yield flowResult(
         this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
           workspaceBaseEntities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+          ),
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -324,23 +343,27 @@ export class EditorSdlcState {
 
   *buildProjectLatestRevisionEntityHashesIndex(): GeneratorFn<void> {
     try {
-      const projectLatestEntities = (yield this.sdlcClient.getEntities(
-        this.currentProjectId,
-        undefined,
-      )) as Entity[];
+      const projectLatestEntities =
+        (yield this.editorStore.sdlcServerClient.getEntities(
+          this.currentProjectId,
+          undefined,
+        )) as Entity[];
       this.editorStore.changeDetectionState.projectLatestRevisionState.setEntities(
         projectLatestEntities,
       );
       yield flowResult(
         this.editorStore.changeDetectionState.projectLatestRevisionState.buildEntityHashesIndex(
           projectLatestEntities,
-          CORE_LOG_EVENT.CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT,
+          ),
         ),
       );
       this.editorStore.refreshCurrentEntityDiffEditorState();
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -350,15 +373,16 @@ export class EditorSdlcState {
   *fetchWorkspaceBuilds(): GeneratorFn<void> {
     try {
       this.workspaceBuilds = (
-        (yield this.sdlcClient.getBuildsByRevision(
+        (yield this.editorStore.sdlcServerClient.getBuildsByRevision(
           this.currentProjectId,
           this.currentWorkspaceId,
           RevisionAlias.CURRENT,
         )) as PlainObject<Build>[]
       ).map((build) => Build.serialization.fromJson(build));
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -19,39 +19,41 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
-import { getDecoratedSetImplementationPropertyMappings } from '../../../../utils/MappingResolutionUtil';
+} from '@finos/legend-shared';
 import type {
   SetImplementationVisitor,
   SetImplementation,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import type { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import type { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import { EnumValueMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumValueMapping';
-import { PrimitiveType } from '../../../../models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { FlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
-import type { AbstractFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
+  OperationSetImplementation,
+  PureInstanceSetImplementation,
+  FlatDataInstanceSetImplementation,
+  EnumerationMapping,
+  Property,
+  AbstractFlatDataPropertyMapping,
+  RelationalInstanceSetImplementation,
+  RootRelationalInstanceSetImplementation,
+  AggregationAwareSetImplementation,
+  PropertyMapping,
+} from '@finos/legend-graph';
 import {
+  getDecoratedSetImplementationPropertyMappings,
+  getLeafSetImplementations,
+  PurePropertyMapping,
+  EmbeddedFlatDataPropertyMapping,
+  EnumValueMapping,
+  PrimitiveType,
+  RawLambda,
+  Enumeration,
+  Class,
+  FlatDataPropertyMapping,
   Measure,
   Unit,
-} from '../../../../models/metamodels/pure/model/packageableElements/domain/Measure';
-import type { RelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
-import type { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { EnumValueExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/EnumValueReference';
-import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-import type { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import { RelationalPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { createStubRelationalOperationElement } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RawRelationalOperationElement';
-import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
+  EnumValueExplicitReference,
+  PropertyExplicitReference,
+  RelationalPropertyMapping,
+  createStubRelationalOperationElement,
+  EmbeddedRelationalInstanceSetImplementation,
+  getEnumerationMappingsByEnumeration,
+} from '@finos/legend-graph';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -90,9 +92,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   ): void {
     setImplementation.setParameters(
       setImplementation.parameters.filter((param) =>
-        setImplementation.parent
-          .getClassMappings(true)
-          .find((setImp) => setImp === param.setImplementation.value),
+        setImplementation.parent.allClassMappings.find(
+          (setImp) => setImp === param.setImplementation.value,
+        ),
       ),
     );
   }
@@ -149,12 +151,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               ),
             ];
         // Find existing enumeration mappings for the property enumeration
-        const existingEnumerationMappings =
-          setImplementation.parent.enumerationMappingsByEnumeration(
-            enumerationPropertyMapping[0].property.value.genericType.value.getRawType(
-              Enumeration,
-            ),
-          );
+        const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
+          setImplementation.parent,
+          enumerationPropertyMapping[0].property.value.genericType.value.getRawType(
+            Enumeration,
+          ),
+        );
         enumerationPropertyMapping.forEach((epm) => {
           // If there are no enumeration mappings, delete the transformer of the property mapping
           // If there is only 1 enumeration mapping, make it the transformer of the property mapping
@@ -174,7 +176,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // TODO: should we try to get leaf implementation here from the root
           // or should we just simply find all class mappings for the target class
           // as we should not try to `understand` operation class mapping union?
-          setImplementation.parent.getLeafSetImplementations(
+          getLeafSetImplementations(
+            setImplementation.parent,
             property.genericType.value.getRawType(Class),
           );
         // if there are no root-resolved set implementations for the class, return empty array
@@ -273,12 +276,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               ),
             ];
         // Find existing enumeration mappings for the property enumeration
-        const existingEnumerationMappings =
-          setImplementation.parent.enumerationMappingsByEnumeration(
-            ePropertyMapping[0].property.value.genericType.value.getRawType(
-              Enumeration,
-            ),
-          );
+        const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
+          setImplementation.parent,
+          ePropertyMapping[0].property.value.genericType.value.getRawType(
+            Enumeration,
+          ),
+        );
         ePropertyMapping.forEach((epm) => {
           assertType(
             epm,
@@ -387,12 +390,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           ePropertyMapping = [newPropertyMapping];
         }
         // Find existing enumeration mappings for the property enumeration
-        const existingEnumerationMappings =
-          setImplementation.parent.enumerationMappingsByEnumeration(
-            ePropertyMapping[0].property.value.genericType.value.getRawType(
-              Enumeration,
-            ),
-          );
+        const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
+          setImplementation.parent,
+          ePropertyMapping[0].property.value.genericType.value.getRawType(
+            Enumeration,
+          ),
+        );
         ePropertyMapping.forEach((epm) => {
           assertType(
             epm,
@@ -417,10 +420,10 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // TODO: should we try to get leaf implementation here from the root
         // or should we just simply find all class mappings for the target class
         // as we should not try to `understand` operation class mapping union?
-        const resolvedLeafSetImps =
-          setImplementation.parent.getLeafSetImplementations(
-            property.genericType.value.getRawType(Class),
-          );
+        const resolvedLeafSetImps = getLeafSetImplementations(
+          setImplementation.parent,
+          property.genericType.value.getRawType(Class),
+        );
         // if there are no root-resolved set implementations for the class, return empty array
         if (resolvedLeafSetImps) {
           classPropertyMappings = resolvedLeafSetImps

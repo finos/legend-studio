@@ -15,20 +15,26 @@
  */
 
 import { LegendStudio } from '@finos/legend-studio';
-import { QueryBuilder_Preset } from '@finos/legend-studio-preset-query-builder';
-import { DSLText_Preset } from '@finos/legend-studio-preset-dsl-text';
-import { EFJSONSchema_Preset } from '@finos/legend-studio-preset-external-format-json-schema';
-import studioConfig from '../studio.config';
-import './index.scss';
+import { QueryBuilder_StudioPreset } from '@finos/legend-studio-preset-query-builder';
+import { DSLText_StudioPreset } from '@finos/legend-extension-dsl-text';
+import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
+import { BrowserConsole } from '@finos/legend-shared';
+import { DSLDiagram_StudioPreset } from '@finos/legend-extension-dsl-diagram';
 
-LegendStudio.create()
-  .setup({ baseUrl: studioConfig.baseUrl })
-  .withPresets([
-    new DSLText_Preset(),
-    new EFJSONSchema_Preset(),
-    new QueryBuilder_Preset(),
-  ])
-  .start()
-  .catch((e) => {
-    throw e;
-  });
+export class LegendStudioApplication {
+  static run(baseUrl: string): void {
+    LegendStudio.create()
+      .setup({ baseUrl })
+      .withPresets([
+        new DSLText_StudioPreset(),
+        new DSLDiagram_StudioPreset(),
+        new EFJSONSchema_GraphPreset(),
+        new QueryBuilder_StudioPreset(),
+      ])
+      .withLoggers([new BrowserConsole()])
+      .start()
+      .catch((e: unknown) => {
+        throw e;
+      });
+  }
+}

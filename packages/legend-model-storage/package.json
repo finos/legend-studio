@@ -1,0 +1,51 @@
+{
+  "name": "@finos/legend-model-storage",
+  "version": "0.0.3",
+  "description": "Legend storage models",
+  "keywords": [
+    "legend",
+    "legend-model",
+    "storage"
+  ],
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-model-storage",
+  "bugs": {
+    "url": "https://github.com/finos/legend-studio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-model-storage"
+  },
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "type": "module",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn clean && yarn build:tsc",
+    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "clean": "rimraf \"lib\" \"build\"",
+    "dev": "yarn dev:tsc",
+    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@finos/legend-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "cross-env": "7.0.3",
+    "eslint": "7.32.0",
+    "jest": "27.1.1",
+    "lodash": "4.17.21",
+    "rimraf": "3.0.2",
+    "typescript": "4.4.2"
+  },
+  "publishConfig": {
+    "directory": "build/publishContent"
+  }
+}

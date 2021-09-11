@@ -1,0 +1,117 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relation::MySnowFlake
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relation::MySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+    quotedIdentifiersIgnoreCase: true;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'userName';
+    privateKeyVaultReference: 'private';
+    passPhraseVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relation::MySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag2
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'dummy';
+    warehouse: 'test';
+    region: 'EMEA';
+    quotedIdentifiersIgnoreCase: false;
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'user';
+    privateKeyVaultReference: 'value';
+    passPhraseVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::H2Connection
+{
+  store: store::db;
+  type: H2;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdentifiers
+{
+  store: store::db;
+  type: H2;
+  timezone: +3000;
+  quoteIdentifiers: true;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdentifiers1
+{
+  store: store::db;
+  type: H2;
+  timezone: +3000;
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::SnowflakeConnection
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'dbName';
+    account: 'acct1';
+    warehouse: 'warehouse';
+    region: 'reg1';
+  };
+  auth: DefaultH2;
+}

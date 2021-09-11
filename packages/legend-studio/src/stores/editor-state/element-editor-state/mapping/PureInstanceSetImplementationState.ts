@@ -14,25 +14,31 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, flowResult } from 'mobx';
-import {
-  LAMBDA_START,
-  SOURCE_ID_LABEL,
-} from '../../../../models/MetaModelConst';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { observable, action, computed, makeObservable } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
-import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { PurePropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
-import type { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { isNonNullable } from '@finos/legend-studio-shared';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import type { GeneratorFn } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  isNonNullable,
+} from '@finos/legend-shared';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
+import type {
+  PurePropertyMapping,
+  PureInstanceSetImplementation,
+} from '@finos/legend-graph';
+import {
+  LAMBDA_PIPE,
+  GRAPH_MANAGER_LOG_EVENT,
+  ParserError,
+  RawLambda,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -44,7 +50,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
     instanceSetImplementationState: PureInstanceSetImplementationState,
     propertyMapping: PurePropertyMapping,
   ) {
-    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_START);
+    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_PIPE);
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -53,7 +59,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
     return buildSourceInformationSourceId(
       [
         this.propertyMapping.owner.parent.path,
-        SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
+        MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
         this.propertyMapping.owner.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,
@@ -66,20 +72,20 @@ export class PurePropertyMappingState extends PropertyMappingState {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda = (yield flowResult(
-          this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          ),
-        )) as RawLambda | undefined;
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.propertyMapping.transform = lambda ?? emptyLambda;
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -94,12 +100,11 @@ export class PurePropertyMappingState extends PropertyMappingState {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.propertyMapping.transform);
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -107,9 +112,10 @@ export class PurePropertyMappingState extends PropertyMappingState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -190,18 +196,20 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     if (lambdas.size) {
       this.isConvertingTransformLambdaObjects = true;
       try {
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+            lambdas,
+          )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const purePropertyMapping = propertyMappingsMap.get(key);
           purePropertyMapping?.setLambdaString(
             purePropertyMapping.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

@@ -16,24 +16,20 @@
 
 import { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { PrimitiveTypeIcon } from '../../../shared/Icon';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-} from '@finos/legend-studio-components';
-import { clsx, TreeView } from '@finos/legend-studio-components';
+import type { TreeNodeContainerProps, TreeData } from '@finos/legend-art';
+import { clsx, TreeView, PrimitiveTypeIcon } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { DEFAULT_SOURCE_PARAMETER_NAME } from '../../../../models/MetaModelConst';
 import type { FlatDataRecordTypeTreeNodeData } from '../../../../stores/shared/TreeUtil';
-import { addUniqueEntry } from '@finos/legend-studio-shared';
-import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
+import { addUniqueEntry } from '@finos/legend-shared';
 import type {
+  Type,
   RootFlatDataRecordType,
   FlatDataRecordField,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
+} from '@finos/legend-graph';
+import { DEFAULT_SOURCE_PARAMETER_NAME } from '@finos/legend-graph';
 
 const getRecordTypeTreeNodeData = (
   field: FlatDataRecordField,
@@ -70,7 +66,7 @@ const getRecordTypeTreeData = (
 const RecordFieldTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     FlatDataRecordTypeTreeNodeData,
-    { selectedType?: Type }
+    { selectedType?: Type | undefined }
   >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
@@ -124,7 +120,7 @@ const RecordFieldTreeNodeContainer: React.FC<
 
 export const FlatDataRecordTypeTree: React.FC<{
   recordType: RootFlatDataRecordType;
-  selectedType?: Type;
+  selectedType?: Type | undefined;
 }> = (props) => {
   const { recordType, selectedType } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax

@@ -14,35 +14,52 @@
  * limitations under the License.
  */
 
-import completeGraphEntities from './MockDataGenerationTestData.json';
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
+import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json';
 import { classHasCycle, createMockClassInstance } from '../MockDataUtil';
-import { unitTest } from '@finos/legend-studio-shared';
-import { getTestEditorStore } from '../../StoreTestUtils';
+import { unitTest } from '@finos/legend-shared';
+import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
+import type { Entity } from '@finos/legend-model-storage';
 
-const editorStore = getTestEditorStore();
+const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
   await flowResult(
-    editorStore.graphState.graphManager.buildGraph(
-      editorStore.graphState.graph,
-      completeGraphEntities as Entity[],
+    editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      TEST_DATA__completeGraphEntities as Entity[],
     ),
   );
 });
 
 test(unitTest('Class with hierarchy cycle is detected'), () => {
-  const cycledComplexClass = editorStore.graphState.graph.getClass(
+  const _class = editorStore.graphManagerState.graph.getClass(
+    'myPackage::test::Misc',
+  );
+  expect(createMockClassInstance(_class)).toContainAllKeys([
+    'string',
+    'boolean',
+    'float',
+    'decimal',
+    'number',
+    'integer',
+    'date',
+    'dateTime',
+    'strictDate',
+  ]);
+});
+
+test(unitTest('Class with hierarchy cycle is detected'), () => {
+  const cycledComplexClass = editorStore.graphManagerState.graph.getClass(
     'myPackage::test::shared::src::Application',
   );
-  const nonComplexStyleClass = editorStore.graphState.graph.getClass(
+  const nonComplexStyleClass = editorStore.graphManagerState.graph.getClass(
     'myPackage::test::shared::src::Membership',
   );
-  const simpleClass = editorStore.graphState.graph.getClass(
+  const simpleClass = editorStore.graphManagerState.graph.getClass(
     'myPackage::test::shared::src::Address',
   );
-  expect(classHasCycle(cycledComplexClass, true, new Set<string>())).toBeTrue();
+  expect(classHasCycle(cycledComplexClass, true, new Set<string>())).toBe(true);
   expect(
     classHasCycle(nonComplexStyleClass, true, new Set<string>()),
   ).toBeFalse();
@@ -51,7 +68,7 @@ test(unitTest('Class with hierarchy cycle is detected'), () => {
 
 // TODO: maybe we should isolate this to another test for mock data util
 test(unitTest('Test mock data with classes cycle'), () => {
-  const applicationClass = editorStore.graphState.graph.getClass(
+  const applicationClass = editorStore.graphManagerState.graph.getClass(
     'myPackage::test::shared::src::Application',
   );
   const applicationInstance = createMockClassInstance(

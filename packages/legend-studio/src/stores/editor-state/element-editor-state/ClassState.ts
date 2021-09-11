@@ -14,26 +14,33 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, makeObservable, flowResult } from 'mobx';
-import { LAMBDA_START, SOURCE_ID_LABEL } from '../../../models/MetaModelConst';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
-import { LambdaEditorState } from '../../editor-state/element-editor-state/LambdaEditorState';
+import { observable, action, flow, makeObservable } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore';
-import { ParserError } from '../../../models/metamodels/pure/action/EngineError';
-import { RawLambda } from '../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import type { Constraint } from '../../../models/metamodels/pure/model/packageableElements/domain/Constraint';
-import type { DerivedProperty } from '../../../models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-import { buildSourceInformationSourceId } from '../../../models/metamodels/pure/action/SourceInformationHelper';
+import type { Class, Constraint, DerivedProperty } from '@finos/legend-graph';
+import {
+  LAMBDA_PIPE,
+  GRAPH_MANAGER_LOG_EVENT,
+  ParserError,
+  RawLambda,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
+
+export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
+export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
 
 export class DerivedPropertyState extends LambdaEditorState {
   derivedProperty: DerivedProperty;
   editorStore: EditorStore;
 
   constructor(derivedProperty: DerivedProperty, editorStore: EditorStore) {
-    super(`${LAMBDA_START}''`, '');
+    super(`${LAMBDA_PIPE}''`, '');
 
     makeObservable(this, {
       derivedProperty: observable,
@@ -48,7 +55,7 @@ export class DerivedPropertyState extends LambdaEditorState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.derivedProperty.owner.path,
-      SOURCE_ID_LABEL.DERIVED_PROPERTY,
+      DERIVED_PROPERTY_SOURCE_ID_LABEL,
       this.derivedProperty.name,
       this.uuid, // in case of duplications
     ]);
@@ -63,20 +70,20 @@ export class DerivedPropertyState extends LambdaEditorState {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda = (yield flowResult(
-          this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          ),
-        )) as RawLambda | undefined;
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.setBodyAndParameters(lambda ?? emptyLambda);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -97,12 +104,11 @@ export class DerivedPropertyState extends LambdaEditorState {
             this.derivedProperty.body,
           ),
         );
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -110,9 +116,10 @@ export class DerivedPropertyState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -128,7 +135,7 @@ export class ConstraintState extends LambdaEditorState {
   editorStore: EditorStore;
 
   constructor(constraint: Constraint, editorStore: EditorStore) {
-    super('true', LAMBDA_START);
+    super('true', LAMBDA_PIPE);
 
     makeObservable(this, {
       constraint: observable,
@@ -142,7 +149,7 @@ export class ConstraintState extends LambdaEditorState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.constraint.owner.path,
-      SOURCE_ID_LABEL.CONSTRAINT,
+      CONSTRAINT_SOURCE_ID_LABEL,
       this.constraint.name,
       this.uuid, // in case of duplications
     ]);
@@ -152,20 +159,20 @@ export class ConstraintState extends LambdaEditorState {
     const emptyFunctionDefinition = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda = (yield flowResult(
-          this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          ),
-        )) as RawLambda | undefined;
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.constraint.functionDefinition = lambda ?? emptyFunctionDefinition;
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -180,12 +187,11 @@ export class ConstraintState extends LambdaEditorState {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.constraint.functionDefinition);
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -193,9 +199,10 @@ export class ConstraintState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -323,18 +330,20 @@ export class ClassState {
     if (lambdas.size) {
       this.isConvertingConstraintLambdaObjects = true;
       try {
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+            lambdas,
+          )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const constraintState = constraintStateMap.get(key);
           constraintState?.setLambdaString(
             constraintState.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {
@@ -359,18 +368,20 @@ export class ClassState {
     if (lambdas.size) {
       this.isConvertingDerivedPropertyLambdaObjects = true;
       try {
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+            lambdas,
+          )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const derivedPropertyState = derivedPropertyStateMap.get(key);
           derivedPropertyState?.setLambdaString(
             derivedPropertyState.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

@@ -16,14 +16,11 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { PanelLoadingIndicator } from '@finos/legend-studio-components';
-import { getQueryParameters } from '@finos/legend-studio-shared';
+import { PanelLoadingIndicator } from '@finos/legend-art';
+import { getQueryParameters } from '@finos/legend-shared';
 import { useParams } from 'react-router-dom';
-import {
-  useApplicationStore,
-  AppHeader,
-  AppHeaderMenu,
-} from '@finos/legend-studio';
+import { useStudioStore, AppHeader, AppHeaderMenu } from '@finos/legend-studio';
+import { useApplicationStore } from '@finos/legend-application';
 
 const EVENT_MARKETING_LINK_ACCESS = 'Marketing link accessed';
 export const PATH_PARAM_TOKEN_REDIRECT_URL = 'redirectUrl';
@@ -45,17 +42,14 @@ interface RedirectPathParams {
  */
 export const URLRedirector = observer(() => {
   const applicationStore = useApplicationStore();
-  const isApplicationLoadConcluded = applicationStore.initState.hasCompleted;
+  const studioStore = useStudioStore();
   const params = useParams<RedirectPathParams>();
 
   useEffect(() => {
-    if (isApplicationLoadConcluded) {
-      if (applicationStore.initState.hasFailed) {
-        applicationStore.setupTelemetryService();
-      }
+    if (studioStore.initState.hasCompleted) {
       const queryParams = getQueryParameters<{
         marketingId?: string;
-      }>(applicationStore.historyApiClient.location.search);
+      }>(applicationStore.navigator.getCurrentLocation(), true);
       let redirectUrl = params[PATH_PARAM_TOKEN_REDIRECT_URL];
       switch (redirectUrl) {
         case SPECIAL_REDIRECT_ALIAS.HOME:
@@ -66,17 +60,19 @@ export const URLRedirector = observer(() => {
       }
       // report if the link from a marketing campaign is accessed
       if (queryParams.marketingId) {
-        applicationStore.telemetryService.logEvent(
-          EVENT_MARKETING_LINK_ACCESS,
-          {
-            marketingId: queryParams.marketingId,
-            redirectUrl: redirectUrl,
-          },
-        );
+        studioStore.telemetryService.logEvent(EVENT_MARKETING_LINK_ACCESS, {
+          marketingId: queryParams.marketingId,
+          redirectUrl: redirectUrl,
+        });
       }
-      applicationStore.historyApiClient.push(`/${redirectUrl}`);
+      applicationStore.navigator.goTo(`/${redirectUrl}`);
     }
-  }, [applicationStore, params, isApplicationLoadConcluded]);
+  }, [
+    applicationStore,
+    studioStore,
+    params,
+    studioStore.initState.hasCompleted,
+  ]);
 
   return (
     <div className="app__page">

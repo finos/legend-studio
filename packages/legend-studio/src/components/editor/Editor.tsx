@@ -20,8 +20,16 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
-import { clsx, useStateWithCallback } from '@finos/legend-studio-components';
-import SplitPane from 'react-split-pane';
+import type { ResizablePanelHandlerProps } from '@finos/legend-art';
+import {
+  getControlledResizablePanelProps,
+  clsx,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+  useStateWithCallback,
+} from '@finos/legend-art';
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel';
 import { SideBar } from './side-bar/SideBar';
 import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel';
@@ -32,20 +40,20 @@ import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
-import { EditorStoreProvider, useEditorStore } from '../../stores/EditorStore';
-import Backdrop from '@material-ui/core/Backdrop';
 import type { EditorPathParams } from '../../stores/LegendStudioRouter';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-  useApplicationStore,
-} from '../../stores/ApplicationStore';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
-import { isNonNullable } from '@finos/legend-studio-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { EditorStoreProvider, useEditorStore } from './EditorStoreProvider';
+import {
+  ActionAlertType,
+  ActionAlertActionType,
+  ApplicationBackdrop,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],
@@ -69,34 +77,29 @@ export const EditorInner = observer(() => {
   const applicationStore = useApplicationStore();
 
   // Extensions
-  const extraEditorExtensionComponents =
-    editorStore.applicationStore.pluginManager
-      .getEditorPlugins()
-      .flatMap(
-        (plugin) =>
-          plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
-          [],
-      )
-      .filter(isNonNullable)
-      .map((config) => (
-        <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
-      ));
+  const extraEditorExtensionComponents = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],
+    )
+    .filter(isNonNullable)
+    .map((config) => (
+      <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+    ));
 
   // Resize
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // These create snapping effect on panel resizing
-  const resizeSideBar = (newSize: number | undefined): void => {
-    if (newSize !== undefined) {
-      editorStore.sideBarDisplayState.setSize(newSize);
-    }
-  };
-  const resizeAuxPanel = (newSize: number | undefined): void => {
-    if (ref.current) {
-      if (newSize !== undefined) {
-        editorStore.auxPanelDisplayState.setSize(newSize);
-      }
-    }
-  };
+  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
+    editorStore.sideBarDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
+    );
+
+  const resizeAuxPanel = (handleProps: ResizablePanelHandlerProps): void =>
+    editorStore.auxPanelDisplayState.setSize(
+      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().height,
+    );
 
   useEffect(() => {
     if (ref.current) {
@@ -119,7 +122,7 @@ export const EditorInner = observer(() => {
 
   // Initialize the app
   useEffect(() => {
-    flowResult(editorStore.init(projectId, workspaceId)).catch(
+    flowResult(editorStore.initialize(projectId, workspaceId)).catch(
       applicationStore.alertIllegalUnhandledError,
     );
   }, [editorStore, applicationStore, projectId, workspaceId]);
@@ -163,14 +166,14 @@ export const EditorInner = observer(() => {
   const retryBlockedLocation = useCallback(
     (allowedNavigation: boolean): void => {
       if (allowedNavigation && blockedLocation) {
-        applicationStore.historyApiClient.push(blockedLocation.pathname);
+        applicationStore.navigator.goTo(blockedLocation.pathname);
       }
     },
     [blockedLocation, applicationStore],
   );
   // NOTE: we have to use `useStateWithCallback` here because we want to guarantee that we call `history.push(blockedLocation.pathname)`
   // after confirmedAllowNavigation is flipped, otherwise we would end up in the `false` case of handleBlockedNavigation again!
-  // Another way to go about this is to use `setTimeout(() => history.push(...), 0)` but it can potentailly be more error prone
+  // Another way to go about this is to use `setTimeout(() => history.push(...), 0)` but it can potentially be more error-prone
   // See https://www.robinwieruch.de/react-usestate-callback
   const [confirmedAllowNavigation, setConfirmedAllowNavigation] =
     useStateWithCallback<boolean>(false, retryBlockedLocation);
@@ -217,7 +220,7 @@ export const EditorInner = observer(() => {
     return true;
   };
   const editable =
-    editorStore.graphState.graph.buildState.hasCompleted &&
+    editorStore.graphManagerState.graph.buildState.hasCompleted &&
     editorStore.isInitialized;
   const isResolvingConflicts =
     editorStore.isInConflictResolutionMode &&
@@ -245,40 +248,66 @@ export const EditorInner = observer(() => {
           >
             <div className="editor__body">
               <ActivityBar />
-              <Backdrop className="backdrop" open={editorStore.backdrop} />
+              <ApplicationBackdrop open={editorStore.backdrop} />
               <div ref={ref} className="editor__content-container">
                 <div
                   className={clsx('editor__content', {
                     'editor__content--expanded': editorStore.isInExpandedMode,
                   })}
                 >
-                  <SplitPane
-                    split="vertical"
-                    size={editorStore.sideBarDisplayState.size}
-                    onDragFinished={resizeSideBar}
-                    minSize={0}
-                    maxSize={-600}
-                  >
-                    <SideBar />
-                    <SplitPane
-                      primary="second"
-                      split="horizontal"
-                      size={editorStore.auxPanelDisplayState.size}
-                      onDragFinished={resizeAuxPanel}
-                      minSize={0}
-                      maxSize={0}
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel
+                      {...getControlledResizablePanelProps(
+                        editorStore.sideBarDisplayState.size === 0,
+                        {
+                          onStopResize: resizeSideBar,
+                        },
+                      )}
+                      size={editorStore.sideBarDisplayState.size}
+                      direction={1}
                     >
-                      <>
-                        {(isResolvingConflicts || editable) &&
-                          editorStore.isInFormMode && <EditPanel />}
-                        {editable && editorStore.isInGrammarTextMode && (
-                          <GrammarTextEditor />
-                        )}
-                        {!editable && <EditPanelSplashScreen />}
-                      </>
-                      <AuxiliaryPanel />
-                    </SplitPane>
-                  </SplitPane>
+                      <SideBar />
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel minSize={300}>
+                      <ResizablePanelGroup orientation="horizontal">
+                        <ResizablePanel
+                          {...getControlledResizablePanelProps(
+                            editorStore.auxPanelDisplayState.isMaximized,
+                          )}
+                        >
+                          {(isResolvingConflicts || editable) &&
+                            editorStore.isInFormMode && <EditPanel />}
+                          {editable && editorStore.isInGrammarTextMode && (
+                            <GrammarTextEditor />
+                          )}
+                          {!editable && <EditPanelSplashScreen />}
+                        </ResizablePanel>
+                        <ResizablePanelSplitter>
+                          <ResizablePanelSplitterLine
+                            color={
+                              editorStore.auxPanelDisplayState.isMaximized
+                                ? 'transparent'
+                                : 'var(--color-dark-grey-250)'
+                            }
+                          />
+                        </ResizablePanelSplitter>
+                        <ResizablePanel
+                          {...getControlledResizablePanelProps(
+                            editorStore.auxPanelDisplayState.size === 0,
+                            {
+                              onStopResize: resizeAuxPanel,
+                            },
+                          )}
+                          flex={0}
+                          direction={-1}
+                          size={editorStore.auxPanelDisplayState.size}
+                        >
+                          <AuxiliaryPanel />
+                        </ResizablePanel>
+                      </ResizablePanelGroup>
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </div>
               </div>
             </div>

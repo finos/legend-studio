@@ -22,24 +22,28 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   TAB_SIZE,
-} from '../../stores/EditorConfig';
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   disposeDiffEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
-} from '../../utils/TextEditorUtil';
-import { useEditorStore } from '../../stores/EditorStore';
+} from '@finos/legend-art';
 import {
   isString,
   losslessStringify,
   tryToFormatJSONString,
   tryToFormatLosslessJSONString,
-} from '@finos/legend-studio-shared';
-import { useApplicationStore } from '../../stores/ApplicationStore';
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
+import { useEditorStore } from '../editor/EditorStoreProvider';
 
 export const TextDiffView = observer(
-  (props: { language: EDITOR_LANGUAGE; from?: string; to?: string }) => {
+  (props: {
+    language: EDITOR_LANGUAGE;
+    from?: string | undefined;
+    to?: string | undefined;
+  }) => {
     const { from, to, language } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();

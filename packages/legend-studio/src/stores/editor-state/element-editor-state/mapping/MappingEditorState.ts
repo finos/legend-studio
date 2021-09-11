@@ -22,8 +22,6 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
-import { PRIMITIVE_TYPE } from '../../../../models/MetaModelConst';
 import type { EditorStore } from '../../../EditorStore';
 import {
   InstanceSetImplementationState,
@@ -37,9 +35,11 @@ import {
   TEST_RESULT,
 } from './MappingTestState';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { fromElementPathToMappingElementId } from '../../../../models/MetaModelUtils';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
+  deleteEntry,
   generateEnumerableNameFromToken,
   IllegalStateError,
   isNonNullable,
@@ -49,67 +49,65 @@ import {
   UnsupportedOperationError,
   assertTrue,
   addUniqueEntry,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState';
 import {
   FlatDataInstanceSetImplementationState,
   RootFlatDataInstanceSetImplementationState,
 } from './FlatDataInstanceSetImplementationState';
-import type { TreeNodeData, TreeData } from '@finos/legend-studio-components';
+import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
-import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
-import { extractSourceInformationCoordinates } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Enumeration } from '../../../../models/metamodels/pure/model/packageableElements/domain/Enumeration';
+import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
 import type {
-  MappingElement,
-  MappingElementSource,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
+  CompilationError,
+  PackageableElement,
+  AbstractFlatDataPropertyMapping,
+  InputData,
+  Type,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
+  PRIMITIVE_TYPE,
+  fromElementPathToMappingElementId,
+  extractSourceInformationCoordinates,
+  Class,
+  Enumeration,
   Mapping,
-  MAPPING_ELEMENT_TYPE,
-  getMappingElementType,
-  getMappingElementTarget,
-  getMappingElementSource,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { EnumerationMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/EnumerationMapping';
-import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { PureInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { PackageableElement } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { MappingTest } from '../../../../models/metamodels/pure/model/packageableElements/mapping/MappingTest';
-import { ExpectedOutputMappingTestAssert } from '../../../../models/metamodels/pure/model/packageableElements/mapping/ExpectedOutputMappingTestAssert';
-import {
+  EnumerationMapping,
+  BASIC_SET_IMPLEMENTATION_TYPE,
+  SetImplementation,
+  PureInstanceSetImplementation,
+  MappingTest,
+  ExpectedOutputMappingTestAssert,
   ObjectInputData,
   ObjectInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { AbstractFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
-import type { InputData } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InputData';
-import { FlatDataInputData } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInputData';
-import { RootFlatDataRecordType } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/FlatDataDataType';
-import {
+  FlatDataInstanceSetImplementation,
+  InstanceSetImplementation,
+  EmbeddedFlatDataPropertyMapping,
+  FlatDataInputData,
+  RootFlatDataRecordType,
   PackageableElementExplicitReference,
   OptionalPackageableElementExplicitReference,
-} from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { RootFlatDataRecordTypeExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference';
-import { RootRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { AggregationAwareSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
-import { Table } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/Table';
-import { View } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/View';
-import { TableAlias } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalOperationElement';
-import { TableExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/TableReference';
-import { ViewExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/model/ViewReference';
-import {
+  RootFlatDataRecordTypeExplicitReference,
+  RootRelationalInstanceSetImplementation,
+  EmbeddedRelationalInstanceSetImplementation,
+  AggregationAwareSetImplementation,
+  Table,
+  View,
+  TableAlias,
+  TableExplicitReference,
+  ViewExplicitReference,
   RelationalInputData,
   RelationalInputType,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/mapping/RelationalInputData';
-import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
-import { LambdaEditorState } from '../LambdaEditorState';
-import { AssociationImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/AssociationImplementation';
+  OperationSetImplementation,
+  OperationType,
+  AssociationImplementation,
+  InferableMappingElementIdExplicitValue,
+  InferableMappingElementRootExplicitValue,
+  updateRootSetImplementationOnCreate,
+  updateRootSetImplementationOnDelete,
+} from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -126,6 +124,245 @@ export const generateMappingTestName = (mapping: Mapping): string => {
   );
   return generatedName;
 };
+
+export enum MAPPING_ELEMENT_SOURCE_ID_LABEL {
+  ENUMERATION_MAPPING = 'enumerationMapping',
+  OPERATION_CLASS_MAPPING = 'operationClassMapping',
+  PURE_INSTANCE_CLASS_MAPPING = 'pureInstanceClassMapping',
+  FLAT_DATA_CLASS_MAPPING = 'flatDataClassMapping',
+  RELATIONAL_CLASS_MAPPING = 'relationalClassMapping',
+  AGGREGATION_AWARE_CLASS_MAPPING = 'aggregationAwareClassMapping',
+}
+
+export enum MAPPING_ELEMENT_TYPE {
+  CLASS = 'CLASS',
+  ENUMERATION = 'ENUMERATION',
+  ASSOCIATION = 'ASSOCIATION',
+}
+
+export type MappingElement =
+  | EnumerationMapping
+  | SetImplementation
+  | AssociationImplementation;
+
+/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
+export type MappingElementSource =
+  | Type
+  | Class
+  | RootFlatDataRecordType
+  | View
+  | Table;
+
+/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
+export const getMappingElementTarget = (
+  mappingElement: MappingElement,
+): PackageableElement => {
+  if (mappingElement instanceof EnumerationMapping) {
+    return mappingElement.enumeration.value;
+  } else if (mappingElement instanceof AssociationImplementation) {
+    return mappingElement.association.value;
+  } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
+    return mappingElement.class.value;
+  } else if (
+    mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
+  ) {
+    return mappingElement.class.value;
+  } else if (mappingElement instanceof SetImplementation) {
+    return mappingElement.class.value;
+  }
+  throw new UnsupportedOperationError(
+    `Can't derive target of mapping element`,
+    mappingElement,
+  );
+};
+
+/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
+export const getMappingElementSource = (
+  mappingElement: MappingElement,
+): MappingElementSource | undefined => {
+  if (mappingElement instanceof OperationSetImplementation) {
+    // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
+    // in the mapping, so if we use this method on all class mappings of a mapping, we don't miss anything
+    return undefined;
+  } else if (mappingElement instanceof EnumerationMapping) {
+    return mappingElement.sourceType.value;
+  } else if (mappingElement instanceof AssociationImplementation) {
+    throw new UnsupportedOperationError();
+  } else if (mappingElement instanceof PureInstanceSetImplementation) {
+    return mappingElement.srcClass.value;
+  } else if (mappingElement instanceof FlatDataInstanceSetImplementation) {
+    return mappingElement.sourceRootRecordType.value;
+  } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
+    return getMappingElementSource(
+      guaranteeType(
+        mappingElement.rootInstanceSetImplementation,
+        FlatDataInstanceSetImplementation,
+      ),
+    );
+  } else if (
+    mappingElement instanceof RootRelationalInstanceSetImplementation
+  ) {
+    return mappingElement.mainTableAlias.relation.value;
+  } else if (
+    mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
+  ) {
+    return mappingElement.rootInstanceSetImplementation.mainTableAlias.relation
+      .value;
+  } else if (mappingElement instanceof AggregationAwareSetImplementation) {
+    return getMappingElementSource(mappingElement.mainSetImplementation);
+  }
+  throw new UnsupportedOperationError(
+    `Can't derive source of mapping element`,
+    mappingElement,
+  );
+};
+
+export const getMappingElementType = (
+  mappingElement: MappingElement,
+): MAPPING_ELEMENT_TYPE => {
+  if (mappingElement instanceof EnumerationMapping) {
+    return MAPPING_ELEMENT_TYPE.ENUMERATION;
+  } else if (mappingElement instanceof AssociationImplementation) {
+    return MAPPING_ELEMENT_TYPE.ASSOCIATION;
+  } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
+    return MAPPING_ELEMENT_TYPE.CLASS;
+  } else if (mappingElement instanceof SetImplementation) {
+    return MAPPING_ELEMENT_TYPE.CLASS;
+  }
+  throw new UnsupportedOperationError(
+    `Can't classify mapping element`,
+    mappingElement,
+  );
+};
+
+export const createClassMapping = (
+  mapping: Mapping,
+  id: string,
+  _class: Class,
+  setImpType: BASIC_SET_IMPLEMENTATION_TYPE,
+): SetImplementation | undefined => {
+  let setImp: SetImplementation;
+  // NOTE: by default when we create a new instance set implementation, we will create PURE instance set implementation
+  // we don't let users choose the various instance set implementation type as that require proper source
+  // e.g. flat data class mapping requires stubbing the source
+  switch (setImpType) {
+    case BASIC_SET_IMPLEMENTATION_TYPE.OPERATION:
+      setImp = new OperationSetImplementation(
+        InferableMappingElementIdExplicitValue.create(id, _class.path),
+        mapping,
+        PackageableElementExplicitReference.create(_class),
+        InferableMappingElementRootExplicitValue.create(false),
+        OperationType.STORE_UNION,
+      );
+      break;
+    case BASIC_SET_IMPLEMENTATION_TYPE.INSTANCE:
+      setImp = new PureInstanceSetImplementation(
+        InferableMappingElementIdExplicitValue.create(id, _class.path),
+        mapping,
+        PackageableElementExplicitReference.create(_class),
+        InferableMappingElementRootExplicitValue.create(false),
+        OptionalPackageableElementExplicitReference.create<Class>(undefined),
+      );
+      break;
+    default:
+      return undefined;
+  }
+  updateRootSetImplementationOnCreate(setImp);
+  mapping.addClassMapping(setImp);
+  return setImp;
+};
+
+export const createEnumerationMapping = (
+  mapping: Mapping,
+  id: string,
+  enumeration: Enumeration,
+  sourceType: Type,
+): EnumerationMapping => {
+  const enumMapping = new EnumerationMapping(
+    InferableMappingElementIdExplicitValue.create(id, enumeration.path),
+    PackageableElementExplicitReference.create(enumeration),
+    mapping,
+    OptionalPackageableElementExplicitReference.create(sourceType),
+  );
+  mapping.addEnumerationMapping(enumMapping);
+  return enumMapping;
+};
+
+const getEmbeddedSetImplmentations = (
+  mapping: Mapping,
+): InstanceSetImplementation[] =>
+  mapping.allClassMappings
+    .filter(
+      (setImpl): setImpl is InstanceSetImplementation =>
+        setImpl instanceof InstanceSetImplementation,
+    )
+    .map((setImpl) => setImpl.getEmbeddedSetImplmentations())
+    .flat();
+
+/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
+const getMappingElementByTypeAndId = (
+  mapping: Mapping,
+  type: string,
+  id: string,
+): MappingElement | undefined => {
+  // NOTE: ID must be unique across all mapping elements of the same type
+  switch (type) {
+    case MAPPING_ELEMENT_TYPE.CLASS:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
+      return mapping.allClassMappings.find(
+        (classMapping) => classMapping.id.value === id,
+      );
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
+      return (
+        mapping.allClassMappings.find(
+          (classMapping) => classMapping.id.value === id,
+        ) ??
+        getEmbeddedSetImplmentations(mapping)
+          .filter(
+            (
+              a: InstanceSetImplementation,
+            ): a is EmbeddedFlatDataPropertyMapping =>
+              a instanceof EmbeddedFlatDataPropertyMapping,
+          )
+          .find((me) => me.id.value === id)
+      );
+    case MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
+      return (
+        mapping.allClassMappings.find(
+          (classMapping) => classMapping.id.value === id,
+        ) ??
+        getEmbeddedSetImplmentations(mapping)
+          .filter(
+            (
+              a: InstanceSetImplementation,
+            ): a is EmbeddedRelationalInstanceSetImplementation =>
+              a instanceof EmbeddedRelationalInstanceSetImplementation,
+          )
+          .find((me) => me.id.value === id)
+      );
+    case MAPPING_ELEMENT_TYPE.ASSOCIATION:
+      return mapping.associationMappings.find(
+        (associationMapping) => associationMapping.id.value === id,
+      );
+    case MAPPING_ELEMENT_TYPE.ENUMERATION:
+      return mapping.enumerationMappings.find(
+        (enumerationMapping) => enumerationMapping.id.value === id,
+      );
+    default:
+      return undefined;
+  }
+};
+
+// TODO?: We need to consider whther to keep this method or not, because in the future we might
+// need to treat class mappings, enumeration mappings, and association mappings fairly differently
+// TODO: account for mapping includes?
+export const getAllMappingElements = (mapping: Mapping): MappingElement[] => [
+  ...mapping.classMappings,
+  ...mapping.associationMappings,
+  ...mapping.enumerationMappings,
+];
 
 const constructMappingElementNodeData = (
   mappingElement: MappingElement,
@@ -167,13 +404,11 @@ const getMappingElementTreeData = (
 ): TreeData<MappingExplorerTreeNodeData> => {
   const rootIds: string[] = [];
   const nodes = new Map<string, MappingExplorerTreeNodeData>();
-  const rootMappingElements = mapping
-    .getAllMappingElements()
-    .sort((a, b) =>
-      getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
-        getMappingIdentitySortString(b, getMappingElementTarget(b)),
-      ),
-    );
+  const rootMappingElements = getAllMappingElements(mapping).sort((a, b) =>
+    getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
+      getMappingIdentitySortString(b, getMappingElementTarget(b)),
+    ),
+  );
   rootMappingElements.forEach((mappingElement) => {
     const mappingElementTreeNodeData =
       getMappingElementTreeNodeData(mappingElement);
@@ -224,13 +459,11 @@ const reprocessMappingElementNodes = (
 ): TreeData<MappingExplorerTreeNodeData> => {
   const rootIds: string[] = [];
   const nodes = new Map<string, MappingExplorerTreeNodeData>();
-  const rootMappingElements = mapping
-    .getAllMappingElements()
-    .sort((a, b) =>
-      getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
-        getMappingIdentitySortString(b, getMappingElementTarget(b)),
-      ),
-    );
+  const rootMappingElements = getAllMappingElements(mapping).sort((a, b) =>
+    getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
+      getMappingIdentitySortString(b, getMappingElementTarget(b)),
+    ),
+  );
   rootMappingElements.forEach((mappingElement) => {
     const mappingElementTreeNodeData = reprocessMappingElement(
       mappingElement,
@@ -246,7 +479,7 @@ export interface MappingElementSpec {
   showTarget: boolean;
   // whether or not to open the new mapping element tab as an adjacent tab, this behavior is similar to Chrome
   openInAdjacentTab: boolean;
-  target?: PackageableElement;
+  target?: PackageableElement | undefined;
   postSubmitAction?: (newMappingElement: MappingElement | undefined) => void;
 }
 
@@ -256,11 +489,11 @@ export type MappingEditorTabState =
   | MappingExecutionState;
 
 export class MappingEditorState extends ElementEditorState {
-  currentTabState?: MappingEditorTabState;
+  currentTabState?: MappingEditorTabState | undefined;
   openedTabStates: MappingEditorTabState[] = [];
 
   mappingExplorerTreeData: TreeData<MappingExplorerTreeNodeData>;
-  newMappingElementSpec?: MappingElementSpec;
+  newMappingElementSpec?: MappingElementSpec | undefined;
 
   mappingTestStates: MappingTestState[] = [];
   isRunningAllTests = false;
@@ -654,7 +887,9 @@ export class MappingEditorState extends ElementEditorState {
   ): GeneratorFn<void> {
     let mappingElementsToClose = [mappingElement];
     if (
-      this.editorStore.graphState.isInstanceSetImplementation(mappingElement)
+      this.editorStore.graphManagerState.isInstanceSetImplementation(
+        mappingElement,
+      )
     ) {
       const embeddedChildren = mappingElement.getEmbeddedSetImplmentations();
       mappingElementsToClose = mappingElementsToClose.concat(embeddedChildren);
@@ -676,7 +911,23 @@ export class MappingEditorState extends ElementEditorState {
   }
 
   *deleteMappingElement(mappingElement: MappingElement): GeneratorFn<void> {
-    yield flowResult(this.mapping.deleteMappingElement(mappingElement));
+    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
+    if (mappingElement instanceof EnumerationMapping) {
+      this.mapping.deleteEnumerationMapping(mappingElement);
+    } else if (mappingElement instanceof AssociationImplementation) {
+      this.mapping.deleteAssociationMapping(mappingElement);
+    } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
+      deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
+    } else if (
+      mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
+    ) {
+      deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
+    } else if (mappingElement instanceof SetImplementation) {
+      this.mapping.deleteClassMapping(mappingElement);
+    }
+    if (mappingElement instanceof SetImplementation) {
+      updateRootSetImplementationOnDelete(mappingElement);
+    }
     yield flowResult(this.closeMappingElementTabState(mappingElement));
     this.reprocessMappingExplorerTree();
   }
@@ -687,9 +938,9 @@ export class MappingEditorState extends ElementEditorState {
   createMappingElement(spec: MappingElementSpec): void {
     if (spec.target) {
       const suggestedId = fromElementPathToMappingElementId(spec.target.path);
-      const mappingIds = this.mapping
-        .getAllMappingElements()
-        .map((mElement) => mElement.id.value);
+      const mappingIds = getAllMappingElements(this.mapping).map(
+        (mElement) => mElement.id.value,
+      );
       const showId = mappingIds.includes(suggestedId);
       const showClasMappingType = spec.target instanceof Class;
       const showNewMappingModal = [
@@ -703,10 +954,11 @@ export class MappingEditorState extends ElementEditorState {
         let newMappingElement: MappingElement | undefined = undefined;
         if (spec.target instanceof Enumeration) {
           // We default to a source type of String when creating a new enumeration mapping
-          newMappingElement = this.mapping.createEnumerationMapping(
+          newMappingElement = createEnumerationMapping(
+            this.mapping,
             suggestedId,
             spec.target,
-            this.editorStore.graphState.graph.getPrimitiveType(
+            this.editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.STRING,
             ),
           );
@@ -774,11 +1026,11 @@ export class MappingEditorState extends ElementEditorState {
     mappingEditorState.openedTabStates = this.openedTabStates
       .map((tabState) => {
         if (tabState instanceof MappingElementState) {
-          const mappingElement =
-            mappingEditorState.mapping.getMappingElementByTypeAndId(
-              getMappingElementType(tabState.mappingElement),
-              tabState.mappingElement.id.value,
-            );
+          const mappingElement = getMappingElementByTypeAndId(
+            mappingEditorState.mapping,
+            getMappingElementType(tabState.mappingElement),
+            tabState.mappingElement.id.value,
+          );
           return this.createMappingElementState(mappingElement);
         } else if (tabState instanceof MappingTestState) {
           return mappingEditorState.mappingTestStates.find(
@@ -795,11 +1047,11 @@ export class MappingEditorState extends ElementEditorState {
 
     // process currently opened tab
     if (this.currentTabState instanceof MappingElementState) {
-      const currentlyOpenedMappingElement =
-        mappingEditorState.mapping.getMappingElementByTypeAndId(
-          getMappingElementType(this.currentTabState.mappingElement),
-          this.currentTabState.mappingElement.id.value,
-        );
+      const currentlyOpenedMappingElement = getMappingElementByTypeAndId(
+        mappingEditorState.mapping,
+        getMappingElementType(this.currentTabState.mappingElement),
+        this.currentTabState.mappingElement.id.value,
+      );
       mappingEditorState.currentTabState = this.openedTabStates.find(
         (tabState) =>
           tabState instanceof MappingElementState &&
@@ -838,7 +1090,8 @@ export class MappingEditorState extends ElementEditorState {
           assertTrue(errorCoordinates.length >= 5);
           const [, mappingType, mappingId, propertyName, targetPropertyId] =
             errorCoordinates;
-          const newMappingElement = this.mapping.getMappingElementByTypeAndId(
+          const newMappingElement = getMappingElementByTypeAndId(
+            this.mapping,
             mappingType,
             mappingId,
           );
@@ -888,9 +1141,10 @@ export class MappingEditorState extends ElementEditorState {
           }
         }
       }
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.warn(
-        CORE_LOG_EVENT.COMPILATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.warn(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
         `Can't locate error, redirecting to text mode`,
         error,
       );
@@ -1062,7 +1316,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *createNewTest(setImplementation: SetImplementation): GeneratorFn<void> {
     const query =
-      this.editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+      this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
         setImplementation.class.value,
       );
     const source = getMappingElementSource(setImplementation);

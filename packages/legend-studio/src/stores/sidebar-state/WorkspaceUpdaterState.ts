@@ -17,28 +17,33 @@
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
-import type { WorkspaceUpdateReport } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
-import { WORKSPACE_UPDATE_REPORT_STATUS } from '../../models/sdlc/models/workspace/WorkspaceUpdateReport';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
-  Revision,
-  RevisionAlias,
-} from '../../models/sdlc/models/revision/Revision';
-import { Review, ReviewState } from '../../models/sdlc/models/review/Review';
-import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
-import {
+  LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   getNullableFirstElement,
   NetworkClientError,
   HttpStatus,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import type { EntityChangeConflict } from '../../models/sdlc/models/entity/EntityChangeConflict';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import type { Entity } from '@finos/legend-model-storage';
+import type {
+  EntityChangeConflict,
+  WorkspaceUpdateReport,
+} from '@finos/legend-server-sdlc';
+import {
+  WorkspaceUpdateReportStatus,
+  EntityDiff,
+  Review,
+  ReviewState,
+  Revision,
+  RevisionAlias,
+} from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;
@@ -158,7 +163,8 @@ export class WorkspaceUpdaterState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       if (
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
@@ -178,7 +184,7 @@ export class WorkspaceUpdaterState {
     try {
       this.isRefreshingWorkspaceUpdater = true;
       this.sdlcState.isWorkspaceOutdated =
-        (yield this.sdlcState.sdlcClient.isWorkspaceOutdated(
+        (yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         )) as boolean;
@@ -210,16 +216,16 @@ export class WorkspaceUpdaterState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - restartChangeDetectionStartTime,
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -248,7 +254,8 @@ export class WorkspaceUpdaterState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.notifyWarning(
         'Failed to check if current workspace is in conflict resolution mode',
       );
@@ -263,29 +270,30 @@ export class WorkspaceUpdaterState {
         showLoading: true,
       });
       const workspaceUpdateReport =
-        (yield this.sdlcState.sdlcClient.updateWorkspace(
+        (yield this.editorStore.sdlcServerClient.updateWorkspace(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
         )) as WorkspaceUpdateReport;
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.SDLC_UPDATE_WORKSPACE,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_UPDATED),
         Date.now() - startTime,
         'ms',
       );
       this.sdlcState.isWorkspaceOutdated = false;
       switch (workspaceUpdateReport.status) {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
-        case WORKSPACE_UPDATE_REPORT_STATUS.CONFLICT:
-        case WORKSPACE_UPDATE_REPORT_STATUS.UPDATED:
-          window.location.reload();
+        case WorkspaceUpdateReportStatus.CONFLICT:
+        case WorkspaceUpdateReportStatus.UPDATED:
+          this.editorStore.applicationStore.navigator.reload();
           break;
-        case WORKSPACE_UPDATE_REPORT_STATUS.NO_OP:
+        case WorkspaceUpdateReportStatus.NO_OP:
         default:
           break;
       }
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -305,14 +313,14 @@ export class WorkspaceUpdaterState {
       // 2. the revision is the merged/comitted review revision (this usually happens for prototype projects where fast forwarding merging is not default)
       // in those case, we will get the time from the base revision
       const workspaceBaseRevision = Revision.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.getRevision(
+        (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           RevisionAlias.BASE,
         )) as PlainObject<Revision>,
       );
       const baseReviewObj = getNullableFirstElement(
-        (yield this.sdlcState.sdlcClient.getReviews(
+        (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.currentProjectId,
           ReviewState.COMMITTED,
           [workspaceBaseRevision.id],
@@ -325,7 +333,7 @@ export class WorkspaceUpdaterState {
         ? Review.serialization.fromJson(baseReviewObj)
         : undefined;
       this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = (
-        (yield this.sdlcState.sdlcClient.getReviews(
+        (yield this.editorStore.sdlcServerClient.getReviews(
           this.sdlcState.currentProjectId,
           ReviewState.COMMITTED,
           undefined,
@@ -338,9 +346,10 @@ export class WorkspaceUpdaterState {
       )
         .map((review) => Review.serialization.fromJson(review))
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

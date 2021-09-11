@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useCallback } from 'react';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import {
@@ -30,8 +29,7 @@ import {
 import {
   prettyCONSTName,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
-import SplitPane from 'react-split-pane';
+} from '@finos/legend-shared';
 import type { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
 import { VscError } from 'react-icons/vsc';
@@ -42,28 +40,33 @@ import type {
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import {
   clsx,
   BlankPanelContent,
   BlankPanelPlaceholder,
   CustomSelectorInput,
-} from '@finos/legend-studio-components';
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+  MappingIcon,
+  RuntimeIcon,
+} from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
-import { MappingIcon, RuntimeIcon } from '../../../shared/Icon';
 import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
-import type { KeyedExecutionParameter } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { flowResult } from 'mobx';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type { KeyedExecutionParameter, Runtime } from '@finos/legend-graph';
 import {
   PureSingleExecution,
   PureMultiExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { RuntimePointer } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { PackageableRuntime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/PackageableRuntime';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { flowResult } from 'mobx';
+  Mapping,
+  RuntimePointer,
+  PackageableRuntime,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {
@@ -96,7 +99,7 @@ const PureSingleExecutionConfigurationEditor = observer(
       label: isMappingEmpty ? noMappingLabel : mapping.path,
     };
     const onMappingSelectionChange = (
-      val: PackageableElementSelectOption<Mapping>,
+      val: PackageableElementOption<Mapping>,
     ): void => {
       if (val.value !== mapping) {
         selectedExecution.setMapping(val.value);
@@ -125,8 +128,8 @@ const PureSingleExecutionConfigurationEditor = observer(
           label: string | React.ReactNode;
           value?: Runtime;
         }[]);
-    const runtimes = editorStore.graphState.graph.ownRuntimes.filter((rt) =>
-      rt.runtimeValue.mappings.map((m) => m.value).includes(mapping),
+    const runtimes = editorStore.graphManagerState.graph.ownRuntimes.filter(
+      (rt) => rt.runtimeValue.mappings.map((m) => m.value).includes(mapping),
     ); // only include runtime associated with the mapping
     runtimeOptions = runtimeOptions.concat(
       runtimes.map((rt) => ({
@@ -418,65 +421,69 @@ const PureExecutionEditor = observer(
 
     return (
       <div className="service-execution-editor">
-        <SplitPane
-          split="horizontal"
-          defaultSize={200}
-          minSize={15}
-          maxSize={800}
-        >
-          <ServiceExecutionQueryEditor
-            executionState={executionState}
-            isReadOnly={isReadOnly}
-          />
-          <div className="service-execution-editor__content">
-            <div className="panel">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label service-editor__execution__label--test">
-                    configuration
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={200} minSize={28}>
+            <ServiceExecutionQueryEditor
+              executionState={executionState}
+              isReadOnly={isReadOnly}
+            />
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={56}>
+            <div className="service-execution-editor__content">
+              <div className="panel">
+                <div className="panel__header">
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__label service-editor__execution__label--test">
+                      configuration
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="panel__content service-execution-editor__configuration__content">
-                <SplitPane
-                  split="vertical"
-                  defaultSize={250}
-                  minSize={50}
-                  maxSize={600}
-                >
-                  <div className="service-execution-editor__keys">
-                    <div className="panel__header">
-                      <div className="panel__header__title">
-                        <div className="panel__header__title__label service-editor__execution__label--execution">
-                          keys
+                <div className="panel__content service-execution-editor__configuration__content">
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel size={250} minSize={50}>
+                      <div className="service-execution-editor__keys">
+                        <div className="panel__header">
+                          <div className="panel__header__title">
+                            <div className="panel__header__title__label service-editor__execution__label--execution">
+                              keys
+                            </div>
+                          </div>
+                        </div>
+                        <div className="panel__content">
+                          <BlankPanelPlaceholder
+                            placeholderText="Add a key"
+                            onClick={addKey}
+                            clickActionType="add"
+                            tooltipText="Click to add a test"
+                          />
                         </div>
                       </div>
-                    </div>
-                    <div className="panel__content">
-                      <BlankPanelPlaceholder
-                        placeholderText="Add a key"
-                        onClick={addKey}
-                        clickActionType="add"
-                        tooltipText="Click to add a test"
-                      />
-                    </div>
-                  </div>
-                  {execution instanceof PureSingleExecution && (
-                    <PureSingleExecutionEditorWrapper
-                      executionState={executionState}
-                    />
-                  )}
-                  {execution instanceof PureMultiExecution && (
-                    <UnsupportedEditorPanel
-                      text={`Can't display service multi-execution in form-mode`}
-                      isReadOnly={isReadOnly}
-                    />
-                  )}
-                </SplitPane>
+                    </ResizablePanel>
+                    <ResizablePanelSplitter>
+                      <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                    </ResizablePanelSplitter>
+                    <ResizablePanel minSize={300}>
+                      {execution instanceof PureSingleExecution && (
+                        <PureSingleExecutionEditorWrapper
+                          executionState={executionState}
+                        />
+                      )}
+                      {execution instanceof PureMultiExecution && (
+                        <UnsupportedEditorPanel
+                          text={`Can't display service multi-execution in form-mode`}
+                          isReadOnly={isReadOnly}
+                        />
+                      )}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                </div>
               </div>
             </div>
-          </div>
-        </SplitPane>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

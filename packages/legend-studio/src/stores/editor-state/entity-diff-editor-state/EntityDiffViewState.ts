@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
+import { observable, action, flow, computed, makeObservable } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
-  observable,
-  action,
-  flow,
-  computed,
-  makeObservable,
-  flowResult,
-} from 'mobx';
-import { CORE_LOG_EVENT } from '../../../utils/Logger';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import {
+  assertErrorThrown,
+  LogEvent,
   assertNonNullable,
   guaranteeNonNullable,
   hashObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore';
-import type { Entity } from '../../../models/sdlc/models/entity/Entity';
 import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
 import { EntityDiffEditorState } from './EntityDiffEditorState';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { extractEntityNameFromPath } from '../../../models/sdlc/SDLCUtils';
+import type { Entity } from '@finos/legend-model-storage';
+import { extractEntityNameFromPath } from '@finos/legend-model-storage';
+import { STUDIO_LOG_EVENT } from '../../../stores/StudioLogEvent';
+import type { PackageableElement } from '@finos/legend-graph';
 
 /**
  * NOTE: when we support comparison between entities, we should create a new editor state
@@ -50,18 +45,22 @@ export enum DIFF_VIEW_MODE {
 
 export class EntityDiffViewState extends EntityDiffEditorState {
   diffMode = DIFF_VIEW_MODE.GRAMMAR;
-  fromEntityPath?: string;
-  toEntityPath?: string;
+  fromEntityPath?: string | undefined;
+  toEntityPath?: string | undefined;
   fromRevision: SPECIAL_REVISION_ALIAS | string;
   toRevision: SPECIAL_REVISION_ALIAS | string;
   // to and from entities
-  fromEntity?: Entity;
-  toEntity?: Entity;
-  fromGrammarText?: string;
-  toGrammarText?: string;
+  fromEntity?: Entity | undefined;
+  toEntity?: Entity | undefined;
+  fromGrammarText?: string | undefined;
+  toGrammarText?: string | undefined;
   // functions to get to and from entities
-  fromEntityGetter?: (entityPath: string | undefined) => Entity | undefined;
-  toEntityGetter?: (entityPath: string | undefined) => Entity | undefined;
+  fromEntityGetter?:
+    | ((entityPath: string | undefined) => Entity | undefined)
+    | undefined;
+  toEntityGetter?:
+    | ((entityPath: string | undefined) => Entity | undefined)
+    | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -134,7 +133,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
     );
   }
   get element(): PackageableElement | undefined {
-    return this.editorStore.graphState.graph.getNullableElement(
+    return this.editorStore.graphManagerState.graph.getNullableElement(
       this.effectiveEntityPath,
     );
   }
@@ -183,18 +182,18 @@ export class EntityDiffViewState extends EntityDiffEditorState {
   *getFromGrammar(): GeneratorFn<void> {
     if (this.fromEntity) {
       try {
-        const elementGrammar = (yield flowResult(
-          this.editorStore.graphState.graphManager.entitiesToPureCode([
-            this.fromEntity,
-          ]),
-        )) as string;
+        const elementGrammar =
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+            [this.fromEntity],
+          )) as string;
         this.setFromGrammarText(elementGrammar);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.setFromGrammarText(
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.SDLC_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
       }
@@ -206,18 +205,18 @@ export class EntityDiffViewState extends EntityDiffEditorState {
   *getToGrammar(): GeneratorFn<void> {
     if (this.toEntity) {
       try {
-        const elementGrammar = (yield flowResult(
-          this.editorStore.graphState.graphManager.entitiesToPureCode([
-            this.toEntity,
-          ]),
-        )) as string;
+        const elementGrammar =
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+            [this.toEntity],
+          )) as string;
         this.setToGrammarText(elementGrammar);
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         this.setFromGrammarText(
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.SDLC_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
       }

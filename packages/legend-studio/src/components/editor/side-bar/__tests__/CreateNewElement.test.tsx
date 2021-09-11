@@ -21,20 +21,20 @@ import {
   getByText,
   getByPlaceholderText,
 } from '@testing-library/react';
-import { integrationTest, toTitleCase } from '@finos/legend-studio-shared';
+import { integrationTest, toTitleCase } from '@finos/legend-shared';
 import {
-  getMockedEditorStore,
-  setUpEditorWithDefaultSDLCData,
-} from '../../../ComponentTestUtils';
-import { CORE_TEST_ID } from '../../../../const';
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditorWithDefaultSDLCData,
+} from '../../../EditorComponentTestUtils';
+import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import type { EditorStore } from '../../../../stores/EditorStore';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { PACKAGEABLE_ELEMENT_TYPE } from '@finos/legend-graph';
 
 const addRootPackage = (packagePath: string, result: RenderResult): void => {
   fireEvent.click(result.getByTitle('New Element...', { exact: false }));
   const contextMenu = result.getByRole('menu');
   fireEvent.click(getByText(contextMenu, 'New Package...'));
-  const modal = result.getByTestId(CORE_TEST_ID.NEW_ELEMENT_MODAL);
+  const modal = result.getByTestId(STUDIO_TEST_ID.NEW_ELEMENT_MODAL);
   const packageInput = getByPlaceholderText(modal, 'Enter a name', {
     exact: false,
   });
@@ -48,14 +48,14 @@ const createNewElementOnRootPackage = (
   result: RenderResult,
   elementName?: string,
 ): void => {
-  const packageExplorer = result.getByTestId(CORE_TEST_ID.EXPLORER_TREES);
+  const packageExplorer = result.getByTestId(STUDIO_TEST_ID.EXPLORER_TREES);
   const rootPackageDiv = getByText(packageExplorer, rootPackage);
   const rightClick = { button: 2 };
   fireEvent.click(rootPackageDiv, rightClick);
   fireEvent.click(
     result.getByText(`New ${toTitleCase(elementType.toLowerCase())}...`),
   );
-  const modal = result.getByTestId(CORE_TEST_ID.NEW_ELEMENT_MODAL);
+  const modal = result.getByTestId(STUDIO_TEST_ID.NEW_ELEMENT_MODAL);
   const elementInput = getByPlaceholderText(modal, 'Enter a name', {
     exact: false,
   });
@@ -69,15 +69,15 @@ let renderResult: RenderResult;
 let mockedEditorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = getMockedEditorStore();
-  renderResult = await setUpEditorWithDefaultSDLCData(mockedEditorStore);
+  mockedEditorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore);
 });
 
 test(
   integrationTest('Model loader shows up if no elements in graph'),
   async () => {
     const packageExplorer = renderResult.getByTestId(
-      CORE_TEST_ID.EXPLORER_TREES,
+      STUDIO_TEST_ID.EXPLORER_TREES,
     );
     getByText(packageExplorer, 'Open Model Loader');
     // TODO
@@ -120,35 +120,35 @@ test(integrationTest('Create elements with no drivers'), async () => {
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getProfile(
+      mockedEditorStore.graphManagerState.graph.getProfile(
         `${ROOT_PACKAGE_NAME}::ProfileExtension`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getEnumeration(
+      mockedEditorStore.graphManagerState.graph.getEnumeration(
         `${ROOT_PACKAGE_NAME}::MyEnumeration`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getClass(
+      mockedEditorStore.graphManagerState.graph.getClass(
         `${ROOT_PACKAGE_NAME}::Person`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getMapping(
+      mockedEditorStore.graphManagerState.graph.getMapping(
         `${ROOT_PACKAGE_NAME}::MyMapping`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphState.graph.getService(
+      mockedEditorStore.graphManagerState.graph.getService(
         `${ROOT_PACKAGE_NAME}::MyService`,
       ),
     ).toBeDefined(),

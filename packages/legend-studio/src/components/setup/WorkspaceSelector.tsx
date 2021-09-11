@@ -16,14 +16,14 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useSetupStore } from '../../stores/SetupStore';
-import type { SelectComponent } from '@finos/legend-studio-components';
-import { CustomSelectorInput } from '@finos/legend-studio-components';
-import type { WorkspaceSelectOption } from '../../models/sdlc/models/workspace/Workspace';
+import type { WorkspaceOption } from '../../stores/SetupStore';
+import type { SelectComponent } from '@finos/legend-art';
+import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import { FaPlus } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
-import { useApplicationStore } from '../../stores/ApplicationStore';
-import { ACTION_STATE } from '@finos/legend-studio-shared';
+import { useSetupStore } from './SetupStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 export const WorkspaceSelector = observer(
   (
@@ -35,23 +35,24 @@ export const WorkspaceSelector = observer(
   ) => {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
-    const applicationStore = useApplicationStore();
+    const applicationStore = useApplicationStore<StudioConfig>();
     const currentWorkspaceId = setupStore.currentWorkspaceId;
-    const options = setupStore.currentProjectWorkspaceOptions;
+    const options =
+      setupStore.currentProjectWorkspaceOptions.sort(compareLabelFn);
     const selectedOption =
       options.find((option) => option.value === currentWorkspaceId) ?? null;
     const isLoadingOptions =
-      setupStore.loadProjectsState === ACTION_STATE.IN_PROGRESS ||
-      setupStore.loadWorkspacesState === ACTION_STATE.IN_PROGRESS;
+      setupStore.loadProjectsState.isInProgress ||
+      setupStore.loadWorkspacesState.isInProgress;
 
-    const onSelectionChange = (val: WorkspaceSelectOption | null): void => {
+    const onSelectionChange = (val: WorkspaceOption | null): void => {
       if (
         (val !== null || selectedOption !== null) &&
         (!val || !selectedOption || val.value !== selectedOption.value)
       ) {
         setupStore.setCurrentWorkspaceId(val?.value);
         onChange(Boolean(selectedOption));
-        applicationStore.historyApiClient.push(
+        applicationStore.navigator.goTo(
           generateSetupRoute(
             applicationStore.config.sdlcServerKey,
             setupStore.currentProjectId ?? '',

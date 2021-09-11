@@ -15,47 +15,44 @@
  */
 
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
   losslessStringify,
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { SingleExecutionTestState } from './ServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
-import {
-  CLIENT_VERSION,
-  LAMBDA_START,
-} from '../../../../models/MetaModelConst';
-import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
 import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
+import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
+import { ExecutionPlanState } from '../../../ExecutionPlanState';
 import type {
   ServiceExecution,
   KeyedExecutionParameter,
   PureExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
+  ServiceTest,
+  Mapping,
+  Runtime,
+  ExecutionResult,
+} from '@finos/legend-graph';
 import {
+  GRAPH_MANAGER_LOG_EVENT,
+  LAMBDA_PIPE,
+  RawLambda,
   PureSingleExecution,
   PureMultiExecution,
-} from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceExecution';
-import type { ServiceTest } from '../../../../models/metamodels/pure/model/packageableElements/service/ServiceTest';
-import type { Mapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import {
   EngineRuntime,
   RuntimePointer,
-} from '../../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import type { ExecutionResult } from '../../../../models/metamodels/pure/action/execution/ExecutionResult';
-import { TAB_SIZE } from '../../../EditorConfig';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
+  PackageableElementExplicitReference,
+  buildSourceInformationSourceId,
+  PureClientVersion,
+} from '@finos/legend-graph';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -66,7 +63,7 @@ export abstract class ServiceExecutionState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   execution: ServiceExecution;
-  selectedSingeExecutionTestState?: SingleExecutionTestState;
+  selectedSingeExecutionTestState?: SingleExecutionTestState | undefined;
   selectedTab = SERVICE_EXECUTION_TAB.MAPPING_AND_RUNTIME;
 
   constructor(
@@ -132,7 +129,7 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
   isInitializingLambda = false;
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
-    super('', LAMBDA_START);
+    super('', LAMBDA_PIPE);
 
     makeObservable(this, {
       execution: observable,
@@ -181,12 +178,11 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             this.execution.func.body,
           ),
         );
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
             lambdas,
             pretty,
-          ),
-        )) as Map<string, string>;
+          )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
         this.setLambdaString(
           grammarText !== undefined
@@ -194,9 +190,10 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
             : '',
         );
         this.clearErrors();
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -217,12 +214,13 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   declare execution: PureExecution;
   selectedExecutionConfiguration?:
     | PureSingleExecution
-    | KeyedExecutionParameter;
-  runtimeEditorState?: RuntimeEditorState;
+    | KeyedExecutionParameter
+    | undefined;
+  runtimeEditorState?: RuntimeEditorState | undefined;
   isExecuting = false;
   isGeneratingPlan = false;
   isOpeningQueryEditor = false;
-  executionResultText?: string; // NOTE: stored as lossless JSON string
+  executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
 
   constructor(
@@ -288,9 +286,10 @@ export class ServicePureExecutionState extends ServiceExecutionState {
           this.selectedExecutionConfiguration.runtime,
         ),
       );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -306,22 +305,22 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     try {
       this.isExecuting = true;
       const query = this.queryState.query;
-      const result = (yield flowResult(
-        this.editorStore.graphState.graphManager.executeMapping(
-          this.editorStore.graphState.graph,
+      const result =
+        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+          this.editorStore.graphManagerState.graph,
           this.selectedExecutionConfiguration.mapping.value,
           query,
           this.selectedExecutionConfiguration.runtime,
-          CLIENT_VERSION.VX_X_X,
+          PureClientVersion.VX_X_X,
           true,
-        ),
-      )) as ExecutionResult;
+        )) as ExecutionResult;
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.EXECUTION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -371,7 +370,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       decorateRuntimeWithNewMapping(
         this.selectedExecutionConfiguration.runtime,
         this.selectedExecutionConfiguration.mapping.value,
-        this.editorStore.graphState.graph,
+        this.editorStore.graphManagerState.graph,
       );
       this.selectedExecutionConfiguration.setRuntime(customRuntime);
     }
@@ -379,10 +378,10 @@ export class ServicePureExecutionState extends ServiceExecutionState {
 
   autoSelectRuntimeOnMappingChange(mapping: Mapping): void {
     if (this.selectedExecutionConfiguration) {
-      const runtimes = this.editorStore.graphState.graph.ownRuntimes.filter(
-        (runtime) =>
+      const runtimes =
+        this.editorStore.graphManagerState.graph.ownRuntimes.filter((runtime) =>
           runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
-      );
+        );
       if (runtimes.length) {
         this.selectedExecutionConfiguration.setRuntime(
           runtimes[0].runtimeValue,

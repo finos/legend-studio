@@ -31,6 +31,7 @@ module.exports = (api) => {
           development: isEnvDevelopment,
           useTypescript: true,
           useReact: true,
+          useReactFastRefresh: true,
         },
       ],
     ],

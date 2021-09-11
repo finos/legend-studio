@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, makeObservable, flowResult } from 'mobx';
-import { TAB_SIZE } from '../EditorConfig';
+import { observable, action, flow, makeObservable } from 'mobx';
 import { EditorState } from '../editor-state/EditorState';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
   UnsupportedOperationError,
   guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
+} from '@finos/legend-shared';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
-import type { ImportConfigurationDescription } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
-import { ImportMode } from '../../models/metamodels/pure/action/generation/ImportConfigurationDescription';
+import type { Entity } from '@finos/legend-model-storage';
+import type { ImportConfigurationDescription } from '@finos/legend-graph';
+import { ImportMode } from '@finos/legend-graph';
+import { TAB_SIZE } from '@finos/legend-application';
 
 export enum MODEL_UPDATER_INPUT_TYPE {
   ENTITIES = 'ENTITIES',
@@ -36,7 +38,7 @@ export enum MODEL_UPDATER_INPUT_TYPE {
 export class ModelLoaderState extends EditorState {
   modelText = this.getExampleEntitiesInputText();
   currentInputType = MODEL_UPDATER_INPUT_TYPE.ENTITIES;
-  currentExternalInputType?: string;
+  currentExternalInputType?: string | undefined;
   modelImportDescriptions: ImportConfigurationDescription[] = [];
   replace = true;
   isLoadingModel = false;
@@ -107,25 +109,30 @@ export class ModelLoaderState extends EditorState {
   *loadCurrentProjectEntities(): GeneratorFn<void> {
     switch (this.currentInputType) {
       case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
-        const graphEntities = this.editorStore.graphState.graph.buildState
-          .hasSucceeded
-          ? this.editorStore.graphState.graph.allOwnElements.map((element) =>
-              this.editorStore.graphState.graphManager.elementToEntity(element),
+        const graphEntities = this.editorStore.graphManagerState.graph
+          .buildState.hasSucceeded
+          ? this.editorStore.graphManagerState.graph.allOwnElements.map(
+              (element) =>
+                this.editorStore.graphManagerState.graphManager.elementToEntity(
+                  element,
+                ),
             )
           : this.editorStore.changeDetectionState.workspaceLatestRevisionState
               .entities;
-        this.modelText = (yield flowResult(
-          this.editorStore.graphState.graphManager.entitiesToPureProtocolText(
+        this.modelText =
+          (yield this.editorStore.graphManagerState.graphManager.entitiesToPureProtocolText(
             graphEntities,
-          ),
-        )) as string;
+          )) as string;
         break;
       }
       case MODEL_UPDATER_INPUT_TYPE.ENTITIES: {
-        const graphEntities = this.editorStore.graphState.graph.buildState
-          .hasSucceeded
-          ? this.editorStore.graphState.graph.allOwnElements.map((element) =>
-              this.editorStore.graphState.graphManager.elementToEntity(element),
+        const graphEntities = this.editorStore.graphManagerState.graph
+          .buildState.hasSucceeded
+          ? this.editorStore.graphManagerState.graph.allOwnElements.map(
+              (element) =>
+                this.editorStore.graphManagerState.graphManager.elementToEntity(
+                  element,
+                ),
             )
           : this.editorStore.changeDetectionState.workspaceLatestRevisionState
               .entities;
@@ -149,18 +156,17 @@ export class ModelLoaderState extends EditorState {
       });
       let entities: Entity[];
       if (this.currentExternalInputType) {
-        entities = (yield flowResult(
-          this.editorStore.graphState.graphManager.externalFormatTextToEntities(
+        entities =
+          (yield this.editorStore.graphManagerState.graphManager.externalFormatTextToEntities(
             this.modelText,
             this.currentExternalInputType,
             ImportMode.SCHEMA_IMPORT,
-          ),
-        )) as Entity[];
+          )) as Entity[];
       } else {
         switch (this.currentInputType) {
           case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
             entities =
-              this.editorStore.graphState.graphManager.pureProtocolToEntities(
+              this.editorStore.graphManagerState.graphManager.pureProtocolToEntities(
                 this.modelText,
               );
             break;
@@ -180,15 +186,16 @@ export class ModelLoaderState extends EditorState {
       } [${this.replace ? `potentially affected ` : ''} ${
         entities.length
       } entities]`;
-      yield this.editorStore.applicationStore.networkClientManager.sdlcClient.updateEntities(
+      yield this.editorStore.sdlcServerClient.updateEntities(
         this.editorStore.sdlcState.currentProjectId,
         this.editorStore.sdlcState.currentWorkspaceId,
         { replace: this.replace, entities, message },
       );
-      window.location.reload(); // hard refresh after
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.MODEL_LOADER_PROBLEM,
+      this.editorStore.applicationStore.navigator.reload();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -207,12 +214,12 @@ export class ModelLoaderState extends EditorState {
 
   *fetchAvailableModelImportDescriptions(): GeneratorFn<void> {
     try {
-      this.modelImportDescriptions = (yield flowResult(
-        this.editorStore.graphState.graphManager.getAvailableImportConfigurationDescriptions(),
-      )) as ImportConfigurationDescription[];
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.MODEL_LOADER_PROBLEM,
+      this.modelImportDescriptions =
+        (yield this.editorStore.graphManagerState.graphManager.getAvailableImportConfigurationDescriptions()) as ImportConfigurationDescription[];
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -234,10 +241,10 @@ export class ModelLoaderState extends EditorState {
   }
 
   private getExamplePureProtocolInputText(): string {
-    return `// example Pure model context data\n${this.editorStore.graphState.graphManager.getExamplePureProtocolText()}`;
+    return `// example Pure model context data\n${this.editorStore.graphManagerState.graphManager.getExamplePureProtocolText()}`;
   }
 
   private getExampleExternalFormatInputText(): string {
-    return `// example external format import data\n${this.editorStore.graphState.graphManager.getExampleExternalFormatImportText()}`;
+    return `// example external format import data\n${this.editorStore.graphManagerState.graphManager.getExampleExternalFormatImportText()}`;
   }
 }

@@ -23,14 +23,13 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
+} from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor';
 import { UMLEditor } from './uml-editor/UMLEditor';
 import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { UMLEditorState } from '../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { ElementEditorState } from '../../../stores/editor-state/element-editor-state/ElementEditorState';
-import { useEditorStore } from '../../../stores/EditorStore';
-import { CORE_TEST_ID } from '../../../const';
+import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/EditorConfig';
 import { useResizeDetector } from 'react-resize-detector';
 import type { EditorState } from '../../../stores/editor-state/EditorState';
@@ -39,8 +38,6 @@ import {
   EntityDiffViewState,
 } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffView } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { DiagramEditorState } from '../../../stores/editor-state/element-editor-state/DiagramEditorState';
-import { DiagramEditor } from './diagram-editor/DiagramEditor';
 import { ModelLoader } from '../../editor/edit-panel/ModelLoader';
 import { ModelLoaderState } from '../../../stores/editor-state/ModelLoaderState';
 import { FunctionEditorState } from '../../../stores/editor-state/element-editor-state/FunctionEditorState';
@@ -57,7 +54,7 @@ import { PackageableConnectionEditorState } from '../../../stores/editor-state/e
 import { PackageableConnectionEditor } from './connection-editor/ConnectionEditor';
 import { FileGenerationEditorState } from '../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
 import { FileGenerationEditor } from './element-generation-editor/FileGenerationEditor';
-import { guaranteeNonNullable } from '@finos/legend-studio-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { EntityChangeConflictEditor } from './diff-editor/EntityChangeConflictEditor';
 import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState';
@@ -67,7 +64,8 @@ import { GenerationSpecificationEditorState } from '../../../stores/editor-state
 import { GenerationSpecificationEditor } from './GenerationSpecificationEditor';
 import { FileGenerationViewerState } from '../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationViewer } from '../../editor/edit-panel/FileGenerationViewer';
-import type { DSL_EditorPlugin_Extension } from '../../../stores/EditorPlugin';
+import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
+import { useEditorStore } from '../EditorStoreProvider';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -251,8 +249,6 @@ export const EditPanel = observer(() => {
             return <FunctionEditor key={currentEditorState.uuid} />;
           } else if (currentEditorState instanceof MappingEditorState) {
             return <MappingEditor key={currentEditorState.uuid} />;
-          } else if (currentEditorState instanceof DiagramEditorState) {
-            return <DiagramEditor key={currentEditorState.uuid} />;
           } else if (currentEditorState instanceof ServiceEditorState) {
             return <ServiceEditor key={currentEditorState.uuid} />;
           } else if (
@@ -278,15 +274,14 @@ export const EditPanel = observer(() => {
           ) {
             return <UnsupportedElementEditor key={currentEditorState.uuid} />;
           }
-          const extraElementEditorCreators =
-            editorStore.applicationStore.pluginManager
-              .getEditorPlugins()
-              .flatMap(
-                (plugin) =>
-                  (
-                    plugin as DSL_EditorPlugin_Extension
-                  ).getExtraElementEditorCreators?.() ?? [],
-              );
+          const extraElementEditorCreators = editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_StudioPlugin_Extension
+                ).getExtraElementEditorRenderers?.() ?? [],
+            );
           for (const elementEditorCreators of extraElementEditorCreators) {
             const elementEditor = elementEditorCreators(currentEditorState);
             if (elementEditor) {
@@ -378,10 +373,10 @@ export const EditPanel = observer(() => {
     );
   }
   return (
-    <div data-testid={CORE_TEST_ID.EDIT_PANEL} className="panel edit-panel">
+    <div data-testid={STUDIO_TEST_ID.EDIT_PANEL} className="panel edit-panel">
       <ContextMenu disabled={true} className="panel__header edit-panel__header">
         <div
-          data-testid={CORE_TEST_ID.EDIT_PANEL__HEADER_TABS}
+          data-testid={STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS}
           className="edit-panel__header__tabs"
         >
           {openedEditorStates.map((editorState) => (
@@ -431,7 +426,7 @@ export const EditPanel = observer(() => {
               className="edit-panel__element-view"
               content={
                 <MenuContent
-                  data-testid={CORE_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS}
+                  data-testid={STUDIO_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS}
                   className="edit-panel__element-view__options edit-panel__element-view__options--with-group"
                 >
                   <div className="edit-panel__element-view__option__group edit-panel__element-view__option__group--native">
@@ -503,7 +498,7 @@ export const EditPanel = observer(() => {
               className="edit-panel__element-view"
               content={
                 <MenuContent
-                  data-testid={CORE_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS}
+                  data-testid={STUDIO_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS}
                   className="edit-panel__element-view__options"
                 >
                   <MenuContentItem
@@ -548,7 +543,7 @@ export const EditPanel = observer(() => {
         // See https://github.com/bvaughn/react-error-boundary/issues/23#issuecomment-425470511
         key={currentEditorState.uuid}
         className="panel__content edit-panel__content"
-        data-testid={CORE_TEST_ID.EDIT_PANEL_CONTENT}
+        data-testid={STUDIO_TEST_ID.EDIT_PANEL_CONTENT}
       >
         {renderActiveElementTab()}
       </div>

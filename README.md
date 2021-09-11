@@ -4,6 +4,8 @@
 
 # legend-studio
 
+The codebase and home of Legend applications: `Legend Studio`, `Legend Query`, etc.
+
 ## Getting started
 
 Make sure you have SDLC and Engine servers running. If you don't have these servers [setup to run locally](https://legend.finos.org/docs/installation/maven-install-guide#installation-steps), you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev) to quickly set them up.
@@ -22,7 +24,7 @@ After setting up, visit http://localhost:8080/studio and the application should 
 
 ## Documentation
 
-You can find the Legend Studio documentation [on the website](https://legend.finos.org/).
+You can find our documentation [on the website](https://legend.finos.org/).
 
 Check out the [Getting Started](https://legend.finos.org/docs/getting-started/getting-started-guide) page for a quick overview. Also check out the [Installatiton Guide](https://legend.finos.org/docs/installation/installation-guide) to find out how to setup your Legend ecosystem.
 

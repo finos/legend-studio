@@ -19,19 +19,18 @@ import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-studio-components';
+import type { SelectComponent } from '@finos/legend-art';
 import {
+  compareLabelFn,
   CustomSelectorInput,
   PanelLoadingIndicator,
-} from '@finos/legend-studio-components';
-import { SetupStoreProvider, useSetupStore } from '../../stores/SetupStore';
+} from '@finos/legend-art';
+import type { ProjectOption } from '../../stores/SetupStore';
+import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
-import { CORE_TEST_ID } from '../../const';
-import { NotificationSnackbar } from '../application/NotificationSnackbar';
+import { STUDIO_TEST_ID } from '../StudioTestID';
 import Dialog from '@material-ui/core/Dialog';
-import type { ProjectSelectOption } from '../../models/sdlc/models/project/Project';
-import { ProjectType } from '../../models/sdlc/models/project/Project';
-import { isNumber, ACTION_STATE } from '@finos/legend-studio-shared';
+import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
 import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {
@@ -40,16 +39,21 @@ import {
 } from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
-import { useApplicationStore } from '../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import { ProjectType } from '@finos/legend-server-sdlc';
+import {
+  useApplicationStore,
+  NotificationSnackbar,
+} from '@finos/legend-application';
+import type { StudioConfig } from '../../application/StudioConfig';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore();
-  const config = applicationStore.config;
+  const applicationStore = useApplicationStore<StudioConfig>();
   const importProjectSuccessReport = setupStore.importProjectSuccessReport;
   const projectNameInputRef = useRef<HTMLInputElement>(null);
-  const defaultType = config.options.TEMPORARY__useSDLCProductionProjectsOnly
+  const defaultType = applicationStore.config.options
+    .TEMPORARY__useSDLCProductionProjectsOnly
     ? ProjectType.PRODUCTION
     : ProjectType.PROTOTYPE;
   const [projectType, setProjectType] = useState<ProjectType>(defaultType);
@@ -72,8 +76,8 @@ const CreateProjectModal = observer(() => {
   const [itemValue, setItemValue] = useState<string>('');
   const [tagsArray, setTagsArray] = useState<Array<string>>([]);
   const dispatchingActions =
-    setupStore.createOrImportProjectState === ACTION_STATE.IN_PROGRESS ||
-    setupStore.createWorkspaceState === ACTION_STATE.IN_PROGRESS;
+    setupStore.createOrImportProjectState.isInProgress ||
+    setupStore.createWorkspaceState.isInProgress;
   const closeModal = (): void => {
     setupStore.setCreateProjectModal(false);
     setupStore.setImportProjectSuccessReport(undefined);
@@ -99,7 +103,9 @@ const CreateProjectModal = observer(() => {
   ): void => {
     event.preventDefault();
     if (importProjectSuccessReport) {
-      window.open(importProjectSuccessReport.reviewUrl, '_blank');
+      applicationStore.navigator.openNewWindow(
+        importProjectSuccessReport.reviewUrl,
+      );
     } else {
       if (projectIdentifier && groupId && artifactId) {
         if (projectType === ProjectType.PROTOTYPE) {
@@ -202,9 +208,7 @@ const CreateProjectModal = observer(() => {
         </div>
         <form onSubmit={handleSubmit}>
           <PanelLoadingIndicator
-            isLoading={
-              setupStore.createOrImportProjectState === ACTION_STATE.IN_PROGRESS
-            }
+            isLoading={setupStore.createOrImportProjectState.isInProgress}
           />
           <div className="setup-create__form">
             <div className="panel__content__form">
@@ -217,7 +221,8 @@ const CreateProjectModal = observer(() => {
                   production project. Prototype projects should only be used as
                   playgrounds or proofs-of-concept.
                 </div>
-                {config.options.TEMPORARY__useSDLCProductionProjectsOnly ||
+                {applicationStore.config.options
+                  .TEMPORARY__useSDLCProductionProjectsOnly ||
                 Boolean(importProjectSuccessReport) ? (
                   <input
                     className="panel__content__form__section__input"
@@ -325,7 +330,7 @@ const CreateProjectModal = observer(() => {
                 <div
                   className="panel__content__form__section__list__items"
                   data-testid={
-                    CORE_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+                    STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
                   }
                 >
                   {tagsArray.map((value, idx) => (
@@ -472,20 +477,20 @@ const CreateWorkspaceModal = observer(() => {
     createWorkspaceState,
     showCreateWorkspaceModal,
   } = setupStore;
-  const isFetchingProjects = loadProjectsState === ACTION_STATE.IN_PROGRESS;
+  const isFetchingProjects = loadProjectsState.isInProgress;
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceNameInputRef = useRef<HTMLInputElement>(null);
   const [currentProjectId, setCurrentProjectId] = useState<string | undefined>(
     setupStore.currentProjectId,
   );
   const [workspaceName, setWorkspaceName] = useState('');
-  const projectOptions = setupStore.projectOptions;
+  const projectOptions = setupStore.projectOptions.sort(compareLabelFn);
   const selectedOption =
     projectOptions.find((option) => option.value === currentProjectId) ?? null;
   const dispatchingActions =
-    createWorkspaceState === ACTION_STATE.IN_PROGRESS ||
-    createOrImportProjectState === ACTION_STATE.IN_PROGRESS;
-  const onSelectionChange = (val: ProjectSelectOption | null): void => {
+    createWorkspaceState.isInProgress ||
+    createOrImportProjectState.isInProgress;
+  const onSelectionChange = (val: ProjectOption | null): void => {
     if (
       (val !== null || selectedOption !== null) &&
       (!val || !selectedOption || val.value !== selectedOption.value)
@@ -494,10 +499,10 @@ const CreateWorkspaceModal = observer(() => {
       workspaceNameInputRef.current?.focus();
     }
   };
-  const projectSelectorPlaceHolder = isFetchingProjects
+  const projectSelectorPlaceholder = isFetchingProjects
     ? 'Loading projects'
-    : loadProjectsState === ACTION_STATE.FAILED
-    ? 'Error fetching Projects'
+    : loadProjectsState.hasFailed
+    ? 'Error fetching projects'
     : projectOptions.length
     ? 'Choose an existing project'
     : 'You have no projects, please create or acquire access for at least one';
@@ -541,9 +546,7 @@ const CreateWorkspaceModal = observer(() => {
         <div className="modal__title">Create Workspace</div>
         <form onSubmit={handleSubmit}>
           <PanelLoadingIndicator
-            isLoading={
-              setupStore.createWorkspaceState === ACTION_STATE.IN_PROGRESS
-            }
+            isLoading={setupStore.createWorkspaceState.isInProgress}
           />
           <div className="setup-create__form setup-create__form__workspace">
             <CustomSelectorInput
@@ -558,7 +561,7 @@ const CreateWorkspaceModal = observer(() => {
               isLoading={isFetchingProjects}
               onChange={onSelectionChange}
               value={selectedOption}
-              placeholder={projectSelectorPlaceHolder}
+              placeholder={projectSelectorPlaceholder}
               isClearable={true}
               escapeClearsValue={true}
               darkMode={true}
@@ -588,15 +591,14 @@ const CreateWorkspaceModal = observer(() => {
 
 const SetupSelection = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<StudioConfig>();
   const config = applicationStore.config;
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
   const proceedButtonRef = useRef<HTMLButtonElement>(null);
-  const isCreatingWorkspace =
-    setupStore.createWorkspaceState === ACTION_STATE.IN_PROGRESS;
+  const isCreatingWorkspace = setupStore.createWorkspaceState.isInProgress;
   const isCreatingOrImportingProject =
-    setupStore.createOrImportProjectState === ACTION_STATE.IN_PROGRESS;
+    setupStore.createOrImportProjectState.isInProgress;
   const disableProceedButton =
     !setupStore.currentProjectId ||
     !setupStore.currentWorkspaceId ||
@@ -621,7 +623,7 @@ const SetupSelection = observer(() => {
       setupStore.currentWorkspaceId &&
       setupStore.currentWorkspace
     ) {
-      applicationStore.historyApiClient.push(
+      applicationStore.navigator.goTo(
         generateEditorRoute(
           applicationStore.config.sdlcServerKey,
           setupStore.currentProjectId,
@@ -646,7 +648,7 @@ const SetupSelection = observer(() => {
         <div className="setup">
           <div
             className="setup__content"
-            data-testid={CORE_TEST_ID.SETUP__CONTENT}
+            data-testid={STUDIO_TEST_ID.SETUP__CONTENT}
           >
             <div>
               <ProjectSelector
@@ -671,7 +673,7 @@ const SetupSelection = observer(() => {
                 className="setup__view-project-btn u-pull-right"
                 onClick={(): void => {
                   if (setupStore.currentProjectId) {
-                    applicationStore.historyApiClient.push(
+                    applicationStore.navigator.goTo(
                       generateViewProjectRoute(
                         applicationStore.config.sdlcServerKey,
                         setupStore.currentProjectId,

@@ -16,11 +16,11 @@
 
 import { computed, action, observable, makeObservable, flowResult } from 'mobx';
 import { ElementEditorState } from './ElementEditorState';
-import { assertType, guaranteeType } from '@finos/legend-studio-shared';
+import { assertType, guaranteeType } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore';
 import { FileGenerationState } from '../../editor-state/FileGenerationState';
-import type { PackageableElement } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import { FileGenerationSpecification } from '../../../models/metamodels/pure/model/packageableElements/fileGeneration/FileGenerationSpecification';
+import type { PackageableElement } from '@finos/legend-graph';
+import { FileGenerationSpecification } from '@finos/legend-graph';
 
 export class FileGenerationEditorState extends ElementEditorState {
   isGenerating = false;

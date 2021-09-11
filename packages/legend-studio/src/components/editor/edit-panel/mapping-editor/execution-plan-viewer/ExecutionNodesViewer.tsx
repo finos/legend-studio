@@ -16,21 +16,18 @@
 
 import { observer } from 'mobx-react-lite';
 import { SqlPlanViewer } from './SqlPlanViewer';
-
-import { SQLExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/SQLExecutionNode';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { EXECUTION_PLAN_VIEW_MODE } from '../../../../../stores/ExecutionPlanState';
-import { ExecutionPlan } from '../../../../../models/metamodels/pure/model/executionPlan/ExecutionPlan';
 import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from './ExecutionPlanViewer';
-import { RelationalTDSInstantiationExecutionNode } from '../../../../../models/metamodels/pure/model/executionPlan/nodes/RelationalInstantiationExecutionNode';
-import { EDITOR_LANGUAGE } from '../../../../../stores/EditorConfig';
-import type { ResultType } from '../../../../../models/metamodels/pure/model/executionPlan/result/ResultType';
-import { TDSResultType } from '../../../../../models/metamodels/pure/model/executionPlan/result/TDSResultType';
-
+import type { ResultType, DataType } from '@finos/legend-graph';
 import {
+  SQLExecutionNode,
+  ExecutionPlan,
+  RelationalTDSInstantiationExecutionNode,
+  TDSResultType,
   VarChar,
   Char,
   VarBinary,
@@ -46,16 +43,16 @@ import {
   TinyInt,
   Timestamp,
   Other,
-} from '../../../../../models/metamodels/pure/model/packageableElements/store/relational/model/RelationalDataType';
+} from '@finos/legend-graph';
 import {
   BlankPanelContent,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
-} from '@finos/legend-studio-components';
-import { prettyCONSTName } from '@finos/legend-studio-shared';
-import { TextInputEditor } from '../../../../shared/TextInputEditor';
-import type { DataType } from '../../../../../models/metamodels/pure/model/packageableElements/domain/DataType';
+} from '@finos/legend-art';
+import { prettyCONSTName } from '@finos/legend-shared';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
 
 const generateDataTypeLabel = (type: unknown | undefined): string => {
   if (type === undefined) {
@@ -193,7 +190,7 @@ const JSONViewer: React.FC<{ query: string }> = (props: { query: string }) => {
   const { query } = props;
   return (
     <div className="panel__content">
-      <TextInputEditor
+      <StudioTextInputEditor
         inputValue={query}
         isReadOnly={true}
         language={EDITOR_LANGUAGE.JSON}

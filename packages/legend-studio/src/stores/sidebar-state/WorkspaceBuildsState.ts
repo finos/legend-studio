@@ -15,11 +15,12 @@
  */
 
 import { makeAutoObservable } from 'mobx';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
-import { Build } from '../../models/sdlc/models/build/Build';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
+import { Build } from '@finos/legend-server-sdlc';
 
 export class WorkspaceBuildsState {
   editorStore: EditorStore;
@@ -42,7 +43,7 @@ export class WorkspaceBuildsState {
       this.isFetchingBuilds = true;
       // NOTE: this network call can take a while, so we might consider limiting the number of builds to 10 or so
       this.builds = (
-        (yield this.sdlcState.sdlcClient.getBuilds(
+        (yield this.editorStore.sdlcServerClient.getBuilds(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           undefined,
@@ -50,9 +51,10 @@ export class WorkspaceBuildsState {
           undefined,
         )) as PlainObject<Build>[]
       ).map((build) => Build.serialization.fromJson(build));
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

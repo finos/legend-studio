@@ -21,42 +21,39 @@ import {
   generateViewProjectRoute,
   generateViewVersionRoute,
 } from '../../../stores/LegendStudioRouter';
-import {
-  PanelLoadingIndicator,
-  CustomSelectorInput,
-} from '@finos/legend-studio-components';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
-import { useEditorStore } from '../../../stores/EditorStore';
+import { PanelLoadingIndicator, CustomSelectorInput } from '@finos/legend-art';
 import { FiShare } from 'react-icons/fi';
-import type { Version } from '../../../models/sdlc/models/version/Version';
+import type { Version } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../EditorStoreProvider';
+import { useApplicationStore } from '@finos/legend-application';
+import type { StudioConfig } from '../../../application/StudioConfig';
 
 const ShareModal = observer(
   (props: { open: boolean; closeModal: () => void }) => {
     const { open, closeModal } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
+    const applicationStore = useApplicationStore<StudioConfig>();
     const versions = editorStore.sdlcState.projectVersions;
     const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
     const isFetchingProject = editorStore.sdlcState.isFetchingProject;
     const [selectedVersion, setSelectedVersion] = useState<
       Version | undefined
     >();
-    const urlBase = window.location.origin;
     const projectId = editorStore.sdlcState.currentProjectId;
     const projectLink = selectedVersion
-      ? `${urlBase}${applicationStore.historyApiClient.createHref({
-          pathname: generateViewVersionRoute(
+      ? applicationStore.navigator.generateLocation(
+          generateViewVersionRoute(
             applicationStore.config.sdlcServerKey,
             projectId,
             selectedVersion.id.id,
           ),
-        })}`
-      : `${urlBase}${applicationStore.historyApiClient.createHref({
-          pathname: generateViewProjectRoute(
+        )
+      : applicationStore.navigator.generateLocation(
+          generateViewProjectRoute(
             applicationStore.config.sdlcServerKey,
             projectId,
           ),
-        })}`;
+        );
     const copyProjectLink = (): void => {
       applicationStore
         .copyTextToClipboard(projectLink)

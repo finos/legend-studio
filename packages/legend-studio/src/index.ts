@@ -15,153 +15,21 @@
  */
 
 // application
+export * from './components/StudioStoreProvider';
 export * from './application/LegendStudio';
-export * from './application/PluginManager';
-export { ApplicationConfig } from './stores/ApplicationConfig';
-
-// network
-export * from './stores/network/Telemetry';
-export * from './stores/network/Tracer';
+export * from './application/StudioConfig';
+export * from './application/StudioPluginManager';
 export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
-
-// metamodels
-export * from './models/metamodels/pure/graph/PureGraphExtension';
-export * from './models/metamodels/pure/graph/PureGraphManagerPlugin';
-export * from './models/MetaModelUtils';
-export {
-  PRIMITIVE_TYPE,
-  CLIENT_VERSION,
-  LAMBDA_START,
-  DEFAULT_SOURCE_PARAMETER_NAME,
-  CORE_ELEMENT_PATH,
-  TYPICAL_MULTIPLICITY_TYPE,
-  MULTIPLICITY_INFINITE,
-} from './models/MetaModelConst';
-export * from './models/metamodels/pure/model/Stubable'; // TODO: to be removed
-export { BasicModel } from './models/metamodels/pure/graph/BasicModel';
-export { PureModel } from './models/metamodels/pure/graph/PureModel';
-export * from './models/metamodels/pure/action/EngineError';
-export * from './models/metamodels/pure/action/SourceInformationHelper';
-export * from './models/metamodels/pure/model/packageableElements/PackageableElement';
-export * from './models/metamodels/pure/model/packageableElements/PackageableElementReference';
-export { Multiplicity } from './models/metamodels/pure/model/packageableElements/domain/Multiplicity';
-export { Type } from './models/metamodels/pure/model/packageableElements/domain/Type';
-export { PrimitiveType } from './models/metamodels/pure/model/packageableElements/domain/PrimitiveType';
-export { GenericTypeExplicitReference } from './models/metamodels/pure/model/packageableElements/domain/GenericTypeReference';
-export { GenericType } from './models/metamodels/pure/model/packageableElements/domain/GenericType';
-export {
-  Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
-} from './models/metamodels/pure/model/packageableElements/domain/Class';
-export { Enumeration } from './models/metamodels/pure/model/packageableElements/domain/Enumeration';
-export { Enum } from './models/metamodels/pure/model/packageableElements/domain/Enum';
-export * from './models/metamodels/pure/model/packageableElements/domain/EnumValueReference';
-export type { AbstractProperty } from './models/metamodels/pure/model/packageableElements/domain/AbstractProperty';
-export { DerivedProperty } from './models/metamodels/pure/model/packageableElements/domain/DerivedProperty';
-export { Property } from './models/metamodels/pure/model/packageableElements/domain/Property';
-export { RawLambda } from './models/metamodels/pure/model/rawValueSpecification/RawLambda';
-export { UnknownValue } from './models/metamodels/pure/model/valueSpecification/UnknownValue';
-export { VariableExpression } from './models/metamodels/pure/model/valueSpecification/VariableExpression';
-export {
-  AbstractPropertyExpression,
-  SimpleFunctionExpression,
-  FunctionExpression,
-} from './models/metamodels/pure/model/valueSpecification/SimpleFunctionExpression';
-export {
-  FunctionType,
-  LambdaFunction,
-  LambdaFunctionInstanceValue,
-} from './models/metamodels/pure/model/valueSpecification/LambdaFunction';
-export { AlloySerializationConfigInstanceValue } from './models/metamodels/pure/model/valueSpecification/AlloySerializationConfig';
-export {
-  EnumValueInstanceValue,
-  MappingInstanceValue,
-  PairInstanceValue,
-  PureListInstanceValue,
-  RuntimeInstanceValue,
-  InstanceValue,
-  CollectionInstanceValue,
-  PrimitiveInstanceValue,
-} from './models/metamodels/pure/model/valueSpecification/InstanceValue';
-export { ValueSpecification } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';
-export type { ValueSpecificationVisitor } from './models/metamodels/pure/model/valueSpecification/ValueSpecification';
-export type { RawExecutionPlan } from './models/metamodels/pure/model/executionPlan/ExecutionPlan';
-export {
-  ExecutionResult,
-  TdsExecutionResult,
-} from './models/metamodels/pure/action/execution/ExecutionResult';
-export {
-  GraphFetchTree,
-  PropertyGraphFetchTree,
-  RootGraphFetchTree,
-  GraphFetchTreeInstanceValue,
-  PropertyGraphFetchTreeInstanceValue,
-  RootGraphFetchTreeInstanceValue,
-} from './models/metamodels/pure/model/valueSpecification/GraphFetchTree';
-export * from './models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-
-// protocols
-export * from './models/protocols/pure/PureProtocolProcessorPlugin';
-export type { V1_PureModelContextData } from './models/protocols/pure/v1/model/context/V1_PureModelContextData';
-export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
-export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext';
-export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';
-export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda';
-export { V1_ValueSpecification } from './models/protocols/pure/v1/model/valueSpecification/V1_ValueSpecification';
-export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';
-export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext';
-export {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper';
-export {
-  V1_RawValueSpecificationTransformer,
-  V1_transformRawLambda,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
-export { V1_rawLambdaModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
-export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
-export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
-export {
-  V1_pureModelContextDataPropSchema,
-  V1_deserializePureModelContextData as V1_jsonToPureModelContextData,
-} from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
-export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
-export { V1_PropertyPointer } from './models/protocols/pure/v1/model/packageableElements/domain/V1_PropertyPointer';
-export {
-  V1_propertyPointerModelSchema,
-  V1_stereotypePtrSchema,
-} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
-export { V1_AppliedFunction } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedFunction';
-export { V1_AppliedProperty } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedProperty';
-export { V1_Collection } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Collection';
-export { V1_Lambda } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Lambda';
-export { V1_Variable } from './models/protocols/pure/v1/model/valueSpecification/V1_Variable';
-export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
-export { V1_deserializeRawValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
-export { V1_serializeRawValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
-export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
-
-// SDLC
-export { Entity } from './models/sdlc/models/entity/Entity';
-export { EntityChangeType } from './models/sdlc/models/entity/EntityChange';
-export { Build, BuildStatus } from './models/sdlc/models/build/Build';
-export { Project, ProjectType } from './models/sdlc/models/project/Project';
-export { Version } from './models/sdlc/models/version/Version';
-export { SDLCServerClient } from './models/sdlc/SDLCServerClient';
-
-// Metadata
-export { ProjectMetadata } from './models/metadata/models/ProjectMetadata';
+export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
 
 // stores
-export * from './stores/EditorPlugin';
-export * from './stores/ApplicationStore';
+export * from './stores/StudioPlugin';
 export * from './stores/EditorStore';
 export * from './stores/EditorConfig';
-export * from './stores/editor-state/element-editor-state/ElementEditorState';
-export * from './stores/editor-state/UnsupportedElementEditorState';
+export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState';
+export { ElementEditorState } from './stores/editor-state/element-editor-state/ElementEditorState';
+export { UnsupportedElementEditorState } from './stores/editor-state/UnsupportedElementEditorState';
 export { NewElementState, NewElementDriver } from './stores/NewElementState';
-export { LambdaEditorState } from './stores/editor-state/element-editor-state/LambdaEditorState';
 export type { TransformDropTarget } from './stores/shared/DnDUtil';
 export {
   CORE_DND_TYPE,
@@ -171,39 +39,33 @@ export {
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 
 // components
-export * from './components/shared/TextInputEditor';
+export * from './components/editor/EditorStoreProvider';
 export * from './components/shared/AppHeader';
-export * from './components/shared/Icon'; // TODO: we might want to move all of these to @finos/legend-studio-components
+export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor';
 export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
-export { getElementIcon, getElementTypeIcon } from './components/shared/Icon';
 export { TypeTree } from './components/shared/TypeTree';
-export { LambdaEditor } from './components/shared/LambdaEditor';
-export { LegendMaterialUITheme } from './components/LegendStudioApplication';
-export { BlockingAlert } from './components/application/BlockingAlert';
-export { ActionAlert } from './components/application/ActionAlert';
-export { NotificationSnackbar } from './components/application/NotificationSnackbar';
-
-export * from './utils/Logger'; // TODO: to be removed when we move this to @finos/legend-studio-shared
+export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor';
 
 // test
-export * from './const';
 export {
-  getTestApplicationConfig,
-  getTestEditorStore,
-  buildGraphBasic,
-  checkBuildingElementsRoundtrip,
-} from './stores/StoreTestUtils';
-export {
-  getMockedApplicationStore,
-  getMockedEditorStore,
-  setUpEditor,
-  setUpEditorWithDefaultSDLCData,
-} from './components/ComponentTestUtils';
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditor,
+  TEST__setUpEditorWithDefaultSDLCData,
+  TEST__openElementFromExplorerTree,
+} from './components/EditorComponentTestUtils';
+export { STUDIO_TEST_ID } from './components/StudioTestID';
+export * from './stores/EditorStoreTestUtils';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
-export * from './DSLMapping_Exports';
-export * from './DSLService_Exports';
-export * from './DSLGenerationSpecification_Exports';
-export * from './StoreFlatData_Exports';
-export * from './StoreRelational_Exports';
+export {
+  ConnectionEditor_StringEditor,
+  ConnectionEditor_BooleanEditor,
+  ConnectionEditor_ArrayEditor,
+} from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor';
+export * from './stores/DSLGenerationSpecification_StudioPlugin_Extension';
+
+export * from './stores/StoreRelational_StudioPlugin_Extension';
+export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
+export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';

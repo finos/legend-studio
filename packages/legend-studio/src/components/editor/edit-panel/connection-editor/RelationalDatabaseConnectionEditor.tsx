@@ -24,26 +24,25 @@ import type { RelationalDatabaseConnectionValueState } from '../../../../stores/
 import { useState } from 'react';
 import { MdModeEdit } from 'react-icons/md';
 import { VscError } from 'react-icons/vsc';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
   clsx,
   CustomSelectorInput,
   CheckSquareIcon,
   SquareIcon,
   TimesIcon,
-} from '@finos/legend-studio-components';
-import { capitalize, prettyCONSTName } from '@finos/legend-studio-shared';
-import type { RelationalDatabaseConnection } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { DatabaseType } from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+} from '@finos/legend-art';
+import { capitalize, prettyCONSTName } from '@finos/legend-shared';
+import type { RelationalDatabaseConnection, Store } from '@finos/legend-graph';
 import {
+  DatabaseType,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   DeltaLakeAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/AuthenticationStrategy';
-import {
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -51,16 +50,17 @@ import {
   StaticDatasourceSpecification,
   BigQueryDatasourceSpecification,
   RedshiftDatasourceSpecification,
-} from '../../../../models/metamodels/pure/model/packageableElements/store/relational/connection/DatasourceSpecification';
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 import { runInAction } from 'mobx';
-import type { PackageableElementSelectOption } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElement';
-import type { Store } from '../../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
-import type { EditorPlugin } from '../../../../stores/EditorPlugin';
-import type { StoreRelational_EditorPlugin_Extension } from '../../../../stores/StoreRelational_EditorPlugin_Extension';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
+import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import type { StudioPlugin } from '../../../../stores/StudioPlugin';
+import type { StoreRelational_StudioPlugin_Extension } from '../../../../stores/StoreRelational_StudioPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
+import { useEditorStore } from '../../EditorStoreProvider';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -171,7 +171,7 @@ export const ConnectionEditor_TextEditor = observer(
           {description}
         </div>
         <div className="panel__content__form__section__text-editor">
-          <TextInputEditor
+          <StudioTextInputEditor
             inputValue={value ?? ''}
             updateInput={update}
             isReadOnly={isReadOnly}
@@ -798,15 +798,16 @@ const RelationalConnectionStoreEditor = observer(
         <VscError />
       </div>
     );
-    const stores = connectionValueState.editorStore.graphState.graph.ownStores;
-    const options = stores.map((e) => e.selectOption);
+    const stores =
+      connectionValueState.editorStore.graphManagerState.graph.ownStores;
+    const options = stores.map(buildElementOption);
     const store = connection.store.value;
     const selectedStore = {
       value: store,
       label: isStoreEmpty ? noStoreLabel : store.path,
     };
     const onStoreChange = (
-      val: PackageableElementSelectOption<Store> | null,
+      val: PackageableElementOption<Store> | null,
     ): void => {
       if (val) {
         connection.setStore(
@@ -850,7 +851,7 @@ const RelationalConnectionStoreEditor = observer(
 const renderDatasourceSpecificationEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: EditorPlugin[],
+  plugins: StudioPlugin[],
 ): React.ReactNode => {
   const sourceSpec = connection.datasourceSpecification;
   if (sourceSpec instanceof StaticDatasourceSpecification) {
@@ -906,7 +907,7 @@ const renderDatasourceSpecificationEditor = (
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_EditorPlugin_Extension
+          plugin as StoreRelational_StudioPlugin_Extension
         ).getExtraDatasourceSpecificationEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraDatasourceSpecificationEditorRenderers) {
@@ -923,7 +924,7 @@ const renderDatasourceSpecificationEditor = (
 const renderAuthenticationStrategyEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: EditorPlugin[],
+  plugins: StudioPlugin[],
 ): React.ReactNode => {
   const authSpec = connection.authenticationStrategy;
   if (authSpec instanceof DelegatedKerberosAuthenticationStrategy) {
@@ -965,7 +966,7 @@ const renderAuthenticationStrategyEditor = (
     const extraAuthenticationStrategyEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_EditorPlugin_Extension
+          plugin as StoreRelational_StudioPlugin_Extension
         ).getExtraAuthenticationStrategyEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraAuthenticationStrategyEditorRenderers) {
@@ -986,8 +987,8 @@ const RelationalConnectionGeneralEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly } = props;
     const connection = connectionValueState.connection;
-    const applicationStore = useApplicationStore();
-    const plugins = applicationStore.pluginManager.getEditorPlugins();
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getStudioPlugins();
     // database type
     const typeOptions = Object.values(DatabaseType).map((e) => ({
       value: e,
@@ -1011,7 +1012,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_EditorPlugin_Extension
+              plugin as StoreRelational_StudioPlugin_Extension
             ).getExtraDatasourceSpecificationTypes?.() ?? [],
         ),
       )
@@ -1039,7 +1040,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_EditorPlugin_Extension
+              plugin as StoreRelational_StudioPlugin_Extension
             ).getExtraAuthenticationStrategyTypes?.() ?? [],
         ),
       )
@@ -1061,8 +1062,8 @@ const RelationalConnectionGeneralEditor = observer(
 
     return (
       <div className="relational-connection-editor">
-        <ReflexContainer orientation="horizontal">
-          <ReflexElement size={200} minSize={15}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={200} minSize={15}>
             <div className="panel">
               <div className="panel__header">
                 <div className="panel__header__title">
@@ -1092,12 +1093,12 @@ const RelationalConnectionGeneralEditor = observer(
                 />
               </div>
             </div>
-          </ReflexElement>
-          <ReflexSplitter />
-          <ReflexElement>
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel>
             <div className="relational-connection-editor__content">
-              <ReflexContainer orientation="vertical">
-                <ReflexElement size={450} minSize={50}>
+              <ResizablePanelGroup orientation="vertical">
+                <ResizablePanel size={450} minSize={50}>
                   <div className="relational-connection-editor__auth">
                     <div className="panel__header">
                       <div className="panel__header__title">
@@ -1127,9 +1128,9 @@ const RelationalConnectionGeneralEditor = observer(
                       </div>
                     </div>
                   </div>
-                </ReflexElement>
-                <ReflexSplitter />
-                <ReflexElement minSize={0}>
+                </ResizablePanel>
+                <ResizablePanelSplitter />
+                <ResizablePanel>
                   <div className="relational-connection-editor__source">
                     <div className="panel__header">
                       <div className="panel__header__title">
@@ -1159,11 +1160,11 @@ const RelationalConnectionGeneralEditor = observer(
                       </div>
                     </div>
                   </div>
-                </ReflexElement>
-              </ReflexContainer>
+                </ResizablePanel>
+              </ResizablePanelGroup>
             </div>
-          </ReflexElement>
-        </ReflexContainer>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

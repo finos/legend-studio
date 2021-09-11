@@ -16,7 +16,6 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import type { IDisposable } from 'monaco-editor';
 import {
   editor as monacoEditorAPI,
@@ -27,18 +26,9 @@ import {
   TAB_SIZE,
   EDITOR_THEME,
   EDITOR_LANGUAGE,
-} from '../../../../stores/EditorConfig';
+  useApplicationStore,
+} from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
-import {
-  disposeEditor,
-  disableEditorHotKeys,
-  baseTextEditorSettings,
-  moveToPosition,
-  setErrorMarkers,
-  revealError,
-  resetLineNumberGutterWidth,
-} from '../../../../utils/TextEditorUtil';
-import type { EntityChangeConflict } from '../../../../models/sdlc/models/entity/EntityChangeConflict';
 import type {
   MergeEditorComparisonViewInfo,
   MergeConflict,
@@ -53,14 +43,25 @@ import {
   debounce,
   isNonNullable,
   hashObject,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
-import { clsx, CustomSelectorInput } from '@finos/legend-studio-components';
+import {
+  clsx,
+  CustomSelectorInput,
+  disposeEditor,
+  disableEditorHotKeys,
+  baseTextEditorSettings,
+  moveToPosition,
+  setErrorMarkers,
+  revealError,
+  resetLineNumberGutterWidth,
+} from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { useApplicationStore } from '../../../../stores/ApplicationStore';
 import { flowResult } from 'mobx';
+import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
+import { useEditorStore } from '../../EditorStoreProvider';
 
 const getConflictSummaryText = (
   conflictEditorState: EntityChangeConflictEditorState,
@@ -374,7 +375,14 @@ const MergeConflictEditor = observer(
       if (editorModel) {
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         if (error?.sourceInformation) {
-          setErrorMarkers(editorModel, error.sourceInformation, error.message);
+          setErrorMarkers(
+            editorModel,
+            error.message,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+            error.sourceInformation.endLine,
+            error.sourceInformation.endColumn,
+          );
         } else {
           monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
         }
@@ -540,7 +548,11 @@ const MergeConflictEditor = observer(
     useEffect(() => {
       if (editor) {
         if (error?.sourceInformation) {
-          revealError(editor, error.sourceInformation);
+          revealError(
+            editor,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+          );
         }
       }
     }, [editor, error, error?.sourceInformation]);

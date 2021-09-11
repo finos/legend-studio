@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
+import { platform } from 'os';
 import { existsSync, readdirSync, copyFileSync, writeFileSync } from 'fs';
 import chalk from 'chalk';
 import { resolve, dirname } from 'path';
 import { execSync } from 'child_process';
-import { resolveFullTsConfig } from '@finos/legend-studio-dev-utils/TypescriptConfigUtils';
+import { resolveFullTsConfig } from '@finos/legend-dev-utils/TypescriptConfigUtils';
 import { mkdirs, copySync } from 'fs-extra';
 import { fileURLToPath } from 'url';
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -32,7 +33,15 @@ const workspaceName = packageJson.name;
 
 const preparePublishContent = async () => {
   const packageConfig = existsSync(resolve(workspaceDir, '_package.config.js'))
-    ? (await import(resolve(workspaceDir, '_package.config.js'))).default
+    ? // NOTE: Windows requires prefix `file://` for absolute path
+      (
+        await import(
+          `${platform() === 'win32' ? 'file://' : ''}${resolve(
+            workspaceDir,
+            '_package.config.js',
+          )}`
+        )
+      ).default
     : undefined;
   console.log(`Preparing publish content for workspace '${workspaceName}'...`);
 
@@ -162,13 +171,13 @@ const preparePublishContent = async () => {
     );
     console.log(
       chalk.green(
-        `Sucessfully prepared publish content for workspace '${workspaceName}'!\n`,
+        `Successfully prepared publish content for workspace '${workspaceName}'!\n`,
       ),
     );
   } catch (e) {
     console.log(
       chalk.red(
-        `\u2A2F Failed to prepare publish content for workspace '${workspaceName}'.\n`,
+        `\u2A2F Failed to prepare publish content for workspace '${workspaceName}'\n`,
       ),
     );
     throw e;

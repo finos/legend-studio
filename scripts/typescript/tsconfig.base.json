@@ -23,13 +23,21 @@
     // See https://stackoverflow.com/questions/56238356/understanding-esmoduleinterop-in-tsconfig-file
     "esModuleInterop": true, // enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports
     "allowSyntheticDefaultImports": true,
-    // This option is needed for `mobx` decorator in constructor to work properly with uninitialized class attributes
+    // `useDefineForClassFields: true` is needed for `mobx` decorator in constructor to work properly with uninitialized class attributes.
+    // This is set by default with `target: "esnext"`.
     // See https://github.com/mobxjs/mobx/issues/2486
     // See https://mobx.js.org/installation.html#use-spec-compliant-transpilation-for-class-properties
-    "useDefineForClassFields": true,
+    // "useDefineForClassFields": true,
     // Other settings
-    "noImplicitOverride": true,
     "strict": true,
+    "noImplicitOverride": true,
+    // ---exactOptionalPropertyTypes specifies that optional property types should be interpreted exactly as
+    // written, meaning that `| undefined` is not added to the type.
+    // This makes it possible to ensure that optional properties are never `undefined` when they're present
+    // on an object, and that `undefined` values read from optional properties unequivocally indicate that
+    // the properties are not present.
+    // See https://github.com/microsoft/TypeScript/pull/43947
+    "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true
   }
 }

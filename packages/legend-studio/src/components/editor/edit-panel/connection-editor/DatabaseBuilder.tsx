@@ -16,15 +16,19 @@
 
 import { observer } from 'mobx-react-lite';
 import Dialog from '@material-ui/core/Dialog';
-import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
   PanelLoadingIndicator,
   SaveIcon,
   FireIcon,
   clsx,
   TreeView,
-} from '@finos/legend-studio-components';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
+  SchemaIcon,
+  TableIcon,
+} from '@finos/legend-art';
 import { useEffect } from 'react';
 import type {
   DatabaseBuilderState,
@@ -43,15 +47,14 @@ import {
   FaChevronRight,
   FaRegCircle,
 } from 'react-icons/fa';
-import { capitalize } from '@finos/legend-studio-shared';
-import { SchemaIcon, TableIcon } from '../../../shared/Icon';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
+import { capitalize } from '@finos/legend-shared';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper';
 import { flowResult } from 'mobx';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -260,8 +263,8 @@ export const DatabaseBuilder = observer(
           </div>
           <div className="database-builder__content">
             <PanelLoadingIndicator isLoading={isExecutingAction} />
-            <ReflexContainer orientation="vertical">
-              <ReflexElement size={450} minSize={0}>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel size={450}>
                 <div className="database-builder__config">
                   <div className="panel__header">
                     <div className="panel__header__title">
@@ -301,9 +304,9 @@ export const DatabaseBuilder = observer(
                     )}
                   </div>
                 </div>
-              </ReflexElement>
-              <ReflexSplitter />
-              <ReflexElement>
+              </ResizablePanel>
+              <ResizablePanelSplitter />
+              <ResizablePanel>
                 <div className="panel database-builder__generated">
                   <div className="panel__header">
                     <div className="panel__header__title">
@@ -335,15 +338,15 @@ export const DatabaseBuilder = observer(
                     </div>
                   </div>
                   <div className="panel__content">
-                    <TextInputEditor
+                    <StudioTextInputEditor
                       language={EDITOR_LANGUAGE.PURE}
                       inputValue={databaseBuilderState.databaseGrammarCode}
                       isReadOnly={true}
                     />
                   </div>
                 </div>
-              </ReflexElement>
-            </ReflexContainer>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         </div>
       </Dialog>

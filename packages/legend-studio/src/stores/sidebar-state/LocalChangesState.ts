@@ -18,24 +18,28 @@ import { action, makeAutoObservable, flowResult } from 'mobx';
 import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import { CORE_LOG_EVENT } from '../../utils/Logger';
-import { Revision } from '../../models/sdlc/models/revision/Revision';
-import { DATE_TIME_FORMAT } from '../../const';
-import { TAB_SIZE } from '../EditorConfig';
-import type { GeneratorFn, PlainObject } from '@finos/legend-studio-shared';
+import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  LogEvent,
   assertErrorThrown,
   downloadFile,
   guaranteeNonNullable,
   ContentType,
   NetworkClientError,
   HttpStatus,
-} from '@finos/legend-studio-shared';
-import type { Entity } from '../../models/sdlc/models/entity/Entity';
-import { ActionAlertType, ActionAlertActionType } from '../ApplicationStore';
-import { EntityDiff } from '../../models/sdlc/models/comparison/EntityDiff';
+} from '@finos/legend-shared';
+import {
+  DATE_TIME_FORMAT,
+  TAB_SIZE,
+  ActionAlertType,
+  ActionAlertActionType,
+} from '@finos/legend-application';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
+import type { Entity } from '@finos/legend-model-storage';
+import { EntityDiff, Revision } from '@finos/legend-server-sdlc';
+import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 
 export class LocalChangesState {
   editorStore: EditorStore;
@@ -70,14 +74,15 @@ export class LocalChangesState {
         return undefined;
       }
       const element =
-        this.editorStore.graphState.graph.getNullableElement(entityPath);
+        this.editorStore.graphManagerState.graph.getNullableElement(entityPath);
       if (!element) {
         return undefined;
       }
-      const entity = this.editorStore.graphState.graphManager.elementToEntity(
-        element,
-        true,
-      );
+      const entity =
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
+          element,
+          true,
+        );
       return entity;
     };
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)
@@ -115,24 +120,22 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.stop();
       yield Promise.all([
         this.sdlcState.buildWorkspaceLatestRevisionEntityHashesIndex(),
-        this.editorStore.graphState.graph.precomputeHashes(
-          this.editorStore.applicationStore.logger,
-        ),
+        this.editorStore.graphManagerState.precomputeHashes(),
       ]);
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - startTime,
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
+    } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -177,7 +180,8 @@ export class LocalChangesState {
         });
         return;
       }
-    } catch (error: unknown) {
+    } catch (error) {
+      assertErrorThrown(error);
       this.editorStore.applicationStore.notifyWarning(
         'Failed to check if current workspace is in conflict resolution mode',
       );
@@ -195,7 +199,7 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
       const latestRevision = Revision.serialization.fromJson(
-        (yield this.sdlcState.sdlcClient.performEntityChanges(
+        (yield this.editorStore.sdlcServerClient.performEntityChanges(
           this.sdlcState.currentProjectId,
           this.sdlcState.currentWorkspaceId,
           {
@@ -216,8 +220,8 @@ export class LocalChangesState {
       this.sdlcState.setCurrentRevision(latestRevision); // update current revision to the latest
       const syncFinishedTime = Date.now();
 
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.SDLC_SYNC_WORKSPACE,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SYNCED),
         syncFinishedTime - startTime,
         'ms',
       );
@@ -229,22 +233,26 @@ export class LocalChangesState {
          * Here we try to rebuild local hash index. If failed, we will use local hash index, but for veracity, it's best to use entities
          * coming from the server.
          */
-        const entities = (yield this.sdlcState.sdlcClient.getEntitiesByRevision(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
-          latestRevision.id,
-        )) as Entity[];
+        const entities =
+          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+            this.sdlcState.currentProjectId,
+            this.sdlcState.currentWorkspaceId,
+            latestRevision.id,
+          )) as Entity[];
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
           entities,
         );
         yield flowResult(
           this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
             entities,
-            CORE_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            LogEvent.create(
+              CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            ),
           ),
         );
         this.editorStore.refreshCurrentEntityDiffEditorState();
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         /**
          * NOTE: there is a known problem with the SDLC server where if we try to fetch the entities right after syncing, there is a chance
          * that we get entities from the older commit (i.e. potentially some caching issue). As such, to account for this case, we will
@@ -254,8 +262,8 @@ export class LocalChangesState {
          */
         if (error instanceof NetworkClientError) {
           if (error.response.status === HttpStatus.NOT_FOUND) {
-            this.editorStore.applicationStore.logger.error(
-              CORE_LOG_EVENT.SDLC_PROBLEM,
+            this.editorStore.applicationStore.log.error(
+              LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
               `Can't fetch entities for the latest workspace revision immediately after syncing`,
               error,
             );
@@ -293,11 +301,7 @@ export class LocalChangesState {
           throw error;
         }
       }
-      yield flowResult(
-        this.editorStore.graphState.graph.precomputeHashes(
-          this.editorStore.applicationStore.logger,
-        ),
-      );
+      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
       this.editorStore.changeDetectionState.start();
       yield Promise.all([
         this.editorStore.changeDetectionState.computeLocalChanges(true),
@@ -305,15 +309,16 @@ export class LocalChangesState {
           true,
         ),
       ]);
-      this.editorStore.applicationStore.logger.info(
-        CORE_LOG_EVENT.CHANGE_DETECTION_RESTARTED,
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - syncFinishedTime,
         'ms',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SDLC_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (

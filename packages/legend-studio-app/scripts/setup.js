@@ -15,55 +15,47 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { resolve } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+export const setup = (outputDir) => {
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir);
+  }
 
-const outputDir = process.argv[2];
-const resolvedOutputDir = resolve(__dirname, `../${outputDir}`);
-
-if (!existsSync(resolvedOutputDir)) {
-  mkdirSync(resolvedOutputDir);
-}
-
-writeFileSync(
-  resolve(resolvedOutputDir, 'version.json'),
-  JSON.stringify(
-    {
-      buildTime: new Date().toISOString(),
-      version: `${loadJSON(resolve(__dirname, '../package.json')).version}`,
-      commitSHA: execSync(`git rev-parse HEAD`, {
-        encoding: 'utf-8',
-      }).trim(),
-    },
-    null,
-    2,
-  ),
-);
-
-writeFileSync(
-  resolve(resolvedOutputDir, 'config.json'),
-  JSON.stringify(
-    {
-      appName: 'studio',
-      env: 'local',
-      sdlc: {
-        url: 'http://localhost:7070/api',
+  writeFileSync(
+    resolve(outputDir, 'version.json'),
+    JSON.stringify(
+      {
+        buildTime: new Date().toISOString(),
+        version: '0.0.0-local',
+        commitSHA: 'local',
       },
-      engine: {
-        url: 'http://localhost:6060/api',
+      null,
+      2,
+    ),
+  );
+
+  writeFileSync(
+    resolve(outputDir, 'config.json'),
+    JSON.stringify(
+      {
+        appName: 'studio',
+        env: 'local',
+        sdlc: {
+          url: 'http://localhost:7070/api',
+        },
+        engine: {
+          url: 'http://localhost:6060/api',
+        },
+        depot: {
+          url: 'http://localhost:9090/api',
+        },
+        documentation: {
+          url: 'https://legend.finos.org',
+        },
       },
-      metadata: {
-        url: 'http://localhost:9090/api',
-      },
-      documentation: {
-        url: 'https://legend.finos.org',
-      },
-    },
-    undefined,
-    2,
-  ),
-);
+      undefined,
+      2,
+    ),
+  );
+};

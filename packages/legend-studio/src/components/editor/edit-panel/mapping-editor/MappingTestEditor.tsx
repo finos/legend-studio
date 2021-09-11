@@ -16,7 +16,6 @@
 
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
@@ -28,7 +27,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { FaScroll, FaWrench } from 'react-icons/fa';
 import { JsonDiffView } from '../../../shared/DiffView';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -36,37 +34,44 @@ import {
   TimesIcon,
   PencilIcon,
   PlayIcon,
-} from '@finos/legend-studio-components';
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+} from '@finos/legend-art';
 import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
 import {
   IllegalStateError,
   isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,
-} from '@finos/legend-studio-shared';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
+} from '@finos/legend-shared';
 import { VscError } from 'react-icons/vsc';
 import {
+  EDITOR_LANGUAGE,
+  useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
-  useApplicationStore,
-} from '../../../../stores/ApplicationStore';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import {
-  getMappingElementSource,
-  getMappingElementTarget,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
+} from '@finos/legend-application';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
-import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
+import {
+  getMappingElementSource,
+  getMappingElementTarget,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import { useEditorStore } from '../../EditorStoreProvider';
+import {
+  Class,
+  RawLambda,
+  SetImplementation,
+  OperationSetImplementation,
+} from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -75,8 +80,8 @@ const MappingTestQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = applicationStore.pluginManager
-      .getEditorPlugins()
+    const extraQueryEditors = editorStore.pluginManager
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           plugin.getExtraMappingTestQueryEditorRendererConfigurations?.() ?? [],
@@ -108,7 +113,7 @@ const MappingTestQueryEditor = observer(
         flowResult(
           queryState.updateLamba(
             setImplementation
-              ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+              ? editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
                   guaranteeType(
                     getMappingElementTarget(setImplementation),
                     Class,
@@ -202,24 +207,26 @@ const MappingTestQueryEditor = observer(
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <ReflexContainer orientation="vertical">
-              <ReflexElement minSize={250}>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={250}>
                 <div className="mapping-test-editor__query-panel__query">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}
                     showMiniMap={false}
                   />
                 </div>
-              </ReflexElement>
-              <ReflexSplitter />
-              <ReflexElement size={250} minSize={250}>
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel size={250} minSize={250}>
                 <div className="mapping-test-editor__query-panel__query-editor">
                   {extraQueryEditors}
                 </div>
-              </ReflexElement>
-            </ReflexContainer>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         )}
         {queryState.query.isStub && (
@@ -262,7 +269,7 @@ export const MappingTestObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.data}
           isReadOnly={isReadOnly}
@@ -286,7 +293,7 @@ export const MappingTestFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
@@ -315,7 +322,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
@@ -472,12 +479,12 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
           {!isValid && (
             <div
               className="panel__content__validation-error"
-              title={validationResult?.messages.join('\n') ?? ''}
+              title={validationResult.messages.join('\n')}
             >
               <VscError />
             </div>
           )}
-          <TextInputEditor
+          <StudioTextInputEditor
             inputValue={assertionState.expectedResult}
             updateInput={updateExpectedResult}
             isReadOnly={isReadOnly}
@@ -522,33 +529,37 @@ export const MappingTestBuilder = observer(
     return (
       <div className="mapping-test-editor">
         <PanelLoadingIndicator isLoading={testState.isExecutingTest} />
-        <ReflexContainer orientation="horizontal">
-          <ReflexElement size={250} minSize={28}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={250} minSize={28}>
             {/* use UUID key to make sure these components refresh when we change the state */}
             <MappingTestQueryEditor
               key={testState.queryState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
             />
-          </ReflexElement>
-          <ReflexSplitter />
-          <ReflexElement size={250} minSize={28}>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel size={250} minSize={28}>
             {/* use UUID key to make sure these components refresh when we change the state */}
             <MappingTestInputDataBuilder
               key={testState.inputDataState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
             />
-          </ReflexElement>
-          <ReflexSplitter />
-          <ReflexElement minSize={28}>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={28}>
             <MappingTestAssertionBuilder
               key={testState.assertionState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
             />
-          </ReflexElement>
-        </ReflexContainer>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },

@@ -16,16 +16,13 @@
 
 import type { RenderResult } from '@testing-library/react';
 import { getByText } from '@testing-library/react';
-import m2mGraphEntities from '../../../../stores/__tests__/buildGraph/M2MGraphEntitiesTestData.json';
+import TEST_DATA__m2mGraphEntities from '../../../../stores/__tests__/TEST_DATA__M2MGraphEntities.json';
+import { integrationTest, guaranteeNonNullable } from '@finos/legend-shared';
 import {
-  integrationTest,
-  guaranteeNonNullable,
-} from '@finos/legend-studio-shared';
-import {
-  openAndAssertPathWithElement,
-  getMockedEditorStore,
-  setUpEditorWithDefaultSDLCData,
-} from '../../../ComponentTestUtils';
+  TEST__openAndAssertPathWithElement,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditorWithDefaultSDLCData,
+} from '../../../EditorComponentTestUtils';
 import type { EditorStore } from '../../../../stores/EditorStore';
 
 const packageRootChildren = ['ui'];
@@ -34,9 +31,9 @@ let renderResult: RenderResult;
 let mockedEditorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = getMockedEditorStore();
-  renderResult = await setUpEditorWithDefaultSDLCData(mockedEditorStore, {
-    entities: m2mGraphEntities,
+  mockedEditorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+    entities: TEST_DATA__m2mGraphEntities,
   });
 });
 
@@ -51,6 +48,9 @@ test(integrationTest('Package Explorer'), async () => {
   packageRootChildren.forEach((p) =>
     expect(renderResult.queryByText(p)).not.toBeNull(),
   );
-  await openAndAssertPathWithElement('ui::test1::ProfileTest', renderResult);
+  await TEST__openAndAssertPathWithElement(
+    'ui::test1::ProfileTest',
+    renderResult,
+  );
   // TODO test generation package when added to model;
 });

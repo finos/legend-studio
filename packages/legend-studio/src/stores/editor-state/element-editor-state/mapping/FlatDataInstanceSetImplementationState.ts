@@ -14,39 +14,43 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, flowResult } from 'mobx';
-import {
-  LAMBDA_START,
-  SOURCE_ID_LABEL,
-} from '../../../../models/MetaModelConst';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
+import { observable, action, computed, makeObservable } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
   UnsupportedOperationError,
   guaranteeType,
   IllegalStateError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
-import type { SourceInformation } from '../../../../models/metamodels/pure/action/SourceInformation';
-import type { CompilationError } from '../../../../models/metamodels/pure/action/EngineError';
-import { ParserError } from '../../../../models/metamodels/pure/action/EngineError';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import type { FlatDataInstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import type { AbstractFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
-import { FlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import type { Property } from '../../../../models/metamodels/pure/model/packageableElements/domain/Property';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { InferableMappingElementIdExplicitValue } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InferableMappingElementId';
-import { PackageableElementExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PropertyExplicitReference } from '../../../../models/metamodels/pure/model/packageableElements/domain/PropertyReference';
-import { buildSourceInformationSourceId } from '../../../../models/metamodels/pure/action/SourceInformationHelper';
+import type {
+  SourceInformation,
+  CompilationError,
+  FlatDataInstanceSetImplementation,
+  AbstractFlatDataPropertyMapping,
+  PropertyMapping,
+  Property,
+} from '@finos/legend-graph';
+import {
+  LAMBDA_PIPE,
+  GRAPH_MANAGER_LOG_EVENT,
+  ParserError,
+  RawLambda,
+  FlatDataPropertyMapping,
+  EmbeddedFlatDataPropertyMapping,
+  Class,
+  InferableMappingElementIdExplicitValue,
+  PackageableElementExplicitReference,
+  PropertyExplicitReference,
+  buildSourceInformationSourceId,
+} from '@finos/legend-graph';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
 
 export class FlatDataPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -58,7 +62,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     instanceSetImplementationState: FlatDataInstanceSetImplementationState,
     propertyMapping: AbstractFlatDataPropertyMapping,
   ) {
-    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_START);
+    super(instanceSetImplementationState, propertyMapping, '', LAMBDA_PIPE);
     this.propertyMapping = propertyMapping;
     this.editorStore = editorStore;
   }
@@ -66,7 +70,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.propertyMapping.owner.parent.path,
-      SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
+      MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
       this.propertyMapping.owner.id.value,
       this.propertyMapping.property.value.name,
       this.uuid, // in case of duplications
@@ -77,22 +81,22 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
     const emptyLambda = RawLambda.createStub();
     if (this.lambdaString) {
       try {
-        const lambda = (yield flowResult(
-          this.editorStore.graphState.graphManager.pureCodeToLambda(
+        const lambda =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          ),
-        )) as RawLambda | undefined;
+          )) as RawLambda | undefined;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof FlatDataPropertyMapping) {
           this.propertyMapping.transform = lambda ?? emptyLambda;
         }
-      } catch (error: unknown) {
+      } catch (error) {
+        assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -110,12 +114,11 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         try {
           const lambdas = new Map<string, RawLambda>();
           lambdas.set(this.lambdaId, this.propertyMapping.transform);
-          const isolatedLambdas = (yield flowResult(
-            this.editorStore.graphState.graphManager.lambdaToPureCode(
+          const isolatedLambdas =
+            (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
               lambdas,
               pretty,
-            ),
-          )) as Map<string, string>;
+            )) as Map<string, string>;
           const grammarText = isolatedLambdas.get(this.lambdaId);
           this.setLambdaString(
             grammarText !== undefined
@@ -123,9 +126,10 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
               : '',
           );
           this.clearErrors();
-        } catch (error: unknown) {
-          this.editorStore.applicationStore.logger.error(
-            CORE_LOG_EVENT.PARSING_PROBLEM,
+        } catch (error) {
+          assertErrorThrown(error);
+          this.editorStore.applicationStore.log.error(
+            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
             error,
           );
         }
@@ -217,18 +221,20 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
     if (lambdas.size) {
       this.isConvertingTransformLambdaObjects = true;
       try {
-        const isolatedLambdas = (yield flowResult(
-          this.editorStore.graphState.graphManager.lambdaToPureCode(lambdas),
-        )) as Map<string, string>;
+        const isolatedLambdas =
+          (yield this.editorStore.graphManagerState.graphManager.lambdasToPureCode(
+            lambdas,
+          )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
           const flatDataPropertyMappingState = propertyMappingStates.get(key);
           flatDataPropertyMappingState?.setLambdaString(
             flatDataPropertyMappingState.extractLambdaString(grammarText),
           );
         });
-      } catch (error: unknown) {
-        this.editorStore.applicationStore.logger.error(
-          CORE_LOG_EVENT.PARSING_PROBLEM,
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {
@@ -315,8 +321,8 @@ export class EmbeddedFlatDataInstanceSetImplementationState
   // dummy lambda editor states needed because embedded flat-data should be seen as `PropertMappingState`
   lambdaPrefix = '';
   lambdaString = '';
-  parserError?: ParserError;
-  compilationError?: CompilationError;
+  parserError?: ParserError | undefined;
+  compilationError?: CompilationError | undefined;
 
   setLambdaString(val: string): void {
     return;

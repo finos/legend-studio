@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import { action, computed, flowResult, makeAutoObservable } from 'mobx';
+import { action, computed, makeAutoObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
+import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  assertErrorThrown,
+  LogEvent,
   ActionState,
   prettyCONSTName,
   assertNonEmptyString,
@@ -26,12 +28,12 @@ import {
   UnsupportedOperationError,
   getNullableFirstElement,
   assertTrue,
-} from '@finos/legend-studio-shared';
-import { CORE_LOG_EVENT } from '../../../../utils/Logger';
-import { Version } from '../../../../models/sdlc/models/version/Version';
-import type { ServiceRegistrationResult } from '../../../../models/metamodels/pure/action/service/ServiceRegistrationResult';
-import { ServiceExecutionMode } from '../../../../models/metamodels/pure/action/service/ServiceExecutionMode';
-import { ServiceRegistrationEnvInfo } from '../../../ApplicationConfig';
+} from '@finos/legend-shared';
+import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import { Version } from '@finos/legend-server-sdlc';
+import type { ServiceRegistrationResult } from '@finos/legend-graph';
+import { ServiceExecutionMode } from '@finos/legend-graph';
+import { ServiceRegistrationEnvInfo } from '../../../../application/StudioConfig';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
@@ -60,9 +62,9 @@ export class ServiceRegistrationState {
   serviceEditorState: ServiceEditorState;
   modal = false;
   registrationState = ActionState.create();
-  serviceEnv?: string;
-  serviceExecutionMode?: ServiceExecutionMode;
-  projectVersion?: Version | string;
+  serviceEnv?: string | undefined;
+  serviceExecutionMode?: ServiceExecutionMode | undefined;
+  projectVersion?: Version | string | undefined;
   activatePostRegistration = true;
 
   constructor(
@@ -76,7 +78,7 @@ export class ServiceRegistrationState {
       updateVersion: action,
       setProjectVersion: action,
       openModal: action,
-      init: action,
+      initialize: action,
       updateType: action,
       updateEnv: action,
       setActivatePostRegistration: action,
@@ -105,10 +107,10 @@ export class ServiceRegistrationState {
 
   openModal(): void {
     this.setModal(true);
-    this.init();
+    this.initialize();
   }
 
-  init(): void {
+  initialize(): void {
     this.serviceEnv = getNullableFirstElement(
       this.editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig,
@@ -200,22 +202,19 @@ export class ServiceRegistrationState {
           ? this.projectVersion.id.id
           : undefined;
       const projectId = this.editorStore.sdlcState.currentProjectId;
-      const serviceRegistrationResult = (yield flowResult(
-        this.editorStore.graphState.graphManager.registerService(
-          this.editorStore.graphState.graph,
+      const serviceRegistrationResult =
+        (yield this.editorStore.graphManagerState.graphManager.registerService(
+          this.editorStore.graphManagerState.graph,
           this.serviceEditorState.service,
           projectId,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
           versionInput,
-        ),
-      )) as ServiceRegistrationResult;
+        )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
-        yield flowResult(
-          this.editorStore.graphState.graphManager.activateService(
-            serverUrl,
-            serviceRegistrationResult.serviceInstanceId,
-          ),
+        yield this.editorStore.graphManagerState.graphManager.activateService(
+          serverUrl,
+          serviceRegistrationResult.serviceInstanceId,
         );
       }
       this.setModal(false);
@@ -226,9 +225,10 @@ export class ServiceRegistrationState {
         undefined,
         null,
       );
-    } catch (error: unknown) {
-      this.editorStore.applicationStore.logger.error(
-        CORE_LOG_EVENT.SERVICE_REGISTRATION_PROBLEM,
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error, undefined, null);

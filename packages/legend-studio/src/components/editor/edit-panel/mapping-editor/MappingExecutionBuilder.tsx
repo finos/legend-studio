@@ -15,10 +15,12 @@
  */
 
 import { Fragment, useState, useRef, useCallback } from 'react';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
-import { useEditorStore } from '../../../../stores/EditorStore';
 import { flowResult } from 'mobx';
+import type { SelectComponent } from '@finos/legend-art';
 import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
   createFilter,
   CustomSelectorInput,
   BlankPanelPlaceholder,
@@ -27,23 +29,22 @@ import {
   TimesIcon,
   PlayIcon,
   FlaskIcon,
-} from '@finos/legend-studio-components';
+  ResizablePanelSplitterLine,
+  compareLabelFn,
+} from '@finos/legend-art';
 import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-studio-components';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  getMappingElementSource,
+  getMappingElementTarget,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useDrop } from 'react-dnd';
 import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { NewServiceModal } from '../service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import { EDITOR_LANGUAGE } from '../../../../stores/EditorConfig';
-import {
-  guaranteeType,
-  uniq,
-  compareLabelFn,
-  isNonNullable,
-} from '@finos/legend-studio-shared';
+import { guaranteeType, uniq, isNonNullable } from '@finos/legend-shared';
 import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,
@@ -51,21 +52,21 @@ import {
   MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
-import { TextInputEditor } from '../../../shared/TextInputEditor';
 import {
+  EDITOR_LANGUAGE,
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
-} from '../../../../stores/ApplicationStore';
-import { Class } from '../../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import {
-  getMappingElementTarget,
-  getMappingElementSource,
-} from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { RawLambda } from '../../../../models/metamodels/pure/model/rawValueSpecification/RawLambda';
-import { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import { OperationSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/OperationSetImplementation';
+} from '@finos/legend-application';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
+import { useEditorStore } from '../../EditorStoreProvider';
+import {
+  Class,
+  RawLambda,
+  SetImplementation,
+  OperationSetImplementation,
+} from '@finos/legend-graph';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -148,8 +149,8 @@ const MappingExecutionQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = applicationStore.pluginManager
-      .getEditorPlugins()
+    const extraQueryEditors = editorStore.pluginManager
+      .getStudioPlugins()
       .flatMap(
         (plugin) =>
           plugin.getExtraMappingExecutionQueryEditorRendererConfigurations?.() ??
@@ -181,7 +182,7 @@ const MappingExecutionQueryEditor = observer(
         flowResult(
           queryState.updateLamba(
             setImplementation
-              ? editorStore.graphState.graphManager.HACKY_createGetAllLambda(
+              ? editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
                   guaranteeType(
                     getMappingElementTarget(setImplementation),
                     Class,
@@ -296,24 +297,26 @@ const MappingExecutionQueryEditor = observer(
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <ReflexContainer orientation="vertical">
-              <ReflexElement minSize={250}>
+            <ResizablePanelGroup orientation="vertical">
+              <ResizablePanel minSize={250}>
                 <div className="mapping-execution-builder__query-panel__query">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={queryState.lambdaString}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}
                     showMiniMap={false}
                   />
                 </div>
-              </ReflexElement>
-              <ReflexSplitter />
-              <ReflexElement size={250} minSize={250}>
+              </ResizablePanel>
+              <ResizablePanelSplitter>
+                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+              </ResizablePanelSplitter>
+              <ResizablePanel size={250} minSize={250}>
                 <div className="mapping-execution-builder__query-panel__query-editor">
                   {extraQueryEditors}
                 </div>
-              </ReflexElement>
-            </ReflexContainer>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         )}
         {queryState.query.isStub && (
@@ -354,7 +357,7 @@ export const MappingExecutionObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -374,7 +377,7 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -399,7 +402,7 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <TextInputEditor
+        <StudioTextInputEditor
           language={EDITOR_LANGUAGE.SQL}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
@@ -660,23 +663,27 @@ export const MappingExecutionBuilder = observer(
           </div>
         </div>
         <div className="mapping-execution-builder__content">
-          <ReflexContainer orientation="horizontal">
-            <ReflexElement size={250} minSize={28}>
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel size={250} minSize={28}>
               {/* use UUID key to make sure these components refresh when we change the state */}
               <MappingExecutionQueryEditor
                 key={executionState.queryState.uuid}
                 executionState={executionState}
               />
-            </ReflexElement>
-            <ReflexSplitter />
-            <ReflexElement size={250} minSize={28}>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel size={250} minSize={28}>
               <MappingExecutionInputDataBuilder
                 key={executionState.inputDataState.uuid}
                 executionState={executionState}
               />
-            </ReflexElement>
-            <ReflexSplitter />
-            <ReflexElement minSize={28}>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel minSize={28}>
               <div className="panel mapping-execution-builder__result-panel">
                 <div className="panel__header">
                   <div className="panel__header__title">
@@ -684,15 +691,15 @@ export const MappingExecutionBuilder = observer(
                   </div>
                 </div>
                 <div className="panel__content mapping-execution-builder__result-panel__content">
-                  <TextInputEditor
+                  <StudioTextInputEditor
                     inputValue={executionResultText ?? ''}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.JSON}
                   />
                 </div>
               </div>
-            </ReflexElement>
-          </ReflexContainer>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
         <ExecutionPlanViewer
           executionPlanState={executionState.executionPlanState}

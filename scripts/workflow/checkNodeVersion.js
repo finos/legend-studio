@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { loadJSON } from '@finos/legend-studio-dev-utils/DevUtils';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';

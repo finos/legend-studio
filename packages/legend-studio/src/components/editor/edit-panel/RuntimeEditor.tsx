@@ -25,10 +25,12 @@ import {
   IdentifiedConnectionsPerStoreEditorTabState,
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
-import { useEditorStore } from '../../../stores/EditorStore';
-import SplitPane from 'react-split-pane';
-import type { TreeNodeContainerProps } from '@finos/legend-studio-components';
+import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
   clsx,
   TreeView,
   ContextMenu,
@@ -38,7 +40,12 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
-} from '@finos/legend-studio-components';
+  RuntimeIcon,
+  ConnectionIcon,
+  ModelStoreIcon,
+  ClassIcon,
+  MappingIcon,
+} from '@finos/legend-art';
 import {
   FaChevronDown,
   FaChevronRight,
@@ -48,14 +55,7 @@ import {
   FaCog,
   FaCaretRight,
 } from 'react-icons/fa';
-import {
-  getElementIcon,
-  RuntimeIcon,
-  ConnectionIcon,
-  ModelStoreIcon,
-  ClassIcon,
-  MappingIcon,
-} from '../../shared/Icon';
+import { getElementIcon } from '../../shared/ElementIconUtils';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor';
 import type { UMLEditorElementDropTarget } from '../../../stores/shared/DnDUtil';
@@ -68,31 +68,31 @@ import {
   assertErrorThrown,
   guaranteeType,
   UnsupportedOperationError,
-} from '@finos/legend-studio-shared';
+} from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { Dialog } from '@material-ui/core';
-import type { PackageableElementSelectOption } from '../../../models/metamodels/pure/model/packageableElements/PackageableElement';
+import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../EditorStoreProvider';
+import type { PackageableElementReference } from '@finos/legend-graph';
 import {
   Connection,
   ConnectionPointer,
-} from '../../../models/metamodels/pure/model/packageableElements/connection/Connection';
-import {
   Runtime,
   IdentifiedConnection,
   RuntimePointer,
-} from '../../../models/metamodels/pure/model/packageableElements/runtime/Runtime';
-import { ModelStore } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/model/ModelStore';
-import { Mapping } from '../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import { PackageableConnection } from '../../../models/metamodels/pure/model/packageableElements/connection/PackageableConnection';
-import { JsonModelConnection } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import { Class } from '../../../models/metamodels/pure/model/packageableElements/domain/Class';
-import { Store } from '../../../models/metamodels/pure/model/packageableElements/store/Store';
-import { XmlModelConnection } from '../../../models/metamodels/pure/model/packageableElements/store/modelToModel/connection/XmlModelConnection';
-import { FlatDataConnection } from '../../../models/metamodels/pure/model/packageableElements/store/flatData/connection/FlatDataConnection';
-import type { PackageableElementReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/model/packageableElements/PackageableElementReference';
-import { RelationalDatabaseConnection } from '../../../models/metamodels/pure/model/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { useApplicationStore } from '../../../stores/ApplicationStore';
+  ModelStore,
+  Mapping,
+  Class,
+  Store,
+  PackageableConnection,
+  JsonModelConnection,
+  XmlModelConnection,
+  FlatDataConnection,
+  RelationalDatabaseConnection,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const getConnectionTooltipText = (connection: Connection): string => {
   const connectionValue =
@@ -489,9 +489,9 @@ const IdentifiedConnectionEditor = observer(
         try {
           customConnection =
             currentRuntimeEditorTabState.createNewCustomConnection();
-        } catch (e: unknown) {
-          assertErrorThrown(e);
-          applicationStore.notifyWarning(e.message);
+        } catch (error) {
+          assertErrorThrown(error);
+          applicationStore.notifyWarning(error.message);
           return;
         }
         const newIdentifiedConnection = new IdentifiedConnection(
@@ -633,138 +633,141 @@ const IdentifiedConnectionsPerStoreEditor = observer(
 
     return (
       <div className="runtime-store-connections-editor">
-        <SplitPane
-          split="vertical"
-          defaultSize={300}
-          minSize={300}
-          maxSize={-400}
-        >
-          <div className="panel runtime-explorer">
-            <div className="panel__header">
-              {currentRuntimeEditorTabState instanceof
-                IdentifiedConnectionsPerStoreEditorTabState && (
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">store</div>
-                  <div className="panel__header__title__content">
-                    {currentRuntimeEditorTabState.store.name}
-                  </div>
-                </div>
-              )}
-              {currentRuntimeEditorTabState instanceof
-                IdentifiedConnectionsPerClassEditorTabState && (
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">store</div>
-                  <div className="panel__header__title__content">
-                    ModelStore
-                  </div>
-                  <div className="runtime-store-connections-editor__model-store__arrow-icon">
-                    <FaCaretRight />
-                  </div>
-                  <div className="runtime-store-connections-editor__model-store__class-icon">
-                    <ClassIcon />
-                  </div>
-                  <div className="runtime-store-connections-editor__model-store__class-name">
-                    {currentRuntimeEditorTabState.class.name}
-                  </div>
-                </div>
-              )}
-              <div className="panel__header__actions">
-                <button
-                  className="panel__header__action"
-                  disabled={isReadOnly}
-                  tabIndex={-1}
-                  onClick={addNewConnection}
-                  title="Add Connection..."
-                >
-                  <FaPlus />
-                </button>
-              </div>
-            </div>
-            <ContextMenu
-              className="panel__content"
-              disabled={isReadOnly}
-              content={
-                <IdentifiedConnectionsPerStoreExplorerContextMenu
-                  createNewIdentifiedConnection={addNewConnection}
-                />
-              }
-              menuProps={{ elevation: 7 }}
-            >
-              <div ref={dropConnectionRef} className="dnd__dropzone">
-                {Boolean(
-                  currentRuntimeEditorTabState.identifiedConnections.length,
-                ) && (
-                  <>
-                    <div
-                      className={clsx({ dnd__overlay: isConnectionDragOver })}
-                    />
-                    <div className="panel__content__list">
-                      {currentRuntimeEditorTabState.identifiedConnections.map(
-                        (rtConnection) => (
-                          <IdentifiedConnectionsPerStoreExplorerItem
-                            key={rtConnection.uuid}
-                            identifiedConnection={rtConnection}
-                            currentRuntimeEditorTabState={
-                              currentRuntimeEditorTabState
-                            }
-                            isActive={rtConnection === identifiedConnection}
-                            isReadOnly={isReadOnly}
-                          />
-                        ),
-                      )}
-                    </div>
-                  </>
-                )}
-                {!currentRuntimeEditorTabState.identifiedConnections.length && (
-                  <BlankPanelPlaceholder
-                    placeholderText="Add a connection"
-                    onClick={addNewConnection}
-                    clickActionType="add"
-                    tooltipText="Drop a connection to add it to the list, or click to add an embedded connection"
-                    dndProps={
-                      isEmbeddedRuntime
-                        ? undefined
-                        : {
-                            isDragOver: isConnectionDragOver,
-                            canDrop: canDropConnection,
-                          }
-                    }
-                    readOnlyProps={
-                      !isReadOnly
-                        ? undefined
-                        : {
-                            placeholderText: 'No connection',
-                          }
-                    }
-                  />
-                )}
-              </div>
-            </ContextMenu>
-          </div>
-          {connectionEditorState && identifiedConnection && (
-            <IdentifiedConnectionEditor
-              runtimeEditorState={runtimeEditorState}
-              currentRuntimeEditorTabState={currentRuntimeEditorTabState}
-              connectionEditorState={connectionEditorState}
-              identifiedConnection={identifiedConnection}
-              isReadOnly={isReadOnly}
-            />
-          )}
-          {(!connectionEditorState || !identifiedConnection) && (
-            <div className="panel">
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel size={300} minSize={300}>
+            <div className="panel runtime-explorer">
               <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">
-                    runtime connection
+                {currentRuntimeEditorTabState instanceof
+                  IdentifiedConnectionsPerStoreEditorTabState && (
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__label">store</div>
+                    <div className="panel__header__title__content">
+                      {currentRuntimeEditorTabState.store.name}
+                    </div>
                   </div>
+                )}
+                {currentRuntimeEditorTabState instanceof
+                  IdentifiedConnectionsPerClassEditorTabState && (
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__label">store</div>
+                    <div className="panel__header__title__content">
+                      ModelStore
+                    </div>
+                    <div className="runtime-store-connections-editor__model-store__arrow-icon">
+                      <FaCaretRight />
+                    </div>
+                    <div className="runtime-store-connections-editor__model-store__class-icon">
+                      <ClassIcon />
+                    </div>
+                    <div className="runtime-store-connections-editor__model-store__class-name">
+                      {currentRuntimeEditorTabState.class.name}
+                    </div>
+                  </div>
+                )}
+                <div className="panel__header__actions">
+                  <button
+                    className="panel__header__action"
+                    disabled={isReadOnly}
+                    tabIndex={-1}
+                    onClick={addNewConnection}
+                    title="Add Connection..."
+                  >
+                    <FaPlus />
+                  </button>
                 </div>
               </div>
-              <div className="panel__content">
-                <BlankPanelContent>No connection selected</BlankPanelContent>
-              </div>
+              <ContextMenu
+                className="panel__content"
+                disabled={isReadOnly}
+                content={
+                  <IdentifiedConnectionsPerStoreExplorerContextMenu
+                    createNewIdentifiedConnection={addNewConnection}
+                  />
+                }
+                menuProps={{ elevation: 7 }}
+              >
+                <div ref={dropConnectionRef} className="dnd__dropzone">
+                  {Boolean(
+                    currentRuntimeEditorTabState.identifiedConnections.length,
+                  ) && (
+                    <>
+                      <div
+                        className={clsx({ dnd__overlay: isConnectionDragOver })}
+                      />
+                      <div className="panel__content__list">
+                        {currentRuntimeEditorTabState.identifiedConnections.map(
+                          (rtConnection) => (
+                            <IdentifiedConnectionsPerStoreExplorerItem
+                              key={rtConnection.uuid}
+                              identifiedConnection={rtConnection}
+                              currentRuntimeEditorTabState={
+                                currentRuntimeEditorTabState
+                              }
+                              isActive={rtConnection === identifiedConnection}
+                              isReadOnly={isReadOnly}
+                            />
+                          ),
+                        )}
+                      </div>
+                    </>
+                  )}
+                  {!currentRuntimeEditorTabState.identifiedConnections
+                    .length && (
+                    <BlankPanelPlaceholder
+                      placeholderText="Add a connection"
+                      onClick={addNewConnection}
+                      clickActionType="add"
+                      tooltipText="Drop a connection to add it to the list, or click to add an embedded connection"
+                      dndProps={
+                        isEmbeddedRuntime
+                          ? undefined
+                          : {
+                              isDragOver: isConnectionDragOver,
+                              canDrop: canDropConnection,
+                            }
+                      }
+                      readOnlyProps={
+                        !isReadOnly
+                          ? undefined
+                          : {
+                              placeholderText: 'No connection',
+                            }
+                      }
+                    />
+                  )}
+                </div>
+              </ContextMenu>
             </div>
-          )}
-        </SplitPane>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel>
+            {connectionEditorState && identifiedConnection && (
+              <IdentifiedConnectionEditor
+                runtimeEditorState={runtimeEditorState}
+                currentRuntimeEditorTabState={currentRuntimeEditorTabState}
+                connectionEditorState={connectionEditorState}
+                identifiedConnection={identifiedConnection}
+                isReadOnly={isReadOnly}
+              />
+            )}
+            {(!connectionEditorState || !identifiedConnection) && (
+              <div className="panel">
+                <div className="panel__header">
+                  <div className="panel__header__title">
+                    <div className="panel__header__title__label">
+                      runtime connection
+                    </div>
+                  </div>
+                </div>
+                <div className="panel__content">
+                  <BlankPanelContent>No connection selected</BlankPanelContent>
+                </div>
+              </div>
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },
@@ -779,22 +782,21 @@ const RuntimeMappingEditor = observer(
     const { runtimeEditorState, mappingRef, isReadOnly } = props;
     const editorStore = useEditorStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
-    const mappingOptions = editorStore.graphState.graph.ownMappings
+    const mappingOptions = editorStore.graphManagerState.graph.ownMappings
       .filter((m) => !runtimeValue.mappings.map((_m) => _m.value).includes(m))
-      .map((m) => m.selectOption);
+      .map(buildElementOption);
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: PackageableElementSelectOption<Mapping>): string =>
+      stringify: (option: PackageableElementOption<Mapping>): string =>
         option.value.path,
     });
     const selectedMappingOption = {
       value: mappingRef,
       label: mappingRef.value.name,
     };
-    const changeMapping = (
-      val: PackageableElementSelectOption<Mapping>,
-    ): void => runtimeEditorState.changeMapping(mappingRef, val.value);
+    const changeMapping = (val: PackageableElementOption<Mapping>): void =>
+      runtimeEditorState.changeMapping(mappingRef, val.value);
     const deleteMapping = (): void =>
       runtimeEditorState.deleteMapping(mappingRef);
     const visitMapping = (): void => editorStore.openElement(mappingRef.value);
@@ -847,7 +849,7 @@ const RuntimeGeneralEditor = observer(
     const runtimeValue = runtimeEditorState.runtimeValue;
     const isRuntimeEmbedded = !(runtime instanceof RuntimePointer);
     // mappings
-    const mappings = editorStore.graphState.graph.ownMappings.filter(
+    const mappings = editorStore.graphManagerState.graph.ownMappings.filter(
       (mapping) => !runtimeValue.mappings.map((m) => m.value).includes(mapping),
     );
     const allowAddingMapping = !isReadOnly && Boolean(mappings.length);
@@ -969,21 +971,23 @@ export const RuntimeEditor = observer(
 
     return (
       <div className="runtime-editor">
-        <SplitPane
-          split="vertical"
-          defaultSize={300}
-          minSize={300}
-          maxSize={-700}
-        >
-          <RuntimeExplorer
-            runtimeEditorState={runtimeEditorState}
-            isReadOnly={isReadOnly}
-          />
-          <RuntimeEditorPanel
-            runtimeEditorState={runtimeEditorState}
-            isReadOnly={isReadOnly}
-          />
-        </SplitPane>
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel size={300} minSize={300}>
+            <RuntimeExplorer
+              runtimeEditorState={runtimeEditorState}
+              isReadOnly={isReadOnly}
+            />
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel>
+            <RuntimeEditorPanel
+              runtimeEditorState={runtimeEditorState}
+              isReadOnly={isReadOnly}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     );
   },
@@ -1005,7 +1009,7 @@ export const PackageableRuntimeEditor = observer(() => {
 
 export const EmbeddedRuntimeEditor = observer(
   (props: {
-    runtimeEditorState?: RuntimeEditorState;
+    runtimeEditorState?: RuntimeEditorState | undefined;
     isReadOnly: boolean;
     onClose: () => void;
   }) => {

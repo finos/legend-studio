@@ -1,0 +1,179 @@
+###Relational
+Database store::relational::tests::dbIncWithStoreFilter
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+
+  View PersonView
+  (
+    ~filter PersonFilter
+    ID: personTable.ID PRIMARY KEY,
+    FIRSTNAME: personTable.FIRSTNAME,
+    LASTNAME: personTable.LASTNAME,
+    AGE: personTable.AGE
+  )
+
+  Filter PersonFilter(personTable.AGE > 110)
+  Filter personMappingFilter(PersonView.AGE < 200)
+)
+
+Database model::realtional::test::PersonDB
+(
+  Schema PersonSchema
+  (
+    Table PersonTable
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, OUT_IS_INCLUSIVE = true, INFINITY_DATE = %2015-10-26T00:00:00),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200),
+      in_z DATE,
+      out_z DATE,
+      from_z DATE,
+      thru_z DATE
+    )
+  )
+)
+
+Database meta::relational::tests::dbInc
+(
+  Schema productSchema
+  (
+    Table productTable
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200)
+    )
+  )
+
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+  Table PersonTableExtension
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER,
+    birthDate DATE
+  )
+  Table differentPersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INTEGER,
+    ADDRESSID INTEGER,
+    FIRMID INTEGER,
+    MANAGERID INTEGER
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INTEGER,
+    CEOID INTEGER
+  )
+  Table firmExtensionTable
+  (
+    firmId INTEGER PRIMARY KEY,
+    legalName VARCHAR(200),
+    establishedDate DATE
+  )
+  Table otherFirmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INTEGER
+  )
+  Table addressTable
+  (
+    ID INTEGER PRIMARY KEY,
+    TYPE INTEGER,
+    NAME VARCHAR(200),
+    STREET VARCHAR(100),
+    COMMENTS VARCHAR(100)
+  )
+  Table locationTable
+  (
+    ID INTEGER PRIMARY KEY,
+    PERSONID INTEGER,
+    PLACE VARCHAR(200),
+    date DATE
+  )
+  Table placeOfInterestTable
+  (
+    ID INTEGER PRIMARY KEY,
+    locationID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+
+  View PersonFirmView
+  (
+    PERSON_ID: personTable.ID PRIMARY KEY,
+    lastName: personTable.LASTNAME,
+    firm_name: [meta::relational::tests::dbInc]@Firm_Person | firmTable.LEGALNAME
+  )
+  View FirstNameAddress
+  (
+    ~distinct
+    firstName: personTable.FIRSTNAME PRIMARY KEY,
+    address: [meta::relational::tests::dbInc]@Address_Person | addressTable.NAME PRIMARY KEY
+  )
+  View personViewWithGroupBy
+  (
+    ~groupBy
+    (
+      personTable.ID
+    )
+    id: personTable.ID PRIMARY KEY,
+    maxage: max(personTable.AGE)
+  )
+  View PersonViewWithDistinct
+  (
+    ~distinct
+    id: [meta::relational::tests::dbInc]@PersonWithPersonView | personTable.ID PRIMARY KEY,
+    firstName: [meta::relational::tests::dbInc]@PersonWithPersonView | personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::dbInc]@PersonWithPersonView | personTable.LASTNAME,
+    firmId: [meta::relational::tests::dbInc]@PersonWithPersonView | personTable.FIRMID
+  )
+
+  Join personViewWithFirmTable(firmTable.ID = PersonViewWithDistinct.firmId)
+  Join PersonWithPersonView(personTable.ID = personViewWithGroupBy.id and personTable.AGE = personViewWithGroupBy.maxage)
+  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
+  Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+  Join Firm_Ceo(firmTable.CEOID = personTable.ID)
+  Join Firm_Person(firmTable.ID = personTable.FIRMID)
+  Join Firm_Person1(firmTable.ID = personTable.FIRMID and firmTable.LEGALNAME = 'Firm X')
+  Join Firm_Person2(firmTable.ID = personTable.FIRMID and personTable.FIRSTNAME = 'Peter')
+  Join FirmExtension_PersonExtension(firmExtensionTable.firmId = PersonTableExtension.FIRMID)
+  Join Person_Location(personTable.ID = locationTable.PERSONID)
+  Join Person_Manager(personTable.MANAGERID = {target}.ID)
+  Join location_PlaceOfInterest(locationTable.ID = placeOfInterestTable.locationID)
+  Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)
+
+  Filter FirmXFilter(firmTable.LEGALNAME = 'Firm X')
+  Filter FirmBFilter(firmTable.LEGALNAME = 'Firm B')
+)

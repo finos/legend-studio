@@ -153,7 +153,6 @@ const TYPESCRIPT_RULES = {
     { args: 'none', ignoreRestSiblings: true },
   ],
   '@typescript-eslint/no-extra-semi': WARN,
-  '@typescript-eslint/no-implicit-any-catch': WARN,
   // NOTE: since functions are hoisted in ES6, it is then advisable to enable this rule so that we can have functions that depend on each other and not causing
   // circular module dependency. It is also said to be safe to use
   // See https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-use-before-define.md#options
@@ -204,7 +203,9 @@ const STUDIO_RULES = {
   '@finos/legend-studio/enforce-protocol-export-prefix': ERROR,
   '@finos/legend-studio/enforce-protocol-file-prefix': ERROR,
   '@finos/legend-studio/no-cross-protocol-version-import': ERROR,
-  '@finos/legend-studio/no-cross-workspace-source-import': ERROR,
+  '@finos/legend-studio/no-cross-workspace-non-export-usage': ERROR,
+  '@finos/legend-studio/no-cross-workspace-source-usage': ERROR,
+  '@finos/legend-studio/no-same-workspace-absolute-import': ERROR,
   '@finos/legend-studio/no-same-workspace-index-import': ERROR,
 };
 

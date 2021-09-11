@@ -15,15 +15,17 @@
  */
 
 import { observable, computed, makeObservable, action, flow } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-studio-shared';
-import { uuid } from '@finos/legend-studio-shared';
-import { LambdaEditorState } from '../../../editor-state/element-editor-state/LambdaEditorState';
+import type { GeneratorFn } from '@finos/legend-shared';
+import { uuid } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import type { PropertyMapping } from '../../../../models/metamodels/pure/model/packageableElements/mapping/PropertyMapping';
-import type { InstanceSetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/InstanceSetImplementation';
-import type { MappingElement } from '../../../../models/metamodels/pure/model/packageableElements/mapping/Mapping';
-import type { SetImplementation } from '../../../../models/metamodels/pure/model/packageableElements/mapping/SetImplementation';
-import type { Type } from '../../../../models/metamodels/pure/model/packageableElements/domain/Type';
+import type { MappingElement } from './MappingEditorState';
+import type {
+  PropertyMapping,
+  InstanceSetImplementation,
+  SetImplementation,
+  Type,
+} from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export class MappingElementState {
   uuid = uuid();
@@ -61,7 +63,7 @@ export abstract class SetImplementationState extends MappingElementState {
 export abstract class InstanceSetImplementationState extends SetImplementationState {
   declare mappingElement: InstanceSetImplementation;
   propertyMappingStates: PropertyMappingState[] = [];
-  selectedType?: Type;
+  selectedType?: Type | undefined;
 
   constructor(
     editorStore: EditorStore,
