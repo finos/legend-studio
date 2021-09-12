@@ -16,4 +16,4 @@
 
 import { validateChangesets } from '@finos/legend-dev-utils/ChangesetUtils';
 
-validateChangesets(process.cwd(), 'origin/master');
+validateChangesets(process.cwd(), `origin/${process.env.GITHUB_BASE_REF}`);
