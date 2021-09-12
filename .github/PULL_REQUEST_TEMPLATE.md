@@ -16,10 +16,10 @@ https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md
 <!--
 Summary fill-out guides:
 
-- Test: https://github.com/finos/legend-studio/blob/master/docs/technical/test-strategy.md
+- Test: https://github.com/finos/legend-studio/blob/master/docs/test-strategy.md
 - Changeset: https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md#changeset
 - Documentation: Link to a PR from https://github.com/finos/legend repo
-- Dependency: https://github.com/finos/legend-studio/blob/master/docs/workflow/dependencies.md
+- Dependency: https://github.com/finos/legend-studio/blob/master/docs/dependencies.md
 
 NOTE: For component/style changes: Please check out our style guide https://github.com/finos/legend-studio/tree/master/docs/ux. Also, PR involving UX/UI might take more time to discuss and review.
 

@@ -73,7 +73,7 @@ To create the changeset, you can use the following commands:
 # To quickly generate a changeset
 # NOTE: you can provide an optional message. If no message is provided,
 # the summary part of your changeset will be left blank.
-yarn changeset -m "e.g. some message ..."
+yarn changeset "e.g. some message ..."
 
 # To open an interactive prompt to build more advanced changeset
 yarn changeset:cli
@@ -105,17 +105,11 @@ After setting up, visit http://localhost:8080/studio and the application should 
 
 #### :pencil2: Writing code
 
-Before writing any code, you need to [setup your branch properly](./docs/workflow/working-with-github.md#standard-contribution-workflow), this is a fairly common workflow in any OSS project. But if you are working on a feature that is part of a new release, the workflow is slightly different, find out more about that [here](./docs/workflow/working-with-github.md#working-on-a-release).
-
-Now, you're good to start. After the setup step, you can start the application you are working on in development mode.
+After setting up, you can start Legend Studio.
 
 ```sh
 # Run the main web application (top-level workspace) in development mode.
-yarn dev # alias: `yarn start` - this by default will start Studio
-
-# Or start the specific app you are working on
-yarn dev:query
-yarn dev:studio
+yarn dev # alias: `yarn start`
 ```
 
 Each workspace in the monorepo should have a `dev` script. Run these (in separate terminal tabs) when you are making changes in these workspaces to rebuild on change. Otherwise, after making change, you have to manually rebuild the workspace using the `build` script. Following are some useful scripts for development.
@@ -142,7 +136,7 @@ yarn dev:tsc
 
 #### :construction: Testing your code
 
-Read our [guide on testing](./docs/technical/test-strategy.md) to understand our approach to testing.
+Read our [guide on testing](./docs/test-strategy.md) to understand our approach to testing.
 
 ```sh
 # Use this on root directory or workspace directory to run unit
@@ -187,19 +181,16 @@ yarn fix
 
 #### :tada: Checking in your code
 
-Make sure to [create a changeset](#changeset) if you make significant code logic changes.
+Make sure to [create a changeset](#changeset) if you make significant code logic changes. Commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
 
 ```sh
+# Bring up the interactive tool to build changeset.
 yarn changeset
 ```
 
-If you make change to the interface, please kindly include the screenshots or `GIFs` in the description of the PR to make it easier for us to review this change :pray:
-
-Also please try to commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
-
 #### :package: Releasing
 
-This section is only for maintainers. See the [release guidelines](./docs/workflow/release-guide.md).
+This section is only for maintainers. See the [release guidelines](./docs/release-guide.md).
 
 ### Code Conventions
 
