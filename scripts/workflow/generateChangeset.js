@@ -36,44 +36,62 @@ import chalk from 'chalk';
  * Of course, we can allow a workaround for people who work directly `master` branch.
  */
 
-const DEFAULT_BRANCH_NAME = 'master';
-const useOriginDefaultBranch = process.argv[3] === '--useOrigin';
+import * as yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
-if (!useOriginDefaultBranch) {
+const argv = yargs.default(hideBin(process.argv)).argv;
+
+const DEFAULT_BRANCH_NAME = 'master';
+const useOrigin = argv.useOrigin;
+const message = argv.m;
+const targetBranch = argv.v
+  ? argv.v === 'latest'
+    ? DEFAULT_BRANCH_NAME
+    : `release/${argv.v}`
+  : undefined;
+
+if (targetBranch === undefined) {
+  console.log(
+    chalk.red(
+      `Changeset generator needs to know the release version you are working on. ` +
+        `Specify a version using '-v 0.4.0' or '-v latest' if you are planning to merge your changes to the default branch`,
+    ),
+  );
+  process.exit(1);
+}
+
+if (!useOrigin) {
   const currentBranch = execSync(`git branch --show-current`, {
     encoding: 'utf-8',
   }).trim();
 
-  if (currentBranch === DEFAULT_BRANCH_NAME) {
+  if (currentBranch === targetBranch) {
     console.log(
       chalk.red(
-        `Changeset generator by default only works if you work on feature branches instead of default branch. ` +
+        `Changeset generator by default only works if you work on feature branches instead of the '${targetBranch}' branch. ` +
           `This is also the recommended workflow. But if you must, you can use the '--useOrigin' flag.`,
       ),
     );
     process.exit(1);
   }
 
-  const localDefaultBranchRev = execSync(
-    `git rev-parse ${DEFAULT_BRANCH_NAME}`,
-    {
-      encoding: 'utf-8',
-    },
-  ).trim();
-  const originDefaultBranchRev = execSync(
-    `git rev-parse origin/${DEFAULT_BRANCH_NAME}`,
+  const localTargetBranchRev = execSync(`git rev-parse ${targetBranch}`, {
+    encoding: 'utf-8',
+  }).trim();
+  const originTargetBranchRev = execSync(
+    `git rev-parse origin/${targetBranch}`,
     {
       encoding: 'utf-8',
     },
   ).trim();
 
-  if (localDefaultBranchRev !== originDefaultBranchRev) {
+  if (localTargetBranchRev !== originTargetBranchRev) {
     console.log(
       chalk.yellow(
         `Changeset generator might not haved produced the most accurate changeset!\n` +
-          `By default will set reference point to your local default branch; however, ` +
-          `when validating them, we will set reference point to origin default branch.\n` +
-          `As such, it is recommended to keep your local default and origin default branches in sync to produce more accurate changeset.\n`,
+          `By default this will set reference point to your local '${targetBranch}' branch; however, ` +
+          `when validating them, we will set reference point to origin '${targetBranch}' branch.\n` +
+          `As such, it is recommended to keep your local and origin '${targetBranch}' branches in sync to produce more accurate changeset.\n`,
       ),
     );
   }
@@ -81,8 +99,6 @@ if (!useOriginDefaultBranch) {
 
 generateChangeset(
   process.cwd(),
-  process.argv[2] ?? '',
-  useOriginDefaultBranch
-    ? `origin/${DEFAULT_BRANCH_NAME}`
-    : DEFAULT_BRANCH_NAME,
+  message ? message.trim() : '',
+  useOrigin ? `origin/${targetBranch}` : targetBranch,
 );
