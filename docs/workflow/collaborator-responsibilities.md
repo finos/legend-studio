@@ -2,11 +2,22 @@
 
 > This is an overview of the responsibilities expected from collaborators who are part of the organization maintaining this project, if you are not part of this group, this is probably irrelevant to you
 
-There are 3 main roles for people working on this repository, and each comes with their own set of responsibilities.
+There are 4 main roles for people working on this repository, and each comes with their own set of responsibilities.
 
+- **Maintainers**: people who maintain the project, who can merge PRs
 - **Release coordinators**: people who monitor, keep track, and do the actual release
 - **Developers**: people who actually implement the feature, bug fixes, etc.
-- **Reviewers**: people review PR
+- **Reviewers**: people review PRs
+
+## Maintainers
+
+The most important thing to take note of as maintainers is when merging PRs, make sure to use the right merging strategy:
+
+- For normal PRs, almost always do a `squash` merge unless requested to do otherwise and the commit list seems sensible and do not pose risk of polluting the default branch history
+- For release branch update PRs, **always** do a `rebase` merge
+- For release branch merging into default branch PRs, **always** do a `rebase` merge
+
+> Mistakes are not too punishing, but they will cause the history to look messy and rectifying them might cause quite a lot of effort so please be vigilant here :pray:
 
 ## Release coordinaters
 
@@ -17,8 +28,9 @@ There are 3 main roles for people working on this repository, and each comes wit
 - Communicate about the timeline and progress with `developers` and `reviewers`
 - When publish a new release, create a PR to merge the release branch into the default branch and then do a release
 - Publish `CHANGELOG.md` and Github release to point at the doc for the new release
+- If release branch needs to be updated, release coordinator need to create a PR for the rebase. **Please make sure to merge the PR using rebase strategy** to maintain linear history
 
-## Developer
+## Developers
 
 - When working on a bug fix:
   - If there is no issue filed for the bug, please create one with small reproducible test case and make sure to link this in your PR and `changeset` for that PR
