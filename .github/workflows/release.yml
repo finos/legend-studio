@@ -6,7 +6,7 @@ on:
       # Default branch is meant for standard releases, i.e. minor version bumps (e.g. 1.6.0, 1.7.0)
       - master
       # Release branches are meant for patch releases, i.e. patch version bumps (e.g. 1.6.1, 1.7.1)
-      - 'releases/**'
+      - 'release/**'
 
 # This job is meant for both standard and path release process
 # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md
