@@ -53,7 +53,7 @@ const targetBranch = argv.v
 if (targetBranch === undefined) {
   console.log(
     chalk.red(
-      `Changeset generator needs to know the release version you are working on. ` +
+      `Changeset generator needs the release version you are working on. ` +
         `Specify a version using '-v 0.4.0' or '-v latest' if you are planning to merge your changes to the default branch`,
     ),
   );

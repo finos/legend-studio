@@ -105,7 +105,7 @@ After setting up, visit http://localhost:8080/studio and the application should 
 
 #### :pencil2: Writing code
 
-Before writing any code, you need to [setup your branch properly](./docs/workflow/working-with-github.md#standard-contribution-workflow), this is a fairly common workflow in any OSS project. But if you are working on a feature that is part of a new release, the workflow is slightly different, find out more about that [here](./docs/workflow/working-with-github.md#working-on-a-release).
+Before writing any code, you need to [setup your branch properly](./docs/workflow/working-with-github.md#standard-contribution-workflow), this is a fairly common workflow in any OSS project. But if you are working on bug fixes for a recent release, the workflow will be slightly different, find out more about that [here](./docs/workflow/working-with-github.md#working-on-bug-fixes-for-a-release).
 
 Now, you're good to start. After the setup step, you can start the application you are working on in development mode.
 
@@ -199,7 +199,7 @@ Also please try to commit your code with messages following our [convention](#co
 
 #### :package: Releasing
 
-This section is only for maintainers. See the [release guidelines](./docs/workflow/release-guide.md).
+This section is only for maintainers, or whoever has [write access and above](https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/repository-permission-levels-for-an-organization#repository-access-for-each-permission-level) permission in this repository. Only this group of people should have the permission to trigger the release. For details of the release process, please read this [guide](./docs/workflow/release-process.md).
 
 ### Code Conventions
 

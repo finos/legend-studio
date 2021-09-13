@@ -1,5 +1,9 @@
 # Working with Github
 
+This provides a general guideline on how to work with Github and `git CLI`, if you are familiar with [Github flow](https://docs.github.com/en/get-started/quickstart/github-flow), you would be able to pick this up quite quickly.
+
+> We meant to keep this guideline friendly to developers who are new Git and Github, if you are one, please check out these [helpful](https://www.atlassian.com/git/tutorials/setting-up-a-repository) [resources](https://lab.github.com/githubtraining/create-a-release-based-workflow)
+
 ## Standard contribution workflow
 
 We disallow working directly with the default branch, therefore, your workflow should be something like this:
@@ -12,13 +16,13 @@ We disallow working directly with the default branch, therefore, your workflow s
 - Push the feature branch `git push -u origin feature-1`
 - Create a PR, getting it approved and merged
 - [Sync the fork](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/syncing-a-fork) (or you can use the command `git pull --rebase upstream master`)
-- _Restart the process to contribute new features..._
+- _Restart the process for the next contributions..._
 
-## Working on a release
+## Working on bug fixes for a release
 
-The workflow above is applicable to you most of the time, however, if you are working on a feature of a particular release, the workflow is slightly different.
+The workflow above is applicable to you most of the time, however, if you are working on bug fixes for a particular release, the workflow is slightly different.
 
-_Let's say the next release we're working on is `0.4.0`, at this point the release coordinator [should have already created](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) the release branch `release/0.4.0` in the main repository. Your workflow would be something like this_
+_Let's say the release we're rolling out bug fixes for is `0.4.0`, at this point the release coordinator [should have already created](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) the release branch `release/0.4.0` in the main repository. Your workflow would be something like this_
 
 - **One-time setup**: fetch the release branch and sync it with your fork
 
@@ -33,4 +37,4 @@ git push -f
 - Push the feature branch `git push -u origin feature-1`
 - Create a PR, **changing to merge to the release branch** `release/0.4.0` instead of the default branch, getting it approved and merged
 - Sync the fork (similarly to the above, except on Github, you would need to switch to the release branch to fetch upstream or use the command `git pull --rebease upstream release/0.4.0`)
-- _Restart the process to contribute new features..._
+- _Restart the process for the next contributions..._
