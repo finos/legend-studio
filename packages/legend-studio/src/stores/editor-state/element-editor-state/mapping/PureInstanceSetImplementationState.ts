@@ -39,6 +39,7 @@ import {
   RawLambda,
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -126,9 +127,86 @@ export class PurePropertyMappingState extends PropertyMappingState {
   }
 }
 
+export class PureInstanceSetImplementationFilterState extends LambdaEditorState {
+  filter: RawLambda | undefined;
+  editorStore: EditorStore;
+
+  constructor(editorStore: EditorStore, filter?: RawLambda) {
+    super('true', LAMBDA_PIPE);
+
+    makeObservable(this, {
+      filter: observable,
+      editorStore: observable,
+    });
+
+    this.filter = filter;
+    this.editorStore = editorStore;
+  }
+
+  get lambdaId(): string {
+    return buildSourceInformationSourceId([this.uuid]);
+  }
+
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
+    const emptyFunctionDefinition = RawLambda.createStub();
+    if (this.lambdaString) {
+      try {
+        const lambda =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
+            this.fullLambdaString,
+            this.lambdaId,
+          )) as RawLambda | undefined;
+        this.setParserError(undefined);
+        this.filter = lambda ?? emptyFunctionDefinition;
+      } catch (error) {
+        assertErrorThrown(error);
+        if (error instanceof ParserError) {
+          this.setParserError(error);
+        }
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          error,
+        );
+      }
+    } else {
+      this.clearErrors();
+      this.filter = emptyFunctionDefinition;
+    }
+  }
+
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+    if (this.filter && !this.filter.isStub) {
+      try {
+        const grammarText =
+          (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
+            this.filter,
+            this.lambdaId,
+            pretty,
+          )) as string;
+        this.setLambdaString(
+          grammarText !== undefined
+            ? this.extractLambdaString(grammarText)
+            : '',
+        );
+        this.clearErrors();
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          error,
+        );
+      }
+    } else {
+      this.clearErrors();
+      this.setLambdaString('');
+    }
+  }
+}
 export class PureInstanceSetImplementationState extends InstanceSetImplementationState {
   declare mappingElement: PureInstanceSetImplementation;
   declare propertyMappingStates: PurePropertyMappingState[];
+  filterMappingState: PureInstanceSetImplementationFilterState;
+
   isConvertingTransformLambdaObjects = false;
 
   constructor(
@@ -139,13 +217,19 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
 
     makeObservable(this, {
       isConvertingTransformLambdaObjects: observable,
+      filterMappingState: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
+      setFilterMappingState: action,
     });
 
     this.mappingElement = setImplementation;
     this.propertyMappingStates = setImplementation.propertyMappings.map(
       (pm) => new PurePropertyMappingState(this.editorStore, this, pm),
+    );
+    this.filterMappingState = new PureInstanceSetImplementationFilterState(
+      editorStore,
+      setImplementation.filter,
     );
   }
 
@@ -158,6 +242,11 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     propertyMappingState: PurePropertyMappingState[],
   ): void {
     this.propertyMappingStates = propertyMappingState;
+  }
+  setFilterMappingState(
+    filterMappingState: PureInstanceSetImplementationFilterState,
+  ): void {
+    this.filterMappingState = filterMappingState;
   }
 
   /**
@@ -181,6 +270,12 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
         existingPropertyMappingState ?? propertyMappingState,
       );
     });
+    this.setFilterMappingState(
+      new PureInstanceSetImplementationFilterState(
+        this.editorStore,
+        this.mappingElement.filter,
+      ),
+    );
     this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
