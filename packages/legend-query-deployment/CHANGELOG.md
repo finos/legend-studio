@@ -1,5 +1,7 @@
 # @finos/legend-query-deployment
 
+## 0.4.1
+
 ## 0.4.0
 
 ## 0.3.0
