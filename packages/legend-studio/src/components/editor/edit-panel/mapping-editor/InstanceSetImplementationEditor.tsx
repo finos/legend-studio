@@ -74,6 +74,7 @@ import {
   Table,
   Database,
 } from '@finos/legend-graph';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -395,6 +396,15 @@ export const InstanceSetImplementationEditor = observer(
       flowResult(
         instanceSetImplementationState.convertPropertyMappingTransformObjects(),
       ).catch(applicationStore.alertIllegalUnhandledError);
+
+      instanceSetImplementationState instanceof
+        PureInstanceSetImplementationState &&
+        flowResult(
+          instanceSetImplementationState.filterMappingState.convertLambdaObjectToGrammarString(
+            true,
+          ),
+        );
+
       return isReadOnly
         ? noop()
         : (): void =>
@@ -416,71 +426,105 @@ export const InstanceSetImplementationEditor = observer(
       <div className="mapping-element-editor__content">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel minSize={300}>
-            <div className="panel class-mapping-editor__property-panel">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__content">
-                    PROPERTIES
-                  </div>
-                </div>
-                <div className="panel__header__actions">
-                  <div className="panel__header__action">
-                    <div
-                      className={`class-mapping-editor__sort-by-required-btn ${
-                        sortByRequired
-                          ? 'class-mapping-editor__sort-by-required-btn--enabled'
-                          : ''
-                      }`}
-                      onClick={handleSortChange}
-                    >
-                      <FaLongArrowAltDown />
-                      <FaAsterisk />
+            <ResizablePanelGroup orientation="horizontal">
+              <ResizablePanel minSize={300}>
+                <div className="panel class-mapping-editor__property-panel">
+                  <div className="panel__header">
+                    <div className="panel__header__title">
+                      <div className="panel__header__title__content">
+                        PROPERTIES
+                      </div>
+                    </div>
+                    <div className="panel__header__actions">
+                      <div className="panel__header__action">
+                        <div
+                          className={`class-mapping-editor__sort-by-required-btn ${
+                            sortByRequired
+                              ? 'class-mapping-editor__sort-by-required-btn--enabled'
+                              : ''
+                          }`}
+                          onClick={handleSortChange}
+                        >
+                          <FaLongArrowAltDown />
+                          <FaAsterisk />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              <div className="panel__content">
-                {!isReadOnly &&
-                  !isUnsupported &&
-                  sortedProperties.map((property) => (
-                    <PropertyMappingsEditor
-                      key={property.name}
-                      property={property}
-                      instanceSetImplementationState={
-                        instanceSetImplementationState
-                      }
-                      isReadOnly={isReadOnly}
-                    />
-                  ))}
-                {isReadOnly &&
-                  !isUnsupported &&
-                  sortedProperties
-                    // for property without any property mapping in readonly mode, we won't show it
-                    .filter(
-                      (p) =>
-                        instanceSetImplementationState.propertyMappingStates.filter(
-                          (pm) =>
-                            pm.propertyMapping.property.value.name === p.name,
-                        ).length,
-                    )
-                    .map((property) => (
-                      <PropertyMappingsEditor
-                        key={property.name}
-                        property={property}
-                        instanceSetImplementationState={
-                          instanceSetImplementationState
-                        }
+                  <div className="panel__content">
+                    {!isReadOnly &&
+                      !isUnsupported &&
+                      sortedProperties.map((property) => (
+                        <PropertyMappingsEditor
+                          key={property.name}
+                          property={property}
+                          instanceSetImplementationState={
+                            instanceSetImplementationState
+                          }
+                          isReadOnly={isReadOnly}
+                        />
+                      ))}
+                    {isReadOnly &&
+                      !isUnsupported &&
+                      sortedProperties
+                        // for property without any property mapping in readonly mode, we won't show it
+                        .filter(
+                          (p) =>
+                            instanceSetImplementationState.propertyMappingStates.filter(
+                              (pm) =>
+                                pm.propertyMapping.property.value.name ===
+                                p.name,
+                            ).length,
+                        )
+                        .map((property) => (
+                          <PropertyMappingsEditor
+                            key={property.name}
+                            property={property}
+                            instanceSetImplementationState={
+                              instanceSetImplementationState
+                            }
+                            isReadOnly={isReadOnly}
+                          />
+                        ))}
+                    {isUnsupported && (
+                      <UnsupportedEditorPanel
                         isReadOnly={isReadOnly}
-                      />
-                    ))}
-                {isUnsupported && (
-                  <UnsupportedEditorPanel
-                    isReadOnly={isReadOnly}
-                    text={`Can't display class mapping in form mode`}
-                  ></UnsupportedEditorPanel>
+                        text={`Can't display class mapping in form mode`}
+                      ></UnsupportedEditorPanel>
+                    )}
+                  </div>
+                </div>
+              </ResizablePanel>
+              <ResizablePanelSplitter />
+              {instanceSetImplementationState instanceof
+                PureInstanceSetImplementationState &&
+                instanceSetImplementationState.filterMappingState.filter && (
+                  <ResizablePanel minSize={40}>
+                    <div className="panel class-mapping-editor__filter-panel">
+                      <div className="panel__header">
+                        <div className="panel__header__title">
+                          <div className="panel__header__title__content">
+                            FILTER
+                          </div>
+                        </div>
+                      </div>
+                      <div className="filter-panel">
+                        <div className="filter-panel__content">
+                          <StudioLambdaEditor
+                            className="function-editor__element__lambda-editor"
+                            disabled={false}
+                            forceBackdrop={false}
+                            forceExpansion={true}
+                            lambdaEditorState={
+                              instanceSetImplementationState.filterMappingState
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </ResizablePanel>
                 )}
-              </div>
-            </div>
+            </ResizablePanelGroup>
           </ResizablePanel>
           <ResizablePanelSplitter />
           <ResizablePanel size={300} minSize={300}>
