@@ -38,6 +38,7 @@ import chalk from 'chalk';
 
 import * as yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import semver from 'semver';
 
 const argv = yargs.default(hideBin(process.argv)).argv;
 
@@ -47,7 +48,9 @@ const message = argv.m;
 const targetBranch = argv.v
   ? argv.v === 'latest'
     ? DEFAULT_BRANCH_NAME
-    : `release/${argv.v}`
+    : semver.valid(argv.v)
+    ? `release/${argv.v}`
+    : undefined
   : undefined;
 
 if (targetBranch === undefined) {
