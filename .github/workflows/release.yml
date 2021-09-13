@@ -44,7 +44,7 @@ jobs:
         with:
           version: yarn version
           commit: 'chore: bump versions and release'
-          title: ${{ github.event.pull_request.base.ref == 'master' && 'New Release' || 'New Patch Release' }}
+          title: ${{ github.ref == 'refs/heads/master' && 'New Release' || 'New Patch Release' }}
           publish: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
