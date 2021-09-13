@@ -4,31 +4,26 @@
 
 There are 4 main roles for people working on this repository, and each comes with their own set of responsibilities.
 
-- **Maintainers**: people who maintain the project, who can merge PRs
-- **Release coordinators**: people who monitor, keep track, and do the actual release
-- **Developers**: people who actually implement the feature, bug fixes, etc.
-- **Reviewers**: people review PRs
+- **[Maintainers](#maintainers)**: people who maintain the project, who can merge PRs
+- **[Release coordinators](#release-coordinators)**: people who monitor, keep track, and do the actual release
+- **[Developers](#developers)**: people who actually implement the feature, bug fixes, etc.
+- **[Reviewers](#reviewers)**: people review PRs
 
 ## Maintainers
 
-The most important thing to take note of as maintainers is when merging PRs, make sure to use the right merging strategy:
+The most important thing to pay attention to as maintainers is when merging PRs, please make sure to always use the `squash` merging strategy, _unless requested to do otherwise and the commit list seems sensible and do not pose risk of polluting the default branch history_.
 
-- For normal PRs, almost always do a `squash` merge unless requested to do otherwise and the commit list seems sensible and do not pose risk of polluting the default branch history
-- For release branch update PRs, **always** do a `rebase` merge
-- For release branch merging into default branch PRs, **always** do a `rebase` merge
-
-> Mistakes are not too punishing, but they will cause the history to look messy and rectifying them might cause quite a lot of effort so please be vigilant here :pray:
-
-## Release coordinaters
+## Release coordinators
 
 - Do release planning (at the moment, we can't guarantee a fixed release cycle, but one usually lasts around 2 weeks to a month)
-- At the beginning of the cycle, add a new milestone, and [create a new release branch](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) for the version with the format `release/<VERSION>` (e.g. `release/0.4.0`)
 - Work with `developers` to add relavent issues to the milestone and assign them accordingly
 - When PR are submitted against the release branch, coordinators need to check if these need documentation or not: new feature and interface change almost always guarantee documentation change, bug fixes, if notable also require documentation
 - Communicate about the timeline and progress with `developers` and `reviewers`
-- When publish a new release, create a PR to merge the release branch into the default branch and then do a release
-- Publish `CHANGELOG.md` and Github release to point at the doc for the new release
-- If release branch needs to be updated, release coordinator need to create a PR for the rebase. **Please make sure to merge the PR using rebase strategy** to maintain linear history
+- When we need to do a release, [create a new release branch](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) for the version with the format `release/<VERSION>` (e.g. `release/0.4.0`). This is the branch where bug fixes for the application versions will be worked on.
+- After a patch release is made on the latest version, `cherry-pick` the changes from the release branch back on to the default branch to keep the development branch up to date.
+- Update `CHANGELOG.md` and Github release to point at the doc for the new releases
+
+> There are a lot more details around the release process for the release coordinator in [this guide](./release-process.md)
 
 ## Developers
 
@@ -43,6 +38,6 @@ The most important thing to take note of as maintainers is when merging PRs, mak
 ## Reviewers
 
 - Make sure the change has proper `changeset`: please be strict here, there are changes that do not require any changeset at all, but because of our convention, we will needto cover code changes with an empty `changeset`. As such, please remind the developers to break down their changesets properly.
-- Pay attention to the branch the PR is trying to merge into, if the feature is meant for a release, the base branch **must be** the release branch
+- Pay attention to the branch the PR is trying to merge into, if the PR is a bug fix for a past release, the base branch **must be** the corresponding release branch
 - Be vigilant when you see new dependencies introduced, refer to [our guide for dependencies](./dependencies)
 - When reviewing an interface change or a new feature, please make sure to check how the feature look and work. This is tricky even with tests, so thank you so much for doing this :pray:
