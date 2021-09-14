@@ -31,15 +31,16 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
+import type {
+  ProjectConfiguration,
+  ProjectDependency,
+} from '@finos/legend-server-sdlc';
 import {
-  Project,
   ProjectStructureVersion,
-  ProjectType,
   UpdateProjectConfigurationCommand,
-  Version,
 } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import { ProjectData } from '@finos/legend-server-depot';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
@@ -53,13 +54,12 @@ export class ProjectConfigurationEditorState extends EditorState {
   projectConfiguration?: ProjectConfiguration | undefined;
   selectedTab: CONFIGURATION_EDITOR_TAB;
   isReadOnly = false;
-  versionsByProject = new Map<string, Map<string, Version>>();
-  projects = new Map<string, Project>();
+  projects = new Map<string, ProjectData>();
   queryHistory = new Set<string>();
   isQueryingProjects = false;
   associatedProjectsAndVersionsFetched = false;
   isFetchingAssociatedProjectsAndVersions = false;
-  latestProjectStructureVersion?: ProjectStructureVersion | undefined;
+  latestProjectStructureVersion: ProjectStructureVersion | undefined;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
     super(editorStore);
@@ -70,7 +70,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       projectConfiguration: observable,
       selectedTab: observable,
       isReadOnly: observable,
-      versionsByProject: observable,
       projects: observable,
       queryHistory: observable,
       isQueryingProjects: observable,
@@ -83,8 +82,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       setSelectedTab: action,
       fectchAssociatedProjectsAndVersions: flow,
       updateProjectConfiguration: flow,
-      queryProjects: flow,
-      getProjectVersions: flow,
       updateToLatestStructure: flow,
       updateConfigs: flow,
       fetchLatestProjectStructureVersion: flow,
@@ -127,58 +124,32 @@ export class ProjectConfigurationEditorState extends EditorState {
     );
   }
 
-  *fectchAssociatedProjectsAndVersions(
-    projectConfig: ProjectConfiguration,
-  ): GeneratorFn<void> {
+  getProjectDataFromDependency(
+    dependency: ProjectDependency,
+  ): ProjectData | undefined {
+    if (!dependency.isLegacyDependency) {
+      return this.projects.get(dependency.projectId);
+    }
+    const projectData = Array.from(this.projects.values()).find(
+      (e) => e.projectId === dependency.projectId,
+    );
+    // re-write to new format
+    if (projectData) {
+      dependency.setProjectId(projectData.coordinates);
+    }
+    return projectData;
+  }
+
+  *fectchAssociatedProjectsAndVersions(): GeneratorFn<void> {
     this.isFetchingAssociatedProjectsAndVersions = true;
     try {
-      const dependencies = projectConfig.projectDependencies;
-      yield Promise.all(
-        dependencies.map((projDep) =>
-          this.editorStore.sdlcServerClient
-            .getProject(projDep.projectId)
-            .then((projectObj) => {
-              const project = Project.serialization.fromJson(projectObj);
-              this.projects.set(project.projectId, project);
-            })
-            .catch((e) => {
-              this.editorStore.applicationStore.log.error(
-                LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-                e,
-              );
-            }),
-        ),
-      );
-      yield Promise.all(
-        dependencies.map((projDep) =>
-          this.editorStore.sdlcServerClient
-            .getVersions(projDep.projectId)
-            .then((versions) => {
-              const versionMap = observable<string, Version>(new Map());
-              versions
-                .map((version) => Version.serialization.fromJson(version))
-                .forEach((version) => versionMap.set(version.id.id, version));
-              this.versionsByProject.set(projDep.projectId, versionMap);
-            })
-            .catch((e) => {
-              this.editorStore.applicationStore.log.error(
-                LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-                e,
-              );
-            }),
-        ),
-      );
-      // add production projects
       (
-        (yield this.editorStore.sdlcServerClient.getProjects(
-          ProjectType.PRODUCTION,
-          undefined,
-          undefined,
-          undefined,
-        )) as PlainObject<Project>[]
+        (yield this.editorStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       )
-        .map((project) => Project.serialization.fromJson(project))
-        .forEach((project) => this.projects.set(project.projectId, project));
+        .map((project) => ProjectData.serialization.fromJson(project))
+        // filter out non versioned projects
+        .filter((p) => Boolean(p.versions.length))
+        .forEach((project) => this.projects.set(project.coordinates, project));
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error) {
       assertErrorThrown(error);
@@ -231,57 +202,6 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isUpdatingConfiguration = false;
-    }
-  }
-
-  // FIXME: as of now we do caching on the query, we might want to rethink this strategy although it makes sense
-  // but UX-wise, it's awkward that user have to refresh the browser in order to refresh this cache.
-  *queryProjects(query: string): GeneratorFn<void> {
-    if (!this.queryHistory.has(query) && query) {
-      this.isQueryingProjects = true;
-      try {
-        (
-          (yield this.editorStore.sdlcServerClient.getProjects(
-            ProjectType.PRODUCTION,
-            false,
-            query,
-            undefined,
-          )) as PlainObject<Project>[]
-        )
-          .map((project) => Project.serialization.fromJson(project))
-          .forEach((project) => this.projects.set(project.projectId, project));
-        this.queryHistory.add(query);
-      } catch (error) {
-        assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
-          LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-          error,
-        );
-        this.editorStore.applicationStore.notifyError(error);
-      } finally {
-        this.isQueryingProjects = false;
-      }
-    }
-  }
-
-  *getProjectVersions(projectId: string): GeneratorFn<void> {
-    try {
-      const versionMap = observable<string, Version>(new Map());
-      (
-        (yield this.editorStore.sdlcServerClient.getVersions(
-          projectId,
-        )) as PlainObject<Version>[]
-      )
-        .map((version) => Version.serialization.fromJson(version))
-        .forEach((version) => versionMap.set(version.id.id, version));
-      this.versionsByProject.set(projectId, versionMap);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notifyError(error);
     }
   }
 

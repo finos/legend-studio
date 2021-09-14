@@ -38,6 +38,7 @@ import chalk from 'chalk';
 
 import * as yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import semver from 'semver';
 
 const argv = yargs.default(hideBin(process.argv)).argv;
 
@@ -47,13 +48,15 @@ const message = argv.m;
 const targetBranch = argv.v
   ? argv.v === 'latest'
     ? DEFAULT_BRANCH_NAME
-    : `release/${argv.v}`
+    : semver.valid(argv.v)
+    ? `release/${argv.v}`
+    : undefined
   : undefined;
 
 if (targetBranch === undefined) {
   console.log(
     chalk.red(
-      `Changeset generator needs to know the release version you are working on. ` +
+      `Changeset generator needs the release version you are working on. ` +
         `Specify a version using '-v 0.4.0' or '-v latest' if you are planning to merge your changes to the default branch`,
     ),
   );
