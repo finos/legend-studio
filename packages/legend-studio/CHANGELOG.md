@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.2.19
+
+### Patch Changes
+
+- [#460](https://github.com/finos/legend-studio/pull/460) [`c719991e`](https://github.com/finos/legend-studio/commit/c719991ea2791d8de86ca470735491318d1441fb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `depot` server to query for available dependency projects. Switch to adding dependency using project coordinates consisting of `groupId` and `artifactId`.
+
 ## 0.2.18
 
 ### Patch Changes
