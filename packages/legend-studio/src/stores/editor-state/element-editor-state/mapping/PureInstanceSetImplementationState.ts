@@ -130,8 +130,12 @@ export class PurePropertyMappingState extends PropertyMappingState {
 export class PureInstanceSetImplementationFilterState extends LambdaEditorState {
   filter: RawLambda | undefined;
   editorStore: EditorStore;
-
-  constructor(editorStore: EditorStore, filter?: RawLambda) {
+  instanceSetImplementationState: PureInstanceSetImplementationState;
+  constructor(
+    instanceSetImplementationState: PureInstanceSetImplementationState,
+    editorStore: EditorStore,
+    filter?: RawLambda,
+  ) {
     super('true', LAMBDA_PIPE);
 
     makeObservable(this, {
@@ -139,12 +143,18 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
       editorStore: observable,
     });
 
-    this.filter = filter;
     this.editorStore = editorStore;
+    this.filter = filter;
+    this.instanceSetImplementationState = instanceSetImplementationState;
   }
 
   get lambdaId(): string {
-    return buildSourceInformationSourceId([this.uuid]);
+    return buildSourceInformationSourceId([
+      this.instanceSetImplementationState.setImplementation.parent.path,
+      MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
+      this.instanceSetImplementationState.setImplementation.id.value,
+      this.uuid,
+    ]);
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
@@ -228,6 +238,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       (pm) => new PurePropertyMappingState(this.editorStore, this, pm),
     );
     this.filterMappingState = new PureInstanceSetImplementationFilterState(
+      this,
       editorStore,
       setImplementation.filter,
     );
@@ -272,6 +283,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     });
     this.setFilterMappingState(
       new PureInstanceSetImplementationFilterState(
+        this,
         this.editorStore,
         this.mappingElement.filter,
       ),

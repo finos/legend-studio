@@ -34,6 +34,7 @@ import {
   InstanceSetImplementationState,
   MappingElementState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
+import type { PureInstanceSetImplementationFilterState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
@@ -73,8 +74,10 @@ import {
   View,
   Table,
   Database,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
+import type { EditorStore } from '../../../../stores/EditorStore';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -347,6 +350,54 @@ export const InstanceSetImplementationSourceExplorer = observer(
   },
 );
 
+const MappingFilterEditor = observer(
+  ({
+    editorStore,
+    instanceSetImplementationState,
+    filterState,
+    isReadOnly,
+  }: {
+    editorStore: EditorStore;
+    instanceSetImplementationState: PureInstanceSetImplementationState;
+    filterState: PureInstanceSetImplementationFilterState;
+    isReadOnly: boolean;
+  }) => {
+    useEffect(() => {
+      flowResult(filterState.convertLambdaObjectToGrammarString(true));
+    }, [instanceSetImplementationState, filterState]);
+    return (
+      <div
+        key={filterState.uuid}
+        className="panel class-mapping-editor__filter-panel"
+      >
+        <div className="panel__header">
+          <div className="panel__header__title">
+            <div className="panel__header__title__content">FILTER</div>
+          </div>
+        </div>
+        <div
+          className={clsx('property-mapping-editor', {
+            backdrop__element: Boolean(filterState.parserError),
+          })}
+        >
+          <div className="filter-mapping-editor__content">
+            <StudioLambdaEditor
+              className="filter-mapping-editor__element__lambda-editor"
+              disabled={isReadOnly}
+              forceBackdrop={!!filterState.parserError}
+              forceExpansion={true}
+              lambdaEditorState={filterState}
+              expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.BOOLEAN,
+              )}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 // Sort by property type/complexity (asc)
 const typeSorter = (a: Property, b: Property): number =>
   (a.genericType.value.rawType instanceof Class ? 1 : 0) -
@@ -389,6 +440,11 @@ export const InstanceSetImplementationEditor = observer(
       instanceSetImplementationState instanceof
       UnsupportedInstanceSetImplementationState;
 
+    const renderFilterEditor =
+      instanceSetImplementationState instanceof
+        PureInstanceSetImplementationState &&
+      instanceSetImplementationState.filterMappingState.filter;
+
     useEffect(() => {
       if (!isReadOnly) {
         instanceSetImplementationState.decorate();
@@ -396,15 +452,6 @@ export const InstanceSetImplementationEditor = observer(
       flowResult(
         instanceSetImplementationState.convertPropertyMappingTransformObjects(),
       ).catch(applicationStore.alertIllegalUnhandledError);
-
-      instanceSetImplementationState instanceof
-        PureInstanceSetImplementationState &&
-        flowResult(
-          instanceSetImplementationState.filterMappingState.convertLambdaObjectToGrammarString(
-            true,
-          ),
-        );
-
       return isReadOnly
         ? noop()
         : (): void =>
@@ -496,34 +543,20 @@ export const InstanceSetImplementationEditor = observer(
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter />
-              {instanceSetImplementationState instanceof
-                PureInstanceSetImplementationState &&
-                instanceSetImplementationState.filterMappingState.filter && (
-                  <ResizablePanel minSize={40}>
-                    <div className="panel class-mapping-editor__filter-panel">
-                      <div className="panel__header">
-                        <div className="panel__header__title">
-                          <div className="panel__header__title__content">
-                            FILTER
-                          </div>
-                        </div>
-                      </div>
-                      <div className="filter-panel">
-                        <div className="filter-panel__content">
-                          <StudioLambdaEditor
-                            className="function-editor__element__lambda-editor"
-                            disabled={false}
-                            forceBackdrop={false}
-                            forceExpansion={true}
-                            lambdaEditorState={
-                              instanceSetImplementationState.filterMappingState
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </ResizablePanel>
-                )}
+              {renderFilterEditor && (
+                <ResizablePanel minSize={40}>
+                  <MappingFilterEditor
+                    editorStore={editorStore}
+                    instanceSetImplementationState={
+                      instanceSetImplementationState
+                    }
+                    filterState={
+                      instanceSetImplementationState.filterMappingState
+                    }
+                    isReadOnly={isReadOnly}
+                  />
+                </ResizablePanel>
+              )}
             </ResizablePanelGroup>
           </ResizablePanel>
           <ResizablePanelSplitter />

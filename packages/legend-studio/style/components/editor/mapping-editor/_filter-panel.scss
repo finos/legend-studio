@@ -16,7 +16,13 @@
 
 @use '../../../mixins' as *;
 
-.filter-panel {
-  height: 100%;
-  width: 100%;
+.filter-mapping-editor {
+  &__content {
+    height: 100%;
+    width: 100%;
+  }
+
+  &__element__lambda-editor {
+    height: 10rem !important;
+  }
 }
