@@ -353,49 +353,42 @@ export const InstanceSetImplementationSourceExplorer = observer(
 const MappingFilterEditor = observer(
   ({
     editorStore,
-    instanceSetImplementationState,
     filterState,
     isReadOnly,
   }: {
     editorStore: EditorStore;
-    instanceSetImplementationState: PureInstanceSetImplementationState;
     filterState: PureInstanceSetImplementationFilterState;
     isReadOnly: boolean;
-  }) => {
-    useEffect(() => {
-      flowResult(filterState.convertLambdaObjectToGrammarString(true));
-    }, [instanceSetImplementationState, filterState]);
-    return (
-      <div
-        key={filterState.uuid}
-        className="panel class-mapping-editor__filter-panel"
-      >
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__content">FILTER</div>
-          </div>
-        </div>
-        <div
-          className={clsx('property-mapping-editor', {
-            backdrop__element: Boolean(filterState.parserError),
-          })}
-        >
-          <div className="filter-mapping-editor__content">
-            <StudioLambdaEditor
-              className="filter-mapping-editor__element__lambda-editor"
-              disabled={isReadOnly}
-              forceBackdrop={!!filterState.parserError}
-              forceExpansion={true}
-              lambdaEditorState={filterState}
-              expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.BOOLEAN,
-              )}
-            />
-          </div>
+  }) => (
+    <div
+      key={filterState.uuid}
+      className="panel class-mapping-editor__filter-panel"
+    >
+      <div className="panel__header">
+        <div className="panel__header__title">
+          <div className="panel__header__title__content">FILTER</div>
         </div>
       </div>
-    );
-  },
+      <div
+        className={clsx('property-mapping-editor', {
+          backdrop__element: Boolean(filterState.parserError),
+        })}
+      >
+        <div className="filter-mapping-editor__content">
+          <StudioLambdaEditor
+            className="filter-mapping-editor__element__lambda-editor"
+            disabled={isReadOnly}
+            forceBackdrop={!!filterState.parserError}
+            forceExpansion={true}
+            lambdaEditorState={filterState}
+            expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.BOOLEAN,
+            )}
+          />
+        </div>
+      </div>
+    </div>
+  ),
 );
 
 // Sort by property type/complexity (asc)
@@ -443,7 +436,7 @@ export const InstanceSetImplementationEditor = observer(
     const renderFilterEditor =
       instanceSetImplementationState instanceof
         PureInstanceSetImplementationState &&
-      instanceSetImplementationState.filterMappingState.filter;
+      instanceSetImplementationState.mappingFilterState.filter;
 
     useEffect(() => {
       if (!isReadOnly) {
@@ -452,6 +445,13 @@ export const InstanceSetImplementationEditor = observer(
       flowResult(
         instanceSetImplementationState.convertPropertyMappingTransformObjects(),
       ).catch(applicationStore.alertIllegalUnhandledError);
+      renderFilterEditor &&
+        flowResult(
+          instanceSetImplementationState.mappingFilterState.convertLambdaObjectToGrammarString(
+            true,
+          ),
+        ).catch(applicationStore.alertIllegalUnhandledError);
+
       return isReadOnly
         ? noop()
         : (): void =>
@@ -547,11 +547,8 @@ export const InstanceSetImplementationEditor = observer(
                 <ResizablePanel minSize={40}>
                   <MappingFilterEditor
                     editorStore={editorStore}
-                    instanceSetImplementationState={
-                      instanceSetImplementationState
-                    }
                     filterState={
-                      instanceSetImplementationState.filterMappingState
+                      instanceSetImplementationState.mappingFilterState
                     }
                     isReadOnly={isReadOnly}
                   />

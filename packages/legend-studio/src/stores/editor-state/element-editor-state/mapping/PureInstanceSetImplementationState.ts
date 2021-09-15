@@ -41,6 +41,8 @@ import {
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 
+export const FILTER_SOURCE_ID_LABEL = 'filter';
+
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
   declare instanceSetImplementationState: PureInstanceSetImplementationState;
@@ -148,11 +150,15 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
     this.instanceSetImplementationState = instanceSetImplementationState;
   }
 
+  setFilter(filter: RawLambda): void {
+    this.filter = filter;
+  }
+
   get lambdaId(): string {
     return buildSourceInformationSourceId([
-      this.instanceSetImplementationState.setImplementation.parent.path,
+      this.instanceSetImplementationState.mappingElement.parent.path,
       MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
-      this.instanceSetImplementationState.setImplementation.id.value,
+      FILTER_SOURCE_ID_LABEL,
       this.uuid,
     ]);
   }
@@ -168,6 +174,9 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.filter = lambda ?? emptyFunctionDefinition;
+        this.instanceSetImplementationState.mappingElement.setMappingFilter(
+          this.filter,
+        );
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -215,7 +224,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
 export class PureInstanceSetImplementationState extends InstanceSetImplementationState {
   declare mappingElement: PureInstanceSetImplementation;
   declare propertyMappingStates: PurePropertyMappingState[];
-  filterMappingState: PureInstanceSetImplementationFilterState;
+  mappingFilterState: PureInstanceSetImplementationFilterState;
 
   isConvertingTransformLambdaObjects = false;
 
@@ -227,17 +236,17 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
 
     makeObservable(this, {
       isConvertingTransformLambdaObjects: observable,
-      filterMappingState: observable,
+      mappingFilterState: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
-      setFilterMappingState: action,
+      setMappingFilterState: action,
     });
 
     this.mappingElement = setImplementation;
     this.propertyMappingStates = setImplementation.propertyMappings.map(
       (pm) => new PurePropertyMappingState(this.editorStore, this, pm),
     );
-    this.filterMappingState = new PureInstanceSetImplementationFilterState(
+    this.mappingFilterState = new PureInstanceSetImplementationFilterState(
       this,
       editorStore,
       setImplementation.filter,
@@ -254,10 +263,10 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
   ): void {
     this.propertyMappingStates = propertyMappingState;
   }
-  setFilterMappingState(
-    filterMappingState: PureInstanceSetImplementationFilterState,
+  setMappingFilterState(
+    mappingFilterState: PureInstanceSetImplementationFilterState,
   ): void {
-    this.filterMappingState = filterMappingState;
+    this.mappingFilterState = mappingFilterState;
   }
 
   /**
@@ -281,11 +290,11 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
         existingPropertyMappingState ?? propertyMappingState,
       );
     });
-    this.setFilterMappingState(
+    this.setMappingFilterState(
       new PureInstanceSetImplementationFilterState(
         this,
         this.editorStore,
-        this.mappingElement.filter,
+        this.mappingFilterState.filter,
       ),
     );
     this.setPropertyMappingStates(newPropertyMappingStates);

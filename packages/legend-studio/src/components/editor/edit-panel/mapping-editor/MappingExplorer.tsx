@@ -55,12 +55,14 @@ import { MappingElementDecorator } from '../../../../stores/editor-state/element
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { PackageableElement } from '@finos/legend-graph';
+import { PureInstanceSetImplementation, RawLambda } from '@finos/legend-graph';
 import {
   SetImplementation,
   EnumerationMapping,
   PropertyMapping,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 
 export const MappingExplorerContextMenu = observer(
   (
@@ -110,9 +112,33 @@ export const MappingExplorerContextMenu = observer(
         );
       }
     };
+    const addMappingFilter = (): void => {
+      if (mappingElement instanceof PureInstanceSetImplementation) {
+        if (!mappingElement.filter) {
+          const stubLambda = RawLambda.createStub();
+          mappingElement.setMappingFilter(stubLambda);
+          if (
+            mappingEditorState.currentTabState instanceof
+            PureInstanceSetImplementationState
+          ) {
+            mappingEditorState.currentTabState.mappingFilterState.setFilter(
+              stubLambda,
+            );
+          }
+        }
+      }
+    };
 
     return (
       <div ref={ref} className="mapping-explorer__context-menu">
+        {mappingElement instanceof PureInstanceSetImplementation && (
+          <div
+            className="mapping-explorer__context-menu__item"
+            onClick={addMappingFilter}
+          >
+            Add Filter
+          </div>
+        )}
         {mappingElement instanceof SetImplementation && (
           <div
             className="mapping-explorer__context-menu__item"
