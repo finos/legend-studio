@@ -16,52 +16,17 @@
 
 export const TEST_DATA__roundtrip = [
   {
-    path: 'anything::text',
+    path: 'model::testDataSpace',
     content: {
-      _type: 'text',
-      content: 'this is just for context',
-      name: 'text',
-      package: 'anything',
-      type: 'plainText',
+      _type: 'dataSpace',
+      artifactId: 'legend-query-test',
+      groupId: 'org.finos.legend.test',
+      mapping: 'dummyMapping',
+      name: 'testDataSpace',
+      package: 'model',
+      runtime: 'dummyRuntime',
+      versionId: 'latest',
     },
-    classifierPath: 'meta::pure::metamodel::text::Text',
-  },
-  {
-    path: 'anything::text2',
-    content: {
-      _type: 'text',
-      content: 'this is just a simple `markdown`',
-      name: 'text2',
-      package: 'anything',
-      type: 'markdown',
-    },
-    classifierPath: 'meta::pure::metamodel::text::Text',
-  },
-  {
-    path: '__internal__::SectionIndex',
-    content: {
-      _type: 'sectionIndex',
-      name: 'SectionIndex',
-      package: '__internal__',
-      sections: [
-        {
-          _type: 'importAware',
-          imports: [],
-          elements: [],
-          parserName: 'Pure',
-        },
-        {
-          _type: 'default',
-          elements: ['anything::text'],
-          parserName: 'Text',
-        },
-        {
-          _type: 'default',
-          elements: ['anything::text2'],
-          parserName: 'Text',
-        },
-      ],
-    },
-    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+    classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
   },
 ];
