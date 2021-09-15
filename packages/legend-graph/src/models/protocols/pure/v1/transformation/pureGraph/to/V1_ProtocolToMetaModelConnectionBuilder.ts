@@ -164,20 +164,18 @@ export class V1_ProtocolToMetaModelConnectionBuilder
   ): Connection {
     const store = !this.embeddedConnectionStore
       ? this.context.resolveBinding(
-        guaranteeNonNullable(
-          connection.store,
-          'Binding is missing',
-        ),
-      )
+          guaranteeNonNullable(connection.store, 'Binding is missing'),
+        )
       : connection.store
-        ? this.context.resolveBinding(connection.store)
-        : ((): PackageableElementReference<Binding> => {
+      ? this.context.resolveBinding(connection.store)
+      : ((): PackageableElementReference<Binding> => {
           assertType(
             this.embeddedConnectionStore.value,
             Binding,
             'External format connection store must be a binding store',
           );
-          return this.embeddedConnectionStore as PackageableElementReference<Binding>;
+          return this
+            .embeddedConnectionStore as PackageableElementReference<Binding>;
         })();
     return new ExternalFormatConnection(store, connection.externalSource);
   }
