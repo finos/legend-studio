@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-art/lib/index.css';
-@import '@finos/legend-application/lib/index.css';
+import type { PureModel } from '@finos/legend-graph';
+import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 
-@import '@finos/legend-studio/lib/index.css';
-@import '@finos/legend-extension-dsl-data-space/lib/index.css';
-@import '@finos/legend-extension-dsl-diagram/lib/index.css';
-@import '@finos/legend-extension-dsl-text/lib/index.css';
-@import '@finos/legend-studio-preset-query-builder/lib/index.css';
+export const getDataSpace = (path: string, graph: PureModel): DataSpace =>
+  graph.getExtensionElement(path, DataSpace, `Can't find data space '${path}'`);

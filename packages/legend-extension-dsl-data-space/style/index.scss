@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-art/lib/index.css';
-@import '@finos/legend-application/lib/index.css';
+@use 'mixins' as *;
 
-@import '@finos/legend-studio/lib/index.css';
-@import '@finos/legend-extension-dsl-data-space/lib/index.css';
-@import '@finos/legend-extension-dsl-diagram/lib/index.css';
-@import '@finos/legend-extension-dsl-text/lib/index.css';
-@import '@finos/legend-studio-preset-query-builder/lib/index.css';
+:root {
+  --color-data-space: var(--color-blue-50);
+}
+
+.icon--data-space {
+  color: var(--color-text-element);
+}

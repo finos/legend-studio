@@ -1,23 +1,21 @@
 {
-  "name": "@finos/legend-studio-app",
-  "version": "0.4.1",
-  "description": "Legend Studio web application deployment",
+  "name": "@finos/legend-extension-dsl-data-space",
+  "version": "0.0.0",
+  "description": "Legend extension for Data Space DSL",
   "keywords": [
     "legend",
-    "legend-studio",
-    "studio",
-    "app",
-    "deployment",
-    "webapp"
+    "legend-extension",
+    "dsl",
+    "dsl-data-space"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-app",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-data-space",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-studio-app"
+    "directory": "packages/legend-extension-dsl-data-space"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -34,31 +32,46 @@
     "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
-    "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
-    "@finos/legend-extension-dsl-data-space": "workspace:*",
-    "@finos/legend-extension-dsl-diagram": "workspace:*",
-    "@finos/legend-extension-dsl-text": "workspace:*",
-    "@finos/legend-extension-external-format-json-schema": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-preset-query-builder": "workspace:*",
     "@types/react": "17.0.20",
-    "react": "17.0.2"
+    "mobx": "6.3.3",
+    "mobx-react-lite": "3.2.1",
+    "monaco-editor": "0.27.0",
+    "react": "17.0.2",
+    "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
+    "jest": "27.2.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.39.2",
     "typescript": "4.4.3"
   },
+  "peerDependencies": {
+    "react": "^17.0.0"
+  },
   "publishConfig": {
     "directory": "build/publishContent"
+  },
+  "extensions": {
+    "graphPreset": "@finos/legend-graph-preset-dsl-data-space",
+    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-protocol-processor",
+    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-graph-manager",
+    "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-graph",
+    "studioPreset": "@finos/legend-studio-preset-dsl-data-space",
+    "studioPlugin": "@finos/legend-studio-plugin-dsl-data-space"
   }
 }

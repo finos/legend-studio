@@ -32,6 +32,9 @@
       "path": "packages/legend-extension-dsl-diagram"
     },
     {
+      "path": "packages/legend-extension-dsl-data-space"
+    },
+    {
       "path": "packages/legend-extension-external-format-json-schema"
     }
   ]

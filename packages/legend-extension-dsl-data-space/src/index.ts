@@ -14,11 +14,4 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-art/lib/index.css';
-@import '@finos/legend-application/lib/index.css';
-
-@import '@finos/legend-studio/lib/index.css';
-@import '@finos/legend-extension-dsl-data-space/lib/index.css';
-@import '@finos/legend-extension-dsl-diagram/lib/index.css';
-@import '@finos/legend-extension-dsl-text/lib/index.css';
-@import '@finos/legend-studio-preset-query-builder/lib/index.css';
+export * from './DSLDataSpace_Extension';

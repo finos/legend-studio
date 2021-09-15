@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-art/lib/index.css';
-@import '@finos/legend-application/lib/index.css';
+import { getDataSpace } from '../../../../../../graphManager/DSLDataSpace_GraphManagerHelper';
+import type { DataSpace } from '../../../../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import type {
+  PackageableElementImplicitReference,
+  V1_GraphBuilderContext,
+} from '@finos/legend-graph';
 
-@import '@finos/legend-studio/lib/index.css';
-@import '@finos/legend-extension-dsl-data-space/lib/index.css';
-@import '@finos/legend-extension-dsl-diagram/lib/index.css';
-@import '@finos/legend-extension-dsl-text/lib/index.css';
-@import '@finos/legend-studio-preset-query-builder/lib/index.css';
+export const V1_resolveDataSpace = (
+  path: string,
+  context: V1_GraphBuilderContext,
+): PackageableElementImplicitReference<DataSpace> =>
+  context.createImplicitPackageableElementReference(path, (_path: string) =>
+    getDataSpace(_path, context.graph),
+  );
