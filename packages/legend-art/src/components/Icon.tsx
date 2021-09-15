@@ -43,8 +43,10 @@ export {
   FaRobot as RobotIcon,
   FaArrowLeft as ArrowLeftIcon,
   FaArrowRight as ArrowRightIcon,
+  FaArrowAltCircleDown as ArrowCircleDownIcon,
   FaUser as UserIcon,
   FaShapes as ShapesIcon,
+  FaScroll as ScrollIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

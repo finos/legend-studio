@@ -824,3 +824,30 @@
     height: 3.6rem;
   }
 }
+
+.service-query-importer {
+  &__query-option {
+    @include flexVCenter;
+
+    &__label {
+      width: calc(100% - 5rem);
+    }
+
+    &__user {
+      @include flexCenter;
+
+      width: 5rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      color: var(--color-dark-grey-500);
+
+      &--mine {
+        background: var(--color-light-grey-400);
+        color: var(--color-dark-shade-800);
+      }
+    }
+  }
+}

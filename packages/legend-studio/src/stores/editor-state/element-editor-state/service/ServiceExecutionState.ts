@@ -17,6 +17,7 @@
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  ActionState,
   assertErrorThrown,
   LogEvent,
   losslessStringify,
@@ -40,6 +41,8 @@ import type {
   Mapping,
   Runtime,
   ExecutionResult,
+  LightQuery,
+  Query,
 } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
@@ -98,6 +101,7 @@ export abstract class ServiceExecutionState {
   setSelectedTab(val: SERVICE_EXECUTION_TAB): void {
     this.selectedTab = val;
   }
+
   getInitiallySelectedTestState(
     execution: ServiceExecution,
     test: ServiceTest,
@@ -123,10 +127,15 @@ export abstract class ServiceExecutionState {
     | undefined;
 }
 
-class ServicePureExecutionQueryState extends LambdaEditorState {
+export class ServicePureExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
   execution: PureExecution;
   isInitializingLambda = false;
+
+  openQueryImporter = false;
+  queries: LightQuery[] = [];
+  importQueryState = ActionState.create();
+  loadQueriesState = ActionState.create();
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', LAMBDA_PIPE);
@@ -134,9 +143,14 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
     makeObservable(this, {
       execution: observable,
       isInitializingLambda: observable,
+      openQueryImporter: observable,
+      queries: observable,
+      setOpenQueryImporter: action,
       setIsInitializingLambda: action,
       setLambda: action,
       updateLamba: flow,
+      loadQueries: flow,
+      importQuery: flow,
     });
 
     this.editorStore = editorStore;
@@ -160,6 +174,52 @@ class ServicePureExecutionQueryState extends LambdaEditorState {
 
   setLambda(val: RawLambda): void {
     this.execution.setFunction(val);
+  }
+
+  setOpenQueryImporter(val: boolean): void {
+    this.openQueryImporter = val;
+  }
+
+  *importQuery(queryId: string | undefined): GeneratorFn<void> {
+    if (queryId) {
+      try {
+        this.importQueryState.inProgress();
+        const query =
+          (yield this.editorStore.graphManagerState.graphManager.getQuery(
+            queryId,
+            this.editorStore.graphManagerState.graph,
+          )) as Query;
+        const lambda =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
+            query.content,
+          )) as RawLambda;
+        yield flowResult(this.updateLamba(lambda));
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.notifyError(error);
+      } finally {
+        this.setOpenQueryImporter(false);
+        this.importQueryState.reset();
+      }
+    }
+  }
+
+  *loadQueries(searchText: string): GeneratorFn<void> {
+    const isValidSearchString = searchText.length >= 3;
+    this.loadQueriesState.inProgress();
+    try {
+      this.queries =
+        (yield this.editorStore.graphManagerState.graphManager.getQueries(
+          isValidSearchString ? searchText : undefined,
+          undefined,
+          10,
+        )) as LightQuery[];
+      this.loadQueriesState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.loadQueriesState.fail();
+      this.editorStore.applicationStore.notifyError(error);
+    }
   }
 
   *updateLamba(val: RawLambda): GeneratorFn<void> {
