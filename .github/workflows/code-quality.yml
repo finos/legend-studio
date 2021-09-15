@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - 'release/**'
 
 # NOTE: we cannot run this action in PR because secrets are not accessible from forks
 # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - 'release/**'
   pull_request:
     branches:
       - '**'
@@ -103,7 +104,7 @@ jobs:
       - name: Test
         run: yarn test:ci
       - name: Upload test coverage report
-        uses: codecov/codecov-action@v2.0.3
+        uses: codecov/codecov-action@v2.1.0
         with:
           directory: ./build/coverage
 
@@ -114,6 +115,7 @@ jobs:
     name: Check Application Build
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - application: '@finos/legend-studio-deployment'

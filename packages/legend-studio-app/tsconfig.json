@@ -15,6 +15,7 @@
     { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-extension-dsl-serializer" },
     { "path": "../legend-extension-dsl-text" },
+    { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-extension-external-format-json-schema" },
     { "path": "../legend-studio-preset-query-builder" }
   ]

@@ -35,6 +35,10 @@ export class ProjectData {
     });
   }
 
+  get coordinates(): string {
+    return `${this.groupId}:${this.artifactId}`;
+  }
+
   setVersions(val: string[]): void {
     this.versions = val;
   }

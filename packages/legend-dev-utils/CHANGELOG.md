@@ -1,5 +1,15 @@
 # @finos/legend-dev-utils
 
+## 0.0.8
+
+## 0.0.7
+
+### Patch Changes
+
+- [#473](https://github.com/finos/legend-studio/pull/473) [`f967957c`](https://github.com/finos/legend-studio/commit/f967957c8ca1a74632d36b793d7560c44315bc5a) ([@akphi](https://github.com/akphi)) - Add support for release branches in `changeset` utils.
+
+## 0.0.6
+
 ## 0.0.5
 
 ## 0.0.4

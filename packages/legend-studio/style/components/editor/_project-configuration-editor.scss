@@ -229,4 +229,31 @@
     pointer-events: none;
     visibility: hidden;
   }
+
+  &__label {
+    display: flex;
+
+    &__tag {
+      @include flexCenter;
+
+      width: 8rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      padding: 0 0.5rem;
+      font-size: 1rem;
+      margin-right: 1rem;
+      cursor: default;
+
+      &--production {
+        color: var(--color-light-grey-100);
+        background: var(--color-magenta-100);
+      }
+    }
+
+    &__name {
+      @include flexVCenter;
+
+      height: 1.8rem;
+    }
+  }
 }

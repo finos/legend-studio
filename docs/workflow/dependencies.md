@@ -1,6 +1,8 @@
 # Dependencies
 
-## Adding a Dependency
+This details considerations to take when introducing or updating dependencies in the project.
+
+## Adding a dependency
 
 There could be [a fair number of downsides](https://github.com/artsy/README/blob/master/playbooks/dependencies.md) to adding a new dependency, such as larger bundle size, upgrade chores, less flexibility, slower migration, and the risk of the dependency becoming vulnerable or abandoned. On the other hand, if we choose to opt out and build the exact implementation that addresses just our needs, there is the cost of development and maintenance.
 
@@ -20,11 +22,11 @@ Other parameters (no order implied) to consider are:
 - **Documentation:** _Does the library have good docs, example, and rich set of API which covers some feature we might be interested in in the future?_
 - **Issues:** _Does this library currently have any blockers in terms of security, performance?_, _Does it affect our usage/upgrade/migration for another dependency?_
 
-## Updating a Dependency
+## Updating a dependency
 
 We can seem quiet _conservative_ about adding a new dependency, but when we already introduced it, we are very open to keeping it up-to-date. In fact, we encourage our team to check and update dependencies **as soon and as often as possible**. Of course, this applies to only `minor` and `patch` updates; for `major` version bumps, we need to evaluate the risk and effort as it can be considered as arduous as adding new dependencies.
 
-## When To Put Things in Shared?
+## When to move things to shared?
 
 Throughout the codebase, we have a few different `shared` packages which hold shared utilities, helpers, components, constructs, etc. As such, when a new dependency is added, we should check if it already belonged to one of these `shared` packages, if not, we need to decide whether to add it to these or to the consumer package. This is often harder to decide than it seems, but generally, if a dependency fits in both of these categories, it's very likely that we can move it in `shared` (and re-exported potentially under a different name/alias).
 

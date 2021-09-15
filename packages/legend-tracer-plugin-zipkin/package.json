@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-tracer-plugin-zipkin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Legend application plugin for tracer using Zipkin and OpenTracing",
   "keywords": [
     "legend",
@@ -49,9 +49,9 @@
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
-    "jest": "27.1.0",
+    "jest": "27.2.0",
     "rimraf": "3.0.2",
-    "typescript": "4.4.2"
+    "typescript": "4.4.3"
   },
   "publishConfig": {
     "directory": "build/publishContent"

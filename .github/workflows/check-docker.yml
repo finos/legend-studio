@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - master
+      - 'release/**'
   pull_request:
     branches:
       - '**'
@@ -15,6 +16,7 @@ jobs:
     name: Run Docker Image Checks
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - image: local/legend-studio
