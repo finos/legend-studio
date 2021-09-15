@@ -141,6 +141,11 @@
     @include ellipsisTextOverflow;
   }
 
+  &__item__label__filter-icon {
+    margin-left: auto;
+    padding-right: 0.5rem;
+  }
+
   &__item--active,
   &__item--active:hover {
     background: var(--color-light-blue-200);

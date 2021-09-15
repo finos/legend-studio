@@ -47,6 +47,7 @@ import {
   FaArrowCircleRight,
   FaChevronRight,
   FaChevronDown,
+  FaFilter,
 } from 'react-icons/fa';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
@@ -122,21 +123,52 @@ export const MappingExplorerContextMenu = observer(
             PureInstanceSetImplementationState
           ) {
             mappingEditorState.currentTabState.mappingFilterState.setFilter(
-              stubLambda,
+              RawLambda.createStub(),
+            );
+          }
+        }
+      }
+    };
+    const removeMappingFilter = (): void => {
+      if (mappingElement instanceof PureInstanceSetImplementation) {
+        if (mappingElement.filter) {
+          mappingElement.setMappingFilter(undefined);
+          if (
+            mappingEditorState.currentTabState instanceof
+            PureInstanceSetImplementationState
+          ) {
+            mappingEditorState.currentTabState.mappingFilterState.setFilter(
+              undefined,
             );
           }
         }
       }
     };
 
+    const renderAddFilter =
+      mappingElement instanceof PureInstanceSetImplementation &&
+      !mappingElement.filter;
+
+    const renderRemoveFilter =
+      mappingElement instanceof PureInstanceSetImplementation &&
+      !!mappingElement.filter;
+
     return (
       <div ref={ref} className="mapping-explorer__context-menu">
-        {mappingElement instanceof PureInstanceSetImplementation && (
+        {renderAddFilter && (
           <div
             className="mapping-explorer__context-menu__item"
             onClick={addMappingFilter}
           >
             Add Filter
+          </div>
+        )}
+        {renderRemoveFilter && (
+          <div
+            className="mapping-explorer__context-menu__item"
+            onClick={removeMappingFilter}
+          >
+            Remove Filter
           </div>
         )}
         {mappingElement instanceof SetImplementation && (
@@ -358,6 +390,12 @@ const MappingElementTreeNodeContainer = observer(
             <div className="mapping-explorer__item__label__text">
               {mappingElement.label.value}
             </div>
+            {mappingElement instanceof PureInstanceSetImplementation &&
+              !!mappingElement.filter && (
+                <div className="mapping-explorer__item__label__filter-icon">
+                  <FaFilter />
+                </div>
+              )}
           </button>
         </div>
       </ContextMenu>

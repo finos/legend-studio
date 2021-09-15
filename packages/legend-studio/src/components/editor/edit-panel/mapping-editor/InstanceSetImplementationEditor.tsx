@@ -354,16 +354,15 @@ const MappingFilterEditor = observer(
   ({
     editorStore,
     filterState,
+    instanceSetImplementationState,
     isReadOnly,
   }: {
     editorStore: EditorStore;
     filterState: PureInstanceSetImplementationFilterState;
+    instanceSetImplementationState: PureInstanceSetImplementationState;
     isReadOnly: boolean;
   }) => (
-    <div
-      key={filterState.uuid}
-      className="panel class-mapping-editor__filter-panel"
-    >
+    <div className="panel class-mapping-editor__filter-panel">
       <div className="panel__header">
         <div className="panel__header__title">
           <div className="panel__header__title__content">FILTER</div>
@@ -377,7 +376,10 @@ const MappingFilterEditor = observer(
         <div className="filter-mapping-editor__content">
           <StudioLambdaEditor
             className="filter-mapping-editor__element__lambda-editor"
-            disabled={isReadOnly}
+            disabled={
+              isReadOnly ||
+              instanceSetImplementationState.isConvertingTransformLambdaObjects
+            }
             forceBackdrop={!!filterState.parserError}
             forceExpansion={true}
             lambdaEditorState={filterState}
@@ -445,13 +447,11 @@ export const InstanceSetImplementationEditor = observer(
       flowResult(
         instanceSetImplementationState.convertPropertyMappingTransformObjects(),
       ).catch(applicationStore.alertIllegalUnhandledError);
-      renderFilterEditor &&
-        flowResult(
-          instanceSetImplementationState.mappingFilterState.convertLambdaObjectToGrammarString(
-            true,
-          ),
-        ).catch(applicationStore.alertIllegalUnhandledError);
-
+      if (renderFilterEditor) {
+        flowResult(instanceSetImplementationState.convertFilterMapping()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
       return isReadOnly
         ? noop()
         : (): void =>
@@ -547,6 +547,9 @@ export const InstanceSetImplementationEditor = observer(
                 <ResizablePanel minSize={40}>
                   <MappingFilterEditor
                     editorStore={editorStore}
+                    instanceSetImplementationState={
+                      instanceSetImplementationState
+                    }
                     filterState={
                       instanceSetImplementationState.mappingFilterState
                     }

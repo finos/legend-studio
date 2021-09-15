@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, flow } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
@@ -150,7 +150,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
     this.instanceSetImplementationState = instanceSetImplementationState;
   }
 
-  setFilter(filter: RawLambda): void {
+  setFilter(filter: RawLambda | undefined): void {
     this.filter = filter;
   }
 
@@ -174,9 +174,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           )) as RawLambda | undefined;
         this.setParserError(undefined);
         this.filter = lambda ?? emptyFunctionDefinition;
-        this.instanceSetImplementationState.mappingElement.setMappingFilter(
-          this.filter,
-        );
+        this.instanceSetImplementationState.mappingElement.filter = this.filter;
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -240,6 +238,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       hasParserError: computed,
       setPropertyMappingStates: action,
       setMappingFilterState: action,
+      convertFilterMapping: flow,
     });
 
     this.mappingElement = setImplementation;
@@ -290,13 +289,6 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
         existingPropertyMappingState ?? propertyMappingState,
       );
     });
-    this.setMappingFilterState(
-      new PureInstanceSetImplementationFilterState(
-        this,
-        this.editorStore,
-        this.mappingFilterState.filter,
-      ),
-    );
     this.setPropertyMappingStates(newPropertyMappingStates);
   }
 
@@ -322,6 +314,30 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
             purePropertyMapping.extractLambdaString(grammarText),
           );
         });
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          error,
+        );
+      } finally {
+        this.isConvertingTransformLambdaObjects = false;
+      }
+    }
+  }
+
+  *convertFilterMapping(): GeneratorFn<void> {
+    const lambda = this.mappingFilterState.filter;
+    if (lambda) {
+      this.isConvertingTransformLambdaObjects = true;
+      try {
+        const isolatedLambda =
+          (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
+            lambda,
+          )) as string;
+        this.mappingFilterState.setLambdaString(
+          this.mappingFilterState.extractLambdaString(isolatedLambda),
+        );
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
