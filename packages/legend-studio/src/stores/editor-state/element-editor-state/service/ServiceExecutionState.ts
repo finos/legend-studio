@@ -56,6 +56,7 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
 } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-model-storage';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -207,13 +208,25 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   *loadQueries(searchText: string): GeneratorFn<void> {
     const isValidSearchString = searchText.length >= 3;
     this.loadQueriesState.inProgress();
+    const dependencyProjectCoordinates = Array.from(
+      (
+        (yield flowResult(
+          this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
+        )) as Map<string, Entity[]>
+      ).keys(),
+    );
     try {
       this.queries =
-        (yield this.editorStore.graphManagerState.graphManager.getQueries(
-          isValidSearchString ? searchText : undefined,
-          undefined,
-          10,
-        )) as LightQuery[];
+        (yield this.editorStore.graphManagerState.graphManager.getQueries({
+          search: isValidSearchString ? searchText : undefined,
+          projectCoordinates: [
+            // either get queries for the current project
+            `${this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId}:${this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId}`,
+            // or any of its dependencies
+            ...dependencyProjectCoordinates,
+          ],
+          limit: 10,
+        })) as LightQuery[];
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);

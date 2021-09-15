@@ -298,11 +298,12 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Query -------------------------------------------
 
-  abstract getQueries(
-    search: string | undefined,
-    showCurrentUserQueriesOnly: boolean | undefined,
-    limit: number | undefined,
-  ): Promise<LightQuery[]>;
+  abstract getQueries(options?: {
+    search?: string | undefined;
+    projectCoordinates?: string[] | undefined;
+    showCurrentUserQueriesOnly?: boolean | undefined;
+    limit?: number | undefined;
+  }): Promise<LightQuery[]>;
   abstract getLightQuery(queryId: string): Promise<LightQuery>;
   abstract getQuery(queryId: string, graph: PureModel): Promise<Query>;
   abstract createQuery(query: Query, graph: PureModel): Promise<Query>;

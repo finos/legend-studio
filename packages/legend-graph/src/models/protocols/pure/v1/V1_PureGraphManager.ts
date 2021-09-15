@@ -2047,14 +2047,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Query ---------------------------------------------
 
-  async getQueries(
-    search: string | undefined,
-    showCurrentUserQueriesOnly: boolean | undefined,
-    limit: number | undefined,
-  ): Promise<LightQuery[]> {
-    return (
-      await this.engine.getQueries(search, showCurrentUserQueriesOnly, limit)
-    ).map((protocol) =>
+  async getQueries(options?: {
+    search?: string | undefined;
+    projectCoordinates?: string[] | undefined;
+    showCurrentUserQueriesOnly?: boolean | undefined;
+    limit?: number | undefined;
+  }): Promise<LightQuery[]> {
+    return (await this.engine.getQueries(options)).map((protocol) =>
       V1_buildLightQuery(
         protocol,
         this.engine.getEngineServerClient().currentUserId,
