@@ -25,7 +25,7 @@ export enum V1_DatasourceSpecificationType {
   BIGQUERY = 'bigQuery',
   H2_LOCAL = 'h2Local',
   REDSHIFT = 'redshift',
-  DELTALAKE = 'deltaLake',
+  DATABRICKS = 'databricks',
 }
 
 export abstract class V1_DatasourceSpecification implements Hashable {
@@ -70,7 +70,7 @@ export class V1_EmbeddedH2DatasourceSpecification
   }
 }
 
-export class V1_DeltaLakeDatasourceSpecification
+export class V1_DatabricksDatasourceSpecification
   extends V1_DatasourceSpecification
   implements Hashable
 {
@@ -79,7 +79,7 @@ export class V1_DeltaLakeDatasourceSpecification
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DELTALAKE_DATASOURCE_SPECIFICATION,
+      CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
       this.shard,
       this.httpPath,
     ]);

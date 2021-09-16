@@ -41,7 +41,7 @@ import { V1_RelationalDatabaseConnection } from '../../../model/packageableEleme
 import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
   V1_LocalH2DataSourceSpecification,
-  V1_DeltaLakeDatasourceSpecification,
+  V1_DatabricksDatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
   V1_StaticDatasourceSpecification,
@@ -50,7 +50,7 @@ import {
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
-  V1_DeltaLakeAuthenticationStrategy,
+  V1_ApiTokenAuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -127,7 +127,7 @@ enum V1_DatasourceSpecificationType {
   STATIC = 'static',
   H2_EMBEDDED = 'h2Embedded',
   H2_LOCAL = 'h2Local',
-  DELTALAKE = 'deltaLake',
+  DATABRICKS = 'databricks',
   SNOWFLAKE = 'snowflake',
   REDSHIFT = 'redshift',
   BIGQUERY = 'bigQuery',
@@ -162,10 +162,10 @@ const localH2DatasourceSpecificationModelSchema = createModelSchema(
   },
 );
 
-const deltaLakeDatasourceSpecificationModelSchema = createModelSchema(
-  V1_DeltaLakeDatasourceSpecification,
+const databricksDatasourceSpecificationModelSchema = createModelSchema(
+  V1_DatabricksDatasourceSpecification,
   {
-    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.DELTALAKE),
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.DATABRICKS),
     shard: primitive(),
     httpPath: primitive(),
   },
@@ -211,8 +211,8 @@ export const V1_serializeDatasourceSpecification = (
     return serialize(staticDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_EmbeddedH2DatasourceSpecification) {
     return serialize(embeddedH2DatasourceSpecificationModelSchema, protocol);
-  } else if (protocol instanceof V1_DeltaLakeDatasourceSpecification) {
-    return serialize(deltaLakeDatasourceSpecificationModelSchema, protocol);
+  } else if (protocol instanceof V1_DatabricksDatasourceSpecification) {
+    return serialize(databricksDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     return serialize(snowflakeDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
@@ -251,8 +251,8 @@ export const V1_deserializeDatasourceSpecification = (
       return deserialize(staticDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.H2_EMBEDDED:
       return deserialize(embeddedH2DatasourceSpecificationModelSchema, json);
-    case V1_DatasourceSpecificationType.DELTALAKE:
-      return deserialize(deltaLakeDatasourceSpecificationModelSchema, json);
+    case V1_DatasourceSpecificationType.DATABRICKS:
+      return deserialize(databricksDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.SNOWFLAKE:
       return deserialize(snowflakeDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.BIGQUERY:
@@ -289,7 +289,7 @@ enum V1_AuthenticationStrategyType {
   DELEGATED_KERBEROS = 'delegatedKerberos',
   SNOWFLAKE_PUBLIC = 'snowflakePublic',
   GCP_APPLICATION_DEFAULT_CREDENTIALS = 'gcpApplicationDefaultCredentials',
-  DELTALAKE = 'deltaLake',
+  API_TOKEN = 'apiToken',
   H2_DEFAULT = 'h2Default',
   TEST = 'test',
   OAUTH = 'oauth',
@@ -316,10 +316,10 @@ const V1_testDatabaseAuthenticationStrategyModelSchema = createModelSchema(
   { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.TEST) },
 );
 
-const V1_deltaLakeAuthenticationStrategyModelSchema = createModelSchema(
-  V1_DeltaLakeAuthenticationStrategy,
+const V1_apiTokenAuthenticationStrategyModelSchema = createModelSchema(
+  V1_ApiTokenAuthenticationStrategy,
   {
-    _type: usingConstantValueSchema(V1_AuthenticationStrategyType.DELTALAKE),
+    _type: usingConstantValueSchema(V1_AuthenticationStrategyType.API_TOKEN),
     apiToken: primitive(),
   },
 );
@@ -379,8 +379,8 @@ export const V1_serializeAuthenticationStrategy = (
       V1_testDatabaseAuthenticationStrategyModelSchema,
       protocol,
     );
-  } else if (protocol instanceof V1_DeltaLakeAuthenticationStrategy) {
-    return serialize(V1_deltaLakeAuthenticationStrategyModelSchema, protocol);
+  } else if (protocol instanceof V1_ApiTokenAuthenticationStrategy) {
+    return serialize(V1_apiTokenAuthenticationStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     return serialize(
       V1_snowflakePublicAuthenticationStrategyModelSchema,
@@ -434,8 +434,8 @@ export const V1_deserializeAuthenticationStrategy = (
       );
     case V1_AuthenticationStrategyType.H2_DEFAULT:
       return deserialize(V1_defaultH2AuthenticationStrategyModelSchema, json);
-    case V1_AuthenticationStrategyType.DELTALAKE:
-      return deserialize(V1_deltaLakeAuthenticationStrategyModelSchema, json);
+    case V1_AuthenticationStrategyType.API_TOKEN:
+      return deserialize(V1_apiTokenAuthenticationStrategyModelSchema, json);
     case V1_AuthenticationStrategyType.SNOWFLAKE_PUBLIC:
       return deserialize(
         V1_snowflakePublicAuthenticationStrategyModelSchema,

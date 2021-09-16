@@ -33,7 +33,7 @@ import {
   DefaultH2AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  DeltaLakeAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
@@ -44,7 +44,7 @@ import {
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
-  DeltaLakeDatasourceSpecification,
+  DatabricksDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
@@ -61,7 +61,7 @@ import {
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
-  V1_DeltaLakeDatasourceSpecification,
+  V1_DatabricksDatasourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
@@ -71,7 +71,7 @@ import {
   V1_SnowflakePublicAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  V1_DeltaLakeAuthenticationStrategy,
+  V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -108,10 +108,10 @@ const transformEmbeddedH2DatasourceSpecification = (
   return source;
 };
 
-const transformDeltaLakeDatasourceSpecification = (
-  metamodel: DeltaLakeDatasourceSpecification,
-): V1_DeltaLakeDatasourceSpecification => {
-  const source = new V1_DeltaLakeDatasourceSpecification();
+const transformDatabricksDatasourceSpecification = (
+  metamodel: DatabricksDatasourceSpecification,
+): V1_DatabricksDatasourceSpecification => {
+  const source = new V1_DatabricksDatasourceSpecification();
   source.shard = metamodel.shard;
   source.httpPath = metamodel.httpPath;
   return source;
@@ -157,8 +157,8 @@ const transformDatasourceSpecification = (
     return transformStaticDatasourceSpecification(metamodel);
   } else if (metamodel instanceof EmbeddedH2DatasourceSpecification) {
     return transformEmbeddedH2DatasourceSpecification(metamodel);
-  } else if (metamodel instanceof DeltaLakeDatasourceSpecification) {
-    return transformDeltaLakeDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof DatabricksDatasourceSpecification) {
+    return transformDatabricksDatasourceSpecification(metamodel);
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof BigQueryDatasourceSpecification) {
@@ -213,8 +213,8 @@ const transformAuthenticationStrategy = (
     return new V1_TestDatabaseAuthenticationStrategy();
   } else if (metamodel instanceof OAuthAuthenticationStrategy) {
     return transformOAuthtAuthenticationStrategy(metamodel);
-  } else if (metamodel instanceof DeltaLakeAuthenticationStrategy) {
-    const auth = new V1_DeltaLakeAuthenticationStrategy();
+  } else if (metamodel instanceof ApiTokenAuthenticationStrategy) {
+    const auth = new V1_ApiTokenAuthenticationStrategy();
     auth.apiToken = metamodel.apiToken;
     return auth;
   } else if (metamodel instanceof SnowflakePublicAuthenticationStrategy) {

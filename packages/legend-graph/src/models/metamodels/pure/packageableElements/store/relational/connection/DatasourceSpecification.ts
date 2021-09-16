@@ -72,7 +72,7 @@ export class StaticDatasourceSpecification
   }
 }
 
-export class DeltaLakeDatasourceSpecification
+export class DatabricksDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -93,7 +93,7 @@ export class DeltaLakeDatasourceSpecification
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DELTALAKE_DATASOURCE_SPECIFICATION,
+      CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
       this.shard,
       this.httpPath,
     ]);

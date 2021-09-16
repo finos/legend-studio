@@ -25,7 +25,7 @@ import {
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
-  DeltaLakeDatasourceSpecification,
+  DatabricksDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
@@ -34,7 +34,7 @@ import type { AuthenticationStrategy } from '../../../../../../../metamodels/pur
 import {
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  DeltaLakeAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
@@ -47,7 +47,7 @@ import {
   V1_LocalH2DataSourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
-  V1_DeltaLakeDatasourceSpecification,
+  V1_DatabricksDatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
@@ -58,7 +58,7 @@ import {
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
-  V1_DeltaLakeAuthenticationStrategy,
+  V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
@@ -107,20 +107,20 @@ export const V1_buildDatasourceSpecification = (
       protocol.autoServerMode,
     );
     return embeddedSpec;
-  } else if (protocol instanceof V1_DeltaLakeDatasourceSpecification) {
+  } else if (protocol instanceof V1_DatabricksDatasourceSpecification) {
     assertNonEmptyString(
       protocol.shard,
-      'DeltaLake shard specification is missing',
+      'Databricks shard specification is missing',
     );
     assertNonEmptyString(
       protocol.httpPath,
-      'DeltaLake httpPath specification is missing',
+      'Databricks httpPath specification is missing',
     );
-    const deltaLakeSpec = new DeltaLakeDatasourceSpecification(
+    const databricksSpec = new DatabricksDatasourceSpecification(
       protocol.shard,
       protocol.httpPath,
     );
-    return deltaLakeSpec;
+    return databricksSpec;
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     assertNonEmptyString(
       protocol.accountName,
@@ -212,12 +212,9 @@ export const V1_buildAuthenticationStrategy = (
     const metamodel = new DelegatedKerberosAuthenticationStrategy();
     metamodel.serverPrincipal = protocol.serverPrincipal;
     return metamodel;
-  } else if (protocol instanceof V1_DeltaLakeAuthenticationStrategy) {
-    assertNonEmptyString(
-      protocol.apiToken,
-      'DeltaLake API token is missing or empty',
-    );
-    return new DeltaLakeAuthenticationStrategy(protocol.apiToken);
+  } else if (protocol instanceof V1_ApiTokenAuthenticationStrategy) {
+    assertNonEmptyString(protocol.apiToken, 'API token is missing or empty');
+    return new ApiTokenAuthenticationStrategy(protocol.apiToken);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     assertNonEmptyString(
       protocol.privateKeyVaultReference,

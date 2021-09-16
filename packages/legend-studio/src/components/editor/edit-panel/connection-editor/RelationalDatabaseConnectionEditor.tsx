@@ -41,12 +41,12 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
-  DeltaLakeAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
-  DeltaLakeDatasourceSpecification,
+  DatabricksDatasourceSpecification,
   StaticDatasourceSpecification,
   BigQueryDatasourceSpecification,
   RedshiftDatasourceSpecification,
@@ -474,9 +474,9 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
   },
 );
 
-const DeltaLakeDatasourceSpecificationEditor = observer(
+const DatabricksDatasourceSpecificationEditor = observer(
   (props: {
-    sourceSpec: DeltaLakeDatasourceSpecification;
+    sourceSpec: DatabricksDatasourceSpecification;
     isReadOnly: boolean;
   }) => {
     const { sourceSpec, isReadOnly } = props;
@@ -664,9 +664,9 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
   },
 );
 
-const DeltaLakeAuthenticationStrategyEditor = observer(
+const ApiTokenAuthenticationStrategyEditor = observer(
   (props: {
-    authSpec: DeltaLakeAuthenticationStrategy;
+    authSpec: ApiTokenAuthenticationStrategy;
     isReadOnly: boolean;
   }) => {
     const { authSpec, isReadOnly } = props;
@@ -868,9 +868,9 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
-  } else if (sourceSpec instanceof DeltaLakeDatasourceSpecification) {
+  } else if (sourceSpec instanceof DatabricksDatasourceSpecification) {
     return (
-      <DeltaLakeDatasourceSpecificationEditor
+      <DatabricksDatasourceSpecificationEditor
         sourceSpec={sourceSpec}
         isReadOnly={isReadOnly}
       />
@@ -941,9 +941,9 @@ const renderAuthenticationStrategyEditor = (
         isReadOnly={isReadOnly}
       />
     );
-  } else if (authSpec instanceof DeltaLakeAuthenticationStrategy) {
+  } else if (authSpec instanceof ApiTokenAuthenticationStrategy) {
     return (
-      <DeltaLakeAuthenticationStrategyEditor
+      <ApiTokenAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

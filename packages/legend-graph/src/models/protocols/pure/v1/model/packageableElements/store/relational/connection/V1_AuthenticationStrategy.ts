@@ -73,7 +73,7 @@ export class V1_OAuthAuthenticationStrategy
   }
 }
 
-export class V1_DeltaLakeAuthenticationStrategy
+export class V1_ApiTokenAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable
 {
@@ -81,7 +81,7 @@ export class V1_DeltaLakeAuthenticationStrategy
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DELTALAKE_AUTHENTICATION_STRATEGY,
+      CORE_HASH_STRUCTURE.API_TOKEN_AUTHENTICATION_STRATEGY,
       this.apiToken,
     ]);
   }

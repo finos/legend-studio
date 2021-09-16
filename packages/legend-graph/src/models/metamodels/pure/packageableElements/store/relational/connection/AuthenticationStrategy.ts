@@ -68,7 +68,7 @@ export class DefaultH2AuthenticationStrategy
   }
 }
 
-export class DeltaLakeAuthenticationStrategy
+export class ApiTokenAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
@@ -92,7 +92,7 @@ export class DeltaLakeAuthenticationStrategy
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DELTALAKE_AUTHENTICATION_STRATEGY,
+      CORE_HASH_STRUCTURE.API_TOKEN_AUTHENTICATION_STRATEGY,
       this.apiToken,
     ]);
   }
