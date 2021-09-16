@@ -130,33 +130,25 @@ export class PurePropertyMappingState extends PropertyMappingState {
 }
 
 export class PureInstanceSetImplementationFilterState extends LambdaEditorState {
-  filter: RawLambda | undefined;
   editorStore: EditorStore;
-  instanceSetImplementationState: PureInstanceSetImplementationState;
+  instanceSetImplementation: PureInstanceSetImplementation;
   constructor(
-    instanceSetImplementationState: PureInstanceSetImplementationState,
+    instanceSetImplementation: PureInstanceSetImplementation,
     editorStore: EditorStore,
-    filter?: RawLambda,
   ) {
     super('true', LAMBDA_PIPE);
 
     makeObservable(this, {
-      filter: observable,
       editorStore: observable,
     });
 
     this.editorStore = editorStore;
-    this.filter = filter;
-    this.instanceSetImplementationState = instanceSetImplementationState;
-  }
-
-  setFilter(filter: RawLambda | undefined): void {
-    this.filter = filter;
+    this.instanceSetImplementation = instanceSetImplementation;
   }
 
   get lambdaId(): string {
     return buildSourceInformationSourceId([
-      this.instanceSetImplementationState.mappingElement.parent.path,
+      this.instanceSetImplementation.parent.path,
       MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
       FILTER_SOURCE_ID_LABEL,
       this.uuid,
@@ -173,8 +165,9 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
             this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
-        this.filter = lambda ?? emptyFunctionDefinition;
-        this.instanceSetImplementationState.mappingElement.filter = this.filter;
+        this.instanceSetImplementation.setMappingFilter(
+          lambda ?? emptyFunctionDefinition,
+        );
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -187,16 +180,23 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
       }
     } else {
       this.clearErrors();
-      this.filter = emptyFunctionDefinition;
+      if (this.instanceSetImplementation.filter?.isStub) {
+        this.instanceSetImplementation.setMappingFilter(
+          emptyFunctionDefinition,
+        );
+      }
     }
   }
 
   *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
-    if (this.filter && !this.filter.isStub) {
+    if (
+      this.instanceSetImplementation.filter &&
+      !this.instanceSetImplementation.isStub
+    ) {
       try {
         const grammarText =
           (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
-            this.filter,
+            this.instanceSetImplementation.filter,
             this.lambdaId,
             pretty,
           )) as string;
@@ -222,7 +222,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
 export class PureInstanceSetImplementationState extends InstanceSetImplementationState {
   declare mappingElement: PureInstanceSetImplementation;
   declare propertyMappingStates: PurePropertyMappingState[];
-  mappingFilterState: PureInstanceSetImplementationFilterState;
+  mappingFilterState: PureInstanceSetImplementationFilterState | undefined;
 
   isConvertingTransformLambdaObjects = false;
 
@@ -246,9 +246,8 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       (pm) => new PurePropertyMappingState(this.editorStore, this, pm),
     );
     this.mappingFilterState = new PureInstanceSetImplementationFilterState(
-      this,
+      this.mappingElement,
       editorStore,
-      setImplementation.filter,
     );
   }
 
@@ -327,7 +326,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
   }
 
   *convertFilterMapping(): GeneratorFn<void> {
-    const lambda = this.mappingFilterState.filter;
+    const lambda = this.mappingElement.filter;
     if (lambda) {
       this.isConvertingTransformLambdaObjects = true;
       try {
@@ -335,7 +334,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
           (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
             lambda,
           )) as string;
-        this.mappingFilterState.setLambdaString(
+        this.mappingFilterState?.setLambdaString(
           this.mappingFilterState.extractLambdaString(isolatedLambda),
         );
       } catch (error) {

@@ -438,7 +438,7 @@ export const InstanceSetImplementationEditor = observer(
     const renderFilterEditor =
       instanceSetImplementationState instanceof
         PureInstanceSetImplementationState &&
-      instanceSetImplementationState.mappingFilterState.filter;
+      instanceSetImplementationState.mappingElement.filter;
 
     useEffect(() => {
       if (!isReadOnly) {
@@ -543,20 +543,21 @@ export const InstanceSetImplementationEditor = observer(
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter />
-              {renderFilterEditor && (
-                <ResizablePanel minSize={40}>
-                  <MappingFilterEditor
-                    editorStore={editorStore}
-                    instanceSetImplementationState={
-                      instanceSetImplementationState
-                    }
-                    filterState={
-                      instanceSetImplementationState.mappingFilterState
-                    }
-                    isReadOnly={isReadOnly}
-                  />
-                </ResizablePanel>
-              )}
+              {renderFilterEditor &&
+                instanceSetImplementationState.mappingFilterState && (
+                  <ResizablePanel minSize={40}>
+                    <MappingFilterEditor
+                      editorStore={editorStore}
+                      instanceSetImplementationState={
+                        instanceSetImplementationState
+                      }
+                      filterState={
+                        instanceSetImplementationState.mappingFilterState
+                      }
+                      isReadOnly={isReadOnly}
+                    />
+                  </ResizablePanel>
+                )}
             </ResizablePanelGroup>
           </ResizablePanel>
           <ResizablePanelSplitter />
