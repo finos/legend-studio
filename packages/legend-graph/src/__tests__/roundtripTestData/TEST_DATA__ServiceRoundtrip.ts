@@ -54,6 +54,21 @@ export const TEST_DATA__ServiceRoundtrip = [
     path: 'test::pure::tService_Single',
     content: {
       _type: 'service',
+      stereotypes: [
+        {
+          profile: 'meta::pure::profiles::typemodifiers',
+          value: 'abstract',
+        },
+      ],
+      taggedValues: [
+        {
+          tag: {
+            profile: 'meta::pure::profiles::doc',
+            value: 'doc',
+          },
+          value: 'something',
+        },
+      ],
       autoActivateUpdates: true,
       documentation: 'this is just for context',
       execution: {

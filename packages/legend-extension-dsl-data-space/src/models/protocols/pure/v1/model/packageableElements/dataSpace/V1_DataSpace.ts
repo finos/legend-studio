@@ -17,10 +17,16 @@
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../../DSLDataSpace_ModelUtils';
-import type { V1_PackageableElementVisitor } from '@finos/legend-graph';
+import type {
+  V1_PackageableElementVisitor,
+  V1_StereotypePtr,
+  V1_TaggedValue,
+} from '@finos/legend-graph';
 import { V1_PackageableElement } from '@finos/legend-graph';
 
 export class V1_DataSpace extends V1_PackageableElement implements Hashable {
+  stereotypes: V1_StereotypePtr[] = [];
+  taggedValues: V1_TaggedValue[] = [];
   groupId!: string;
   artifactId!: string;
   versionId!: string;
@@ -33,6 +39,8 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE,
+      hashArray(this.stereotypes),
+      hashArray(this.taggedValues),
       this.groupId,
       this.artifactId,
       this.versionId,
