@@ -56,11 +56,12 @@ import { MappingElementDecorator } from '../../../../stores/editor-state/element
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { PackageableElement } from '@finos/legend-graph';
-import { PureInstanceSetImplementation, RawLambda } from '@finos/legend-graph';
 import {
   SetImplementation,
   EnumerationMapping,
   PropertyMapping,
+  PureInstanceSetImplementation,
+  RawLambda,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {

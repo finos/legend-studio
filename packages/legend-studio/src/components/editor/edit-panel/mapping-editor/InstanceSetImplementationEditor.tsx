@@ -447,7 +447,11 @@ export const InstanceSetImplementationEditor = observer(
       flowResult(
         instanceSetImplementationState.convertPropertyMappingTransformObjects(),
       ).catch(applicationStore.alertIllegalUnhandledError);
-      if (renderFilterEditor) {
+      if (
+        instanceSetImplementationState instanceof
+          PureInstanceSetImplementationState &&
+        instanceSetImplementationState.mappingElement.filter
+      ) {
         flowResult(instanceSetImplementationState.convertFilterMapping()).catch(
           applicationStore.alertIllegalUnhandledError,
         );

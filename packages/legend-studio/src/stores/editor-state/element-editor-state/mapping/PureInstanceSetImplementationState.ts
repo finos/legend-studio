@@ -200,11 +200,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
             this.lambdaId,
             pretty,
           )) as string;
-        this.setLambdaString(
-          grammarText !== undefined
-            ? this.extractLambdaString(grammarText)
-            : '',
-        );
+        this.setLambdaString(this.extractLambdaString(grammarText));
         this.clearErrors();
       } catch (error) {
         assertErrorThrown(error);
