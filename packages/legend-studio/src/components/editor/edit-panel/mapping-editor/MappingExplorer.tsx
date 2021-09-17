@@ -155,11 +155,11 @@ export const MappingExplorerContextMenu = observer(
       },
     );
 
-    const renderAddFilter =
+    const allowAddFilter =
       mappingElement instanceof PureInstanceSetImplementation &&
       !mappingElement.filter;
 
-    const renderRemoveFilter =
+    const allowRemoveFilter =
       mappingElement instanceof PureInstanceSetImplementation &&
       !!mappingElement.filter;
 
@@ -181,7 +181,7 @@ export const MappingExplorerContextMenu = observer(
             Test
           </div>
         )}
-        {renderAddFilter && (
+        {allowAddFilter && (
           <div
             className="mapping-explorer__context-menu__item"
             onClick={addMappingFilter}
@@ -189,7 +189,7 @@ export const MappingExplorerContextMenu = observer(
             Add Filter
           </div>
         )}
-        {renderRemoveFilter && (
+        {allowRemoveFilter && (
           <div
             className="mapping-explorer__context-menu__item"
             onClick={removeMappingFilter}

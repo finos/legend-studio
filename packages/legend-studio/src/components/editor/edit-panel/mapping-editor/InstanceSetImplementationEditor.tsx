@@ -373,9 +373,9 @@ const MappingFilterEditor = observer(
           backdrop__element: Boolean(filterState.parserError),
         })}
       >
-        <div className="filter-mapping-editor__content">
+        <div className="class-mapping-filter-editor__content">
           <StudioLambdaEditor
-            className="filter-mapping-editor__element__lambda-editor"
+            className="class-mapping-filter-editor__element__lambda-editor"
             disabled={
               isReadOnly ||
               instanceSetImplementationState.isConvertingTransformLambdaObjects
@@ -549,7 +549,7 @@ export const InstanceSetImplementationEditor = observer(
               <ResizablePanelSplitter />
               {renderFilterEditor &&
                 instanceSetImplementationState.mappingFilterState && (
-                  <ResizablePanel minSize={40}>
+                  <ResizablePanel size={300} minSize={80}>
                     <MappingFilterEditor
                       editorStore={editorStore}
                       instanceSetImplementationState={
