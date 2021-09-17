@@ -62,7 +62,9 @@ Since the introduction of `Legend Query` in the codebase, we realize the need to
 - [@finos/legend-studio-network](https://www.npmjs.com/package/@finos/legend-studio-network): Merged into [@finos/legend-shared](https://www.npmjs.com/package/@finos/legend-shared)
 - [@finos/legend-studio-preset-external-format-json-schema](https://www.npmjs.com/package/@finos/legend-studio-preset-external-format-json-schema): Renamed to [@finos/legend-extension-external-format-json-schema](https://www.npmjs.com/package/@finos/legend-extension-external-format-json-schema)
 - [@finos/legend-studio-preset-dsl-text](https://www.npmjs.com/package/@finos/legend-studio-preset-dsl-text): Renamed to [@finos/legend-extension-dsl-text](https://www.npmjs.com/package/@finos/legend-extension-dsl-text)
-- [@finos/legend-studio-plugin-tracer-zipkin](https://www.npmjs.com/package/@finos/legend-studio-plugin-tracer-zipkin): Renamed to [@finos/legend-tracer-plugin-zipkin](https://www.npmjs.com/package/@finos/legend-tracer-plugin-zipkin)
+- [@finos/legend-studio-plugin-tracer-zipkin](https://www.npmjs.com/package/@finos/legend-studio-plugin-tracer-zipkin): Renamed to [@finos/legend-tracer-extension-zipkin](https://www.npmjs.com/package/@finos/legend-tracer-extension-zipkin)
+- [@finos/legend-studio-preset-query-builder](https://www.npmjs.com/package/@finos/legend-studio-preset-query-builder): Renamed to [@finos/legend-studio-extension-query-builder](https://www.npmjs.com/package/@finos/legend-studio-extension-query-builder)
+- [@finos/legend-studio-plugin-management](https://www.npmjs.com/package/@finos/legend-studio-plugin-management): Renamed to [@finos/legend-studio-extension-management-toolkit](https://www.npmjs.com/package/@finos/legend-studio-extension-management-toolkit)
 
 Some new essential packages are introduced in an effort to make core more modularized and compact:
 

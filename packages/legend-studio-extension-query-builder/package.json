@@ -1,22 +1,23 @@
 {
-  "name": "@finos/legend-studio-preset-query-builder",
-  "version": "0.0.42",
+  "name": "@finos/legend-studio-extension-query-builder",
+  "version": "0.0.0",
   "description": "Legend Studio preset for query builder",
   "keywords": [
     "legend",
     "legend-studio",
+    "legend-studio-extension",
+    "extension",
     "studio",
-    "preset-query-builder",
     "query builder"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-preset-query-builder",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-extension-query-builder",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-studio-preset-query-builder"
+    "directory": "packages/legend-studio-extension-query-builder"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

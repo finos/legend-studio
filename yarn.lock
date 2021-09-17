@@ -2716,7 +2716,7 @@ __metadata:
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-preset-query-builder": "workspace:*"
+    "@finos/legend-studio-extension-query-builder": "workspace:*"
     "@types/react": 17.0.21
     cross-env: 7.0.3
     eslint: 7.32.0
@@ -2747,9 +2747,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management":
+"@finos/legend-studio-extension-management-toolkit@workspace:packages/legend-studio-extension-management-toolkit":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-plugin-management@workspace:packages/legend-studio-plugin-management"
+  resolution: "@finos/legend-studio-extension-management-toolkit@workspace:packages/legend-studio-extension-management-toolkit"
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
@@ -2776,9 +2776,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-preset-query-builder@workspace:*, @finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder":
+"@finos/legend-studio-extension-query-builder@workspace:*, @finos/legend-studio-extension-query-builder@workspace:packages/legend-studio-extension-query-builder":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-preset-query-builder@workspace:packages/legend-studio-preset-query-builder"
+  resolution: "@finos/legend-studio-extension-query-builder@workspace:packages/legend-studio-extension-query-builder"
   dependencies:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
@@ -2857,9 +2857,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-tracer-plugin-zipkin@workspace:packages/legend-tracer-plugin-zipkin":
+"@finos/legend-tracer-extension-zipkin@workspace:packages/legend-tracer-extension-zipkin":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-tracer-plugin-zipkin@workspace:packages/legend-tracer-plugin-zipkin"
+  resolution: "@finos/legend-tracer-extension-zipkin@workspace:packages/legend-tracer-extension-zipkin"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"

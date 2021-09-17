@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "build": "yarn clean && yarn workspaces foreach --topological-dev --verbose run build",
+    "build:sass": "yarn workspaces foreach --all --parallel --verbose run build:sass",
     "build:tsc": "tsc --build",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
     "changeset:cli": "changeset",

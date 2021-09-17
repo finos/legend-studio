@@ -29,7 +29,16 @@ export default {
     ...base.setupFiles,
     '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
   ],
+  moduleNameMapper: {
+    ...base.moduleNameMapper,
+    // Mock for testing `react-dnd`
+    // See http://react-dnd.github.io/react-dnd/docs/testing
+    '^dnd-core$': 'dnd-core/dist/cjs',
+    '^react-dnd$': 'react-dnd/dist/cjs',
+    '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
+    '^monaco-editor$': '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
+  },
   testMatch: [
-    '<rootDir>/packages/legend-studio-plugin-management/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+    '<rootDir>/packages/legend-studio-extension-query-builder/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
 };
