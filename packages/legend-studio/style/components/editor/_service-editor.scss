@@ -850,4 +850,11 @@
       }
     }
   }
+
+  &__query-preview {
+    height: 30rem;
+    position: relative;
+    margin: 1rem 0;
+    border: 0.1rem solid var(--color-dark-grey-200);
+  }
 }

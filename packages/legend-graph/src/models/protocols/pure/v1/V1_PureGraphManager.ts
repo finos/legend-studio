@@ -2076,6 +2076,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async getQueryContent(queryId: string): Promise<string> {
+    return (await this.engine.getQuery(queryId)).content;
+  }
+
   async createQuery(query: Query, graph: PureModel): Promise<Query> {
     return V1_buildQuery(
       await this.engine.createQuery(V1_transformQuery(query)),

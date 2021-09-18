@@ -23,6 +23,7 @@ import type {
 import { Dialog } from '@material-ui/core';
 import type { SelectComponent } from '@finos/legend-art';
 import {
+  BlankPanelContent,
   ArrowCircleDownIcon,
   clsx,
   CustomSelectorInput,
@@ -109,8 +110,18 @@ const ServiceExecutionQueryImporter = observer(
     // query finder
     const [searchText, setSearchText] = useState('');
     const queryOptions = queryState.queries.map(buildQueryOption);
+    const selectedQueryOption = queryState.selectedQueryInfo
+      ? {
+          label: queryState.selectedQueryInfo.query.name,
+          value: queryState.selectedQueryInfo.query,
+        }
+      : null;
     const onQueryOptionChange = (option: QueryOption | null): void => {
-      queryState.importQuery(option?.value.id);
+      if (option?.value !== queryState.selectedQueryInfo?.query.id) {
+        flowResult(queryState.setSelectedQueryInfo(option?.value)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
     };
     const formatQueryOptionLabel = (option: QueryOption): React.ReactNode => (
       <div className="service-query-importer__query-option">
@@ -146,6 +157,11 @@ const ServiceExecutionQueryImporter = observer(
         debouncedLoadQueries(value);
       }
     };
+    const importQuery = (): void => {
+      flowResult(queryState.importQuery()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    };
 
     useEffect(() => {
       flowResult(queryState.loadQueries('')).catch(
@@ -172,12 +188,36 @@ const ServiceExecutionQueryImporter = observer(
             onInputChange={onSearchTextChange}
             inputValue={searchText}
             onChange={onQueryOptionChange}
-            value={null} // the moment the query is chosen, the query importer will be dismissed
+            value={selectedQueryOption}
             placeholder="Search for a query by name..."
             darkMode={true}
             isClearable={true}
             formatOptionLabel={formatQueryOptionLabel}
           />
+          <div className="service-query-importer__query-preview">
+            <PanelLoadingIndicator
+              isLoading={queryState.loadQueryInfoState.isInProgress}
+            />
+            {queryState.selectedQueryInfo && (
+              <StudioTextInputEditor
+                inputValue={queryState.selectedQueryInfo.content}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.PURE}
+                showMiniMap={false}
+                hideGutter={true}
+              />
+            )}
+            {!queryState.selectedQueryInfo && (
+              <BlankPanelContent>No query to preview</BlankPanelContent>
+            )}
+          </div>
+          <button
+            className="btn btn--dark u-pull-right"
+            disabled={!queryState.selectedQueryInfo}
+            onClick={importQuery}
+          >
+            Import
+          </button>
         </div>
       </Dialog>
     );

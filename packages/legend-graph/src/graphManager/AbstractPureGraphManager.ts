@@ -306,6 +306,7 @@ export abstract class AbstractPureGraphManager {
   }): Promise<LightQuery[]>;
   abstract getLightQuery(queryId: string): Promise<LightQuery>;
   abstract getQuery(queryId: string, graph: PureModel): Promise<Query>;
+  abstract getQueryContent(queryId: string): Promise<string>;
   abstract createQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;

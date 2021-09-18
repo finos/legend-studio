@@ -42,7 +42,6 @@ import type {
   Runtime,
   ExecutionResult,
   LightQuery,
-  Query,
 } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
@@ -128,6 +127,11 @@ export abstract class ServiceExecutionState {
     | undefined;
 }
 
+interface QueryImportInfo {
+  query: LightQuery;
+  content: string;
+}
+
 export class ServicePureExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
   execution: PureExecution;
@@ -135,8 +139,10 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
 
   openQueryImporter = false;
   queries: LightQuery[] = [];
-  importQueryState = ActionState.create();
+  selectedQueryInfo?: QueryImportInfo | undefined;
   loadQueriesState = ActionState.create();
+  loadQueryInfoState = ActionState.create();
+  importQueryState = ActionState.create();
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
     super('', LAMBDA_PIPE);
@@ -146,11 +152,13 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
       isInitializingLambda: observable,
       openQueryImporter: observable,
       queries: observable,
+      selectedQueryInfo: observable,
       setOpenQueryImporter: action,
       setIsInitializingLambda: action,
       setLambda: action,
       updateLamba: flow,
       loadQueries: flow,
+      setSelectedQueryInfo: flow,
       importQuery: flow,
     });
 
@@ -181,18 +189,42 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
     this.openQueryImporter = val;
   }
 
-  *importQuery(queryId: string | undefined): GeneratorFn<void> {
-    if (queryId) {
+  *setSelectedQueryInfo(query: LightQuery | undefined): GeneratorFn<void> {
+    if (query) {
+      try {
+        this.loadQueryInfoState.inProgress();
+        const content =
+          (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
+            (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
+              (yield this.editorStore.graphManagerState.graphManager.getQueryContent(
+                query.id,
+              )) as string,
+            )) as RawLambda,
+            '',
+            true,
+          )) as string;
+        this.selectedQueryInfo = {
+          query,
+          content,
+        };
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.notifyError(error);
+      } finally {
+        this.loadQueryInfoState.reset();
+      }
+    } else {
+      this.selectedQueryInfo = undefined;
+    }
+  }
+
+  *importQuery(): GeneratorFn<void> {
+    if (this.selectedQueryInfo) {
       try {
         this.importQueryState.inProgress();
-        const query =
-          (yield this.editorStore.graphManagerState.graphManager.getQuery(
-            queryId,
-            this.editorStore.graphManagerState.graph,
-          )) as Query;
         const lambda =
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
-            query.content,
+            this.selectedQueryInfo.content,
           )) as RawLambda;
         yield flowResult(this.updateLamba(lambda));
       } catch (error) {
