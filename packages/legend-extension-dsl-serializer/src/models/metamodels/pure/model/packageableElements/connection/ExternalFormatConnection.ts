@@ -21,13 +21,13 @@ import {
   guaranteeType,
   hashArray,
 } from '@finos/legend-shared';
-import type { ConnectionVisitor } from '../../../connection/Connection';
-import { Connection } from '../../../connection/Connection';
+import type { ConnectionVisitor } from '@finos/legend-graph';
+import { Connection } from '@finos/legend-graph';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import { Binding } from '../model/Binding';
+import type { PackageableElementReference } from '@finos/legend-graph';
+import { Binding } from '../store/Binding';
 import { UrlStream } from './UrlStream';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 
 export class ExternalFormatConnection extends Connection implements Hashable {
   static readonly CONTENT_TYPE = ContentType.TEXT_PLAIN;
@@ -65,13 +65,13 @@ export class ExternalFormatConnection extends Connection implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
+      DSL_SERIALIZER_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
       this.store.hashValue,
       this.externalSource,
     ]);
   }
 
   accept_ConnectionVisitor<T>(visitor: ConnectionVisitor<T>): T {
-    return visitor.visit_ExternalFormatConnection(this);
+    return visitor.visit_Connection(this);
   }
 }

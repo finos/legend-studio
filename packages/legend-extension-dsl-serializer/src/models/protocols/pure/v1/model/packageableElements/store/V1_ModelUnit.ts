@@ -16,7 +16,7 @@
 
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import { EXTERNAL_SHARED_FORMAT_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
+import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
 
 export class V1_ModelUnit implements Hashable {
   packageableElementIncludes: string[] = [];
@@ -24,7 +24,7 @@ export class V1_ModelUnit implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      EXTERNAL_SHARED_FORMAT_HASH_STRUCTURE.MODEL_UNIT,
+      DSL_SERIALIZER_HASH_STRUCTURE.MODEL_UNIT,
       hashArray(this.packageableElementIncludes),
       hashArray(this.packageableElementExcludes),
     ]);

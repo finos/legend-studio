@@ -19,7 +19,7 @@ import type { EditorStore } from '@finos/legend-studio';
 import { guaranteeType } from '@finos/legend-shared';
 import { ElementEditorState } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import Binding from '../models/metamodels/pure/model/packageableElements/store/Binding';
+import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
 
 export class BindingEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {

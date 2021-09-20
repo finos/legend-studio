@@ -18,7 +18,7 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import type { V1_PackageableElementVisitor } from '@finos/legend-graph';
 import { V1_Store } from '@finos/legend-graph';
-import { EXTERNAL_SHARED_FORMAT_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
+import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
 import type { V1_ModelUnit } from './V1_ModelUnit';
 
 export class V1_Binding extends V1_Store implements Hashable {
@@ -29,7 +29,7 @@ export class V1_Binding extends V1_Store implements Hashable {
 
   override get hashCode(): string {
     return hashArray([
-      EXTERNAL_SHARED_FORMAT_HASH_STRUCTURE.BINDING,
+      DSL_SERIALIZER_HASH_STRUCTURE.BINDING,
       this.path,
       this.schemaSet ?? '',
       this.schemaId ?? '',

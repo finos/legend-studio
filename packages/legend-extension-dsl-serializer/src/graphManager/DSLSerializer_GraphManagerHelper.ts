@@ -16,7 +16,8 @@
 
 import type { PureModel } from '@finos/legend-graph';
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import type Binding from '../models/metamodels/pure/model/packageableElements/store/Binding';
+import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
+import { guaranteeType } from '@finos/legend-shared';
 
 export const getSchemaSet = (path: string, graph: PureModel): SchemaSet =>
   graph.getExtensionElement(
@@ -26,4 +27,4 @@ export const getSchemaSet = (path: string, graph: PureModel): SchemaSet =>
   );
 
 export const getBinding = (path: string, graph: PureModel): Binding =>
-  graph.getBindingStore(path);
+  guaranteeType(graph.getStore(path), Binding, `Can't find binding '${path}'`);

@@ -16,12 +16,22 @@
 
 import type { Hashable } from '@finos/legend-shared';
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
+import { computed, makeObservable, observable } from 'mobx';
+import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 
-export class V1_UrlStream implements Hashable {
-  url = '';
+export class UrlStream implements Hashable {
+  url: string;
+
+  constructor(url: string) {
+    makeObservable(this, {
+      url: observable,
+      hashCode: computed,
+    });
+
+    this.url = url;
+  }
 
   get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.URL_STREAM, this.url]);
+    return hashArray([DSL_SERIALIZER_HASH_STRUCTURE.URL_STREAM, this.url]);
   }
 }

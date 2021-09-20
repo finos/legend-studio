@@ -17,34 +17,52 @@
 import packageJson from '../../../../package.json';
 import { V1_Binding } from './v1/model/packageableElements/store/V1_Binding';
 import { V1_SchemaSet } from './v1/model/packageableElements/schemaSet/V1_SchemaSet';
+import { V1_ExternalFormatConnection } from './v1/model/packageableElements/connection/V1_ExternalFormatConnection';
 import type { PlainObject } from '@finos/legend-shared';
-import { assertType } from '@finos/legend-shared';
+import {
+  assertType,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_bindingModelSchema,
   V1_BINDING_ELEMENT_PROTOCOL_TYPE,
   V1_schemaSetModelSchema,
   V1_SCHEMA_SET_ELEMENT_PROTOCOL_TYPE,
+  V1_externalFormatConnectionModelSchema,
+  V1_EXTERNAL_FORMAT_CONNECTION_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLSerializer_ProtocolHelper';
 import {
   getBinding,
   getSchemaSet,
 } from '../../../graphManager/DSLSerializer_GraphManagerHelper';
-import Binding from '../../metamodels/pure/model/packageableElements/store/Binding';
+import { V1_resolveBinding } from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper'
+import { Binding } from '../../metamodels/pure/model/packageableElements/store/Binding';
 import { SchemaSet } from '../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { ExternalFormatConnection } from '../../metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
 import type {
   GraphPluginManager,
   PackageableElement,
+  Connection,
   V1_ElementProtocolClassifierPathGetter,
   V1_ElementProtocolDeserializer,
   V1_ElementProtocolSerializer,
   V1_ElementTransformer,
+  V1_ConnectionBuilder,
+  V1_ConnectionTransformer,
+  V1_ConnectionProtocolSerializer,
+  V1_ConnectionProtocolDeserializer,
   V1_GraphBuilderContext,
   V1_GraphTransformerContext,
+  V1_Connection,
   V1_PackageableElement,
+  PackageableElementReference,
+  Store,
 } from '@finos/legend-graph';
 import {
   PureProtocolProcessorPlugin,
+  V1_transformElementReference,
+  Connection_PureProtocolProcessorPlugin_Extension,
   V1_ElementBuilder,
   V1_initPackageableElement,
 } from '@finos/legend-graph';
@@ -54,7 +72,7 @@ const BINDING_ELEMENT_CLASSIFIER_PATH =
 const SCHEMA_SET_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::metamodel::SchemaSet';
 
-export class DSLSerializer_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class DSLSerializer_PureProtocolProcessorPlugin extends Connection_PureProtocolProcessorPlugin_Extension {
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
@@ -208,6 +226,81 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends PureProtocolProce
           protocol.format = metamodel.format;
           protocol.schemas = metamodel.schemas;
           return protocol;
+        }
+        return undefined;
+      },
+    ];
+  }
+  override V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
+    return [
+      (
+        connection: V1_Connection,
+        context: V1_GraphBuilderContext,
+        store?: PackageableElementReference<Store> | undefined,
+      ): Connection | undefined => {
+        if(connection instanceof V1_ExternalFormatConnection) {
+          const Store = !store
+            ? V1_resolveBinding(
+              guaranteeNonNullable(connection.store, 'Binding is missing'),
+              context,
+            )
+            : connection.store
+              ? V1_resolveBinding(connection.store, context)
+              : ((): PackageableElementReference<Binding> => {
+                assertType(
+                  store.value,
+                  Binding,
+                  'External format connection store must be a binding store',
+                );
+                return store as PackageableElementReference<Binding>;
+              })();
+          return new ExternalFormatConnection(Store, connection.externalSource);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraConnectionTransformers(): V1_ConnectionTransformer[] {
+    return [
+      (
+        metamodel: Connection,
+        context: V1_GraphTransformerContext,
+      ): V1_Connection | undefined => {
+        if (metamodel instanceof ExternalFormatConnection) {
+          const connection = new V1_ExternalFormatConnection();
+          connection.store = V1_transformElementReference(metamodel.store);
+          connection.externalSource = metamodel.externalSource;
+          return connection;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraConnectionProtocolSerializers(): V1_ConnectionProtocolSerializer[] {
+    return [
+      (
+        connectionProtocol: V1_Connection,
+      ): PlainObject<V1_Connection> | undefined => {
+        if (connectionProtocol instanceof V1_ExternalFormatConnection) {
+          return serialize(
+            V1_externalFormatConnectionModelSchema,
+            connectionProtocol,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraConnectionProtocolDeserializers(): V1_ConnectionProtocolDeserializer[] {
+    return [
+      (json: PlainObject<V1_Connection>): V1_Connection | undefined => {
+        if (
+          json._type === V1_EXTERNAL_FORMAT_CONNECTION_ELEMENT_PROTOCOL_TYPE
+        ) {
+          return deserialize(V1_externalFormatConnectionModelSchema, json);
         }
         return undefined;
       },

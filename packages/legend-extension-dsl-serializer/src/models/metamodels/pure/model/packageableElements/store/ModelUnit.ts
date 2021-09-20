@@ -14,7 +14,34 @@
  * limitations under the License.
  */
 
-import { ModelUnit } from '@finos/legend-graph';
+import { observable, computed, makeObservable } from 'mobx';
+import { hashArray } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
+import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 
-class ModelUnit_ extends ModelUnit {}
-export default ModelUnit_;
+export class ModelUnit implements Hashable {
+  packageableElementIncludes: string[];
+  packageableElementExcludes: string[];
+
+  constructor(
+    packageableElementIncludes: string[],
+    packageableElementExcludes: string[],
+  ) {
+    makeObservable(this, {
+      packageableElementIncludes: observable,
+      packageableElementExcludes: observable,
+      hashCode: computed,
+    });
+
+    this.packageableElementIncludes = packageableElementIncludes;
+    this.packageableElementExcludes = packageableElementExcludes;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      DSL_SERIALIZER_HASH_STRUCTURE.MODEL_UNIT,
+      hashArray(this.packageableElementIncludes),
+      hashArray(this.packageableElementExcludes),
+    ]);
+  }
+}

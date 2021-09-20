@@ -38,8 +38,6 @@ import { V1_JsonModelConnection } from '../../../model/packageableElements/store
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
 import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
 import type { V1_DatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import { V1_ExternalFormatConnection } from '../../../model/packageableElements/store/externalFormat/V1_ExternalFormatConnection';
-import { V1_UrlStream } from '../../../model/packageableElements/store/externalFormat/V1_UrlStream';
 import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
@@ -62,6 +60,7 @@ import {
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import type { Connection_PureProtocolProcessorPlugin_Extension } from '../../../../Connection_PureProtocolProcessorPlugin_Extension';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
@@ -74,7 +73,6 @@ export enum V1_ConnectionType {
   XML_MODEL_CONNECTION = 'XmlModelConnection',
   FLAT_DATA_CONNECTION = 'FlatDataConnection',
   RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
-  EXTERNAL_FORMAT_CONNECTION = 'ExternalFormatConnection',
 }
 
 export const V1_connectionPointerModelSchema = createModelSchema(
@@ -111,22 +109,6 @@ export const V1_xmlModelConnectionModelSchema = createModelSchema(
     class: primitive(),
     store: alias('element', optional(primitive())), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
     url: primitive(),
-  },
-);
-
-const V1_urlStreamModelSchema = createModelSchema(V1_UrlStream, {
-  _type: usingConstantValueSchema('urlStream'),
-  url: primitive(),
-});
-
-export const V1_externalFormatConnectionModelSchema = createModelSchema(
-  V1_ExternalFormatConnection,
-  {
-    _type: usingConstantValueSchema(
-      V1_ConnectionType.EXTERNAL_FORMAT_CONNECTION,
-    ),
-    store: alias('element', optional(primitive())), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
-    externalSource: usingModelSchema(V1_urlStreamModelSchema),
   },
 );
 
@@ -474,6 +456,7 @@ export const V1_deserializeAuthenticationStrategy = (
 export const V1_serializeConnectionValue = (
   protocol: V1_Connection,
   allowPointer: boolean,
+  plugins?: PureProtocolProcessorPlugin[] | undefined,
 ): PlainObject<V1_Connection> => {
   /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   if (protocol instanceof V1_JsonModelConnection) {
@@ -486,8 +469,6 @@ export const V1_serializeConnectionValue = (
     return serialize(V1_flatDataConnectionModelSchema, protocol);
   } else if (protocol instanceof V1_RelationalDatabaseConnection) {
     return serialize(V1_RelationalDatabaseConnection, protocol);
-  } else if (protocol instanceof V1_ExternalFormatConnection) {
-    return serialize(V1_ExternalFormatConnection, protocol);
   } else if (protocol instanceof V1_ConnectionPointer) {
     if (allowPointer) {
       return serialize(V1_connectionPointerModelSchema, protocol);
@@ -496,12 +477,27 @@ export const V1_serializeConnectionValue = (
       `Serializing connection pointer is not allowed here`,
     );
   }
+  if (plugins !== undefined) {
+    const extraConnectionProtocolSerializers = plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as Connection_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
+    );
+    for (const serializer of extraConnectionProtocolSerializers) {
+      const json = serializer(protocol);
+      if (json) {
+        return json;
+      }
+    }
+  }
   throw new UnsupportedOperationError(`Can't serialize connection`, protocol);
 };
 
 export const V1_deserializeConnectionValue = (
   json: PlainObject<V1_Connection>,
   allowPointer: boolean,
+  plugins?: PureProtocolProcessorPlugin[],
 ): V1_Connection => {
   switch (json._type) {
     /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
@@ -513,8 +509,6 @@ export const V1_deserializeConnectionValue = (
       return deserialize(V1_xmlModelConnectionModelSchema, json);
     case V1_ConnectionType.FLAT_DATA_CONNECTION:
       return deserialize(V1_flatDataConnectionModelSchema, json);
-    case V1_ConnectionType.EXTERNAL_FORMAT_CONNECTION:
-      return deserialize(V1_externalFormatConnectionModelSchema, json);
     case V1_ConnectionType.RELATIONAL_DATABASE_CONNECTION:
       return deserialize(V1_RelationalDatabaseConnection, json);
     case V1_ConnectionType.CONNECTION_POINTER:
@@ -524,10 +518,29 @@ export const V1_deserializeConnectionValue = (
       throw new IllegalStateError(
         `Deserializing connection pointer is not allowed here`,
       );
-    default:
+    default: {
+      console.log('step1');
+      if (plugins !== undefined) {
+        console.log('step2');
+        const extraConnectionProtocolDeserializers = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as Connection_PureProtocolProcessorPlugin_Extension
+            ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
+        );
+        for (const deserializer of extraConnectionProtocolDeserializers) {
+          console.log('step3');
+          const protocol = deserializer(json);
+          if (protocol) {
+            console.log('step4');
+            return protocol;
+          }
+        }
+      }
       throw new UnsupportedOperationError(
         `Can't deserialize connection of type '${json._type}'`,
       );
+    }
   }
 };
 
@@ -556,17 +569,27 @@ export const V1_deserializeDatabaseConnectionValue = (
   }
 };
 
-export const V1_packageableConnectionModelSchema = createModelSchema(
-  V1_PackageableConnection,
-  {
+export const V1_packageableConnectionModelSchema = (
+  plugins?: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_PackageableConnection, {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE,
     ),
     connectionValue: custom(
-      (val) => V1_serializeConnectionValue(val, false),
-      (val) => V1_deserializeConnectionValue(val, false),
+      (val) => {
+        if (plugins !== undefined) {
+          return V1_serializeConnectionValue(val, false, plugins);
+        }
+        return V1_serializeConnectionValue(val, false);
+      },
+      (val) => {
+        if (plugins !== undefined) {
+          return V1_deserializeConnectionValue(val, false, plugins);
+        }
+        return V1_deserializeConnectionValue(val, false);
+      },
     ),
     name: primitive(),
     package: primitive(),
-  },
-);
+  });

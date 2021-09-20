@@ -19,6 +19,7 @@ import {
   guaranteeNonNullable,
   assertTrue,
   assertType,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst';
 import type { DatabaseType } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
@@ -28,7 +29,6 @@ import { ConnectionPointer } from '../../../../../../metamodels/pure/packageable
 import { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
 import { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
 import { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
-import { ExternalFormatConnection } from '../../../../../../metamodels/pure/packageableElements/store/externalFormat/connection/ExternalFormatConnection';
 import type { Store } from '../../../../../../metamodels/pure/packageableElements/store/Store';
 import { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
 import { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
@@ -37,20 +37,20 @@ import type { PackageableElementReference } from '../../../../../../metamodels/p
 import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection';
 import type { V1_ConnectionVisitor } from '../../../model/packageableElements/connection/V1_Connection';
 import type { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import type { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
 import type { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
-import type { V1_ExternalFormatConnection } from '../../../model/packageableElements/store/externalFormat/V1_ExternalFormatConnection';
 import type { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 import type { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import {
   V1_buildDatasourceSpecification,
   V1_buildAuthenticationStrategy,
 } from '../../../transformation/pureGraph/to/helpers/V1_RelationalConnectionBuilderHelper';
+import type { Connection_PureProtocolProcessorPlugin_Extension } from '../../../../Connection_PureProtocolProcessorPlugin_Extension';
 import type { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_buildPostProcessor } from './helpers/V1_PostProcessorBuilderHelper';
-import { Binding } from '../../../../../../metamodels/pure/packageableElements/store/externalFormat/model/Binding';
 
 export class V1_ProtocolToMetaModelConnectionBuilder
   implements V1_ConnectionVisitor<Connection>
@@ -64,6 +64,26 @@ export class V1_ProtocolToMetaModelConnectionBuilder
   ) {
     this.context = context;
     this.embeddedConnectionStore = embeddedConnectionStore;
+  }
+
+  visit_Connection(connection: V1_Connection): Connection {
+    const extraConnectionBuilders = this.context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as Connection_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionBuilders?.() ?? [],
+    );
+    for (const builder of extraConnectionBuilders) {
+      const store = this.embeddedConnectionStore;
+      const extraConnection = builder(connection, this.context, store);
+      if (extraConnection) {
+        return extraConnection;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't build new Connection: no compatible builder available from plugins`,
+      connection,
+    );
   }
 
   visit_ConnectionPointer(connection: V1_ConnectionPointer): Connection {
@@ -157,27 +177,6 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       this.context.resolveClass(connection.class),
       connection.url,
     );
-  }
-
-  visit_ExternalFormatConnection(
-    connection: V1_ExternalFormatConnection,
-  ): Connection {
-    const store = !this.embeddedConnectionStore
-      ? this.context.resolveBinding(
-          guaranteeNonNullable(connection.store, 'Binding is missing'),
-        )
-      : connection.store
-      ? this.context.resolveBinding(connection.store)
-      : ((): PackageableElementReference<Binding> => {
-          assertType(
-            this.embeddedConnectionStore.value,
-            Binding,
-            'External format connection store must be a binding store',
-          );
-          return this
-            .embeddedConnectionStore as PackageableElementReference<Binding>;
-        })();
-    return new ExternalFormatConnection(store, connection.externalSource);
   }
 
   visit_FlatDataConnection(connection: V1_FlatDataConnection): Connection {

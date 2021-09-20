@@ -16,10 +16,10 @@
 
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import type { V1_ConnectionVisitor } from '../../../../model/packageableElements/connection/V1_Connection';
-import { V1_Connection } from '../../../../model/packageableElements/connection/V1_Connection';
+import type { V1_ConnectionVisitor } from '@finos/legend-graph';
+import { V1_Connection } from '@finos/legend-graph';
 import { V1_UrlStream } from './V1_UrlStream';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
+import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
 
 export class V1_ExternalFormatConnection
   extends V1_Connection
@@ -29,13 +29,13 @@ export class V1_ExternalFormatConnection
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
+      DSL_SERIALIZER_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
       this.store ?? '',
       this.externalSource,
     ]);
   }
 
   accept_ConnectionVisitor<T>(visitor: V1_ConnectionVisitor<T>): T {
-    return visitor.visit_ExternalFormatConnection(this);
+    return visitor.visit_Connection(this);
   }
 }

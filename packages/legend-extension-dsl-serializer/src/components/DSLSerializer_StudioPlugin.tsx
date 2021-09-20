@@ -33,11 +33,10 @@ import { SchemaSetEditorState } from '../stores/SchemaSetEditorState';
 import { BindingEditorState } from '../stores/BindingEditorState';
 import type { PackageableElement } from '@finos/legend-graph';
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import Binding from '../models/metamodels/pure/model/packageableElements/store/Binding';
+import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
-const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
-  'PROJECT_EXPLORER_SCHEMA_SET';
+const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_SCHEMA_SET';
 const BINDING_ELEMENT_TYPE = 'BINDING';
 const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
 

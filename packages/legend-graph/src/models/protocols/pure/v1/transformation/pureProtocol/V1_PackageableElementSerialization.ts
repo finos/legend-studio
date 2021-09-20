@@ -98,11 +98,13 @@ export class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
 {
   extraElementProtocolSerializers: V1_ElementProtocolSerializer[] = [];
+  plugins: PureProtocolProcessorPlugin[];
 
   constructor(plugins: PureProtocolProcessorPlugin[]) {
     this.extraElementProtocolSerializers = plugins.flatMap(
       (plugin) => plugin.V1_getExtraElementProtocolSerializers?.() ?? [],
     );
+    this.plugins = plugins;
   }
 
   visit_PackageableElement(
@@ -180,7 +182,10 @@ export class V1_PackageableElementSerializer
   visit_PackageableConnection(
     element: V1_PackageableConnection,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_packageableConnectionModelSchema, element);
+    return serialize(
+      V1_packageableConnectionModelSchema(this.plugins),
+      element,
+    );
   }
 
   visit_FileGeneration(
@@ -234,7 +239,7 @@ export const V1_deserializePackageableElement = (
     case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_servicedModelSchema, json);
     case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_packageableConnectionModelSchema, json);
+      return deserialize(V1_packageableConnectionModelSchema(plugins), json);
     case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_packageableRuntimeModelSchema, json);
     case V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE:

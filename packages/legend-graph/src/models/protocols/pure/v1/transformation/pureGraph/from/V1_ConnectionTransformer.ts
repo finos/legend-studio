@@ -27,7 +27,6 @@ import { ConnectionPointer } from '../../../../../../metamodels/pure/packageable
 import type { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
 import type { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
 import type { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
-import type { ExternalFormatConnection } from '../../../../../../metamodels/pure/packageableElements/store/externalFormat/connection/ExternalFormatConnection';
 import type { RelationalDatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import type { AuthenticationStrategy } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
@@ -79,11 +78,11 @@ import { V1_RelationalDatabaseConnection } from '../../../model/packageableEleme
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
-import { V1_ExternalFormatConnection } from '../../../model/packageableElements/store/externalFormat/V1_ExternalFormatConnection';
 import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_transformPostProcessor } from './V1_PostProcessorTransformer';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import type { Connection_PureProtocolProcessorPlugin_Extension } from '../../../../Connection_PureProtocolProcessorPlugin_Extension';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformStaticDatasourceSpecification = (
@@ -301,15 +300,6 @@ const transformXmlModelConnection = (
   return connection;
 };
 
-const transformExternalFormatConnection = (
-  element: ExternalFormatConnection,
-): V1_ExternalFormatConnection => {
-  const connection = new V1_ExternalFormatConnection();
-  connection.store = V1_transformElementReference(element.store);
-  connection.externalSource = element.externalSource;
-  return connection;
-};
-
 const transformFlatDataConnection = (
   element: FlatDataConnection,
 ): V1_FlatDataConnection => {
@@ -326,6 +316,25 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
     this.context = context;
   }
 
+  visit_Connection(connection: Connection): V1_Connection {
+    const extraConnectionTransformers = this.context.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as Connection_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionTransformers?.() ?? [],
+    );
+    for (const transformer of extraConnectionTransformers) {
+      const connectionProtocol = transformer(connection, this.context);
+      if (connectionProtocol) {
+        return connectionProtocol;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't transform Connection: no compatible transformer available from plugins`,
+      connection,
+    );
+  }
+
   visit_ConnectionPointer(connection: ConnectionPointer): V1_Connection {
     return transformConnectionPointer(connection);
   }
@@ -336,12 +345,6 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
 
   visit_JsonModelConnection(connection: JsonModelConnection): V1_Connection {
     return transformJsonModelConnection(connection);
-  }
-
-  visit_ExternalFormatConnection(
-    connection: ExternalFormatConnection,
-  ): V1_Connection {
-    return transformExternalFormatConnection(connection);
   }
 
   visit_XmlModelConnection(connection: XmlModelConnection): V1_Connection {

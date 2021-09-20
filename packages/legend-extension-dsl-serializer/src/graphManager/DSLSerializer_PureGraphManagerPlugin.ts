@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import Binding from '../models/metamodels/pure/model/packageableElements/store/Binding';
+import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import type {
   GraphPluginManager,

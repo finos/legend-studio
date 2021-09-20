@@ -26,15 +26,14 @@ import type { PackageableConnection } from './PackageableConnection';
 import type { RelationalDatabaseConnection } from '../store/relational/connection/RelationalDatabaseConnection';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { ModelChainConnection } from '../store/modelToModel/connection/ModelChainConnection';
-import type { ExternalFormatConnection } from '../store/externalFormat/connection/ExternalFormatConnection';
 
 export interface ConnectionVisitor<T> {
+  visit_Connection(connection: Connection): T;
   visit_ConnectionPointer(connection: ConnectionPointer): T;
   visit_ModelChainConnection(connection: ModelChainConnection): T;
   visit_JsonModelConnection(connection: JsonModelConnection): T;
   visit_XmlModelConnection(connection: XmlModelConnection): T;
   visit_FlatDataConnection(connection: FlatDataConnection): T;
-  visit_ExternalFormatConnection(connection: ExternalFormatConnection): T;
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): T;

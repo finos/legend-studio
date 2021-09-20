@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-export { Binding } from './models/metamodels/pure/packageableElements/store/externalFormat/model/Binding';
-export { ModelUnit } from './models/metamodels/pure/packageableElements/store/externalFormat/model/ModelUnit';
-export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/store/externalFormat/connection/ExternalFormatConnection';
+import type { Hashable } from '@finos/legend-shared';
+import { hashArray } from '@finos/legend-shared';
+import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
+
+export class V1_UrlStream implements Hashable {
+  url = '';
+
+  get hashCode(): string {
+    return hashArray([DSL_SERIALIZER_HASH_STRUCTURE.URL_STREAM, this.url]);
+  }
+}

@@ -18,7 +18,7 @@ import {
   getSchemaSet,
   getBinding,
 } from '../../../../../../graphManager/DSLSerializer_GraphManagerHelper';
-import type Binding from '../../../../../metamodels/pure/model/packageableElements/store/Binding';
+import type { Binding } from '../../../../../metamodels/pure/model/packageableElements/store/Binding';
 import type { SchemaSet } from '../../../../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import type {
   PackageableElementImplicitReference,
@@ -40,3 +40,4 @@ export const V1_resolveBinding = (
   context.createImplicitPackageableElementReference(path, (_path: string) =>
     getBinding(_path, context.graph),
   );
+

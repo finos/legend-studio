@@ -20,7 +20,6 @@ import type { V1_RelationalDatabaseConnection } from '../../../model/packageable
 import type { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import type { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
 import type { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
-import type { V1_ExternalFormatConnection } from '../store/externalFormat/V1_ExternalFormatConnection';
 import type { V1_ConnectionPointer } from './V1_ConnectionPointer';
 
 export enum V1_ConnectionType {
@@ -31,17 +30,16 @@ export enum V1_ConnectionType {
   XML_MODEL_CONNECTION = 'XmlModelConnection',
   FLAT_DATA_CONNECTION = 'FlatDataConnection',
   RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
-  EXTERNAL_FORMAT_CONNECTION = 'ExternalFormatConnection',
 }
 
 /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
 export interface V1_ConnectionVisitor<T> {
+  visit_Connection(connection: V1_Connection): T;
   visit_ConnectionPointer(connection: V1_ConnectionPointer): T;
   visit_JsonModelConnection(connection: V1_JsonModelConnection): T;
   visit_ModelChainConnection(connection: V1_ModelChainConnection): T;
   visit_XmlModelConnection(connection: V1_XmlModelConnection): T;
   visit_FlatDataConnection(connection: V1_FlatDataConnection): T;
-  visit_ExternalFormatConnection(connection: V1_ExternalFormatConnection): T;
   visit_RelationalDatabaseConnection(
     connection: V1_RelationalDatabaseConnection,
   ): T;

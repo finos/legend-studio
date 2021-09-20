@@ -19,7 +19,7 @@ import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import type { PackageableElementVisitor } from '@finos/legend-graph';
 import { PackageableElement } from '@finos/legend-graph';
-import { EXTERNAL_SHARED_FORMAT_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
+import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 import type { Schema } from './Schema';
 
 export class SchemaSet extends PackageableElement implements Hashable {
@@ -54,7 +54,7 @@ export class SchemaSet extends PackageableElement implements Hashable {
   }
   protected override get _elementHashCode(): string {
     return hashArray([
-      EXTERNAL_SHARED_FORMAT_HASH_STRUCTURE.SCHEMA_SET,
+      DSL_SERIALIZER_HASH_STRUCTURE.SCHEMA_SET,
       this.path,
       this.format,
       hashArray(this.schemas),
