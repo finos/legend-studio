@@ -70,10 +70,20 @@ const buildTDSExecutionResult = (
   protocol: V1_TdsExecutionResult,
 ): TdsExecutionResult => {
   const metamodel = new TdsExecutionResult();
+  const result = protocol.result;
   metamodel.values = guaranteeNonNullable(
     protocol.result,
     `TDS execution result value is missing`,
   );
+  if (
+    (
+      result as {
+        rows: object | undefined;
+      }
+    ).rows
+  ) {
+    metamodel.values = (result as { rows: object }).rows;
+  }
   metamodel.builder = buildTDSBuilder(
     guaranteeNonNullable(
       protocol.builder,

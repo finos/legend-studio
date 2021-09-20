@@ -35,6 +35,8 @@ export abstract class ExecutionResult {
   builder!: ResultBuilder;
   activities: object | undefined;
   values!: object;
+  _content!: object;
+  _assertionContent!: object;
 }
 
 // Model
