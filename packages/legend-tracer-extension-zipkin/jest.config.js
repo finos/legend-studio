@@ -25,6 +25,6 @@ export default {
   name: packageJson.name,
   rootDir: '../..',
   testMatch: [
-    '<rootDir>/packages/legend-tracer-plugin-zipkin/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+    '<rootDir>/packages/legend-tracer-extension-zipkin/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
   ],
 };

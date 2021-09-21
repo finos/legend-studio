@@ -250,6 +250,12 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const service = this.context.graph.getService(
       this.context.graph.buildPath(element.package, element.name),
     );
+    service.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    service.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
     service.pattern = element.pattern;
     service.owners = element.owners.slice();
     service.documentation = element.documentation;

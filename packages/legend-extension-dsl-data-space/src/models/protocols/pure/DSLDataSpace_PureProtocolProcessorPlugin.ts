@@ -17,7 +17,7 @@
 import packageJson from '../../../../package.json';
 import { V1_DataSpace } from './v1/model/packageableElements/dataSpace/V1_DataSpace';
 import type { PlainObject } from '@finos/legend-shared';
-import { assertType } from '@finos/legend-shared';
+import { isNonNullable, assertType } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_dataSpaceModelSchema,
@@ -37,6 +37,9 @@ import type {
   V1_PackageableElement,
 } from '@finos/legend-graph';
 import {
+  V1_buildTaggedValue,
+  V1_transformStereotype,
+  V1_transformTaggedValue,
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
@@ -89,6 +92,12 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
             elementProtocol.name,
           );
           const element = getDataSpace(path, context.graph);
+          element.stereotypes = elementProtocol.stereotypes
+            .map((stereotype) => context.resolveStereotype(stereotype))
+            .filter(isNonNullable);
+          element.taggedValues = elementProtocol.taggedValues
+            .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
+            .filter(isNonNullable);
           element.groupId = elementProtocol.groupId;
           element.artifactId = elementProtocol.artifactId;
           element.versionId = elementProtocol.versionId;
@@ -148,6 +157,12 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
         if (metamodel instanceof DataSpace) {
           const protocol = new V1_DataSpace();
           V1_initPackageableElement(protocol, metamodel);
+          protocol.stereotypes = metamodel.stereotypes.map(
+            V1_transformStereotype,
+          );
+          protocol.taggedValues = metamodel.taggedValues.map(
+            V1_transformTaggedValue,
+          );
           protocol.groupId = metamodel.groupId;
           protocol.artifactId = metamodel.artifactId;
           protocol.versionId = metamodel.versionId;
