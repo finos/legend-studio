@@ -88,7 +88,6 @@ We now use [Typescript 4.4](https://www.typescriptlang.org/docs/handbook/release
 
 ## Notable fixes
 
-- [269](https://github.com/finos/legend-studio/issues/269) Allow editing of project configuration during dependency error
 - [463](https://github.com/finos/legend-studio/issues/463) Mock data generator for models break when there are enumerations with 0 or 1 value in the source class tree
 - [462](https://github.com/finos/legend-studio/issues/462) Layout is broken: activity bar disappear and editor stretches beyond screen width when there are too many elements being opened
 - [449](https://github.com/finos/legend-studio/issues/449) Changing class properties' type in form mode, especially when the type if `primitive` is not working
@@ -99,3 +98,4 @@ We now use [Typescript 4.4](https://www.typescriptlang.org/docs/handbook/release
 - [399](https://github.com/finos/legend-studio/issues/399) Multiple mapped properties disappear in mapping editor
 - [354](https://github.com/finos/legend-studio/issues/354) Viewer mode does not allow viewing project configuration
 - [298](https://github.com/finos/legend-studio/issues/298) Operation class mapping editor allows cycle
+- [269](https://github.com/finos/legend-studio/issues/269) Allow editing of project configuration during dependency error
