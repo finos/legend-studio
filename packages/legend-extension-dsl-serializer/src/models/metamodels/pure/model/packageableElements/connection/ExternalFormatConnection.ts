@@ -21,10 +21,12 @@ import {
   guaranteeType,
   hashArray,
 } from '@finos/legend-shared';
-import type { ConnectionVisitor } from '@finos/legend-graph';
+import type {
+  ConnectionVisitor,
+  PackageableElementReference,
+} from '@finos/legend-graph';
 import { Connection } from '@finos/legend-graph';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { PackageableElementReference } from '@finos/legend-graph';
 import { Binding } from '../store/Binding';
 import { UrlStream } from './UrlStream';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';

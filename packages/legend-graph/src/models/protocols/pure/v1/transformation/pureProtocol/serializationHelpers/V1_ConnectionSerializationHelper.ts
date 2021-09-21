@@ -29,7 +29,6 @@ import {
   usingConstantValueSchema,
   IllegalStateError,
   UnsupportedOperationError,
-  usingModelSchema,
 } from '@finos/legend-shared';
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
@@ -60,7 +59,7 @@ import {
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
-import type { Connection_PureProtocolProcessorPlugin_Extension } from '../../../../Connection_PureProtocolProcessorPlugin_Extension';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
@@ -481,7 +480,7 @@ export const V1_serializeConnectionValue = (
     const extraConnectionProtocolSerializers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as Connection_PureProtocolProcessorPlugin_Extension
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
     );
     for (const serializer of extraConnectionProtocolSerializers) {
@@ -519,20 +518,16 @@ export const V1_deserializeConnectionValue = (
         `Deserializing connection pointer is not allowed here`,
       );
     default: {
-      console.log('step1');
       if (plugins !== undefined) {
-        console.log('step2');
         const extraConnectionProtocolDeserializers = plugins.flatMap(
           (plugin) =>
             (
-              plugin as Connection_PureProtocolProcessorPlugin_Extension
+              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
             ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
         );
         for (const deserializer of extraConnectionProtocolDeserializers) {
-          console.log('step3');
           const protocol = deserializer(json);
           if (protocol) {
-            console.log('step4');
             return protocol;
           }
         }

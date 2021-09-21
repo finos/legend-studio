@@ -42,8 +42,7 @@ export type V1_ConnectionProtocolDeserializer = (
   json: PlainObject<V1_Connection>,
 ) => V1_Connection | undefined;
 
-export abstract class Connection_PureProtocolProcessorPlugin_Extension
-  extends PureProtocolProcessorPlugin {
+export abstract class DSLMapping_PureProtocolProcessorPlugin_Extension extends PureProtocolProcessorPlugin {
   V1_getExtraConnectionBuilders?(): V1_ConnectionBuilder[];
 
   V1_getExtraConnectionTransformers?(): V1_ConnectionTransformer[];

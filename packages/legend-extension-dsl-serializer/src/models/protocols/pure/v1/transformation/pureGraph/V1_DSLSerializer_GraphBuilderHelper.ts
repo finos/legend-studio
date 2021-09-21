@@ -40,4 +40,3 @@ export const V1_resolveBinding = (
   context.createImplicitPackageableElementReference(path, (_path: string) =>
     getBinding(_path, context.graph),
   );
-

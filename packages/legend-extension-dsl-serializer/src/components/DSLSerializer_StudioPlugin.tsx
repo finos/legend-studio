@@ -36,7 +36,8 @@ import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/s
 import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
-const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_SCHEMA_SET';
+const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
+  'PROJECT_EXPLORER_SCHEMA_SET';
 const BINDING_ELEMENT_TYPE = 'BINDING';
 const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
 

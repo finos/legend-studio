@@ -320,7 +320,7 @@ const runtimeInstanceModelSchema = createModelSchema(V1_RuntimeInstance, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.RUNTIME_INSTANCE),
   runtime: custom(
     (val) => V1_serializeRuntime(val),
-    (val) => deserialize(V1_engineRuntimeModelSchema, val),
+    (val) => deserialize(V1_engineRuntimeModelSchema(), val),
   ),
 });
 

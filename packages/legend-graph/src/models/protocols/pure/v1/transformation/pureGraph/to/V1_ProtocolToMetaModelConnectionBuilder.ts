@@ -37,8 +37,10 @@ import type { PackageableElementReference } from '../../../../../../metamodels/p
 import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection';
-import type { V1_ConnectionVisitor } from '../../../model/packageableElements/connection/V1_Connection';
+import type {
+  V1_Connection,
+  V1_ConnectionVisitor,
+} from '../../../model/packageableElements/connection/V1_Connection';
 import type { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import type { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
 import type { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
@@ -48,7 +50,7 @@ import {
   V1_buildDatasourceSpecification,
   V1_buildAuthenticationStrategy,
 } from '../../../transformation/pureGraph/to/helpers/V1_RelationalConnectionBuilderHelper';
-import type { Connection_PureProtocolProcessorPlugin_Extension } from '../../../../Connection_PureProtocolProcessorPlugin_Extension';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_buildPostProcessor } from './helpers/V1_PostProcessorBuilderHelper';
 
@@ -70,7 +72,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     const extraConnectionBuilders = this.context.extensions.plugins.flatMap(
       (plugin) =>
         (
-          plugin as Connection_PureProtocolProcessorPlugin_Extension
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionBuilders?.() ?? [],
     );
     for (const builder of extraConnectionBuilders) {
@@ -81,7 +83,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       }
     }
     throw new UnsupportedOperationError(
-      `Can't build new Connection: no compatible builder available from plugins`,
+      `Can't build new connection: no compatible builder available from plugins`,
       connection,
     );
   }

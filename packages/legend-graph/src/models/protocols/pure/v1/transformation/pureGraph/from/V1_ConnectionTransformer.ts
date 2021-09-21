@@ -82,7 +82,7 @@ import { V1_FlatDataConnection } from '../../../model/packageableElements/store/
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_transformPostProcessor } from './V1_PostProcessorTransformer';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
-import type { Connection_PureProtocolProcessorPlugin_Extension } from '../../../../Connection_PureProtocolProcessorPlugin_Extension';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformStaticDatasourceSpecification = (
@@ -320,7 +320,7 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
     const extraConnectionTransformers = this.context.plugins.flatMap(
       (plugin) =>
         (
-          plugin as Connection_PureProtocolProcessorPlugin_Extension
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionTransformers?.() ?? [],
     );
     for (const transformer of extraConnectionTransformers) {
@@ -330,7 +330,7 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
       }
     }
     throw new UnsupportedOperationError(
-      `Can't transform Connection: no compatible transformer available from plugins`,
+      `Can't transform connection: no compatible transformer available from plugins`,
       connection,
     );
   }

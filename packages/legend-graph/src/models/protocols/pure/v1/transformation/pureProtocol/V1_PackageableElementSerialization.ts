@@ -176,7 +176,7 @@ export class V1_PackageableElementSerializer
   visit_PackageableRuntime(
     element: V1_PackageableRuntime,
   ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_packageableRuntimeModelSchema, element);
+    return serialize(V1_packageableRuntimeModelSchema(this.plugins), element);
   }
 
   visit_PackageableConnection(
@@ -241,7 +241,7 @@ export const V1_deserializePackageableElement = (
     case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_packageableConnectionModelSchema(plugins), json);
     case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_packageableRuntimeModelSchema, json);
+      return deserialize(V1_packageableRuntimeModelSchema(plugins), json);
     case V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_fileGenerationModelSchema, json);
     case V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE:

@@ -41,6 +41,7 @@ import {
   V1_serializeConnectionValue,
   V1_deserializeConnectionValue,
 } from './V1_ConnectionSerializationHelper';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 
 export const V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE = 'runtime';
 
@@ -71,54 +72,81 @@ export const V1_legacyRuntimeModelSchema = createModelSchema(V1_LegacyRuntime, {
   ),
 });
 
-export const V1_identifiedConnectionModelSchema = createModelSchema(
-  V1_IdentifiedConnection,
-  {
+export const V1_identifiedConnectionModelSchema = (
+  plugins?: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_IdentifiedConnection, {
     connection: custom(
-      (val) => V1_serializeConnectionValue(val, true),
-      (val) => V1_deserializeConnectionValue(val, true),
+      (val) => {
+        if (plugins !== undefined) {
+          return V1_serializeConnectionValue(val, false, plugins);
+        }
+        return V1_serializeConnectionValue(val, false);
+      },
+      (val) => {
+        if (plugins !== undefined) {
+          return V1_deserializeConnectionValue(val, false, plugins);
+        }
+        return V1_deserializeConnectionValue(val, false);
+      },
     ),
     id: primitive(),
-  },
-);
+  });
 
-export const V1_storeConnectionModelSchema = createModelSchema(
-  V1_StoreConnections,
-  {
+export const V1_storeConnectionModelSchema = (
+  plugins?: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_StoreConnections, {
     store: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     storeConnections: list(
-      usingModelSchema(V1_identifiedConnectionModelSchema),
+      usingModelSchema(
+        plugins !== undefined
+          ? V1_identifiedConnectionModelSchema(plugins)
+          : V1_identifiedConnectionModelSchema(),
+      ),
     ),
-  },
-);
+  });
 
-export const V1_engineRuntimeModelSchema = createModelSchema(V1_EngineRuntime, {
-  _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
-  connections: list(usingModelSchema(V1_storeConnectionModelSchema)),
-  mappings: list(
-    usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
-  ),
-});
+export const V1_engineRuntimeModelSchema = (
+  plugins?: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_EngineRuntime, {
+    _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
+    connections: list(
+      usingModelSchema(
+        plugins !== undefined
+          ? V1_storeConnectionModelSchema(plugins)
+          : V1_storeConnectionModelSchema(),
+      ),
+    ),
+    mappings: list(
+      usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
+    ),
+  });
 
 export const V1_serializeRuntime = (
   protocol: V1_Runtime,
 ): PlainObject<V1_Runtime> => {
   if (protocol instanceof V1_EngineRuntime) {
-    return serialize(V1_engineRuntimeModelSchema, protocol);
+    return serialize(V1_engineRuntimeModelSchema(), protocol);
   } else if (protocol instanceof V1_RuntimePointer) {
     return serialize(V1_runtimePointerModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Can't serialize runtime`, protocol);
 };
 
-export const V1_packageableRuntimeModelSchema = createModelSchema(
-  V1_PackageableRuntime,
-  {
+export const V1_packageableRuntimeModelSchema = (
+  plugins?: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_PackageableRuntime, {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
     ),
     name: primitive(),
     package: primitive(),
-    runtimeValue: usingModelSchema(V1_engineRuntimeModelSchema),
-  },
-);
+    runtimeValue: usingModelSchema(
+      plugins !== undefined
+        ? V1_engineRuntimeModelSchema(plugins)
+        : V1_engineRuntimeModelSchema(),
+    ),
+  });
