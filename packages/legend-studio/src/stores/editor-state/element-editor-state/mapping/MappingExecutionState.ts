@@ -51,13 +51,14 @@ import {
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type {
+import {
   Runtime,
   InputData,
   Mapping,
   Connection,
   ExecutionResult,
   SetImplementation,
+  extractExecutionResultValues,
 } from '@finos/legend-graph';
 import {
   LAMBDA_PIPE,
@@ -640,7 +641,11 @@ export class MappingExecutionState {
             true,
           )) as ExecutionResult;
         this.setExecutionResultText(
-          losslessStringify(result.values, undefined, TAB_SIZE),
+          losslessStringify(
+            extractExecutionResultValues(result),
+            undefined,
+            TAB_SIZE,
+          ),
         );
       }
     } catch (error) {

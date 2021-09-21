@@ -48,7 +48,7 @@ import {
 } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type {
+import {
   MappingTest,
   RawLambda,
   Runtime,
@@ -56,6 +56,7 @@ import type {
   MappingTestAssert,
   Mapping,
   ExecutionResult,
+  extractExecutionResultValues,
 } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
@@ -570,7 +571,11 @@ export class MappingTestState {
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
         this.assertionState.setExpectedResult(
-          losslessStringify(result.values, undefined, TAB_SIZE),
+          losslessStringify(
+            extractExecutionResultValues(result),
+            undefined,
+            TAB_SIZE,
+          ),
         );
         this.updateAssertion();
       } else {
