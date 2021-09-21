@@ -92,6 +92,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
+import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
 
 export class EditorGraphState {
   editorStore: EditorStore;
@@ -322,9 +323,17 @@ export class EditorGraphState {
         this.editorStore.graphManagerState.graph.buildState.fail();
         // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
-        this.editorStore.setBlockingAlert({
-          message: `Can't initialize dependency models. Error: ${error.message}`,
-        });
+        this.editorStore.applicationStore.notifyError(
+          `Can't initialize dependency models. Error: ${error.message}`,
+          undefined,
+          null,
+        );
+        const projectConfigurationEditorState =
+          this.editorStore.projectConfigurationEditorState;
+        projectConfigurationEditorState.setSelectedTab(
+          CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
+        );
+        this.editorStore.setCurrentEditorState(projectConfigurationEditorState);
       } else if (error instanceof GraphDataDeserializationError) {
         // if something goes wrong with de-serialization, redirect to model loader to fix
         this.redirectToModelLoaderForDebugging(error);
