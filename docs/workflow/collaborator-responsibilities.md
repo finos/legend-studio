@@ -20,7 +20,7 @@ The most important thing to pay attention to as maintainers is when merging PRs,
 - When PR are submitted against the release branch, coordinators need to check if these need documentation or not: new feature and interface change almost always guarantee documentation change, bug fixes, if notable also require documentation
 - Communicate about the timeline and progress with `developers` and `reviewers`
 - When we need to do a release, [create a new release branch](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) for the version with the format `release/<VERSION>` (e.g. `release/0.4.0`). This is the branch where bug fixes for the application versions will be worked on.
-- After a patch release is made on the latest version, `cherry-pick` the changes from the release branch back on to the default branch to keep the development branch up to date.
+- After a patch release is made on the latest version, `cherry-pick` the changes from the release branch back on to the default branch to keep the development branch up to date, for more details, refer to the [release guide](./release-process.md#patch-releases).
 - Update `CHANGELOG.md` and Github release to point at the doc for the new releases
 
 > There are a lot more details around the release process for the release coordinator in [this guide](./release-process.md)
