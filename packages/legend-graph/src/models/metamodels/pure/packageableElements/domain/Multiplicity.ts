@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import { hashArray } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
@@ -32,10 +32,20 @@ export class Multiplicity implements Hashable {
       upperBound: observable,
       str: computed,
       hashCode: computed,
+      setLowerBound: action,
+      setUpperBound: action,
     });
 
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
+  }
+
+  setLowerBound(val: number): void {
+    this.lowerBound = val;
+  }
+
+  setUpperBound(val: number | undefined): void {
+    this.upperBound = val;
   }
 
   get str(): string {

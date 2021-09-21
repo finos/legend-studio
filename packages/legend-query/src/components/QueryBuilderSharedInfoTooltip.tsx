@@ -17,7 +17,11 @@
 import type { TooltipProps } from '@material-ui/core';
 import { Tooltip } from '@material-ui/core';
 import { StubTransition } from '@finos/legend-art';
-import type { AbstractProperty, Multiplicity } from '@finos/legend-graph';
+import type {
+  AbstractProperty,
+  Multiplicity,
+  VariableExpression,
+} from '@finos/legend-graph';
 import { DerivedProperty, MULTIPLICITY_INFINITE } from '@finos/legend-graph';
 
 const getMultiplicityDescription = (multiplicity: Multiplicity): string => {
@@ -88,6 +92,53 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
             <div className="query-builder__tooltip__item__label">Mapped</div>
             <div className="query-builder__tooltip__item__value">
               {isMapped ? 'Yes' : 'No'}
+            </div>
+          </div>
+        </div>
+      }
+    >
+      {children}
+    </Tooltip>
+  );
+};
+
+export const QueryBuilderParameterInfoTooltip: React.FC<{
+  variable: VariableExpression;
+  children: React.ReactElement;
+  placement: NonNullable<TooltipProps['placement']>;
+}> = (props) => {
+  const { variable, children, placement } = props;
+  const type = variable.genericType?.value.rawType;
+  return (
+    <Tooltip
+      arrow={true}
+      placement={placement}
+      classes={{
+        tooltip: 'query-builder__tooltip',
+        arrow: 'query-builder__tooltip__arrow',
+        tooltipPlacementRight: 'query-builder__tooltip--right',
+      }}
+      TransitionComponent={StubTransition}
+      title={
+        <div className="query-builder__tooltip__content">
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">Type</div>
+            <div className="query-builder__tooltip__item__value">
+              {type?.name ?? ''}
+            </div>
+          </div>
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">Var Name</div>
+            <div className="query-builder__tooltip__item__value">
+              {variable.name}
+            </div>
+          </div>
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">
+              Multiplicity
+            </div>
+            <div className="query-builder__tooltip__item__value">
+              {getMultiplicityDescription(variable.multiplicity)}
             </div>
           </div>
         </div>

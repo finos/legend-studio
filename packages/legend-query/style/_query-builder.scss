@@ -495,13 +495,59 @@
     font-size: 1.1rem;
   }
 
+  &--parameter {
+    display: flex;
+    height: 2.2rem;
+    border-radius: 0.2rem;
+    margin: 0;
+    color: var(--color-light-grey-150);
+    background: var(--color-pink-400);
+    width: 100%;
+
+    &__icon {
+      @include flexCenter;
+
+      width: 2rem;
+      min-width: 2rem;
+      background: var(--color-dark-shade-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+    }
+
+    &__label {
+      @include flexVCenter;
+
+      user-select: none;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    &__text {
+      @include ellipsisTextOverflow;
+
+      padding: 0 1rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      width: 100%;
+    }
+
+    &__info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.2rem;
+      width: 2.2rem;
+      margin: 0.3rem;
+    }
+  }
+
   &__input {
     height: 100%;
     max-width: 100%;
     width: 100%;
     font-size: 1.2rem;
     padding: 0 0.5rem;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-200);
     border-radius: 0;
   }
 

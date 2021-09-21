@@ -15,9 +15,14 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
+import { FaCheckSquare, FaSquare, FaSave, FaDollarSign } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import { clsx, CustomSelectorInput, PencilIcon } from '@finos/legend-art';
+import {
+  clsx,
+  CustomSelectorInput,
+  InfoCircleIcon,
+  PencilIcon,
+} from '@finos/legend-art';
 import {
   guaranteeNonNullable,
   isNonNullable,
@@ -42,7 +47,36 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
+  VariableExpression,
 } from '@finos/legend-graph';
+import { QueryBuilderParameterInfoTooltip } from './QueryBuilderSharedInfoTooltip';
+
+const VariableExpressionEditor = observer(
+  (props: { valueSpecification: VariableExpression }) => {
+    const { valueSpecification } = props;
+    const varName = valueSpecification.name;
+    return (
+      <div className="query-builder-value-spec-editor--parameter">
+        <div className="query-builder-value-spec-editor--parameter__icon">
+          <FaDollarSign />
+        </div>
+        <div className="query-builder-value-spec-editor--parameter__label">
+          <div className="query-builder-value-spec-editor--parameter__text">
+            {varName}
+          </div>
+          <QueryBuilderParameterInfoTooltip
+            variable={valueSpecification}
+            placement={'bottom'}
+          >
+            <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
+              <InfoCircleIcon />
+            </div>
+          </QueryBuilderParameterInfoTooltip>
+        </div>
+      </div>
+    );
+  },
+);
 
 const StringPrimitiveInstanceValueEditor = observer(
   (props: { valueSpecification: PrimitiveInstanceValue }) => {
@@ -438,6 +472,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
     );
   }
   // property expression
-  // variable expression
+  else if (valueSpecification instanceof VariableExpression) {
+    return <VariableExpressionEditor valueSpecification={valueSpecification} />;
+  }
   return <QueryBuilderUnsupportedValueSpecificationEditor />;
 };

@@ -24,6 +24,7 @@ import type {
   SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import {
+  VariableExpression,
   CollectionInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
@@ -104,6 +105,12 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
         ).includes(collectionType.path);
       }
       return collectionType === propertyType;
+    } else if (valueSpec instanceof VariableExpression) {
+      // check if not a single value
+      if (valueSpec.multiplicity.upperBound === 1) {
+        return false;
+      }
+      return propertyType === valueSpec.genericType?.value.rawType;
     }
     return false;
   }

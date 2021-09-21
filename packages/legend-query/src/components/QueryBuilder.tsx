@@ -39,6 +39,7 @@ import {
   ApplicationBackdrop,
   useApplicationStore,
 } from '@finos/legend-application';
+import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
 
 enum QUERY_HOTKEY {
   COMPILE = 'COMPILE',
@@ -183,6 +184,9 @@ export const QueryBuilder = observer(
                         queryBuilderState={queryBuilderState}
                       />
                       <QueryBuilderExplorerPanel
+                        queryBuilderState={queryBuilderState}
+                      />
+                      <QueryBuilderParameterPanel
                         queryBuilderState={queryBuilderState}
                       />
                     </ResizablePanel>

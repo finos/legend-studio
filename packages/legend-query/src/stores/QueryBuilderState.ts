@@ -33,7 +33,7 @@ import {
 import { QueryBuilderSetupState } from './QueryBuilderSetupState';
 import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
-import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
+import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type {
   Class,
@@ -86,6 +86,7 @@ import type {
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
 import type { QueryConfig } from '../application/QueryConfig';
+import { QueryParameterState } from './QueryParameterState';
 
 export class QueryBuilderState {
   applicationStore: ApplicationStore<QueryConfig>;
@@ -93,6 +94,7 @@ export class QueryBuilderState {
 
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
+  queryParameterState: QueryParameterState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   resultSetModifierState: QueryResultSetModifierState;
@@ -127,6 +129,7 @@ export class QueryBuilderState {
     makeObservable(this, {
       querySetupState: observable,
       explorerState: observable,
+      queryParameterState: observable,
       fetchStructureState: observable,
       filterState: observable,
       resultSetModifierState: observable,
@@ -151,6 +154,7 @@ export class QueryBuilderState {
 
     this.querySetupState = new QueryBuilderSetupState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
+    this.queryParameterState = new QueryParameterState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultSetModifierState = new QueryResultSetModifierState(this);
@@ -175,6 +179,7 @@ export class QueryBuilderState {
 
   resetData(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
+    this.queryParameterState = new QueryParameterState(this);
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
@@ -235,11 +240,7 @@ export class QueryBuilderState {
       const compiledLambda = guaranteeNonNullable(
         compiledValueSpecification.values[0],
       );
-      compiledLambda.expressionSequence.map((e) =>
-        e.accept_ValueSpecificationVisitor(
-          new QueryBuilderLambdaProcessor(this, undefined),
-        ),
-      );
+      processQueryBuilderLambdaFunction(this, compiledLambda);
     }
   }
 

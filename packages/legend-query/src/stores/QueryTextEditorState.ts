@@ -17,7 +17,6 @@
 import {
   GRAPH_MANAGER_LOG_EVENT,
   buildSourceInformationSourceId,
-  LAMBDA_PIPE,
   ParserError,
   RawLambda,
 } from '@finos/legend-graph';
@@ -61,7 +60,7 @@ export class QueryTextEditorState extends LambdaEditorState {
   readOnlylambdaJson = '';
 
   constructor(queryBuilderState: QueryBuilderState) {
-    super('', LAMBDA_PIPE);
+    super('', '');
 
     makeObservable(this, {
       rawLambdaState: observable,

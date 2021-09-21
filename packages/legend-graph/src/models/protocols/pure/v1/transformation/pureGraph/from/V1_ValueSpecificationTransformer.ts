@@ -352,6 +352,14 @@ export class V1_ValueSpecificationTransformer
   ): V1_ValueSpecification {
     const _variable = new V1_Variable();
     _variable.name = valueSpecification.name;
+    const genericType = valueSpecification.genericType;
+    if (this.isParameter && genericType) {
+      const multiplicity = new V1_Multiplicity();
+      multiplicity.lowerBound = valueSpecification.multiplicity.lowerBound;
+      multiplicity.upperBound = valueSpecification.multiplicity.upperBound;
+      _variable.multiplicity = multiplicity;
+      _variable.class = genericType.value.rawType.name;
+    }
     return _variable;
   }
 
