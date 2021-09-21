@@ -67,7 +67,7 @@ export const isValidPath = (path: string): boolean =>
 export const hashObjectWithoutSourceInformation = (val: object): string =>
   hashObject(val, {
     excludeKeys: (key: string) => key === SOURCE_INFORMATION_KEY,
-  }) as string;
+  });
 
 export const fromElementPathToMappingElementId = (className: string): string =>
   className.split(ELEMENT_PATH_DELIMITER).join('_');

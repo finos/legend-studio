@@ -20,7 +20,6 @@ import type {
   ApplicationPageRenderEntry,
 } from '@finos/legend-studio';
 import { StudioPlugin } from '@finos/legend-studio';
-import { ProjectDashboard } from './ProjectDashboard';
 import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
 
 export class Management_StudioPlugin extends StudioPlugin {
@@ -34,11 +33,6 @@ export class Management_StudioPlugin extends StudioPlugin {
 
   override getExtraApplicationPageRenderEntries(): ApplicationPageRenderEntry[] {
     return [
-      // project dashboard
-      {
-        urlPattern: `/projectDashboard`,
-        component: ProjectDashboard,
-      },
       // URL redirector
       {
         urlPattern: `/redirect/-/:${PATH_PARAM_TOKEN_REDIRECT_URL}+/-/`,

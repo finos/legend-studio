@@ -147,7 +147,7 @@ export interface StudioConfigurationData
   env: string;
   sdlc: { url: string } | SDLCServerOption[];
   depot: { url: string };
-  engine: { url: string };
+  engine: { url: string; queryUrl?: string };
   documentation: { url: string };
 }
 
@@ -158,6 +158,7 @@ export class StudioConfig extends LegendApplicationConfig {
   _sdlcServerKey: string | undefined;
   sdlcServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
+  readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
 
   isConfigured = false;
@@ -217,6 +218,7 @@ export class StudioConfig extends LegendApplicationConfig {
       configData.engine.url,
       `Application configuration failure: 'engine.url' field is missing or empty`,
     );
+    this.engineQueryServerUrl = configData.engine.queryUrl;
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
       `Application configuration failure: 'depot.url' field is missing or empty`,

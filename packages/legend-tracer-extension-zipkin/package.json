@@ -1,24 +1,23 @@
 {
-  "name": "@finos/legend-tracer-plugin-zipkin",
-  "version": "0.0.3",
-  "description": "Legend application plugin for tracer using Zipkin and OpenTracing",
+  "name": "@finos/legend-tracer-extension-zipkin",
+  "version": "0.0.0",
+  "description": "Legend application extension for tracer using Zipkin and OpenTracing",
   "keywords": [
     "legend",
-    "legend-application",
-    "plugin",
+    "legend-tracer-extension",
     "extension",
     "opentracing",
     "tracer",
     "zipkin"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-tracer-plugin-zipkin",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-tracer-extension-zipkin",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-tracer-plugin-zipkin"
+    "directory": "packages/legend-tracer-extension-zipkin"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

@@ -17,11 +17,17 @@
 import { makeObservable, override } from 'mobx';
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import type { PackageableElementVisitor } from '@finos/legend-graph';
+import type {
+  PackageableElementVisitor,
+  StereotypeReference,
+  TaggedValue,
+} from '@finos/legend-graph';
 import { PackageableElement } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils';
 
 export class DataSpace extends PackageableElement implements Hashable {
+  stereotypes: StereotypeReference[] = [];
+  taggedValues: TaggedValue[] = [];
   groupId!: string;
   artifactId!: string;
   versionId!: string;
@@ -44,6 +50,10 @@ export class DataSpace extends PackageableElement implements Hashable {
   protected override get _elementHashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE,
+      hashArray(
+        this.stereotypes.map((stereotype) => stereotype.pointerHashCode),
+      ),
+      hashArray(this.taggedValues),
       this.groupId,
       this.artifactId,
       this.versionId,

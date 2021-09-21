@@ -101,11 +101,11 @@ export class ExistingQuerySetupState extends QuerySetupState {
     this.loadQueriesState.inProgress();
     try {
       this.queries =
-        (yield this.queryStore.graphManagerState.graphManager.getQueries(
-          isValidSearchString ? searchText : undefined,
-          this.showCurrentUserQueriesOnly,
-          10,
-        )) as LightQuery[];
+        (yield this.queryStore.graphManagerState.graphManager.getQueries({
+          search: isValidSearchString ? searchText : undefined,
+          showCurrentUserQueriesOnly: this.showCurrentUserQueriesOnly,
+          limit: 10,
+        })) as LightQuery[];
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);

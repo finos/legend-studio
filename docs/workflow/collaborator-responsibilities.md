@@ -15,7 +15,7 @@ The most important thing to pay attention to as maintainers is when merging PRs,
 
 ## Release coordinators
 
-- Do release planning (at the moment, we can't guarantee a fixed release cycle, but one usually lasts around 2 weeks to a month)
+- Do release planning (at the moment, we can't guarantee a fixed release cycle, but one usually lasts around 2 weeks to a month), _the main focus for now is to be transparent about "what goes into the next release?" so users know the coming features as well as to enable us writing better documentation/release notes_.
 - Work with `developers` to add relavent issues to the milestone and assign them accordingly
 - When PR are submitted against the release branch, coordinators need to check if these need documentation or not: new feature and interface change almost always guarantee documentation change, bug fixes, if notable also require documentation
 - Communicate about the timeline and progress with `developers` and `reviewers`

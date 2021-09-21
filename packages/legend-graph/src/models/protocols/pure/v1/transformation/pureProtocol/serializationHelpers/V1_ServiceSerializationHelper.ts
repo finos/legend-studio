@@ -57,6 +57,11 @@ import {
   V1_SingleExecutionTest,
   V1_TestContainer,
 } from '../../../model/packageableElements/service/V1_ServiceTest';
+import {
+  V1_stereotypePtrSchema,
+  V1_taggedValueSchema,
+} from './V1_DomainSerializationHelper';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
 
@@ -238,6 +243,34 @@ export const V1_servicedModelSchema = createModelSchema(V1_Service, {
   owners: list(primitive()),
   package: primitive(),
   pattern: primitive(),
+  stereotypes: custom(
+    (values) =>
+      serializeArray(
+        values,
+        (value) => serialize(V1_stereotypePtrSchema, value),
+        true,
+      ),
+    (values) =>
+      deserializeArray(
+        values,
+        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
+        false,
+      ),
+  ),
+  taggedValues: custom(
+    (values) =>
+      serializeArray(
+        values,
+        (value) => serialize(V1_taggedValueSchema, value),
+        true,
+      ),
+    (values) =>
+      deserializeArray(
+        values,
+        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
+        false,
+      ),
+  ),
   test: custom(
     (val) => V1_serializeServiceTest(val),
     (val) => V1_deserializeServiceTest(val),

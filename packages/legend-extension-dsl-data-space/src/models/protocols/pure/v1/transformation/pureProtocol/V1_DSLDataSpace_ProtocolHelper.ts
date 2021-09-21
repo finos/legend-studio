@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
+import type { V1_StereotypePtr } from '@finos/legend-graph';
+import {
+  V1_stereotypePtrSchema,
+  V1_taggedValueSchema,
+} from '@finos/legend-graph';
 import {
   deserializeArray,
   serializeArray,
   usingConstantValueSchema,
 } from '@finos/legend-shared';
-import { createModelSchema, custom, optional, primitive } from 'serializr';
+import {
+  createModelSchema,
+  custom,
+  deserialize,
+  optional,
+  primitive,
+  serialize,
+} from 'serializr';
 import { V1_DataSpace } from '../../model/packageableElements/dataSpace/V1_DataSpace';
 
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
@@ -37,6 +49,34 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   name: primitive(),
   package: primitive(),
   runtime: primitive(),
+  stereotypes: custom(
+    (values) =>
+      serializeArray(
+        values,
+        (value) => serialize(V1_stereotypePtrSchema, value),
+        true,
+      ),
+    (values) =>
+      deserializeArray(
+        values,
+        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
+        false,
+      ),
+  ),
   supportEmail: optional(primitive()),
+  taggedValues: custom(
+    (values) =>
+      serializeArray(
+        values,
+        (value) => serialize(V1_taggedValueSchema, value),
+        true,
+      ),
+    (values) =>
+      deserializeArray(
+        values,
+        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
+        false,
+      ),
+  ),
   versionId: primitive(),
 });

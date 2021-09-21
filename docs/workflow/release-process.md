@@ -1,6 +1,6 @@
 # Release Process
 
-This is a guide on the release process of this repository. Note that this repository contains several libraries (meant to be published to `NPM`) and applications (meant to be deployable and published to `DockerHub`). For libraries' releases, we use [changesets](https://github.com/atlassian/changesets). Application releases are done in a pretty standard manner. All applications' versions are kept the similar (since we consider them all part of the same application suite) and we do a minor version bump every 2 weeks to a month. Patch version bumps are meant for bug fixes post a release.
+This is a guide on the release process of this repository. Note that this repository contains several libraries (meant to be published to `NPM`) and applications (meant to be deployable and published to `DockerHub`). For libraries' releases, we use [changesets](https://github.com/atlassian/changesets). Application releases are done in a pretty standard manner. All applications' versions are kept the similar (since we consider them all part of the same application suite) and we do a minor version bump every 2 weeks to a month--_the main focus for now is to be transparent about "what goes into the next release?" so users know the coming features as well as to enable us writing better documentation/release notes_. Patch version bumps are meant for bug fixes post a release.
 
 We will go into details in the following sections:
 
