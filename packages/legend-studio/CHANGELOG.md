@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.2.20
+
+### Patch Changes
+
+- [#513](https://github.com/finos/legend-studio/pull/513) [`5968c8c8`](https://github.com/finos/legend-studio/commit/5968c8c81c6079a258433bc757ced4baade4e75d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Allow editing of `ProjectConfiguration` when a dependency graph error occurs (fixes [#269](https://github.com/finos/legend-studio/issues/269)).
+
 ## 0.2.19
 
 ### Patch Changes
