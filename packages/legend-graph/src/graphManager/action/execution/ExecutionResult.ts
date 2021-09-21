@@ -34,7 +34,6 @@ export class ResultBuilder {
 export abstract class ExecutionResult {
   builder!: ResultBuilder;
   activities: object | undefined;
-  values!: object;
 }
 
 // Model
@@ -43,9 +42,7 @@ export class JsonBuilder {
 }
 
 export class JsonExecutionResult extends ExecutionResult {
-  getResultObject(): object {
-    return this.values;
-  }
+  values!: object;
 }
 
 // TDS
@@ -85,6 +82,7 @@ export class ClassBuilder extends ResultBuilder {
 
 export class ClassExecutionResult extends ExecutionResult {
   override builder = new ClassBuilder(BuilderType.CLASS_BUILDER);
+  objects!: object;
 }
 
 export class INTERNAL__UnknownExecutionResult extends ExecutionResult {

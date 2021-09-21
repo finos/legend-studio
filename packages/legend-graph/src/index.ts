@@ -170,6 +170,7 @@ export {
   ExecutionResult,
   TdsExecutionResult,
 } from './graphManager/action/execution/ExecutionResult';
+export * from './graphManager/action/execution/ExecutionResultHelper';
 export * from './graphManager/PureGraphManagerPlugin';
 export * from './graphManager/action/query/Query';
 export * from './graphManager/action/EngineError';

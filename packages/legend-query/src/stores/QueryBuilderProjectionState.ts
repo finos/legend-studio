@@ -648,7 +648,7 @@ export class QueryBuilderProjectionState {
             `Unexpected preview data format`,
           );
           const previewResultData =
-            previewResult.values as QueryBuilderPreviewData;
+            previewResult.result as QueryBuilderPreviewData;
           // transpose the result
           const transposedPreviewResultData = {
             columns: ['Aggregation', 'Value'],
@@ -687,7 +687,7 @@ export class QueryBuilderProjectionState {
             `Unexpected preview data format`,
           );
           this.queryBuilderState.explorerState.previewDataState.setPreviewData(
-            previewResult.values as QueryBuilderPreviewData,
+            previewResult.result as QueryBuilderPreviewData,
           );
           break;
         }

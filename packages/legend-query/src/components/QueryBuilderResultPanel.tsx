@@ -22,7 +22,10 @@ import { FaPlay, FaScroll } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type { ExecutionResult } from '@finos/legend-graph';
-import { TdsExecutionResult } from '@finos/legend-graph';
+import {
+  extractExecutionResultValues,
+  TdsExecutionResult,
+} from '@finos/legend-graph';
 import {
   EDITOR_LANGUAGE,
   TAB_SIZE,
@@ -34,7 +37,7 @@ const QueryBuilderResultValues = observer(
   (props: { executionResult: ExecutionResult }) => {
     const { executionResult } = props;
     const executionResultString = JSON.stringify(
-      executionResult.values,
+      extractExecutionResultValues(executionResult),
       null,
       TAB_SIZE,
     );
