@@ -2454,19 +2454,19 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.19
+    "@types/react": 17.0.21
     cross-env: 7.0.3
     eslint: 7.32.0
-    jest: 27.1.0
+    jest: 27.2.0
     mobx: 6.3.3
     mobx-react-lite: 3.2.1
     monaco-editor: 0.27.0
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.39.0
+    sass: 1.41.1
     serializr: 2.0.5
-    typescript: 4.4.2
+    typescript: 4.4.3
   peerDependencies:
     react: ^17.0.0
   languageName: unknown
@@ -2998,7 +2998,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jest/core@npm:^27.1.0, @jest/core@npm:^27.2.0":
+"@jest/core@npm:^27.2.0":
   version: 27.2.0
   resolution: "@jest/core@npm:27.2.0"
   dependencies:
@@ -4063,17 +4063,6 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: ca2eca8f33ddbcba46932efeb8affdd274ea5800ea38bf8bc8de205808d09de21ea1f3d6ab156573aca393b912f0d908826cc6ad92470a3f2b6c34e70d5f75db
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:17.0.19":
-  version: 17.0.19
-  resolution: "@types/react@npm:17.0.19"
-  dependencies:
-    "@types/prop-types": "*"
-    "@types/scheduler": "*"
-    csstype: ^3.0.2
-  checksum: d5af52623dd863e5a9f64eb72979f19c21e03012e25ee93adc93f664ed7976e81b654128dc653b225ad5ba2aaae24e0febe37face272bb051d6289e23ed7177d
   languageName: node
   linkType: hard
 
@@ -9473,7 +9462,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-cli@npm:^27.1.0, jest-cli@npm:^27.2.0":
+"jest-cli@npm:^27.2.0":
   version: 27.2.0
   resolution: "jest-cli@npm:27.2.0"
   dependencies:
@@ -10078,24 +10067,6 @@ __metadata:
     merge-stream: ^2.0.0
     supports-color: ^8.0.0
   checksum: 2189649c8ce67c9e3f09f20943872a24486546a81216d698986763708610232c6e942de41c10cdefee1a6abfcc7a64208de88d5a8c5cff55cb52f5da16688733
-  languageName: node
-  linkType: hard
-
-"jest@npm:27.1.0":
-  version: 27.1.0
-  resolution: "jest@npm:27.1.0"
-  dependencies:
-    "@jest/core": ^27.1.0
-    import-local: ^3.0.2
-    jest-cli: ^27.1.0
-  peerDependencies:
-    node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
-  peerDependenciesMeta:
-    node-notifier:
-      optional: true
-  bin:
-    jest: bin/jest.js
-  checksum: e9cc602bb860b805461d3ed8a7029b3353bfdf8fc4c8dc8da79490e49d00b3a98fec1efa1aa0099873636406d813e1f0dd28fa616b045fb8288cd06f2c4e2bf5
   languageName: node
   linkType: hard
 
@@ -13801,7 +13772,7 @@ resolve@^2.0.0-next.3:
   checksum: 69c66ea3482922064f1e907fc204283e5e9cc02eb20b7ab1761d478922f77b3e2c47c8e3c585f771d75ce57bb088b226ae2eb4c736849b29c8727e921a6e0d41
   languageName: node
   linkType: hard
-  
+
 "sass@npm:1.41.1":
   version: 1.41.1
   resolution: "sass@npm:1.41.1"
@@ -15378,16 +15349,6 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-typescript@4.4.2:
-  version: 4.4.2
-  resolution: "typescript@npm:4.4.2"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 194e08e9d1971d667d6fd1a0554616b7022312a2319d70e81a64e502a265992061ee7817ed9a69b52bbabe7a9b85e7938cb8c11c433e40a516b277f8c4dacd51
-  languageName: node
-  linkType: hard
-
 typescript@4.4.3:
   version: 4.4.3
   resolution: "typescript@npm:4.4.3"
@@ -15395,16 +15356,6 @@ typescript@4.4.3:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 05823f21796d450531a7e4ab299715d38fd9ded0e4ce7400876053f4b5166ca3dde7a68cecfe72d9086039f03c0b6edba36516fb10ed83c5837d9600532ea4c2
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@4.4.2#~builtin<compat/typescript>":
-  version: 4.4.2
-  resolution: "typescript@patch:typescript@npm%3A4.4.2#~builtin<compat/typescript>::version=4.4.2&hash=d8b4e7"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 11d6ab6e868117908c388401e2ac06d503c5c8709115ab80ee69a1a6352c1f98471d1e595636bfe6a2d6b20b03a44df6bb2d3d198cea97c0c328968cd18d2b70
   languageName: node
   linkType: hard
 
