@@ -119,7 +119,7 @@ import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda';
 import { V1_ExecuteInput } from './engine/execution/V1_ExecuteInput';
 import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput';
 import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
-import { V1_ValueSpecificationTransformer } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
+import { V1_transformValueSpecification } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
 import { V1_Profile } from './model/packageableElements/domain/V1_Profile';
 import { V1_Class } from './model/packageableElements/domain/V1_Class';
 import { V1_Enumeration } from './model/packageableElements/domain/V1_Enumeration';
@@ -1665,14 +1665,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     valueSpecification: ValueSpecification,
   ): Record<PropertyKey, unknown> {
     return V1_serializeValueSpecification(
-      valueSpecification.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationTransformer(
-          [],
-          new Map<string, unknown[]>(),
-          true,
-          false,
-        ),
-      ),
+      V1_transformValueSpecification(valueSpecification),
     ) as Record<PropertyKey, unknown>;
   }
 

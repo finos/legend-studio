@@ -40,10 +40,8 @@ import type {
   CollectionInstanceValue,
   InstanceValue,
 } from '../../../../../../metamodels/pure/valueSpecification/InstanceValue';
-import type {
-  LambdaFunction,
-  LambdaFunctionInstanceValue,
-} from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
+import { LambdaFunctionInstanceValue } from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
+import type { LambdaFunction } from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
 import type {
   AbstractPropertyExpression,
   FunctionExpression,
@@ -366,8 +364,7 @@ export class V1_ValueSpecificationTransformer
   visit_LambdaFunctionInstanceValue(
     valueSpecification: LambdaFunctionInstanceValue,
   ): V1_ValueSpecification {
-    const _lambda = guaranteeNonNullable(valueSpecification.values[0]);
-    return V1_transformLambdaFunction(_lambda);
+    return V1_transformLambdaFunctionInstanceValue(valueSpecification);
   }
 
   visit_AbstractPropertyExpression(
@@ -457,9 +454,11 @@ export const V1_transformLambdaBody = (
   );
 };
 
-export function V1_transformLambdaFunction(
-  lambdaFunc: LambdaFunction,
+export function V1_transformLambdaFunctionInstanceValue(
+  valueSpecification: LambdaFunctionInstanceValue,
+  isRootLambda?: boolean,
 ): V1_Lambda {
+  const lambdaFunc = guaranteeNonNullable(valueSpecification.values[0]);
   const lambda = new V1_Lambda();
   lambda.parameters = lambdaFunc.functionType.parameters.map((p) =>
     guaranteeType(
@@ -467,7 +466,7 @@ export function V1_transformLambdaFunction(
         new V1_ValueSpecificationTransformer(
           [],
           new Map<string, unknown[]>(),
-          true,
+          Boolean(isRootLambda),
           false,
         ),
       ),
@@ -476,4 +475,21 @@ export function V1_transformLambdaFunction(
   );
   lambda.body = V1_transformLambdaBody(lambdaFunc, false);
   return lambda;
+}
+
+export function V1_transformValueSpecification(
+  valueSpecification: ValueSpecification,
+): V1_ValueSpecification {
+  if (valueSpecification instanceof LambdaFunctionInstanceValue) {
+    return V1_transformLambdaFunctionInstanceValue(valueSpecification, true);
+  } else {
+    return valueSpecification.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationTransformer(
+        [],
+        new Map<string, unknown[]>(),
+        true,
+        false,
+      ),
+    );
+  }
 }
