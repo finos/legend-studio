@@ -17,7 +17,6 @@ As mentioned, the release process for libraries is backed by [changesets](https:
 - New features will be added to the default branch
 - Application version bump will **always** be minor bumps (e.g. `1.6.0`, `1.7.0`)
 - At the beginning of a new application version bump, we will [create a release branch](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) for that version (i.e. `release/1.6.0`, `release/1.7.0`), this will be used for adding bug fixes and creating [patch releases](#patch-releases)
-- When a patch release is created (e.g. `1.6.1`, `1.7.1`, `1.7.2`), release coordinator need to `cherry pick` the commits on the release branch onto the default branch. To do this, you can follow [this guide](https://stackoverflow.com/a/3933416). In particular, you can cherry pick between the 2 release commit on this branch (e.g. between `1.6.0` and `1.6.1`) using Git command like `git cherry-pick A..B`, then create a PR against default branch for this. You should follow the naming convention for this PR, for example `Chery-picking changes in v1.6.1`. A small note here is that this will fail `changesets` CI check as the changesets have been used to create the patch release so we can ignore the failure of this CI check and go ahead to merge and approve this cherry-picking PR.
 - When we want to do a new release, create a changeset with minor bump for all of the applications, e.g. `@finos/legend-studio-app`, `@finos/legend-query-app`, etc. if this is not already been done as part of any changesets. Approve and merge the `New Release` will trigger a pipeline to publish a new release.
 
 ### Changesets
@@ -31,9 +30,11 @@ We use `changesets` to automate our versioning and release process via [github a
 
 Patch release is meant for fixing bugs for a standard release. After a standard release being done, release coordinators should have create a release branch corresponding to that release, for example `release/1.4.0`. Developers working on bug fixes for this particular version will be creating PRs against this branch.
 
-When a new patch release being done, release coordinators need to cherry-pick the changes back onto the default branch. **Note: please do not merge the release branch back onto the default branch!**
-
 We also use `changesets` to ochestrate the release process for patch release, release coordinate need to approve and merge `New Patch Release` PR to create a patch release.
+
+When a new patch release is cut (e.g. `1.6.1`, `1.7.1`, `1.7.2`), release coordinator need to `cherry pick` the commits on the release branch onto the default branch. **Note: please do not merge the release branch back onto the default branch!**. To do this, you can follow [this guide](https://stackoverflow.com/a/3933416). In particular, you can cherry pick between the 2 release commit on this branch (e.g. between `1.6.0` and `1.6.1`) using Git command like `git cherry-pick A..B`, then create a PR against default branch for this. You should follow the naming convention for this PR, for example `Chery-picking changes in v1.6.1`. A small note here is that this will fail `changesets` CI check as the changesets have been used to create the patch release so we can ignore the failure of this CI check and go ahead to merge and approve this cherry-picking PR. For the format of the cherry-picking PRs, please check out [these](https://github.com/finos/legend-studio/pull/494) [examples](https://github.com/finos/legend-studio/pull/518).
+
+> Note that cherry-picking the patch changes back onto the default branch is a **must**, otherwise, we might risk publishing packages with the same versions on NPM when doing a release on the default branch. Also, please note that since the changesets have been consumed as part of the patch release, there should not be any changeset files, and this would probably cause the changeset CI checks to fail; ignore that check in this case.
 
 ## Dev/Beta/RC releases
 
