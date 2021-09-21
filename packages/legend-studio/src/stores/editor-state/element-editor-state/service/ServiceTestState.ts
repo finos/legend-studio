@@ -34,14 +34,14 @@ import {
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import {
+import type {
   ServiceTestResult,
   KeyedSingleExecutionTest,
   Runtime,
   ExecutionResult,
-  extractExecutionResultValues,
 } from '@finos/legend-graph';
 import {
+  extractExecutionResultValues,
   GRAPH_MANAGER_LOG_EVENT,
   TestContainer,
   SingleExecutionTest,

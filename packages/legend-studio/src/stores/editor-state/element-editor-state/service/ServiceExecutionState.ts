@@ -45,7 +45,6 @@ import type {
 } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
-  LAMBDA_PIPE,
   RawLambda,
   PureSingleExecution,
   PureMultiExecution,
@@ -145,7 +144,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   importQueryState = ActionState.create();
 
   constructor(editorStore: EditorStore, execution: PureExecution) {
-    super('', LAMBDA_PIPE);
+    super('', '');
 
     makeObservable(this, {
       execution: observable,

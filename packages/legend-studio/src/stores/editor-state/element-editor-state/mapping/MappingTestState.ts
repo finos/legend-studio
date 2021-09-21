@@ -48,7 +48,7 @@ import {
 } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import {
+import type {
   MappingTest,
   RawLambda,
   Runtime,
@@ -56,9 +56,9 @@ import {
   MappingTestAssert,
   Mapping,
   ExecutionResult,
-  extractExecutionResultValues,
 } from '@finos/legend-graph';
 import {
+  extractExecutionResultValues,
   GRAPH_MANAGER_LOG_EVENT,
   LAMBDA_PIPE,
   Class,
@@ -627,7 +627,7 @@ export class MappingTestState {
           true,
         )) as ExecutionResult;
       this.testExecutionResultText = losslessStringify(
-        result.values,
+        extractExecutionResultValues(result),
         undefined,
         TAB_SIZE,
       );
@@ -637,7 +637,7 @@ export class MappingTestState {
       ) {
         // TODO: this logic should probably be better handled in by engine mapping test runner
         assertionMatched =
-          hashObject(result.values) ===
+          hashObject(extractExecutionResultValues(result)) ===
           hashObject(losslessParse(this.assertionState.expectedResult));
       } else {
         throw new UnsupportedOperationError();

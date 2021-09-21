@@ -51,16 +51,16 @@ import {
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import {
+import type {
   Runtime,
   InputData,
   Mapping,
   Connection,
   ExecutionResult,
   SetImplementation,
-  extractExecutionResultValues,
 } from '@finos/legend-graph';
 import {
+  extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_LOG_EVENT,
   MappingTest,

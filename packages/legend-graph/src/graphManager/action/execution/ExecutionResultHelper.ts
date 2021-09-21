@@ -16,20 +16,23 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { ExecutionResult } from './ExecutionResult';
-import { INTERNAL__UnknownExecutionResult } from './ExecutionResult';
 import {
   JsonExecutionResult,
   TdsExecutionResult,
   ClassExecutionResult,
+  INTERNAL__UnknownExecutionResult,
 } from './ExecutionResult';
 
+// Execution Results often wrap the result values with additional metadata.
+// This method extracts the actual values from the execution result
 export const extractExecutionResultValues = (
   executionResult: ExecutionResult,
 ): object => {
   if (executionResult instanceof JsonExecutionResult) {
     return executionResult.values;
   } else if (executionResult instanceof TdsExecutionResult) {
-    return executionResult.result.rows;
+    // Note we need the result values in object format to run test results
+    return executionResult.result.rows.map((v) => ({ values: v.values }));
   } else if (executionResult instanceof ClassExecutionResult) {
     return executionResult.objects;
   } else if (executionResult instanceof INTERNAL__UnknownExecutionResult) {
