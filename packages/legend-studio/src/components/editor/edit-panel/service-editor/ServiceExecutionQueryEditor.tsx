@@ -14,71 +14,212 @@
  * limitations under the License.
  */
 
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaPlay, FaScroll } from 'react-icons/fa';
-import type { ServicePureExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
+import type {
+  ServicePureExecutionQueryState,
+  ServicePureExecutionState,
+} from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
 import { Dialog } from '@material-ui/core';
+import type { SelectComponent } from '@finos/legend-art';
 import {
+  BlankPanelContent,
+  ArrowCircleDownIcon,
   clsx,
+  CustomSelectorInput,
   PanelLoadingIndicator,
+  PlayIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  ScrollIcon,
 } from '@finos/legend-art';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
-import { isNonNullable } from '@finos/legend-shared';
+import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import type { LightQuery } from '@finos/legend-graph';
 
-const ServiceExecutionModals = observer(
+const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
     const { executionState } = props;
     // execution
     const executionResultText = executionState.executionResultText;
     const closeExecutionResultViewer = (): void =>
       executionState.setExecutionResultText(undefined);
+
     return (
-      <>
-        <ExecutionPlanViewer
-          executionPlanState={executionState.executionPlanState}
-        />
-        <Dialog
-          open={Boolean(executionResultText)}
-          onClose={closeExecutionResultViewer}
-          classes={{
-            root: 'editor-modal__root-container',
-            container: 'editor-modal__container',
-            paper: 'editor-modal__content',
-          }}
-        >
-          <div className="modal modal--dark editor-modal">
-            <div className="modal__header">
-              <div className="modal__title">Execution Result</div>
-            </div>
-            <div className="modal__body">
-              <StudioTextInputEditor
-                inputValue={executionResultText ?? ''}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.JSON}
-                showMiniMap={true}
-              />
-            </div>
-            <div className="modal__footer">
-              <button
-                className="btn modal__footer__close-btn"
-                onClick={closeExecutionResultViewer}
-              >
-                Close
-              </button>
-            </div>
+      <Dialog
+        open={Boolean(executionResultText)}
+        onClose={closeExecutionResultViewer}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <div className="modal modal--dark editor-modal">
+          <div className="modal__header">
+            <div className="modal__title">Execution Result</div>
           </div>
-        </Dialog>
-      </>
+          <div className="modal__body">
+            <StudioTextInputEditor
+              inputValue={executionResultText ?? ''}
+              isReadOnly={true}
+              language={EDITOR_LANGUAGE.JSON}
+              showMiniMap={true}
+            />
+          </div>
+          <div className="modal__footer">
+            <button
+              className="btn modal__footer__close-btn"
+              onClick={closeExecutionResultViewer}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Dialog>
+    );
+  },
+);
+
+type QueryOption = { label: string; value: LightQuery };
+const buildQueryOption = (query: LightQuery): QueryOption => ({
+  label: query.name,
+  value: query,
+});
+
+const ServiceExecutionQueryImporter = observer(
+  (props: { queryState: ServicePureExecutionQueryState }) => {
+    const { queryState } = props;
+    const applicationStore = useApplicationStore();
+    const queryFinderRef = useRef<SelectComponent>(null);
+    const closeQueryImporter = (): void =>
+      queryState.setOpenQueryImporter(false);
+    const handleEnterQueryImporter = (): void =>
+      queryFinderRef.current?.focus();
+
+    // query finder
+    const [searchText, setSearchText] = useState('');
+    const queryOptions = queryState.queries.map(buildQueryOption);
+    const selectedQueryOption = queryState.selectedQueryInfo
+      ? {
+          label: queryState.selectedQueryInfo.query.name,
+          value: queryState.selectedQueryInfo.query,
+        }
+      : null;
+    const onQueryOptionChange = (option: QueryOption | null): void => {
+      if (option?.value !== queryState.selectedQueryInfo?.query.id) {
+        flowResult(queryState.setSelectedQueryInfo(option?.value)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
+    const formatQueryOptionLabel = (option: QueryOption): React.ReactNode => (
+      <div className="service-query-importer__query-option">
+        <div className="service-query-importer__query-option__label">
+          {option.label}
+        </div>
+        {Boolean(option.value.owner) && (
+          <div
+            className={clsx('service-query-importer__query-option__user', {
+              'service-query-importer__query-option__user--mine':
+                option.value.isCurrentUserQuery,
+            })}
+          >
+            {option.value.isCurrentUserQuery ? 'mine' : option.value.owner}
+          </div>
+        )}
+      </div>
+    );
+
+    const debouncedLoadQueries = useMemo(
+      () =>
+        debounce((input: string): void => {
+          flowResult(queryState.loadQueries(input)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
+        }, 500),
+      [applicationStore, queryState],
+    );
+    const onSearchTextChange = (value: string): void => {
+      if (value !== searchText) {
+        setSearchText(value);
+        debouncedLoadQueries.cancel();
+        debouncedLoadQueries(value);
+      }
+    };
+    const importQuery = (): void => {
+      flowResult(queryState.importQuery()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    };
+
+    useEffect(() => {
+      flowResult(queryState.loadQueries('')).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [queryState, applicationStore]);
+
+    return (
+      <Dialog
+        open={queryState.openQueryImporter}
+        onClose={closeQueryImporter}
+        TransitionProps={{
+          onEnter: handleEnterQueryImporter,
+        }}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <div className="modal modal--dark search-modal">
+          <div className="modal__title">Import Query</div>
+          <CustomSelectorInput
+            ref={queryFinderRef}
+            options={queryOptions}
+            isLoading={queryState.loadQueriesState.isInProgress}
+            onInputChange={onSearchTextChange}
+            inputValue={searchText}
+            onChange={onQueryOptionChange}
+            value={selectedQueryOption}
+            placeholder="Search for a query by name..."
+            darkMode={true}
+            isClearable={true}
+            formatOptionLabel={formatQueryOptionLabel}
+          />
+          <div className="service-query-importer__query-preview">
+            <PanelLoadingIndicator
+              isLoading={queryState.loadQueryInfoState.isInProgress}
+            />
+            {queryState.selectedQueryInfo && (
+              <StudioTextInputEditor
+                inputValue={queryState.selectedQueryInfo.content}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.PURE}
+                showMiniMap={false}
+                hideGutter={true}
+              />
+            )}
+            {!queryState.selectedQueryInfo && (
+              <BlankPanelContent>No query to preview</BlankPanelContent>
+            )}
+          </div>
+          <button
+            className="btn btn--dark u-pull-right"
+            disabled={!queryState.selectedQueryInfo}
+            onClick={importQuery}
+          >
+            Import
+          </button>
+        </div>
+      </Dialog>
     );
   },
 );
@@ -116,6 +257,9 @@ export const ServiceExecutionQueryEditor = observer(
         </Fragment>,
       );
     }
+    const importQuery = (): void => {
+      queryState.setOpenQueryImporter(true);
+    };
     // execution
     const execute = applicationStore.guaranteeSafeAction(() =>
       flowResult(executionState.execute()),
@@ -141,21 +285,30 @@ export const ServiceExecutionQueryEditor = observer(
           <div className="panel__header__actions">
             <button
               className="panel__header__action"
+              onClick={importQuery}
+              disabled={isReadOnly}
+              tabIndex={-1}
+              title="Import query"
+            >
+              <ArrowCircleDownIcon />
+            </button>
+            <button
+              className="panel__header__action"
               onClick={execute}
               disabled={isReadOnly}
               tabIndex={-1}
-              title={'Run service execution'}
+              title="Run service execution"
             >
-              <FaPlay />
+              <PlayIcon />
             </button>
             <button
               className="panel__header__action"
               onClick={generatePlan}
               disabled={isReadOnly}
               tabIndex={-1}
-              title={'Generate execution plan'}
+              title="Generate execution plan"
             >
-              <FaScroll />
+              <ScrollIcon />
             </button>
           </div>
         </div>
@@ -195,7 +348,11 @@ export const ServiceExecutionQueryEditor = observer(
               </ResizablePanel>
             </ResizablePanelGroup>
           )}
-          <ServiceExecutionModals executionState={executionState} />
+          <ExecutionPlanViewer
+            executionPlanState={executionState.executionPlanState}
+          />
+          <ServiceExecutionResultViewer executionState={executionState} />
+          <ServiceExecutionQueryImporter queryState={queryState} />
         </div>
       </div>
     );

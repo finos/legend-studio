@@ -60,6 +60,7 @@ import type {
   SetImplementation,
 } from '@finos/legend-graph';
 import {
+  extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_LOG_EVENT,
   MappingTest,
@@ -640,7 +641,11 @@ export class MappingExecutionState {
             true,
           )) as ExecutionResult;
         this.setExecutionResultText(
-          losslessStringify(result.values, undefined, TAB_SIZE),
+          losslessStringify(
+            extractExecutionResultValues(result),
+            undefined,
+            TAB_SIZE,
+          ),
         );
       }
     } catch (error) {

@@ -41,7 +41,9 @@ export const StudioLambdaEditor = observer(
     matchedExpectedType?: (() => boolean) | undefined;
     onExpectedTypeLabelSelect?: (() => void) | undefined;
     forceBackdrop: boolean;
+    disableExpansion?: boolean | undefined;
     forceExpansion?: boolean | undefined;
+    disablePopUp?: boolean | undefined;
     useBaseTextEditorSettings?: boolean | undefined;
     hideErrorBar?: boolean | undefined;
   }) => {
@@ -53,7 +55,9 @@ export const StudioLambdaEditor = observer(
       expectedType,
       onExpectedTypeLabelSelect,
       matchedExpectedType,
+      disableExpansion,
       forceExpansion,
+      disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
     } = props;
@@ -124,7 +128,9 @@ export const StudioLambdaEditor = observer(
         onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
         forceBackdrop={forceBackdrop}
         backdropSetter={backdropSetter}
+        disableExpansion={disableExpansion}
         forceExpansion={forceExpansion}
+        disablePopUp={disablePopUp}
         useBaseTextEditorSettings={useBaseTextEditorSettings}
         hideErrorBar={hideErrorBar}
         onKeyDownEventHandlers={onKeyDownEventHandlers}

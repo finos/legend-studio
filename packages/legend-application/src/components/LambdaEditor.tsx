@@ -26,16 +26,21 @@ import {
   disableEditorHotKeys,
   baseTextEditorSettings,
 } from '@finos/legend-art';
-import { FaLongArrowAltDown, FaLongArrowAltUp } from 'react-icons/fa';
+import {
+  FaLongArrowAltDown,
+  FaLongArrowAltUp,
+  FaWindowMaximize,
+} from 'react-icons/fa';
 import type { LambdaEditorState } from '../stores/LambdaEditorState';
 import type { DebouncedFunc, GeneratorFn } from '@finos/legend-shared';
-import { debounce } from '@finos/legend-shared';
+import { noop, debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { EngineError, Type } from '@finos/legend-graph';
 import { ParserError } from '@finos/legend-graph';
 import { APPLICATION_TEST_ID } from './ApplicationTestID';
 import { useApplicationStore } from './ApplicationStoreProvider';
 import { EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../const';
+import { Dialog } from '@material-ui/core';
 
 export type LambdaEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;
@@ -71,7 +76,7 @@ const LambdaErrorFeedback: React.FC<{
   );
 };
 
-const LambdaEditorInner = observer(
+const LambdaEditorInline = observer(
   (props: {
     className?: string | undefined;
     disabled: boolean;
@@ -80,12 +85,15 @@ const LambdaEditorInner = observer(
     expectedType?: Type | undefined;
     matchedExpectedType?: (() => boolean) | undefined;
     onExpectedTypeLabelSelect?: (() => void) | undefined;
-    forceExpansion?: boolean | undefined;
     useBaseTextEditorSettings?: boolean | undefined;
     hideErrorBar?: boolean | undefined;
     forceBackdrop: boolean;
+    disableExpansion?: boolean | undefined;
+    forceExpansion?: boolean | undefined;
+    disablePopUp?: boolean | undefined;
     backdropSetter?: ((val: boolean) => void) | undefined;
     onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[];
+    openInPopUp: () => void;
   }) => {
     const {
       className,
@@ -97,10 +105,13 @@ const LambdaEditorInner = observer(
       matchedExpectedType,
       forceBackdrop,
       backdropSetter,
+      disableExpansion,
       forceExpansion,
+      disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
       onKeyDownEventHandlers,
+      openInPopUp,
     } = props;
     const applicationStore = useApplicationStore();
     const onDidChangeModelContentEventDisposer = useRef<
@@ -115,11 +126,11 @@ const LambdaEditorInner = observer(
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
-    const textInput = useRef<HTMLDivElement>(null);
+    const textInputRef = useRef<HTMLDivElement>(null);
 
-    const transformLambdaToString = (pretty: boolean): Promise<void> => {
+    const transformLambdaToString = async (pretty: boolean): Promise<void> => {
       transformStringToLambda?.cancel();
-      return flowResult(
+      return await flowResult(
         lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
       ).catch(applicationStore.alertIllegalUnhandledError);
     };
@@ -143,8 +154,8 @@ const LambdaEditorInner = observer(
     }, [editor, width, height]);
 
     useEffect(() => {
-      if (!editor && textInput.current) {
-        const element = textInput.current;
+      if (!editor && textInputRef.current) {
+        const element = textInputRef.current;
         const lambdaEditorOptions: monacoEditorAPI.IStandaloneEditorConstructionOptions =
           useBaseTextEditorSettings
             ? {}
@@ -205,6 +216,8 @@ const LambdaEditorInner = observer(
           backdropSetter(true);
         } else if (!forceBackdrop) {
           // make sure the backdrop is no longer `needed` for blocking by another parser error before hiding it
+          // NOTE: this has a serious drawback, see the documentation for `forceBackdrop` prop of `LambdaEditor`
+          // for better context
           backdropSetter(false);
         }
       }
@@ -339,7 +352,7 @@ const LambdaEditorInner = observer(
             data-testid={APPLICATION_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
             className="lambda-editor__editor__input"
           >
-            <div className="text-editor__body" ref={textInput} />
+            <div className="text-editor__body" ref={textInputRef} />
           </div>
           {Boolean(expectedType) && (
             <div className="lambda-editor__editor__info">
@@ -374,7 +387,7 @@ const LambdaEditorInner = observer(
               )}
             </div>
           )}
-          {!forceExpansion && (
+          {!disableExpansion && !forceExpansion && (
             <button
               className="lambda-editor__editor__expand-btn"
               onClick={toggleExpandedMode}
@@ -385,6 +398,17 @@ const LambdaEditorInner = observer(
               {isExpanded ? <FaLongArrowAltUp /> : <FaLongArrowAltDown />}
             </button>
           )}
+          {!disablePopUp && (
+            <button
+              className="lambda-editor__action"
+              onClick={openInPopUp}
+              disabled={Boolean(parserError)}
+              tabIndex={-1}
+              title="Open..."
+            >
+              <FaWindowMaximize />
+            </button>
+          )}
         </div>
         {!hideErrorBar && (
           <LambdaErrorFeedback
@@ -393,6 +417,253 @@ const LambdaEditorInner = observer(
           />
         )}
       </>
+    );
+  },
+);
+
+const LambdaEditorPopUp = observer(
+  (props: {
+    className?: string | undefined;
+    disabled: boolean;
+    lambdaEditorState: LambdaEditorState;
+    transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | undefined;
+    onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[];
+    onClose: () => void;
+  }) => {
+    const {
+      className,
+      disabled,
+      lambdaEditorState,
+      transformStringToLambda,
+      onKeyDownEventHandlers,
+      onClose,
+    } = props;
+    const applicationStore = useApplicationStore();
+    const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
+    const onDidChangeModelContentEventDisposer = useRef<
+      IDisposable | undefined
+    >(undefined);
+    const value = lambdaEditorState.lambdaString;
+    const parserError = lambdaEditorState.parserError;
+    const compilationError = lambdaEditorState.compilationError;
+    // const selectTypeLabel = (): void => onExpectedTypeLabelSelect?.();
+    const [editor, setEditor] = useState<
+      monacoEditorAPI.IStandaloneCodeEditor | undefined
+    >();
+    const textInputRef = useRef<HTMLDivElement>(null);
+
+    const transformLambdaToString = async (pretty: boolean): Promise<void> => {
+      transformStringToLambda?.cancel();
+      return await flowResult(
+        lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
+      ).catch(applicationStore.alertIllegalUnhandledError);
+    };
+    const discardChanges = applicationStore.guaranteeSafeAction(() =>
+      transformLambdaToString(true),
+    );
+
+    const { ref, width, height } = useResizeDetector<HTMLDivElement>();
+    useEffect(() => {
+      if (width !== undefined && height !== undefined) {
+        editor?.layout({ width, height });
+      }
+    }, [editor, width, height]);
+
+    const onEnter = (): void => {
+      if (!editor && textInputRef.current) {
+        const element = textInputRef.current;
+        const _editor = monacoEditorAPI.create(element, {
+          ...baseTextEditorSettings,
+          language: EDITOR_LANGUAGE.PURE,
+          theme: EDITOR_THEME.LEGEND,
+        });
+        disableEditorHotKeys(_editor);
+        setEditor(_editor);
+      }
+    };
+
+    if (editor) {
+      /**
+       * See the extensive note about this instantiation in `LambdaEditor`. The fact that `transformStringToLambda` can change
+       * since it does not solely depends on `LambdaEditorState` but also the `disabled` flag means that the update function
+       * can go stale, so we cannot place this `onDidChangeModelContent` in a one-time called instantiation of the editor
+       * (i.e. the first `useEffect` where we create the editor). As such, we have to use refs and disposer to update this every time
+       * the lambda editor is re-rendered.
+       *
+       * A potential bug that could come up if we place this logic in the `useEffect` for instantiating the editor is:
+       * 1. Initially set the `disabled` to true, then switch it back to `false` (using a timer or something)
+       * 2. Type something in the lambda editor, the transform function is `undefined` and does not update the underlying lambda
+       */
+      onDidChangeModelContentEventDisposer.current?.dispose();
+      onDidChangeModelContentEventDisposer.current =
+        editor.onDidChangeModelContent(() => {
+          const currentVal = editor.getValue();
+          /**
+           * Avoid unecessary setting of lambda string. Also, this prevents clearing the non-parser error on first render.
+           * Since this method is guaranteed to be called one time during the first rendering when we first set the
+           * value for the lambda editor, we do not want to clear any existing non-parser error in case it is set by methods
+           * like reveal error in each editor
+           */
+          if (currentVal !== lambdaEditorState.lambdaString) {
+            lambdaEditorState.setLambdaString(currentVal);
+            /**
+             * Here we clear the error as user changes the input
+             * NOTE: we don't reset the parser error here, we could, but with that, we have to assume that the parsing check is
+             * pretty quick--almost near real time, but if after typing new character, we clear the parsing error and the user
+             * still make mistake, then the warning message will appear to flash, which is bad UX, so for now, we leave it be
+             */
+            lambdaEditorState.setCompilationError(undefined);
+          }
+          /**
+           * This method MUST run on the first rendering of the lambda editor, as it will update the lambda object. This is
+           * needed for new lambda where a lot of time is just a stub lambda. Without having this method called on the first
+           * rendering, that stub lambda will remain stub lambda until user starts typing something in the lambda editor.
+           * This stub lambda sometimes does not even get registered in change detection and causing the user to lose data
+           * Although, technically a stub lambda is useless, so this is not too serious, but it may come across as buggy
+           */
+          transformStringToLambda?.cancel();
+          if (transformStringToLambda) {
+            const stringToLambdaTransformation = transformStringToLambda();
+            if (stringToLambdaTransformation) {
+              flowResult(stringToLambdaTransformation).catch(
+                applicationStore.alertIllegalUnhandledError,
+              );
+            }
+          }
+        });
+
+      // set hotkeys (before calling the action, finish parsing the current text value)
+      onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger hotkeys multiple times
+      /**
+       * NOTE: We can use `setCommand` here but that does not expose the event so we cannot `stopPropagation`, and we need to
+       * use `stopPropagation` to prevent the event top bubble up to global hotkeys listener.
+       * If we really want to use `setCommand` the other approach is to set <HotKeys/> around this lambda editor to override F9
+       * perhaps that's the cleaner approach because we use `react-hotkeys` to handle it's business, but there is an on-going
+       * issue with <HotKeys/> keybindings are lost when component rerenders and this happen as users type because we call `setValue`
+       * See https://github.com/greena13/react-hotkeys/issues/209
+       *
+       * The main role of this section is to disable `monaco-editor` command and override with global actions, such as generate, compile,
+       * toggle text mode, etc. The important thing is before we do so, we would like to finish the parsing of the current string, otherwise,
+       * those operations can end up flushing the current state and trashing the user input, which is bad, as such, we make sure the
+       * parsing passes before actually calling those global operations.
+       */
+      onKeyDownEventDisposer.current = editor.onKeyDown((event) => {
+        onKeyDownEventHandlers.forEach((handler) => {
+          if (handler.matcher(event)) {
+            event.preventDefault();
+            event.stopPropagation();
+            transformStringToLambda?.cancel();
+            handler.action(event);
+          }
+        });
+      });
+
+      // Set the text value
+      const currentValue = editor.getValue();
+      const editorModel = editor.getModel();
+      const currentConfig = editor.getRawOptions();
+      if (currentValue !== value) {
+        editor.setValue(value);
+      }
+      if (currentConfig.readOnly !== disabled) {
+        editor.updateOptions({
+          readOnly: disabled,
+        });
+      }
+
+      // Set the errors
+      if (editorModel) {
+        editorModel.updateOptions({ tabSize: TAB_SIZE });
+        const error = parserError ?? compilationError;
+        if (error?.sourceInformation) {
+          setErrorMarkers(
+            editorModel,
+            error.message,
+            error.sourceInformation.startLine,
+            error.sourceInformation.startColumn,
+            error.sourceInformation.endLine,
+            error.sourceInformation.endColumn,
+          );
+        } else {
+          monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
+        }
+      }
+    }
+
+    useEffect(() => {
+      flowResult(
+        lambdaEditorState.convertLambdaObjectToGrammarString(true),
+      ).catch(applicationStore.alertIllegalUnhandledError);
+    }, [applicationStore, lambdaEditorState]);
+
+    useEffect(
+      () => (): void => {
+        if (editor) {
+          disposeEditor(editor);
+        }
+      },
+      [editor],
+    ); // dispose editor
+
+    return (
+      <Dialog
+        open={true}
+        TransitionProps={{
+          onEnter,
+        }}
+        onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <div
+          className={clsx(
+            'modal modal--dark editor-modal lambda-editor__popup__modal',
+            {
+              'lambda-editor__popup__modal--has-error': Boolean(
+                lambdaEditorState.parserError,
+              ),
+            },
+          )}
+        >
+          <div className="modal__header">
+            <div className="modal__title">Edit Lambda</div>
+            {lambdaEditorState.parserError && (
+              <div className="modal__title__error-badge">
+                Failed to parse lambda
+              </div>
+            )}
+          </div>
+          <div className="modal__body">
+            <div className={clsx('lambda-editor__popup__content', className)}>
+              <div
+                ref={ref}
+                data-testid={APPLICATION_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
+                className="lambda-editor__editor__input"
+              >
+                <div className="text-editor__body" ref={textInputRef} />
+              </div>
+            </div>
+          </div>
+          <div className="modal__footer">
+            <button
+              className="btn btn--dark btn--caution"
+              onClick={discardChanges}
+            >
+              Discard changes
+            </button>
+            <button
+              className="btn btn--dark"
+              onClick={onClose}
+              disabled={Boolean(lambdaEditorState.parserError)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Dialog>
     );
   },
 );
@@ -414,11 +685,53 @@ export const LambdaEditor = observer(
     expectedType?: Type | undefined;
     matchedExpectedType?: (() => boolean) | undefined;
     onExpectedTypeLabelSelect?: (() => void) | undefined;
+    /**
+     * As backdrop element is often shared in the application, and there could be multiple
+     * editor using that backdrop, we could end up in situation where some such editors
+     * have parser errors and some don't (this can happen when user make edits very quickly 2 lambda
+     * editor and causes parsers error simultaneously). In this case, we want to make sure when
+     * parser error is fixed in one editor, the backdrop is not dismissed immediately.
+     *
+     * NOTE: the current approach has a critical flaw, where on the same screen, there could be multiple
+     * sets of lambda editors with different values for `forceBackdrop`. So really, the only way to
+     * accomondate for this is to have `forceBackdrop` as a global value. Or we should get rid of this
+     * backdrop mechanism altogether as it's not really a good UX pattern. i.e. quick evaluation makes
+     * us believe that this is a good option, user will lose what they type, but the most recent parsable
+     * input will still be captured.
+     */
     forceBackdrop: boolean;
+    /**
+     * (de)activator for backdrop that is usually used to block any background interactions
+     * while there is a parser error in the editor
+     */
     backdropSetter?: ((val: boolean) => void) | undefined;
+    /**
+     * To whether or not disable expasipn toggler
+     */
+    disableExpansion?: boolean | undefined;
+    /**
+     * To whether show the inline editor in expanded mode initially and
+     * disable expansion toggler
+     *
+     * This flag will override the effect of `forceExpansion`
+     */
     forceExpansion?: boolean | undefined;
+    /**
+     * To whether or not disable popup mode
+     */
+    disablePopUp?: boolean | undefined;
+    /**
+     * To whether or not style inline editor
+     */
     useBaseTextEditorSettings?: boolean | undefined;
+    /**
+     * To whether or not hide parser error bar in inline mode
+     */
     hideErrorBar?: boolean | undefined;
+    /**
+     * Allow adding hotkeys handler to the editor, this is usually used
+     * to allow activating global hotkeys while typing in the editor
+     */
     onKeyDownEventHandlers?: LambdaEditorOnKeyDownEventHandler[];
   }) => {
     const {
@@ -430,11 +743,16 @@ export const LambdaEditor = observer(
       expectedType,
       onExpectedTypeLabelSelect,
       matchedExpectedType,
+      disableExpansion,
       forceExpansion,
+      disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
       onKeyDownEventHandlers,
     } = props;
+    const [showPopUp, setShowPopUp] = useState(false);
+    const openInPopUp = (): void => setShowPopUp(true);
+    const closePopUp = (): void => setShowPopUp(false);
     const debouncedTransformStringToLambda = useMemo(
       () =>
         disabled
@@ -446,8 +764,23 @@ export const LambdaEditor = observer(
       [lambdaEditorState, disabled],
     );
 
+    if (!disablePopUp && showPopUp) {
+      return (
+        <>
+          <div className="lambda-editor" />
+          <LambdaEditorPopUp
+            className={className}
+            disabled={disabled}
+            lambdaEditorState={lambdaEditorState}
+            transformStringToLambda={debouncedTransformStringToLambda}
+            onKeyDownEventHandlers={onKeyDownEventHandlers ?? []}
+            onClose={closePopUp}
+          />
+        </>
+      );
+    }
     return (
-      <LambdaEditorInner
+      <LambdaEditorInline
         /**
          * See the usage of `transformStringToLambda` as well as the instatiation of the editor in `LambdaEditorInner`.
          * One of the big problem is that the editor uses lambda editor state (there are some non-trivial logic there, that
@@ -482,10 +815,17 @@ export const LambdaEditor = observer(
         onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
         forceBackdrop={forceBackdrop}
         backdropSetter={backdropSetter}
-        forceExpansion={forceExpansion}
+        disableExpansion={disableExpansion}
+        forceExpansion={
+          disableExpansion !== undefined
+            ? !disableExpansion && forceExpansion
+            : forceExpansion
+        }
+        disablePopUp={disablePopUp}
         useBaseTextEditorSettings={useBaseTextEditorSettings}
         hideErrorBar={hideErrorBar}
         onKeyDownEventHandlers={onKeyDownEventHandlers ?? []}
+        openInPopUp={openInPopUp}
       />
     );
   },

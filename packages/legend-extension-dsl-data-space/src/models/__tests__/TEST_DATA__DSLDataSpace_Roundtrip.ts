@@ -19,6 +19,21 @@ export const TEST_DATA__roundtrip = [
     path: 'model::testDataSpace',
     content: {
       _type: 'dataSpace',
+      stereotypes: [
+        {
+          profile: 'meta::pure::profiles::typemodifiers',
+          value: 'abstract',
+        },
+      ],
+      taggedValues: [
+        {
+          tag: {
+            profile: 'meta::pure::profiles::doc',
+            value: 'doc',
+          },
+          value: 'something',
+        },
+      ],
       artifactId: 'legend-query-test',
       groupId: 'org.finos.legend.test',
       mapping: 'dummyMapping',

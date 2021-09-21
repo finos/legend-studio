@@ -558,18 +558,15 @@ export class V1_Engine {
 
   // ------------------------------------------- Query -------------------------------------------
 
-  async getQueries(
-    search: string | undefined,
-    showCurrentUserQueriesOnly: boolean | undefined,
-    limit: number | undefined,
-  ): Promise<V1_LightQuery[]> {
-    return (
-      await this.engineServerClient.getQueries(
-        search,
-        showCurrentUserQueriesOnly,
-        limit,
-      )
-    ).map((query) => V1_LightQuery.serialization.fromJson(query));
+  async getQueries(options?: {
+    search?: string | undefined;
+    projectCoordinates?: string[] | undefined;
+    showCurrentUserQueriesOnly?: boolean | undefined;
+    limit?: number | undefined;
+  }): Promise<V1_LightQuery[]> {
+    return (await this.engineServerClient.getQueries(options)).map((query) =>
+      V1_LightQuery.serialization.fromJson(query),
+    );
   }
 
   async getQuery(queryId: string): Promise<V1_Query> {

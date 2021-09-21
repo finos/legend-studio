@@ -23,10 +23,14 @@ import type { ServiceTest } from './ServiceTest';
 import { SingleExecutionTest } from './ServiceTest';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import { PackageableElement } from '../PackageableElement';
+import type { StereotypeReference } from '../domain/StereotypeReference';
+import type { TaggedValue } from '../domain/TaggedValue';
 
 export const DEFAULT_SERVICE_PATTERN = '/';
 
 export class Service extends PackageableElement implements Hashable {
+  stereotypes: StereotypeReference[] = [];
+  taggedValues: TaggedValue[] = [];
   pattern = '/';
   owners: string[] = [];
   documentation = '';
@@ -118,6 +122,10 @@ export class Service extends PackageableElement implements Hashable {
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE,
+      hashArray(
+        this.stereotypes.map((stereotype) => stereotype.pointerHashCode),
+      ),
+      hashArray(this.taggedValues),
       this.path,
       this.pattern,
       hashArray(this.owners),

@@ -41,6 +41,7 @@ import type {
   ExecutionResult,
 } from '@finos/legend-graph';
 import {
+  extractExecutionResultValues,
   GRAPH_MANAGER_LOG_EVENT,
   TestContainer,
   SingleExecutionTest,
@@ -273,7 +274,11 @@ export class TestContainerState {
         this.setAssertionData(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           tryToFormatLosslessJSONString(
-            losslessStringify(result.values, undefined, TAB_SIZE),
+            losslessStringify(
+              extractExecutionResultValues(result),
+              undefined,
+              TAB_SIZE,
+            ),
           ),
         );
         this.updateTestAssert();
@@ -320,7 +325,7 @@ export class TestContainerState {
           expected: this.assertionData ?? '',
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           actual: tryToFormatLosslessJSONString(
-            losslessStringify(result.values),
+            losslessStringify(extractExecutionResultValues(result)),
           ),
         });
       } else {

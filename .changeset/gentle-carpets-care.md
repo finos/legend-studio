@@ -20,8 +20,8 @@
 '@finos/legend-studio': patch
 '@finos/legend-studio-app': patch
 '@finos/legend-studio-deployment': patch
-'@finos/legend-studio-plugin-management': patch
-'@finos/legend-studio-preset-query-builder': patch
-'@finos/legend-tracer-plugin-zipkin': patch
+'@finos/legend-studio-extension-management-toolkit': patch
+'@finos/legend-studio-extension-query-builder': patch
+'@finos/legend-tracer-extension-zipkin': patch
 '@finos/stylelint-config-legend-studio': patch
 ---

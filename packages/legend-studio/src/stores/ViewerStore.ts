@@ -235,6 +235,8 @@ export class ViewerStore {
             tabSize: TAB_SIZE,
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+              queryBaseUrl:
+                this.editorStore.applicationStore.config.engineQueryServerUrl,
               enableCompression: true,
             },
           },
