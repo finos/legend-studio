@@ -234,7 +234,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       hasParserError: computed,
       setPropertyMappingStates: action,
       setMappingFilterState: action,
-      convertFilterMapping: flow,
+      convertFilter: flow,
     });
 
     this.mappingElement = setImplementation;
@@ -321,7 +321,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     }
   }
 
-  *convertFilterMapping(): GeneratorFn<void> {
+  *convertFilter(): GeneratorFn<void> {
     const lambda = this.mappingElement.filter;
     if (lambda) {
       this.isConvertingTransformLambdaObjects = true;

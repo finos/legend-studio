@@ -381,7 +381,7 @@ const MappingFilterEditor = observer(
               instanceSetImplementationState.isConvertingTransformLambdaObjects
             }
             forceBackdrop={!!filterState.parserError}
-            forceExpansion={true}
+            forceExpansion={false}
             lambdaEditorState={filterState}
             expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
               PRIMITIVE_TYPE.BOOLEAN,
@@ -452,7 +452,7 @@ export const InstanceSetImplementationEditor = observer(
           PureInstanceSetImplementationState &&
         instanceSetImplementationState.mappingElement.filter
       ) {
-        flowResult(instanceSetImplementationState.convertFilterMapping()).catch(
+        flowResult(instanceSetImplementationState.convertFilter()).catch(
           applicationStore.alertIllegalUnhandledError,
         );
       }
@@ -549,7 +549,7 @@ export const InstanceSetImplementationEditor = observer(
               <ResizablePanelSplitter />
               {renderFilterEditor &&
                 instanceSetImplementationState.mappingFilterState && (
-                  <ResizablePanel size={300} minSize={80}>
+                  <ResizablePanel size={330} minSize={80}>
                     <MappingFilterEditor
                       editorStore={editorStore}
                       instanceSetImplementationState={
