@@ -21,6 +21,7 @@ import {
   custom,
   serialize,
 } from 'serializr';
+import type { ModelSchema } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
@@ -74,20 +75,20 @@ export const V1_legacyRuntimeModelSchema = createModelSchema(V1_LegacyRuntime, {
 
 export const V1_identifiedConnectionModelSchema = (
   plugins?: PureProtocolProcessorPlugin[],
-) =>
+): ModelSchema<V1_IdentifiedConnection> =>
   createModelSchema(V1_IdentifiedConnection, {
     connection: custom(
       (val) => {
         if (plugins !== undefined) {
-          return V1_serializeConnectionValue(val, false, plugins);
+          return V1_serializeConnectionValue(val, true, plugins);
         }
-        return V1_serializeConnectionValue(val, false);
+        return V1_serializeConnectionValue(val, true);
       },
       (val) => {
         if (plugins !== undefined) {
-          return V1_deserializeConnectionValue(val, false, plugins);
+          return V1_deserializeConnectionValue(val, true, plugins);
         }
-        return V1_deserializeConnectionValue(val, false);
+        return V1_deserializeConnectionValue(val, true);
       },
     ),
     id: primitive(),
@@ -95,7 +96,7 @@ export const V1_identifiedConnectionModelSchema = (
 
 export const V1_storeConnectionModelSchema = (
   plugins?: PureProtocolProcessorPlugin[],
-) =>
+): ModelSchema<V1_StoreConnections> =>
   createModelSchema(V1_StoreConnections, {
     store: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     storeConnections: list(
@@ -109,7 +110,7 @@ export const V1_storeConnectionModelSchema = (
 
 export const V1_engineRuntimeModelSchema = (
   plugins?: PureProtocolProcessorPlugin[],
-) =>
+): ModelSchema<V1_EngineRuntime> =>
   createModelSchema(V1_EngineRuntime, {
     _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
     connections: list(
@@ -137,7 +138,7 @@ export const V1_serializeRuntime = (
 
 export const V1_packageableRuntimeModelSchema = (
   plugins?: PureProtocolProcessorPlugin[],
-) =>
+): ModelSchema<V1_PackageableRuntime> =>
   createModelSchema(V1_PackageableRuntime, {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,

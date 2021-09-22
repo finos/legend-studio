@@ -24,6 +24,7 @@ import {
   list,
   optional,
 } from 'serializr';
+import type { ModelSchema } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
@@ -566,7 +567,7 @@ export const V1_deserializeDatabaseConnectionValue = (
 
 export const V1_packageableConnectionModelSchema = (
   plugins?: PureProtocolProcessorPlugin[],
-) =>
+): ModelSchema<V1_PackageableConnection> =>
   createModelSchema(V1_PackageableConnection, {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE,
