@@ -16,6 +16,9 @@
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
 import type { InstanceValue, Type } from '@finos/legend-graph';
+import { EnumValueExplicitReference } from '@finos/legend-graph';
+import { EnumValueInstanceValue } from '@finos/legend-graph';
+import { Enumeration } from '@finos/legend-graph';
 import {
   CollectionInstanceValue,
   PrimitiveType,
@@ -43,6 +46,11 @@ export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
 export interface QueryBuilderParameterDragSource {
   variable: ParameterState;
 }
+
+export const createMockEnumerationProperty = (
+  enumeration: Enumeration,
+): string =>
+  new Randomizer().getRandomItemInCollection(enumeration.values)?.name ?? '';
 
 const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,
@@ -116,25 +124,37 @@ export class ParameterState {
     varType: Type | undefined,
     multiplicity: Multiplicity,
   ): InstanceValue | undefined {
+    if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
+      const collectionInst = new CollectionInstanceValue(
+        multiplicity,
+        GenericTypeExplicitReference.create(new GenericType(varType)),
+      );
+      return collectionInst;
+    }
     if (varType instanceof PrimitiveType) {
-      if (!multiplicity.upperBound || multiplicity.upperBound > 1) {
-        const collectionInst = new CollectionInstanceValue(
-          multiplicity,
-          GenericTypeExplicitReference.create(new GenericType(varType)),
-        );
-        return collectionInst;
-      } else {
-        const primitiveInst = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(varType)),
-          multiplicity,
-        );
-        if (multiplicity.lowerBound !== 0) {
-          primitiveInst.values = [
-            createMockPrimitiveProperty(varType, this.parameter.name),
-          ];
-        }
-        return primitiveInst;
+      const primitiveInst = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(new GenericType(varType)),
+        multiplicity,
+      );
+      primitiveInst.values = [
+        createMockPrimitiveProperty(
+          varType,
+          this.parameter.name === '' ? 'myVar' : this.parameter.name,
+        ),
+      ];
+      return primitiveInst;
+    } else if (varType instanceof Enumeration) {
+      const enumValueInstance = new EnumValueInstanceValue(
+        GenericTypeExplicitReference.create(new GenericType(varType)),
+        multiplicity,
+      );
+      const mock = createMockEnumerationProperty(varType);
+      if (mock !== '') {
+        enumValueInstance.values = [
+          EnumValueExplicitReference.create(varType.getValue(mock)),
+        ];
       }
+      return enumValueInstance;
     }
     return undefined;
   }
@@ -198,19 +218,30 @@ export class QueryParameterState {
   selectedParameter: ParameterState | undefined;
   queryBuilderState: QueryBuilderState;
   parameters: ParameterState[] = [];
+  isDisabled: boolean;
 
-  constructor(queryBuilderState: QueryBuilderState) {
+  constructor(
+    queryBuilderState: QueryBuilderState,
+    isDisabled?: boolean | undefined,
+  ) {
     makeObservable(this, {
       panelIsOpen: observable,
       parameters: observable,
       selectedParameter: observable,
+      isDisabled: observable,
       setPanelIsOpen: action,
       setSelectedParameter: action,
       addParameter: action,
       removeParameter: action,
+      setIsDisabled: action,
     });
 
     this.queryBuilderState = queryBuilderState;
+    this.isDisabled = Boolean(isDisabled);
+  }
+
+  setIsDisabled(value: boolean): void {
+    this.isDisabled = value;
   }
 
   setPanelIsOpen(value: boolean): void {

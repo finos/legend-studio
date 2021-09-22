@@ -16,7 +16,12 @@
 
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { CustomSelectorInput, PencilIcon, TimesIcon } from '@finos/legend-art';
+import {
+  BlankPanelContent,
+  CustomSelectorInput,
+  PencilIcon,
+  TimesIcon,
+} from '@finos/legend-art';
 import { FaDollarSign, FaPlus } from 'react-icons/fa';
 import type { QueryBuilderParameterDragSource } from '../stores/QueryParameterState';
 import {
@@ -25,7 +30,7 @@ import {
 } from '../stores/QueryParameterState';
 import { Dialog } from '@material-ui/core';
 import { useEffect, useState } from 'react';
-import type { PrimitiveType, Type } from '@finos/legend-graph';
+import type { Type } from '@finos/legend-graph';
 import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
@@ -60,12 +65,10 @@ const VariableExpressionEditor = observer(
     const variableType = variableExpressionState.variableType ?? stringType;
     const selectedType = buildElementOption(variableType);
     const typeOptions: PackageableElementOption<Type>[] =
-      queryBuilderState.graphManagerState.graph.primitiveTypes.map(
-        (p) => buildElementOption(p) as PackageableElementOption<Type>,
-      );
-    const changePrimitiveType = (
-      val: PackageableElementOption<PrimitiveType>,
-    ): void => {
+      queryBuilderState.graphManagerState.graph.primitiveTypes
+        .map((p) => buildElementOption(p) as PackageableElementOption<Type>)
+        .concat(queryBuilderState.enumerationOptions);
+    const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
         variableExpressionState.changeVariableType(val.value);
       }
@@ -155,7 +158,7 @@ const VariableExpressionEditor = observer(
                 <CustomSelectorInput
                   placeholder="Choose a type..."
                   options={typeOptions}
-                  onChange={changePrimitiveType}
+                  onChange={changeType}
                   value={selectedType}
                   darkMode={true}
                 />
@@ -183,13 +186,24 @@ const VariableExpressionEditor = observer(
                   onChange={changeUpperBound}
                 />
               </div>
-              {variableExpressionState.values && (
-                <QueryBuilderValueSpecificationEditor
-                  valueSpecification={variableExpressionState.values}
-                  graph={queryBuilderState.graphManagerState.graph}
-                  expectedType={variableType}
-                />
-              )}
+
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  Value (s)
+                </div>
+                <div className="panel__content__form__section__header__prompt">
+                  The value of the parameters. This value will not be persisted
+                  when query is save
+                </div>
+                {variableExpressionState.values && (
+                  <QueryBuilderValueSpecificationEditor
+                    valueSpecification={variableExpressionState.values}
+                    graph={queryBuilderState.graphManagerState.graph}
+                    expectedType={variableType}
+                    className="query-builder__parameters__value__editor"
+                  />
+                )}
+              </div>
             </div>
           </div>
           <div className="modal__footer">
@@ -324,9 +338,11 @@ export const QueryBuilderParameterPanel = observer(
     const { queryBuilderState } = props;
     const queryParameterState = queryBuilderState.queryParameterState;
     const addParameter = (): void => {
-      const parmaterState = ParameterState.createDefault(queryParameterState);
-      queryParameterState.setSelectedParameter(parmaterState);
-      parmaterState.mockParameterValues();
+      if (!queryParameterState.isDisabled) {
+        const parmaterState = ParameterState.createDefault(queryParameterState);
+        queryParameterState.setSelectedParameter(parmaterState);
+        parmaterState.mockParameterValues();
+      }
     };
 
     return (
@@ -340,6 +356,7 @@ export const QueryBuilderParameterPanel = observer(
               className="panel__header__action"
               tabIndex={-1}
               onClick={addParameter}
+              disabled={queryParameterState.isDisabled}
               title="Add Parameter"
             >
               <FaPlus />
@@ -347,13 +364,21 @@ export const QueryBuilderParameterPanel = observer(
           </div>
         </div>
         <div className="panel__content query-builder__parameters__content">
-          {queryParameterState.parameters.map((parameter) => (
-            <VariableExpressionViewer
-              key={parameter.uuid}
-              queryBuilderState={queryBuilderState}
-              variableExpressionState={parameter}
-            />
-          ))}
+          {!queryParameterState.isDisabled &&
+            queryParameterState.parameters.map((parameter) => (
+              <VariableExpressionViewer
+                key={parameter.uuid}
+                queryBuilderState={queryBuilderState}
+                variableExpressionState={parameter}
+              />
+            ))}
+          {queryParameterState.isDisabled && (
+            <BlankPanelContent>
+              <div className="unsupported-element-editor__main">
+                <div className="unsupported-element-editor__summary">{`Parameters not supported in this mode`}</div>
+              </div>
+            </BlankPanelContent>
+          )}
         </div>
         {queryParameterState.selectedParameter && (
           <VariableExpressionEditor

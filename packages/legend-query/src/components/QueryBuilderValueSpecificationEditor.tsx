@@ -52,11 +52,19 @@ import {
 import { QueryBuilderParameterInfoTooltip } from './QueryBuilderSharedInfoTooltip';
 
 const VariableExpressionEditor = observer(
-  (props: { valueSpecification: VariableExpression }) => {
-    const { valueSpecification } = props;
+  (props: {
+    valueSpecification: VariableExpression;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, className } = props;
     const varName = valueSpecification.name;
     return (
-      <div className="query-builder-value-spec-editor--parameter">
+      <div
+        className={clsx(
+          'query-builder-value-spec-editor--parameter',
+          className,
+        )}
+      >
         <div className="query-builder-value-spec-editor--parameter__icon">
           <FaDollarSign />
         </div>
@@ -79,14 +87,17 @@ const VariableExpressionEditor = observer(
 );
 
 const StringPrimitiveInstanceValueEditor = observer(
-  (props: { valueSpecification: PrimitiveInstanceValue }) => {
-    const { valueSpecification } = props;
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       valueSpecification.changeValue(event.target.value, 0);
 
     return (
-      <div className="query-builder-value-spec-editor">
+      <div className={clsx('query-builder-value-spec-editor', className)}>
         <input
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
           spellCheck={false}
@@ -100,13 +111,16 @@ const StringPrimitiveInstanceValueEditor = observer(
 );
 
 const BooleanPrimitiveInstanceValueEditor = observer(
-  (props: { valueSpecification: PrimitiveInstanceValue }) => {
-    const { valueSpecification } = props;
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as boolean;
     const toggleValue = (): void => valueSpecification.changeValue(!value, 0);
 
     return (
-      <div className="query-builder-value-spec-editor">
+      <div className={clsx('query-builder-value-spec-editor', className)}>
         <button
           className={clsx('query-builder-value-spec-editor__toggler__btn', {
             'query-builder-value-spec-editor__toggler__btn--toggled': value,
@@ -124,8 +138,9 @@ const NumberPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     isInteger: boolean;
+    className?: string | undefined;
   }) => {
-    const { valueSpecification, isInteger } = props;
+    const { valueSpecification, isInteger, className } = props;
     const value = valueSpecification.values[0] as number;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       let inputVal = isInteger
@@ -136,7 +151,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
     };
 
     return (
-      <div className="query-builder-value-spec-editor">
+      <div className={clsx('query-builder-value-spec-editor', className)}>
         <input
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
           spellCheck={false}
@@ -150,14 +165,17 @@ const NumberPrimitiveInstanceValueEditor = observer(
 );
 
 const DatePrimitiveInstanceValueEditor = observer(
-  (props: { valueSpecification: PrimitiveInstanceValue }) => {
-    const { valueSpecification } = props;
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       valueSpecification.changeValue(event.target.value, 0);
 
     return (
-      <div className="query-builder-value-spec-editor">
+      <div className={clsx('query-builder-value-spec-editor', className)}>
         <input
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
           type="date"
@@ -171,8 +189,11 @@ const DatePrimitiveInstanceValueEditor = observer(
 );
 
 const EnumValueInstanceValueEditor = observer(
-  (props: { valueSpecification: EnumValueInstanceValue }) => {
-    const { valueSpecification } = props;
+  (props: {
+    valueSpecification: EnumValueInstanceValue;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, className } = props;
     const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
     const enumValue = enumValueRef.value;
     const options = enumValue.owner.values.map((value) => ({
@@ -187,7 +208,7 @@ const EnumValueInstanceValueEditor = observer(
     };
 
     return (
-      <div className="query-builder-value-spec-editor">
+      <div className={clsx('query-builder-value-spec-editor', className)}>
         <CustomSelectorInput
           className="u-full-width"
           options={options}
@@ -328,8 +349,9 @@ const CollectionValueInstanceValueEditor = observer(
     valueSpecification: CollectionInstanceValue;
     graph: PureModel;
     expectedType: Type;
+    className?: string | undefined;
   }) => {
-    const { valueSpecification, graph, expectedType } = props;
+    const { valueSpecification, graph, expectedType, className } = props;
     const inputRef = useRef<HTMLInputElement>(null);
     const [text, setText] = useState(stringifyValue(valueSpecification.values));
     const [editable, setEditable] = useState(false);
@@ -365,7 +387,7 @@ const CollectionValueInstanceValueEditor = observer(
 
     if (editable) {
       return (
-        <div className="query-builder-value-spec-editor">
+        <div className={clsx('query-builder-value-spec-editor', className)}>
           <input
             ref={inputRef}
             className="panel__content__form__section__input query-builder-value-spec-editor__input"
@@ -385,7 +407,7 @@ const CollectionValueInstanceValueEditor = observer(
     }
     return (
       <div
-        className="query-builder-value-spec-editor"
+        className={clsx('query-builder-value-spec-editor', className)}
         onClick={enableEdit}
         title="Click to edit"
       >
@@ -414,8 +436,9 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
   expectedType: Type;
+  className?: string | undefined;
 }> = (props) => {
-  const { valueSpecification, graph, expectedType } = props;
+  const { valueSpecification, graph, expectedType, className } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
     switch (_type.path) {
@@ -423,12 +446,14 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
         return (
           <StringPrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
+            className={className}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
         return (
           <BooleanPrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
+            className={className}
           />
         );
       case PRIMITIVE_TYPE.NUMBER:
@@ -439,6 +464,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           <NumberPrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
             isInteger={_type.path === PRIMITIVE_TYPE.INTEGER}
+            className={className}
           />
         );
       case PRIMITIVE_TYPE.DATE:
@@ -447,6 +473,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
         return (
           <DatePrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
+            className={className}
           />
         );
       default:
@@ -454,7 +481,10 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
     }
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     return (
-      <EnumValueInstanceValueEditor valueSpecification={valueSpecification} />
+      <EnumValueInstanceValueEditor
+        valueSpecification={valueSpecification}
+        className={className}
+      />
     );
   } else if (
     valueSpecification instanceof CollectionInstanceValue &&
@@ -468,12 +498,18 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
         valueSpecification={valueSpecification}
         graph={graph}
         expectedType={expectedType}
+        className={className}
       />
     );
   }
   // property expression
   else if (valueSpecification instanceof VariableExpression) {
-    return <VariableExpressionEditor valueSpecification={valueSpecification} />;
+    return (
+      <VariableExpressionEditor
+        valueSpecification={valueSpecification}
+        className={className}
+      />
+    );
   }
   return <QueryBuilderUnsupportedValueSpecificationEditor />;
 };

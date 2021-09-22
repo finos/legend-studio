@@ -351,7 +351,10 @@ export const buildLambdaFunction = (
     },
   );
   // build parameters
-  if (queryBuilderState.queryParameterState.parameters.length) {
+  if (
+    !queryBuilderState.queryParameterState.isDisabled &&
+    queryBuilderState.queryParameterState.parameters.length
+  ) {
     // if we are executing:
     // set the parameters to empty
     // add let statements for each parameter

@@ -95,6 +95,7 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     runtime: Runtime,
     onSave: (lambda: RawLambda) => Promise<void>,
     disableCompile: boolean,
+    disableParameters?: boolean | undefined,
   ): GeneratorFn<void> {
     this.queryBuilderState.querySetupState.setMapping(mapping);
     this.queryBuilderState.querySetupState.setRuntime(runtime);
@@ -107,5 +108,6 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     );
     this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
     this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+    this.queryBuilderState.queryParameterState.setIsDisabled(Boolean(disableParameters));
   }
 }

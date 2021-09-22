@@ -37,6 +37,7 @@ import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type {
   Class,
+  Enumeration,
   GraphManagerState,
   LambdaFunction,
   Mapping,
@@ -179,7 +180,10 @@ export class QueryBuilderState {
 
   resetData(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
-    this.queryParameterState = new QueryParameterState(this);
+    this.queryParameterState = new QueryParameterState(
+      this,
+      this.queryParameterState.isDisabled,
+    );
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
@@ -377,6 +381,14 @@ export class QueryBuilderState {
       )
       .concat(this.graphManagerState.graph.dependencyManager.classes)
       .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
+  }
+
+  get enumerationOptions(): PackageableElementOption<Enumeration>[] {
+    return this.graphManagerState.graph.ownEnumerations
+      .concat(this.graphManagerState.graph.dependencyManager.enumerations)
+      .map(
+        (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
+      );
   }
 
   get mappingOptions(): PackageableElementOption<Mapping>[] {

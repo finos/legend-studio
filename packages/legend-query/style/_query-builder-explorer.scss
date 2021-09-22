@@ -17,7 +17,7 @@
 @use './mixins' as *;
 
 .query-builder__setup {
-  height: 13.8rem !important;
+  height: 100%;
 
   &__content {
     padding: 0.5rem;
@@ -71,15 +71,9 @@
 }
 
 .query-builder__explorer {
-  height: calc(100% - 33.8rem) !important;
-
   .backdrop__element {
     // this is needed to make DnD elements from the explorer tree floats above other backdrop elements
     z-index: 101;
-  }
-
-  &--expanded {
-    height: calc(100% - 3.4rem) !important;
   }
 
   &__content {
@@ -111,8 +105,6 @@
 }
 
 .query-builder__parameters {
-  height: 20rem !important;
-
   &__content {
     overflow-y: auto;
     padding: 0.5rem 0;
@@ -230,6 +222,10 @@
     font-size: 1.2rem;
     background: var(--color-pink-400);
     border-radius: 0.2rem;
+  }
+
+  &__value__editor {
+    height: 3rem;
   }
 }
 

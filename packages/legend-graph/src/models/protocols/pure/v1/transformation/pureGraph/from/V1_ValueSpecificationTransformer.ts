@@ -356,7 +356,7 @@ export class V1_ValueSpecificationTransformer
       multiplicity.lowerBound = valueSpecification.multiplicity.lowerBound;
       multiplicity.upperBound = valueSpecification.multiplicity.upperBound;
       _variable.multiplicity = multiplicity;
-      _variable.class = genericType.value.rawType.name;
+      _variable.class = genericType.value.rawType.path;
     }
     return _variable;
   }
