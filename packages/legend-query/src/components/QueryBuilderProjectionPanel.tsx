@@ -56,6 +56,8 @@ import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggreg
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
+import type { QueryBuilderParameterDragSource } from '../stores/QueryParameterState';
+import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParameterState';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -158,11 +160,26 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
     const hasParserError = projectionColumnState.projectionState.hasParserError;
 
     const handleDrop = useCallback(
-      (item: QueryBuilderExplorerTreeDragSource): void => {
-        projectionColumnState.derivationLambdaEditorState.setLambdaString(
-          projectionColumnState.derivationLambdaEditorState.lambdaString +
-            item.node.dndText,
-        );
+      (
+        item:
+          | QueryBuilderExplorerTreeDragSource
+          | QueryBuilderParameterDragSource,
+        type: string,
+      ): void => {
+        if (type === QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE) {
+          projectionColumnState.derivationLambdaEditorState.setLambdaString(
+            `${
+              projectionColumnState.derivationLambdaEditorState.lambdaString
+            }$${
+              (item as QueryBuilderParameterDragSource).variable.variableName
+            }`,
+          );
+        } else {
+          projectionColumnState.derivationLambdaEditorState.setLambdaString(
+            projectionColumnState.derivationLambdaEditorState.lambdaString +
+              (item as QueryBuilderExplorerTreeDragSource).node.dndText,
+          );
+        }
       },
       [projectionColumnState],
     );
@@ -173,10 +190,16 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+          QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE,
         ],
-        drop: (item: QueryBuilderExplorerTreeDragSource, monitor): void => {
+        drop: (
+          item:
+            | QueryBuilderExplorerTreeDragSource
+            | QueryBuilderParameterDragSource,
+          monitor,
+        ): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item);
+            handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor): { item: unknown; dragItemType: string } => ({

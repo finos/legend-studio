@@ -142,9 +142,7 @@ export const QueryBuilderSetupPanel = observer(
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP}
-        className={clsx('panel query-builder__setup', {
-          'query-builder__setup--collapsed': !querySetupState.showSetupPanel,
-        })}
+        className="panel query-builder__setup"
       >
         <div className="panel__header">
           <div className="panel__header__title">

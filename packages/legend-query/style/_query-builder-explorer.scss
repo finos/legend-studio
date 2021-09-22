@@ -226,6 +226,10 @@
 
   &__value__editor {
     height: 3rem;
+
+    input {
+      font-size: 1.4rem !important;
+    }
   }
 }
 

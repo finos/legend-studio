@@ -182,12 +182,8 @@ const QueryBuilderFilterConditionEditor = observer(
       );
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
-      (item: QueryBuilderFilterDropTarget, type: string): void => {
-        if (type === QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE) {
-          const varState = (item as unknown as QueryBuilderParameterDragSource)
-            .variable;
-          node.condition.setValue(varState.parameter);
-        }
+      (item: QueryBuilderParameterDragSource): void => {
+        node.condition.setValue(item.variable.parameter);
       },
       [node],
     );
@@ -195,11 +191,11 @@ const QueryBuilderFilterConditionEditor = observer(
       () => ({
         accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
         drop: (
-          item: QueryBuilderFilterConditionDragSource,
+          item: QueryBuilderParameterDragSource,
           monitor: DropTargetMonitor,
         ): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item, monitor.getItemType() as string);
+            handleDrop(item);
           }
         },
         collect: (monitor): { isFilterValueDragOver: boolean } => ({
