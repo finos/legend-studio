@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../../package.json';
 import {
   StudioPlugin,
   UnsupportedElementEditorState,
@@ -33,7 +33,7 @@ import type {
 } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
-import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import { DataSpace } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
