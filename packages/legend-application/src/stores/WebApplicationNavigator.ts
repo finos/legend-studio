@@ -59,6 +59,10 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
     this.window.open(location, '_blank');
   }
 
+  setCurrentLocation(location: string): void {
+    this.window.history.pushState(null, '', location);
+  }
+
   getCurrentLocation(): string {
     return this.window.location.href;
   }

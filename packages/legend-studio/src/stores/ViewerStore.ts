@@ -82,7 +82,7 @@ export class ViewerStore {
   internalizeEntityPath(params: ViewerPathParams): void {
     if (params.entityPath) {
       this.elementPath = params.entityPath;
-      this.editorStore.applicationStore.navigator.jumpTo(
+      this.editorStore.applicationStore.navigator.setCurrentLocation(
         this.editorStore.applicationStore.navigator.generateLocation(
           params.versionId
             ? generateViewVersionRoute(
