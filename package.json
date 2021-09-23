@@ -15,7 +15,7 @@
     "check:changeset": "node ./scripts/workflow/checkChangesets.js",
     "check:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js",
     "check:format": "prettier --list-different \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json --check \"package.json\" \"packages/*/package.json\"",
-    "check:pkg-constraints": "yarn constraints",
+    "check:pkg-constraints": "yarn constraints && echo \"Checking for circular dependencies...\" && yarn workspaces foreach --topological-dev exec \"echo '' >/dev/null\"",
     "check:project-ref": "node ./scripts/typescript/checkProjectReferenceConfigs.js",
     "check:tsc": "yarn build:tsc",
     "check:update": "yarn upgrade-interactive",
