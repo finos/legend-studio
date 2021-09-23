@@ -27,6 +27,8 @@ e.g. studio-end-to-end-test-project-prod
    // cleanup
 5. Delete the workspace
 
+> Note that the element was not found because local changes are not merged, the expectation should be similar to that of `[Test 1:Step 3]` if the local changes are merged.
+
 ## Test 3: Open project
 
 1. Create a new workspace
