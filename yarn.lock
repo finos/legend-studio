@@ -2267,7 +2267,7 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.5.0
+    "@testing-library/dom": 8.6.0
     "@testing-library/react": 12.1.0
     "@types/css-font-loading-module": 0.0.6
     "@types/react": 17.0.24
@@ -2279,7 +2279,7 @@ __metadata:
     jest: 27.2.1
     mobx: 6.3.3
     mobx-react-lite: 3.2.1
-    monaco-editor: 0.28.0
+    monaco-editor: 0.28.1
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
@@ -2304,7 +2304,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
     "@types/react": 17.0.24
-    "@types/react-select": 4.0.17
+    "@types/react-select": 4.0.18
     "@types/react-window": 1.8.5
     clsx: 1.1.1
     cross-env: 7.0.3
@@ -2312,7 +2312,7 @@ __metadata:
     jest: 27.2.1
     mobx: 6.3.3
     mobx-react-lite: 3.2.1
-    monaco-editor: 0.28.0
+    monaco-editor: 0.28.1
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
@@ -2363,7 +2363,7 @@ __metadata:
     jsonc-parser: 3.0.0
     micromatch: 4.0.4
     mini-css-extract-plugin: 2.3.0
-    monaco-editor: 0.28.0
+    monaco-editor: 0.28.1
     monaco-editor-webpack-plugin: 4.2.0
     postcss: 8.3.7
     postcss-loader: 6.1.1
@@ -2375,7 +2375,7 @@ __metadata:
     strip-ansi: 7.0.1
     text-table: 0.2.0
     typescript: 4.4.3
-    webpack: 5.53.0
+    webpack: 5.54.0
     wrap-ansi: 8.0.1
   languageName: unknown
   linkType: soft
@@ -2398,7 +2398,7 @@ __metadata:
     jest: 27.2.1
     mobx: 6.3.3
     mobx-react-lite: 3.2.1
-    monaco-editor: 0.28.0
+    monaco-editor: 0.28.1
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
@@ -2464,7 +2464,7 @@ __metadata:
     jest: 27.2.1
     mobx: 6.3.3
     mobx-react-lite: 3.2.1
-    monaco-editor: 0.28.0
+    monaco-editor: 0.28.1
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2580,7 +2580,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.3
-    webpack: 5.53.0
+    webpack: 5.54.0
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.8.0
     webpack-dev-server: 4.2.1
@@ -2602,7 +2602,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.5.0
+    "@testing-library/dom": 8.6.0
     "@testing-library/react": 12.1.0
     "@types/papaparse": 5.2.6
     "@types/react": 17.0.24
@@ -2615,7 +2615,7 @@ __metadata:
     jest: 27.2.1
     mobx: 6.3.3
     mobx-react-lite: 3.2.1
-    monaco-editor: 0.28.0
+    monaco-editor: 0.28.1
     npm-run-all: 4.1.5
     papaparse: 5.3.1
     react: 17.0.2
@@ -2743,7 +2743,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.3
-    webpack: 5.53.0
+    webpack: 5.54.0
     webpack-bundle-analyzer: 4.4.2
     webpack-cli: 4.8.0
     webpack-dev-server: 4.2.1
@@ -2793,7 +2793,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.5.0
+    "@testing-library/dom": 8.6.0
     "@testing-library/react": 12.1.0
     "@types/react": 17.0.24
     cross-env: 7.0.3
@@ -2826,7 +2826,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.5.0
+    "@testing-library/dom": 8.6.0
     "@testing-library/react": 12.1.0
     "@types/react": 17.0.24
     "@types/react-dom": 17.0.9
@@ -2838,8 +2838,8 @@ __metadata:
     jest: 27.2.1
     mobx: 6.3.3
     mobx-react-lite: 3.2.1
-    monaco-editor: 0.28.0
-    node-diff3: 3.0.0
+    monaco-editor: 0.28.1
+    node-diff3: 3.1.0
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dnd: 14.0.3
@@ -3609,9 +3609,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/dom@npm:8.5.0":
-  version: 8.5.0
-  resolution: "@testing-library/dom@npm:8.5.0"
+"@testing-library/dom@npm:8.6.0":
+  version: 8.6.0
+  resolution: "@testing-library/dom@npm:8.6.0"
   dependencies:
     "@babel/code-frame": ^7.10.4
     "@babel/runtime": ^7.12.5
@@ -3621,7 +3621,7 @@ __metadata:
     dom-accessibility-api: ^0.5.6
     lz-string: ^1.4.4
     pretty-format: ^27.0.2
-  checksum: fde0e9086de62e92a50e866a3b7d00c05ebdd054f5b044652b80726c82733f50fd290dda99a8aba4a3ff763ea16910c1916f0c8fbadd0a1b48ffdc159eafcb9c
+  checksum: 72a3a74b4415e49724e7b3b9c92b8dbbde3604e1bd857e9473e15a00984f6a412b57ec67dbfa0a1635e1a009e79b0d7c7a8002dd1247eb0a7731e07cf138bc1e
   languageName: node
   linkType: hard
 
@@ -3999,15 +3999,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-select@npm:4.0.17":
-  version: 4.0.17
-  resolution: "@types/react-select@npm:4.0.17"
+"@types/react-select@npm:4.0.18":
+  version: 4.0.18
+  resolution: "@types/react-select@npm:4.0.18"
   dependencies:
     "@emotion/serialize": ^1.0.0
     "@types/react": "*"
     "@types/react-dom": "*"
     "@types/react-transition-group": "*"
-  checksum: aa94bd1ff3536ab2bb8443bcf3c11109bcd78ae965dc534b205273eb98a84487d272e008adff50744870255e4ec5767465283649abd3d449fbc712718c062fca
+  checksum: c247c7fe45cc1d1db1fb0e5a569e288037081ed05d17f377376de82a58a5d334bb7282922ee5eaf3c30957437b028097235be81cb0bed905b3b73f9a5b8c7b58
   languageName: node
   linkType: hard
 
@@ -6883,13 +6883,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"enhanced-resolve@npm:^5.8.0":
-  version: 5.8.2
-  resolution: "enhanced-resolve@npm:5.8.2"
+"enhanced-resolve@npm:^5.8.3":
+  version: 5.8.3
+  resolution: "enhanced-resolve@npm:5.8.3"
   dependencies:
     graceful-fs: ^4.2.4
     tapable: ^2.2.0
-  checksum: 6e871ec5b183220dbcdaff8580cbdacee5425e321790e5846abd1b573d20d2bcb37f73ee983fd10c6d6878d31a2d08e234e72fc91a81236d64623ee6ba7d6611
+  checksum: d79fbe531106448b768bb0673fb623ec0202d7ee70373ab7d4f4745d5dfe0806f38c9db7e7da8c941288fe475ab3d538db3791fce522056eeea40ca398c9e287
   languageName: node
   linkType: hard
 
@@ -7007,10 +7007,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es-module-lexer@npm:^0.7.1":
-  version: 0.7.1
-  resolution: "es-module-lexer@npm:0.7.1"
-  checksum: c66fb633cc521529862818caf603897d58d30442c885a1a1ed16823ddbbb8a437e3952454a4b2650242df1c1b4d0efa42fedbe49594e3ef2ceb3c891cf1211dd
+"es-module-lexer@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "es-module-lexer@npm:0.9.0"
+  checksum: 05ddfcb598749e4da78f300e191baa0380dc7aded0b0af808421716f7d90b549edb4062d65958ec1e0abe707d3d025e11b5cebd446f1f615d1bb2be1b6c74d7b
   languageName: node
   linkType: hard
 
@@ -10459,10 +10459,10 @@ __metadata:
     prettier: 2.4.1
     rimraf: 3.0.2
     semver: 7.3.5
-    sort-package-json: 1.51.0
+    sort-package-json: 1.52.0
     stylelint: 13.13.1
     typescript: 4.4.3
-    yargs: 17.1.1
+    yargs: 17.2.0
   languageName: unknown
   linkType: soft
 
@@ -11287,10 +11287,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor@npm:0.28.0":
-  version: 0.28.0
-  resolution: "monaco-editor@npm:0.28.0"
-  checksum: 6b15c839a3ef9a5de59a795be7f823bd3e950420626a47cbba64787dbde1852b6577e135f8c409096579a65a80ec84b91b6c2c529072ab639a84f9b1af39d2d7
+"monaco-editor@npm:0.28.1":
+  version: 0.28.1
+  resolution: "monaco-editor@npm:0.28.1"
+  checksum: 4205c12410f154ade2282eee5ad4ca1df1e2ee5e6097e3b18a8606abc535d7ee2f1b54b8ce282db2ba24e8143c6ed4cd06d35dcfb77d457dd9514ca9f0d2e4fd
   languageName: node
   linkType: hard
 
@@ -11432,10 +11432,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-diff3@npm:3.0.0":
-  version: 3.0.0
-  resolution: "node-diff3@npm:3.0.0"
-  checksum: c506fb79ad285b5193a65f965a0796643e1c9e7d9abdd679cf9522b16b32420571d997d15ea4f573e2904477b6ed06f07dc5c857ac6d3a735b537498d123ce10
+"node-diff3@npm:3.1.0":
+  version: 3.1.0
+  resolution: "node-diff3@npm:3.1.0"
+  checksum: 6af936c668dedf89f3ec8a309916006c808f66b1d71335f12dadee9532299c35f0ad2e98fa61ec7477e0ba31439a5b9403d8dfa84f5cf874ea4d4b81e5e42d0f
   languageName: node
   linkType: hard
 
@@ -14276,9 +14276,9 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"sort-package-json@npm:1.51.0":
-  version: 1.51.0
-  resolution: "sort-package-json@npm:1.51.0"
+"sort-package-json@npm:1.52.0":
+  version: 1.52.0
+  resolution: "sort-package-json@npm:1.52.0"
   dependencies:
     detect-indent: ^6.0.0
     detect-newline: 3.1.0
@@ -14288,7 +14288,7 @@ resolve@^2.0.0-next.3:
     sort-object-keys: ^1.1.3
   bin:
     sort-package-json: cli.js
-  checksum: e9a5bd43ed1d7ae0b74646cb4778d4a5c1217f415795dcc25c80634887dd7e664242d34589e9007b53c722f048c03a3424969db3b01d8df82d3cb1679b885c7d
+  checksum: 0ac65776ec96a451e618e00ed87dabe0d9ef872d1f00083efed889841dcf966778c715fc612c1c042ecdebf5b5cbe88b54a04e0e6ebda8f5b9190c393072e991
   languageName: node
   linkType: hard
 
@@ -15921,9 +15921,9 @@ typescript@4.4.3:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.53.0":
-  version: 5.53.0
-  resolution: "webpack@npm:5.53.0"
+"webpack@npm:5.54.0":
+  version: 5.54.0
+  resolution: "webpack@npm:5.54.0"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -15934,8 +15934,8 @@ typescript@4.4.3:
     acorn-import-assertions: ^1.7.6
     browserslist: ^4.14.5
     chrome-trace-event: ^1.0.2
-    enhanced-resolve: ^5.8.0
-    es-module-lexer: ^0.7.1
+    enhanced-resolve: ^5.8.3
+    es-module-lexer: ^0.9.0
     eslint-scope: 5.1.1
     events: ^3.2.0
     glob-to-regexp: ^0.4.1
@@ -15954,7 +15954,7 @@ typescript@4.4.3:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: f55c40e0a215d68633976ea54acbd9e92bf43f18593d25ffa2f4f1c33e7017d9c475ceabaddf1742d60310d84ec4600e564c1125e061378032948c11a2b18245
+  checksum: aa75ccf1fcd0cb67e886bcfa7944637018657905e23e053a31cb999c61731395c1a7395023b60dced793cb0b5ee9f4184c6f109a2758e154d9c8f8941346128b
   languageName: node
   linkType: hard
 
@@ -16235,9 +16235,9 @@ typescript@4.4.3:
   languageName: node
   linkType: hard
 
-"yargs@npm:17.1.1":
-  version: 17.1.1
-  resolution: "yargs@npm:17.1.1"
+"yargs@npm:17.2.0":
+  version: 17.2.0
+  resolution: "yargs@npm:17.2.0"
   dependencies:
     cliui: ^7.0.2
     escalade: ^3.1.1
@@ -16246,7 +16246,7 @@ typescript@4.4.3:
     string-width: ^4.2.0
     y18n: ^5.0.5
     yargs-parser: ^20.2.2
-  checksum: b05a9467937172e01a4af7a7ad4361a22ee510cd12d1d5a3ad3b4c2e57eb8c35ca94ee22e4bdfbb40fe693fbf8000771e41824f77f6b224f1496c57f20f192b6
+  checksum: 7904ae4cb54c956ed4e2e0920417958e339c0e5305b6f7385a66afd5101a79dc83b38af856064a7dd1fd8458dc442936ee19e53b621349d410f7abebf2769772
   languageName: node
   linkType: hard
 

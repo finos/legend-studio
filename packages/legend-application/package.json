@@ -49,7 +49,7 @@
     "history": "5.0.1",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
-    "monaco-editor": "0.28.0",
+    "monaco-editor": "0.28.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-icons": "4.2.0",
@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.5.0",
+    "@testing-library/dom": "8.6.0",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
     "jest": "27.2.1",

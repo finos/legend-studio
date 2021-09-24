@@ -46,7 +46,7 @@
     "@types/react": "17.0.24",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
-    "monaco-editor": "0.28.0",
+    "monaco-editor": "0.28.1",
     "react": "17.0.2",
     "serializr": "2.0.5"
   },
