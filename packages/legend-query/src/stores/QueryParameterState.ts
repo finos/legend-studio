@@ -16,10 +16,10 @@
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
 import type { InstanceValue, Type } from '@finos/legend-graph';
-import { EnumValueExplicitReference } from '@finos/legend-graph';
-import { EnumValueInstanceValue } from '@finos/legend-graph';
-import { Enumeration } from '@finos/legend-graph';
 import {
+  EnumValueExplicitReference,
+  EnumValueInstanceValue,
+  Enumeration,
   CollectionInstanceValue,
   PrimitiveType,
   PrimitiveInstanceValue,
@@ -214,22 +214,22 @@ export class ParameterState {
 }
 
 export class QueryParameterState {
-  panelIsOpen = false;
   selectedParameter: ParameterState | undefined;
   queryBuilderState: QueryBuilderState;
   parameters: ParameterState[] = [];
   isDisabled: boolean;
+  valuesEditorIsOpen = false;
 
   constructor(
     queryBuilderState: QueryBuilderState,
     isDisabled?: boolean | undefined,
   ) {
     makeObservable(this, {
-      panelIsOpen: observable,
+      valuesEditorIsOpen: observable,
       parameters: observable,
       selectedParameter: observable,
       isDisabled: observable,
-      setPanelIsOpen: action,
+      setValuesEditorIsOpen: action,
       setSelectedParameter: action,
       addParameter: action,
       removeParameter: action,
@@ -244,8 +244,8 @@ export class QueryParameterState {
     this.isDisabled = value;
   }
 
-  setPanelIsOpen(value: boolean): void {
-    this.panelIsOpen = value;
+  setValuesEditorIsOpen(val: boolean): void {
+    this.valuesEditorIsOpen = val;
   }
 
   setSelectedParameter(val: ParameterState | undefined): void {

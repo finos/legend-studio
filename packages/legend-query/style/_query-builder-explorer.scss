@@ -112,6 +112,31 @@
 
   &__modal__body {
     overflow: auto;
+    padding: 2rem !important;
+    height: 60vh;
+  }
+
+  &__modal {
+    height: 65vh;
+    width: 65vh;
+  }
+
+  &__values__editor {
+    &__modal {
+      height: 65vh;
+      width: 65vh;
+    }
+  }
+
+  &__value {
+    &__label {
+      @include flexVCenter;
+
+      color: var(--color-light-grey-50);
+      margin-bottom: 0.5rem;
+      line-height: 2rem;
+      cursor: default;
+    }
   }
 
   &__parameter {

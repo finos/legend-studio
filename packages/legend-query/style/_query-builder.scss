@@ -531,12 +531,11 @@
     }
 
     &__info {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 2.2rem;
-      width: 2.2rem;
-      margin: 0.3rem;
+      @include flexVCenter;
+
+      cursor: help;
+      height: 2rem;
+      width: 2rem;
     }
   }
 

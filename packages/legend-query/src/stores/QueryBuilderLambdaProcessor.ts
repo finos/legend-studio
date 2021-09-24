@@ -966,7 +966,6 @@ const processQueryParameters = (
     variableState.mockParameterValues();
     queryParameterState.addParameter(variableState);
   });
-  queryParameterState.setPanelIsOpen(true);
 };
 
 export const processQueryBuilderLambdaFunction = (

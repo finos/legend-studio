@@ -76,7 +76,7 @@ const VariableExpressionEditor = observer(
             variable={valueSpecification}
             placement={'bottom'}
           >
-            <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
+            <div className="query-builder-value-spec-editor--parameter__info">
               <InfoCircleIcon />
             </div>
           </QueryBuilderParameterInfoTooltip>
@@ -87,10 +87,7 @@ const VariableExpressionEditor = observer(
 );
 
 const StringPrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue;
-    className?: string | undefined;
-  }) => {
+  (props: { valueSpecification: PrimitiveInstanceValue }) => {
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>

@@ -76,6 +76,7 @@ import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderParameterDragSource } from '../stores/QueryParameterState';
 import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParameterState';
+import { MdRefresh } from 'react-icons/md';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -369,6 +370,14 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
+    const refreshNode = (): void => {
+      if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+        node.condition.value =
+          node.condition.operator.getDefaultFilterConditionValue(
+            node.condition,
+          );
+      }
+    };
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
 
     // Drag and Drop
@@ -548,6 +557,16 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             </div>
           </div>
           <div className="query-builder-filter-tree__node__actions">
+            {node instanceof QueryBuilderFilterTreeConditionNodeData && (
+              <button
+                className="query-builder-filter-tree__node__action"
+                tabIndex={-1}
+                title="Reset Filter Value"
+                onClick={refreshNode}
+              >
+                <MdRefresh />
+              </button>
+            )}
             <button
               className="query-builder-filter-tree__node__action"
               tabIndex={-1}

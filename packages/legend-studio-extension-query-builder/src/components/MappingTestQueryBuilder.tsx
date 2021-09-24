@@ -54,7 +54,7 @@ export const MappingTestQueryBuilder = observer(
               )
               .catch(applicationStore.alertIllegalUnhandledError),
           testState.queryState.query.isStub,
-          true
+          true,
         ),
       );
     };
