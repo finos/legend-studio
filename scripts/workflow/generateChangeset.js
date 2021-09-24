@@ -39,13 +39,14 @@ import chalk from 'chalk';
 import * as yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import semver from 'semver';
+import inquirer from 'inquirer';
 
 const argv = yargs.default(hideBin(process.argv)).argv;
 
 const DEFAULT_BRANCH_NAME = 'master';
 const useOrigin = argv.useOrigin;
 const message = argv.m;
-const targetBranch = argv.v
+let targetBranch = argv.v
   ? argv.v === 'latest'
     ? DEFAULT_BRANCH_NAME
     : semver.valid(argv.v)
@@ -54,13 +55,27 @@ const targetBranch = argv.v
   : undefined;
 
 if (targetBranch === undefined) {
-  console.log(
-    chalk.red(
-      `Changeset generator needs the release version you are working on. ` +
-        `Specify a version using '-v 0.4.0' or '-v latest' if you are planning to merge your changes to the default branch`,
-    ),
-  );
-  process.exit(1);
+  await inquirer
+    .prompt([
+      {
+        type: 'confirm',
+        name: 'proceed',
+        message: `${chalk.yellow(
+          `If you are working off a release branch, (e.g release/0.4.0), please abort and use this command with '-v 0.4.0'.\n`,
+        )}Otherwise, the generator assumes you are working on the default branch. Proceed?`,
+      },
+    ])
+    .then((answers) => {
+      const { proceed } = answers;
+      if (proceed) {
+        targetBranch = DEFAULT_BRANCH_NAME;
+      } else {
+        process.exit(1);
+      }
+    })
+    .catch((error) => {
+      throw error;
+    });
 }
 
 if (!useOrigin) {
@@ -91,7 +106,7 @@ if (!useOrigin) {
   if (localTargetBranchRev !== originTargetBranchRev) {
     console.log(
       chalk.yellow(
-        `Changeset generator might not haved produced the most accurate changeset!\n` +
+        `Changeset generator might not have produced the most accurate changeset!\n` +
           `By default this will set reference point to your local '${targetBranch}' branch; however, ` +
           `when validating them, we will set reference point to origin '${targetBranch}' branch.\n` +
           `As such, it is recommended to keep your local and origin '${targetBranch}' branches in sync to produce more accurate changeset.\n`,
