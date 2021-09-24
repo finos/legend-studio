@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-Bug fix for opening element in viewer mode - View in Project
+Fix an issue with opening a particular element in viewer mode from Studio editor not working properly (#[https://github.com/finos/legend-studio/issues/503](https://github.com/finos/legend-studio/issues/503))
