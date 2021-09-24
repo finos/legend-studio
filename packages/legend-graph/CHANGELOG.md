@@ -16,7 +16,7 @@
 
 - [#443](https://github.com/finos/legend-studio/pull/443) [`c408f16`](https://github.com/finos/legend-studio/commit/c408f16dc60474ef6c28e5e4484053b4928c2afc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Account for cycles and duplication when resolving all child set implementations and `leaf` set implementations of an `operation set implementation`. Also, since we don't try to _understand_ how each operation works, we will disregard the operation type in this resolution.
 
-* [#450](https://github.com/finos/legend-studio/pull/450) [`b9ae7134`](https://github.com/finos/legend-studio/commit/b9ae71342ed6162c9892ad62790c1471c9d085be) ([@akphi](https://github.com/akphi)) - Since we do not keep the `section index`, we will cause paths inside of the `transform` of `relational property mappings` to be off since we keep the `transform` as raw `relational operation element`. As such, we now mitigate this by always resolving to full paths in this `transform` (fixes [#424](https://github.com/finos/legend-studio/issues/424))
+* [#450](https://github.com/finos/legend-studio/pull/450) [`b9ae7134`](https://github.com/finos/legend-studio/commit/b9ae71342ed6162c9892ad62790c1471c9d085be) ([@akphi](https://github.com/akphi)) - Since we do not keep the `section index`, we will cause paths inside of the `transform` of `relational property mappings` to be off since we keep the `transform` as raw `relational operation element`. As such, we now mitigate this by always resolving to full paths in this `transform` ([#424](https://github.com/finos/legend-studio/issues/424))
 
 ## 0.0.3
 
