@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { DiagramRenderer } from '../diagram-viewer/DiagramRenderer';
+import { DiagramRenderer } from '../../DiagramRenderer';
 import { uuid } from '@finos/legend-shared';
 import type { Class } from '@finos/legend-graph';
 import { PackageableElementExplicitReference } from '@finos/legend-graph';

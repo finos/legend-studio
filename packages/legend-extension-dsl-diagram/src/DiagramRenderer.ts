@@ -38,18 +38,18 @@ import {
   Multiplicity,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
-import type { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
-import { Rectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Rectangle';
-import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
-import { PositionedRectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/PositionedRectangle';
-import { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/ClassView';
-import type { PropertyHolderView } from '../../models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
-import { GeneralizationView } from '../../models/metamodels/pure/packageableElements/diagram/GeneralizationView';
-import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/RelationshipView';
-import { manageInsidePointsDynamically } from '../../models/metamodels/pure/packageableElements/diagram/RelationshipView';
-import { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/PropertyView';
-import { getElementPosition } from '../../helpers/DiagramHelper';
-import { AssociationView } from '../../models/metamodels/pure/packageableElements/diagram/AssociationView';
+import type { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
+import { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/Rectangle';
+import { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/Point';
+import { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/PositionedRectangle';
+import { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
+import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
+import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/GeneralizationView';
+import type { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
+import { manageInsidePointsDynamically } from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
+import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/PropertyView';
+import { getElementPosition } from './helpers/DiagramHelper';
+import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/AssociationView';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,

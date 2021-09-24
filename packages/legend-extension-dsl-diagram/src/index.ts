@@ -16,7 +16,7 @@
 
 export * from './DSLDiagram_Extension';
 
-export { DiagramRenderer } from './components/diagram-viewer/DiagramRenderer';
+export { DiagramRenderer } from './DiagramRenderer';
 
 export { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
 export { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';

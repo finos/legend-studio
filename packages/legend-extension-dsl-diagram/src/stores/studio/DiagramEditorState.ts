@@ -20,8 +20,8 @@ import {
   guaranteeType,
   uuid,
 } from '@finos/legend-shared';
-import type { DiagramRenderer } from '../components/diagram-viewer/DiagramRenderer';
-import { DIAGRAM_INTERACTION_MODE } from '../components/diagram-viewer/DiagramRenderer';
+import type { DiagramRenderer } from '../../DiagramRenderer';
+import { DIAGRAM_INTERACTION_MODE } from '../../DiagramRenderer';
 import { PanelDisplayState } from '@finos/legend-art';
 import type {
   PackageableElement,
@@ -42,10 +42,10 @@ import {
   EditorHotkey,
   ElementEditorState,
 } from '@finos/legend-studio';
-import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/ClassView';
-import type { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/Point';
-import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
-import type { PropertyHolderView } from '../models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
+import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/ClassView';
+import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
+import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
+import type { PropertyHolderView } from '../../models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
 
 enum DIAGRAM_EDITOR_HOTKEY {
   RECENTER = 'RECENTER',

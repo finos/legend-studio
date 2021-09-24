@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
-import {
-  StudioPlugin,
-  UnsupportedElementEditorState,
-} from '@finos/legend-studio';
+import packageJson from '../../../package.json';
 import type {
   StudioPluginManager,
   NewElementFromStateCreator,
@@ -30,10 +26,14 @@ import type {
   ElementIconGetter,
   DSL_StudioPlugin_Extension,
   NewElementState,
+  ElementEditorRenderer,
 } from '@finos/legend-studio';
+import { StudioPlugin } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
-import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import { DataSpace } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import { DataSpaceEditorState } from '../../stores/studio/DataSpaceEditorState';
+import { DataSpaceViewer } from './DataSpaceEditor';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -81,6 +81,17 @@ export class DSLDataSpace_StudioPlugin
     ];
   }
 
+  getExtraElementEditorRenderers(): ElementEditorRenderer[] {
+    return [
+      (elementEditorState: ElementEditorState): React.ReactNode | undefined => {
+        if (elementEditorState instanceof DataSpaceEditorState) {
+          return <DataSpaceViewer key={elementEditorState.uuid} />;
+        }
+        return undefined;
+      },
+    ];
+  }
+
   getExtraNewElementFromStateCreators(): NewElementFromStateCreator[] {
     return [
       (
@@ -111,7 +122,7 @@ export class DSLDataSpace_StudioPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof DataSpace) {
-          return new UnsupportedElementEditorState(editorStore, element);
+          return new DataSpaceEditorState(editorStore, element);
         }
         return undefined;
       },

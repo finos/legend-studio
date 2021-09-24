@@ -20,7 +20,7 @@ import { DSLText_PureGraphManagerPlugin } from './graphManager/DSLText_PureGraph
 import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin';
 import type { GraphPluginManager } from '@finos/legend-graph';
 import type { StudioPluginManager } from '@finos/legend-studio';
-import { DSLText_StudioPlugin } from './components/DSLText_StudioPlugin';
+import { DSLText_StudioPlugin } from './components/studio/DSLText_StudioPlugin';
 import { DSLText_PureGraphPlugin } from './graph/DSLText_PureGraphPlugin';
 
 export class DSLText_GraphPreset extends AbstractPreset {
