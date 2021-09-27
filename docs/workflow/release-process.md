@@ -17,7 +17,9 @@ As mentioned, the release process for libraries is backed by [changesets](https:
 - New features will be added to the default branch
 - Application version bump will **always** be minor bumps (e.g. `1.6.0`, `1.7.0`)
 - When we want to do a new release, create a changeset with minor bump for all of the applications, e.g. `@finos/legend-studio-app`, `@finos/legend-query-app`, etc. if this is not already been done as part of any changesets. Approve and merge the `New Release` will trigger a pipeline to publish a new release.
-- After cutting a release, at the beginning of a new application version bump, we will [create a release branch](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) for that version (i.e. `release/1.6.0`, `release/1.7.0`), this will be used for adding bug fixes and creating [patch releases](#patch-releases)
+- After cutting a release, at the beginning of a new application version bump, we will:
+- [create a release branch](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) for that version (i.e. `release/1.6.0`, `release/1.7.0`), this will be used for adding bug fixes and creating [patch releases](#patch-releases)
+- Bump minor version for all applications `yarn release:bump`
 
 ### Changesets
 
