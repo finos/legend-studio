@@ -13,7 +13,7 @@ e.g. studio-end-to-end-test-project-prod
 ## Test 1: Open element
 
 1. Create a new workspace
-2. Right click on `model::Person` and click `Open Viewer`
+2. Right click on `model::Person` and click `View in Project`
 3. Verify that `model::Person` being opened, note that for the URL, the element path is cleaned
    // cleanup
 4. Delete the workspace
@@ -21,10 +21,13 @@ e.g. studio-end-to-end-test-project-prod
 ## Test 2: Open not-found element
 
 1. Create a new workspace
-2. Create a new element `model::Firm` and click `Open Viewer`
-3. Verify that no element editor is opened and an error notification pops up to say the element is not found
+2. Create a new element `model::Firm`
+3. Right click on `model::Firm` and click `View in Project`
+4. Verify that no element editor is opened and an error notification pops up to say the element is not found
    // cleanup
-4. Delete the workspace
+5. Delete the workspace
+
+> Note that the element was not found because local changes are not merged, the expectation should be similar to that of `[Test 1:Step 3]` if the local changes are merged.
 
 ## Test 3: Open project
 

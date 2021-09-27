@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.2.20
+
+### Patch Changes
+
+- [#513](https://github.com/finos/legend-studio/pull/513) [`5968c8c8`](https://github.com/finos/legend-studio/commit/5968c8c81c6079a258433bc757ced4baade4e75d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Allow editing of `ProjectConfiguration` when a dependency graph error occurs ([#269](https://github.com/finos/legend-studio/issues/269)).
+
 ## 0.2.19
 
 ### Patch Changes
@@ -12,7 +18,7 @@
 
 - [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Fix layout problem when there are many items being opened causing the tab bar to overflow and activity bar to disappear ([#462](https://github.com/finos/legend-studio/issues/462)).
 
-* [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Fix problem where model test data generation fails when encoutering enumeration with 0 or 1 enum value (fixes [#463](https://github.com/finos/legend-studio/issues/463)). Also, we ensure this kind of error is handled gracefully and do not crash the application.
+* [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Fix problem where model test data generation fails when encoutering enumeration with 0 or 1 enum value ([#463](https://github.com/finos/legend-studio/issues/463)). Also, we ensure this kind of error is handled gracefully and do not crash the application.
 
 ## 0.2.17
 
@@ -28,7 +34,7 @@
 
 ### Patch Changes
 
-- [#443](https://github.com/finos/legend-studio/pull/443) [`c408f16`](https://github.com/finos/legend-studio/commit/c408f16dc60474ef6c28e5e4484053b4928c2afc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Operation class mapping editor will now help user avoid creating cycle (fixes [#298](https://github.com/finos/legend-studio/issues/298)).
+- [#443](https://github.com/finos/legend-studio/pull/443) [`c408f16`](https://github.com/finos/legend-studio/commit/c408f16dc60474ef6c28e5e4484053b4928c2afc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Operation class mapping editor will now help user avoid creating cycle ([#298](https://github.com/finos/legend-studio/issues/298)).
 
 * [#444](https://github.com/finos/legend-studio/pull/444) [`9c6c7386`](https://github.com/finos/legend-studio/commit/9c6c7386bb5c884fdf0077a1dcba6b46dfa840ce) ([@akphi](https://github.com/akphi)) - Move `DSL Diagram` logic to a new separate extension package `@finos/legend-extension-dsl-diagram`.
 

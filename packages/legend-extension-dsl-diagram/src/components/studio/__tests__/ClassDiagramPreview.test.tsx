@@ -22,7 +22,7 @@ import {
   TEST__openElementFromExplorerTree,
   StudioPluginManager,
 } from '@finos/legend-studio';
-import { DSLDiagram_StudioPreset } from '../../DSLDiagram_Extension';
+import { DSLDiagram_StudioPreset } from '../../../DSLDiagram_Extension';
 import { DSL_DIAGRAM_TEST_ID } from '../DSLDiagram_TestID';
 
 const TEST_DATA__dummyModel = [

@@ -21,7 +21,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
-import { TextEditorState } from '../stores/TextEditorState';
+import { TextEditorState } from '../../stores/studio/TextEditorState';
 import {
   LockIcon,
   CaretDownIcon,
@@ -30,7 +30,7 @@ import {
   MenuContentItem,
 } from '@finos/legend-art';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { TEXT_TYPE } from '../models/metamodels/pure/model/packageableElements/text/Text';
+import { TEXT_TYPE } from '../../models/metamodels/pure/model/packageableElements/text/Text';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
   switch (type) {

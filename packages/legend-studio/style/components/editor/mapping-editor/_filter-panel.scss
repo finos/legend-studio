@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
-@forward './data-space-viewer';
+@use '../../../mixins' as *;
 
-:root {
-  --color-data-space: var(--color-blue-50);
-}
-
-.icon--data-space {
-  color: var(--color-text-element);
+.class-mapping-filter-editor {
+  &__content {
+    height: 100%;
+    width: 100%;
+  }
 }

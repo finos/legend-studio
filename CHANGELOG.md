@@ -98,3 +98,4 @@ We now use [Typescript 4.4](https://www.typescriptlang.org/docs/handbook/release
 - [399](https://github.com/finos/legend-studio/issues/399) Multiple mapped properties disappear in mapping editor
 - [354](https://github.com/finos/legend-studio/issues/354) Viewer mode does not allow viewing project configuration
 - [298](https://github.com/finos/legend-studio/issues/298) Operation class mapping editor allows cycle
+- [269](https://github.com/finos/legend-studio/issues/269) Allow editing of project configuration during dependency error

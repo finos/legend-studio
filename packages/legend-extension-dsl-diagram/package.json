@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Legend extension for Diagram DSL",
   "keywords": [
     "legend",
@@ -44,7 +44,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@material-ui/core": "4.12.3",
-    "@types/react": "17.0.21",
+    "@types/react": "17.0.24",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
     "react": "17.0.2",
@@ -59,11 +59,11 @@
     "@testing-library/react": "12.1.0",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
-    "jest": "27.2.0",
+    "jest": "27.2.1",
     "jest-canvas-mock": "2.3.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.41.1",
+    "sass": "1.42.1",
     "typescript": "4.4.3"
   },
   "peerDependencies": {

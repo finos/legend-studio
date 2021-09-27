@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, action, computed, makeObservable, flow } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
@@ -39,6 +39,9 @@ import {
   RawLambda,
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
+import { LambdaEditorState } from '@finos/legend-application';
+
+export const FILTER_SOURCE_ID_LABEL = 'filter';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -126,9 +129,97 @@ export class PurePropertyMappingState extends PropertyMappingState {
   }
 }
 
+export class PureInstanceSetImplementationFilterState extends LambdaEditorState {
+  editorStore: EditorStore;
+  instanceSetImplementation: PureInstanceSetImplementation;
+  constructor(
+    instanceSetImplementation: PureInstanceSetImplementation,
+    editorStore: EditorStore,
+  ) {
+    super('true', LAMBDA_PIPE);
+
+    makeObservable(this, {
+      editorStore: observable,
+    });
+
+    this.editorStore = editorStore;
+    this.instanceSetImplementation = instanceSetImplementation;
+  }
+
+  get lambdaId(): string {
+    return buildSourceInformationSourceId([
+      this.instanceSetImplementation.parent.path,
+      MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
+      FILTER_SOURCE_ID_LABEL,
+      this.uuid,
+    ]);
+  }
+
+  *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
+    const emptyFunctionDefinition = RawLambda.createStub();
+    if (this.lambdaString) {
+      try {
+        const lambda =
+          (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
+            this.fullLambdaString,
+            this.lambdaId,
+          )) as RawLambda | undefined;
+        this.setParserError(undefined);
+        this.instanceSetImplementation.setMappingFilter(
+          lambda ?? emptyFunctionDefinition,
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        if (error instanceof ParserError) {
+          this.setParserError(error);
+        }
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          error,
+        );
+      }
+    } else {
+      this.clearErrors();
+      if (this.instanceSetImplementation.filter?.isStub) {
+        this.instanceSetImplementation.setMappingFilter(
+          emptyFunctionDefinition,
+        );
+      }
+    }
+  }
+
+  *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
+    if (
+      this.instanceSetImplementation.filter &&
+      !this.instanceSetImplementation.isStub
+    ) {
+      try {
+        const grammarText =
+          (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
+            this.instanceSetImplementation.filter,
+            this.lambdaId,
+            pretty,
+          )) as string;
+        this.setLambdaString(this.extractLambdaString(grammarText));
+        this.clearErrors();
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          error,
+        );
+      }
+    } else {
+      this.clearErrors();
+      this.setLambdaString('');
+    }
+  }
+}
 export class PureInstanceSetImplementationState extends InstanceSetImplementationState {
   declare mappingElement: PureInstanceSetImplementation;
   declare propertyMappingStates: PurePropertyMappingState[];
+  mappingFilterState: PureInstanceSetImplementationFilterState | undefined;
+
   isConvertingTransformLambdaObjects = false;
 
   constructor(
@@ -139,13 +230,20 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
 
     makeObservable(this, {
       isConvertingTransformLambdaObjects: observable,
+      mappingFilterState: observable,
       hasParserError: computed,
       setPropertyMappingStates: action,
+      setMappingFilterState: action,
+      convertFilter: flow,
     });
 
     this.mappingElement = setImplementation;
     this.propertyMappingStates = setImplementation.propertyMappings.map(
       (pm) => new PurePropertyMappingState(this.editorStore, this, pm),
+    );
+    this.mappingFilterState = new PureInstanceSetImplementationFilterState(
+      this.mappingElement,
+      editorStore,
     );
   }
 
@@ -158,6 +256,11 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     propertyMappingState: PurePropertyMappingState[],
   ): void {
     this.propertyMappingStates = propertyMappingState;
+  }
+  setMappingFilterState(
+    mappingFilterState: PureInstanceSetImplementationFilterState,
+  ): void {
+    this.mappingFilterState = mappingFilterState;
   }
 
   /**
@@ -206,6 +309,30 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
             purePropertyMapping.extractLambdaString(grammarText),
           );
         });
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          error,
+        );
+      } finally {
+        this.isConvertingTransformLambdaObjects = false;
+      }
+    }
+  }
+
+  *convertFilter(): GeneratorFn<void> {
+    const lambda = this.mappingElement.filter;
+    if (lambda) {
+      this.isConvertingTransformLambdaObjects = true;
+      try {
+        const isolatedLambda =
+          (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
+            lambda,
+          )) as string;
+        this.mappingFilterState?.setLambdaString(
+          this.mappingFilterState.extractLambdaString(isolatedLambda),
+        );
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(

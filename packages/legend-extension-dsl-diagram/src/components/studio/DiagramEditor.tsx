@@ -25,17 +25,17 @@ import {
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
-} from './diagram-viewer/DiagramRenderer';
+} from '../../DiagramRenderer';
 import type {
   DiagramEditorInlineClassCreatorState,
   DiagramEditorInlineClassRenamerState,
   DiagramEditorInlinePropertyEditorState,
-} from '../stores/DiagramEditorState';
+} from '../../stores/studio/DiagramEditorState';
 import {
   DIAGRAM_EDITOR_SIDE_PANEL_TAB,
   DiagramEditorClassViewEditorSidePanelState,
   DiagramEditorState,
-} from '../stores/DiagramEditorState';
+} from '../../stores/studio/DiagramEditorState';
 import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
   getControlledResizablePanelProps,
@@ -92,8 +92,8 @@ import {
   ElementDragSource,
   useEditorStore,
 } from '@finos/legend-studio';
-import { cleanUpDeadReferencesInDiagram } from '../helpers/DiagramHelper';
-import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/Point';
+import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
+import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {

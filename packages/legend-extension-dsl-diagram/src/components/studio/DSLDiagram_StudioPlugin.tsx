@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../../package.json';
 import type {
   StudioPluginManager,
   NewElementFromStateCreator,
@@ -34,8 +34,8 @@ import type {
 import { StudioPlugin } from '@finos/legend-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
-import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
-import { DiagramEditorState } from '../stores/DiagramEditorState';
+import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
+import { DiagramEditorState } from '../../stores/studio/DiagramEditorState';
 import { DiagramEditor } from './DiagramEditor';
 import { ClassDiagramPreview } from './ClassDiagramPreview';
 
