@@ -203,7 +203,7 @@ Make sure to [create a changeset](#changeset) if you make significant code logic
 yarn changeset
 ```
 
-If you make change to the interface, please kindly include the screenshots or `GIFs` in the description of the PR to make it easier for us to review this change :pray:
+If you make change to the interface, please kindly include the screenshots, screen captures or `GIFs` in the description of the PR to make it easier for us to review this change :pray:
 
 Also please try to commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
 
