@@ -80,7 +80,7 @@ import type { PackageableElement } from '../../../../../../metamodels/pure/packa
 import type { INTERNAL__UnknownValueSpecification } from '../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
 import { V1_INTERNAL__UnknownValueSpecfication } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
 
-export class V1_ValueSpecificationTransformer
+class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
 {
   inScope: string[] = [];
@@ -477,7 +477,7 @@ export function V1_transformLambdaFunctionInstanceValue(
   return lambda;
 }
 
-export function V1_transformValueSpecification(
+export function V1_transformRootValueSpecification(
   valueSpecification: ValueSpecification,
 ): V1_ValueSpecification {
   if (valueSpecification instanceof LambdaFunctionInstanceValue) {

@@ -834,7 +834,7 @@ export const TEST_DATA__lambda_existsChainFilterWithCustomVariableName = {
   parameters: [],
 };
 
-export const TEST_DATA_lambda_simpleSingleConditionFilterWithParameter = {
+export const TEST_DATA__lambda_simpleSingleConditionFilterWithParameter = {
   _type: 'lambda',
   body: [
     {

@@ -33,7 +33,6 @@ export class VariableExpression extends ValueSpecification {
       name: observable,
       genericType: observable,
       setName: action,
-      setMultiplicity: action,
     });
     this.name = name;
     this.genericType = genericType;
@@ -41,10 +40,6 @@ export class VariableExpression extends ValueSpecification {
 
   setName(val: string): void {
     this.name = val;
-  }
-
-  setMultiplicity(val: Multiplicity): void {
-    this.multiplicity = val;
   }
 
   accept_ValueSpecificationVisitor<T>(

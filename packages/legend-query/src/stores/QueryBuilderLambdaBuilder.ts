@@ -352,15 +352,15 @@ export const buildLambdaFunction = (
   );
   // build parameters
   if (
-    !queryBuilderState.queryParameterState.isDisabled &&
-    queryBuilderState.queryParameterState.parameters.length
+    !queryBuilderState.queryParametersState.isDisabled &&
+    queryBuilderState.queryParametersState.parameters.length
   ) {
     // if we are executing:
     // set the parameters to empty
     // add let statements for each parameter
     if (options?.isBuildingExecutionQuery) {
       lambdaFunction.functionType.parameters = [];
-      const letsFuncs = queryBuilderState.queryParameterState.parameters
+      const letsFuncs = queryBuilderState.queryParametersState.parameters
         .map((_var) => {
           if (_var.values) {
             const letFunc = new SimpleFunctionExpression(
@@ -385,7 +385,7 @@ export const buildLambdaFunction = (
       ];
     } else {
       lambdaFunction.functionType.parameters =
-        queryBuilderState.queryParameterState.parameters.map(
+        queryBuilderState.queryParametersState.parameters.map(
           (e) => e.parameter,
         );
     }

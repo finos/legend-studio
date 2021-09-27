@@ -56,8 +56,8 @@ import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggreg
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParameterState';
-import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParameterState';
+import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
+import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

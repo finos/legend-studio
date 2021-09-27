@@ -21,17 +21,18 @@ import {
   CustomSelectorInput,
   PencilIcon,
   TimesIcon,
+  DollarIcon,
 } from '@finos/legend-art';
-import { FaDollarSign, FaPlus } from 'react-icons/fa';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParameterState';
+import { FaPlus } from 'react-icons/fa';
+import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
 import {
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-  ParameterState,
-} from '../stores/QueryParameterState';
+  QueryParameterState,
+} from '../stores/QueryParametersState';
 import { Dialog } from '@material-ui/core';
 import { useEffect, useState } from 'react';
 import type { Type } from '@finos/legend-graph';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { MULTIPLICITY_INFINITE, PRIMITIVE_TYPE } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
@@ -43,7 +44,7 @@ const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     // main state
     const { queryBuilderState } = props;
-    const parameterState = queryBuilderState.queryParameterState;
+    const parameterState = queryBuilderState.queryParametersState;
     const close = (): void => parameterState.setValuesEditorIsOpen(false);
     const execute = (): void => {
       close();
@@ -117,11 +118,11 @@ const ParameterValuesEditor = observer(
 const VariableExpressionEditor = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
-    variableExpressionState: ParameterState;
+    variableExpressionState: QueryParameterState;
   }) => {
     // main state
     const { queryBuilderState, variableExpressionState } = props;
-    const queryParameterState = queryBuilderState.queryParameterState;
+    const queryParameterState = queryBuilderState.queryParametersState;
     const isCreating = !queryParameterState.parameters.includes(
       variableExpressionState,
     );
@@ -158,10 +159,9 @@ const VariableExpressionEditor = observer(
         multiplity.upperBound,
       );
     };
-    const UPPER_BOUND_LIMIT = '*';
     const [upperBound, setUppBound] = useState<string>(
       multiplity.upperBound === undefined
-        ? UPPER_BOUND_LIMIT
+        ? MULTIPLICITY_INFINITE
         : multiplity.upperBound.toString(),
     );
     const changeUpperBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -169,13 +169,13 @@ const VariableExpressionEditor = observer(
     ) => {
       const value = event.target.value;
       if (
-        value === UPPER_BOUND_LIMIT ||
+        value === MULTIPLICITY_INFINITE ||
         value === '' ||
         !isNaN(parseInt(value))
       ) {
         variableExpressionState.changeMultiplicity(
           multiplity.lowerBound,
-          value === UPPER_BOUND_LIMIT || value === ''
+          value === MULTIPLICITY_INFINITE || value === ''
             ? undefined
             : parseInt(value),
         );
@@ -325,10 +325,10 @@ const QueryBuilderParameterDragLayer = observer(
 const VariableExpressionViewer = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
-    variableExpressionState: ParameterState;
+    variableExpressionState: QueryParameterState;
   }) => {
     const { queryBuilderState, variableExpressionState } = props;
-    const queryParameterState = queryBuilderState.queryParameterState;
+    const queryParameterState = queryBuilderState.queryParametersState;
     const variable = variableExpressionState.parameter;
     const name = variable.name;
     const variableType = variable.genericType?.value.rawType;
@@ -355,7 +355,7 @@ const VariableExpressionViewer = observer(
         <div className="query-builder__parameters__parameter__content">
           <div className="query-builder__parameters__parameter__icon">
             <div className="query-builder__parameters__parameter-icon">
-              <FaDollarSign />
+              <DollarIcon />
             </div>
           </div>
           <div className="query-builder__parameters__parameter__label">
@@ -392,10 +392,11 @@ const VariableExpressionViewer = observer(
 export const QueryBuilderParameterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const queryParameterState = queryBuilderState.queryParameterState;
+    const queryParameterState = queryBuilderState.queryParametersState;
     const addParameter = (): void => {
       if (!queryParameterState.isDisabled) {
-        const parmaterState = ParameterState.createDefault(queryParameterState);
+        const parmaterState =
+          QueryParameterState.createDefault(queryParameterState);
         queryParameterState.setSelectedParameter(parmaterState);
         parmaterState.mockParameterValues();
       }

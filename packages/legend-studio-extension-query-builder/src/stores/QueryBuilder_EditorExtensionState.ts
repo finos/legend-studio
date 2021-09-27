@@ -108,7 +108,7 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     );
     this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
     this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-    this.queryBuilderState.queryParameterState.setIsDisabled(
+    this.queryBuilderState.queryParametersState.setIsDisabled(
       Boolean(disableParameters),
     );
   }

@@ -27,7 +27,7 @@ import {
   TEST_DATA__simpleGroupBy,
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__firmPersonGraphFetch,
-  TEST_DATA_personWithParameter,
+  TEST_DATA__personWithParameter,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
 import {
   simpleDerivationProjection,
@@ -95,7 +95,7 @@ const cases: RoundtripTestCase[] = [
   [
     'Simple project() and filter() with parameter',
     relationalCtx,
-    TEST_DATA_personWithParameter,
+    TEST_DATA__personWithParameter,
   ],
 ];
 

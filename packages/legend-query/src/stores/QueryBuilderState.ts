@@ -87,7 +87,7 @@ import type {
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
 import type { QueryConfig } from '../application/QueryConfig';
-import { QueryParameterState } from './QueryParameterState';
+import { QueryParametersState } from './QueryParametersState';
 
 export class QueryBuilderState {
   applicationStore: ApplicationStore<QueryConfig>;
@@ -95,7 +95,7 @@ export class QueryBuilderState {
 
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
-  queryParameterState: QueryParameterState;
+  queryParametersState: QueryParametersState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   resultSetModifierState: QueryResultSetModifierState;
@@ -130,7 +130,7 @@ export class QueryBuilderState {
     makeObservable(this, {
       querySetupState: observable,
       explorerState: observable,
-      queryParameterState: observable,
+      queryParametersState: observable,
       fetchStructureState: observable,
       filterState: observable,
       resultSetModifierState: observable,
@@ -155,7 +155,7 @@ export class QueryBuilderState {
 
     this.querySetupState = new QueryBuilderSetupState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
-    this.queryParameterState = new QueryParameterState(this);
+    this.queryParametersState = new QueryParametersState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultSetModifierState = new QueryResultSetModifierState(this);
@@ -180,9 +180,9 @@ export class QueryBuilderState {
 
   resetData(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
-    this.queryParameterState = new QueryParameterState(
+    this.queryParametersState = new QueryParametersState(
       this,
-      this.queryParameterState.isDisabled,
+      this.queryParametersState.isDisabled,
     );
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(

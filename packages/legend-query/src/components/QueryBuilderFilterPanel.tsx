@@ -74,8 +74,8 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { useApplicationStore } from '@finos/legend-application';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParameterState';
-import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParameterState';
+import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
+import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
 import { MdRefresh } from 'react-icons/md';
 
 const FilterConditionDragLayer: React.FC = () => {
@@ -370,7 +370,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
-    const refreshNode = (): void => {
+    const resetNode = (): void => {
       if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
         node.condition.value =
           node.condition.operator.getDefaultFilterConditionValue(
@@ -562,7 +562,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 className="query-builder-filter-tree__node__action"
                 tabIndex={-1}
                 title="Reset Filter Value"
-                onClick={refreshNode}
+                onClick={resetNode}
               >
                 <MdRefresh />
               </button>

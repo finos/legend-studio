@@ -55,7 +55,7 @@ import {
   buildPropertyExpressionFromExplorerTreeNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import { useDrag, useDragLayer } from 'react-dnd';
-import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderSharedInfoTooltip';
+import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil';

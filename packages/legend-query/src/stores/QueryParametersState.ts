@@ -44,7 +44,7 @@ export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
 }
 
 export interface QueryBuilderParameterDragSource {
-  variable: ParameterState;
+  variable: QueryParameterState;
 }
 
 export const createMockEnumerationProperty = (
@@ -91,14 +91,14 @@ const createMockPrimitiveProperty = (
   }
 };
 
-export class ParameterState {
+export class QueryParameterState {
   uuid = uuid();
-  queryParameterState: QueryParameterState;
+  queryParameterState: QueryParametersState;
   parameter: VariableExpression;
   values: InstanceValue | undefined;
 
   constructor(
-    queryParameterState: QueryParameterState,
+    queryParameterState: QueryParametersState,
     variableExpression: VariableExpression,
   ) {
     makeObservable(this, {
@@ -113,14 +113,14 @@ export class ParameterState {
 
   mockParameterValues(): void {
     this.setValues(
-      this.mockValues(
+      this.generateMockValues(
         this.parameter.genericType?.value.rawType,
         this.parameter.multiplicity,
       ),
     );
   }
 
-  mockValues(
+  generateMockValues(
     varType: Type | undefined,
     multiplicity: Multiplicity,
   ): InstanceValue | undefined {
@@ -164,9 +164,9 @@ export class ParameterState {
   }
 
   static createDefault(
-    queryParameterState: QueryParameterState,
-  ): ParameterState {
-    return new ParameterState(
+    queryParameterState: QueryParametersState,
+  ): QueryParameterState {
+    return new QueryParameterState(
       queryParameterState,
       new VariableExpression(
         '',
@@ -213,10 +213,10 @@ export class ParameterState {
   }
 }
 
-export class QueryParameterState {
-  selectedParameter: ParameterState | undefined;
+export class QueryParametersState {
+  selectedParameter: QueryParameterState | undefined;
   queryBuilderState: QueryBuilderState;
-  parameters: ParameterState[] = [];
+  parameters: QueryParameterState[] = [];
   isDisabled: boolean;
   valuesEditorIsOpen = false;
 
@@ -248,15 +248,15 @@ export class QueryParameterState {
     this.valuesEditorIsOpen = val;
   }
 
-  setSelectedParameter(val: ParameterState | undefined): void {
+  setSelectedParameter(val: QueryParameterState | undefined): void {
     this.selectedParameter = val;
   }
 
-  addParameter(val: ParameterState): void {
+  addParameter(val: QueryParameterState): void {
     addUniqueEntry(this.parameters, val);
   }
 
-  removeParameter(val: ParameterState): void {
+  removeParameter(val: QueryParameterState): void {
     deleteEntry(this.parameters, val);
   }
 }

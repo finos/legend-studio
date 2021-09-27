@@ -15,13 +15,15 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { FaCheckSquare, FaSquare, FaSave, FaDollarSign } from 'react-icons/fa';
+import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
   CustomSelectorInput,
   InfoCircleIcon,
   PencilIcon,
+  DollarIcon,
+  StubTransition,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -49,7 +51,56 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import { QueryBuilderParameterInfoTooltip } from './QueryBuilderSharedInfoTooltip';
+import type { TooltipProps } from '@material-ui/core';
+import { Tooltip } from '@material-ui/core';
+import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+
+const QueryBuilderParameterInfoTooltip: React.FC<{
+  variable: VariableExpression;
+  children: React.ReactElement;
+  placement: NonNullable<TooltipProps['placement']>;
+}> = (props) => {
+  const { variable, children, placement } = props;
+  const type = variable.genericType?.value.rawType;
+  return (
+    <Tooltip
+      arrow={true}
+      placement={placement}
+      classes={{
+        tooltip: 'query-builder__tooltip',
+        arrow: 'query-builder__tooltip__arrow',
+        tooltipPlacementRight: 'query-builder__tooltip--right',
+      }}
+      TransitionComponent={StubTransition}
+      title={
+        <div className="query-builder__tooltip__content">
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">Type</div>
+            <div className="query-builder__tooltip__item__value">
+              {type?.name ?? ''}
+            </div>
+          </div>
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">Var Name</div>
+            <div className="query-builder__tooltip__item__value">
+              {variable.name}
+            </div>
+          </div>
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">
+              Multiplicity
+            </div>
+            <div className="query-builder__tooltip__item__value">
+              {getMultiplicityDescription(variable.multiplicity)}
+            </div>
+          </div>
+        </div>
+      }
+    >
+      {children}
+    </Tooltip>
+  );
+};
 
 const VariableExpressionEditor = observer(
   (props: {
@@ -61,22 +112,22 @@ const VariableExpressionEditor = observer(
     return (
       <div
         className={clsx(
-          'query-builder-value-spec-editor--parameter',
+          'query-builder-value-spec-editor__parameter',
           className,
         )}
       >
-        <div className="query-builder-value-spec-editor--parameter__icon">
-          <FaDollarSign />
+        <div className="query-builder-value-spec-editor__parameter__icon">
+          <DollarIcon />
         </div>
-        <div className="query-builder-value-spec-editor--parameter__label">
-          <div className="query-builder-value-spec-editor--parameter__text">
+        <div className="query-builder-value-spec-editor__parameter__label">
+          <div className="query-builder-value-spec-editor__parameter__text">
             {varName}
           </div>
           <QueryBuilderParameterInfoTooltip
             variable={valueSpecification}
             placement={'bottom'}
           >
-            <div className="query-builder-value-spec-editor--parameter__info">
+            <div className="query-builder-value-spec-editor__parameter__info">
               <InfoCircleIcon />
             </div>
           </QueryBuilderParameterInfoTooltip>
@@ -87,7 +138,10 @@ const VariableExpressionEditor = observer(
 );
 
 const StringPrimitiveInstanceValueEditor = observer(
-  (props: { valueSpecification: PrimitiveInstanceValue }) => {
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    className?: string | undefined;
+  }) => {
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>

@@ -697,7 +697,7 @@ export const TEST_DATA__firmPersonGraphFetch = {
   parameters: [],
 };
 
-export const TEST_DATA_personWithParameter = {
+export const TEST_DATA__personWithParameter = {
   _type: 'lambda',
   body: [
     {

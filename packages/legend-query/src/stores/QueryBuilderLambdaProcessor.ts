@@ -78,7 +78,7 @@ import {
 } from './QueryBuilderProjectionState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
-import { ParameterState } from './QueryParameterState';
+import { QueryParameterState } from './QueryParametersState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -876,8 +876,8 @@ export class QueryBuilderLambdaProcessor
   visit_LambdaFunctionInstanceValue(
     valueSpecification: LambdaFunctionInstanceValue,
   ): void {
-    valueSpecification.values.map((value) =>
-      value.expressionSequence.map((expression) =>
+    valueSpecification.values.forEach((value) =>
+      value.expressionSequence.forEach((expression) =>
         expression.accept_ValueSpecificationVisitor(
           new QueryBuilderLambdaProcessor(
             this.queryBuilderState,
@@ -960,9 +960,12 @@ const processQueryParameters = (
   lambdaFunc: LambdaFunction,
   queryBuilderState: QueryBuilderState,
 ): void => {
-  const queryParameterState = queryBuilderState.queryParameterState;
+  const queryParameterState = queryBuilderState.queryParametersState;
   lambdaFunc.functionType.parameters.forEach((parameter) => {
-    const variableState = new ParameterState(queryParameterState, parameter);
+    const variableState = new QueryParameterState(
+      queryParameterState,
+      parameter,
+    );
     variableState.mockParameterValues();
     queryParameterState.addParameter(variableState);
   });

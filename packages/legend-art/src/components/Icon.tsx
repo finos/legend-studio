@@ -49,6 +49,7 @@ export {
   FaScroll as ScrollIcon,
   FaEnvelope as EnvelopIcon,
   FaSkull as SkullIcon,
+  FaDollarSign as DollarIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

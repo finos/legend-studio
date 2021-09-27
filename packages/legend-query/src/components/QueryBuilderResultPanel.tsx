@@ -101,8 +101,8 @@ export const QueryBuilderResultPanel = observer(
     const resultState = queryBuilderState.resultState;
     const executionResult = resultState.executionResult;
     const execute = (): void => {
-      if (queryBuilderState.queryParameterState.parameters.length) {
-        queryBuilderState.queryParameterState.setValuesEditorIsOpen(true);
+      if (queryBuilderState.queryParametersState.parameters.length) {
+        queryBuilderState.queryParametersState.setValuesEditorIsOpen(true);
       } else {
         flowResult(resultState.execute()).catch(
           applicationStore.alertIllegalUnhandledError,

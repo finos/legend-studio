@@ -39,6 +39,7 @@ import type {
 } from './SimpleFunctionExpression';
 import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownValueSpecification';
 import type { VariableExpression } from './VariableExpression';
+import { makeObservable, observable, action } from 'mobx';
 
 export interface ValueSpecificationVisitor<T> {
   visit_RootGraphFetchTreeInstanceValue(
@@ -83,8 +84,16 @@ export abstract class ValueSpecification {
     multiplicity: Multiplicity,
     genericTypeReference?: GenericTypeReference,
   ) {
+    makeObservable<ValueSpecification>(this, {
+      multiplicity: observable,
+      setMultiplicity: action,
+    });
     this.multiplicity = multiplicity;
     this.genericType = genericTypeReference;
+  }
+
+  setMultiplicity(val: Multiplicity): void {
+    this.multiplicity = val;
   }
 
   abstract accept_ValueSpecificationVisitor<T>(
