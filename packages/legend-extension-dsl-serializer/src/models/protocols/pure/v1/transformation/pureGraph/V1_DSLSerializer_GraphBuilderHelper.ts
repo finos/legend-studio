@@ -25,7 +25,7 @@ import type {
   V1_GraphBuilderContext,
 } from '@finos/legend-graph';
 
-export const V1_resolveSchemaset = (
+export const V1_resolveSchemaSet = (
   path: string,
   context: V1_GraphBuilderContext,
 ): PackageableElementImplicitReference<SchemaSet> =>

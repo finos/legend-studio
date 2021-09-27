@@ -25,6 +25,7 @@ import type { Schema } from './Schema';
 export class SchemaSet extends PackageableElement implements Hashable {
   format: string;
   schemas: Schema[];
+
   constructor(name: string) {
     super(name);
 
@@ -52,6 +53,7 @@ export class SchemaSet extends PackageableElement implements Hashable {
   deleteSchema(value: Schema): void {
     deleteEntry(this.schemas, value);
   }
+
   protected override get _elementHashCode(): string {
     return hashArray([
       DSL_SERIALIZER_HASH_STRUCTURE.SCHEMA_SET,

@@ -72,5 +72,4 @@ export {
   V1_EngineRuntime,
   V1_Runtime,
 } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
-export { V1_engineRuntimeModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
 export * from './models/protocols/pure/DSLMapping_PureProtocolProcessorPlugin_Extension';

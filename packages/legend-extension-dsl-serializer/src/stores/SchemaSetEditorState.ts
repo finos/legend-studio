@@ -26,16 +26,16 @@ export class SchemaSetEditorState extends ElementEditorState {
     super(editorStore, element);
 
     makeObservable(this, {
-      schemaSetElement: computed,
+      schemaSet: computed,
       reprocess: action,
     });
   }
 
-  get schemaSetElement(): SchemaSet {
+  get schemaSet(): SchemaSet {
     return guaranteeType(
       this.element,
       SchemaSet,
-      'Element inside schema set element editor state must be a schema set element',
+      'Element inside schema set element editor state must be a SchemaSet',
     );
   }
 

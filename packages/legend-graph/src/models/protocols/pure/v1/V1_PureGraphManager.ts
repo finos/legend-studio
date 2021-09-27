@@ -157,6 +157,7 @@ import { V1_ServiceStore } from './model/packageableElements/store/relational/V1
 import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity';
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
+import { V1_setupEngineRuntimeModelSchema } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
@@ -384,6 +385,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     V1_setupDatabaseSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupEngineRuntimeModelSchema(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
   }

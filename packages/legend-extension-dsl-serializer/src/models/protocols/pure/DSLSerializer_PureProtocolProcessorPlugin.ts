@@ -83,7 +83,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
     return [
       new V1_ElementBuilder<V1_Binding>({
-        elementClassName: 'Binding',
+        elementClassName: Binding.name,
         _class: V1_Binding,
         firstPass: (
           elementProtocol: V1_PackageableElement,
@@ -95,7 +95,6 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             elementProtocol.package,
             elementProtocol.name,
           );
-          //context.currentSubGraph.setOwnElementInExtension(path, element, Binding);
           context.currentSubGraph
             .getOrCreatePackage(elementProtocol.package)
             .addElement(element);
@@ -119,7 +118,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
         },
       }),
       new V1_ElementBuilder<V1_SchemaSet>({
-        elementClassName: 'externalFormatSchemaSet',
+        elementClassName: SchemaSet.name,
         _class: V1_SchemaSet,
         firstPass: (
           elementProtocol: V1_PackageableElement,
@@ -237,7 +236,10 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
         if (connection instanceof V1_ExternalFormatConnection) {
           const Store = !store
             ? V1_resolveBinding(
-                guaranteeNonNullable(connection.store, 'Binding is missing'),
+                guaranteeNonNullable(
+                  connection.store,
+                  'External format connection binding is missing',
+                ),
                 context,
               )
             : connection.store
@@ -246,7 +248,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
                 assertType(
                   store.value,
                   Binding,
-                  'External format connection store must be a binding store',
+                  'External format connection store must have a Binding as its store',
                 );
                 return store as PackageableElementReference<Binding>;
               })();

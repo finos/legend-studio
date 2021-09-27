@@ -23,7 +23,7 @@ export const getSchemaSet = (path: string, graph: PureModel): SchemaSet =>
   graph.getExtensionElement(
     path,
     SchemaSet,
-    `Can't find Schema set element '${path}'`,
+    `Can't find schema set element '${path}'`,
   );
 
 export const getBinding = (path: string, graph: PureModel): Binding =>

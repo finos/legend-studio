@@ -21,7 +21,7 @@ import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../../DSLSerializer_M
 export class V1_Schema implements Hashable {
   id?: string | undefined;
   location?: string | undefined;
-  content = '';
+  content!: string;
 
   get hashCode(): string {
     return hashArray([

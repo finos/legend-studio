@@ -57,7 +57,7 @@ export class ExternalFormatConnection extends Connection implements Hashable {
     return guaranteeType(
       this.store.value,
       Binding,
-      'External Format connection must have a binding store',
+      'External Format connection must have Binding as its store',
     );
   }
 

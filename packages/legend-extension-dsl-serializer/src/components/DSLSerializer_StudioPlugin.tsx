@@ -15,7 +15,10 @@
  */
 
 import packageJson from '../../package.json';
-import { StudioPlugin } from '@finos/legend-studio';
+import {
+  StudioPlugin,
+  UnsupportedElementEditorState,
+} from '@finos/legend-studio';
 import type {
   StudioPluginManager,
   NewElementFromStateCreator,
@@ -28,9 +31,7 @@ import type {
   DSL_StudioPlugin_Extension,
   NewElementState,
 } from '@finos/legend-studio';
-import { FileIcon } from '@finos/legend-art';
-import { SchemaSetEditorState } from '../stores/SchemaSetEditorState';
-import { BindingEditorState } from '../stores/BindingEditorState';
+import { FaBuffer, FaSitemap } from 'react-icons/fa';
 import type { PackageableElement } from '@finos/legend-graph';
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
@@ -76,13 +77,13 @@ export class DSLSerializer_StudioPlugin
         if (type === SCHEMA_SET_ELEMENT_TYPE) {
           return (
             <div className="icon icon--text-element">
-              <FileIcon />
+              <FaSitemap />
             </div>
           );
         } else if (type === BINDING_ELEMENT_TYPE) {
           return (
             <div className="icon icon--text-element">
-              <FileIcon />
+              <FaBuffer />
             </div>
           );
         }
@@ -115,9 +116,9 @@ export class DSLSerializer_StudioPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof SchemaSet) {
-          return new SchemaSetEditorState(editorStore, element);
+          return new UnsupportedElementEditorState(editorStore, element);
         } else if (element instanceof Binding) {
-          return new BindingEditorState(editorStore, element);
+          return new UnsupportedElementEditorState(editorStore, element);
         }
         return undefined;
       },

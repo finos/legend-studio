@@ -26,16 +26,16 @@ export class BindingEditorState extends ElementEditorState {
     super(editorStore, element);
 
     makeObservable(this, {
-      bindingElement: computed,
+      binding: computed,
       reprocess: action,
     });
   }
 
-  get bindingElement(): Binding {
+  get binding(): Binding {
     return guaranteeType(
       this.element,
       Binding,
-      'Element inside binding element editor state must be a binding element',
+      'Element inside binding element editor state must be a Binding',
     );
   }
 

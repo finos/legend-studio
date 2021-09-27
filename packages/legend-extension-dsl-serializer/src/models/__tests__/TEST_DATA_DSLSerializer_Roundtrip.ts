@@ -16,22 +16,22 @@
 
 export const roundtripTestData = [
   {
-    path: 'anything::text',
+    path: 'anything::schemaSet1',
     content: {
       _type: 'externalFormatSchemaSet',
       format: 'test',
-      name: 'text',
+      name: 'schemaSet1',
       package: 'anything',
       schemas: [],
     },
     classifierPath: 'meta::external::shared::format::metamodel::SchemaSet',
   },
   {
-    path: 'anything::text1',
+    path: 'anything::schemaSet2',
     content: {
       _type: 'externalFormatSchemaSet',
       format: 'test',
-      name: 'text1',
+      name: 'schemaSet2',
       package: 'anything',
       schemas: [
         {
@@ -49,7 +49,7 @@ export const roundtripTestData = [
     classifierPath: 'meta::external::shared::format::metamodel::SchemaSet',
   },
   {
-    path: 'anything::text3',
+    path: 'anything::binding1',
     content: {
       _type: 'binding',
       contentType: 'test',
@@ -57,9 +57,9 @@ export const roundtripTestData = [
         packageableElementExcludes: [],
         packageableElementIncludes: [],
       },
-      name: 'text3',
+      name: 'binding1',
       package: 'anything',
-      schemaSet: 'text',
+      schemaSet: 'schemaSet1',
     },
     classifierPath: 'meta::external::shared::format::binding::Binding',
   },
@@ -69,7 +69,7 @@ export const roundtripTestData = [
       _type: 'connection',
       connectionValue: {
         _type: 'ExternalFormatConnection',
-        element: 'text3',
+        element: 'binding1',
         externalSource: {
           _type: 'urlStream',
           url: 'test',
@@ -96,19 +96,19 @@ export const roundtripTestData = [
         {
           _type: 'importAware',
           imports: [],
-          elements: ['anything::text'],
+          elements: ['anything::schemaSet1'],
           parserName: 'ExternalFormat',
         },
         {
           _type: 'importAware',
           imports: [],
-          elements: ['anything::text1'],
+          elements: ['anything::schemaSet2'],
           parserName: 'ExternalFormat',
         },
         {
           _type: 'importAware',
           imports: ['anything'],
-          elements: ['anything::text3'],
+          elements: ['anything::binding1'],
           parserName: 'Binding',
         },
         {

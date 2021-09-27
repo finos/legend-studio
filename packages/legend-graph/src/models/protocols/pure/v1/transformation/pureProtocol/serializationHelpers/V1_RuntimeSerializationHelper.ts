@@ -20,6 +20,7 @@ import {
   list,
   custom,
   serialize,
+  deserialize,
 } from 'serializr';
 import type { ModelSchema } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
@@ -74,52 +75,32 @@ export const V1_legacyRuntimeModelSchema = createModelSchema(V1_LegacyRuntime, {
 });
 
 export const V1_identifiedConnectionModelSchema = (
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_IdentifiedConnection> =>
   createModelSchema(V1_IdentifiedConnection, {
     connection: custom(
-      (val) => {
-        if (plugins !== undefined) {
-          return V1_serializeConnectionValue(val, true, plugins);
-        }
-        return V1_serializeConnectionValue(val, true);
-      },
-      (val) => {
-        if (plugins !== undefined) {
-          return V1_deserializeConnectionValue(val, true, plugins);
-        }
-        return V1_deserializeConnectionValue(val, true);
-      },
+      (val) => V1_serializeConnectionValue(val, true, plugins),
+      (val) => V1_deserializeConnectionValue(val, true, plugins),
     ),
     id: primitive(),
   });
 
 export const V1_storeConnectionModelSchema = (
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_StoreConnections> =>
   createModelSchema(V1_StoreConnections, {
     store: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     storeConnections: list(
-      usingModelSchema(
-        plugins !== undefined
-          ? V1_identifiedConnectionModelSchema(plugins)
-          : V1_identifiedConnectionModelSchema(),
-      ),
+      usingModelSchema(V1_identifiedConnectionModelSchema(plugins)),
     ),
   });
 
-export const V1_engineRuntimeModelSchema = (
-  plugins?: PureProtocolProcessorPlugin[],
+export const V1_setupEngineRuntimeModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_EngineRuntime> =>
   createModelSchema(V1_EngineRuntime, {
     _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
-    connections: list(
-      usingModelSchema(
-        plugins !== undefined
-          ? V1_storeConnectionModelSchema(plugins)
-          : V1_storeConnectionModelSchema(),
-      ),
-    ),
+    connections: list(usingModelSchema(V1_storeConnectionModelSchema(plugins))),
     mappings: list(
       usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     ),
@@ -129,25 +110,24 @@ export const V1_serializeRuntime = (
   protocol: V1_Runtime,
 ): PlainObject<V1_Runtime> => {
   if (protocol instanceof V1_EngineRuntime) {
-    return serialize(V1_engineRuntimeModelSchema(), protocol);
+    return serialize(V1_EngineRuntime, protocol);
   } else if (protocol instanceof V1_RuntimePointer) {
     return serialize(V1_runtimePointerModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Can't serialize runtime`, protocol);
 };
 
-export const V1_packageableRuntimeModelSchema = (
-  plugins?: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_PackageableRuntime> =>
-  createModelSchema(V1_PackageableRuntime, {
+export const V1_packageableRuntimeModelSchema = createModelSchema(
+  V1_PackageableRuntime,
+  {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
     ),
     name: primitive(),
     package: primitive(),
-    runtimeValue: usingModelSchema(
-      plugins !== undefined
-        ? V1_engineRuntimeModelSchema(plugins)
-        : V1_engineRuntimeModelSchema(),
+    runtimeValue: custom(
+      (val) => serialize(V1_EngineRuntime, val),
+      (val) => deserialize(V1_EngineRuntime, val),
     ),
-  });
+  },
+);

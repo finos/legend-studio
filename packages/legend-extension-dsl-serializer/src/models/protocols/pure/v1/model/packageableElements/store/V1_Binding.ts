@@ -24,7 +24,7 @@ import type { V1_ModelUnit } from './V1_ModelUnit';
 export class V1_Binding extends V1_Store implements Hashable {
   schemaSet?: string | undefined;
   schemaId?: string | undefined;
-  contentType = '';
+  contentType!: string;
   modelUnit!: V1_ModelUnit;
 
   override get hashCode(): string {
