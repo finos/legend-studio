@@ -28,7 +28,7 @@ import {
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_packageableElementPointerDeserrializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
+import { V1_packageableElementPointerDeserializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
@@ -69,7 +69,7 @@ export const V1_legacyRuntimeModelSchema = createModelSchema(V1_LegacyRuntime, {
     ),
   ),
   mappings: list(
-    usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
+    usingModelSchema(V1_packageableElementPointerDeserializerSchema),
   ),
 });
 
@@ -87,7 +87,7 @@ export const V1_setupEngineRuntimeSerialization = (
     },
   );
   const V1_storeConnectionModelSchema = createModelSchema(V1_StoreConnections, {
-    store: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
+    store: usingModelSchema(V1_packageableElementPointerDeserializerSchema),
     storeConnections: list(
       usingModelSchema(V1_identifiedConnectionModelSchema),
     ),
@@ -96,7 +96,7 @@ export const V1_setupEngineRuntimeSerialization = (
     _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
     connections: list(usingModelSchema(V1_storeConnectionModelSchema)),
     mappings: list(
-      usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
+      usingModelSchema(V1_packageableElementPointerDeserializerSchema),
     ),
   });
 };

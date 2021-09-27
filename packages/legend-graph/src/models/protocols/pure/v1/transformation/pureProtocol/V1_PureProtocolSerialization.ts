@@ -42,7 +42,7 @@ import { V1_PureModelContextComposite } from '../../model/context/V1_PureModelCo
 import { V1_Protocol } from '../../model/V1_Protocol';
 import { V1_AlloySdlc } from '../../model/context/V1_AlloySdlc';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
-import { V1_packageableElementPointerDeserrializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
+import { V1_packageableElementPointerDeserializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import { GraphDataDeserializationError } from '../../../../../../graphManager/GraphManagerUtils';
@@ -105,7 +105,7 @@ const alloySdlcSerializationModelSchema = createModelSchema(V1_AlloySdlc, {
   groupdId: primitive(),
   artifactId: primitive(),
   packageableElementPointers: list(
-    usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
+    usingModelSchema(V1_packageableElementPointerDeserializerSchema),
   ),
 });
 
