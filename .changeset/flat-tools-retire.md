@@ -2,4 +2,4 @@
 "@finos/legend-graph": minor
 ---
 
-Add extension mechanism for connection
+Add extension mechanism for processing connections.
