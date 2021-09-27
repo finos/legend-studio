@@ -15,50 +15,33 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import {
-  ContentType,
-  createUrlStringFromData,
-  guaranteeType,
-  hashArray,
-} from '@finos/legend-shared';
+import { ContentType, hashArray } from '@finos/legend-shared';
 import type {
   ConnectionVisitor,
   PackageableElementReference,
 } from '@finos/legend-graph';
 import { Connection } from '@finos/legend-graph';
 import { action, computed, makeObservable, observable } from 'mobx';
-import { Binding } from '../store/Binding';
-import { UrlStream } from './UrlStream';
+import type { Binding } from '../store/Binding';
+import type { UrlStream } from './UrlStream';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 
 export class ExternalFormatConnection extends Connection implements Hashable {
   static readonly CONTENT_TYPE = ContentType.TEXT_PLAIN;
-  externalSource: UrlStream;
+  externalSource!: UrlStream;
 
   constructor(
     store: PackageableElementReference<Binding>,
-    externalSource = new UrlStream(
-      createUrlStringFromData('', ExternalFormatConnection.CONTENT_TYPE, false),
-    ),
+    externalSource: UrlStream,
   ) {
     super(store);
 
     makeObservable(this, {
       externalSource: observable,
       setSource: action,
-      bindingStore: computed,
       hashCode: computed,
     });
-
     this.externalSource = externalSource;
-  }
-
-  get bindingStore(): Binding {
-    return guaranteeType(
-      this.store.value,
-      Binding,
-      'External Format connection must have Binding as its store',
-    );
   }
 
   setSource(value: UrlStream): void {

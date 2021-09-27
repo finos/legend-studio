@@ -18,14 +18,14 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import type { V1_ConnectionVisitor } from '@finos/legend-graph';
 import { V1_Connection } from '@finos/legend-graph';
-import { V1_UrlStream } from './V1_UrlStream';
+import type { V1_UrlStream } from './V1_UrlStream';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
 
 export class V1_ExternalFormatConnection
   extends V1_Connection
   implements Hashable
 {
-  externalSource: V1_UrlStream = new V1_UrlStream();
+  externalSource!: V1_UrlStream;
 
   get hashCode(): string {
     return hashArray([

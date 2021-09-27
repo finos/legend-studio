@@ -22,7 +22,6 @@ import {
   serialize,
   deserialize,
 } from 'serializr';
-import type { ModelSchema } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
@@ -74,9 +73,9 @@ export const V1_legacyRuntimeModelSchema = createModelSchema(V1_LegacyRuntime, {
   ),
 });
 
-export const V1_identifiedConnectionModelSchema = (
+export const V1_setupEngineRuntimeModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_IdentifiedConnection> =>
+): void => {
   createModelSchema(V1_IdentifiedConnection, {
     connection: custom(
       (val) => V1_serializeConnectionValue(val, true, plugins),
@@ -84,27 +83,28 @@ export const V1_identifiedConnectionModelSchema = (
     ),
     id: primitive(),
   });
-
-export const V1_storeConnectionModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_StoreConnections> =>
   createModelSchema(V1_StoreConnections, {
     store: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     storeConnections: list(
-      usingModelSchema(V1_identifiedConnectionModelSchema(plugins)),
+      custom(
+        (val) => serialize(V1_IdentifiedConnection, val),
+        (val) => deserialize(V1_IdentifiedConnection, val),
+      ),
     ),
   });
-
-export const V1_setupEngineRuntimeModelSchema = (
-  plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_EngineRuntime> =>
   createModelSchema(V1_EngineRuntime, {
     _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
-    connections: list(usingModelSchema(V1_storeConnectionModelSchema(plugins))),
+    connections: list(
+      custom(
+        (val) => serialize(V1_StoreConnections, val),
+        (val) => deserialize(V1_StoreConnections, val),
+      ),
+    ),
     mappings: list(
       usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     ),
   });
+};
 
 export const V1_serializeRuntime = (
   protocol: V1_Runtime,
