@@ -1,5 +1,17 @@
 # @finos/legend-studio
 
+## 0.2.21
+
+### Patch Changes
+
+- [#521](https://github.com/finos/legend-studio/pull/521) [`8d457b59`](https://github.com/finos/legend-studio/commit/8d457b59aedc72039a6f50850d1bc2ae959b0ecd) ([@umarphaarook](https://github.com/umarphaarook)) - Fix an issue with opening a particular element in viewer mode from main editor ([#503](https://github.com/finos/legend-studio/issues/503))
+
+* [#506](https://github.com/finos/legend-studio/pull/506) [`4fd0d256`](https://github.com/finos/legend-studio/commit/4fd0d2560ef245d97f1d86a4a6ed227a9c3d2cbe) ([@akphi](https://github.com/akphi)) - Support importing `query` in `Service` editor.
+
+- [#498](https://github.com/finos/legend-studio/pull/498) [`61f0a0bb`](https://github.com/finos/legend-studio/commit/61f0a0bb342bd838673b10d65d1e16023c450901) ([@kshradhan](https://github.com/kshradhan)) - Add form editor for Pure Instance set implementation filter.
+
+* [#512](https://github.com/finos/legend-studio/pull/512) [`f22a375a`](https://github.com/finos/legend-studio/commit/f22a375ae14770fe3e62b2ec405fbfe728f0d0e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show full `lambda` (including `parameters`) when displaying service `query` in service editor.
+
 ## 0.2.20
 
 ### Patch Changes
