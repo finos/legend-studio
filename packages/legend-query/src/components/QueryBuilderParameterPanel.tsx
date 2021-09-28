@@ -393,8 +393,11 @@ export const QueryBuilderParameterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const queryParameterState = queryBuilderState.queryParametersState;
+    const parametersDisabled = Boolean(
+      queryBuilderState.config.parametersDisabled,
+    );
     const addParameter = (): void => {
-      if (!queryParameterState.isDisabled) {
+      if (!parametersDisabled) {
         const parmaterState =
           QueryParameterState.createDefault(queryParameterState);
         queryParameterState.setSelectedParameter(parmaterState);
@@ -413,7 +416,7 @@ export const QueryBuilderParameterPanel = observer(
               className="panel__header__action"
               tabIndex={-1}
               onClick={addParameter}
-              disabled={queryParameterState.isDisabled}
+              disabled={parametersDisabled}
               title="Add Parameter"
             >
               <FaPlus />
@@ -421,7 +424,7 @@ export const QueryBuilderParameterPanel = observer(
           </div>
         </div>
         <div className="panel__content query-builder__parameters__content">
-          {!queryParameterState.isDisabled &&
+          {!parametersDisabled &&
             queryParameterState.parameters.map((parameter) => (
               <VariableExpressionViewer
                 key={parameter.uuid}
@@ -429,7 +432,7 @@ export const QueryBuilderParameterPanel = observer(
                 variableExpressionState={parameter}
               />
             ))}
-          {queryParameterState.isDisabled && (
+          {parametersDisabled && (
             <BlankPanelContent>
               <div className="unsupported-element-editor__main">
                 <div className="unsupported-element-editor__summary">{`Parameters not supported in this mode`}</div>

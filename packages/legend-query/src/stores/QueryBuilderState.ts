@@ -89,10 +89,15 @@ import { buildElementOption } from '@finos/legend-application';
 import type { QueryConfig } from '../application/QueryConfig';
 import { QueryParametersState } from './QueryParametersState';
 
+export interface QueryBuilderConfig {
+  parametersDisabled?: boolean;
+}
+
 export class QueryBuilderState {
   applicationStore: ApplicationStore<QueryConfig>;
   graphManagerState: GraphManagerState;
 
+  config: QueryBuilderConfig;
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
   queryParametersState: QueryParametersState;
@@ -126,6 +131,7 @@ export class QueryBuilderState {
   constructor(
     applicationStore: ApplicationStore<QueryConfig>,
     graphManagerState: GraphManagerState,
+    queryBuilderConfig?: QueryBuilderConfig | undefined,
   ) {
     makeObservable(this, {
       querySetupState: observable,
@@ -139,6 +145,7 @@ export class QueryBuilderState {
       queryUnsupportedState: observable,
       isCompiling: observable,
       backdrop: observable,
+      config: observable,
       classOptions: computed,
       mappingOptions: computed,
       runtimeOptions: computed,
@@ -147,6 +154,7 @@ export class QueryBuilderState {
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
+      setConfig: action,
       compileQuery: flow,
     });
 
@@ -162,6 +170,7 @@ export class QueryBuilderState {
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
+    this.config = queryBuilderConfig ?? {};
   }
 
   setBackdrop(val: boolean): void {
@@ -178,12 +187,13 @@ export class QueryBuilderState {
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
+  setConfig(config: QueryBuilderConfig): void {
+    this.config = config;
+  }
+
   resetData(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
-    this.queryParametersState = new QueryParametersState(
-      this,
-      this.queryParametersState.isDisabled,
-    );
+    this.queryParametersState = new QueryParametersState(this);
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,

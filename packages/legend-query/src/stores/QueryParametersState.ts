@@ -217,31 +217,20 @@ export class QueryParametersState {
   selectedParameter: QueryParameterState | undefined;
   queryBuilderState: QueryBuilderState;
   parameters: QueryParameterState[] = [];
-  isDisabled: boolean;
   valuesEditorIsOpen = false;
 
-  constructor(
-    queryBuilderState: QueryBuilderState,
-    isDisabled?: boolean | undefined,
-  ) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       valuesEditorIsOpen: observable,
       parameters: observable,
       selectedParameter: observable,
-      isDisabled: observable,
       setValuesEditorIsOpen: action,
       setSelectedParameter: action,
       addParameter: action,
       removeParameter: action,
-      setIsDisabled: action,
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.isDisabled = Boolean(isDisabled);
-  }
-
-  setIsDisabled(value: boolean): void {
-    this.isDisabled = value;
   }
 
   setValuesEditorIsOpen(val: boolean): void {

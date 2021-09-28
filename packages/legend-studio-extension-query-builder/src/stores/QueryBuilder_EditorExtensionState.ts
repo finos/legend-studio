@@ -16,6 +16,7 @@
 
 import type { Mapping, RawLambda, Runtime } from '@finos/legend-graph';
 import { QueryBuilderState } from '@finos/legend-query';
+import type { QueryBuilderConfig } from '@finos/legend-query';
 import type { GeneratorFn } from '@finos/legend-shared';
 import type { EditorStore } from '@finos/legend-studio';
 import { EditorExtensionState } from '@finos/legend-studio';
@@ -95,7 +96,7 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     runtime: Runtime,
     onSave: (lambda: RawLambda) => Promise<void>,
     disableCompile: boolean,
-    disableParameters?: boolean | undefined,
+    queryBuilderConfig?: QueryBuilderConfig | undefined,
   ): GeneratorFn<void> {
     this.queryBuilderState.querySetupState.setMapping(mapping);
     this.queryBuilderState.querySetupState.setRuntime(runtime);
@@ -108,8 +109,6 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     );
     this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
     this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-    this.queryBuilderState.queryParametersState.setIsDisabled(
-      Boolean(disableParameters),
-    );
+    this.queryBuilderState.setConfig(queryBuilderConfig ?? {});
   }
 }
