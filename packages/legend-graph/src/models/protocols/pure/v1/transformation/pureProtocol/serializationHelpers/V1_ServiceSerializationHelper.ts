@@ -46,7 +46,6 @@ import {
 } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
   V1_runtimePointerModelSchema,
-  V1_engineRuntimeModelSchema,
   V1_legacyRuntimeModelSchema,
   V1_RuntimeType,
 } from './V1_RuntimeSerializationHelper';
@@ -81,7 +80,7 @@ const V1_serializeRuntimeValue = (
   if (protocol instanceof V1_RuntimePointer) {
     return serialize(V1_runtimePointerModelSchema, protocol);
   } else if (protocol instanceof V1_EngineRuntime) {
-    return serialize(V1_engineRuntimeModelSchema, protocol);
+    return serialize(V1_EngineRuntime, protocol);
   } else if (protocol instanceof V1_LegacyRuntime) {
     return serialize(V1_legacyRuntimeModelSchema, protocol);
   }
@@ -98,7 +97,7 @@ const V1_deserializeRuntimeValue = (
     case V1_RuntimeType.RUNTIME_POINTER:
       return deserialize(V1_runtimePointerModelSchema, json);
     case V1_RuntimeType.ENGINE_RUNTIME:
-      return deserialize(V1_engineRuntimeModelSchema, json);
+      return deserialize(V1_EngineRuntime, json);
     case V1_RuntimeType.LEGACY_RUNTIME:
     case undefined:
       return deserialize(V1_legacyRuntimeModelSchema, json);

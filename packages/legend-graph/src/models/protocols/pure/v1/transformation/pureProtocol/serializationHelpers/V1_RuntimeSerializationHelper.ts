@@ -20,6 +20,7 @@ import {
   list,
   custom,
   serialize,
+  deserialize,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import {
@@ -41,6 +42,7 @@ import {
   V1_serializeConnectionValue,
   V1_deserializeConnectionValue,
 } from './V1_ConnectionSerializationHelper';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 
 export const V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE = 'runtime';
 
@@ -71,40 +73,39 @@ export const V1_legacyRuntimeModelSchema = createModelSchema(V1_LegacyRuntime, {
   ),
 });
 
-export const V1_identifiedConnectionModelSchema = createModelSchema(
-  V1_IdentifiedConnection,
-  {
-    connection: custom(
-      (val) => V1_serializeConnectionValue(val, true),
-      (val) => V1_deserializeConnectionValue(val, true),
-    ),
-    id: primitive(),
-  },
-);
-
-export const V1_storeConnectionModelSchema = createModelSchema(
-  V1_StoreConnections,
-  {
+export const V1_setupEngineRuntimeSerialization = (
+  plugins: PureProtocolProcessorPlugin[],
+): void => {
+  const V1_identifiedConnectionModelSchema = createModelSchema(
+    V1_IdentifiedConnection,
+    {
+      connection: custom(
+        (val) => V1_serializeConnectionValue(val, true, plugins),
+        (val) => V1_deserializeConnectionValue(val, true, plugins),
+      ),
+      id: primitive(),
+    },
+  );
+  const V1_storeConnectionModelSchema = createModelSchema(V1_StoreConnections, {
     store: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     storeConnections: list(
       usingModelSchema(V1_identifiedConnectionModelSchema),
     ),
-  },
-);
-
-export const V1_engineRuntimeModelSchema = createModelSchema(V1_EngineRuntime, {
-  _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
-  connections: list(usingModelSchema(V1_storeConnectionModelSchema)),
-  mappings: list(
-    usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
-  ),
-});
+  });
+  createModelSchema(V1_EngineRuntime, {
+    _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
+    connections: list(usingModelSchema(V1_storeConnectionModelSchema)),
+    mappings: list(
+      usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
+    ),
+  });
+};
 
 export const V1_serializeRuntime = (
   protocol: V1_Runtime,
 ): PlainObject<V1_Runtime> => {
   if (protocol instanceof V1_EngineRuntime) {
-    return serialize(V1_engineRuntimeModelSchema, protocol);
+    return serialize(V1_EngineRuntime, protocol);
   } else if (protocol instanceof V1_RuntimePointer) {
     return serialize(V1_runtimePointerModelSchema, protocol);
   }
@@ -119,6 +120,9 @@ export const V1_packageableRuntimeModelSchema = createModelSchema(
     ),
     name: primitive(),
     package: primitive(),
-    runtimeValue: usingModelSchema(V1_engineRuntimeModelSchema),
+    runtimeValue: custom(
+      (val) => serialize(V1_EngineRuntime, val),
+      (val) => deserialize(V1_EngineRuntime, val),
+    ),
   },
 );

@@ -19,6 +19,7 @@ import {
   guaranteeNonNullable,
   assertTrue,
   assertType,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst';
 import type { DatabaseType } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
@@ -36,7 +37,10 @@ import type { PackageableElementReference } from '../../../../../../metamodels/p
 import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_ConnectionVisitor } from '../../../model/packageableElements/connection/V1_Connection';
+import type {
+  V1_Connection,
+  V1_ConnectionVisitor,
+} from '../../../model/packageableElements/connection/V1_Connection';
 import type { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import type { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
 import type { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
@@ -46,6 +50,7 @@ import {
   V1_buildDatasourceSpecification,
   V1_buildAuthenticationStrategy,
 } from '../../../transformation/pureGraph/to/helpers/V1_RelationalConnectionBuilderHelper';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_buildPostProcessor } from './helpers/V1_PostProcessorBuilderHelper';
 
@@ -61,6 +66,26 @@ export class V1_ProtocolToMetaModelConnectionBuilder
   ) {
     this.context = context;
     this.embeddedConnectionStore = embeddedConnectionStore;
+  }
+
+  visit_Connection(connection: V1_Connection): Connection {
+    const extraConnectionBuilders = this.context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionBuilders?.() ?? [],
+    );
+    for (const builder of extraConnectionBuilders) {
+      const store = this.embeddedConnectionStore;
+      const extraConnection = builder(connection, this.context, store);
+      if (extraConnection) {
+        return extraConnection;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't build new connection: no compatible builder available from plugins`,
+      connection,
+    );
   }
 
   visit_ConnectionPointer(connection: V1_ConnectionPointer): Connection {

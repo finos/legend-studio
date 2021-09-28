@@ -34,6 +34,7 @@ export enum V1_ConnectionType {
 
 /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
 export interface V1_ConnectionVisitor<T> {
+  visit_Connection(connection: V1_Connection): T;
   visit_ConnectionPointer(connection: V1_ConnectionPointer): T;
   visit_JsonModelConnection(connection: V1_JsonModelConnection): T;
   visit_ModelChainConnection(connection: V1_ModelChainConnection): T;

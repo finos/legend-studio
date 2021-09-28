@@ -70,10 +70,7 @@ import type {
 import { V1_PropertyPathElement } from '../../../model/valueSpecification/raw/path/V1_PropertyPathElement';
 import type { V1_PathElement } from '../../../model/valueSpecification/raw/path/V1_PathElement';
 import { V1_AppliedProperty } from '../../../model/valueSpecification/application/V1_AppliedProperty';
-import {
-  V1_engineRuntimeModelSchema,
-  V1_serializeRuntime,
-} from './V1_RuntimeSerializationHelper';
+import { V1_serializeRuntime } from './V1_RuntimeSerializationHelper';
 import type { V1_ExecutionContext } from '../../../model/valueSpecification/raw/executionContext/V1_ExecutionContext';
 import { V1_AnalyticsExecutionContext } from '../../../model/valueSpecification/raw/executionContext/V1_AnalyticsExecutionContext';
 import { V1_BaseExecutionContext } from '../../../model/valueSpecification/raw/executionContext/V1_BaseExecutionContext';
@@ -82,6 +79,7 @@ import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/
 import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
 import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
 import type { V1_INTERNAL__UnknownValueSpecfication } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
+import { V1_EngineRuntime } from '../../../model/packageableElements/runtime/V1_Runtime';
 
 enum V1_PathElementType {
   PROPERTY_PATH_ELEMENT = 'propertyPath',
@@ -320,7 +318,7 @@ const runtimeInstanceModelSchema = createModelSchema(V1_RuntimeInstance, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.RUNTIME_INSTANCE),
   runtime: custom(
     (val) => V1_serializeRuntime(val),
-    (val) => deserialize(V1_engineRuntimeModelSchema, val),
+    (val) => deserialize(V1_EngineRuntime, val),
   ),
 });
 

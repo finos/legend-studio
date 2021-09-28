@@ -24,6 +24,7 @@ import {
   list,
   optional,
 } from 'serializr';
+import type { ModelSchema } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   usingConstantValueSchema,
@@ -59,6 +60,7 @@ import {
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
@@ -454,6 +456,7 @@ export const V1_deserializeAuthenticationStrategy = (
 export const V1_serializeConnectionValue = (
   protocol: V1_Connection,
   allowPointer: boolean,
+  plugins?: PureProtocolProcessorPlugin[] | undefined,
 ): PlainObject<V1_Connection> => {
   /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   if (protocol instanceof V1_JsonModelConnection) {
@@ -474,12 +477,27 @@ export const V1_serializeConnectionValue = (
       `Serializing connection pointer is not allowed here`,
     );
   }
+  if (plugins !== undefined) {
+    const extraConnectionProtocolSerializers = plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
+    );
+    for (const serializer of extraConnectionProtocolSerializers) {
+      const json = serializer(protocol);
+      if (json) {
+        return json;
+      }
+    }
+  }
   throw new UnsupportedOperationError(`Can't serialize connection`, protocol);
 };
 
 export const V1_deserializeConnectionValue = (
   json: PlainObject<V1_Connection>,
   allowPointer: boolean,
+  plugins?: PureProtocolProcessorPlugin[],
 ): V1_Connection => {
   switch (json._type) {
     /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
@@ -500,10 +518,25 @@ export const V1_deserializeConnectionValue = (
       throw new IllegalStateError(
         `Deserializing connection pointer is not allowed here`,
       );
-    default:
+    default: {
+      if (plugins !== undefined) {
+        const extraConnectionProtocolDeserializers = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+            ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
+        );
+        for (const deserializer of extraConnectionProtocolDeserializers) {
+          const protocol = deserializer(json);
+          if (protocol) {
+            return protocol;
+          }
+        }
+      }
       throw new UnsupportedOperationError(
         `Can't deserialize connection of type '${json._type}'`,
       );
+    }
   }
 };
 
@@ -532,17 +565,27 @@ export const V1_deserializeDatabaseConnectionValue = (
   }
 };
 
-export const V1_packageableConnectionModelSchema = createModelSchema(
-  V1_PackageableConnection,
-  {
+export const V1_packageableConnectionModelSchema = (
+  plugins?: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PackageableConnection> =>
+  createModelSchema(V1_PackageableConnection, {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE,
     ),
     connectionValue: custom(
-      (val) => V1_serializeConnectionValue(val, false),
-      (val) => V1_deserializeConnectionValue(val, false),
+      (val) => {
+        if (plugins !== undefined) {
+          return V1_serializeConnectionValue(val, false, plugins);
+        }
+        return V1_serializeConnectionValue(val, false);
+      },
+      (val) => {
+        if (plugins !== undefined) {
+          return V1_deserializeConnectionValue(val, false, plugins);
+        }
+        return V1_deserializeConnectionValue(val, false);
+      },
     ),
     name: primitive(),
     package: primitive(),
-  },
-);
+  });

@@ -20,6 +20,7 @@ import { DSLText_StudioPreset } from '@finos/legend-extension-dsl-text';
 import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
 import { BrowserConsole } from '@finos/legend-shared';
 import { DSLDiagram_StudioPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSLSerializer_StudioPreset } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_StudioPreset } from '@finos/legend-extension-dsl-data-space';
 
 export class LegendStudioApplication {
@@ -32,6 +33,7 @@ export class LegendStudioApplication {
         new DSLDataSpace_StudioPreset(),
         new EFJSONSchema_GraphPreset(),
         new QueryBuilder_StudioPreset(),
+        new DSLSerializer_StudioPreset(),
       ])
       .withLoggers([new BrowserConsole()])
       .start()
