@@ -1,0 +1,28 @@
+@mixin flexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flexVCenter {
+  display: flex;
+  align-items: center;
+}
+
+@mixin ellipsisTextOverflow {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-word;
+  text-align: left;
+}
+
+@mixin flexHSpaceBetween {
+  display: flex;
+  justify-content: space-between;
+}
+
+@mixin flexConstantDimension {
+  flex-grow: 0;
+  flex-shrink: 0;
+}

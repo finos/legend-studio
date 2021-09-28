@@ -24,7 +24,7 @@ export class Schema implements Hashable {
   location?: string | undefined;
   content: string;
 
-  constructor(id: string, location: string, content: string) {
+  constructor(content: string, id?: string, location?: string) {
     makeObservable(this, {
       id: observable.ref,
       location: observable.ref,

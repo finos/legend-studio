@@ -1,0 +1,259 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.format-editor {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-light-grey-50);
+  position: relative;
+  padding-left: 0;
+  background: var(--color-light-grey-50);
+  display: flex;
+
+  &__dropdown {
+    background: var(--color-light-grey-100);
+    border: 0.1rem solid var(--color-light-grey-400);
+    padding: 0;
+  }
+
+  &__type {
+    @include flexVCenter;
+
+    height: 2.6rem;
+    width: 25rem;
+    background: var(--color-light-grey-100);
+    border-right: 0.1rem solid var(--color-light-grey-50);
+    border-left: 0.1rem solid var(--color-light-grey-50);
+    color: var(--color-dark-grey-50);
+    cursor: pointer;
+  }
+
+  &__type__label {
+    height: 2.6rem;
+    width: 23.4rem;
+
+    @include flexCenter;
+  }
+
+  &__type__icon {
+    @include flexCenter;
+
+    border-left: 0.1rem solid var(--color-light-grey-50);
+    height: 2.6rem;
+    width: 2.6rem;
+    min-width: 2.6rem;
+  }
+
+  &__option {
+    @include flexCenter;
+
+    width: 25rem;
+    height: 2.8rem;
+    background: var(--color-light-grey-100);
+    border: 0.01rem solid var(--color-light-grey-400);
+    color: var(--color-dark-grey-50);
+  }
+}
+
+
+.schema-editor {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+
+  &__id, &__location {
+    flex: auto;
+    width: 100%;
+    min-width: 35rem;
+    max-width: 43rem;
+    border: 0.1rem solid var(--color-input-border);
+    border-radius: 0.2rem 0 0 0.2rem;
+    margin-right: 0.7rem;
+    padding: 0 0.5rem;
+    height: 2.8rem;
+  }
+
+  &__remove-btn {
+    @include flexCenter;
+
+    flex: 2.8rem 0 0;
+    height: 2.8rem;
+    float: right;
+    color: var(--color-light-grey-0);
+    background: var(--color-dark-grey-300);
+    border-radius: 0.2rem;
+    cursor: pointer;
+  }
+
+  &__content {
+    margin-top: 0.5rem;
+    flex: 1 1 100%;
+    display: flex;
+  }
+
+  &__content__expanded {
+    height: 15rem !important;
+  }
+
+  &__content__input {
+    width: 100%;
+    min-width: 0;
+    border: 0.1rem solid var(--color-input-border);
+    border-radius: 0.2rem 0 0 0.2rem;
+    height: 2.8rem;
+    overflow-y: hidden;
+    position: relative;
+    fontFamily: 'Arial',
+  }
+
+  &__content__expanded &__content__input {
+    height: 350%;
+    resize: none;
+    line-height: 2rem;
+  }
+
+  &__content__input:hover {
+    border: 0.1rem solid var(--color-input-border--hover);
+  }
+
+  &__content__input:focus {
+    border: 0.1rem solid var(--color-input-border--focus);
+  }
+
+  &__content__expand-btn {
+    @include flexCenter;
+
+    height: 100%;
+    width: 1.6rem;
+    background: var(--color-light-grey-0);
+    border: 0.1rem solid var(--color-input-border);
+    border-left: none;
+    border-radius: 0 0.2rem 0.2rem 0;
+    cursor: pointer;
+
+    &__expanded {
+      height: 350%;
+    }
+  }
+}
+
+.schema-set-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &__header {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
+    cursor: default;
+    background: var(--color-light-grey-200);
+    height: 2.8rem;
+    min-height: 2.8rem;
+    position: relative;
+    z-index: 1;
+    border: 0.1rem solid var(--color-light-grey-400);
+    box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
+  }
+
+  &__header__actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__header__action {
+    @include flexCenter;
+
+    background: transparent;
+    cursor: pointer;
+    width: 2.8rem;
+  }
+
+  &__header__action[disabled] svg {
+    color: var(--color-light-grey-400) !important;
+  }
+
+  &__header__title {
+    @include flexVCenter;
+
+    padding-left: 1rem;
+    user-select: none;
+  }
+
+  &__header__title__label {
+    height: 1.8rem;
+    line-height: 1.8rem;
+    border-radius: 0.1rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-100);
+    background: var(--color-dark-grey-300);
+    font-size: 1.1rem;
+    cursor: default;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+  }
+
+  &__header__title__content {
+    font-weight: bold;
+
+    @include ellipsisTextOverflow;
+  }
+
+  &__content {
+    background: var(--color-light-grey-100);
+    height: calc(100% - 2.8rem);
+    overflow-y: auto;
+  }
+
+  &__content__list {
+    height: 100%;
+    width: 100%;
+    padding-top: 0.5rem;
+  }
+
+  &__dropdown {
+    background: var(--color-light-grey-100);
+    border: 0.1rem solid var(--color-light-grey-400);
+    padding: 0;
+
+  }
+
+  &__option {
+    @include flexCenter;
+
+    height: 2.8rem;
+    background: var(--color-light-grey-100);
+    border: 0.01rem solid var(--color-light-grey-400);
+    color: var(--color-dark-grey-50);
+
+    &__active {
+      background: var(--color-light-blue-400);
+      border: 0.01rem solid var(--color-dark-grey-400);
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  &__option:hover {
+    background: var(--color-dark-grey-100);
+    border: 0.01rem solid var(--color-dark-grey-400);
+    color: var(--color-light-grey-50);
+  }
+
+}

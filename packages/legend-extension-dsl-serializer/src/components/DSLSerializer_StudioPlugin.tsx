@@ -26,12 +26,15 @@ import type {
   ElementEditorState,
   ElementEditorStateCreator,
   ElementTypeGetter,
+  ElementEditorRenderer,
   ElementProjectExplorerDnDTypeGetter,
   ElementIconGetter,
   DSL_StudioPlugin_Extension,
   NewElementState,
 } from '@finos/legend-studio';
 import { FaBuffer, FaSitemap } from 'react-icons/fa';
+import { SchemaSetEditor } from './SchemaSetElementEditor';
+import { SchemaSetEditorState } from '../stores/SchemaSetEditorState';
 import type { PackageableElement } from '@finos/legend-graph';
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
@@ -92,6 +95,17 @@ export class DSLSerializer_StudioPlugin
     ];
   }
 
+  getExtraElementEditorRenderers(): ElementEditorRenderer[] {
+    return [
+      (elementEditorState: ElementEditorState): React.ReactNode | undefined => {
+        if (elementEditorState instanceof SchemaSetEditorState) {
+          return <SchemaSetEditor key={elementEditorState.uuid} />;
+        }
+        return undefined;
+      },
+    ];
+  }
+
   getExtraNewElementFromStateCreators(): NewElementFromStateCreator[] {
     return [
       (
@@ -116,7 +130,7 @@ export class DSLSerializer_StudioPlugin
         element: PackageableElement,
       ): ElementEditorState | undefined => {
         if (element instanceof SchemaSet) {
-          return new UnsupportedElementEditorState(editorStore, element);
+          return new SchemaSetEditorState(editorStore, element);
         } else if (element instanceof Binding) {
           return new UnsupportedElementEditorState(editorStore, element);
         }
