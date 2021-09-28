@@ -81,6 +81,7 @@ import { V1_ServiceStorage } from './service/V1_ServiceStorage';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
+import { serialize } from 'serializr';
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -598,7 +599,7 @@ export class V1_Engine {
   ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
       await this.engineServerClient.buildDatabase(
-        V1_DatabaseBuilderInput.serialization.toJson(input),
+        serialize(V1_DatabaseBuilderInput, input),
       ),
     );
   }

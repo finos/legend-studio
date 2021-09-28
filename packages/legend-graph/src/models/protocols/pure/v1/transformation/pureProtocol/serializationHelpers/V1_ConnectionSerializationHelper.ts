@@ -456,7 +456,7 @@ export const V1_deserializeAuthenticationStrategy = (
 export const V1_serializeConnectionValue = (
   protocol: V1_Connection,
   allowPointer: boolean,
-  plugins?: PureProtocolProcessorPlugin[] | undefined,
+  plugins: PureProtocolProcessorPlugin[] | undefined,
 ): PlainObject<V1_Connection> => {
   /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   if (protocol instanceof V1_JsonModelConnection) {
@@ -497,7 +497,7 @@ export const V1_serializeConnectionValue = (
 export const V1_deserializeConnectionValue = (
   json: PlainObject<V1_Connection>,
   allowPointer: boolean,
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_Connection => {
   switch (json._type) {
     /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
@@ -566,25 +566,15 @@ export const V1_deserializeDatabaseConnectionValue = (
 };
 
 export const V1_packageableConnectionModelSchema = (
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_PackageableConnection> =>
   createModelSchema(V1_PackageableConnection, {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE,
     ),
     connectionValue: custom(
-      (val) => {
-        if (plugins !== undefined) {
-          return V1_serializeConnectionValue(val, false, plugins);
-        }
-        return V1_serializeConnectionValue(val, false);
-      },
-      (val) => {
-        if (plugins !== undefined) {
-          return V1_deserializeConnectionValue(val, false, plugins);
-        }
-        return V1_deserializeConnectionValue(val, false);
-      },
+      (val) => V1_serializeConnectionValue(val, false, plugins),
+      (val) => V1_deserializeConnectionValue(val, false, plugins),
     ),
     name: primitive(),
     package: primitive(),
