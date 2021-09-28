@@ -73,33 +73,28 @@ export const V1_legacyRuntimeModelSchema = createModelSchema(V1_LegacyRuntime, {
   ),
 });
 
-export const V1_setupEngineRuntimeModelSchema = (
+export const V1_setupEngineRuntimeSerialization = (
   plugins: PureProtocolProcessorPlugin[],
 ): void => {
-  createModelSchema(V1_IdentifiedConnection, {
-    connection: custom(
-      (val) => V1_serializeConnectionValue(val, true, plugins),
-      (val) => V1_deserializeConnectionValue(val, true, plugins),
-    ),
-    id: primitive(),
-  });
-  createModelSchema(V1_StoreConnections, {
+  const V1_identifiedConnectionModelSchema = createModelSchema(
+    V1_IdentifiedConnection,
+    {
+      connection: custom(
+        (val) => V1_serializeConnectionValue(val, true, plugins),
+        (val) => V1_deserializeConnectionValue(val, true, plugins),
+      ),
+      id: primitive(),
+    },
+  );
+  const V1_storeConnectionModelSchema = createModelSchema(V1_StoreConnections, {
     store: usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     storeConnections: list(
-      custom(
-        (val) => serialize(V1_IdentifiedConnection, val),
-        (val) => deserialize(V1_IdentifiedConnection, val),
-      ),
+      usingModelSchema(V1_identifiedConnectionModelSchema),
     ),
   });
   createModelSchema(V1_EngineRuntime, {
     _type: usingConstantValueSchema(V1_RuntimeType.ENGINE_RUNTIME),
-    connections: list(
-      custom(
-        (val) => serialize(V1_StoreConnections, val),
-        (val) => deserialize(V1_StoreConnections, val),
-      ),
-    ),
+    connections: list(usingModelSchema(V1_storeConnectionModelSchema)),
     mappings: list(
       usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
     ),

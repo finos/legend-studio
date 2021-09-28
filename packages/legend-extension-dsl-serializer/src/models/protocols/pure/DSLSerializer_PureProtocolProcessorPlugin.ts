@@ -252,7 +252,9 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
                 );
                 return store as PackageableElementReference<Binding>;
               })();
-          return new ExternalFormatConnection(Store, connection.externalSource);
+          const externalFormatConnection = new ExternalFormatConnection(Store);
+          externalFormatConnection.externalSource = connection.externalSource;
+          return externalFormatConnection;
         }
         return undefined;
       },

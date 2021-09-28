@@ -30,10 +30,7 @@ export class ExternalFormatConnection extends Connection implements Hashable {
   static readonly CONTENT_TYPE = ContentType.TEXT_PLAIN;
   externalSource!: UrlStream;
 
-  constructor(
-    store: PackageableElementReference<Binding>,
-    externalSource: UrlStream,
-  ) {
+  constructor(store: PackageableElementReference<Binding>) {
     super(store);
 
     makeObservable(this, {
@@ -41,7 +38,6 @@ export class ExternalFormatConnection extends Connection implements Hashable {
       setSource: action,
       hashCode: computed,
     });
-    this.externalSource = externalSource;
   }
 
   setSource(value: UrlStream): void {
