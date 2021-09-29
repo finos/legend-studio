@@ -484,10 +484,26 @@ const DatabricksDatasourceSpecificationEditor = observer(
       <>
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
-          value={sourceSpec.shard}
-          propertyName="shard"
+          value={sourceSpec.hostname}
+          propertyName="hostname"
           update={(value: string | undefined): void =>
-            sourceSpec.setShard(value ?? '')
+            sourceSpec.setHostname(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.port}
+          propertyName="port"
+          update={(value: string | undefined): void =>
+            sourceSpec.setPort(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.protocol}
+          propertyName="protocol"
+          update={(value: string | undefined): void =>
+            sourceSpec.setProtocol(value ?? '')
           }
         />
         <ConnectionEditor_StringEditor

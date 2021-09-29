@@ -166,7 +166,9 @@ const databricksDatasourceSpecificationModelSchema = createModelSchema(
   V1_DatabricksDatasourceSpecification,
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.DATABRICKS),
-    shard: primitive(),
+    hostname: primitive(),
+    port: primitive(),
+    protocol: primitive(),
     httpPath: primitive(),
   },
 );

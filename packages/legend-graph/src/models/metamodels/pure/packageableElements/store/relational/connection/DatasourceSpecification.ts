@@ -76,31 +76,52 @@ export class DatabricksDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
-  shard: string;
+  hostname: string;
+  port: string;
+  protocol: string;
   httpPath: string;
 
-  constructor(shard: string, httpPath: string) {
+  constructor(
+    hostname: string,
+    port: string,
+    protocol: string,
+    httpPath: string,
+  ) {
     super();
 
     makeObservable(this, {
-      shard: observable,
+      hostname: observable,
+      port: observable,
+      protocol: observable,
       httpPath: observable,
       hashCode: computed,
     });
-    this.shard = shard;
+    this.hostname = hostname;
+    this.port = port;
+    this.protocol = protocol;
     this.httpPath = httpPath;
   }
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
-      this.shard,
+      this.hostname,
+      this.port,
+      this.protocol,
       this.httpPath,
     ]);
   }
 
-  setShard(val: string): void {
-    this.shard = val;
+  setHostname(val: string): void {
+    this.hostname = val;
+  }
+
+  setPort(val: string): void {
+    this.port = val;
+  }
+
+  setProtocol(val: string): void {
+    this.protocol = val;
   }
 
   setHttpPath(val: string): void {

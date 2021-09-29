@@ -186,7 +186,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_DATASOURCE_SPEC_TYPE.DATABRICKS: {
         this.connection.setDatasourceSpecification(
-          new DatabricksDatasourceSpecification('', ''),
+          new DatabricksDatasourceSpecification('', '', '', ''),
         );
         return;
       }

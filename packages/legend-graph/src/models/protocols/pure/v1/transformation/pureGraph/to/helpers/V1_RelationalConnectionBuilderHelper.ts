@@ -109,15 +109,25 @@ export const V1_buildDatasourceSpecification = (
     return embeddedSpec;
   } else if (protocol instanceof V1_DatabricksDatasourceSpecification) {
     assertNonEmptyString(
-      protocol.shard,
-      'Databricks shard specification is missing',
+      protocol.hostname,
+      'Databricks hostname specification is missing',
+    );
+    assertNonEmptyString(
+      protocol.port,
+      'Databricks port specification is missing',
+    );
+    assertNonEmptyString(
+      protocol.protocol,
+      'Databricks protocol specification is missing',
     );
     assertNonEmptyString(
       protocol.httpPath,
       'Databricks httpPath specification is missing',
     );
     const databricksSpec = new DatabricksDatasourceSpecification(
-      protocol.shard,
+      protocol.hostname,
+      protocol.port,
+      protocol.protocol,
       protocol.httpPath,
     );
     return databricksSpec;
