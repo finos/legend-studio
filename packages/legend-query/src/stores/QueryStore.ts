@@ -329,6 +329,7 @@ export class QueryStore {
     this.queryBuilderState = new QueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
+      {},
     );
   }
 
@@ -337,6 +338,7 @@ export class QueryStore {
     this.queryBuilderState = new QueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
+      this.queryBuilderState.config,
     );
     this.graphManagerState.resetGraph();
     this.buildGraphState.reset();

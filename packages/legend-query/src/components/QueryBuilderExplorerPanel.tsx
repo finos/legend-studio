@@ -677,8 +677,6 @@ export const QueryBuilderExplorerPanel = observer(
     return (
       <div
         className={clsx('panel query-builder__explorer', {
-          'query-builder__explorer--expanded':
-            !queryBuilderState.querySetupState.showSetupPanel,
           // NOTE: this might make it hard to modularize
           backdrop__element:
             queryBuilderState.fetchStructureState.projectionState

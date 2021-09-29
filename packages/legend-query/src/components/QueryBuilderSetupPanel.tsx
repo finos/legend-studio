@@ -15,13 +15,10 @@
  */
 
 import {
-  clsx,
   CustomSelectorInput,
   createFilter,
   ErrorIcon,
   CogIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
   ClassIcon,
   MappingIcon,
   RuntimeIcon,
@@ -40,8 +37,6 @@ export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const querySetupState = queryBuilderState.querySetupState;
-    const toggleShowSetupPanel = (): void =>
-      querySetupState.setShowSetupPanel(!querySetupState.showSetupPanel);
     const elementFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -142,29 +137,11 @@ export const QueryBuilderSetupPanel = observer(
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP}
-        className={clsx('panel query-builder__setup', {
-          'query-builder__setup--collapsed': !querySetupState.showSetupPanel,
-        })}
+        className="panel query-builder__setup"
       >
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">setup</div>
-          </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              onClick={toggleShowSetupPanel}
-              tabIndex={-1}
-              title={
-                querySetupState.showSetupPanel ? 'Hide Setup' : 'Show Setup'
-              }
-            >
-              {querySetupState.showSetupPanel ? (
-                <ChevronUpIcon />
-              ) : (
-                <ChevronDownIcon />
-              )}
-            </button>
           </div>
         </div>
         <div className="panel__content query-builder__setup__content">

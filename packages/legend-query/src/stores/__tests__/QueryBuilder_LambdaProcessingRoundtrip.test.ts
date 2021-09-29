@@ -27,6 +27,7 @@ import {
   TEST_DATA__simpleGroupBy,
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__firmPersonGraphFetch,
+  TEST_DATA__personWithParameter,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
 import {
   simpleDerivationProjection,
@@ -91,6 +92,11 @@ const cases: RoundtripTestCase[] = [
   ],
   ['Simple graph fetch', m2mCtx, TEST_DATA__simpleGraphFetch],
   ['Complex graph fetch', m2mCtx, TEST_DATA__firmPersonGraphFetch],
+  [
+    'Simple project() and filter() with parameter',
+    relationalCtx,
+    TEST_DATA__personWithParameter,
+  ],
 ];
 
 describe(unitTest('Lambda processing roundtrip test'), () => {

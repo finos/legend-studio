@@ -833,3 +833,149 @@ export const TEST_DATA__lambda_existsChainFilterWithCustomVariableName = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__lambda_simpleSingleConditionFilterWithParameter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'filter',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'domain::COVIDData',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'caseType',
+                    },
+                    {
+                      _type: 'var',
+                      name: 'case',
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'caseType',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'cases',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'string',
+              values: ['Case Type'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+            {
+              _type: 'string',
+              values: ['Cases'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ],
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'String',
+      name: 'case',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+    },
+  ],
+};

@@ -352,7 +352,9 @@ export const ServiceExecutionQueryEditor = observer(
             executionPlanState={executionState.executionPlanState}
           />
           <ServiceExecutionResultViewer executionState={executionState} />
-          <ServiceExecutionQueryImporter queryState={queryState} />
+          {queryState.openQueryImporter && (
+            <ServiceExecutionQueryImporter queryState={queryState} />
+          )}
         </div>
       </div>
     );

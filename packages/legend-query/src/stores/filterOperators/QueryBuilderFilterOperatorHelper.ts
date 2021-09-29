@@ -488,6 +488,8 @@ export const getNonCollectionValueSpecificationType = (
     return valueSpecification.genericType.value.rawType;
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     return guaranteeNonNullable(valueSpecification.values[0]).value.owner;
+  } else if (valueSpecification instanceof VariableExpression) {
+    return valueSpecification.genericType?.value.rawType;
   }
   return undefined;
 };
