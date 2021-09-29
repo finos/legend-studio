@@ -131,7 +131,7 @@ export class QueryBuilderState {
   constructor(
     applicationStore: ApplicationStore<QueryConfig>,
     graphManagerState: GraphManagerState,
-    queryBuilderConfig?: QueryBuilderConfig | undefined,
+    queryBuilderConfig: QueryBuilderConfig,
   ) {
     makeObservable(this, {
       querySetupState: observable,
@@ -154,7 +154,6 @@ export class QueryBuilderState {
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
-      setConfig: action,
       compileQuery: flow,
     });
 
@@ -170,7 +169,7 @@ export class QueryBuilderState {
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
-    this.config = queryBuilderConfig ?? {};
+    this.config = queryBuilderConfig;
   }
 
   setBackdrop(val: boolean): void {
@@ -185,10 +184,6 @@ export class QueryBuilderState {
           }),
         )
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
-  }
-
-  setConfig(config: QueryBuilderConfig): void {
-    this.config = config;
   }
 
   resetData(): void {

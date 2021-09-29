@@ -237,6 +237,7 @@ describe(
       const queryBuilderState = new QueryBuilderState(
         applicationStore,
         graphManagerState,
+        {},
       );
       // do the check using input and output lambda
       const rawLambda = inputLambda ?? lambda;

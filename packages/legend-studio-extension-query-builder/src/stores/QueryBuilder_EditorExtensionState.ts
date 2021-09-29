@@ -42,6 +42,7 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     this.queryBuilderState = new QueryBuilderState(
       editorStore.applicationStore,
       editorStore.graphManagerState,
+      {},
     );
   }
 
@@ -49,6 +50,7 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     this.queryBuilderState = new QueryBuilderState(
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,
+      this.queryBuilderState.config,
     );
   }
 
@@ -98,6 +100,11 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     disableCompile: boolean,
     queryBuilderConfig?: QueryBuilderConfig | undefined,
   ): GeneratorFn<void> {
+    this.queryBuilderState = new QueryBuilderState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+      queryBuilderConfig ?? {},
+    );
     this.queryBuilderState.querySetupState.setMapping(mapping);
     this.queryBuilderState.querySetupState.setRuntime(runtime);
     this.queryBuilderState.initialize(func);
@@ -109,6 +116,5 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     );
     this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
     this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-    this.queryBuilderState.setConfig(queryBuilderConfig ?? {});
   }
 }
