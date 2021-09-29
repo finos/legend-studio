@@ -46,7 +46,6 @@ import {
 } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
   V1_runtimePointerModelSchema,
-  V1_engineRuntimeModelSchema,
   V1_legacyRuntimeModelSchema,
   V1_RuntimeType,
 } from './V1_RuntimeSerializationHelper';
@@ -57,6 +56,11 @@ import {
   V1_SingleExecutionTest,
   V1_TestContainer,
 } from '../../../model/packageableElements/service/V1_ServiceTest';
+import {
+  V1_stereotypePtrSchema,
+  V1_taggedValueSchema,
+} from './V1_DomainSerializationHelper';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
 
@@ -76,7 +80,7 @@ const V1_serializeRuntimeValue = (
   if (protocol instanceof V1_RuntimePointer) {
     return serialize(V1_runtimePointerModelSchema, protocol);
   } else if (protocol instanceof V1_EngineRuntime) {
-    return serialize(V1_engineRuntimeModelSchema, protocol);
+    return serialize(V1_EngineRuntime, protocol);
   } else if (protocol instanceof V1_LegacyRuntime) {
     return serialize(V1_legacyRuntimeModelSchema, protocol);
   }
@@ -93,7 +97,7 @@ const V1_deserializeRuntimeValue = (
     case V1_RuntimeType.RUNTIME_POINTER:
       return deserialize(V1_runtimePointerModelSchema, json);
     case V1_RuntimeType.ENGINE_RUNTIME:
-      return deserialize(V1_engineRuntimeModelSchema, json);
+      return deserialize(V1_EngineRuntime, json);
     case V1_RuntimeType.LEGACY_RUNTIME:
     case undefined:
       return deserialize(V1_legacyRuntimeModelSchema, json);
@@ -238,6 +242,34 @@ export const V1_servicedModelSchema = createModelSchema(V1_Service, {
   owners: list(primitive()),
   package: primitive(),
   pattern: primitive(),
+  stereotypes: custom(
+    (values) =>
+      serializeArray(
+        values,
+        (value) => serialize(V1_stereotypePtrSchema, value),
+        true,
+      ),
+    (values) =>
+      deserializeArray(
+        values,
+        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
+        false,
+      ),
+  ),
+  taggedValues: custom(
+    (values) =>
+      serializeArray(
+        values,
+        (value) => serialize(V1_taggedValueSchema, value),
+        true,
+      ),
+    (values) =>
+      deserializeArray(
+        values,
+        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
+        false,
+      ),
+  ),
   test: custom(
     (val) => V1_serializeServiceTest(val),
     (val) => V1_deserializeServiceTest(val),

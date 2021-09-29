@@ -86,6 +86,7 @@ import { V1_FlatDataConnection } from '../../../model/packageableElements/store/
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_transformPostProcessor } from './V1_PostProcessorTransformer';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 const transformStaticDatasourceSpecification = (
@@ -334,6 +335,25 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
 
   constructor(context: V1_GraphTransformerContext) {
     this.context = context;
+  }
+
+  visit_Connection(connection: Connection): V1_Connection {
+    const extraConnectionTransformers = this.context.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraConnectionTransformers?.() ?? [],
+    );
+    for (const transformer of extraConnectionTransformers) {
+      const connectionProtocol = transformer(connection, this.context);
+      if (connectionProtocol) {
+        return connectionProtocol;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't transform connection: no compatible transformer available from plugins`,
+      connection,
+    );
   }
 
   visit_ConnectionPointer(connection: ConnectionPointer): V1_Connection {

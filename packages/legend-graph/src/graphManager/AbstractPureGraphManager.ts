@@ -282,7 +282,8 @@ export abstract class AbstractPureGraphManager {
   abstract registerService(
     graph: PureModel,
     service: Service,
-    projectId: string,
+    groupdId: string,
+    artifactId: string,
     server: string,
     executionMode: ServiceExecutionMode,
     version: string | undefined,
@@ -298,13 +299,15 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Query -------------------------------------------
 
-  abstract getQueries(
-    search: string | undefined,
-    showCurrentUserQueriesOnly: boolean | undefined,
-    limit: number | undefined,
-  ): Promise<LightQuery[]>;
+  abstract getQueries(options?: {
+    search?: string | undefined;
+    projectCoordinates?: string[] | undefined;
+    showCurrentUserQueriesOnly?: boolean | undefined;
+    limit?: number | undefined;
+  }): Promise<LightQuery[]>;
   abstract getLightQuery(queryId: string): Promise<LightQuery>;
   abstract getQuery(queryId: string, graph: PureModel): Promise<Query>;
+  abstract getQueryContent(queryId: string): Promise<string>;
   abstract createQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;

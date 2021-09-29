@@ -47,6 +47,7 @@ import {
   FaArrowCircleRight,
   FaChevronRight,
   FaChevronDown,
+  FaFilter,
 } from 'react-icons/fa';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
@@ -59,8 +60,14 @@ import {
   SetImplementation,
   EnumerationMapping,
   PropertyMapping,
+  PureInstanceSetImplementation,
+  RawLambda,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import {
+  PureInstanceSetImplementationFilterState,
+  PureInstanceSetImplementationState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 
 export const MappingExplorerContextMenu = observer(
   (
@@ -111,6 +118,51 @@ export const MappingExplorerContextMenu = observer(
       }
     };
 
+    const addMappingFilter = (): void => {
+      if (mappingElement instanceof PureInstanceSetImplementation) {
+        if (!mappingElement.filter) {
+          const stubLambda = RawLambda.createStub();
+          mappingElement.setMappingFilter(stubLambda);
+        }
+        if (
+          mappingEditorState.currentTabState instanceof
+          PureInstanceSetImplementationState
+        ) {
+          mappingEditorState.currentTabState.mappingFilterState =
+            new PureInstanceSetImplementationFilterState(
+              mappingElement,
+              editorStore,
+            );
+        }
+      }
+    };
+    const removeMappingFilter = applicationStore.guaranteeSafeAction(
+      async () => {
+        if (
+          mappingEditorState.currentTabState instanceof
+          PureInstanceSetImplementationState
+        ) {
+          await flowResult(
+            mappingEditorState.currentTabState.mappingFilterState?.convertLambdaObjectToGrammarString(
+              false,
+            ),
+          );
+          mappingEditorState.currentTabState.mappingFilterState = undefined;
+          if (mappingElement instanceof PureInstanceSetImplementation) {
+            mappingElement.setMappingFilter(undefined);
+          }
+        }
+      },
+    );
+
+    const allowAddFilter =
+      mappingElement instanceof PureInstanceSetImplementation &&
+      !mappingElement.filter;
+
+    const allowRemoveFilter =
+      mappingElement instanceof PureInstanceSetImplementation &&
+      !!mappingElement.filter;
+
     return (
       <div ref={ref} className="mapping-explorer__context-menu">
         {mappingElement instanceof SetImplementation && (
@@ -127,6 +179,22 @@ export const MappingExplorerContextMenu = observer(
             onClick={createTestForMappingElement}
           >
             Test
+          </div>
+        )}
+        {allowAddFilter && (
+          <div
+            className="mapping-explorer__context-menu__item"
+            onClick={addMappingFilter}
+          >
+            Add Filter
+          </div>
+        )}
+        {allowRemoveFilter && (
+          <div
+            className="mapping-explorer__context-menu__item"
+            onClick={removeMappingFilter}
+          >
+            Remove Filter
           </div>
         )}
         {mappingElement && (
@@ -332,6 +400,12 @@ const MappingElementTreeNodeContainer = observer(
             <div className="mapping-explorer__item__label__text">
               {mappingElement.label.value}
             </div>
+            {mappingElement instanceof PureInstanceSetImplementation &&
+              !!mappingElement.filter && (
+                <div className="mapping-explorer__item__label__filter-icon">
+                  <FaFilter />
+                </div>
+              )}
           </button>
         </div>
       </ContextMenu>

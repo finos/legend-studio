@@ -1,12 +1,36 @@
 # @finos/legend-studio
 
+## 0.2.21
+
+### Patch Changes
+
+- [#521](https://github.com/finos/legend-studio/pull/521) [`8d457b59`](https://github.com/finos/legend-studio/commit/8d457b59aedc72039a6f50850d1bc2ae959b0ecd) ([@umarphaarook](https://github.com/umarphaarook)) - Fix an issue with opening a particular element in viewer mode from main editor ([#503](https://github.com/finos/legend-studio/issues/503))
+
+* [#506](https://github.com/finos/legend-studio/pull/506) [`4fd0d256`](https://github.com/finos/legend-studio/commit/4fd0d2560ef245d97f1d86a4a6ed227a9c3d2cbe) ([@akphi](https://github.com/akphi)) - Support importing `query` in `Service` editor.
+
+- [#498](https://github.com/finos/legend-studio/pull/498) [`61f0a0bb`](https://github.com/finos/legend-studio/commit/61f0a0bb342bd838673b10d65d1e16023c450901) ([@kshradhan](https://github.com/kshradhan)) - Add form editor for Pure Instance set implementation filter.
+
+* [#512](https://github.com/finos/legend-studio/pull/512) [`f22a375a`](https://github.com/finos/legend-studio/commit/f22a375ae14770fe3e62b2ec405fbfe728f0d0e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show full `lambda` (including `parameters`) when displaying service `query` in service editor.
+
+## 0.2.20
+
+### Patch Changes
+
+- [#513](https://github.com/finos/legend-studio/pull/513) [`5968c8c8`](https://github.com/finos/legend-studio/commit/5968c8c81c6079a258433bc757ced4baade4e75d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Allow editing of `ProjectConfiguration` when a dependency graph error occurs ([#269](https://github.com/finos/legend-studio/issues/269)).
+
+## 0.2.19
+
+### Patch Changes
+
+- [#460](https://github.com/finos/legend-studio/pull/460) [`c719991e`](https://github.com/finos/legend-studio/commit/c719991ea2791d8de86ca470735491318d1441fb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `depot` server to query for available dependency projects. Switch to adding dependency using project coordinates consisting of `groupId` and `artifactId`.
+
 ## 0.2.18
 
 ### Patch Changes
 
 - [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Fix layout problem when there are many items being opened causing the tab bar to overflow and activity bar to disappear ([#462](https://github.com/finos/legend-studio/issues/462)).
 
-* [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Fix problem where model test data generation fails when encoutering enumeration with 0 or 1 enum value (fixes [#463](https://github.com/finos/legend-studio/issues/463)). Also, we ensure this kind of error is handled gracefully and do not crash the application.
+* [#464](https://github.com/finos/legend-studio/pull/464) [`945574e7`](https://github.com/finos/legend-studio/commit/945574e725ea6103c9016554ce35ef4d6aeaf478) ([@akphi](https://github.com/akphi)) - Fix problem where model test data generation fails when encoutering enumeration with 0 or 1 enum value ([#463](https://github.com/finos/legend-studio/issues/463)). Also, we ensure this kind of error is handled gracefully and do not crash the application.
 
 ## 0.2.17
 
@@ -22,7 +46,7 @@
 
 ### Patch Changes
 
-- [#443](https://github.com/finos/legend-studio/pull/443) [`c408f16`](https://github.com/finos/legend-studio/commit/c408f16dc60474ef6c28e5e4484053b4928c2afc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Operation class mapping editor will now help user avoid creating cycle (fixes [#298](https://github.com/finos/legend-studio/issues/298)).
+- [#443](https://github.com/finos/legend-studio/pull/443) [`c408f16`](https://github.com/finos/legend-studio/commit/c408f16dc60474ef6c28e5e4484053b4928c2afc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Operation class mapping editor will now help user avoid creating cycle ([#298](https://github.com/finos/legend-studio/issues/298)).
 
 * [#444](https://github.com/finos/legend-studio/pull/444) [`9c6c7386`](https://github.com/finos/legend-studio/commit/9c6c7386bb5c884fdf0077a1dcba6b46dfa840ce) ([@akphi](https://github.com/akphi)) - Move `DSL Diagram` logic to a new separate extension package `@finos/legend-extension-dsl-diagram`.
 

@@ -21,8 +21,12 @@ import type { V1_PackageableElementVisitor } from '../../../model/packageableEle
 import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_ServiceExecution } from './V1_ServiceExecution';
 import type { V1_ServiceTest } from './V1_ServiceTest';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
+import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
 
 export class V1_Service extends V1_PackageableElement implements Hashable {
+  stereotypes: V1_StereotypePtr[] = [];
+  taggedValues: V1_TaggedValue[] = [];
   pattern!: string;
   owners: string[] = [];
   documentation!: string;
@@ -33,6 +37,8 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE,
+      hashArray(this.stereotypes),
+      hashArray(this.taggedValues),
       this.path,
       this.pattern,
       hashArray(this.owners),

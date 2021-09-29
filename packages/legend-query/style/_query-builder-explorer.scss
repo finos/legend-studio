@@ -17,7 +17,7 @@
 @use './mixins' as *;
 
 .query-builder__setup {
-  height: 13.8rem !important;
+  height: 100%;
 
   &__content {
     padding: 0.5rem;
@@ -71,15 +71,9 @@
 }
 
 .query-builder__explorer {
-  height: calc(100% - 13.8rem) !important;
-
   .backdrop__element {
     // this is needed to make DnD elements from the explorer tree floats above other backdrop elements
     z-index: 101;
-  }
-
-  &--expanded {
-    height: calc(100% - 3.4rem) !important;
   }
 
   &__content {
@@ -108,6 +102,165 @@
       font-family: 'Roboto Mono', monospace;
     }
   }
+}
+
+.query-builder__parameters {
+  &__content {
+    overflow-y: auto;
+    padding: 0.5rem 0;
+  }
+
+  &__modal__body {
+    overflow: auto;
+    padding: 2rem !important;
+    height: 60vh;
+  }
+
+  &__modal {
+    height: 65vh;
+    width: 65vh;
+  }
+
+  &__values__editor {
+    &__modal {
+      height: 65vh;
+      width: 65vh;
+    }
+  }
+
+  &__value {
+    &__label {
+      @include flexVCenter;
+
+      color: var(--color-light-grey-50);
+      margin-bottom: 0.5rem;
+      line-height: 2rem;
+      cursor: default;
+    }
+  }
+
+  &__parameter {
+    @include flexCenter;
+
+    width: 100%;
+    height: 2.8rem;
+    cursor: pointer;
+
+    &__actions {
+      display: flex;
+      height: 2rem;
+      padding-right: 0.5rem;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 2rem;
+      width: 2rem;
+
+      svg {
+        font-size: 1.3rem;
+        color: var(--color-light-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-light-grey-200);
+      }
+
+      &[disabled] svg {
+        color: var(--color-dark-grey-300);
+      }
+    }
+
+    &__content {
+      @include flexVCenter;
+
+      height: 100%;
+      width: calc(100% - 3.3rem);
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      width: 3rem;
+      min-width: 3rem;
+      padding-left: 1rem;
+      padding-right: 0.5rem;
+      height: 2.2rem;
+      color: var(--color-pink-400);
+    }
+
+    &-icon {
+      display: flex;
+      justify-content: center;
+      width: 1.5rem;
+      min-width: 1.5rem;
+    }
+
+    &__label {
+      @include ellipsisTextOverflow;
+
+      display: flex;
+      color: var(--color-light-grey-400);
+      height: 2.2rem;
+      line-height: 2.2rem;
+    }
+
+    &__type {
+      @include flexVCenter;
+
+      &__label {
+        @include flexVCenter;
+
+        background: var(--color-dark-grey-250);
+        color: var(--color-light-grey-200);
+        margin-left: 0.5rem;
+        border-radius: 0.2rem;
+        font-size: 1rem;
+        padding: 0 0.5rem;
+        height: 1.6rem;
+        font-weight: 500;
+      }
+    }
+  }
+
+  &__parameter:hover {
+    background: var(--color-dark-blue-shade-100);
+  }
+
+  &__drag-preview-layer {
+    position: fixed;
+    pointer-events: none;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__drag-preview {
+    @include flexCenter;
+
+    display: inline-flex;
+    height: 2rem;
+    padding: 0 0.5rem;
+    font-size: 1.2rem;
+    background: var(--color-pink-400);
+    border-radius: 0.2rem;
+  }
+
+  &__value__editor {
+    height: 3rem;
+
+    input {
+      font-size: 1.4rem !important;
+    }
+  }
+}
+
+.query-builder__parameters__editor {
+  padding: 2rem;
+  width: 100%;
 }
 
 .query-builder-explorer-tree {

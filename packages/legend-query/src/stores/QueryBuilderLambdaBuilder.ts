@@ -16,6 +16,7 @@
 
 import {
   guaranteeNonNullable,
+  isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { Class, ValueSpecification } from '@finos/legend-graph';
@@ -349,6 +350,45 @@ export const buildLambdaFunction = (
         : undefined,
     },
   );
-
+  // build parameters
+  if (
+    !queryBuilderState.config.parametersDisabled &&
+    queryBuilderState.queryParametersState.parameters.length
+  ) {
+    // if we are executing:
+    // set the parameters to empty
+    // add let statements for each parameter
+    if (options?.isBuildingExecutionQuery) {
+      lambdaFunction.functionType.parameters = [];
+      const letsFuncs = queryBuilderState.queryParametersState.parameters
+        .map((_var) => {
+          if (_var.values) {
+            const letFunc = new SimpleFunctionExpression(
+              extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
+              multiplicityOne,
+            );
+            const letVar = new PrimitiveInstanceValue(
+              GenericTypeExplicitReference.create(new GenericType(typeString)),
+              multiplicityOne,
+            );
+            letVar.values = [_var.variableName];
+            letFunc.parametersValues.push(letVar);
+            letFunc.parametersValues.push(_var.values);
+            return letFunc;
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
+      lambdaFunction.expressionSequence = [
+        ...letsFuncs,
+        ...lambdaFunction.expressionSequence,
+      ];
+    } else {
+      lambdaFunction.functionType.parameters =
+        queryBuilderState.queryParametersState.parameters.map(
+          (e) => e.parameter,
+        );
+    }
+  }
   return lambdaFunction;
 };

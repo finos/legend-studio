@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio",
-  "version": "0.2.18",
+  "version": "0.2.21",
   "description": "Legend Studio core",
   "keywords": [
     "legend",
@@ -45,16 +45,16 @@
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
-    "@testing-library/react": "12.0.0",
-    "@types/react": "17.0.20",
+    "@testing-library/react": "12.1.0",
+    "@types/react": "17.0.24",
     "@types/react-dom": "17.0.9",
-    "@types/react-router-dom": "5.1.8",
-    "date-fns": "2.23.0",
+    "@types/react-router-dom": "5.3.0",
+    "date-fns": "2.24.0",
     "history": "5.0.1",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
-    "monaco-editor": "0.27.0",
-    "node-diff3": "3.0.0",
+    "monaco-editor": "0.28.1",
+    "node-diff3": "3.1.0",
     "react": "17.0.2",
     "react-dnd": "14.0.3",
     "react-dnd-html5-backend": "14.0.1",
@@ -69,14 +69,14 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.3.0",
+    "@testing-library/dom": "8.6.0",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
-    "jest": "27.1.1",
+    "jest": "27.2.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.39.0",
-    "typescript": "4.4.2"
+    "sass": "1.42.1",
+    "typescript": "4.4.3"
   },
   "peerDependencies": {
     "react": "^17.0.0"

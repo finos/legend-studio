@@ -33,10 +33,11 @@ import {
 import { QueryBuilderSetupState } from './QueryBuilderSetupState';
 import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
-import { QueryBuilderLambdaProcessor } from './QueryBuilderLambdaProcessor';
+import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import type {
   Class,
+  Enumeration,
   GraphManagerState,
   LambdaFunction,
   Mapping,
@@ -86,13 +87,20 @@ import type {
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
 import type { QueryConfig } from '../application/QueryConfig';
+import { QueryParametersState } from './QueryParametersState';
+
+export interface QueryBuilderConfig {
+  parametersDisabled?: boolean;
+}
 
 export class QueryBuilderState {
   applicationStore: ApplicationStore<QueryConfig>;
   graphManagerState: GraphManagerState;
 
+  config: QueryBuilderConfig;
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
+  queryParametersState: QueryParametersState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   resultSetModifierState: QueryResultSetModifierState;
@@ -123,10 +131,12 @@ export class QueryBuilderState {
   constructor(
     applicationStore: ApplicationStore<QueryConfig>,
     graphManagerState: GraphManagerState,
+    queryBuilderConfig: QueryBuilderConfig,
   ) {
     makeObservable(this, {
       querySetupState: observable,
       explorerState: observable,
+      queryParametersState: observable,
       fetchStructureState: observable,
       filterState: observable,
       resultSetModifierState: observable,
@@ -135,6 +145,7 @@ export class QueryBuilderState {
       queryUnsupportedState: observable,
       isCompiling: observable,
       backdrop: observable,
+      config: observable,
       classOptions: computed,
       mappingOptions: computed,
       runtimeOptions: computed,
@@ -151,12 +162,14 @@ export class QueryBuilderState {
 
     this.querySetupState = new QueryBuilderSetupState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
+    this.queryParametersState = new QueryParametersState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
+    this.config = queryBuilderConfig;
   }
 
   setBackdrop(val: boolean): void {
@@ -175,6 +188,7 @@ export class QueryBuilderState {
 
   resetData(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
+    this.queryParametersState = new QueryParametersState(this);
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
@@ -235,11 +249,7 @@ export class QueryBuilderState {
       const compiledLambda = guaranteeNonNullable(
         compiledValueSpecification.values[0],
       );
-      compiledLambda.expressionSequence.map((e) =>
-        e.accept_ValueSpecificationVisitor(
-          new QueryBuilderLambdaProcessor(this, undefined),
-        ),
-      );
+      processQueryBuilderLambdaFunction(this, compiledLambda);
     }
   }
 
@@ -376,6 +386,14 @@ export class QueryBuilderState {
       )
       .concat(this.graphManagerState.graph.dependencyManager.classes)
       .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
+  }
+
+  get enumerationOptions(): PackageableElementOption<Enumeration>[] {
+    return this.graphManagerState.graph.ownEnumerations
+      .concat(this.graphManagerState.graph.dependencyManager.enumerations)
+      .map(
+        (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
+      );
   }
 
   get mappingOptions(): PackageableElementOption<Mapping>[] {

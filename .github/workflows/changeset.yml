@@ -9,6 +9,10 @@ on:
 jobs:
   check-changeset:
     name: Validate Changesets
+    # When cherry-picking changes in patch release, since the changesets should already been consumed
+    # as part of the release, we will skip this checks.
+    # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#patch-releases
+    if: "github.event.pull_request.base.ref != 'master' || !startsWith(github.event.pull_request.title, 'Cherry-picking changes in version ')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.4.0
+        uses: actions/setup-node@v2.4.1
         with:
           node-version: 14.x
       - name: Install dependencies

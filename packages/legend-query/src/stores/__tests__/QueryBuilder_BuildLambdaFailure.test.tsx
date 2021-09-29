@@ -105,6 +105,7 @@ describe(
         const queryBuilderState = new QueryBuilderState(
           applicationStore,
           graphManagerState,
+          {},
         );
         expect(() =>
           queryBuilderState.buildStateFromRawLambda(getRawLambda(lambdaJson)),

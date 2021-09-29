@@ -55,6 +55,10 @@ import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationT
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 import { V1_transformRuntime } from './V1_RuntimeTransformer';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import {
+  V1_transformStereotype,
+  V1_transformTaggedValue,
+} from './V1_DomainTransformer';
 
 const transformSingleExecution = (
   element: PureSingleExecution,
@@ -176,6 +180,8 @@ export const V1_transformService = (
 ): V1_Service => {
   const service = new V1_Service();
   V1_initPackageableElement(service, element);
+  service.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  service.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   service.autoActivateUpdates = element.autoActivateUpdates;
   service.documentation = element.documentation;
   service.execution = transformServiceExecution(element.execution, context);

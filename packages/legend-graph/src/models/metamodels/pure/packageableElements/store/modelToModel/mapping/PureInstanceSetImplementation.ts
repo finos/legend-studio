@@ -54,6 +54,7 @@ export class PureInstanceSetImplementation
       filter: observable,
       setPropertyMappings: action,
       setSrcClass: action,
+      setMappingFilter: action,
       isStub: computed,
       hashCode: computed,
     });
@@ -66,6 +67,9 @@ export class PureInstanceSetImplementation
   }
   setSrcClass(value: Class | undefined): void {
     this.srcClass.setValue(value);
+  }
+  setMappingFilter(value: RawLambda | undefined): void {
+    this.filter = value;
   }
 
   findPropertyMapping(

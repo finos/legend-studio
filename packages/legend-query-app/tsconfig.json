@@ -13,7 +13,9 @@
     { "path": "../legend-art" },
     { "path": "../legend-query" },
     { "path": "../legend-extension-dsl-diagram" },
+    { "path": "../legend-extension-dsl-serializer" },
     { "path": "../legend-extension-dsl-text" },
+    { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-extension-external-format-json-schema" }
   ]
 }

@@ -70,10 +70,6 @@ const buildTDSExecutionResult = (
   protocol: V1_TdsExecutionResult,
 ): TdsExecutionResult => {
   const metamodel = new TdsExecutionResult();
-  metamodel.values = guaranteeNonNullable(
-    protocol.result,
-    `TDS execution result value is missing`,
-  );
   metamodel.builder = buildTDSBuilder(
     guaranteeNonNullable(
       protocol.builder,
@@ -102,7 +98,7 @@ const buildClassExecutionResult = (
   protocol: V1_ClassExecutionResult,
 ): ClassExecutionResult => {
   const metamodel = new ClassExecutionResult();
-  metamodel.values = guaranteeNonNullable(
+  metamodel.objects = guaranteeNonNullable(
     protocol.objects,
     `Class execution result value is missing`,
   );

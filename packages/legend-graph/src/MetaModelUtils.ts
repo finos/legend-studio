@@ -63,7 +63,7 @@ export const isValidFullPath = (fullPath: string): boolean =>
 export const isValidPath = (path: string): boolean =>
   Boolean(path.match(/^(?:\w[\w$_-]*)(?:::\w[\w$_-]*)*$/));
 
-// TODO: this is over-simplification as there could be other fields used for source information
+// NOTE: this is over-simplification as there could be source information fields with other names
 export const hashObjectWithoutSourceInformation = (val: object): string =>
   hashObject(val, {
     excludeKeys: (key: string) => key === SOURCE_INFORMATION_KEY,

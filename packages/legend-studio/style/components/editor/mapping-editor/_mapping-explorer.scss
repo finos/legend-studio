@@ -141,7 +141,18 @@
     @include ellipsisTextOverflow;
   }
 
+  &__item__label__filter-icon {
+    margin-left: auto;
+    padding-right: 0.5rem;
+
+    & > svg {
+      color: var(--color-dark-grey-400);
+      font-size: 1rem;
+    }
+  }
+
   &__item--active,
+  &__item--active svg,
   &__item--active:hover {
     background: var(--color-light-blue-200);
     color: var(--color-light-grey-0);

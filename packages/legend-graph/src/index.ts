@@ -69,6 +69,7 @@ export {
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
+export { V1_TaggedValue } from './models/protocols/pure/v1/model/packageableElements/domain/V1_TaggedValue';
 export { V1_PropertyPointer } from './models/protocols/pure/v1/model/packageableElements/domain/V1_PropertyPointer';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
@@ -169,6 +170,7 @@ export {
   ExecutionResult,
   TdsExecutionResult,
 } from './graphManager/action/execution/ExecutionResult';
+export * from './graphManager/action/execution/ExecutionResultHelper';
 export * from './graphManager/PureGraphManagerPlugin';
 export * from './graphManager/action/query/Query';
 export * from './graphManager/action/EngineError';
@@ -186,6 +188,11 @@ export { getGraphManager } from './models/protocols/pure/Pure';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
 
 // V1 transformation
+export {
+  V1_transformStereotype,
+  V1_transformTaggedValue,
+} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DomainTransformer';
+export { V1_buildTaggedValue } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
 export { V1_PureModelContextData } from './models/protocols/pure/v1/model/context/V1_PureModelContextData';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';
@@ -212,6 +219,7 @@ export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrSchema,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
+export { V1_taggedValueSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
 export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
 export { V1_deserializeRawValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_serializeRawValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';

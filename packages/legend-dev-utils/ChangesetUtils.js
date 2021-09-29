@@ -117,7 +117,8 @@ export async function validateChangesets(cwd, sinceRef) {
         .join('\n')}`,
     );
     error(
-      `Run \`yarn changeset "e.g. some message ..."\` to quickly add a changeset.`,
+      `Run \`yarn changeset -v <VERSION> -m "e.g. some message ..."\` to quickly add a changeset. ` +
+        `'<VERSION>' stands for the release branch you are working off or you can use 'latest' if you are working off the default branch`,
     );
     process.exit(1);
   }

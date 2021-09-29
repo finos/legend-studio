@@ -82,25 +82,23 @@ export class ViewerStore {
   internalizeEntityPath(params: ViewerPathParams): void {
     if (params.entityPath) {
       this.elementPath = params.entityPath;
-      this.editorStore.applicationStore.navigator.jumpTo(
-        this.editorStore.applicationStore.navigator.generateLocation(
-          params.versionId
-            ? generateViewVersionRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
-                params.projectId,
-                params.versionId,
-              )
-            : params.revisionId
-            ? generateVieweRevisionRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
-                params.projectId,
-                params.revisionId,
-              )
-            : generateViewProjectRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
-                params.projectId,
-              ),
-        ),
+      this.editorStore.applicationStore.navigator.goTo(
+        params.versionId
+          ? generateViewVersionRoute(
+              this.editorStore.applicationStore.config.sdlcServerKey,
+              params.projectId,
+              params.versionId,
+            )
+          : params.revisionId
+          ? generateVieweRevisionRoute(
+              this.editorStore.applicationStore.config.sdlcServerKey,
+              params.projectId,
+              params.revisionId,
+            )
+          : generateViewProjectRoute(
+              this.editorStore.applicationStore.config.sdlcServerKey,
+              params.projectId,
+            ),
       );
     }
   }
@@ -235,6 +233,8 @@ export class ViewerStore {
             tabSize: TAB_SIZE,
             clientConfig: {
               baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+              queryBaseUrl:
+                this.editorStore.applicationStore.config.engineQueryServerUrl,
               enableCompression: true,
             },
           },

@@ -48,7 +48,7 @@ fix: correct minor typos in code
 
 A `changeset` is used to express the intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, we expect the author to create `changeset` files to indicate which packages should be re-released due to their changes and a brief summary of the changes to be added to release note/changelog.
 
-> No matter how big is your change, you should **always** at least bump a `patch` release for the packages being modified. We enforce this to avoid missing changes during release and also to lessen the cognitive load for reivewers. If your change is not substantial (for example, you are fixing code format, bumping some minor dependencies or adding some tests), you can leave the summary blank. Sometimes, you would make changes in core packages, leading to further modifications in other packages, in these cases, what we find to be the most common workflow is to create an empty changeset listing out all changed packages, and then to create a seaprate changeset targetting just the modified core packages with detailed changelogs.
+> No matter how big is your change, you should **always at least bump a `patch` release for the packages being modified**. We enforce this to avoid missing changes during release and also to lessen the cognitive load for reivewers. If your change is not substantial (for example, you are fixing code format, bumping low-risk dependencies or adding tests), you can leave the summary blank. Sometimes, you would make changes in core packages, leading to further modifications in other packages, in these cases, what we find to be the most common workflow is to create an empty changeset listing out all changed packages, and then to create a seaprate changeset targetting just the modified core packages with detailed changelogs.
 
 We use [changesets](https://github.com/atlassian/changesets) to manage this process. See below for the format of the changeset.
 
@@ -61,10 +61,20 @@ We use [changesets](https://github.com/atlassian/changesets) to manage this proc
 <!--
 Capitalize the first character of your message and end it with a period.
 To document breaking chnages, prefix the message with `**BREAKING CHANGE:**`
-Please try to adhere to the format in existing changelogs.
 -->
 
 An example description of the major changes.
+
+<!--
+For bug fixes and filed issues, please include the issue in the message if possible
+as it often gives better context than just the changeset itself
+-->
+
+Fix a bug with core editor ([#300](https://github.com/finos/legend-studio))
+
+<!--
+Please check the format we have in our `CHANGELOG.md` files and adhere to that style
+-->
 ```
 
 To create the changeset, you can use the following commands:
@@ -73,15 +83,15 @@ To create the changeset, you can use the following commands:
 # To quickly generate a changeset
 # NOTE: you can provide an optional message. If no message is provided,
 # the summary part of your changeset will be left blank.
-yarn changeset "e.g. some message ..."
+yarn changeset -m "e.g. some message ..."
 
 # To open an interactive prompt to build more advanced changeset
 yarn changeset:cli
 ```
 
-> Note that changeset is generated using the command above uses local default branch as the reference point. This aligns with our recommended workflow that is contributors work on feature branch rather than directly on default branch. Also remember to keep your origin and local default branch in sync, this will help ensure the generated changeset is more accurate and compact, as well as avoid getting your PR blocked by the changeset validation gate.
+> Note that changeset is generated using the command above uses **local default branch** as the reference point. This aligns with our [recommended Git workflow](./docs/workflow/working-with-github.md) where contributors work on feature branch rather than directly on default branch. Also remember to keep your origin and local default branch in sync, this will help ensure the generated changeset is more accurate and compact, as well as avoid getting your PR blocked by the changeset validation gate.
 
-> Also, if you made a mistake in a changeset and want to create a PR to rectify that, to avoid the changeset being attributed to the wrong PR or author, you can add `pr` and `author` fields to the [front-matter part of the changelog](https://github.com/atlassian/changesets/blob/master/packages/changelog-github/CHANGELOG.md#minor-changes).
+> Also, if you made a mistake in a changeset and want to create a PR to rectify that, to avoid the changeset being attributed to the wrong PR or author, you can add `pr` and `author` fields to the [front-matter part of the changelog](https://github.com/atlassian/changesets/blob/main/packages/changelog-github/CHANGELOG.md#030).
 
 ## Development Guidelines
 
@@ -105,11 +115,17 @@ After setting up, visit http://localhost:8080/studio and the application should 
 
 #### :pencil2: Writing code
 
-After setting up, you can start Legend Studio.
+Before writing any code, you need to [setup your branch properly](./docs/workflow/working-with-github.md#standard-contribution-workflow), this is a fairly common workflow in any OSS project. But if you are working on bug fixes for a recent release, the workflow will be slightly different, find out more about that [here](./docs/workflow/working-with-github.md#working-on-bug-fixes-for-a-release).
+
+Now, you're good to start. After the setup step, you can start the application you are working on in development mode.
 
 ```sh
 # Run the main web application (top-level workspace) in development mode.
-yarn dev # alias: `yarn start`
+yarn dev # alias: `yarn start` - this by default will start Studio
+
+# Or start the specific app you are working on
+yarn dev:query
+yarn dev:studio
 ```
 
 Each workspace in the monorepo should have a `dev` script. Run these (in separate terminal tabs) when you are making changes in these workspaces to rebuild on change. Otherwise, after making change, you have to manually rebuild the workspace using the `build` script. Following are some useful scripts for development.
@@ -136,7 +152,7 @@ yarn dev:tsc
 
 #### :construction: Testing your code
 
-Read our [guide on testing](./docs/test-strategy.md) to understand our approach to testing.
+Read our [guide on testing](./docs/technical/test-strategy.md) to understand our approach to testing.
 
 ```sh
 # Use this on root directory or workspace directory to run unit
@@ -181,16 +197,19 @@ yarn fix
 
 #### :tada: Checking in your code
 
-Make sure to [create a changeset](#changeset) if you make significant code logic changes. Commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
+Make sure to [create a changeset](#changeset) if you make significant code logic changes.
 
 ```sh
-# Bring up the interactive tool to build changeset.
 yarn changeset
 ```
 
+If you make change to the interface, please kindly include the screenshots, screen captures or `GIFs` in the description of the PR to make it easier for us to review this change :pray:
+
+Also please try to commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
+
 #### :package: Releasing
 
-This section is only for maintainers. See the [release guidelines](./docs/release-guide.md).
+This section is only for maintainers, or whoever has [write access and above](https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/repository-permission-levels-for-an-organization#repository-access-for-each-permission-level) permission in this repository. Only this group of people should have the permission to trigger the release. For details of the release process, please read this [guide](./docs/workflow/release-process.md).
 
 ### Code Conventions
 

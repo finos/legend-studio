@@ -26,6 +26,7 @@ export {
   FaFire as FireIcon,
   FaSave as SaveIcon,
   FaSquare as SquareIcon,
+  FaRegSquare as RegSquareIcon,
   FaCheckSquare as CheckSquareIcon,
   FaHashtag as HashtagIcon,
   FaHammer as HammerIcon,
@@ -42,8 +43,13 @@ export {
   FaRobot as RobotIcon,
   FaArrowLeft as ArrowLeftIcon,
   FaArrowRight as ArrowRightIcon,
+  FaArrowAltCircleDown as ArrowCircleDownIcon,
   FaUser as UserIcon,
   FaShapes as ShapesIcon,
+  FaScroll as ScrollIcon,
+  FaEnvelope as EnvelopIcon,
+  FaSkull as SkullIcon,
+  FaDollarSign as DollarIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

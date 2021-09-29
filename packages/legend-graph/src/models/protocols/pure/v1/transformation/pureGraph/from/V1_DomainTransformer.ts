@@ -64,7 +64,7 @@ export const V1_transformProfile = (element: Profile): V1_Profile => {
   return profile;
 };
 
-const transformStereotype = (
+export const V1_transformStereotype = (
   element: StereotypeReference,
 ): V1_StereotypePtr => {
   const stereotype = new V1_StereotypePtr();
@@ -73,7 +73,9 @@ const transformStereotype = (
   return stereotype;
 };
 
-const transformTaggedValue = (element: TaggedValue): V1_TaggedValue => {
+export const V1_transformTaggedValue = (
+  element: TaggedValue,
+): V1_TaggedValue => {
   const taggedValue = new V1_TaggedValue();
   taggedValue.value = element.value;
   taggedValue.tag = new V1_TagPtr();
@@ -86,8 +88,8 @@ const transformTaggedValue = (element: TaggedValue): V1_TaggedValue => {
 
 const transformEnumValue = (element: Enum): V1_EnumValue => {
   const enumValue = new V1_EnumValue();
-  enumValue.stereotypes = element.stereotypes.map(transformStereotype);
-  enumValue.taggedValues = element.taggedValues.map(transformTaggedValue);
+  enumValue.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  enumValue.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   enumValue.value = element.name;
   return enumValue;
 };
@@ -97,8 +99,8 @@ export const V1_transformEnumeration = (
 ): V1_Enumeration => {
   const enumeration = new V1_Enumeration();
   V1_initPackageableElement(enumeration, element);
-  enumeration.stereotypes = element.stereotypes.map(transformStereotype);
-  enumeration.taggedValues = element.taggedValues.map(transformTaggedValue);
+  enumeration.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  enumeration.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   enumeration.values = element.values.map(transformEnumValue);
   return enumeration;
 };
@@ -157,8 +159,8 @@ const transformProperty = (element: Property): V1_Property => {
   const property = new V1_Property();
   property.name = element.name;
   property.multiplicity = V1_transformMultiplicity(element.multiplicity);
-  property.stereotypes = element.stereotypes.map(transformStereotype);
-  property.taggedValues = element.taggedValues.map(transformTaggedValue);
+  property.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  property.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   property.type =
     element.genericType.ownerReference.valueForSerialization ?? '';
   return property;
@@ -177,8 +179,10 @@ const transformDerviedProperty = (
   );
   derivedProperty.returnType =
     element.genericType.ownerReference.valueForSerialization ?? '';
-  derivedProperty.stereotypes = element.stereotypes.map(transformStereotype);
-  derivedProperty.taggedValues = element.taggedValues.map(transformTaggedValue);
+  derivedProperty.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  derivedProperty.taggedValues = element.taggedValues.map(
+    V1_transformTaggedValue,
+  );
   return derivedProperty;
 };
 
@@ -192,8 +196,8 @@ export const V1_transformClass = (
     transformConstraint(constraint, context),
   );
   _class.properties = element.properties.map(transformProperty);
-  _class.stereotypes = element.stereotypes.map(transformStereotype);
-  _class.taggedValues = element.taggedValues.map(transformTaggedValue);
+  _class.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  _class.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   _class.superTypes = element.generalizations.map(
     (e) => e.ownerReference.valueForSerialization ?? '',
   );
@@ -213,8 +217,8 @@ export const V1_transformAssociation = (
   association.derivedProperties = element.derivedProperties.map((dp) =>
     transformDerviedProperty(dp, context),
   );
-  association.stereotypes = element.stereotypes.map(transformStereotype);
-  association.taggedValues = element.taggedValues.map(transformTaggedValue);
+  association.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  association.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   return association;
 };
 
@@ -233,8 +237,8 @@ export const V1_transformFunction = (
     ),
   );
   _function.returnType = V1_transformElementReference(element.returnType);
-  _function.stereotypes = element.stereotypes.map(transformStereotype);
-  _function.taggedValues = element.taggedValues.map(transformTaggedValue);
+  _function.stereotypes = element.stereotypes.map(V1_transformStereotype);
+  _function.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   _function.returnMultiplicity = V1_transformMultiplicity(
     element.returnMultiplicity,
   );

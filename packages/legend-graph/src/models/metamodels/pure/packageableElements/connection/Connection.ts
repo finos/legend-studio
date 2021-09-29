@@ -28,6 +28,7 @@ import type { PackageableElementReference } from '../PackageableElementReference
 import type { ModelChainConnection } from '../store/modelToModel/connection/ModelChainConnection';
 
 export interface ConnectionVisitor<T> {
+  visit_Connection(connection: Connection): T;
   visit_ConnectionPointer(connection: ConnectionPointer): T;
   visit_ModelChainConnection(connection: ModelChainConnection): T;
   visit_JsonModelConnection(connection: JsonModelConnection): T;
