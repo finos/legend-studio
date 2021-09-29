@@ -84,8 +84,8 @@ export const QueryBuilderSetupPanel = observer(
         }
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
-      if (queryBuilderState.querySetupState._class) {
-        queryBuilderState.querySetupState.setMapping(val.value);
+      if (querySetupState._class && !querySetupState.mappingIsReadOnly) {
+        querySetupState.setMapping(val.value);
         queryBuilderState.resetData();
       }
     };
