@@ -29,15 +29,15 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { useEditorStore } from '@finos/legend-studio';
-import type { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import { Schema } from '../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
-import { SchemaSetEditorState } from '../stores/SchemaSetEditorState';
+import type { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
+import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
 import { MdMoreVert } from 'react-icons/md';
 import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import type { editor } from 'monaco-editor';
 
 enum FORMAT_TYPE {
-  FLATDATA = 'FlatData',
+  FLAT_DATA = 'FlatData',
   XSD = 'XSD',
 }
 
@@ -101,7 +101,7 @@ const SchemaBasicEditor = observer(
       lineNumbers: 'off',
       fontFamily: 'Arial',
       lineDecorationsWidth: 0,
-    }
+    };
     return (
       <div className="schema-editor">
         <input
@@ -141,7 +141,9 @@ const SchemaBasicEditor = observer(
               <TextInputEditor
                 inputValue={schema.content}
                 language={EDITOR_LANGUAGE.TEXT}
-                updateInput={(val) => schema.content = val}
+                updateInput={(val: string): void => {
+                  schema.content = val;
+                }}
                 extraEditorOptions={editorOptions}
               />
             </div>
@@ -157,8 +159,10 @@ const SchemaBasicEditor = observer(
             />
           )}
           <button
-            className= {
-              isExpanded ? "schema-editor__content__expand-btn schema-editor__content__expand-btn__expanded" : "schema-editor__content__expand-btn"
+            className={
+              isExpanded
+                ? 'schema-editor__content__expand-btn schema-editor__content__expand-btn__expanded'
+                : 'schema-editor__content__expand-btn'
             }
             onClick={toggleExpandedMode}
             tabIndex={-1}
@@ -167,7 +171,6 @@ const SchemaBasicEditor = observer(
             {isExpanded ? <FaLongArrowAltUp /> : <MdMoreVert />}
           </button>
         </div>
-        {/*<TextInputEditor inputValue={schema.content} language={EDITOR_LANGUAGE.TEXT} updateInput={(val) => schema.content = val} />*/}
       </div>
     );
   },
@@ -213,7 +216,7 @@ export const SchemaSetEditor = observer(() => {
       <div className="schema-set-panel__header">
         <div className="schema-set-panel__header__title">
           {isReadOnly && (
-            <div className="element-editor__header__lock">
+            <div className="schema-set-panel__header__lock">
               <FaLock />
             </div>
           )}
@@ -275,7 +278,7 @@ export const SchemaSetEditor = observer(() => {
             <div className="schema-set-panel__header">
               <div className="schema-set-panel__header__title">
                 {isReadOnly && (
-                  <div className="element-editor__header__lock">
+                  <div className="schema-set-panel__header__lock">
                     <FaLock />
                   </div>
                 )}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../../../package.json';
 import {
   StudioPlugin,
   UnsupportedElementEditorState,
@@ -34,10 +34,10 @@ import type {
 } from '@finos/legend-studio';
 import { FaBuffer, FaSitemap } from 'react-icons/fa';
 import { SchemaSetEditor } from './SchemaSetElementEditor';
-import { SchemaSetEditorState } from '../stores/SchemaSetEditorState';
+import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
 import type { PackageableElement } from '@finos/legend-graph';
-import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
+import { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { Binding } from '../../models/metamodels/pure/model/packageableElements/store/Binding';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

@@ -20,7 +20,7 @@ import { AbstractPreset } from '@finos/legend-shared';
 import { DSLSerializer_PureGraphManagerPlugin } from './graphManager/DSLSerializer_PureGraphManagerPlugin';
 import { DSLSerializer_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLSerializer_PureProtocolProcessorPlugin';
 import type { StudioPluginManager } from '@finos/legend-studio';
-import { DSLSerializer_StudioPlugin } from './components/DSLSerializer_StudioPlugin';
+import { DSLSerializer_StudioPlugin } from './components/studio/DSLSerializer_StudioPlugin';
 import { DSLSerializer_PureGraphPlugin } from './graph/DSLSerializer_PureGraphPlugin';
 
 export class DSLSerializer_GraphPreset extends AbstractPreset {

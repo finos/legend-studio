@@ -19,23 +19,23 @@ import type { EditorStore } from '@finos/legend-studio';
 import { guaranteeType } from '@finos/legend-shared';
 import { ElementEditorState } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { Binding } from '../../models/metamodels/pure/model/packageableElements/store/Binding';
 
-export class SchemaSetEditorState extends ElementEditorState {
+export class BindingEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
-      schemaSet: computed,
+      binding: computed,
       reprocess: action,
     });
   }
 
-  get schemaSet(): SchemaSet {
+  get binding(): Binding {
     return guaranteeType(
       this.element,
-      SchemaSet,
-      'Element inside schema set element editor state must be a SchemaSet',
+      Binding,
+      'Element inside binding element editor state must be a Binding',
     );
   }
 
@@ -43,10 +43,7 @@ export class SchemaSetEditorState extends ElementEditorState {
     newElement: PackageableElement,
     editorStore: EditorStore,
   ): ElementEditorState {
-    const schemaSetEditorState = new SchemaSetEditorState(
-      editorStore,
-      newElement,
-    );
-    return schemaSetEditorState;
+    const bindingEditorState = new BindingEditorState(editorStore, newElement);
+    return bindingEditorState;
   }
 }
