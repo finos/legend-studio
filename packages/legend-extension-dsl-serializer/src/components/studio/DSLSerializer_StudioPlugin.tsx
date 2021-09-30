@@ -79,13 +79,13 @@ export class DSLSerializer_StudioPlugin
       (type: string): React.ReactNode | undefined => {
         if (type === SCHEMA_SET_ELEMENT_TYPE) {
           return (
-            <div className="icon icon--text-element">
+            <div className="icon icon--schema-set">
               <FaSitemap />
             </div>
           );
         } else if (type === BINDING_ELEMENT_TYPE) {
           return (
-            <div className="icon icon--text-element">
+            <div className="icon icon--binding">
               <FaBuffer />
             </div>
           );

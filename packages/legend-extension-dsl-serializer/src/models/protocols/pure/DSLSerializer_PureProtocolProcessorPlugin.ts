@@ -36,6 +36,7 @@ import {
 import { V1_resolveBinding } from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';
 import { Binding } from '../../metamodels/pure/model/packageableElements/store/Binding';
 import { SchemaSet } from '../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { Schema } from '../../metamodels/pure/model/packageableElements/schemaSet/Schema';
 import { ExternalFormatConnection } from '../../metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
 import type {
   GraphPluginManager,
@@ -148,7 +149,9 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           );
           const element = getSchemaSet(path, context.graph);
           element.format = elementProtocol.format;
-          element.schemas = elementProtocol.schemas;
+          element.schemas = elementProtocol.schemas.map(
+            (schema) => new Schema(schema.content, schema.id, schema.location),
+          );
         },
       }),
     ];

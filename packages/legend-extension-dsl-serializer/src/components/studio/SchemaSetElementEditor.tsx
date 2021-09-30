@@ -90,12 +90,12 @@ const SchemaBasicEditor = observer(
     const toggleExpandedMode = (): void => setIsExpanded(!isExpanded);
     const changeContent: React.ChangeEventHandler<
       HTMLInputElement | HTMLTextAreaElement
-    > = (event) => (schema.content = event.target.value);
+    > = (event) => schema.setContent(event.target.value);
     const changeId: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      (schema.id = event.target.value);
+      schema.setId(event.target.value);
     const changeLocation: React.ChangeEventHandler<HTMLInputElement> = (
       event,
-    ) => (schema.location = event.target.value);
+    ) => schema.setLocation(event.target.value);
     const editorOptions: editor.IEditorOptions & editor.IGlobalEditorOptions = {
       theme: 'vs',
       lineNumbers: 'off',
@@ -142,7 +142,7 @@ const SchemaBasicEditor = observer(
                 inputValue={schema.content}
                 language={EDITOR_LANGUAGE.TEXT}
                 updateInput={(val: string): void => {
-                  schema.content = val;
+                  schema.setContent(val);
                 }}
                 extraEditorOptions={editorOptions}
               />
@@ -181,6 +181,7 @@ export const SchemaSetEditor = observer(() => {
   const editorState = editorStore.getCurrentEditorState(SchemaSetEditorState);
   const schemaSet = editorState.schemaSet;
   const isReadOnly = editorState.isReadOnly;
+  schemaSet.setFormat(FORMAT_TYPE.FLAT_DATA);
   const [schemaState, setSchema] =
     schemaSet.schemas.length !== 0
       ? useState(schemaSet.schemas[schemaSet.schemas.length - 1])
@@ -286,7 +287,11 @@ export const SchemaSetEditor = observer(() => {
                   Schema
                 </div>
                 <div className="schema-set-panel__header__title__content">
-                  {schemaState.id ? schemaState.id : `Schema${index}`}
+                  {schemaSet.schemas.length !== 0
+                    ? schemaState.id
+                      ? schemaState.id
+                      : `Schema${index}`
+                    : ''}
                 </div>
               </div>
             </div>
@@ -294,6 +299,7 @@ export const SchemaSetEditor = observer(() => {
               <div className="schema-set-panel__content__lists">
                 {schemaSet.schemas.length !== 0 && (
                   <SchemaBasicEditor
+                    key={`Schema${index}`}
                     schema={schemaState}
                     deleteValue={deleteSchema(schemaState)}
                     isReadOnly={isReadOnly}
