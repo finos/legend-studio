@@ -47,6 +47,7 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
+import type { GraphBuilderReport } from '../EditorGraphState';
 
 export class ConflictResolutionState {
   editorStore: EditorStore;
@@ -313,7 +314,13 @@ export class ConflictResolutionState {
             .filter(isNonNullable),
         );
       // build graph
-      yield flowResult(this.editorStore.graphState.buildGraph(entities));
+      const graphBuilderReport = (yield flowResult(
+        this.editorStore.graphState.buildGraph(entities),
+      )) as GraphBuilderReport;
+
+      if (graphBuilderReport.error) {
+        throw graphBuilderReport.error;
+      }
 
       // NOTE: since we have already started change detection engine when we entered conflict resolution mode, we just need
       // to restart local change detection here
