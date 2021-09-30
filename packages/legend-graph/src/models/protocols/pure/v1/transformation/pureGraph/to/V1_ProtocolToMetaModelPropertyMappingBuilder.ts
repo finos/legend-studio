@@ -80,7 +80,7 @@ import {
 import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
 import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext';
 import {
-  getClassMappingById,
+  getAllClassMappingById,
   getClassMappingsByClass,
 } from '../../../../../../../helpers/MappingHelper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
@@ -92,7 +92,7 @@ const resolveRelationalPropertyMappingSource = (
 ): SetImplementation | undefined => {
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
-      return getClassMappingById(immediateParent.parent, value.source);
+      return getAllClassMappingById(immediateParent.parent, value.source);
     }
     const property = immediateParent.association.value.getProperty(
       value.property.property,
@@ -195,7 +195,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const topParent = guaranteeNonNullable(this.topParent);
     if (propertyType instanceof Class) {
       if (protocol.target) {
-        targetSetImplementation = getClassMappingById(
+        targetSetImplementation = getAllClassMappingById(
           topParent.parent,
           protocol.target,
         );
@@ -214,7 +214,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     }
     const sourceSetImplementation = returnUndefOnError(() =>
       protocol.source
-        ? getClassMappingById(topParent.parent, protocol.source)
+        ? getAllClassMappingById(topParent.parent, protocol.source)
         : undefined,
     );
     const purePropertyMapping = new PurePropertyMapping(
@@ -286,7 +286,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const propertyType = property.genericType.value.rawType;
     if (propertyType instanceof Class && protocol.target) {
       targetSetImplementation = this.topParent
-        ? getClassMappingById(this.topParent.parent, protocol.target)
+        ? getAllClassMappingById(this.topParent.parent, protocol.target)
         : undefined;
     }
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
@@ -448,7 +448,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       }
       if (protocol.target) {
         targetSetImplementation = parentMapping
-          ? getClassMappingById(parentMapping, protocol.target)
+          ? getAllClassMappingById(parentMapping, protocol.target)
           : undefined;
       } else {
         targetSetImplementation = parentMapping
@@ -585,7 +585,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       _class,
       InferableMappingElementIdExplicitValue.create(id, ''),
     );
-    inline.inlineSetImplementation = getClassMappingById(
+    inline.inlineSetImplementation = getAllClassMappingById(
       topParent.parent,
       protocol.setImplementationId,
     );

@@ -66,6 +66,7 @@ import type {
   Type,
 } from '@finos/legend-graph';
 import {
+  getAllClassMappings,
   GRAPH_MANAGER_LOG_EVENT,
   PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
@@ -291,7 +292,7 @@ export const createEnumerationMapping = (
 const getEmbeddedSetImplmentations = (
   mapping: Mapping,
 ): InstanceSetImplementation[] =>
-  mapping.allClassMappings
+  mapping.allOwnClassMappings
     .filter(
       (setImpl): setImpl is InstanceSetImplementation =>
         setImpl instanceof InstanceSetImplementation,
@@ -311,12 +312,12 @@ const getMappingElementByTypeAndId = (
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
-      return mapping.allClassMappings.find(
+      return mapping.allOwnClassMappings.find(
         (classMapping) => classMapping.id.value === id,
       );
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
       return (
-        mapping.allClassMappings.find(
+        getAllClassMappings(mapping).find(
           (classMapping) => classMapping.id.value === id,
         ) ??
         getEmbeddedSetImplmentations(mapping)
@@ -330,7 +331,7 @@ const getMappingElementByTypeAndId = (
       );
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
       return (
-        mapping.allClassMappings.find(
+        getAllClassMappings(mapping).find(
           (classMapping) => classMapping.id.value === id,
         ) ??
         getEmbeddedSetImplmentations(mapping)

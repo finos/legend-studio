@@ -22,7 +22,7 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '../../../GraphManagerTestUtils';
-import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
@@ -49,7 +49,7 @@ test(unitTest('Otherwise Embedded Relational Mapping'), () => {
   const mapping = graph.getMapping('mappingPackage::myMapping');
   // person
   const personClassMapping = guaranteeType(
-    getClassMappingsByClass(mapping, graph.getClass('other::Person'))[0],
+    getOwnClassMappingsByClass(mapping, graph.getClass('other::Person'))[0],
     RootRelationalInstanceSetImplementation,
   );
   expect(personClassMapping.id.value).toBe('alias1');

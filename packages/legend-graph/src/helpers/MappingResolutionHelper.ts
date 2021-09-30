@@ -22,7 +22,10 @@ import type { PropertyMapping } from '../models/metamodels/pure/packageableEleme
 import type { Property } from '../models/metamodels/pure/packageableElements/domain/Property';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { getClassMappingsByClass } from './MappingHelper';
+import {
+  getClassMappingsByClass,
+  getOwnClassMappingsByClass,
+} from './MappingHelper';
 
 /**
  * If this is the only mapping element for the target class, automatically mark it as root,
@@ -32,7 +35,7 @@ import { getClassMappingsByClass } from './MappingHelper';
 export const updateRootSetImplementationOnCreate = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+  const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
     setImp.parent,
     setImp.class.value,
   ).filter((si) => si !== setImp);
@@ -52,7 +55,7 @@ export const updateRootSetImplementationOnCreate = (
 export const updateRootSetImplementationOnDelete = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+  const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
     setImp.parent,
     setImp.class.value,
   ).filter((si) => si !== setImp);
@@ -68,7 +71,7 @@ export const updateRootSetImplementationOnDelete = (
 export const nominateRootSetImplementation = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+  const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
     setImp.parent,
     setImp.class.value,
   );

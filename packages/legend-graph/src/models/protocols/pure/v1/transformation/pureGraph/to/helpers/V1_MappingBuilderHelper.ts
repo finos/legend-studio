@@ -285,7 +285,7 @@ export const V1_buildMappingTest = (
 
 export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
   const classToSetImplMap = new Map<Class, Set<SetImplementation>>();
-  mapping.allClassMappings.forEach((setImpl) => {
+  mapping.allOwnClassMappings.forEach((setImpl) => {
     const targetClass = guaranteeNonNullable(setImpl.class.value);
     const setImplsWithTargetClass = classToSetImplMap.get(targetClass);
     if (setImplsWithTargetClass) {
