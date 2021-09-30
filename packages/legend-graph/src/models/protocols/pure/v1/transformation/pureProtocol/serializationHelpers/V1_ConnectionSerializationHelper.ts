@@ -456,7 +456,7 @@ export const V1_deserializeAuthenticationStrategy = (
 export const V1_serializeConnectionValue = (
   protocol: V1_Connection,
   allowPointer: boolean,
-  plugins: PureProtocolProcessorPlugin[] | undefined,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_Connection> => {
   /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   if (protocol instanceof V1_JsonModelConnection) {
@@ -477,18 +477,16 @@ export const V1_serializeConnectionValue = (
       `Serializing connection pointer is not allowed here`,
     );
   }
-  if (plugins !== undefined) {
-    const extraConnectionProtocolSerializers = plugins.flatMap(
-      (plugin) =>
-        (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
-        ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
-    );
-    for (const serializer of extraConnectionProtocolSerializers) {
-      const json = serializer(protocol);
-      if (json) {
-        return json;
-      }
+  const extraConnectionProtocolSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraConnectionProtocolSerializers) {
+    const json = serializer(protocol);
+    if (json) {
+      return json;
     }
   }
   throw new UnsupportedOperationError(`Can't serialize connection`, protocol);
@@ -519,18 +517,16 @@ export const V1_deserializeConnectionValue = (
         `Deserializing connection pointer is not allowed here`,
       );
     default: {
-      if (plugins !== undefined) {
-        const extraConnectionProtocolDeserializers = plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
-            ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
-        );
-        for (const deserializer of extraConnectionProtocolDeserializers) {
-          const protocol = deserializer(json);
-          if (protocol) {
-            return protocol;
-          }
+      const extraConnectionProtocolDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
+      );
+      for (const deserializer of extraConnectionProtocolDeserializers) {
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
         }
       }
       throw new UnsupportedOperationError(
