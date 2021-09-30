@@ -27,7 +27,8 @@ import {
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
-import { EditorGraphState } from './EditorGraphState';
+import type { GraphBuilderReport } from './EditorGraphState';
+import { EditorGraphState, GraphBuilderStatus } from './EditorGraphState';
 import { ChangeDetectionState } from './ChangeDetectionState';
 import { NewElementState } from './NewElementState';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState';
@@ -798,7 +799,26 @@ export class EditorStore {
     }
 
     try {
-      yield flowResult(this.graphState.buildGraph(entities));
+      const graphBuilderReport = (yield flowResult(
+        this.graphState.buildGraph(entities),
+      )) as GraphBuilderReport;
+
+      if (graphBuilderReport.error) {
+        if (
+          graphBuilderReport.status ===
+          GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE
+        ) {
+          yield flowResult(
+            this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+              entities,
+              LogEvent.create(
+                CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+              ),
+            ),
+          );
+        }
+        return;
+      }
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();

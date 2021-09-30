@@ -185,11 +185,12 @@ const QueryBuilderExplorerContextMenu = observer(
   (
     props: {
       queryBuilderState: QueryBuilderState;
+      openNode: () => void;
       node: QueryBuilderExplorerTreeNodeData;
     },
     ref: React.Ref<HTMLDivElement>,
   ) => {
-    const { queryBuilderState, node } = props;
+    const { queryBuilderState, openNode, node } = props;
     const applicationStore = useApplicationStore();
     const viewType = (): void =>
       applicationStore.notifyUnsupportedFeature('View Type');
@@ -219,6 +220,7 @@ const QueryBuilderExplorerContextMenu = observer(
       }
     };
     const addAllChildrenToFetchStructure = (): void => {
+      openNode();
       if (node.type instanceof Class) {
         // NOTE: here we require the node to already been expanded so the child nodes are generated
         // we don't allow adding unopened node. Maybe if it helps, we can show a warning.
@@ -282,7 +284,7 @@ const QueryBuilderExplorerContextMenu = observer(
           )}
         {node.type instanceof Class && (
           <MenuContentItem onClick={addAllChildrenToFetchStructure}>
-            Add All Properties to Fetch Structure
+            Add Properties to Fetch Structure
           </MenuContentItem>
         )}
         <MenuContentItem onClick={viewType}>View Type</MenuContentItem>
@@ -379,6 +381,11 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       <div />
     );
     const selectNode = (): void => onNodeSelect?.(node);
+    const openNode = (): void => {
+      if (!node.isOpen) {
+        onNodeSelect?.(node);
+      }
+    };
     // context menu
     const showContextMenu =
       node instanceof QueryBuilderExplorerTreeRootNodeData ||
@@ -412,6 +419,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
         content={
           <QueryBuilderExplorerContextMenu
             queryBuilderState={queryBuilderState}
+            openNode={openNode}
             node={node}
           />
         }

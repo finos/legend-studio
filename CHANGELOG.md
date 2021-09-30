@@ -88,6 +88,7 @@ We now use [Typescript 4.4](https://www.typescriptlang.org/docs/handbook/release
 
 ## Notable fixes
 
+- [533](https://github.com/finos/legend-studio/issues/533) Change detection reports modified elements as new elements after users fix graph building errors which happen on initial load
 - [463](https://github.com/finos/legend-studio/issues/463) Mock data generator for models break when there are enumerations with 0 or 1 value in the source class tree
 - [462](https://github.com/finos/legend-studio/issues/462) Layout is broken: activity bar disappear and editor stretches beyond screen width when there are too many elements being opened
 - [449](https://github.com/finos/legend-studio/issues/449) Changing class properties' type in form mode, especially when the type if `primitive` is not working

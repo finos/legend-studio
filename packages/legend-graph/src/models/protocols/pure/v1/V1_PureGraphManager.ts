@@ -148,6 +148,7 @@ import {
   V1_DatabaseBuilderConfig,
   V1_DatabaseBuilderInput,
   V1_DatabasePattern,
+  V1_setupDatabaseBuilderInputSerialization,
   V1_TargetDatabase,
 } from './engine/generation/V1_DatabaseBuilderInput';
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
@@ -157,7 +158,10 @@ import { V1_ServiceStore } from './model/packageableElements/store/relational/V1
 import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity';
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
-import { V1_setupEngineRuntimeSerialization } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
+import {
+  V1_setupEngineRuntimeSerialization,
+  V1_setupLegacyRuntimeSerialization,
+} from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
@@ -380,7 +384,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this.extensions = new V1_GraphBuilderExtensions(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
-    // setup (de)serializer using plugins
+    // setup serialization plugins
     V1_setupPureModelContextDataSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
@@ -388,6 +392,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     V1_setupEngineRuntimeSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupLegacyRuntimeSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupDatabaseBuilderInputSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
   }

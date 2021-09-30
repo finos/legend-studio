@@ -65,6 +65,10 @@ export {
   StereotypeReference,
   StereotypeExplicitReference,
 } from './models/metamodels/pure/packageableElements/domain/StereotypeReference';
+export {
+  TagReference,
+  TagExplicitReference,
+} from './models/metamodels/pure/packageableElements/domain/TagReference';
 
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';

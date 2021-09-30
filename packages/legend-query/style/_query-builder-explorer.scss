@@ -105,6 +105,10 @@
 }
 
 .query-builder__parameters {
+  .panel__header {
+    border-top: 0.1rem solid var(--color-dark-grey-200);
+  }
+
   &__content {
     overflow-y: auto;
     padding: 0.5rem 0;

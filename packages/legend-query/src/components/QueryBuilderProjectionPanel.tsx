@@ -462,7 +462,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                 className="query-builder__projection__column__action"
                 tabIndex={-1}
                 onClick={removeColumn}
-                title={`Remove`}
+                title="Remove"
               >
                 <TimesIcon />
               </button>

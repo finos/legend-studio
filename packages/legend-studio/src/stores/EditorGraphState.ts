@@ -94,6 +94,17 @@ import {
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
 
+export enum GraphBuilderStatus {
+  SUCCEEDED = 'SUCCEEDED',
+  FAILED = 'FAILED',
+  REDIRECTED_TO_TEXT_MODE = 'REDIRECTED_TO_TEXT_MODE',
+}
+
+export interface GraphBuilderReport {
+  status: GraphBuilderStatus;
+  error?: Error;
+}
+
 export class EditorGraphState {
   editorStore: EditorStore;
   graphGenerationState: GraphGenerationState;
@@ -256,7 +267,7 @@ export class EditorGraphState {
     }
   }
 
-  *buildGraph(entities: Entity[]): GeneratorFn<void> {
+  *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderReport> {
     try {
       this.isInitializingGraph = true;
       const startTime = Date.now();
@@ -313,6 +324,9 @@ export class EditorGraphState {
       this.editorStore.explorerTreeState.build();
       // add generation specification if model generation elements exists in graph and no generation specification
       this.graphGenerationState.addMissingGenerationSpecifications();
+      return {
+        status: GraphBuilderStatus.SUCCEEDED,
+      };
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -366,7 +380,10 @@ export class EditorGraphState {
           if (error2 instanceof NetworkClientError) {
             // in case the server cannot even transform the JSON due to corrupted protocol, we can redirect to model loader
             this.redirectToModelLoaderForDebugging(error2);
-            throw error2;
+            return {
+              status: GraphBuilderStatus.FAILED,
+              error: error2,
+            };
           }
         }
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
@@ -376,8 +393,15 @@ export class EditorGraphState {
             suppressCompilationFailureMessage: true,
           }),
         );
+        return {
+          status: GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE,
+          error,
+        };
       }
-      throw error;
+      return {
+        status: GraphBuilderStatus.FAILED,
+        error,
+      };
     } finally {
       this.isInitializingGraph = false;
     }
