@@ -434,9 +434,7 @@ export const QueryBuilderParameterPanel = observer(
             ))}
           {parametersDisabled && (
             <BlankPanelContent>
-              <div className="unsupported-element-editor__main">
-                <div className="unsupported-element-editor__summary">{`Parameters not supported in this mode`}</div>
-              </div>
+              Parameters not supported in this mode
             </BlankPanelContent>
           )}
         </div>

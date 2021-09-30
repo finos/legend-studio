@@ -282,7 +282,7 @@ const QueryBuilderExplorerContextMenu = observer(
           )}
         {node.type instanceof Class && (
           <MenuContentItem onClick={addAllChildrenToFetchStructure}>
-            Add All Properties to Fetch Structure
+            Add Properties to Fetch Structure
           </MenuContentItem>
         )}
         <MenuContentItem onClick={viewType}>View Type</MenuContentItem>
