@@ -203,11 +203,11 @@ export const getMappingElementSource = (
   } else if (
     mappingElement instanceof RootRelationalInstanceSetImplementation
   ) {
-    return mappingElement.mainTableAlias.relation.value;
+    return mappingElement.mainTableAlias?.relation.value;
   } else if (
     mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
   ) {
-    return mappingElement.rootInstanceSetImplementation.mainTableAlias.relation
+    return mappingElement.rootInstanceSetImplementation.mainTableAlias?.relation
       .value;
   } else if (mappingElement instanceof AggregationAwareSetImplementation) {
     return getMappingElementSource(mappingElement.mainSetImplementation);
@@ -289,6 +289,8 @@ export const createEnumerationMapping = (
   return enumMapping;
 };
 
+// We use get `own` Class mapping as embedded set implementations can only be within the
+// current class mapping i.e current mapping.
 const getEmbeddedSetImplmentations = (
   mapping: Mapping,
 ): InstanceSetImplementation[] =>

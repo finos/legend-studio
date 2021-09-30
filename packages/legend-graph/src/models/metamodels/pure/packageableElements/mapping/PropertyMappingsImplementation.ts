@@ -20,4 +20,5 @@ import type { PropertyMapping } from './PropertyMapping';
 export interface PropertyMappingsImplementation
   extends PropertyOwnerImplementation {
   propertyMappings: PropertyMapping[];
+  superSetImplementationId?: string | undefined;
 }

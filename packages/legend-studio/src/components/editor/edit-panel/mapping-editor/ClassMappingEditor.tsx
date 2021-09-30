@@ -132,7 +132,7 @@ export const ClassMappingEditor = observer(
         sourceType = CLASS_MAPPING_SOURCE_TYPE.RELATIONAL;
         sourceName = (
           setImplementation as RootRelationalInstanceSetImplementation
-        ).mainTableAlias.relation.value.name;
+        ).mainTableAlias?.relation.value.name;
         break;
       }
       case SET_IMPLEMENTATION_TYPE.OPERATION:

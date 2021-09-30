@@ -539,7 +539,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
     if (!this.identifiedConnections.length) {
       const allSourceClassesFromMappings = uniq(
         this.runtimeEditorState.runtimeValue.mappings.flatMap((mapping) =>
-          mapping.value.allOwnClassMappings
+          getAllClassMappings(mapping.value)
             .map((setImplementation) =>
               getMappingElementSource(setImplementation),
             )

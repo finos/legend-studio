@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, uniq } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
 import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
 import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
@@ -23,15 +23,21 @@ import type { Mapping } from '../models/metamodels/pure/packageableElements/mapp
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 
 export const getAllClassMappings = (mapping: Mapping): SetImplementation[] =>
-  mapping.allOwnClassMappings.concat(
-    mapping.allIncludedMappings.map((e) => e.allOwnClassMappings).flat(),
+  uniq(
+    mapping.allOwnClassMappings.concat(
+      mapping.allIncludedMappings.map((e) => e.allOwnClassMappings).flat(),
+    ),
   );
 
 export const getAllEnumerationMappings = (
   mapping: Mapping,
 ): EnumerationMapping[] =>
-  mapping.allOwnEnumerationMappings.concat(
-    mapping.allIncludedMappings.map((e) => e.allOwnEnumerationMappings).flat(),
+  uniq(
+    mapping.allOwnEnumerationMappings.concat(
+      mapping.allIncludedMappings
+        .map((e) => e.allOwnEnumerationMappings)
+        .flat(),
+    ),
   );
 
 export const extractClassMappingsFromAggregationAwareClassMappings = (
@@ -69,7 +75,7 @@ export const getOwnClassMappingById = (
     `Can't find class mapping with ID '${id}' in mapping '${mapping.path}'`,
   );
 
-export const getAllClassMappingById = (
+export const getClassMappingById = (
   mapping: Mapping,
   id: string,
 ): SetImplementation =>

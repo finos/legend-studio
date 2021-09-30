@@ -66,6 +66,7 @@ import {
   getRelationalInputType,
   RelationalInputData,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
+import { getAllClassMappings } from '../../../../../../../../helpers/MappingHelper';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -285,7 +286,7 @@ export const V1_buildMappingTest = (
 
 export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
   const classToSetImplMap = new Map<Class, Set<SetImplementation>>();
-  mapping.allOwnClassMappings.forEach((setImpl) => {
+  getAllClassMappings(mapping).forEach((setImpl) => {
     const targetClass = guaranteeNonNullable(setImpl.class.value);
     const setImplsWithTargetClass = classToSetImplMap.get(targetClass);
     if (setImplsWithTargetClass) {
@@ -300,7 +301,11 @@ export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
     const _classMappings = entries[1];
     if (_classMappings.size === 1) {
       const classMapping = Array.from(_classMappings.values())[0];
-      if (classMapping.root.value === false) {
+      // ensure you are only altering current mapping
+      if (
+        classMapping.root.value === false &&
+        classMapping.parent === mapping
+      ) {
         classMapping.root = InferableMappingElementRootImplicitValue.create(
           true,
           classMapping.root.value,
