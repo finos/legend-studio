@@ -45,7 +45,7 @@ import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mappin
 import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest';
 import {
   V1_multiplicitySchema,
-  V1_packageableElementPointerDeserrializerSchema,
+  V1_packageableElementPointerDeserializerSchema,
 } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import { V1_propertyPointerModelSchema } from './V1_DomainSerializationHelper';
 import { V1_FlatDataInputData } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData';
@@ -204,6 +204,7 @@ const rootRelationalClassMappingModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.ROOT_RELATIONAL),
     class: primitive(),
+    extendsClassMappingId: optional(primitive()),
     distinct: primitive(),
     filter: usingModelSchema(V1_filterMappingModelSchema),
     groupBy: custom(
@@ -243,6 +244,7 @@ const relationalClassMappingModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.RELATIONAL),
     class: optional(primitive()),
+    extendsClassMappingId: optional(primitive()),
     id: optional(primitive()),
     primaryKey: list(
       custom(
@@ -619,7 +621,7 @@ const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
   _type: usingConstantValueSchema(V1_InputDataType.FLAT_DATA),
   data: primitive(),
   sourceFlatData: usingModelSchema(
-    V1_packageableElementPointerDeserrializerSchema,
+    V1_packageableElementPointerDeserializerSchema,
   ),
 });
 

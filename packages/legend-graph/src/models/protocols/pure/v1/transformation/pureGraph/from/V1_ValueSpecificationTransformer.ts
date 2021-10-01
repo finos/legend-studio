@@ -40,10 +40,8 @@ import type {
   CollectionInstanceValue,
   InstanceValue,
 } from '../../../../../../metamodels/pure/valueSpecification/InstanceValue';
-import type {
-  LambdaFunction,
-  LambdaFunctionInstanceValue,
-} from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
+import { LambdaFunctionInstanceValue } from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
+import type { LambdaFunction } from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
 import type {
   AbstractPropertyExpression,
   FunctionExpression,
@@ -82,7 +80,7 @@ import type { PackageableElement } from '../../../../../../metamodels/pure/packa
 import type { INTERNAL__UnknownValueSpecification } from '../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
 import { V1_INTERNAL__UnknownValueSpecfication } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
 
-export class V1_ValueSpecificationTransformer
+class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
 {
   inScope: string[] = [];
@@ -352,14 +350,21 @@ export class V1_ValueSpecificationTransformer
   ): V1_ValueSpecification {
     const _variable = new V1_Variable();
     _variable.name = valueSpecification.name;
+    const genericType = valueSpecification.genericType;
+    if (this.isParameter && genericType) {
+      const multiplicity = new V1_Multiplicity();
+      multiplicity.lowerBound = valueSpecification.multiplicity.lowerBound;
+      multiplicity.upperBound = valueSpecification.multiplicity.upperBound;
+      _variable.multiplicity = multiplicity;
+      _variable.class = genericType.value.rawType.path;
+    }
     return _variable;
   }
 
   visit_LambdaFunctionInstanceValue(
     valueSpecification: LambdaFunctionInstanceValue,
   ): V1_ValueSpecification {
-    const _lambda = guaranteeNonNullable(valueSpecification.values[0]);
-    return V1_transformLambdaFunction(_lambda);
+    return V1_transformLambdaFunctionInstanceValue(valueSpecification);
   }
 
   visit_AbstractPropertyExpression(
@@ -449,9 +454,11 @@ export const V1_transformLambdaBody = (
   );
 };
 
-export function V1_transformLambdaFunction(
-  lambdaFunc: LambdaFunction,
+export function V1_transformLambdaFunctionInstanceValue(
+  valueSpecification: LambdaFunctionInstanceValue,
+  isRootLambda?: boolean,
 ): V1_Lambda {
+  const lambdaFunc = guaranteeNonNullable(valueSpecification.values[0]);
   const lambda = new V1_Lambda();
   lambda.parameters = lambdaFunc.functionType.parameters.map((p) =>
     guaranteeType(
@@ -459,7 +466,7 @@ export function V1_transformLambdaFunction(
         new V1_ValueSpecificationTransformer(
           [],
           new Map<string, unknown[]>(),
-          true,
+          Boolean(isRootLambda),
           false,
         ),
       ),
@@ -468,4 +475,21 @@ export function V1_transformLambdaFunction(
   );
   lambda.body = V1_transformLambdaBody(lambdaFunc, false);
   return lambda;
+}
+
+export function V1_transformRootValueSpecification(
+  valueSpecification: ValueSpecification,
+): V1_ValueSpecification {
+  if (valueSpecification instanceof LambdaFunctionInstanceValue) {
+    return V1_transformLambdaFunctionInstanceValue(valueSpecification, true);
+  } else {
+    return valueSpecification.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationTransformer(
+        [],
+        new Map<string, unknown[]>(),
+        true,
+        false,
+      ),
+    );
+  }
 }

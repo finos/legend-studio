@@ -22,17 +22,22 @@ import type { PropertyMapping } from '../models/metamodels/pure/packageableEleme
 import type { Property } from '../models/metamodels/pure/packageableElements/domain/Property';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { getClassMappingsByClass } from './MappingHelper';
+import {
+  getClassMappingsByClass,
+  getOwnClassMappingsByClass,
+} from './MappingHelper';
 
 /**
  * If this is the only mapping element for the target class, automatically mark it as root,
  * otherwise, if there is another set implementation make it non-root,
- * otherwise, leave other set implementation root status as-is
+ * otherwise, leave other set implementation root status as-is.
+ * NOTE: use get `OWN` class mappings as we are smartly updating the current mapping in the form editor,
+ * which does not support `include` mappings as of now.
  */
 export const updateRootSetImplementationOnCreate = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+  const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
     setImp.parent,
     setImp.class.value,
   ).filter((si) => si !== setImp);
@@ -48,11 +53,13 @@ export const updateRootSetImplementationOnCreate = (
 
 /**
  * If only one set implementation remained, it will be nominated as the new root
+ * NOTE: use get `OWN` class mappings as we are smartly updating the current mapping in the form editor,
+ * which does not support `include` mappings as of now.
  */
 export const updateRootSetImplementationOnDelete = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+  const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
     setImp.parent,
     setImp.class.value,
   ).filter((si) => si !== setImp);
@@ -64,11 +71,13 @@ export const updateRootSetImplementationOnDelete = (
 /**
  * Make the nominated set implementation root and flip the root flag of all other
  * set implementations with the same target
+ * NOTE: use get `OWN` class mappings as we are smartly updating the current mapping in the form editor,
+ * which does not support `include` mappings as of now.
  */
 export const nominateRootSetImplementation = (
   setImp: SetImplementation,
 ): void => {
-  const classMappingsWithSimilarTarget = getClassMappingsByClass(
+  const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
     setImp.parent,
     setImp.class.value,
   );

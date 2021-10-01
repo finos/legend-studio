@@ -144,11 +144,21 @@ export const OperationSetImplementationEditor = observer(
     // actions
     const visit =
       (param: SetImplementationContainer): (() => void) =>
-      (): void =>
-        mappingEditorState.openMappingElement(
-          param.setImplementation.value,
-          true,
-        );
+      (): void => {
+        const parent = param.setImplementation.value.parent;
+        // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
+        if (parent !== mappingEditorState.element) {
+          editorStore.openElement(parent);
+          editorStore
+            .getCurrentEditorState(MappingEditorState)
+            .openMappingElement(param.setImplementation.value, false);
+        } else {
+          mappingEditorState.openMappingElement(
+            param.setImplementation.value,
+            true,
+          );
+        }
+      };
 
     useEffect(() => {
       if (!isReadOnly) {

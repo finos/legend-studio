@@ -149,9 +149,13 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           );
           const element = getSchemaSet(path, context.graph);
           element.format = elementProtocol.format;
-          element.schemas = elementProtocol.schemas.map(
-            (schema) => new Schema(schema.content, schema.id, schema.location),
-          );
+          element.schemas = elementProtocol.schemas.map((schema) => {
+            const schemaElement = new Schema();
+            schemaElement.content = schema.content;
+            schemaElement.id = schema.id;
+            schemaElement.location = schema.location;
+            return schemaElement;
+          });
         },
       }),
     ];

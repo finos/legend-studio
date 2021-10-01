@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  assertType,
-  addUniqueEntry,
-  guaranteeNonNullable,
-  deleteEntry,
-} from '@finos/legend-shared';
+import { assertType, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type {
   AbstractProperty,
@@ -129,9 +124,15 @@ const getPrunableNodes = (
 ): QueryBuilderGraphFetchTreeNodeData[] =>
   Array.from(treeData.nodes.values()).filter(
     (node) =>
-      node.tree instanceof PropertyGraphFetchTree &&
-      node.type instanceof Class &&
-      node.childrenIds.length === 0,
+      // childless class nodes
+      (node.tree instanceof PropertyGraphFetchTree &&
+        node.type instanceof Class &&
+        node.childrenIds.length === 0) ||
+      // orphan node
+      (node.tree instanceof PropertyGraphFetchTree &&
+        !(node.type instanceof Class) &&
+        node.parentId &&
+        !treeData.nodes.has(node.parentId)),
   );
 
 const removeNode = (
@@ -139,7 +140,7 @@ const removeNode = (
   node: QueryBuilderGraphFetchTreeNodeData,
 ): void => {
   const parentNode = node.parentId
-    ? guaranteeNonNullable(treeData.nodes.get(node.parentId))
+    ? treeData.nodes.get(node.parentId)
     : undefined;
   if (parentNode) {
     deleteEntry(parentNode.childrenIds, node.id);

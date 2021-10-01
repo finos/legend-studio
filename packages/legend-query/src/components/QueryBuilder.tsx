@@ -39,6 +39,7 @@ import {
   ApplicationBackdrop,
   useApplicationStore,
 } from '@finos/legend-application';
+import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
 
 enum QUERY_HOTKEY {
   COMPILE = 'COMPILE',
@@ -164,7 +165,6 @@ export const QueryBuilder = observer(
         );
       },
     };
-
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
@@ -179,12 +179,34 @@ export const QueryBuilder = observer(
                 {isQuerySupported ? (
                   <ResizablePanelGroup orientation="vertical">
                     <ResizablePanel size={450} minSize={300}>
-                      <QueryBuilderSetupPanel
-                        queryBuilderState={queryBuilderState}
-                      />
-                      <QueryBuilderExplorerPanel
-                        queryBuilderState={queryBuilderState}
-                      />
+                      <ResizablePanelGroup orientation="horizontal">
+                        {queryBuilderState.querySetupState.showSetupPanel && (
+                          <ResizablePanel minSize={30} direction={1}>
+                            <QueryBuilderSetupPanel
+                              queryBuilderState={queryBuilderState}
+                            />
+                          </ResizablePanel>
+                        )}
+                        {!queryBuilderState.querySetupState.showSetupPanel && (
+                          <ResizablePanel minSize={30} size={30} direction={1}>
+                            <QueryBuilderSetupPanel
+                              queryBuilderState={queryBuilderState}
+                            />
+                          </ResizablePanel>
+                        )}
+                        <ResizablePanelSplitter />
+                        <ResizablePanel minSize={30} direction={[1, -1]}>
+                          <QueryBuilderExplorerPanel
+                            queryBuilderState={queryBuilderState}
+                          />
+                        </ResizablePanel>
+                        <ResizablePanelSplitter />
+                        <ResizablePanel minSize={30} direction={-1}>
+                          <QueryBuilderParameterPanel
+                            queryBuilderState={queryBuilderState}
+                          />
+                        </ResizablePanel>
+                      </ResizablePanelGroup>
                     </ResizablePanel>
                     <ResizablePanelSplitter />
                     <ResizablePanel minSize={300}>

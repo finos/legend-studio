@@ -46,7 +46,6 @@ import {
 } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
   V1_runtimePointerModelSchema,
-  V1_legacyRuntimeModelSchema,
   V1_RuntimeType,
 } from './V1_RuntimeSerializationHelper';
 import type { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
@@ -82,7 +81,7 @@ const V1_serializeRuntimeValue = (
   } else if (protocol instanceof V1_EngineRuntime) {
     return serialize(V1_EngineRuntime, protocol);
   } else if (protocol instanceof V1_LegacyRuntime) {
-    return serialize(V1_legacyRuntimeModelSchema, protocol);
+    return serialize(V1_LegacyRuntime, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize runtime value`,
@@ -100,7 +99,7 @@ const V1_deserializeRuntimeValue = (
       return deserialize(V1_EngineRuntime, json);
     case V1_RuntimeType.LEGACY_RUNTIME:
     case undefined:
-      return deserialize(V1_legacyRuntimeModelSchema, json);
+      return deserialize(V1_LegacyRuntime, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deeserialize runtime value of type '${json._type}'`,

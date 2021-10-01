@@ -24,7 +24,7 @@ import {
 } from '../../../GraphManagerTestUtils';
 import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { PRIMITIVE_TYPE } from '../../../MetaModelConst';
@@ -93,7 +93,7 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
     'meta::pure::tests::model::simple::FirmExtension',
   );
   const firmExtensionSetImpl = guaranteeType(
-    getClassMappingsByClass(simpleRelationalMappingInc, _class)[0],
+    getOwnClassMappingsByClass(simpleRelationalMappingInc, _class)[0],
     RootRelationalInstanceSetImplementation,
   );
   expect(firmExtensionSetImpl.propertyMappings).toHaveLength(3);

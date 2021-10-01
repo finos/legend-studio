@@ -100,10 +100,15 @@ export const QueryBuilderResultPanel = observer(
     const applicationStore = useApplicationStore();
     const resultState = queryBuilderState.resultState;
     const executionResult = resultState.executionResult;
-    const execute = (): Promise<void> =>
-      flowResult(resultState.execute()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
+    const execute = (): void => {
+      if (queryBuilderState.queryParametersState.parameters.length) {
+        queryBuilderState.queryParametersState.setValuesEditorIsOpen(true);
+      } else {
+        flowResult(resultState.execute()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
     const executePlan = (): Promise<void> =>
       flowResult(resultState.generateExecutionPlan()).catch(
         applicationStore.alertIllegalUnhandledError,

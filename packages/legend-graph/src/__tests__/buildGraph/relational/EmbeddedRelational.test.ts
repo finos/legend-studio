@@ -22,7 +22,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '../../../GraphManagerTestUtils';
 import type { GraphManagerState } from '../../../GraphManagerState';
-import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 
@@ -52,7 +52,7 @@ test(unitTest('Embedded Relational Mapping'), () => {
     'meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded',
   );
   const personClassMapping = guaranteeType(
-    getClassMappingsByClass(
+    getOwnClassMappingsByClass(
       mapping,
       graph.getClass('meta::pure::tests::model::simple::Person'),
     )[0],

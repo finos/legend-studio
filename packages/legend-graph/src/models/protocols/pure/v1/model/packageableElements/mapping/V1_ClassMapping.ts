@@ -46,6 +46,7 @@ export abstract class V1_ClassMapping implements Hashable {
   class?: string | undefined;
   root!: boolean;
   mappingClass?: V1_MappingClass | undefined;
+  extendsClassMappingId?: string | undefined;
 
   get hashCode(): string {
     return hashArray([

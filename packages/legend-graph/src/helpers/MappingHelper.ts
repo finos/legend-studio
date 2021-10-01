@@ -14,13 +14,31 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, uniq } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
 import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
 import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+
+export const getAllClassMappings = (mapping: Mapping): SetImplementation[] =>
+  uniq(
+    mapping.allOwnClassMappings.concat(
+      mapping.allIncludedMappings.map((e) => e.allOwnClassMappings).flat(),
+    ),
+  );
+
+export const getAllEnumerationMappings = (
+  mapping: Mapping,
+): EnumerationMapping[] =>
+  uniq(
+    mapping.allOwnEnumerationMappings.concat(
+      mapping.allIncludedMappings
+        .map((e) => e.allOwnEnumerationMappings)
+        .flat(),
+    ),
+  );
 
 export const extractClassMappingsFromAggregationAwareClassMappings = (
   mapping: Mapping,
@@ -45,16 +63,38 @@ export const extractClassMappingsFromAggregationAwareClassMappings = (
   ];
 };
 
+export const getOwnClassMappingById = (
+  mapping: Mapping,
+  id: string,
+): SetImplementation =>
+  guaranteeNonNullable(
+    [
+      ...mapping.allOwnClassMappings,
+      ...extractClassMappingsFromAggregationAwareClassMappings(mapping),
+    ].find((classMapping) => classMapping.id.value === id),
+    `Can't find class mapping with ID '${id}' in mapping '${mapping.path}'`,
+  );
+
 export const getClassMappingById = (
   mapping: Mapping,
   id: string,
 ): SetImplementation =>
   guaranteeNonNullable(
     [
-      ...mapping.allClassMappings,
+      ...getAllClassMappings(mapping),
       ...extractClassMappingsFromAggregationAwareClassMappings(mapping),
     ].find((classMapping) => classMapping.id.value === id),
     `Can't find class mapping with ID '${id}' in mapping '${mapping.path}'`,
+  );
+
+export const getOwnClassMappingsByClass = (
+  mapping: Mapping,
+  _class: Class,
+): SetImplementation[] =>
+  // TODO: Add association property Mapping to class mappings, AggregationAwareSetImplementation, mappingClass
+  // NOTE: Add in the proper order so find root can resolve properly down the line
+  mapping.allOwnClassMappings.filter(
+    (classMapping) => classMapping.class.value === _class,
   );
 
 export const getClassMappingsByClass = (
@@ -63,7 +103,7 @@ export const getClassMappingsByClass = (
 ): SetImplementation[] =>
   // TODO: Add association property Mapping to class mappings, AggregationAwareSetImplementation, mappingClass
   // NOTE: Add in the proper order so find root can resolve properly down the line
-  mapping.allClassMappings.filter(
+  getAllClassMappings(mapping).filter(
     (classMapping) => classMapping.class.value === _class,
   );
 

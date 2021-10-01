@@ -44,7 +44,7 @@ export class Binding extends Store implements Hashable {
     });
 
     this.contentType = '';
-    this.modelUnit = new ModelUnit([], []);
+    this.modelUnit = new ModelUnit();
   }
 
   setSchemaSet(value: string): void {

@@ -65,6 +65,7 @@ import {
   RawLambda,
   SetImplementation,
   OperationSetImplementation,
+  getAllClassMappings,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
@@ -98,7 +99,7 @@ export const ClassMappingSelectorModal = observer(
         option.value.label.value,
     });
     const classMappingOptions = uniq(
-      mappingEditorState.mapping.allClassMappings
+      getAllClassMappings(mappingEditorState.mapping)
         .filter(
           (classMapping) =>
             !classMappingFilterFn || classMappingFilterFn(classMapping),

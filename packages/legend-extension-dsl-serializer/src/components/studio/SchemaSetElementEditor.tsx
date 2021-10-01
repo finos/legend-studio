@@ -50,15 +50,15 @@ const SchemaSetFormatBasicEditor = observer(
         !isReadOnly && schemaSet.setFormat(val);
       };
     return (
-      <div className="format-editor">
+      <div className="schema-set-format-editor">
         <DropdownMenu
           disabled={isReadOnly}
           content={
-            <MenuContent className="format-editor__dropdown">
+            <MenuContent className="schema-set-format-editor__dropdown">
               {Object.values(FORMAT_TYPE).map((format) => (
                 <MenuContentItem
                   key={format}
-                  className="format-editor__option"
+                  className="schema-set-format-editor__option"
                   onClick={changeType(format)}
                 >
                   {format}
@@ -71,9 +71,11 @@ const SchemaSetFormatBasicEditor = observer(
             transformOrigin: { vertical: 'top', horizontal: 'right' },
           }}
         >
-          <div className="format-editor__type">
-            <div className="format-editor__type__label">{schemaSet.format}</div>
-            <div className="format-editor__type__icon">
+          <div className="schema-set-format-editor__type">
+            <div className="schema-set-format-editor__type__label">
+              {schemaSet.format}
+            </div>
+            <div className="schema-set-format-editor__type__icon">
               <CaretDownIcon />
             </div>
           </div>
@@ -97,7 +99,6 @@ const SchemaBasicEditor = observer(
       event,
     ) => schema.setLocation(event.target.value);
     const editorOptions: editor.IEditorOptions & editor.IGlobalEditorOptions = {
-      theme: 'vs',
       lineNumbers: 'off',
       fontFamily: 'Arial',
       lineDecorationsWidth: 0,
@@ -185,7 +186,7 @@ export const SchemaSetEditor = observer(() => {
   const [schemaState, setSchema] =
     schemaSet.schemas.length !== 0
       ? useState(schemaSet.schemas[schemaSet.schemas.length - 1])
-      : useState(new Schema(''));
+      : useState(new Schema());
   const [index, setIndex] =
     schemaSet.schemas.length !== 0
       ? useState(schemaSet.schemas.length)
@@ -198,7 +199,7 @@ export const SchemaSetEditor = observer(() => {
     };
   const addSchema = (): void => {
     if (!isReadOnly) {
-      schemaSet.addSchema(new Schema(''));
+      schemaSet.addSchema(new Schema());
       setSchema(schemaSet.schemas[schemaSet.schemas.length - 1]);
       setIndex(schemaSet.schemas.length);
     }
@@ -209,7 +210,7 @@ export const SchemaSetEditor = observer(() => {
       schemaSet.deleteSchema(val);
       schemaSet.schemas.length !== 0
         ? setSchema(schemaSet.schemas[schemaSet.schemas.length - 1])
-        : setSchema(new Schema(''));
+        : setSchema(new Schema());
       setIndex(schemaSet.schemas.length);
     };
   return (
@@ -271,7 +272,7 @@ export const SchemaSetEditor = observer(() => {
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-light-grey-400)" />
+          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
         </ResizablePanelSplitter>
         <ResizablePanel>
           {' '}

@@ -24,7 +24,7 @@ export class Schema implements Hashable {
   location?: string | undefined;
   content: string;
 
-  constructor(content: string, id?: string, location?: string) {
+  constructor() {
     makeObservable(this, {
       id: observable.ref,
       location: observable.ref,
@@ -35,9 +35,7 @@ export class Schema implements Hashable {
       hashCode: computed,
     });
 
-    this.id = id;
-    this.location = location;
-    this.content = content;
+    this.content = '';
   }
 
   setId(value: string): void {

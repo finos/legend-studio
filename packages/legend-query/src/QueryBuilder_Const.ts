@@ -68,6 +68,9 @@ export enum SUPPORTED_FUNCTIONS {
   STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
   SUM = 'meta::pure::functions::math::sum',
   UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+
+  // variables
+  LET = 'meta::pure::functions::lang::letFunction',
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
