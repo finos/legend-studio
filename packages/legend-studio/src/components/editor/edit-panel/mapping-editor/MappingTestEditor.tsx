@@ -38,6 +38,10 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
@@ -48,6 +52,8 @@ import {
   isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,
+  UnsupportedOperationError,
+  prettyCONSTName,
 } from '@finos/legend-shared';
 import { VscError } from 'react-icons/vsc';
 import {
@@ -70,6 +76,8 @@ import {
   RawLambda,
   SetImplementation,
   OperationSetImplementation,
+  RelationalInputType,
+  ObjectInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
@@ -304,6 +312,21 @@ export const MappingTestFlatDataInputDataBuilder = observer(
   },
 );
 
+export const getRelationalInputTestDataEditorLanguage = (
+  type: RelationalInputType,
+): EDITOR_LANGUAGE => {
+  switch (type) {
+    case RelationalInputType.SQL:
+      return EDITOR_LANGUAGE.MARKDOWN;
+    case RelationalInputType.CSV:
+      return EDITOR_LANGUAGE.TEXT;
+    default:
+      throw new UnsupportedOperationError(
+        `Can't derive text editor format for text content of type '${type}'`,
+      );
+  }
+};
+
 /**
  * Right now, we always default this to use Local H2 connection.
  */
@@ -318,17 +341,68 @@ export const MappingTestRelationalInputDataBuilder = observer(
     const updateInput = (val: string): void =>
       inputDataState.inputData.setData(val);
 
-    // TODO: handle CSV input type
-
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
         <StudioTextInputEditor
-          language={EDITOR_LANGUAGE.SQL}
+          language={getRelationalInputTestDataEditorLanguage(
+            inputDataState.inputData.inputType,
+          )}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
           updateInput={updateInput}
         />
       </div>
+    );
+  },
+);
+
+export const MappingTestInputDataTypeBuilder = observer(
+  (props: {
+    inputDataState:
+      | MappingTestObjectInputDataState
+      | MappingTestRelationalInputDataState;
+    isReadOnly: boolean;
+  }) => {
+    const { inputDataState, isReadOnly } = props;
+    const inputTypeList: string[] = [];
+    const chosenInputType = inputDataState.inputData.inputType;
+
+    if (inputDataState instanceof MappingTestObjectInputDataState) {
+      inputTypeList.push(ObjectInputType.JSON);
+    } else {
+      inputTypeList.push(RelationalInputType.CSV, RelationalInputType.SQL);
+    }
+
+    const changeInputType =
+      (val: string): (() => void) =>
+      (): void => {
+        inputDataState.inputData.setInputType(val);
+      };
+    return (
+      <DropdownMenu
+        className="edit-panel__header__tab"
+        disabled={isReadOnly}
+        content={
+          <MenuContent>
+            {inputTypeList.map((mode) => (
+              <MenuContentItem
+                key={mode}
+                className="edit-panel__header__dropdown__tab__option"
+                onClick={changeInputType(mode)}
+              >
+                {prettyCONSTName(mode)}
+              </MenuContentItem>
+            ))}
+          </MenuContent>
+        }
+      >
+        <div className="edit-panel__header__tab__content">
+          <div className="edit-panel__header__tab__label">
+            {prettyCONSTName(chosenInputType)}
+          </div>
+          <CaretDownIcon />
+        </div>
+      </DropdownMenu>
     );
   },
 );
@@ -387,6 +461,22 @@ export const MappingTestInputDataBuilder = observer(
       inputDataBuilder = null;
     }
 
+    //input type builder
+    let inputTypeBuilder: React.ReactNode;
+    if (
+      inputDataState instanceof MappingTestRelationalInputDataState ||
+      inputDataState instanceof MappingTestObjectInputDataState
+    ) {
+      inputTypeBuilder = (
+        <MappingTestInputDataTypeBuilder
+          inputDataState={inputDataState}
+          isReadOnly={isReadOnly}
+        />
+      );
+    } else {
+      inputTypeBuilder = null;
+    }
+
     return (
       <div className="panel mapping-test-editor__input-data-panel">
         <div className="panel__header">
@@ -403,6 +493,7 @@ export const MappingTestInputDataBuilder = observer(
             >
               <PencilIcon />
             </button>
+            {inputTypeBuilder}
           </div>
         </div>
         {inputDataBuilder}
