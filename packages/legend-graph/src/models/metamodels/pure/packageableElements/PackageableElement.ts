@@ -63,7 +63,7 @@ export interface PackageableElementVisitor<T> {
 
   visit_FlatData(element: FlatData): T;
   visit_Database(element: Database): T;
-  visit_ServiceStore(element: ServiceStore): T;
+  //visit_ServiceStore(element: ServiceStore): T;
   visit_Service(element: Service): T;
   visit_FileGenerationSpecification(element: FileGenerationSpecification): T;
   visit_GenerationSpecification(element: GenerationSpecification): T;

@@ -44,6 +44,8 @@ import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMa
 import { V1_resolvePathsInRawLambda } from './helpers/V1_ValueSpecificationPathResolver';
 import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
 import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
+import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   implements V1_ClassMappingVisitor<SetImplementation>
@@ -54,6 +56,29 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   constructor(context: V1_GraphBuilderContext, parent: Mapping) {
     this.context = context;
     this.parent = parent;
+  }
+
+  visit_ClassMapping(classMapping: V1_ClassMapping): SetImplementation {
+    const extraClassMappingBuilders = this.context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraClassMappingFirstPassBuilders?.() ?? [],
+    );
+    for (const builder of extraClassMappingBuilders) {
+      const extraClassMapping = builder(
+        classMapping,
+        this.context,
+        this.parent,
+      );
+      if (extraClassMapping) {
+        return extraClassMapping;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't build new connection: no compatible builder available from plugins`,
+      classMapping,
+    );
   }
 
   visit_OperationClassMapping(

@@ -107,11 +107,11 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
     );
   }
 
-  visit_ServiceStore(element: V1_ServiceStore): void {
+  /*visit_ServiceStore(element: V1_ServiceStore): void {
     this.context.graph.getServiceStore(
       this.context.graph.buildPath(element.package, element.name),
     );
-  }
+  }*/
 
   visit_Mapping(element: V1_Mapping): void {
     throw new UnsupportedOperationError();

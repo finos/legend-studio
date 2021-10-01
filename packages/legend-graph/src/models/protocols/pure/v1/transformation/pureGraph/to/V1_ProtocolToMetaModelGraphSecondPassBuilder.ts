@@ -213,14 +213,14 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     );
   }
 
-  visit_ServiceStore(element: V1_ServiceStore): void {
+  /*visit_ServiceStore(element: V1_ServiceStore): void {
     assertNonEmptyString(element.docLink, 'Service store doc link is missing');
     const serviceStore = this.context.graph.getServiceStore(
       this.context.graph.buildPath(element.package, element.name),
     );
     // TODO includedStores
     serviceStore.docLink = element.docLink;
-  }
+  }*/
 
   visit_Mapping(element: V1_Mapping): void {
     const mapping = this.context.graph.getMapping(

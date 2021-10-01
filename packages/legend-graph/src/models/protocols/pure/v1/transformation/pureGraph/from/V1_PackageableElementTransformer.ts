@@ -143,9 +143,9 @@ export class V1_PackageableElementTransformer
     return V1_transformDatabase(element, this.context);
   }
 
-  visit_ServiceStore(element: ServiceStore): V1_PackageableElement {
+  /*visit_ServiceStore(element: ServiceStore): V1_PackageableElement {
     return V1_transformServiceStore(element);
-  }
+  }*/
 
   visit_Mapping(element: Mapping): V1_PackageableElement {
     return V1_transformMapping(element, this.context);

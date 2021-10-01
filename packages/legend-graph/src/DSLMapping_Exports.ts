@@ -72,4 +72,6 @@ export {
   V1_EngineRuntime,
   V1_Runtime,
 } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
+export { V1_ClassMapping } from './models/protocols/pure/v1/model/packageableElements/mapping/V1_ClassMapping';
+export type { V1_ClassMappingVisitor } from './models/protocols/pure/v1/model/packageableElements/mapping/V1_ClassMapping';
 export * from './models/protocols/pure/DSLMapping_PureProtocolProcessorPlugin_Extension';

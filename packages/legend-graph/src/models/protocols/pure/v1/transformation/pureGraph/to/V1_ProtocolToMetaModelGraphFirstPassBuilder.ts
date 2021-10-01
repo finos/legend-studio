@@ -254,7 +254,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     return database;
   }
 
-  visit_ServiceStore(element: V1_ServiceStore): PackageableElement {
+  /*visit_ServiceStore(element: V1_ServiceStore): PackageableElement {
     assertNonEmptyString(element.package, 'Service store package is missing');
     assertNonEmptyString(element.name, 'Service store name is missing');
     const serviceStore = new ServiceStore(element.name);
@@ -271,7 +271,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       .addElement(serviceStore);
     this.context.currentSubGraph.setOwnStore(path, serviceStore);
     return serviceStore;
-  }
+  }*/
 
   visit_Mapping(element: V1_Mapping): PackageableElement {
     assertNonEmptyString(element.package, 'Mapping package is missing');

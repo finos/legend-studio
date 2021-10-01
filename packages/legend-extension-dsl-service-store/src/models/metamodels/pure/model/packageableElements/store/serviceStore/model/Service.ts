@@ -1,0 +1,85 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { observable, computed, makeObservable } from 'mobx';
+import {guaranteeType, hashArray} from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
+import { ServiceStoreElement } from './ServiceStoreElement';
+import { ServiceParameter } from './ServiceParameter';
+import type { SecurityScheme } from './SecurityScheme';
+import type { TypeReference } from './TypeReference';
+import type { ComplexTypeReference } from './ComplexTypeReference';
+import { StringTypeReference } from './StringTypeReference';
+import type { ServiceStore } from './ServiceStore';
+import type { ServiceGroup } from './ServiceGroup';
+
+export enum HTTP_METHOD {
+  GET = 'GET',
+  POST = 'POST',
+}
+
+export class Service extends ServiceStoreElement implements Hashable {
+  requestBody?: TypeReference | undefined;
+  method!: HTTP_METHOD;
+  parameters: ServiceParameter[] = [];
+  response!: ComplexTypeReference;
+  security: SecurityScheme[] = [];
+
+  constructor(
+    id: string,
+    path: string,
+    owner: ServiceStore,
+    parent: ServiceGroup | undefined,
+  ) {
+    super(id, path, owner, parent);
+
+    makeObservable(this, {
+      requestBody: observable,
+      method: observable,
+      parameters: observable,
+      response: observable,
+      security: observable.ref,
+      hashCode: computed,
+    });
+  }
+
+  getParameter = (value: string): ServiceParameter =>
+    guaranteeType(
+      this.parameters.find(
+        (parameter: ServiceParameter): ServiceParameter | undefined => {
+          if (parameter.name === value) {
+            return parameter;
+          }
+          return undefined;
+        },
+      ),
+      ServiceParameter,
+      `Can't find service parameter '${value}'`,
+    );
+
+  override get hashCode(): string {
+    return hashArray([
+      SERVICE_STORE_HASH_STRUCTURE.SERVICE,
+      super.hashCode,
+      this.requestBody ?? new StringTypeReference(true),
+      this.method,
+      hashArray(this.parameters),
+      this.response,
+      hashArray(this.security ?? []),
+    ]);
+  }
+}

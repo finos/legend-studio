@@ -27,6 +27,7 @@ import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElem
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface V1_ClassMappingVisitor<T> {
+  visit_ClassMapping(classMapping: V1_ClassMapping): T;
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): T;
   visit_PureInstanceClassMapping(classMapping: V1_PureInstanceClassMapping): T;
   visit_RootFlatDataClassMapping(classMapping: V1_RootFlatDataClassMapping): T;

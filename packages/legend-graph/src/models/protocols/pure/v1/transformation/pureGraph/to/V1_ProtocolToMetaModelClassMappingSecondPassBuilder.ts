@@ -59,6 +59,8 @@ import {
   extractClassMappingsFromAggregationAwareClassMappings,
   getClassMappingById,
 } from '../../../../../../../helpers/MappingHelper';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
+import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping';
 
 export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
@@ -69,6 +71,18 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   constructor(context: V1_GraphBuilderContext, parent: Mapping) {
     this.context = context;
     this.parent = parent;
+  }
+
+  visit_ClassMapping(classMapping: V1_ClassMapping): void {
+    const extraClassMappingBuilders = this.context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraClassMappingSecondPassBuilders?.() ?? [],
+    );
+    for (const builder of extraClassMappingBuilders) {
+      builder(classMapping, this.context, this.parent);
+    }
   }
 
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): void {

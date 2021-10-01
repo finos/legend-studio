@@ -139,6 +139,8 @@ import { V1_RelationalInputData } from '../../../model/packageableElements/store
 import { SOURCE_INFORMATION_KEY } from '../../../../../../../MetaModelConst';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import { toJS } from 'mobx';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
+import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -1005,6 +1007,27 @@ export class V1_SetImplementationTransformer
 
   constructor(context: V1_GraphTransformerContext) {
     this.context = context;
+  }
+
+  visit_InstanceSetImplementation(
+    setImplementation: InstanceSetImplementation,
+  ): V1_ClassMapping | undefined {
+    const extraClassMappingTransformers = this.context.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraClassMappingTransformers?.() ?? [],
+    );
+    for (const transformer of extraClassMappingTransformers) {
+      const classMapping = transformer(setImplementation, this.context);
+      if (classMapping) {
+        return classMapping;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't transform class mapping: no compatible transformer available from plugins`,
+      setImplementation,
+    );
   }
 
   visit_OperationSetImplementation(

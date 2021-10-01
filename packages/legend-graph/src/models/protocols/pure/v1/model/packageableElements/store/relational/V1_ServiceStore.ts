@@ -35,6 +35,7 @@ export class V1_ServiceStore extends V1_Store implements Hashable {
   accept_PackageableElementVisitor<T>(
     visitor: V1_PackageableElementVisitor<T>,
   ): T {
-    return visitor.visit_ServiceStore(this);
+    //return visitor.visit_ServiceStore(this);
+    return visitor.visit_PackageableElement(this);
   }
 }

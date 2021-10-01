@@ -159,14 +159,14 @@ export class V1_PackageableElementSerializer
     return serialize(V1_databaseModelSchema, element);
   }
 
-  visit_ServiceStore(
+  /*visit_ServiceStore(
     element: V1_ServiceStore,
   ): PlainObject<V1_PackageableElement> {
     return serialize(V1_serviceStoreModelSchema, element);
-  }
+  }*/
 
   visit_Mapping(element: V1_Mapping): PlainObject<V1_PackageableElement> {
-    return serialize(V1_mappingModelSchema, element);
+    return serialize(V1_mappingModelSchema(this.plugins), element);
   }
 
   visit_Service(element: V1_Service): PlainObject<V1_PackageableElement> {
@@ -232,10 +232,10 @@ export const V1_deserializePackageableElement = (
       return deserialize(V1_flatDataModelSchema, json);
     case V1_DATABASE_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_databaseModelSchema, json);
-    case V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_serviceStoreModelSchema, json);
+    /*case V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE:
+      return deserialize(V1_serviceStoreModelSchema, json);*/
     case V1_MAPPING_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_mappingModelSchema, json);
+      return deserialize(V1_mappingModelSchema(plugins), json);
     case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_servicedModelSchema, json);
     case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:

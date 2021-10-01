@@ -232,3 +232,4 @@ export * from './DSLService_Exports';
 export * from './DSLGenerationSpecification_Exports';
 export * from './StoreFlatData_Exports';
 export * from './StoreRelational_Exports';
+export * from './DSLDomain_Exports';
