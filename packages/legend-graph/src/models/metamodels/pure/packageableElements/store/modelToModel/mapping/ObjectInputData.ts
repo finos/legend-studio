@@ -63,6 +63,7 @@ export class ObjectInputData extends InputData implements Hashable {
       inputType: observable,
       data: observable,
       setData: action,
+      setInputType: action,
       validationResult: computed,
       hashCode: computed,
     });
@@ -78,6 +79,10 @@ export class ObjectInputData extends InputData implements Hashable {
 
   setData(val: string): void {
     this.data = val;
+  }
+
+  setInputType(val: string): void {
+    this.inputType = getObjectInputType(val);
   }
 
   get validationResult(): ValidationIssue | undefined {
