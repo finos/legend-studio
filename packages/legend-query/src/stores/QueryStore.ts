@@ -41,6 +41,7 @@ import type {
   GraphManagerState,
 } from '@finos/legend-graph';
 import {
+  getAllClassMappings,
   toLightQuery,
   Query,
   PureExecution,
@@ -564,10 +565,9 @@ export class QueryStore {
         PackageableElementExplicitReference.create(queryInfoState.runtime),
       );
       if (!this.queryBuilderState.querySetupState._class) {
-        const possibleTargets =
-          this.queryBuilderState.querySetupState.mapping.allClassMappings.map(
-            (classMapping) => classMapping.class.value,
-          );
+        const possibleTargets = getAllClassMappings(
+          this.queryBuilderState.querySetupState.mapping,
+        ).map((classMapping) => classMapping.class.value);
         if (possibleTargets.length !== 0) {
           this.queryBuilderState.querySetupState._class = possibleTargets[0];
         }

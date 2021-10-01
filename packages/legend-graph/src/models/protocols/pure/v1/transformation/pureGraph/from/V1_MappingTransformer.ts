@@ -825,9 +825,12 @@ const transformRootRelationalSetImpl = (
   classMapping.class = V1_transformElementReference(element.class);
   classMapping.distinct = element.distinct ?? false;
   classMapping.id = mappingElementIdSerializer(element.id);
-  classMapping.mainTable = V1_transformTableAliasToTablePointer(
-    element.mainTableAlias,
-  );
+  if (element.mainTableAlias) {
+    classMapping.mainTable = V1_transformTableAliasToTablePointer(
+      element.mainTableAlias,
+    );
+  }
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.primaryKey = element.primaryKey.map((pk) =>
     V1_transformRelationalOperationElement(pk, context),
   );

@@ -46,6 +46,7 @@ export class V1_RootRelationalClassMapping
       this.distinct.toString(),
       hashArray(this.groupBy),
       this.filter ?? '',
+      this.extendsClassMappingId ?? '',
     ]);
   }
 }

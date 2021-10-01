@@ -40,6 +40,7 @@ import type {
   PackageableElementReference,
 } from '@finos/legend-graph';
 import {
+  getAllClassMappings,
   PackageableRuntime,
   Runtime,
   EngineRuntime,
@@ -87,7 +88,7 @@ const getStoresFromMappings = (
 ): Store[] =>
   uniq(
     mappings.flatMap((mapping) =>
-      mapping.allClassMappings
+      getAllClassMappings(mapping)
         .map((setImplementation) =>
           getClassMappingStore(setImplementation, graph),
         )
@@ -207,7 +208,7 @@ export const getRuntimeExplorerTreeData = (
   const nodes = new Map<string, RuntimeExplorerTreeNodeData>();
   const allSourceClassesFromMappings = uniq(
     runtimeValue.mappings.flatMap((mapping) =>
-      mapping.value.allClassMappings
+      getAllClassMappings(mapping.value)
         .map((setImplementation) => getMappingElementSource(setImplementation))
         .filter((source): source is Class => source instanceof Class),
     ),
@@ -538,7 +539,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
     if (!this.identifiedConnections.length) {
       const allSourceClassesFromMappings = uniq(
         this.runtimeEditorState.runtimeValue.mappings.flatMap((mapping) =>
-          mapping.value.allClassMappings
+          getAllClassMappings(mapping.value)
             .map((setImplementation) =>
               getMappingElementSource(setImplementation),
             )

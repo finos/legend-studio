@@ -52,8 +52,8 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
       deleteAssociationMapping: action,
       deleteTest: action,
       addTest: action,
-      allClassMappings: computed,
-      allEnumerationMappings: computed,
+      allOwnClassMappings: computed,
+      allOwnEnumerationMappings: computed,
       allIncludedMappings: computed,
       isStub: computed,
       _elementHashCode: override,
@@ -92,13 +92,11 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     addUniqueEntry(this.tests, val);
   }
 
-  // TODO: account for mapping includes
-  get allClassMappings(): SetImplementation[] {
+  get allOwnClassMappings(): SetImplementation[] {
     return this.classMappings;
   }
 
-  // TODO: account for mapping includes
-  get allEnumerationMappings(): EnumerationMapping[] {
+  get allOwnEnumerationMappings(): EnumerationMapping[] {
     return this.enumerationMappings;
   }
 

@@ -77,7 +77,7 @@ export const V1_buildRelationalPrimaryKey = (
   if (rootRelational.groupBy) {
     rootRelational.primaryKey = rootRelational.groupBy.columns;
   } else if (!rootRelational.primaryKey.length) {
-    const relation = rootRelational.mainTableAlias.relation.value;
+    const relation = rootRelational.mainTableAlias?.relation.value;
     const mainTable = rootRelational.mainTableAlias;
     let columns: Column[] = [];
     if (relation instanceof Table || relation instanceof View) {
@@ -90,7 +90,9 @@ export const V1_buildRelationalPrimaryKey = (
       // This might cause bugs in the future.
       // We need more (manual) tests for confidence
       mainTableAlias.column = ColumnExplicitReference.create(col);
-      mainTableAlias.alias = mainTable;
+      if (mainTable) {
+        mainTableAlias.alias = mainTable;
+      }
       return mainTableAlias;
     });
   }
