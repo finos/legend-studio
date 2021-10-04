@@ -162,7 +162,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     if (protocol.localMappingProperty) {
       const localMappingProperty = protocol.localMappingProperty;
       const mappingClass = new MappingClass(
-        `${this.topParent?.parent.path}_${this.topParent?.id}${protocol.property.property}`,
+        `${this.topParent?.parent.path}_${this.topParent?.id.value}${protocol.property.property}`,
       );
       const _multiplicity = this.context.graph.getMultiplicity(
         localMappingProperty.multiplicity.lowerBound,
@@ -565,7 +565,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       complexClass,
       protocol.property.class ?? '',
     );
-    const id = `${this.immediateParent.id}_${property.name}`;
+    const id = `${this.immediateParent.id.value}_${property.name}`;
     const topParent = guaranteeNonNullable(this.topParent);
     const sourceSetImplementation =
       this.immediateParent instanceof RootRelationalInstanceSetImplementation
