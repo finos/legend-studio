@@ -77,7 +77,6 @@ import {
   SetImplementation,
   OperationSetImplementation,
   RelationalInputType,
-  ObjectInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
@@ -317,7 +316,7 @@ export const getRelationalInputTestDataEditorLanguage = (
 ): EDITOR_LANGUAGE => {
   switch (type) {
     case RelationalInputType.SQL:
-      return EDITOR_LANGUAGE.MARKDOWN;
+      return EDITOR_LANGUAGE.SQL;
     case RelationalInputType.CSV:
       return EDITOR_LANGUAGE.TEXT;
     default:
@@ -364,13 +363,13 @@ export const MappingTestInputDataTypeBuilder = observer(
     isReadOnly: boolean;
   }) => {
     const { inputDataState, isReadOnly } = props;
-    const inputTypeList: string[] = [];
-    const chosenInputType = inputDataState.inputData.inputType;
+    let inputTypeList;
 
     if (inputDataState instanceof MappingTestObjectInputDataState) {
-      inputTypeList.push(ObjectInputType.JSON);
+      //TODO : when XML is supported use : Object.keys(ObjectInputType)
+      inputTypeList = ['JSON'];
     } else {
-      inputTypeList.push(RelationalInputType.CSV, RelationalInputType.SQL);
+      inputTypeList = Object.keys(RelationalInputType);
     }
 
     const changeInputType =
@@ -398,7 +397,7 @@ export const MappingTestInputDataTypeBuilder = observer(
       >
         <div className="edit-panel__header__tab__content">
           <div className="edit-panel__header__tab__label">
-            {prettyCONSTName(chosenInputType)}
+            {prettyCONSTName(inputDataState.inputData.inputType)}
           </div>
           <CaretDownIcon />
         </div>

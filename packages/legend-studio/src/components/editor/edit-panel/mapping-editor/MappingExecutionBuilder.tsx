@@ -75,7 +75,6 @@ import {
   SetImplementation,
   OperationSetImplementation,
   getAllClassMappings,
-  ObjectInputType,
   RelationalInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
@@ -482,13 +481,13 @@ export const MappingExecutionInputDataTypeBuilder = observer(
       | MappingTestObjectInputDataState;
   }) => {
     const { inputDataState } = props;
-    const chosenInputType = inputDataState.inputData.inputType;
-    const inputTypeList: string[] = [];
+    let inputTypeList;
 
     if (inputDataState instanceof MappingTestObjectInputDataState) {
-      inputTypeList.push(ObjectInputType.JSON);
+      //TODO : when XML is supported use : Object.keys(ObjectInputType)
+      inputTypeList = ['JSON'];
     } else {
-      inputTypeList.push(RelationalInputType.CSV, RelationalInputType.SQL);
+      inputTypeList = Object.keys(RelationalInputType);
     }
 
     const changeInputType =
@@ -516,7 +515,7 @@ export const MappingExecutionInputDataTypeBuilder = observer(
       >
         <div className="edit-panel__header__tab__content">
           <div className="edit-panel__header__tab__label">
-            {prettyCONSTName(chosenInputType)}
+            {prettyCONSTName(inputDataState.inputData.inputType)}
           </div>
           <CaretDownIcon />
         </div>

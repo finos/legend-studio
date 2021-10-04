@@ -81,8 +81,8 @@ export class ObjectInputData extends InputData implements Hashable {
     this.data = val;
   }
 
-  setInputType(val: string): void {
-    this.inputType = getObjectInputType(val);
+  setInputType(val: ObjectInputType): void {
+    this.inputType = val;
   }
 
   get validationResult(): ValidationIssue | undefined {

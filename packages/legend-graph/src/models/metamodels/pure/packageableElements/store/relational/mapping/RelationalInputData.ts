@@ -72,8 +72,8 @@ export class RelationalInputData extends InputData implements Hashable {
     this.data = value;
   }
 
-  setInputType(value: string): void {
-    this.inputType = getRelationalInputType(value);
+  setInputType(value: RelationalInputType): void {
+    this.inputType = value;
   }
 
   get validationResult(): ValidationIssue | undefined {
