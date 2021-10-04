@@ -82,7 +82,7 @@
     "strip-ansi": "7.0.1",
     "text-table": "0.2.0",
     "typescript": "4.4.3",
-    "webpack": "5.55.1",
+    "webpack": "5.56.1",
     "wrap-ansi": "8.0.1"
   },
   "devDependencies": {

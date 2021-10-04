@@ -47,7 +47,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-extension-query-builder": "workspace:*",
-    "@types/react": "17.0.24",
+    "@types/react": "17.0.27",
     "react": "17.0.2"
   },
   "devDependencies": {
