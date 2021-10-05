@@ -41,6 +41,7 @@ jest.mock('@finos/legend-shared', () => ({
 
 import { resolve, basename } from 'path';
 import fs from 'fs';
+import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import {
   TEST__buildGraphWithEntities,
@@ -130,7 +131,10 @@ const checkGrammarRoundtripMismatch = async (
   let phase = ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP;
   logPhase(phase, excludes, options?.debug);
 
-  const transformGrammarToJsonResult = await axios.post(
+  const transformGrammarToJsonResult = await axios.post<
+    unknown,
+    AxiosResponse<{ modelDataContext: unknown }>
+  >(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/transformGrammarToJson`,
     {
       code: grammarBefore,
@@ -161,7 +165,10 @@ const checkGrammarRoundtripMismatch = async (
       .concat(sectionIndices)
       .map((entity) => entity.content),
   };
-  const transformJsonToGrammarResult = await axios.post(
+  const transformJsonToGrammarResult = await axios.post<
+    unknown,
+    AxiosResponse<{ code: string }>
+  >(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/transformJsonToGrammar`,
     {
       modelDataContext,
@@ -179,10 +186,10 @@ const checkGrammarRoundtripMismatch = async (
   logPhase(phase, excludes, options?.debug);
   if (excludes !== SKIP && !excludes.includes(phase)) {
     // Test successful compilation with graph from serialization
-    const compileResult = await axios.post(
-      `${ENGINE_SERVER_URL}/pure/v1/compilation/compile`,
-      modelDataContext,
-    );
+    const compileResult = await axios.post<
+      unknown,
+      AxiosResponse<{ message: string }>
+    >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
     expect(compileResult.status).toBe(200);
     expect(compileResult.data.message).toEqual('OK');
     logSuccess(phase, options?.debug);

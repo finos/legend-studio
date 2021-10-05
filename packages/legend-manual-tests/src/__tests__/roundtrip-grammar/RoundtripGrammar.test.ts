@@ -43,6 +43,7 @@ jest.mock('@finos/legend-shared', () => ({
 
 import { resolve, basename } from 'path';
 import fs from 'fs';
+import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import type { PlainObject } from '@finos/legend-shared';
 import type { V1_PackageableElement } from '@finos/legend-graph';
@@ -125,7 +126,10 @@ const checkGrammarRoundtrip = async (
   let phase = ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP;
   logPhase(phase, excludes, options?.debug);
   const grammarText = fs.readFileSync(filePath, { encoding: 'utf-8' });
-  const transformGrammarToJsonResult = await axios.post(
+  const transformGrammarToJsonResult = await axios.post<
+    unknown,
+    AxiosResponse<{ modelDataContext: { elements: object[] } }>
+  >(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/transformGrammarToJson`,
     {
       code: grammarText,
@@ -188,7 +192,10 @@ const checkGrammarRoundtrip = async (
       .concat(sectionIndices)
       .map((entity) => entity.content),
   };
-  const transformJsonToGrammarResult = await axios.post(
+  const transformJsonToGrammarResult = await axios.post<
+    unknown,
+    AxiosResponse<{ code: string }>
+  >(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/transformJsonToGrammar`,
     {
       modelDataContext,
@@ -206,10 +213,10 @@ const checkGrammarRoundtrip = async (
   logPhase(phase, excludes, options?.debug);
   if (excludes !== SKIP && !excludes.includes(phase)) {
     // Test successful compilation with graph from serialization
-    const compileResult = await axios.post(
-      `${ENGINE_SERVER_URL}/pure/v1/compilation/compile`,
-      modelDataContext,
-    );
+    const compileResult = await axios.post<
+      unknown,
+      AxiosResponse<{ message: string }>
+    >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
     expect(compileResult.status).toBe(200);
     expect(compileResult.data.message).toEqual('OK');
     logSuccess(phase, options?.debug);
