@@ -28,7 +28,8 @@ import type { RootRelationalInstanceSetImplementation } from './RootRelationalIn
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { Class } from '../../../domain/Class';
 import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
 export class InlineEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation
@@ -70,5 +71,13 @@ export class InlineEmbeddedRelationalInstanceSetImplementation
     visitor: SetImplementationVisitor<T>,
   ): T {
     throw new UnsupportedOperationError();
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INLINE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
+      this.property.pointerHashCode,
+      this.inlineSetImplementation.id.valueForSerialization ?? '',
+    ]);
   }
 }
