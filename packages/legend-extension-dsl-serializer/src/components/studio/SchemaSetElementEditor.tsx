@@ -16,10 +16,11 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaLock, FaLongArrowAltUp, FaPlus, FaTimes } from 'react-icons/fa';
+import { FaLock, FaPlus } from 'react-icons/fa';
 import {
   CaretDownIcon,
   clsx,
+  ContextMenu,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
@@ -32,7 +33,6 @@ import { useEditorStore } from '@finos/legend-studio';
 import type { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
-import { MdMoreVert } from 'react-icons/md';
 import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import type { editor } from 'monaco-editor';
 
@@ -86,13 +86,8 @@ const SchemaSetFormatBasicEditor = observer(
 );
 
 const SchemaBasicEditor = observer(
-  (props: { schema: Schema; deleteValue: () => void; isReadOnly: boolean }) => {
-    const { schema, deleteValue, isReadOnly } = props;
-    const [isExpanded, setIsExpanded] = useState(false);
-    const toggleExpandedMode = (): void => setIsExpanded(!isExpanded);
-    const changeContent: React.ChangeEventHandler<
-      HTMLInputElement | HTMLTextAreaElement
-    > = (event) => schema.setContent(event.target.value);
+  (props: { schema: Schema; isReadOnly: boolean }) => {
+    const { schema, isReadOnly } = props;
     const changeId: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       schema.setId(event.target.value);
     const changeLocation: React.ChangeEventHandler<HTMLInputElement> = (
@@ -121,56 +116,17 @@ const SchemaBasicEditor = observer(
           onChange={changeLocation}
           placeholder={`Location`}
         />
-        {!isReadOnly && (
-          <button
-            className="schema-editor__remove-btn"
-            disabled={isReadOnly}
-            onClick={deleteValue}
-            tabIndex={-1}
-            title={'Delete Schema'}
-          >
-            <FaTimes />
-          </button>
-        )}
-        <div
-          className={clsx('schema-editor__content', {
-            'schema-editor__content__expanded': isExpanded,
-          })}
-        >
-          {isExpanded && (
-            <div className="schema-editor__content__input">
-              <TextInputEditor
-                inputValue={schema.content}
-                language={EDITOR_LANGUAGE.TEXT}
-                updateInput={(val: string): void => {
-                  schema.setContent(val);
-                }}
-                extraEditorOptions={editorOptions}
-              />
-            </div>
-          )}
-          {!isExpanded && (
-            <input
-              className="schema-editor__content__input"
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={schema.content}
-              onChange={changeContent}
-              placeholder={`Content`}
+        <div className={clsx('schema-editor__content')}>
+          <div className="schema-editor__content__input">
+            <TextInputEditor
+              inputValue={schema.content}
+              language={EDITOR_LANGUAGE.TEXT}
+              updateInput={(val: string): void => {
+                schema.setContent(val);
+              }}
+              extraEditorOptions={editorOptions}
             />
-          )}
-          <button
-            className={
-              isExpanded
-                ? 'schema-editor__content__expand-btn schema-editor__content__expand-btn__expanded'
-                : 'schema-editor__content__expand-btn'
-            }
-            onClick={toggleExpandedMode}
-            tabIndex={-1}
-            title={'Expand/Collapse'}
-          >
-            {isExpanded ? <FaLongArrowAltUp /> : <MdMoreVert />}
-          </button>
+          </div>
         </div>
       </div>
     );
@@ -250,7 +206,21 @@ export const SchemaSetEditor = observer(() => {
                 </button>
               </div>
             </div>
-            <div className="schema-set-panel__content">
+            <ContextMenu
+              className="schema-set-panel__content"
+              disabled={isReadOnly}
+              content={
+                !isReadOnly && (
+                  <div
+                    className="schema-set-panel__context-menu"
+                    onClick={deleteSchema(schemaState)}
+                  >
+                    Delete
+                  </div>
+                )
+              }
+              menuProps={{ elevation: 7 }}
+            >
               <div className="schema-set-panel__content__lists">
                 <MenuContent className="schema-set-panel__dropdown">
                   {schemaSet.schemas.map((schema: Schema, index: number) => (
@@ -268,7 +238,7 @@ export const SchemaSetEditor = observer(() => {
                   ))}
                 </MenuContent>
               </div>
-            </div>
+            </ContextMenu>
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
@@ -302,7 +272,6 @@ export const SchemaSetEditor = observer(() => {
                   <SchemaBasicEditor
                     key={`Schema${index}`}
                     schema={schemaState}
-                    deleteValue={deleteSchema(schemaState)}
                     isReadOnly={isReadOnly}
                   />
                 )}
