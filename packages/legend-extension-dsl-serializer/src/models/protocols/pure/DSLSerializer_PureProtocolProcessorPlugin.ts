@@ -19,7 +19,12 @@ import { V1_Binding } from './v1/model/packageableElements/store/V1_Binding';
 import { V1_SchemaSet } from './v1/model/packageableElements/schemaSet/V1_SchemaSet';
 import { V1_ExternalFormatConnection } from './v1/model/packageableElements/connection/V1_ExternalFormatConnection';
 import type { PlainObject } from '@finos/legend-shared';
-import { assertType, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertNonNullable,
+  guaranteeNonEmptyString,
+  assertType,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_bindingModelSchema,
@@ -62,6 +67,10 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
 } from '@finos/legend-graph';
+import { ModelUnit } from '../../metamodels/pure/model/packageableElements/store/ModelUnit';
+import { V1_ModelUnit } from './v1/model/packageableElements/store/V1_ModelUnit';
+import { UrlStream } from '../../metamodels/pure/model/packageableElements/connection/UrlStream';
+import { V1_UrlStream } from './v1/model/packageableElements/connection/V1_UrlStream';
 
 const BINDING_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::binding::Binding';
@@ -113,8 +122,22 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           const element = getBinding(path, context.graph);
           element.schemaId = elementProtocol.schemaId;
           element.schemaSet = elementProtocol.schemaSet;
-          element.contentType = elementProtocol.contentType;
-          element.modelUnit = elementProtocol.modelUnit;
+          element.contentType = guaranteeNonEmptyString(
+            elementProtocol.contentType,
+            `Binding 'contentType' field is missing or empty`,
+          );
+          assertNonNullable(
+            elementProtocol.modelUnit,
+            `Binding 'modelUnit' field is missing`,
+          );
+          const modelUnit = new ModelUnit();
+          modelUnit.setPackageableElementIncludes(
+            elementProtocol.modelUnit.packageableElementIncludes,
+          );
+          modelUnit.setPackageableElementExcludes(
+            elementProtocol.modelUnit.packageableElementExcludes,
+          );
+          element.modelUnit = modelUnit;
         },
       }),
       new V1_ElementBuilder<V1_SchemaSet>({
@@ -147,7 +170,10 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             elementProtocol.name,
           );
           const element = getSchemaSet(path, context.graph);
-          element.format = elementProtocol.format;
+          element.format = guaranteeNonEmptyString(
+            elementProtocol.format,
+            `Schema set 'format' field is missing or empty`,
+          );
           element.schemas = elementProtocol.schemas;
         },
       }),
@@ -211,7 +237,12 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           protocol.schemaId = metamodel.schemaId;
           protocol.schemaSet = metamodel.schemaSet;
           protocol.contentType = metamodel.contentType;
-          protocol.modelUnit = metamodel.modelUnit;
+          const modelUnit = new V1_ModelUnit();
+          modelUnit.packageableElementExcludes =
+            metamodel.modelUnit.packageableElementExcludes;
+          modelUnit.packageableElementIncludes =
+            metamodel.modelUnit.packageableElementIncludes;
+          protocol.modelUnit = modelUnit;
           return protocol;
         } else if (metamodel instanceof SchemaSet) {
           const protocol = new V1_SchemaSet();
@@ -238,7 +269,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             ? V1_resolveBinding(
                 guaranteeNonNullable(
                   connection.store,
-                  'External format connection binding is missing',
+                  `External format connection 'store' field is missing`,
                 ),
                 context,
               )
@@ -248,12 +279,23 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
                 assertType(
                   store.value,
                   Binding,
-                  'External format connection store must have a Binding as its store',
+                  `External format connection store must be a Binding`,
                 );
                 return store as PackageableElementReference<Binding>;
               })();
           const externalFormatConnection = new ExternalFormatConnection(Store);
-          externalFormatConnection.externalSource = connection.externalSource;
+          assertNonNullable(
+            connection.externalSource,
+            `External format connection 'externalSource' field is missing`,
+          );
+          const urlStream = new UrlStream();
+          urlStream.setUrl(
+            guaranteeNonEmptyString(
+              connection.externalSource.url,
+              `URL stream 'url' field is missing or empty`,
+            ),
+          );
+          externalFormatConnection.externalSource = urlStream;
           return externalFormatConnection;
         }
         return undefined;
@@ -270,7 +312,9 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
         if (metamodel instanceof ExternalFormatConnection) {
           const connection = new V1_ExternalFormatConnection();
           connection.store = V1_transformElementReference(metamodel.store);
-          connection.externalSource = metamodel.externalSource;
+          const urlStream = new V1_UrlStream();
+          urlStream.url = metamodel.externalSource.url;
+          connection.externalSource = urlStream;
           return connection;
         }
         return undefined;

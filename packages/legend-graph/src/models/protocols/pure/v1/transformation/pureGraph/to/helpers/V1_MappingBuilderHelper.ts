@@ -85,7 +85,7 @@ const buildEnumValueMapping = (
 ): EnumValueMapping => {
   assertNonNullable(
     srcEnumValueMapping.enumValue,
-    `Enum value mapping enum value name is missing`,
+    `Enum value mapping 'enumValue' field is missing`,
   );
   const enumValueMapping = new EnumValueMapping(
     EnumValueImplicitReference.create(
@@ -132,7 +132,7 @@ export const V1_buildEnumerationMapping = (
 ): EnumerationMapping => {
   assertNonEmptyString(
     srcEnumerationMapping.enumeration,
-    'Enumeration mapping enumeration is missing',
+    `Enumeration mapping 'enumeration' field is missing or empty`,
   );
   const targetEnumeration = context.resolveEnumeration(
     srcEnumerationMapping.enumeration,
@@ -144,7 +144,7 @@ export const V1_buildEnumerationMapping = (
   );
   assertTrue(
     possibleSourceTypes.size <= 1,
-    'Enumeration mapping contains mixed type source values',
+    `Enumeration mapping contains mixed type source values`,
   );
   const sourceTypeInput =
     possibleSourceTypes.size !== 0
@@ -203,15 +203,15 @@ const V1_buildMappingTestInputData = (
   if (inputData instanceof V1_ObjectInputData) {
     assertNonNullable(
       inputData.sourceClass,
-      'Mapping test object input data source class is missing',
+      `Object input data 'sourceClass' field is missing`,
     );
     assertNonNullable(
       inputData.inputType,
-      'Mapping test object input data input type is missing',
+      `Object input data 'inputType' field is missing`,
     );
     assertNonNullable(
       inputData.data,
-      'Mapping test object input data data is missing',
+      `Object input data 'data' field is missing`,
     );
     return new ObjectInputData(
       context.resolveClass(inputData.sourceClass),
@@ -221,11 +221,11 @@ const V1_buildMappingTestInputData = (
   } else if (inputData instanceof V1_FlatDataInputData) {
     assertNonNullable(
       inputData.sourceFlatData,
-      'Mapping test flat-data input data source flat-data is missing',
+      `Flat-data input data 'sourceFlatData' field is missing`,
     );
     assertNonNullable(
       inputData.data,
-      'Mapping test flat-data input data data is missing',
+      `Flat-data input data 'data' field is missing`,
     );
     return new FlatDataInputData(
       context.resolveFlatDataStore(inputData.sourceFlatData.path),
@@ -234,15 +234,15 @@ const V1_buildMappingTestInputData = (
   } else if (inputData instanceof V1_RelationalInputData) {
     assertNonNullable(
       inputData.database,
-      'Mapping test relational input data database is missing',
+      `Relational input data 'database' field is missing`,
     );
     assertNonNullable(
       inputData.inputType,
-      'Mapping test relational input data input type is missing',
+      `Relational input data 'inputType' field is missing`,
     );
     assertNonNullable(
       inputData.data,
-      'Mapping test relational input data data is missing',
+      `Relational input data 'data' field is missing`,
     );
     return new RelationalInputData(
       context.resolveDatabase(inputData.database),
@@ -260,8 +260,11 @@ export const V1_buildMappingTest = (
   mappingTest: V1_MappingTest,
   context: V1_GraphBuilderContext,
 ): MappingTest => {
-  assertNonEmptyString(mappingTest.name, 'Mapping test name is missing');
-  assertNonNullable(mappingTest.query);
+  assertNonEmptyString(
+    mappingTest.name,
+    `Mapping test 'name' field is missing or empty`,
+  );
+  assertNonNullable(mappingTest.query, `Mapping test 'query' field is missing`);
   const query = V1_resolvePathsInRawLambda(
     context,
     mappingTest.query.parameters,

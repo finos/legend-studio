@@ -47,16 +47,16 @@ export class QueryConfig extends LegendApplicationConfig {
 
     assertNonNullable(
       configData.engine,
-      `Application configuration failure: 'engine' field is missing`,
+      `Can't configure application: 'engine' field is missing`,
     );
     this.engineServerUrl = guaranteeNonEmptyString(
       configData.engine.url,
-      `Application configuration failure: 'engine.url' field is missing or empty`,
+      `Can't configure application: 'engine.url' field is missing or empty`,
     );
     this.engineQueryServerUrl = configData.engine.queryUrl;
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
-      `Application configuration failure: 'depot.url' field is missing or empty`,
+      `Can't configure application: 'depot.url' field is missing or empty`,
     );
   }
 }

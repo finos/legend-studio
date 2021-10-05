@@ -91,7 +91,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
   visit_ConnectionPointer(connection: V1_ConnectionPointer): Connection {
     assertNonNullable(
       connection.connection,
-      'Connection pointer connection is missing',
+      `Connection pointer 'connection' field is missing`,
     );
     return new ConnectionPointer(
       this.context.resolveConnection(connection.connection),
@@ -140,9 +140,12 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     }
     assertNonNullable(
       connection.class,
-      'JSON model connection class is missing',
+      `JSON model connection 'class' field is missing`,
     );
-    assertNonNullable(connection.url, 'JSON model connection data is missing');
+    assertNonNullable(
+      connection.url,
+      `JSON model connection 'url' field is missing`,
+    );
     return new JsonModelConnection(
       PackageableElementImplicitReference.create(
         this.context.graph.modelStore,
@@ -168,9 +171,12 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     }
     assertNonNullable(
       connection.class,
-      'XML model connection class is missing',
+      `XML model connection 'class' field is missing`,
     );
-    assertNonNullable(connection.url, 'XML model connection data is missing');
+    assertNonNullable(
+      connection.url,
+      `XML model connection 'url' field is missing`,
+    );
     return new XmlModelConnection(
       PackageableElementImplicitReference.create(
         this.context.graph.modelStore,
@@ -186,7 +192,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       ? this.context.resolveFlatDataStore(
           guaranteeNonNullable(
             connection.store,
-            'Flat-data connection store is missing',
+            `Flat-data connection 'store' field is missing`,
           ),
         )
       : connection.store
@@ -195,12 +201,15 @@ export class V1_ProtocolToMetaModelConnectionBuilder
           assertType(
             this.embeddedConnectionStore.value,
             FlatData,
-            'Flat-data connection store must be a flat-data store',
+            `Flat-data connection store must be a flat-data store`,
           );
           return this
             .embeddedConnectionStore as PackageableElementReference<FlatData>;
         })();
-    assertNonNullable(connection.url, 'Flat-data connection data is missing');
+    assertNonNullable(
+      connection.url,
+      `Flat-data connection 'url' field is missing`,
+    );
     return new FlatDataConnection(store, connection.url);
   }
 
@@ -211,7 +220,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       ? this.context.resolveDatabase(
           guaranteeNonNullable(
             connection.store,
-            'Relational database connection store is missing',
+            `Relational database connection 'store' field is missing`,
           ),
         )
       : connection.store
@@ -220,22 +229,22 @@ export class V1_ProtocolToMetaModelConnectionBuilder
           assertType(
             this.embeddedConnectionStore.value,
             Database,
-            'Relational database connection store must be a database',
+            `Relational database connection store must be a database`,
           );
           return this
             .embeddedConnectionStore as PackageableElementReference<Database>;
         })();
     assertNonNullable(
       connection.type,
-      'Relational database connection type is missing',
+      `Relational database connection 'type' field is missing`,
     );
     assertNonNullable(
       connection.datasourceSpecification,
-      'Relational database connection datasource specification is missing',
+      `Relational database connection 'datasourceSpecification' field is missing`,
     );
     assertNonNullable(
       connection.authenticationStrategy,
-      'Relational database connection authentication strategy is missing',
+      `Relational database connection 'authenticationStrategy' field is missing`,
     );
     const val = new RelationalDatabaseConnection(
       store,

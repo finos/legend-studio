@@ -23,8 +23,8 @@ import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_Mode
 import type { Schema } from './Schema';
 
 export class SchemaSet extends PackageableElement implements Hashable {
-  format: string;
-  schemas: Schema[];
+  format!: string;
+  schemas: Schema[] = [];
 
   constructor(name: string) {
     super(name);
@@ -37,9 +37,6 @@ export class SchemaSet extends PackageableElement implements Hashable {
       deleteSchema: action,
       _elementHashCode: override,
     });
-
-    this.format = '';
-    this.schemas = [];
   }
 
   setFormat(value: string): void {

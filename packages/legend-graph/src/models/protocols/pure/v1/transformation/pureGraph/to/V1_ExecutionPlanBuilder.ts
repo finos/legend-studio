@@ -133,7 +133,7 @@ const buildTDSColumn = (
   const metamodel = new TDSColumn();
   metamodel.name = guaranteeNonNullable(
     protocol.name,
-    'TDS column name is missing',
+    `TDS column 'name' field is missing`,
   );
   metamodel.documentation = protocol.doc;
   metamodel.sourceDataType = protocol.relationalType
@@ -182,7 +182,7 @@ const buildSQLResultColumn = (
   const metamodel = new SQLResultColumn();
   metamodel.label = guaranteeNonNullable(
     protocol.label,
-    'SQL result column label is missing',
+    `SQL result column 'label' field is missing`,
   );
   metamodel.dataType = protocol.dataType
     ? parseDataType(protocol.dataType)
@@ -215,7 +215,7 @@ const buildSQLExecutionNode = (
   buildBaseExecutionNode(metamodel, protocol, context);
   metamodel.sqlQuery = guaranteeNonNullable(
     protocol.sqlQuery,
-    'SQL execution node SQL query is missing',
+    `SQL execution node 'sqlQuery' field is missing`,
   );
   metamodel.onConnectionCloseCommitQuery =
     protocol.onConnectionCloseCommitQuery;
@@ -226,7 +226,7 @@ const buildSQLExecutionNode = (
       new V1_ProtocolToMetaModelConnectionBuilder(context),
     ),
     DatabaseConnection,
-    'SQL execution node connection must be of type database connection',
+    'SQL execution node connection must be a database connection',
   );
   metamodel.resultColumns = protocol.resultColumns.map(buildSQLResultColumn);
   return metamodel;
@@ -263,7 +263,7 @@ export const V1_buildExecutionPlan = (
     const metamodel = new ExecutionPlan();
     metamodel.authDependent = guaranteeNonNullable(
       protocol.authDependent,
-      'Single execution plan authentication dependent flag is missing',
+      `Single execution plan 'authDependent' field is missing`,
     );
     metamodel.kerberos = protocol.kerberos;
     metamodel.processingTemplateFunctions = protocol.templateFunctions;

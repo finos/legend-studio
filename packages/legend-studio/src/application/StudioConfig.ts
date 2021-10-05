@@ -180,12 +180,12 @@ export class StudioConfig extends LegendApplicationConfig {
     });
     assertNonNullable(
       configData.sdlc,
-      `Application configuration failure: 'sdlc' field is missing`,
+      `Can't configure application: 'sdlc' field is missing`,
     );
     if (Array.isArray(configData.sdlc)) {
       if (configData.sdlc.length === 0) {
         throw new AssertionError(
-          `Application configuration failure: 'sdlc' field configured in list form but has no entry`,
+          `Can't configure application: 'sdlc' field configured in list form but has no entry`,
         );
       }
       // Make sure the specified instances are unique by key
@@ -194,7 +194,7 @@ export class StudioConfig extends LegendApplicationConfig {
         configData.sdlc.length
       ) {
         throw new AssertionError(
-          `Application configuration failure: 'sdlc' is configured with duplicated entries`,
+          `Can't configure application: 'sdlc' is configured with duplicated entries`,
         );
       }
       this.sdlcServerOptions = configData.sdlc;
@@ -204,7 +204,7 @@ export class StudioConfig extends LegendApplicationConfig {
           key: URL_PATH_PLACEHOLDER,
           url: guaranteeNonEmptyString(
             configData.sdlc.url,
-            `Application configuration failure: 'sdlc.url' field is missing`,
+            `Can't configure application: 'sdlc.url' field is missing`,
           ),
           label: '(default)',
         },
@@ -212,24 +212,24 @@ export class StudioConfig extends LegendApplicationConfig {
     }
     assertNonNullable(
       configData.engine,
-      `Application configuration failure: 'engine' field is missing`,
+      `Can't configure application: 'engine' field is missing`,
     );
     this.engineServerUrl = guaranteeNonEmptyString(
       configData.engine.url,
-      `Application configuration failure: 'engine.url' field is missing or empty`,
+      `Can't configure application: 'engine.url' field is missing or empty`,
     );
     this.engineQueryServerUrl = configData.engine.queryUrl;
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
-      `Application configuration failure: 'depot.url' field is missing or empty`,
+      `Can't configure application: 'depot.url' field is missing or empty`,
     );
     assertNonNullable(
       configData.documentation,
-      `Application configuration failure: 'documentation' field is missing`,
+      `Can't configure application: 'documentation' field is missing`,
     );
     this.documentationUrl = guaranteeNonEmptyString(
       configData.documentation.url,
-      `Application configuration failure: 'documentation.url' field is missing or empty`,
+      `Can't configure application: 'documentation.url' field is missing or empty`,
     );
     this.options = ApplicationCoreOptions.create(
       (configData.extensions?.core ??

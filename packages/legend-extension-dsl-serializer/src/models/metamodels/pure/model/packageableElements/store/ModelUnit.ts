@@ -14,27 +14,31 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 
 export class ModelUnit implements Hashable {
-  packageableElementIncludes: string[];
-  packageableElementExcludes: string[];
+  packageableElementIncludes: string[] = [];
+  packageableElementExcludes: string[] = [];
 
-  constructor(
-    packageableElementIncludes: string[],
-    packageableElementExcludes: string[],
-  ) {
+  constructor() {
     makeObservable(this, {
       packageableElementIncludes: observable,
       packageableElementExcludes: observable,
       hashCode: computed,
+      setPackageableElementIncludes: action,
+      setPackageableElementExcludes: action,
     });
+  }
 
-    this.packageableElementIncludes = packageableElementIncludes;
-    this.packageableElementExcludes = packageableElementExcludes;
+  setPackageableElementIncludes(val: string[]): void {
+    this.packageableElementIncludes = val;
+  }
+
+  setPackageableElementExcludes(val: string[]): void {
+    this.packageableElementExcludes = val;
   }
 
   get hashCode(): string {
