@@ -1949,8 +1949,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async registerService(
     graph: PureModel,
     service: Service,
-    groupdId: string,
-    artifactId: string,
+    projectId: string,
     server: string,
     executionMode: ServiceExecutionMode,
     version: string | undefined,
@@ -1970,7 +1969,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
-        const sdlcInfo = new V1_AlloySdlc(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySdlc(projectId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         // data
         const data = new V1_PureModelContextData();
@@ -1996,7 +1995,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.PROD: {
-        const sdlcInfo = new V1_AlloySdlc(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySdlc(projectId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(
