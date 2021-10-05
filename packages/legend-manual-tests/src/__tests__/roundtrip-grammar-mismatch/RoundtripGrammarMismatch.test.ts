@@ -223,7 +223,7 @@ const testNameFrom = (fileName: string, toSkip: boolean): string => {
   )}`;
 };
 
-const cases = fs
+const cases: [string, string, boolean][] = fs
   .readdirSync(TEST_CASE_DIR)
   .map((caseName) => resolve(TEST_CASE_DIR, caseName))
   .filter((filePath) => fs.statSync(filePath).isFile())
@@ -231,7 +231,7 @@ const cases = fs
     testNameFrom(filePath, isTestSkipped(filePath)),
     filePath,
     isTestSkipped(filePath),
-  ]) as [string, string, boolean][];
+  ]);
 
 describe('Grammar roundtrip mismatch test', () => {
   test.each(cases)('%s', async (testName, filePath, isSkipped) => {
