@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 0.1.2
+
+### Patch Changes
+
+- [#553](https://github.com/finos/legend-studio/pull/553) [`cf1f2c07`](https://github.com/finos/legend-studio/commit/cf1f2c07934cf7c243802df381e0ead7fb9fe38f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix a problem with hash computation and serialization of `inline` relational property mapping
+
 ## 0.1.1
 
 ## 0.1.0
