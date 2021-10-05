@@ -534,10 +534,6 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
-  const id = mappingElementIdSerializer(element.id);
-  if (id) {
-    embedded.id = id;
-  }
   embedded.setImplementationId = element.inlineSetImplementation.id.value;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(

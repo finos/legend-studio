@@ -80,7 +80,12 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'embedded-relational-mapping.pure': SKIP,
   'nested-embedded-relational-mapping.pure': SKIP,
   'relational-mapping-filter.pure': SKIP,
+  // TODO: remove these two when the issue of source Id in relational property mapping is resolved.
+  // Engine is removing these sources when the owner is the parent class mapping and studio is not
   'basic-class-mapping-extends.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'basic-inline-embedded-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
 };
 
 type GrammarRoundtripOptions = {

@@ -1,0 +1,84 @@
+###Relational
+Database store::test::eDB
+(
+  Table PRODUCT_DENORM
+  (
+    PRODUCT_ID INTEGER PRIMARY KEY,
+    PRODUCT_NAME VARCHAR(200),
+    MARKET_NAME VARCHAR(200),
+    BOND_DETAILS VARCHAR(200),
+    BOND_TYPE VARCHAR(10),
+    BOND_STATUS VARCHAR(10),
+    ISSUER_TYPE VARCHAR(10),
+    ISSUER VARCHAR(10),
+    ISSUER_ADDRESS_NAME VARCHAR(200),
+    ISSUER_ADDRESS_STREET VARCHAR(200),
+    HOLDER_TYPE VARCHAR(10),
+    HOLDER VARCHAR(10),
+    HOLDER_ADDRESS_NAME VARCHAR(200),
+    HOLDER_ADDRESS_STREET VARCHAR(200),
+    SUBPRODUCT_ID INTEGER,
+    SUBPRODUCT_NAME VARCHAR(200)
+  )
+  Table BOND_DETAIL
+  (
+    BOND_ID INTEGER PRIMARY KEY,
+    NOT_SO_GOOD_DETAIL VARCHAR(200),
+    TYPE VARCHAR(10),
+    STATUS VARCHAR(10),
+    HOLDERID INTEGER
+  )
+  Table Party
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200)
+  )
+  Table BondClassificationTable
+  (
+    PRODUCT_ID INTEGER PRIMARY KEY,
+    type VARCHAR(200) PRIMARY KEY
+  )
+)
+
+
+###Pure
+Class model::test::Product
+{
+  name: String[1];
+  market: String[1];
+  bondDetails: model::test::BondDetail[1];
+  subProduct: model::test::Product[1];
+}
+
+Class model::test::BondDetail
+{
+  description: String[1];
+  type: String[1];
+}
+
+
+###Mapping
+Mapping mapping::test::inLineMappingEmbedded
+(
+  model::test::Product[ProdMapping]: Relational
+  {
+    ~primaryKey
+    (
+      [store::test::eDB]PRODUCT_DENORM.PRODUCT_ID
+    )
+    ~mainTable [store::test::eDB]PRODUCT_DENORM
+    name: [store::test::eDB]PRODUCT_DENORM.PRODUCT_NAME,
+    market: [store::test::eDB]PRODUCT_DENORM.MARKET_NAME,
+    bondDetails() Inline[myBondMapping]
+  }
+  model::test::BondDetail[myBondMapping]: Relational
+  {
+    ~primaryKey
+    (
+      [store::test::eDB]PRODUCT_DENORM.PRODUCT_ID
+    )
+    ~mainTable [store::test::eDB]PRODUCT_DENORM
+    description: [store::test::eDB]PRODUCT_DENORM.BOND_DETAILS,
+    type: [store::test::eDB]PRODUCT_DENORM.BOND_TYPE
+  }
+)
