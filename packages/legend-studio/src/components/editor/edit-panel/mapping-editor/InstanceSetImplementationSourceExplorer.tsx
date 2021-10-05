@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
+import { flowResult } from 'mobx';
+import { observer } from 'mobx-react-lite';
+import { useState, useCallback } from 'react';
 import {
   useApplicationStore,
   ActionAlertActionType,
 } from '@finos/legend-application';
 import { clsx, BlankPanelPlaceholder } from '@finos/legend-art';
-import {
+import type {
   InstanceSetImplementation,
   PackageableElement,
+} from '@finos/legend-graph';
+import {
   Class,
   FlatData,
   Database,
@@ -30,17 +35,16 @@ import {
   Type,
   RootFlatDataRecordType,
 } from '@finos/legend-graph';
-import { flowResult } from 'mobx';
-import { observer } from 'mobx-react-lite';
-import { useState, useCallback } from 'react';
 import { useDrop } from 'react-dnd';
 import { FaEdit } from 'react-icons/fa';
-import { CORE_DND_TYPE, ElementDragSource, TypeTree } from '../../../..';
+import type { ElementDragSource } from '../../../../stores/shared/DnDUtil';
+import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
+import { TypeTree } from '../../../shared/TypeTree';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
+import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   MappingEditorState,
   getMappingElementSource,
-  MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
   MappingElementState,
