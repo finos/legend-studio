@@ -18,11 +18,47 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../../DSLDataSpace_ModelUtils';
 import type {
+  V1_PackageableElementPointer,
   V1_PackageableElementVisitor,
   V1_StereotypePtr,
   V1_TaggedValue,
 } from '@finos/legend-graph';
 import { V1_PackageableElement } from '@finos/legend-graph';
+
+export abstract class V1_DataSpaceSupportInfo implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class V1_DataSpaceSupportEmail
+  extends V1_DataSpaceSupportInfo
+  implements Hashable
+{
+  address!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SUPPORT_EMAIL,
+      this.address,
+    ]);
+  }
+}
+
+export class V1_DataSpaceExecutionContext implements Hashable {
+  name!: string;
+  description?: string | undefined;
+  mapping!: V1_PackageableElementPointer;
+  defaultRuntime!: V1_PackageableElementPointer;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
+      this.name,
+      this.description ?? '',
+      this.mapping.path,
+      this.defaultRuntime.path,
+    ]);
+  }
+}
 
 export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
@@ -30,11 +66,11 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   groupId!: string;
   artifactId!: string;
   versionId!: string;
-  mapping!: string;
-  runtime!: string;
-  diagrams?: string[] | undefined;
+  executionContexts!: V1_DataSpaceExecutionContext[];
+  defaultExecutionContext!: string;
+  featuredDiagrams?: V1_PackageableElementPointer[] | undefined;
   description?: string | undefined;
-  supportEmail?: string | undefined;
+  supportInfo?: V1_DataSpaceSupportInfo | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -44,11 +80,11 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       this.groupId,
       this.artifactId,
       this.versionId,
-      this.mapping,
-      this.runtime,
-      hashArray(this.diagrams ?? []),
+      hashArray(this.executionContexts),
+      this.defaultExecutionContext,
+      hashArray((this.featuredDiagrams ?? []).map((pointer) => pointer.path)),
       this.description ?? '',
-      this.supportEmail ?? '',
+      this.supportInfo ?? '',
     ]);
   }
 
