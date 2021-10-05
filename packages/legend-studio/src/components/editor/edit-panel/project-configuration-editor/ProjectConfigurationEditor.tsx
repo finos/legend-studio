@@ -198,8 +198,9 @@ const ProjectDependencyEditor = observer(
     const versionSelectorRef = useRef<SelectComponent>(null);
     const configState = editorStore.projectConfigurationEditorState;
     // project
-    const selectedProject =
-      configState.getProjectDataFromDependency(projectDependency);
+    const selectedProject = configState.projects.get(
+      projectDependency.projectId,
+    );
     const selectedProjectOption = selectedProject
       ? buildProjectOption(selectedProject)
       : null;
@@ -256,6 +257,7 @@ const ProjectDependencyEditor = observer(
       : versionDisabled
       ? 'No project version found. Please create a new one.'
       : 'Select version';
+
     return (
       <div className="project-dependency-editor">
         <CustomSelectorInput
@@ -429,7 +431,7 @@ export const ProjectConfigurationEditor = observer(() => {
         <div className="panel__header project-configuration-editor__tabs__header">
           <div className="project-configuration-editor__tabs">
             {tabs.map((tab) => (
-              <div
+              <button
                 key={tab}
                 onClick={changeTab(tab)}
                 className={clsx('project-configuration-editor__tab', {
@@ -438,7 +440,7 @@ export const ProjectConfigurationEditor = observer(() => {
                 })}
               >
                 {prettyCONSTName(tab)}
-              </div>
+              </button>
             ))}
           </div>
           <div className="panel__header__actions">
