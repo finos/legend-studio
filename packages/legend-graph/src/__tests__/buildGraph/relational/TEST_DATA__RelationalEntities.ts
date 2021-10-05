@@ -13846,7 +13846,6 @@ export const TEST_DATA__inlineEmbeddedRelationalTestData = [
                 property: 'address',
               },
               source: 'alias1',
-              id: 'other_Person_address',
               setImplementationId: 'alias2',
             },
           ],
