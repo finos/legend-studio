@@ -28,9 +28,9 @@ export class ClassView extends PositionedRectangle implements Hashable {
   owner: Diagram;
   class: PackageableElementReference<Class>;
   id: string;
-  hideProperties = false;
-  hideTaggedValues = false;
-  hideStereotypes = false;
+  hideProperties?: boolean | undefined;
+  hideTaggedValues?: boolean | undefined;
+  hideStereotypes?: boolean | undefined;
 
   constructor(
     owner: Diagram,
@@ -71,9 +71,9 @@ export class ClassView extends PositionedRectangle implements Hashable {
       super.hashCode,
       this.id,
       this.class.hashValue,
-      Boolean(this.hideProperties).toString(),
-      Boolean(this.hideTaggedValues).toString(),
-      Boolean(this.hideStereotypes).toString(),
+      this.hideProperties?.toString() ?? '',
+      this.hideTaggedValues?.toString() ?? '',
+      this.hideStereotypes?.toString() ?? '',
     ]);
   }
 }

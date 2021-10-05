@@ -127,25 +127,26 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
             elementProtocol.versionId,
             `Data space 'versionId' field is missing or empty`,
           );
-          element.executionContexts = elementProtocol.executionContexts.map(
-            (contextProtocol) => {
-              const context = new DataSpaceExecutionContext();
-              context.name = guaranteeNonEmptyString(
-                contextProtocol.name,
-                `Data space execution context 'name' field is missing or empty`,
-              );
-              context.description = contextProtocol.description;
-              context.mapping = guaranteeNonNullable(
-                contextProtocol.mapping,
-                `Data space execution context 'mapping' field is missing or empty`,
-              ).path;
-              context.defaultRuntime = guaranteeNonNullable(
-                contextProtocol.defaultRuntime,
-                `Data space execution context 'defaultRuntime' field is missing or empty`,
-              ).path;
-              return context;
-            },
-          );
+          element.executionContexts = guaranteeNonNullable(
+            elementProtocol.executionContexts,
+            `Data space 'executionContexts' field is missing`,
+          ).map((contextProtocol) => {
+            const context = new DataSpaceExecutionContext();
+            context.name = guaranteeNonEmptyString(
+              contextProtocol.name,
+              `Data space execution context 'name' field is missing or empty`,
+            );
+            context.description = contextProtocol.description;
+            context.mapping = guaranteeNonNullable(
+              contextProtocol.mapping,
+              `Data space execution context 'mapping' field is missing or empty`,
+            ).path;
+            context.defaultRuntime = guaranteeNonNullable(
+              contextProtocol.defaultRuntime,
+              `Data space execution context 'defaultRuntime' field is missing or empty`,
+            ).path;
+            return context;
+          });
           element.defaultExecutionContext = guaranteeNonNullable(
             element.executionContexts.find(
               (context) =>

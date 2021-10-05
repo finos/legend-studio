@@ -75,9 +75,9 @@ export const V1_buildClassView = (
     classView.id,
     context.resolveClass(classView.class),
   );
-  view.hideProperties = Boolean(classView.hideProperties);
-  view.hideTaggedValues = Boolean(classView.hideTaggedValues);
-  view.hideStereotypes = Boolean(classView.hideStereotypes);
+  view.hideProperties = classView.hideProperties;
+  view.hideTaggedValues = classView.hideTaggedValues;
+  view.hideStereotypes = classView.hideStereotypes;
   view.rectangle = buildRectangle(classView.rectangle);
   view.position = buildPoint(classView.position);
   return view;

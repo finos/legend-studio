@@ -46,7 +46,12 @@ import axios from 'axios';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
+  TEST__GraphPluginManager,
 } from '@finos/legend-graph';
+import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
+import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
+import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -62,6 +67,9 @@ enum ROUNTRIP_TEST_PHASES {
   GRAMMAR_ROUNDTRIP = 'GRAMMAR_ROUNDTRIP',
   COMPILATION = 'COMPILATION',
 }
+
+const BEFORE_TOKEN = '--- BEFORE ---\n';
+const AFTER_TOKEN = '--- AFTER ---\n';
 
 const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
@@ -90,22 +98,33 @@ const logSuccess = (phase: ROUNTRIP_TEST_PHASES, debug?: boolean): void => {
   }
 };
 
-const BEFORE_TOKEN = '--- BEFORE ---\n';
-const AFTER_TOKEN = '--- AFTER ---\n';
+const isTestSkipped = (filePath: string): boolean =>
+  Object.keys(EXCLUSIONS).includes(basename(filePath)) &&
+  EXCLUSIONS[basename(filePath)] === SKIP;
 
 const checkGrammarRoundtripMismatch = async (
   testCase: string,
   filePath: string,
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
-  const graphManagerState = TEST__getTestGraphManagerState();
+  const pluginManager = new TEST__GraphPluginManager();
+  pluginManager.usePresets([
+    new DSLText_GraphPreset(),
+    new DSLDiagram_GraphPreset(),
+    new DSLSerializer_GraphPreset(),
+    new DSLDataSpace_GraphPreset(),
+  ]);
+  pluginManager.install();
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
 
   if (options?.debug) {
     // eslint-disable-next-line no-console
     console.log(`Roundtrip test case: ${testCase}`);
   }
-  const excludes = Object.keys(EXCLUSIONS).includes(basename(filePath))
-    ? EXCLUSIONS[basename(filePath)]
+  const excludes = Object.keys(EXCLUSIONS)
+    .filter((key) => EXCLUSIONS[key] !== SKIP)
+    .includes(basename(filePath))
+    ? (EXCLUSIONS[basename(filePath)] as ROUNTRIP_TEST_PHASES[])
     : [];
 
   const fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
@@ -176,7 +195,7 @@ const checkGrammarRoundtripMismatch = async (
     },
     {},
   );
-  if (excludes !== SKIP && !excludes.includes(phase)) {
+  if (!excludes.includes(phase)) {
     expect(transformJsonToGrammarResult.data.code).toEqual(grammarAfter);
     logSuccess(phase, options?.debug);
   }
@@ -184,7 +203,7 @@ const checkGrammarRoundtripMismatch = async (
   // Phase 2: Compilation check using serialized protocol
   phase = ROUNTRIP_TEST_PHASES.COMPILATION;
   logPhase(phase, excludes, options?.debug);
-  if (excludes !== SKIP && !excludes.includes(phase)) {
+  if (!excludes.includes(phase)) {
     // Test successful compilation with graph from serialization
     const compileResult = await axios.post<
       unknown,
@@ -196,19 +215,28 @@ const checkGrammarRoundtripMismatch = async (
   }
 };
 
-const testNameFrom = (fileName: string): string => {
+const testNameFrom = (fileName: string, toSkip: boolean): string => {
   const name = basename(fileName, '.pure').split('-').join(' ');
-  return `${name[0].toUpperCase()}${name.substring(1, name.length)}`;
+  return `${toSkip ? '(SKIPPED) ' : ''}${name[0].toUpperCase()}${name.substring(
+    1,
+    name.length,
+  )}`;
 };
 
 const cases = fs
   .readdirSync(TEST_CASE_DIR)
   .map((caseName) => resolve(TEST_CASE_DIR, caseName))
   .filter((filePath) => fs.statSync(filePath).isFile())
-  .map((filePath) => [testNameFrom(filePath), filePath]);
+  .map((filePath) => [
+    testNameFrom(filePath, isTestSkipped(filePath)),
+    filePath,
+    isTestSkipped(filePath),
+  ]) as [string, string, boolean][];
 
 describe('Grammar roundtrip mismatch test', () => {
-  test.each(cases)('%s', async (testName, filePath) => {
-    await checkGrammarRoundtripMismatch(testName, filePath, { debug: false });
+  test.each(cases)('%s', async (testName, filePath, isSkipped) => {
+    if (!isSkipped) {
+      await checkGrammarRoundtripMismatch(testName, filePath, { debug: false });
+    }
   });
 });

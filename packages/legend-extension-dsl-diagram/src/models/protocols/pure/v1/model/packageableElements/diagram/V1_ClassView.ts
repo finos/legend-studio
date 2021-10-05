@@ -32,9 +32,9 @@ export class V1_ClassView extends V1_PositionedRectangle implements Hashable {
       super.hashCode,
       this.id,
       this.class,
-      Boolean(this.hideProperties).toString(),
-      Boolean(this.hideTaggedValues).toString(),
-      Boolean(this.hideStereotypes).toString(),
+      this.hideProperties?.toString() ?? '',
+      this.hideTaggedValues?.toString() ?? '',
+      this.hideStereotypes?.toString() ?? '',
     ]);
   }
 }

@@ -51,10 +51,10 @@ const V1_DATA_SPACE_SUPPORT_EMAIL_TYPE = 'email';
 const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
   V1_DataSpaceExecutionContext,
   {
-    description: optional(primitive()),
     defaultRuntime: usingModelSchema(
       V1_packageableElementPointerDeserializerSchema,
     ),
+    description: optional(primitive()),
     mapping: usingModelSchema(V1_packageableElementPointerDeserializerSchema),
     name: primitive(),
   },
@@ -91,9 +91,9 @@ const V1_deserializeSupportInfo = (
 export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   _type: usingConstantValueSchema(V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE),
   artifactId: primitive(),
-  executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
-  description: optional(primitive()),
   defaultExecutionContext: primitive(),
+  description: optional(primitive()),
+  executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
   featuredDiagrams: custom(
     (values) =>
       serializeArray(

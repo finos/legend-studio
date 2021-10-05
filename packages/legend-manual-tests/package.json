@@ -21,6 +21,11 @@
     "test:watch": "jest --config jest.config.manual.js --watch"
   },
   "dependencies": {
+    "@finos/legend-art": "workspace:*",
+    "@finos/legend-extension-dsl-data-space": "workspace:*",
+    "@finos/legend-extension-dsl-diagram": "workspace:*",
+    "@finos/legend-extension-dsl-serializer": "workspace:*",
+    "@finos/legend-extension-dsl-text": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*"
   },
