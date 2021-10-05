@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.3.2
+
+### Patch Changes
+
+- [#554](https://github.com/finos/legend-studio/pull/554) [`f1d15408`](https://github.com/finos/legend-studio/commit/f1d15408b905fb96efa8da714421a827ab396709) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revert service registration using project coordinates.
+
 ## 0.3.1
 
 ## 0.3.0
