@@ -2,4 +2,4 @@
 '@finos/legend-graph': patch
 ---
 
-Fix `inline` relational property mapping's hashing and serialization.
+Fix a problem with hash computation and serialization of `inline` relational property mapping
