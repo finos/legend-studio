@@ -579,6 +579,8 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     context,
     false,
   ) as V1_RelationalPropertyMapping;
+  // use the same property as the parent otherwise
+  embedded.otherwisePropertyMapping.property = embedded.property;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
       element.localMappingProperty,
