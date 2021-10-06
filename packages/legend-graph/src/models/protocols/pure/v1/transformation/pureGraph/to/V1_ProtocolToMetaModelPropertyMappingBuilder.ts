@@ -142,19 +142,19 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   visit_PurePropertyMapping(protocol: V1_PurePropertyMapping): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Model-to-model property mapping property is missing',
+      `Pure instance property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.class,
-      'Model-to-model property mapping property class is missing',
+      `Pure instance property mapping 'property.class' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Model-to-model property mapping property name is missing',
+      `Pure instance property mapping 'property.property' field is missing or empty`,
     );
     assertNonNullable(
       protocol.transform,
-      'Model-to-model property mapping transform lambda is missing',
+      `Pure instance property mapping 'transform' field is missing`,
     );
     // NOTE: mapping for derived property is not supported
     let property: PropertyReference;
@@ -247,15 +247,15 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Flat-data property mapping property is missing',
+      `Flat-data property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Flat-data property mapping property name is missing',
+      `Flat-data property mapping 'property.property' field is missing or empty`,
     );
     assertNonNullable(
       protocol.transform,
-      'Flat-data property mapping transform lambda is missing',
+      `Flat-data property mapping 'transform' field is missing`,
     );
     // NOTE: there are cases that property pointer class might be missing, such as when we transform grammar to JSON
     // since we do not do look up, due to nesting structure introudced by embedded mappings, we might not have the class information
@@ -323,11 +323,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Flat-data property mapping property is missing',
+      `Embedded flat-data property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Flat-data property mapping property name is missing',
+      `Embedded flat-data property mapping property 'property.property' field is missing or empty`,
     );
     // NOTE: there are cases that property pointer class might be missing, such as when we transform grammar to JSON
     // since we do not do look up, due to nesting structure introudced by embedded mappings, we might not have the class information
@@ -402,15 +402,15 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Relational property mapping property is missing',
+      `Relational property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Relational property mapping property name is missing',
+      `Relational property mapping 'property.property' field is missing or empty`,
     );
     assertNonNullable(
       protocol.relationalOperation,
-      'Relational property mapping operation is missing',
+      `Relational property mapping 'relationalOperation' field is missing`,
     );
     if (protocol.localMappingProperty) {
       throw new UnsupportedOperationError(
@@ -532,11 +532,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Inline embedded property mapping property is missing',
+      `Inline embedded property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Inline embedded property mapping property name is missing',
+      `Inline embedded property mapping 'property.property' field is missing or empty`,
     );
     let propertyOwnerClass: Class;
     if (protocol.property.class) {
@@ -565,7 +565,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       complexClass,
       protocol.property.class ?? '',
     );
-    const id = `${this.immediateParent.id}_${property.name}`;
+    const id = `${this.immediateParent.id.value}_${property.name}`;
     const topParent = guaranteeNonNullable(this.topParent);
     const sourceSetImplementation =
       this.immediateParent instanceof RootRelationalInstanceSetImplementation
@@ -597,11 +597,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Embedded relational property mapping property is missing',
+      `Embedded relational property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Embedded relational property mapping property name is missing',
+      `Embedded relational property mapping 'property.property' field is missing or empty`,
     );
     const property = V1_buildEmbeddedRelationalMappingProperty(
       protocol,
@@ -651,11 +651,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Otherwise embedded relational property mapping property is missing',
+      `Otherwise embedded relational property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Otherwise embedded relational property mapping property name is missing',
+      `Otherwise embedded relational property mapping 'property.property' field is missing or empty`,
     );
     const property = V1_buildEmbeddedRelationalMappingProperty(
       protocol,
@@ -721,24 +721,24 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'XStore property mapping property is missing',
+      `XStore property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.class,
-      'XStore property mapping property class is missing',
+      `XStore property mapping 'property.class' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'XStore property mapping property name is missing',
+      `XStore property mapping 'property.property' field is missing or empty`,
     );
     assertNonNullable(
       protocol.crossExpression,
-      'XStore property mapping cross expression lambda is missing',
+      `XStore property mapping 'crossExpression' field is missing`,
     );
 
     const xStoreParent = guaranteeNonNullable(
       this.xStoreParent,
-      'XStore property mapping parent is missing',
+      `XStore property 'xStoreParent' field is missing`,
     );
     const _association = xStoreParent.association.value;
     const property = _association.getProperty(protocol.property.property);
@@ -770,19 +770,19 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   ): PropertyMapping {
     assertNonNullable(
       protocol.property,
-      'Aggregation-aware property mapping property is missing',
+      `Aggregation-aware property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
       protocol.property.class,
-      'Aggregation-aware property mapping property class is missing',
+      `Aggregation-aware property mapping 'property.class' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.property.property,
-      'Aggregation-aware property mapping property name is missing',
+      `Aggregation-aware property mapping 'property.property' field is missing or empty`,
     );
     const aggregationAwareParent = guaranteeNonNullable(
       this.aggregationAwareParent,
-      'Aggregation-aware property mapping parent is missing',
+      `Aggregation-aware property 'aggregationAwareParent' field is missing`,
     );
 
     const propertyMapping =

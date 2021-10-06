@@ -45,7 +45,7 @@ const buildJSONExecutionResult = (
   const metamodel = new JsonExecutionResult();
   metamodel.values = guaranteeNonNullable(
     protocol.values,
-    `JSON execution result value is missing`,
+    `JSON execution result 'values' field is missing`,
   );
   return metamodel;
 };
@@ -56,7 +56,7 @@ const buildTDSBuilder = (protocol: V1_TdsBuilder): TdsBuilder => {
     const column = new TDSColumn();
     column.name = guaranteeNonNullable(
       _column.name,
-      `TDS column name is missing`,
+      `TDS column 'name' field is missing`,
     );
     column.type = _column.type;
     column.doc = _column.doc;
@@ -73,7 +73,7 @@ const buildTDSExecutionResult = (
   metamodel.builder = buildTDSBuilder(
     guaranteeNonNullable(
       protocol.builder,
-      `TDS execution result builder is missing`,
+      `TDS execution result 'builder' field is missing`,
     ),
   );
   metamodel.activities = protocol.activities;
@@ -100,7 +100,7 @@ const buildClassExecutionResult = (
   const metamodel = new ClassExecutionResult();
   metamodel.objects = guaranteeNonNullable(
     protocol.objects,
-    `Class execution result value is missing`,
+    `Class execution result 'objects' field is missing`,
   );
   metamodel.activities = protocol.activities;
   return metamodel;

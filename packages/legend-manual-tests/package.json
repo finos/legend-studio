@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-manual-tests",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "private": true,
   "description": "Legend manual tests",
   "keywords": [
@@ -21,12 +21,17 @@
     "test:watch": "jest --config jest.config.manual.js --watch"
   },
   "dependencies": {
+    "@finos/legend-art": "workspace:*",
+    "@finos/legend-extension-dsl-data-space": "workspace:*",
+    "@finos/legend-extension-dsl-diagram": "workspace:*",
+    "@finos/legend-extension-dsl-serializer": "workspace:*",
+    "@finos/legend-extension-dsl-text": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "axios": "0.21.4",
+    "axios": "0.22.0",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
     "jest": "27.2.4",

@@ -339,26 +339,50 @@ export const V1_transformDatabaseDataType = (
   dataType: V1_RelationalDataType,
 ): RelationalDataType => {
   if (dataType instanceof V1_VarChar) {
-    assertNonNullable(dataType.size, 'VARCHAR size is missing');
+    assertNonNullable(
+      dataType.size,
+      `Relational data type VARCHAR 'size' field is missing`,
+    );
     return new VarChar(dataType.size);
   } else if (dataType instanceof V1_Char) {
-    assertNonNullable(dataType.size, 'CHAR size is missing');
+    assertNonNullable(
+      dataType.size,
+      `Relational data type CHAR 'size' field is missing`,
+    );
     return new Char(dataType.size);
   } else if (dataType instanceof V1_VarBinary) {
-    assertNonNullable(dataType.size, 'VARBINARY size is missing');
+    assertNonNullable(
+      dataType.size,
+      `Relational data type VARBINARY 'size' field is missing`,
+    );
     return new VarBinary(dataType.size);
   } else if (dataType instanceof V1_Binary) {
-    assertNonNullable(dataType.size, 'BINARY size is missing');
+    assertNonNullable(
+      dataType.size,
+      `Relational data type BINARY 'size' field is missing`,
+    );
     return new Binary(dataType.size);
   } else if (dataType instanceof V1_Bit) {
     return new Bit();
   } else if (dataType instanceof V1_Numeric) {
-    assertNonNullable(dataType.precision, 'NUMBERIC precision is missing');
-    assertNonNullable(dataType.scale, 'NUMBERIC scale is missing');
+    assertNonNullable(
+      dataType.precision,
+      `Relational data type NUMBERIC 'precision' field is missing`,
+    );
+    assertNonNullable(
+      dataType.scale,
+      `Relational data type NUMBERIC 'scale' field is missing`,
+    );
     return new Numeric(dataType.precision, dataType.scale);
   } else if (dataType instanceof V1_Decimal) {
-    assertNonNullable(dataType.precision, 'DECIMAL precision is missing');
-    assertNonNullable(dataType.scale, 'DECIMAL scale is missing');
+    assertNonNullable(
+      dataType.precision,
+      `Relational data type DECIMAL 'precision' field is missing`,
+    );
+    assertNonNullable(
+      dataType.scale,
+      `Relational data type DECIMAL 'scale' field is missing`,
+    );
     return new Decimal(dataType.precision, dataType.scale);
   } else if (dataType instanceof V1_Double) {
     return new Double();
@@ -388,7 +412,7 @@ export const V1_transformDatabaseDataType = (
 };
 
 const buildColumn = (column: V1_Column, table: Table): Column => {
-  assertNonEmptyString(column.name, 'Column name is missing');
+  assertNonEmptyString(column.name, `Column 'name' field is missing or empty`);
   const col = new Column();
   col.name = column.name;
   col.type = V1_transformDatabaseDataType(column.type);
@@ -402,7 +426,7 @@ const buildDatabaseTable = (
   schema: Schema,
   context: V1_GraphBuilderContext,
 ): Table => {
-  assertNonEmptyString(srcTable.name, 'Table name is missing');
+  assertNonEmptyString(srcTable.name, `Table 'name' field is missing or empty`);
   const table = new Table(srcTable.name, schema);
   const columns = srcTable.columns.map((column) => buildColumn(column, table));
   table.columns = columns;
@@ -423,7 +447,10 @@ export const V1_buildSchema = (
   database: Database,
   context: V1_GraphBuilderContext,
 ): Schema => {
-  assertNonEmptyString(srcSchema.name, 'Schema name is missing');
+  assertNonEmptyString(
+    srcSchema.name,
+    `Schema 'name' field is missing or empty`,
+  );
   const schema = new Schema(srcSchema.name, database);
   schema.tables = srcSchema.tables.map((table) =>
     buildDatabaseTable(table, schema, context),
@@ -432,7 +459,7 @@ export const V1_buildSchema = (
 };
 
 const buildViewFirstPass = (srcView: V1_View, schema: Schema): View => {
-  assertNonEmptyString(srcView.name, 'View name is missing');
+  assertNonEmptyString(srcView.name, `View 'name' field is missing or empty`);
   const view = new View(srcView.name, schema);
   const columns = srcView.columnMappings.map((colMapping) => {
     const col = new Column();
@@ -544,7 +571,7 @@ export const V1_buildDatabaseJoin = (
   context: V1_GraphBuilderContext,
   database: Database,
 ): Join => {
-  assertNonEmptyString(srcJoin.name, 'Join name is missing');
+  assertNonEmptyString(srcJoin.name, `Join 'name' field is missing or empty`);
   const aliasMap = new Map<string, TableAlias>();
   const selfJoinTargets: TableAliasColumn[] = [];
   const join = new Join(
@@ -613,7 +640,10 @@ export const V1_buildDatabaseFilter = (
   context: V1_GraphBuilderContext,
   database: Database,
 ): Filter => {
-  assertNonEmptyString(srcFilter.name, 'Filter name is missing');
+  assertNonEmptyString(
+    srcFilter.name,
+    `Filter 'name' field is missing or empty`,
+  );
   const aliasMap = new Map<string, TableAlias>();
   const op = V1_buildRelationalOperationElement(
     srcFilter.operation,

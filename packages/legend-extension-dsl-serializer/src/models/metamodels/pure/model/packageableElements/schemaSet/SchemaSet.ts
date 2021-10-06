@@ -28,8 +28,8 @@ export enum FORMAT_TYPE {
 }
 
 export class SchemaSet extends PackageableElement implements Hashable {
-  format: string;
-  schemas: Schema[];
+  format: FORMAT_TYPE = FORMAT_TYPE.FLAT_DATA;
+  schemas: Schema[] = [];
 
   constructor(name: string) {
     super(name);
@@ -42,12 +42,9 @@ export class SchemaSet extends PackageableElement implements Hashable {
       deleteSchema: action,
       _elementHashCode: override,
     });
-
-    this.format = FORMAT_TYPE.FLAT_DATA;
-    this.schemas = [];
   }
 
-  setFormat(value: string): void {
+  setFormat(value: FORMAT_TYPE): void {
     this.format = value;
   }
 

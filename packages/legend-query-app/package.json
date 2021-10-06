@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-query-app",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "description": "Legend Query web application deployment",
   "keywords": [
     "legend",
@@ -46,7 +46,7 @@
     "@finos/legend-extension-external-format-json-schema": "workspace:*",
     "@finos/legend-query": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "17.0.24",
+    "@types/react": "17.0.27",
     "react": "17.0.2"
   },
   "devDependencies": {

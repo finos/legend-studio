@@ -68,15 +68,15 @@ export const V1_buildDatasourceSpecification = (
   if (protocol instanceof V1_StaticDatasourceSpecification) {
     assertNonEmptyString(
       protocol.host,
-      'Static datasource specification host is missing',
+      `Static datasource specification 'host' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.databaseName,
-      'Static datasource specification database is missing',
+      `Static datasource specification 'databaseName' field is missing or empty`,
     );
     assertNonNullable(
       protocol.port,
-      'Static datasource specification port is missing',
+      `Static datasource specification 'port' field is missing`,
     );
     const staticSpec = new StaticDatasourceSpecification(
       protocol.host,
@@ -87,15 +87,15 @@ export const V1_buildDatasourceSpecification = (
   } else if (protocol instanceof V1_EmbeddedH2DatasourceSpecification) {
     assertNonEmptyString(
       protocol.databaseName,
-      'Embedded H2 datasource specification databaseName is missing',
+      `Embedded H2 datasource specification 'databaseName' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.directory,
-      'Embedded H2 datasource specification directory is missing',
+      `Embedded H2 datasource specification 'directory' field is missing or empty`,
     );
     assertNonNullable(
       protocol.autoServerMode,
-      'Embedded H2 datasource specification autoServerMode is missing',
+      `Embedded H2 datasource specification 'autoServerMode' field is missing or empty`,
     );
     const embeddedSpec = new EmbeddedH2DatasourceSpecification(
       protocol.databaseName,
@@ -106,19 +106,19 @@ export const V1_buildDatasourceSpecification = (
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     assertNonEmptyString(
       protocol.accountName,
-      'Snowflake datasource specification property is missing',
+      `Snowflake datasource specification 'accountName' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.region,
-      'Snowflake datasource specification region is missing',
+      `Snowflake datasource specification 'region' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.warehouseName,
-      'Snowflake datasource specification warehouseName is missing',
+      `Snowflake datasource specification 'warehouseName' field is missing or empty`,
     );
     assertNonNullable(
       protocol.databaseName,
-      'Snowflake datasource specification databaseName is missing',
+      `Snowflake datasource specification 'databaseName' field is missing`,
     );
     const snowflakeSpec = new SnowflakeDatasourceSpecification(
       protocol.accountName,
@@ -133,7 +133,7 @@ export const V1_buildDatasourceSpecification = (
   } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
     assertNonEmptyString(
       protocol.projectId,
-      'BigQuery datasource specification property project ID is missing',
+      `BigQuery datasource specification 'projectId' field is missing or empty`,
     );
     const bigQuerySpec = new BigQueryDatasourceSpecification(
       protocol.projectId,
@@ -148,15 +148,15 @@ export const V1_buildDatasourceSpecification = (
   } else if (protocol instanceof V1_RedshiftDatasourceSpecification) {
     assertNonEmptyString(
       protocol.databaseName,
-      'Redshift datasource specification databaseName is missing',
+      `Redshift datasource specification 'databaseName' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.endpoint,
-      'Redshift datasource specification endpoint is missing',
+      `Redshift datasource specification 'endpoint' field is missing or empty`,
     );
     assertNonNullable(
       protocol.port,
-      'Redshift datasource specification port is missing',
+      `Redshift datasource specification 'port' field is missing or empty`,
     );
     const redshiftSpec = new RedshiftDatasourceSpecification(
       protocol.databaseName,
@@ -197,15 +197,15 @@ export const V1_buildAuthenticationStrategy = (
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     assertNonEmptyString(
       protocol.privateKeyVaultReference,
-      'Snowflake public authentication strategy private key vault reference is missing or empty',
+      `Snowflake public authentication strategy 'privateKeyVaultReference' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.passPhraseVaultReference,
-      'Snowflake public authentication strategy pass phrase vault reference is missing or empty',
+      `Snowflake public authentication strategy 'passPhraseVaultReference' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.publicUserName,
-      'Snowflake public authentication user name is missing or empty',
+      `Snowflake public authentication 'publicUserName' field is missing or empty`,
     );
     return new SnowflakePublicAuthenticationStrategy(
       protocol.privateKeyVaultReference,
@@ -233,11 +233,11 @@ export const V1_buildAuthenticationStrategy = (
   } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
     assertNonEmptyString(
       protocol.userName,
-      'User password authentication strategy userName is missing or empty',
+      `User password authentication strategy 'userName' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.passwordVaultReference,
-      'User password authentication strategy passwordVaultReference is missing or empty',
+      `User password authentication strategy 'passwordVaultReference' field is missing or empty`,
     );
     return new UserPasswordAuthenticationStrategy(
       protocol.userName,

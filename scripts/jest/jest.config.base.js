@@ -27,6 +27,7 @@ const baseConfig = getBaseConfig({
 export default {
   ...baseConfig,
   setupFiles: [
+    '<rootDir>/scripts/jest/setupTests/disallowConsoleError.js',
     '<rootDir>/scripts/jest/setupTests/blockFetch.js',
     '<rootDir>/scripts/jest/setupTests/handleUnhandledRejection.js',
   ],

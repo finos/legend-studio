@@ -19,7 +19,7 @@ export const roundtripTestData = [
     path: 'anything::schemaSet1',
     content: {
       _type: 'externalFormatSchemaSet',
-      format: 'test',
+      format: 'FlatData',
       name: 'schemaSet1',
       package: 'anything',
       schemas: [],
@@ -30,7 +30,7 @@ export const roundtripTestData = [
     path: 'anything::schemaSet2',
     content: {
       _type: 'externalFormatSchemaSet',
-      format: 'test',
+      format: 'FlatData',
       name: 'schemaSet2',
       package: 'anything',
       schemas: [

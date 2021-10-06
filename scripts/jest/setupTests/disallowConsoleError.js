@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-import base from '../../scripts/jest/jest.config.base.js';
-import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { format } from 'util';
 
-const packageJson = loadJSON('./package.json');
+const error = global.console.error;
 
-export default {
-  ...base,
-  displayName: packageJson.name,
-  name: packageJson.name,
-  rootDir: '../..',
-  moduleNameMapper: {
-    ...base.moduleNameMapper,
-    '^monaco-editor$': '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
-  },
-  testMatch: [
-    '<rootDir>/packages/legend-manual-tests/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
-  ],
+// Sometimes, React errors/warnings are not thrown, but printed as errors using `console.error`
+// we would like to catch these in tests as well.
+// See https://github.com/facebook/jest/issues/6121#issuecomment-529591574
+global.console.error = function (...args) {
+  error(...args);
+  throw new Error(format(...args));
 };

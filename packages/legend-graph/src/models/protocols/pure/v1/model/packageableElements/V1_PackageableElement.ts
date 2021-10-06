@@ -80,15 +80,16 @@ export abstract class V1_PackageableElement implements Hashable {
 export enum V1_PackageableElementPointerType {
   STORE = 'STORE',
   MAPPING = 'MAPPING',
+  RUNTIME = 'RUNTIME',
   FILE_GENERATION = 'FILE_GENERATION',
   SERVICE = 'SERVICE',
 }
 
 export class V1_PackageableElementPointer implements Hashable {
-  type!: V1_PackageableElementPointerType;
+  type!: string;
   path!: string;
 
-  constructor(type: V1_PackageableElementPointerType, path: string) {
+  constructor(type: string, path: string) {
     this.type = type;
     this.path = path;
   }

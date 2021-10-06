@@ -74,7 +74,7 @@ export const V1_buildServiceTest = (
     assertType(
       parentService.execution,
       PureSingleExecution,
-      'Service with single execution requires a single execution test',
+      'Service with single-execution requires a single-execution test',
     );
     const singleTest = new SingleExecutionTest(parentService, serviceTest.data);
     singleTest.asserts = serviceTest.asserts.map((assert) => {
@@ -94,12 +94,12 @@ export const V1_buildServiceTest = (
     assertType(
       parentService.execution,
       PureMultiExecution,
-      'Service with multi execution requires a multi execution test',
+      'Service with multi-execution requires a multi-execution test',
     );
     const multiTest = new MultiExecutionTest(parentService);
     if (!serviceTest.tests.length) {
       throw new GraphBuilderError(
-        'Service multi execution test must not be empty',
+        'Service multi-execution test must not be empty',
       );
     }
     const executionKeys = new Set(
@@ -111,12 +111,12 @@ export const V1_buildServiceTest = (
     multiTest.tests = serviceTest.tests.map((test) => {
       assertNonEmptyString(
         test.key,
-        'Service multi execution test key is missing',
+        'Service multi-execution test key is missing',
       );
       // check duplicated key
       if (uniqueKeys.has(test.key)) {
         throw new GraphBuilderError(
-          `Service multi execution test with key '${test.key}' already exists`,
+          `Service multi-execution test with key '${test.key}' already exists`,
         );
       }
       uniqueKeys.add(test.key);
@@ -139,14 +139,14 @@ export const V1_buildServiceTest = (
       });
       return keyedTest;
     });
-    // verify matching key values between multi execution and multi execution test
+    // verify matching key values between multi-execution and multi-execution test
     // NOTE: since test depends on execution, we want to check first if no test is found for an execution
     const testWithoutExecutionKeys = new Set(
       Array.from(uniqueKeys.values()).filter((key) => !executionKeys.has(key)),
     );
     Array.from(uniqueKeys.values()).forEach((key) => executionKeys.delete(key));
     /**
-     * Here, we verify matching key values between multi execution and multi test
+     * Here, we verify matching key values between multi-execution and multi test
      * NOTE: since test depends on execution, we definitely want to throw when no execution is found for a test.
      * The other direction is debatable, on one hand it makes sense to have a test for each execution, but very often
      * (and majorly for backward compatibility reasons) we have executions that only differ in connection information
@@ -191,7 +191,10 @@ const buildServiceExecutionRuntime = (
     mapping,
   );
   if (runtime instanceof V1_RuntimePointer) {
-    assertNonNullable(runtime.runtime, 'Runtime pointer path is missing');
+    assertNonNullable(
+      runtime.runtime,
+      `Runtime pointer 'runtime' field is missing`,
+    );
     return new RuntimePointer(context.resolveRuntime(runtime.runtime));
   } else if (runtime instanceof V1_EngineRuntime) {
     runtime.mappings = runtime.mappings.length
@@ -208,7 +211,7 @@ const buildServiceExecutionRuntime = (
     runtime.connections.forEach((connection) => {
       assertNonNullable(
         connection.store,
-        'Legacy runtime embedded connection store is missing',
+        `Legacy runtime embedded connection 'store' field is missing`,
       );
       const identifiedConnection = new V1_IdentifiedConnection();
       identifiedConnection.id = `connection_${idx} `;
@@ -240,7 +243,7 @@ export const V1_buildServiceExecution = (
   if (serviceExecution instanceof V1_PureSingleExecution) {
     assertNonNullable(
       serviceExecution.func,
-      'Service Pure execution function is missing',
+      `Service Pure execution 'func' field is missing`,
     );
     return new PureSingleExecution(
       V1_resolvePathsInRawLambda(
@@ -258,15 +261,15 @@ export const V1_buildServiceExecution = (
     );
   } else if (serviceExecution instanceof V1_PureMultiExecution) {
     if (!serviceExecution.executionParameters.length) {
-      throw new GraphBuilderError('Service multi execution must not be empty');
+      throw new GraphBuilderError('Service multi-execution must not be empty');
     }
     assertNonNullable(
       serviceExecution.func,
-      'Service Pure execution function is missing',
+      `Service Pure execution 'func' field is missing`,
     );
     assertNonEmptyString(
       serviceExecution.executionKey,
-      'Service multi execution key is missing',
+      `Service multi-execution 'executionKey' field is missing`,
     );
     const execution = new PureMultiExecution(
       serviceExecution.executionKey,
@@ -282,12 +285,12 @@ export const V1_buildServiceExecution = (
       (keyedExecutionParameter) => {
         assertNonEmptyString(
           keyedExecutionParameter.key,
-          'Service multi execution parameter key is missing',
+          `Service multi-execution parameter 'key' field is missing`,
         );
         // check duplicated key
         if (uniqueKeys.has(keyedExecutionParameter.key)) {
           throw new GraphBuilderError(
-            `Service multi execution with key '${keyedExecutionParameter.key}' already exists`,
+            `Service multi-execution with key '${keyedExecutionParameter.key}' already exists`,
           );
         }
         return new KeyedExecutionParameter(

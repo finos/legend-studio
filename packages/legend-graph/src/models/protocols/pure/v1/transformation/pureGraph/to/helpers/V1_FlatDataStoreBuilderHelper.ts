@@ -74,15 +74,15 @@ const buildFlatDataDataType = (
   ): FlatDataRecordField => {
     assertNonEmptyString(
       field.label,
-      'Flat-data record field label is missing',
+      `Flat-data record field 'label' field is missing or empty`,
     );
     assertNonNullable(
       field.flatDataDataType,
-      'Flat-data record field type is missing',
+      `Flat-data record field 'flatDataDataType' field is missing`,
     );
     assertNonNullable(
       field.optional,
-      'Flat-data record field optional flag is missing',
+      `Flat-data record field 'optional' field is missing`,
     );
     const recordField = new FlatDataRecordField(
       field.label,
@@ -162,8 +162,14 @@ const buildFlatDataRecordType = (
 const buildFlatDataProperty = (
   property: V1_FlatDataProperty,
 ): FlatDataProperty => {
-  assertNonEmptyString(property.name, 'Flat-data property name is missing');
-  assertNonNullable(property.value, 'Flat-data property value is missing');
+  assertNonEmptyString(
+    property.name,
+    `Flat-data property 'name' field is missing or empty`,
+  );
+  assertNonNullable(
+    property.value,
+    `Flat-data property 'value' field is missing`,
+  );
   assertTrue(
     isString(property.value) ||
       isNumber(property.value) ||
@@ -178,8 +184,14 @@ export const V1_buildFlatDataSection = (
   parentFlatData: FlatData,
   context: V1_GraphBuilderContext,
 ): FlatDataSection => {
-  assertNonEmptyString(section.name, 'Flat-data section name is missing');
-  assertNonEmptyString(section.driverId, 'Flat-data driver ID is missing');
+  assertNonEmptyString(
+    section.name,
+    `Flat-data section 'name' field is missing or empty`,
+  );
+  assertNonEmptyString(
+    section.driverId,
+    `Flat-data section 'driverId' field is missing`,
+  );
   const flatDataSection = new FlatDataSection(
     section.driverId,
     section.name,

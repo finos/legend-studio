@@ -27,16 +27,10 @@ export abstract class V1_Sdlc {
 }
 
 export class V1_AlloySdlc extends V1_Sdlc {
-  groupId: string;
-  artifactId: string;
+  project: string;
 
-  constructor(
-    groupId: string,
-    artifactId: string,
-    version: string | undefined,
-  ) {
+  constructor(project: string, version: string | undefined) {
     super(version);
-    this.groupId = groupId;
-    this.artifactId = artifactId;
+    this.project = project;
   }
 }
