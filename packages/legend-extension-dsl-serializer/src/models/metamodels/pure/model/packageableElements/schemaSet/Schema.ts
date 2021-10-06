@@ -22,7 +22,7 @@ import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_Mode
 export class Schema implements Hashable {
   id?: string | undefined;
   location?: string | undefined;
-  content!: string;
+  content = '';
 
   constructor() {
     makeObservable(this, {

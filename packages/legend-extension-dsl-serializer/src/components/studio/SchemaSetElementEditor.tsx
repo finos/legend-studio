@@ -91,7 +91,6 @@ const SchemaBasicEditor = observer(
     ) => schema.setLocation(event.target.value);
     const editorOptions: editor.IEditorOptions & editor.IGlobalEditorOptions = {
       lineNumbers: 'off',
-      fontFamily: 'Arial',
       lineDecorationsWidth: 0,
     };
     return (
@@ -134,6 +133,7 @@ export const SchemaSetEditor = observer(() => {
   const editorState = editorStore.getCurrentEditorState(SchemaSetEditorState);
   const schemaSet = editorState.schemaSet;
   const isReadOnly = editorState.isReadOnly;
+  let count = 1;
   const [schemaState, setSchema] =
     schemaSet.schemas.length !== 0
       ? useState(schemaSet.schemas[schemaSet.schemas.length - 1])
@@ -220,7 +220,7 @@ export const SchemaSetEditor = observer(() => {
                 <MenuContent className="schema-set-panel__dropdown">
                   {schemaSet.schemas.map((schema: Schema, index: number) => (
                     <MenuContentItem
-                      key={schema.id}
+                      key={`Schema${count++}`}
                       className={
                         schemaState === schema
                           ? 'schema-set-panel__option schema-set-panel__option__active'

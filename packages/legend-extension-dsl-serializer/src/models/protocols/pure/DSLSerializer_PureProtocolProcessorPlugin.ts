@@ -175,10 +175,12 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             elementProtocol.name,
           );
           const element = getSchemaSet(path, context.graph);
-          element.format =
+          element.format = guaranteeNonNullable(
             Object.values(FORMAT_TYPE).find(
               (type) => type === elementProtocol.format,
-            ) ?? FORMAT_TYPE.FLAT_DATA;
+            ),
+            `Can't support schema format '${elementProtocol.format}'`,
+          );
           element.schemas = elementProtocol.schemas.map((schema) => {
             const schemaElement = new Schema();
             schemaElement.setContent(
