@@ -122,10 +122,6 @@ Now, you're good to start. After the setup step, you can start the application y
 ```sh
 # Run the main web application (top-level workspace) in development mode.
 yarn dev # alias: `yarn start` - this by default will start Studio
-
-# Or start the specific app you are working on
-yarn dev:query
-yarn dev:studio
 ```
 
 Each workspace in the monorepo should have a `dev` script. Run these (in separate terminal tabs) when you are making changes in these workspaces to rebuild on change. Otherwise, after making change, you have to manually rebuild the workspace using the `build` script. Following are some useful scripts for development.
@@ -146,7 +142,18 @@ yarn build
 
 # Using project reference, build and develop Typescript files in all workspaces.
 # This is usually sufficient if you make code change not related to styling.
-yarn build:tsc
+yarn dev:tsc
+```
+
+As such, the recommended workflow is to have multiple terminal tabs opened
+
+```sh
+# one for the application served with Webpack
+yarn dev
+
+# another tab is for Typescript compiler
+# NOTE: this process could take some time in certain cases
+# so if you need to fine tune, you can use `yarn workspace ... dev` instead
 yarn dev:tsc
 ```
 

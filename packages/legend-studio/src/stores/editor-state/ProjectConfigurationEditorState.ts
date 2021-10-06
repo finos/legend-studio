@@ -31,10 +31,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorSdlcState } from '../EditorSdlcState';
-import type {
-  ProjectConfiguration,
-  ProjectDependency,
-} from '@finos/legend-server-sdlc';
+import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
@@ -124,22 +121,6 @@ export class ProjectConfigurationEditorState extends EditorState {
     );
   }
 
-  getProjectDataFromDependency(
-    dependency: ProjectDependency,
-  ): ProjectData | undefined {
-    if (!dependency.isLegacyDependency) {
-      return this.projects.get(dependency.projectId);
-    }
-    const projectData = Array.from(this.projects.values()).find(
-      (e) => e.projectId === dependency.projectId,
-    );
-    // re-write to new format
-    if (projectData) {
-      dependency.setProjectId(projectData.coordinates);
-    }
-    return projectData;
-  }
-
   *fectchAssociatedProjectsAndVersions(): GeneratorFn<void> {
     this.isFetchingAssociatedProjectsAndVersions = true;
     try {
@@ -150,6 +131,22 @@ export class ProjectConfigurationEditorState extends EditorState {
         // filter out non versioned projects
         .filter((p) => Boolean(p.versions.length))
         .forEach((project) => this.projects.set(project.coordinates, project));
+
+      // Update the legacy dependency to newer format (using group ID and artifact ID instead of just project ID)
+      this.projectConfiguration?.projectDependencies.forEach(
+        (dependency): void => {
+          if (!dependency.isLegacyDependency) {
+            return;
+          }
+          const projectData = Array.from(this.projects.values()).find(
+            (e) => e.projectId === dependency.projectId,
+          );
+          // re-write to new format
+          if (projectData) {
+            dependency.setProjectId(projectData.coordinates);
+          }
+        },
+      );
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error) {
       assertErrorThrown(error);

@@ -530,7 +530,7 @@ export class DiagramRenderer {
       case DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP: {
         if (relationshipMode === DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE) {
           throw new IllegalStateError(
-            `Can't switch to relationship mode: relationship is missing`,
+            `Can't switch to relationship mode: relationship mode is not specified`,
           );
         }
         break;

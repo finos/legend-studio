@@ -31,7 +31,7 @@ import type { EditorStore } from '../../../../stores/EditorStore';
 
 let renderResult: RenderResult;
 
-const TEST_DATA_ProjectConfiguration = {
+const TEST_DATA__ProjectConfiguration = {
   projectStructureVersion: { version: 10, extensionVersion: 1 },
   projectId: 'PROD-1234',
   projectType: 'PRODUCTION',
@@ -58,7 +58,7 @@ const TEST_DATA_ProjectConfiguration = {
   metamodelDependencies: [],
 };
 
-const TEST_DATA_ProjectData = [
+const TEST_DATA__ProjectData = [
   {
     id: 'PROD-1',
     projectId: 'PROD-1',
@@ -69,7 +69,7 @@ const TEST_DATA_ProjectData = [
   },
 ];
 
-const TEST_DATA_Projects = [
+const TEST_DATA__Projects = [
   {
     id: 'PROD-1',
     projectId: 'PROD-1',
@@ -96,7 +96,7 @@ const TEST_DATA_Projects = [
   },
 ];
 
-const TEST_DATA_DependencyEntities = [
+const TEST_DATA__DependencyEntities = [
   {
     groupId: 'org.finos.legend',
     artifactId: 'prod-1',
@@ -113,24 +113,28 @@ const TEST_DATA_DependencyEntities = [
   },
 ];
 
-const TEST_DATA_latestProjectStructure = { version: 11, extensionVersion: 1 };
+const TEST_DATA__latestProjectStructure = { version: 11, extensionVersion: 1 };
 
 let mockedEditorStore: EditorStore;
+
 beforeEach(async () => {
   mockedEditorStore = TEST__provideMockedEditorStore();
   renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
     entities: [],
-    projectConfiguration: TEST_DATA_ProjectConfiguration,
-    latestProjectStructureVersion: TEST_DATA_latestProjectStructure,
-    projects: TEST_DATA_Projects,
-    projectData: TEST_DATA_ProjectData,
-    projectDependency: TEST_DATA_DependencyEntities,
+    projectConfiguration: TEST_DATA__ProjectConfiguration,
+    latestProjectStructureVersion: TEST_DATA__latestProjectStructure,
+    projects: TEST_DATA__Projects,
+    projectData: TEST_DATA__ProjectData,
+    projectDependency: TEST_DATA__DependencyEntities,
   });
+  fireEvent.click(renderResult.getByText('config'));
+  const editPanel = renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL_CONTENT);
+  const updateButton = getByText(editPanel, 'Update');
+  expect(updateButton.getAttribute('disabled')).not.toBeNull();
+  await waitFor(() => renderResult.getByText('Project Structure'));
 });
 
 test(integrationTest('Test Project Structure'), async () => {
-  fireEvent.click(renderResult.getByText('config'));
-  await waitFor(() => renderResult.getByText('Project Structure'));
   const editPanel = renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL_CONTENT);
   await waitFor(() => getByText(editPanel, 'PROJECT STRUCTURE VERSION 10.1'));
   await waitFor(() => getByText(editPanel, 'Update to version 11.1'));
@@ -140,12 +144,11 @@ test(integrationTest('Test Project Structure'), async () => {
 });
 
 test(integrationTest('Test Project Dependency'), async () => {
-  fireEvent.click(renderResult.getByText('config'));
-  await waitFor(() => renderResult.getByText('Project Structure'));
   const editPanel = renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL_CONTENT);
-  let updateButton = getByText(editPanel, 'Update');
-  expect(updateButton.getAttribute('disabled')).not.toBeNull();
+  const updateButton = getByText(editPanel, 'Update');
+  expect(updateButton.getAttribute('disabled')).toBeNull();
   fireEvent.click(getByText(editPanel, 'Project Dependencies'));
+
   // dependency 1
   await waitFor(() => getByText(editPanel, 'PROD-1'));
   await waitFor(() => getByText(editPanel, 'org.finos.legend:prod-1'));
@@ -155,8 +158,6 @@ test(integrationTest('Test Project Dependency'), async () => {
   await waitFor(() => getByText(editPanel, 'PROD-2'));
   await waitFor(() => getByText(editPanel, 'org.finos.legend:prod-2'));
   await waitFor(() => getByText(editPanel, '3.0.0'));
-  updateButton = getByText(editPanel, /Update/i);
-  expect(updateButton.getAttribute('disabled')).toBeNull();
 
   const configState = mockedEditorStore.projectConfigurationEditorState;
   const projectDependenciesToAdd =

@@ -25,9 +25,6 @@ import {
   UserIcon,
   QuestionCircleIcon,
   clsx,
-  EnvelopIcon,
-  MappingIcon,
-  RuntimeIcon,
   CustomSelectorInput,
 } from '@finos/legend-art';
 import {
@@ -229,7 +226,7 @@ export const DataSpaceViewer = observer(() => {
                 dataSpaceEditorState={dataSpaceEditorState}
               />
             )}
-            {dataSpaceEditorState.currentActivity ===
+            {/* {dataSpaceEditorState.currentActivity ===
               DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION && (
               <div className="data-space-viewer__main-panel__content data-space-viewer__execution-panel">
                 <div className="data-space-viewer__panel__info-entry">
@@ -249,12 +246,12 @@ export const DataSpaceViewer = observer(() => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
             {dataSpaceEditorState.currentActivity ===
               DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT && (
               <BlankPanelContent>(WIP)</BlankPanelContent>
             )}
-            {dataSpaceEditorState.currentActivity ===
+            {/* {dataSpaceEditorState.currentActivity ===
               DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT && (
               <div className="data-space-viewer__main-panel__content data-space-viewer__support-panel">
                 <div className="data-space-viewer__panel__info-entry">
@@ -262,11 +259,11 @@ export const DataSpaceViewer = observer(() => {
                     <EnvelopIcon />
                   </div>
                   <div className="data-space-viewer__panel__info-entry__content">
-                    {dataSpace.supportEmail ?? '(no support contact available)'}
+                    {dataSpace.supportInfo ?? '(no support contact available)'}
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

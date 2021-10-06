@@ -42,12 +42,12 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.24",
+    "@types/react": "17.0.27",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
     "monaco-editor": "0.28.1",
     "react": "17.0.2",
-    "react-icons": "4.2.0",
+    "react-icons": "4.3.1",
     "serializr": "2.0.5"
   },
   "devDependencies": {

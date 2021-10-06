@@ -28,9 +28,12 @@ export const V1_buildGenerationTreeNode = (
 ): GenerationTreeNode => {
   assertNonEmptyString(
     generationNode.generationElement,
-    'Generation tree node generation element is missing',
+    `Generation tree node 'generationElement' field is missing or empty`,
   );
-  assertNonEmptyString(generationNode.id, 'Generation tree node ID is missing');
+  assertNonEmptyString(
+    generationNode.id,
+    `Generation tree node 'id' field is missing or empty`,
+  );
   const genNode = new GenerationTreeNode(
     context.resolveElement(generationNode.generationElement, false),
   );
@@ -44,7 +47,7 @@ export const V1_buildFileGenerationPointer = (
 ): PackageableElementReference<FileGenerationSpecification> => {
   assertNonEmptyString(
     fileGeneration.path,
-    'File generation pointer path is missing',
+    `File generation pointer 'path' field is missing or empty`,
   );
   return context.resolveFileGeneration(fileGeneration.path);
 };

@@ -76,7 +76,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): void {
     assertNonEmptyString(
       classMapping.class,
-      'Operation class mapping class is missing',
+      `Operation class mapping 'class' field is missing or empty`,
     );
     const id = V1_getInferredClassMappingId(
       this.context.resolveClass(classMapping.class).value,
@@ -116,7 +116,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   ): void {
     assertNonEmptyString(
       classMapping.class,
-      'Model-to-model class mapping class is missing',
+      `Pure instance class mapping 'class' field is missing or empty`,
     );
     const pureInstanceSetImplementation = guaranteeType(
       getOwnClassMappingById(
@@ -149,7 +149,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   ): void {
     assertNonEmptyString(
       classMapping.class,
-      'Flat-data class mapping class is missing',
+      `Flat-data class mapping 'class' field is missing or empty`,
     );
     const flatDataInstanceSetImplementation = guaranteeType(
       getOwnClassMappingById(
@@ -183,7 +183,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Relational class mapping class is missing',
+      `Relational class mapping 'class' field is missing or empty`,
     );
     const rootRelationalInstanceSetImplementation = guaranteeType(
       getOwnClassMappingById(
@@ -272,7 +272,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Aggregation-aware class mapping class is missing',
+      `Aggregation-aware class mapping 'class' field is missing or empty`,
     );
     const aggragetionAwareInstanceSetImplementation = guaranteeType(
       getOwnClassMappingById(

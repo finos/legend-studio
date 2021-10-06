@@ -205,11 +205,11 @@ export class V1_GraphBuilderContext {
   ): StereotypeImplicitReference => {
     assertNonEmptyString(
       stereotypePtr.profile,
-      'Steoreotype pointer profile is missing',
+      `Steoreotype pointer 'profile' field is missing or empty`,
     );
     assertNonEmptyString(
       stereotypePtr.value,
-      'Steoreotype pointer value is missing',
+      `Steoreotype pointer 'value' field is missing or empty`,
     );
     const ownerReference = this.resolveProfile(stereotypePtr.profile);
     const value = ownerReference.value.getStereotype(stereotypePtr.value);
@@ -217,8 +217,14 @@ export class V1_GraphBuilderContext {
   };
 
   resolveTag = (tagPtr: V1_TagPtr): TagImplicitReference => {
-    assertNonEmptyString(tagPtr.profile, 'Tag pointer profile is missing');
-    assertNonEmptyString(tagPtr.value, 'Tag pointer value is missing');
+    assertNonEmptyString(
+      tagPtr.profile,
+      `Tag pointer 'profile' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      tagPtr.value,
+      `Tag pointer 'value' field is missing or empty`,
+    );
     const ownerReference = this.resolveProfile(tagPtr.profile);
     const value = ownerReference.value.getTag(tagPtr.value);
     return TagImplicitReference.create(ownerReference, value);
@@ -235,11 +241,11 @@ export class V1_GraphBuilderContext {
   ): PropertyImplicitReference => {
     assertNonEmptyString(
       propertyPtr.class,
-      'Property pointer class is missing',
+      `Property pointer 'class' field is missing or empty`,
     );
     assertNonEmptyString(
       propertyPtr.property,
-      'Property pointer name is missing',
+      `Property pointer 'property' field is missing or empty`,
     );
     const ownerReference = this.resolveClass(propertyPtr.class);
     const value = ownerReference.value.getOwnedProperty(propertyPtr.property);
@@ -251,11 +257,11 @@ export class V1_GraphBuilderContext {
   ): PropertyImplicitReference => {
     assertNonEmptyString(
       propertyPtr.class,
-      'Property pointer class is missing',
+      `Property pointer 'class' field is missing or empty`,
     );
     assertNonEmptyString(
       propertyPtr.property,
-      'Property pointer name is missing',
+      `Property pointer 'property' field is missing or empty`,
     );
     const ownerReference = this.resolveClass(propertyPtr.class);
     const value = ownerReference.value.getProperty(propertyPtr.property);
@@ -267,11 +273,11 @@ export class V1_GraphBuilderContext {
   ): RootFlatDataRecordTypeImplicitReference => {
     assertNonEmptyString(
       classMapping.flatData,
-      'Flat-data class mapping source flat-data store is missing',
+      `Flat-data class mapping 'flatData' field is missing or empty`,
     );
     assertNonEmptyString(
       classMapping.sectionName,
-      'Flat-data class mapping source flat-data section is missing',
+      `Flat-data class mapping 'sectionName' field is missing or empty`,
     );
     const ownerReference = this.resolveFlatDataStore(classMapping.flatData);
     const value = ownerReference.value
@@ -288,10 +294,16 @@ export class V1_GraphBuilderContext {
   ): ViewImplicitReference | TableImplicitReference => {
     assertNonEmptyString(
       tablePtr.database,
-      'Table pointer database is missing',
+      `Table pointer 'database' field is missing or empty`,
     );
-    assertNonEmptyString(tablePtr.schema, 'Table pointer schema is missing');
-    assertNonEmptyString(tablePtr.table, 'Table pointer table is missing');
+    assertNonEmptyString(
+      tablePtr.schema,
+      `Table pointer 'schema' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      tablePtr.table,
+      `Table pointer 'table' field is missing or empty`,
+    );
     const ownerReference = this.resolveDatabase(tablePtr.database);
     const value = V1_getRelation(
       ownerReference.value,
@@ -302,16 +314,28 @@ export class V1_GraphBuilderContext {
   };
 
   resolveJoin = (joinPtr: V1_JoinPointer): JoinImplicitReference => {
-    assertNonEmptyString(joinPtr.db, 'Join pointer database is missing');
-    assertNonEmptyString(joinPtr.name, 'Join pointer name is missing');
+    assertNonEmptyString(
+      joinPtr.db,
+      `Join pointer 'db' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      joinPtr.name,
+      `Join pointer 'name' field is missing or empty`,
+    );
     const ownerReference = this.resolveDatabase(joinPtr.db);
     const value = ownerReference.value.getJoin(joinPtr.name);
     return JoinImplicitReference.create(ownerReference, value);
   };
 
   resolveFilter = (filterPtr: V1_FilterPointer): FilterImplicitReference => {
-    assertNonEmptyString(filterPtr.db, 'Filter pointer database is missing');
-    assertNonEmptyString(filterPtr.name, 'Filter pointer name is missing');
+    assertNonEmptyString(
+      filterPtr.db,
+      `Filter pointer 'db' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      filterPtr.name,
+      `Filter pointer 'name' field is missing or empty`,
+    );
     const ownerReference = this.resolveDatabase(filterPtr.db);
     const value = ownerReference.value.getFilter(filterPtr.name);
     return FilterImplicitReference.create(ownerReference, value);
