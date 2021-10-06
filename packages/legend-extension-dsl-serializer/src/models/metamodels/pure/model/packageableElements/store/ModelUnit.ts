@@ -23,15 +23,18 @@ export class ModelUnit implements Hashable {
   packageableElementIncludes: string[];
   packageableElementExcludes: string[];
 
-  constructor() {
+  constructor(
+    packageableElementIncludes: string[],
+    packageableElementExcludes: string[],
+  ) {
     makeObservable(this, {
       packageableElementIncludes: observable,
       packageableElementExcludes: observable,
       hashCode: computed,
     });
 
-    this.packageableElementIncludes = [];
-    this.packageableElementExcludes = [];
+    this.packageableElementIncludes = packageableElementIncludes;
+    this.packageableElementExcludes = packageableElementExcludes;
   }
 
   get hashCode(): string {

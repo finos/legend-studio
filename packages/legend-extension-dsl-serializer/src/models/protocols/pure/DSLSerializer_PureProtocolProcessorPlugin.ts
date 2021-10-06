@@ -19,7 +19,11 @@ import { V1_Binding } from './v1/model/packageableElements/store/V1_Binding';
 import { V1_SchemaSet } from './v1/model/packageableElements/schemaSet/V1_SchemaSet';
 import { V1_ExternalFormatConnection } from './v1/model/packageableElements/connection/V1_ExternalFormatConnection';
 import type { PlainObject } from '@finos/legend-shared';
-import { assertType, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  assertType,
+  guaranteeNonEmptyString,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_bindingModelSchema,
@@ -63,6 +67,7 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
 } from '@finos/legend-graph';
+import { V1_Schema } from './v1/model/packageableElements/schemaSet/V1_Schema';
 
 const BINDING_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::binding::Binding';
@@ -151,7 +156,12 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           element.format = elementProtocol.format;
           element.schemas = elementProtocol.schemas.map((schema) => {
             const schemaElement = new Schema();
-            schemaElement.content = schema.content;
+            schemaElement.setContent(
+              guaranteeNonEmptyString(
+                schema.content,
+                `Schema 'content' field is missing or empty`,
+              ),
+            );
             schemaElement.id = schema.id;
             schemaElement.location = schema.location;
             return schemaElement;
@@ -226,7 +236,13 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           protocol.name = metamodel.name;
           protocol.package = metamodel.package?.fullPath ?? '';
           protocol.format = metamodel.format;
-          protocol.schemas = metamodel.schemas;
+          protocol.schemas = metamodel.schemas.map((schema) => {
+            const schemaProtocol = new V1_Schema();
+            schemaProtocol.content = schema.content;
+            schemaProtocol.id = schema.id;
+            schemaProtocol.location = schema.location;
+            return schemaProtocol;
+          });
           return protocol;
         }
         return undefined;

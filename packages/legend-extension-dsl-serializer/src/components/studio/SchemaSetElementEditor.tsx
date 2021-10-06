@@ -35,11 +35,7 @@ import { Schema } from '../../models/metamodels/pure/model/packageableElements/s
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
 import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import type { editor } from 'monaco-editor';
-
-enum FORMAT_TYPE {
-  FLAT_DATA = 'FlatData',
-  XSD = 'XSD',
-}
+import { FORMAT_TYPE } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 
 const SchemaSetFormatBasicEditor = observer(
   (props: { schemaSet: SchemaSet; isReadOnly: boolean }) => {
@@ -138,7 +134,6 @@ export const SchemaSetEditor = observer(() => {
   const editorState = editorStore.getCurrentEditorState(SchemaSetEditorState);
   const schemaSet = editorState.schemaSet;
   const isReadOnly = editorState.isReadOnly;
-  schemaSet.setFormat(FORMAT_TYPE.FLAT_DATA);
   const [schemaState, setSchema] =
     schemaSet.schemas.length !== 0
       ? useState(schemaSet.schemas[schemaSet.schemas.length - 1])
