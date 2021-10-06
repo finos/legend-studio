@@ -102,8 +102,7 @@ const alloySdlcSerializationModelSchema = createModelSchema(V1_AlloySdlc, {
   _type: usingConstantValueSchema(V1_SdlcType.ALLOY),
   baseVersion: optional(primitive()),
   version: primitive(),
-  groupId: primitive(),
-  artifactId: primitive(),
+  project: primitive(),
   packageableElementPointers: list(
     usingModelSchema(V1_packageableElementPointerDeserializerSchema),
   ),

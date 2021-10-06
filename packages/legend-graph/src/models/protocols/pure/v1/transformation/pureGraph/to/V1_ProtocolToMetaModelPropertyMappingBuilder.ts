@@ -565,7 +565,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       complexClass,
       protocol.property.class ?? '',
     );
-    const id = `${this.immediateParent.id}_${property.name}`;
+    const id = `${this.immediateParent.id.value}_${property.name}`;
     const topParent = guaranteeNonNullable(this.topParent);
     const sourceSetImplementation =
       this.immediateParent instanceof RootRelationalInstanceSetImplementation
