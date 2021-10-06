@@ -29,6 +29,7 @@ import {
   FaTimesCircle,
   FaExclamationTriangle,
   FaBug,
+  FaRegCopy,
 } from 'react-icons/fa';
 import { useApplicationStore } from './ApplicationStoreProvider';
 
@@ -77,6 +78,9 @@ export const NotificationSnackbar = observer(() => {
       break;
   }
   const handleClose = (): void => applicationStore.setNotification(undefined);
+  const handleCopy = (): void => {
+    applicationStore.copyTextToClipboard(message);
+  };
   const onSnackbarAutoHideOrClickAway = (
     event: React.SyntheticEvent<unknown>,
     reason: SnackbarCloseReason,
@@ -131,6 +135,14 @@ export const NotificationSnackbar = observer(() => {
           </div>
         }
         action={[
+          <button
+            className="notification__action"
+            onClick={handleCopy}
+            tabIndex={-1}
+            title={'Copy'}
+          >
+            <FaRegCopy />
+          </button>,
           <button
             className="notification__action"
             key="close"
