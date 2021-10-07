@@ -282,7 +282,8 @@ export abstract class AbstractPureGraphManager {
   abstract registerService(
     graph: PureModel,
     service: Service,
-    projectId: string,
+    groupId: string,
+    artifactId: string,
     server: string,
     executionMode: ServiceExecutionMode,
     version: string | undefined,

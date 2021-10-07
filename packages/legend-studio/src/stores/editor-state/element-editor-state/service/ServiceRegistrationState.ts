@@ -201,12 +201,15 @@ export class ServiceRegistrationState {
         this.projectVersion instanceof Version
           ? this.projectVersion.id.id
           : undefined;
-      const projectId = this.editorStore.sdlcState.currentProjectId;
+      const projectConfig = guaranteeNonNullable(
+        this.editorStore.projectConfigurationEditorState.projectConfiguration,
+      );
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
           this.editorStore.graphManagerState.graph,
           this.serviceEditorState.service,
-          projectId,
+          projectConfig.groupId,
+          projectConfig.artifactId,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
           versionInput,
