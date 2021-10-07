@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 0.1.3
+
+### Patch Changes
+
+- [#565](https://github.com/finos/legend-studio/pull/565) [`52396c8f`](https://github.com/finos/legend-studio/commit/52396c8fd9eec484350d4a3e25b88778a61fe083) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Include all elements and service in service full interactive registration.
+
+* [#562](https://github.com/finos/legend-studio/pull/562) [`8c19f46f`](https://github.com/finos/legend-studio/commit/8c19f46f87ed4178c7c27af8e09b3e65cfe3b898) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support snowflake connection `proxy`.
+
+- [#561](https://github.com/finos/legend-studio/pull/561) [`c04d38d5`](https://github.com/finos/legend-studio/commit/c04d38d56b650e5edb8ec57f8f123fe1ba4fb24e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix serialization issue with `otherwise` embedded mapping.
+
 ## 0.1.2
 
 ### Patch Changes

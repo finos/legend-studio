@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 0.3.3
+
+### Patch Changes
+
+- [#566](https://github.com/finos/legend-studio/pull/566) [`373dcf8b`](https://github.com/finos/legend-studio/commit/373dcf8b214510ceda72212d484f179869900514) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use maven coordinates for service registration.
+
 ## 0.3.2
 
 ### Patch Changes

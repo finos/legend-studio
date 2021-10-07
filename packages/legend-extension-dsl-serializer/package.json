@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-serializer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Legend extension for dsl serializer",
   "keywords": [
     "legend",
