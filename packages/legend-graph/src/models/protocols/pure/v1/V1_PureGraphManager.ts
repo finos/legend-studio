@@ -2037,17 +2037,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
     prunedGraphData.elements = graphData.elements.filter(
-      (element) =>
-        element instanceof V1_Class ||
-        element instanceof V1_Enumeration ||
-        element instanceof V1_Profile ||
-        element instanceof V1_Association ||
-        element instanceof V1_ConcreteFunctionDefinition ||
-        element instanceof V1_Measure ||
-        element instanceof V1_Store ||
-        element instanceof V1_PackageableConnection ||
-        element instanceof V1_Mapping ||
-        element instanceof V1_PackageableRuntime,
+      (element) => !(element instanceof V1_Service),
     );
     prunedGraphData.elements.push(this.elementToProtocol<V1_Service>(service));
     return prunedGraphData;
