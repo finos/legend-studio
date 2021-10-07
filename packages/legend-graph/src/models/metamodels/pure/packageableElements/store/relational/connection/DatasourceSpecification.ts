@@ -169,6 +169,11 @@ export class SnowflakeDatasourceSpecification
   databaseName: string;
   cloudType?: string | undefined;
   quotedIdentifiersIgnoreCase?: boolean | undefined;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
+  nonProxyHosts?: string | undefined;
+  organization?: string | undefined;
+  accountType?: string | undefined;
 
   constructor(
     accountName: string,
@@ -185,12 +190,22 @@ export class SnowflakeDatasourceSpecification
       databaseName: observable,
       cloudType: observable,
       quotedIdentifiersIgnoreCase: observable,
+      proxyHost: observable,
+      proxyPort: observable,
+      nonProxyHosts: observable,
+      organization: observable,
+      accountType: observable,
       hashCode: computed,
       setAccountName: action,
       setRegion: action,
       setWarehouseName: action,
       setDatabaseName: action,
       setCloudType: action,
+      setProxyHost: action,
+      setProxyPort: action,
+      setNonProxyHosts: action,
+      setOrganization: action,
+      setAccountType: action,
       setQuotedIdentifiersIgnoreCase: action,
     });
 
@@ -224,6 +239,26 @@ export class SnowflakeDatasourceSpecification
     this.quotedIdentifiersIgnoreCase = val;
   }
 
+  setProxyHost(val: string | undefined): void {
+    this.proxyHost = val;
+  }
+
+  setProxyPort(val: string | undefined): void {
+    this.proxyPort = val;
+  }
+
+  setNonProxyHosts(val: string | undefined): void {
+    this.nonProxyHosts = val;
+  }
+
+  setOrganization(val: string | undefined): void {
+    this.organization = val;
+  }
+
+  setAccountType(val: string | undefined): void {
+    this.accountType = val;
+  }
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SNOWFLAKE_DATASOURCE_SPECIFICATION,
@@ -232,6 +267,11 @@ export class SnowflakeDatasourceSpecification
       this.warehouseName,
       this.databaseName,
       this.cloudType ?? '',
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
+      this.nonProxyHosts ?? '',
+      this.organization ?? '',
+      this.accountType ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }

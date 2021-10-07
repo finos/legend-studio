@@ -166,8 +166,13 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.SNOWFLAKE),
     accountName: primitive(),
+    accountType: optional(primitive()),
     cloudType: optional(primitive()),
     databaseName: primitive(),
+    nonProxyHosts: optional(primitive()),
+    organization: optional(primitive()),
+    proxyHost: optional(primitive()),
+    proxyPort: optional(primitive()),
     quotedIdentifiersIgnoreCase: optional(primitive()),
     region: primitive(),
     warehouseName: primitive(),
