@@ -79,6 +79,11 @@ export class V1_SnowflakeDatasourceSpecification
   databaseName!: string;
   cloudType?: string | undefined;
   quotedIdentifiersIgnoreCase?: boolean | undefined;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
+  nonProxyHosts?: string | undefined;
+  organization?: string | undefined;
+  accountType?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -88,6 +93,11 @@ export class V1_SnowflakeDatasourceSpecification
       this.warehouseName,
       this.databaseName,
       this.cloudType ?? '',
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
+      this.nonProxyHosts ?? '',
+      this.organization ?? '',
+      this.accountType ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }

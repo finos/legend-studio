@@ -115,6 +115,11 @@ const transformSnowflakeDatasourceSpecification = (
   source.accountName = metamodel.accountName;
   source.cloudType = metamodel.cloudType;
   source.quotedIdentifiersIgnoreCase = metamodel.quotedIdentifiersIgnoreCase;
+  source.proxyHost = metamodel.proxyHost;
+  source.proxyPort = metamodel.proxyPort;
+  source.nonProxyHosts = metamodel.nonProxyHosts;
+  source.organization = metamodel.organization;
+  source.accountType = metamodel.accountType;
   return source;
 };
 

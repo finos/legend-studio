@@ -129,6 +129,11 @@ export const V1_buildDatasourceSpecification = (
     snowflakeSpec.cloudType = protocol.cloudType;
     snowflakeSpec.quotedIdentifiersIgnoreCase =
       protocol.quotedIdentifiersIgnoreCase;
+    snowflakeSpec.proxyHost = protocol.proxyHost;
+    snowflakeSpec.proxyPort = protocol.proxyPort;
+    snowflakeSpec.nonProxyHosts = protocol.nonProxyHosts;
+    snowflakeSpec.organization = protocol.organization;
+    snowflakeSpec.accountType = protocol.accountType;
     return snowflakeSpec;
   } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
     assertNonEmptyString(
