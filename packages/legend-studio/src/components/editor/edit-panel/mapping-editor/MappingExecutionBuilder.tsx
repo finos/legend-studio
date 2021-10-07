@@ -475,20 +475,8 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
 );
 
 export const MappingExecutionInputDataTypeBuilder = observer(
-  (props: {
-    inputDataState:
-      | MappingTestRelationalInputDataState
-      | MappingTestObjectInputDataState;
-  }) => {
+  (props: { inputDataState: MappingTestRelationalInputDataState }) => {
     const { inputDataState } = props;
-    let inputTypeList;
-
-    if (inputDataState instanceof MappingTestObjectInputDataState) {
-      //TODO : when XML is supported use : Object.keys(ObjectInputType)
-      inputTypeList = ['JSON'];
-    } else {
-      inputTypeList = Object.keys(RelationalInputType);
-    }
 
     const changeInputType =
       (val: string): (() => void) =>
@@ -501,7 +489,7 @@ export const MappingExecutionInputDataTypeBuilder = observer(
         className="edit-panel__header__tab"
         content={
           <MenuContent>
-            {inputTypeList.map((mode) => (
+            {Object.keys(RelationalInputType).map((mode) => (
               <MenuContentItem
                 key={mode}
                 className="edit-panel__header__dropdown__tab__option"
@@ -591,10 +579,7 @@ export const MappingExecutionInputDataBuilder = observer(
 
     //input type builder
     let inputTypeBuilder: React.ReactNode;
-    if (
-      inputDataState instanceof MappingTestRelationalInputDataState ||
-      inputDataState instanceof MappingTestObjectInputDataState
-    ) {
+    if (inputDataState instanceof MappingTestRelationalInputDataState) {
       inputTypeBuilder = (
         <MappingExecutionInputDataTypeBuilder inputDataState={inputDataState} />
       );
