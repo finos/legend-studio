@@ -298,7 +298,6 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema =
       V1_PropertyMappingType.OTHERWISE_EMBEDDED_RELATIONAL,
     ),
     classMapping: usingModelSchema(relationalClassMappingModelSchema),
-    id: optional(primitive()),
     otherwisePropertyMapping: custom(
       (val) => V1_serializeRelationalPropertyMapping(val),
       (val) => V1_deserializeRelationalPropertyMapping(val),
@@ -347,8 +346,6 @@ function V1_serializeRelationalPropertyMapping(
 ): PlainObject<V1_PropertyMapping> | typeof SKIP {
   if (protocol instanceof V1_RelationalPropertyMapping) {
     return serialize(relationalPropertyMappingModelSchema, protocol);
-  } else if (protocol instanceof V1_EmbeddedRelationalPropertyMapping) {
-    return serialize(embeddedRelationalPropertyMappingModelSchema, protocol);
   } else if (
     protocol instanceof V1_OtherwiseEmbeddedRelationalPropertyMapping
   ) {
@@ -356,6 +353,8 @@ function V1_serializeRelationalPropertyMapping(
       otherwiseEmbeddedRelationalPropertyMappingModelSchgema,
       protocol,
     );
+  } else if (protocol instanceof V1_EmbeddedRelationalPropertyMapping) {
+    return serialize(embeddedRelationalPropertyMappingModelSchema, protocol);
   } else if (protocol instanceof V1_InlineEmbeddedPropertyMapping) {
     return serialize(inlineEmbeddedPropertyMappingModelSchema, protocol);
   } else if (protocol instanceof V1_XStorePropertyMapping) {
