@@ -79,10 +79,6 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import { getRelationalInputTestDataEditorLanguage } from './MappingTestEditor';
-import {
-  MappingTestObjectInputDataState,
-  MappingTestRelationalInputDataState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -475,7 +471,7 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
 );
 
 export const MappingExecutionInputDataTypeBuilder = observer(
-  (props: { inputDataState: MappingTestRelationalInputDataState }) => {
+  (props: { inputDataState: MappingExecutionRelationalInputDataState }) => {
     const { inputDataState } = props;
 
     const changeInputType =
@@ -579,7 +575,7 @@ export const MappingExecutionInputDataBuilder = observer(
 
     //input type builder
     let inputTypeBuilder: React.ReactNode;
-    if (inputDataState instanceof MappingTestRelationalInputDataState) {
+    if (inputDataState instanceof MappingExecutionRelationalInputDataState) {
       inputTypeBuilder = (
         <MappingExecutionInputDataTypeBuilder inputDataState={inputDataState} />
       );
