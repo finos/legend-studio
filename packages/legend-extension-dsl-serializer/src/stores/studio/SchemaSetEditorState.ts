@@ -20,26 +20,23 @@ import { guaranteeType } from '@finos/legend-shared';
 import { ElementEditorState } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
 import { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
+import type { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
 
 export class SchemaSetEditorState extends ElementEditorState {
-  schemaElement: Schema;
+  currentSchema?: Schema | undefined;
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
-    this.schemaElement = new Schema();
-    this.schemaElement.setContent('');
     if (this.element instanceof SchemaSet) {
       if (this.element.schemas.length !== 0) {
-        this.schemaElement =
+        this.currentSchema =
           this.element.schemas[this.element.schemas.length - 1];
       }
     }
     makeObservable(this, {
-      schemaElement: observable,
+      currentSchema: observable,
       schemaSet: computed,
-      schema: computed,
-      setSchema: action,
+      setCurrentSchema: action,
       reprocess: action,
     });
   }
@@ -52,16 +49,8 @@ export class SchemaSetEditorState extends ElementEditorState {
     );
   }
 
-  get schema(): Schema {
-    return guaranteeType(
-      this.schemaElement,
-      Schema,
-      'Element inside schema editor state must be a Schema',
-    );
-  }
-
-  setSchema(value: Schema): void {
-    this.schemaElement = value;
+  setCurrentSchema(value: Schema | undefined): void {
+    this.currentSchema = value;
   }
 
   reprocess(

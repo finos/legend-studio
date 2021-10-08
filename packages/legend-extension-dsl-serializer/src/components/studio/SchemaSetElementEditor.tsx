@@ -131,19 +131,21 @@ export const SchemaSetEditor = observer(() => {
   const editorStore = useEditorStore();
   const editorState = editorStore.getCurrentEditorState(SchemaSetEditorState);
   const schemaSet = editorState.schemaSet;
-  const schemaState = editorState.schema;
+  const schemaState = editorState.currentSchema;
   const isReadOnly = editorState.isReadOnly;
   const changeState =
     (schema: Schema): (() => void) =>
     (): void => {
-      editorState.setSchema(schema);
+      editorState.setCurrentSchema(schema);
     };
   const addSchema = (): void => {
     if (!isReadOnly) {
       const schema = new Schema();
       schema.setContent('');
       schemaSet.addSchema(schema);
-      editorState.setSchema(schemaSet.schemas[schemaSet.schemas.length - 1]);
+      editorState.setCurrentSchema(
+        schemaSet.schemas[schemaSet.schemas.length - 1],
+      );
     }
   };
   const deleteSchema =
@@ -151,11 +153,12 @@ export const SchemaSetEditor = observer(() => {
     (): void => {
       schemaSet.deleteSchema(val);
       if (schemaSet.schemas.length !== 0) {
-        editorState.setSchema(schemaSet.schemas[schemaSet.schemas.length - 1]);
-      } else {
-        const schema = new Schema();
-        schema.setContent('');
-        editorState.setSchema(schema);
+        editorState.setCurrentSchema(
+          schemaSet.schemas[schemaSet.schemas.length - 1],
+        );
+      }
+      if (schemaSet.schemas.length === 0) {
+        editorState.setCurrentSchema(undefined);
       }
     };
   return (
@@ -199,7 +202,8 @@ export const SchemaSetEditor = observer(() => {
               className="schema-set-panel__content"
               disabled={isReadOnly}
               content={
-                !isReadOnly && (
+                !isReadOnly &&
+                schemaState !== undefined && (
                   <div
                     className="schema-set-panel__context-menu"
                     onClick={deleteSchema(schemaState)}
@@ -247,7 +251,7 @@ export const SchemaSetEditor = observer(() => {
                   Schema
                 </div>
                 <div className="schema-set-panel__header__title__content">
-                  {schemaSet.schemas.length !== 0
+                  {schemaState !== undefined
                     ? schemaState.id
                       ? schemaState.id
                       : `Schema${schemaSet.getIndex(schemaState) + 1}`
@@ -257,7 +261,7 @@ export const SchemaSetEditor = observer(() => {
             </div>
             <div className="schema-set-panel__content">
               <div className="schema-set-panel__content__lists">
-                {schemaSet.schemas.length !== 0 && (
+                {schemaState !== undefined && (
                   <SchemaBasicEditor
                     key={`Schema${schemaSet.getIndex(schemaState) + 1}`}
                     schema={schemaState}

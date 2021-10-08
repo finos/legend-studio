@@ -15,29 +15,34 @@
  */
 
 import packageJson from '../../../package.json';
+import type {
+  ConnectionToolTipText,
+  DSLMapping_StudioPlugin_Extension,
+  EditorStore,
+  ElementEditorRenderer,
+  ElementEditorState,
+  ElementEditorStateCreator,
+  ElementIconGetter,
+  ElementProjectExplorerDnDTypeGetter,
+  ElementTypeGetter,
+  NewElementFromStateCreator,
+  NewElementState,
+  StudioPluginManager,
+} from '@finos/legend-studio';
 import {
   StudioPlugin,
   UnsupportedElementEditorState,
 } from '@finos/legend-studio';
-import type {
-  StudioPluginManager,
-  NewElementFromStateCreator,
-  EditorStore,
-  ElementEditorState,
-  ElementEditorStateCreator,
-  ElementTypeGetter,
-  ElementEditorRenderer,
-  ElementProjectExplorerDnDTypeGetter,
-  ElementIconGetter,
-  DSL_StudioPlugin_Extension,
-  NewElementState,
-} from '@finos/legend-studio';
 import { FaBuffer, FaSitemap } from 'react-icons/fa';
 import { SchemaSetEditor } from './SchemaSetElementEditor';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
-import type { PackageableElement } from '@finos/legend-graph';
-import { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import type { Connection, PackageableElement } from '@finos/legend-graph';
+import {
+  FORMAT_TYPE,
+  SchemaSet,
+} from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { Binding } from '../../models/metamodels/pure/model/packageableElements/store/Binding';
+import { ExternalFormatConnection } from '../../models/metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -47,7 +52,7 @@ const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
 
 export class DSLSerializer_StudioPlugin
   extends StudioPlugin
-  implements DSL_StudioPlugin_Extension
+  implements DSLMapping_StudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
@@ -114,7 +119,9 @@ export class DSLSerializer_StudioPlugin
         state: NewElementState,
       ): PackageableElement | undefined => {
         if (type === SCHEMA_SET_ELEMENT_TYPE) {
-          return new SchemaSet(name);
+          const schemaSet = new SchemaSet(name);
+          schemaSet.setFormat(FORMAT_TYPE.FLAT_DATA);
+          return schemaSet;
         } else if (type === BINDING_ELEMENT_TYPE) {
           return new Binding(name);
         }
@@ -156,6 +163,17 @@ export class DSLSerializer_StudioPlugin
     return [
       SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
       BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
+    ];
+  }
+
+  getExtraConnectionToolTipTexts(): ConnectionToolTipText[] {
+    return [
+      (connection: Connection): string | undefined => {
+        if (connection instanceof ExternalFormatConnection) {
+          return `External format connection \u2020 store ${connection.store.value.path}`;
+        }
+        return undefined;
+      },
     ];
   }
 }

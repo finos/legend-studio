@@ -33,7 +33,7 @@ export enum FORMAT_TYPE {
 }
 
 export class SchemaSet extends PackageableElement implements Hashable {
-  format: FORMAT_TYPE = FORMAT_TYPE.FLAT_DATA;
+  format!: FORMAT_TYPE;
   schemas: Schema[] = [];
 
   constructor(name: string) {

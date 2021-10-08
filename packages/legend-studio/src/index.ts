@@ -37,6 +37,7 @@ export {
   TypeDragSource,
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
+export * from './stores/DSLMapping_StudioPlugin_Extension';
 
 // components
 export * from './components/editor/EditorStoreProvider';

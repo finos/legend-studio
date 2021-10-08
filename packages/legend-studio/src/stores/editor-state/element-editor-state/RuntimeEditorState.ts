@@ -65,6 +65,7 @@ import {
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
 } from '@finos/legend-graph';
+import type { DSLMapping_StudioPlugin_Extension } from '../../DSLMapping_StudioPlugin_Extension';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
@@ -440,6 +441,21 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
         new DefaultH2AuthenticationStrategy(),
       );
     }
+    const extraCustomConnections = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).getExtraCustomConnections?.() ?? [],
+      );
+    for (const connection of extraCustomConnections) {
+      const customConnection = connection(this.store);
+      if (customConnection) {
+        return customConnection;
+      }
+    }
+
     throw new UnsupportedOperationError(
       `Can't create custom connection for the specified store`,
       this.store,

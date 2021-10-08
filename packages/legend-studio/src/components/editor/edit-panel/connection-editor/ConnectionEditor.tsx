@@ -29,6 +29,8 @@ import type { Class } from '@finos/legend-graph';
 import { FaLock } from 'react-icons/fa';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
+import type { StudioPlugin } from '../../../../stores/StudioPlugin';
 
 const ModelConnectionEditor = observer(
   (props: {
@@ -99,8 +101,10 @@ export const ConnectionEditor = observer(
     connectionEditorState: ConnectionEditorState;
     isReadOnly: boolean;
     disableChangingStore?: boolean;
+    plugins: StudioPlugin[];
   }) => {
-    const { connectionEditorState, isReadOnly, disableChangingStore } = props;
+    const { connectionEditorState, isReadOnly, disableChangingStore, plugins } =
+      props;
     const connectionValueState = connectionEditorState.connectionValueState;
 
     /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
@@ -130,6 +134,19 @@ export const ConnectionEditor = observer(
           />
         );
       } else {
+        const extraConnectionEditorRenderers = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_StudioPlugin_Extension
+            ).getExtraConnectionEditorRenderers?.() ?? [],
+        );
+        for (const editorRenderer of extraConnectionEditorRenderers) {
+          const editor = editorRenderer(connectionValueState, isReadOnly);
+          if (editor) {
+            return editor;
+          }
+        }
+
         return (
           <UnsupportedEditorPanel
             text={`Can't display this connection in form-mode`}
@@ -164,6 +181,7 @@ export const PackageableConnectionEditor = observer(() => {
     <ConnectionEditor
       connectionEditorState={editorState.connectionState}
       isReadOnly={isReadOnly}
+      plugins={[]}
     />
   );
 });
