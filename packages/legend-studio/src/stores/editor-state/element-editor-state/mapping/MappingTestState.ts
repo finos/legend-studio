@@ -274,10 +274,19 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
 
   get runtime(): Runtime {
     const datasourceSpecification = new LocalH2DatasourceSpecification();
-    datasourceSpecification.setTestDataSetupSqls(
-      // NOTE: this is a gross simplification of handling the input for relational input data
-      [this.inputData.data],
-    );
+    switch (this.inputData.inputType) {
+      case RelationalInputType.SQL:
+        datasourceSpecification.setTestDataSetupSqls(
+          // NOTE: this is a gross simplification of handling the input for relational input data
+          [this.inputData.data],
+        );
+        break;
+      case RelationalInputType.CSV:
+        datasourceSpecification.setTestDataSetupCsv(this.inputData.data);
+        break;
+      default:
+        throw new UnsupportedOperationError(`Invalid input data type`);
+    }
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),

@@ -127,6 +127,17 @@ RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdenti
   auth: DefaultH2;
 }
 
+RelationalDatabaseConnection connection::relational::H2ConnectionWithCsvData
+{
+  store: store::db;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'field1,field2';
+  };
+  auth: DefaultH2;
+}
+
 RelationalDatabaseConnection connection::relational::SnowflakeConnection
 {
   store: store::db;
