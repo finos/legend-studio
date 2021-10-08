@@ -64,6 +64,11 @@ import type {
   V1_PackageableElement,
   PackageableElementReference,
   Store,
+  V1_ExecutionInputGetter,
+  PureModel,
+  Mapping,
+  Runtime,
+  V1_PureModelContextData,
 } from '@finos/legend-graph';
 import {
   V1_transformElementReference,
@@ -179,7 +184,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             Object.values(FORMAT_TYPE).find(
               (type) => type === elementProtocol.format,
             ),
-            `Can't support schema format '${elementProtocol.format}'`,
+            `Schema format '${elementProtocol.format}' is not supported`,
           );
           element.schemas = elementProtocol.schemas.map((schema) => {
             const schemaElement = new Schema();
@@ -372,6 +377,18 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
         }
         return undefined;
       },
+    ];
+  }
+
+  override V1_getExtraExecutionInputGetters(): V1_ExecutionInputGetter[] {
+    return [
+      (
+        graph: PureModel,
+        mapping: Mapping,
+        runtime: Runtime,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter((e) => e instanceof V1_SchemaSet),
     ];
   }
 }

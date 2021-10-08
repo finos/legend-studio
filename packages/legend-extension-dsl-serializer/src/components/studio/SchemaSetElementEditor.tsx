@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaLock, FaPlus } from 'react-icons/fa';
 import {
@@ -132,37 +131,32 @@ export const SchemaSetEditor = observer(() => {
   const editorStore = useEditorStore();
   const editorState = editorStore.getCurrentEditorState(SchemaSetEditorState);
   const schemaSet = editorState.schemaSet;
+  const schemaState = editorState.schema;
   const isReadOnly = editorState.isReadOnly;
-  let count = 1;
-  const [schemaState, setSchema] =
-    schemaSet.schemas.length !== 0
-      ? useState(schemaSet.schemas[schemaSet.schemas.length - 1])
-      : useState(new Schema());
-  const [index, setIndex] =
-    schemaSet.schemas.length !== 0
-      ? useState(schemaSet.schemas.length)
-      : useState(1);
   const changeState =
-    (schema: Schema, index: number): (() => void) =>
+    (schema: Schema): (() => void) =>
     (): void => {
-      setSchema(schema);
-      setIndex(index + 1);
+      editorState.setSchema(schema);
     };
   const addSchema = (): void => {
     if (!isReadOnly) {
-      schemaSet.addSchema(new Schema());
-      setSchema(schemaSet.schemas[schemaSet.schemas.length - 1]);
-      setIndex(schemaSet.schemas.length);
+      const schema = new Schema();
+      schema.setContent('');
+      schemaSet.addSchema(schema);
+      editorState.setSchema(schemaSet.schemas[schemaSet.schemas.length - 1]);
     }
   };
   const deleteSchema =
     (val: Schema): (() => void) =>
     (): void => {
       schemaSet.deleteSchema(val);
-      schemaSet.schemas.length !== 0
-        ? setSchema(schemaSet.schemas[schemaSet.schemas.length - 1])
-        : setSchema(new Schema());
-      setIndex(schemaSet.schemas.length);
+      if (schemaSet.schemas.length !== 0) {
+        editorState.setSchema(schemaSet.schemas[schemaSet.schemas.length - 1]);
+      } else {
+        const schema = new Schema();
+        schema.setContent('');
+        editorState.setSchema(schema);
+      }
     };
   return (
     <div className="schema-set-panel">
@@ -220,13 +214,13 @@ export const SchemaSetEditor = observer(() => {
                 <MenuContent className="schema-set-panel__dropdown">
                   {schemaSet.schemas.map((schema: Schema, index: number) => (
                     <MenuContentItem
-                      key={`Schema${count++}`}
+                      key={`Schema${schemaSet.getIndex(schema) + 1}`}
                       className={
                         schemaState === schema
                           ? 'schema-set-panel__option schema-set-panel__option__active'
                           : 'schema-set-panel__option'
                       }
-                      onClick={changeState(schema, index)}
+                      onClick={changeState(schema)}
                     >
                       {schema.id ? schema.id : `Schema${index + 1}`}
                     </MenuContentItem>
@@ -256,7 +250,7 @@ export const SchemaSetEditor = observer(() => {
                   {schemaSet.schemas.length !== 0
                     ? schemaState.id
                       ? schemaState.id
-                      : `Schema${index}`
+                      : `Schema${schemaSet.getIndex(schemaState) + 1}`
                     : ''}
                 </div>
               </div>
@@ -265,7 +259,7 @@ export const SchemaSetEditor = observer(() => {
               <div className="schema-set-panel__content__lists">
                 {schemaSet.schemas.length !== 0 && (
                   <SchemaBasicEditor
-                    key={`Schema${index}`}
+                    key={`Schema${schemaSet.getIndex(schemaState) + 1}`}
                     schema={schemaState}
                     isReadOnly={isReadOnly}
                   />

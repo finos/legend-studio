@@ -22,12 +22,12 @@ import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_Mode
 export class Schema implements Hashable {
   id?: string | undefined;
   location?: string | undefined;
-  content = '';
+  content!: string;
 
   constructor() {
     makeObservable(this, {
-      id: observable.ref,
-      location: observable.ref,
+      id: observable,
+      location: observable,
       content: observable,
       setId: action,
       setLocation: action,

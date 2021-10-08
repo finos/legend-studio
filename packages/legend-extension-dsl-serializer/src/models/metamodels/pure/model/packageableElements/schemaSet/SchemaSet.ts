@@ -15,7 +15,12 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import {
+  hashArray,
+  addUniqueEntry,
+  deleteEntry,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import type { PackageableElementVisitor } from '@finos/legend-graph';
 import { PackageableElement } from '@finos/legend-graph';
@@ -55,6 +60,12 @@ export class SchemaSet extends PackageableElement implements Hashable {
   deleteSchema(value: Schema): void {
     deleteEntry(this.schemas, value);
   }
+
+  getIndex = (value: Schema): number =>
+    guaranteeNonNullable(
+      this.schemas.findIndex((schema) => value === schema),
+      `Can't find schema '${value}' in schema set '${this.path}'`,
+    );
 
   protected override get _elementHashCode(): string {
     return hashArray([
