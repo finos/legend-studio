@@ -21,6 +21,7 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
+    "./jest/setupJestExpectExtension": "./jest/setupJestExpectExtension.js",
     "./mocks/fileMock": "./mocks/fileMock.js",
     "./ChangesetUtils": "./ChangesetUtils.js",
     "./ChangesetChangelogUtils": "./ChangesetChangelogUtils.cjs",

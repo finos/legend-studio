@@ -341,6 +341,7 @@ test(
       await waitFor(() => dpModal.querySelector(`input[value="Mr."]`)),
     ).not.toBeNull();
   },
+  10000,
 );
 
 test(
