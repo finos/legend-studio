@@ -33,8 +33,8 @@ import type { SchemaSet } from '../../models/metamodels/pure/model/packageableEl
 import { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
 import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
-import type { editor } from 'monaco-editor';
 import { FORMAT_TYPE } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const SchemaSetFormatBasicEditor = observer(
   (props: { schemaSet: SchemaSet; isReadOnly: boolean }) => {
@@ -88,10 +88,6 @@ const SchemaBasicEditor = observer(
     const changeLocation: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => schema.setLocation(event.target.value);
-    const editorOptions: editor.IEditorOptions & editor.IGlobalEditorOptions = {
-      lineNumbers: 'off',
-      lineDecorationsWidth: 0,
-    };
     return (
       <div className="schema-editor">
         <input
@@ -118,7 +114,7 @@ const SchemaBasicEditor = observer(
               updateInput={(val: string): void => {
                 schema.setContent(val);
               }}
-              extraEditorOptions={editorOptions}
+              hideGutter={true}
             />
           </div>
         </div>
@@ -133,6 +129,11 @@ export const SchemaSetEditor = observer(() => {
   const schemaSet = editorState.schemaSet;
   const schemaState = editorState.currentSchema;
   const isReadOnly = editorState.isReadOnly;
+  const getIndex = (value: Schema): number =>
+    guaranteeNonNullable(
+      schemaSet.schemas.findIndex((schema: Schema) => value === schema),
+      `Can't find schema '${value}' in schema set '${schemaSet.path}'`,
+    );
   const changeState =
     (schema: Schema): (() => void) =>
     (): void => {
@@ -143,9 +144,7 @@ export const SchemaSetEditor = observer(() => {
       const schema = new Schema();
       schema.setContent('');
       schemaSet.addSchema(schema);
-      editorState.setCurrentSchema(
-        schemaSet.schemas[schemaSet.schemas.length - 1],
-      );
+      editorState.setCurrentSchema(schema);
     }
   };
   const deleteSchema =
@@ -218,7 +217,7 @@ export const SchemaSetEditor = observer(() => {
                 <MenuContent className="schema-set-panel__dropdown">
                   {schemaSet.schemas.map((schema: Schema, index: number) => (
                     <MenuContentItem
-                      key={`Schema${schemaSet.getIndex(schema) + 1}`}
+                      key={schema.uuid}
                       className={
                         schemaState === schema
                           ? 'schema-set-panel__option schema-set-panel__option__active'
@@ -238,7 +237,6 @@ export const SchemaSetEditor = observer(() => {
           <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
         </ResizablePanelSplitter>
         <ResizablePanel>
-          {' '}
           <div className="schema-set-panel">
             <div className="schema-set-panel__header">
               <div className="schema-set-panel__header__title">
@@ -254,7 +252,7 @@ export const SchemaSetEditor = observer(() => {
                   {schemaState !== undefined
                     ? schemaState.id
                       ? schemaState.id
-                      : `Schema${schemaSet.getIndex(schemaState) + 1}`
+                      : `Schema${getIndex(schemaState) + 1}`
                     : ''}
                 </div>
               </div>
@@ -263,7 +261,7 @@ export const SchemaSetEditor = observer(() => {
               <div className="schema-set-panel__content__lists">
                 {schemaState !== undefined && (
                   <SchemaBasicEditor
-                    key={`Schema${schemaSet.getIndex(schemaState) + 1}`}
+                    key={schemaState.uuid}
                     schema={schemaState}
                     isReadOnly={isReadOnly}
                   />

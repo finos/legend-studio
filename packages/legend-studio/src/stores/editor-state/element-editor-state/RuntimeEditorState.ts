@@ -441,18 +441,18 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
         new DefaultH2AuthenticationStrategy(),
       );
     }
-    const extraCustomConnections = this.editorStore.pluginManager
+    const extraDefaultConnectionValueBuilders = this.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
             plugin as DSLMapping_StudioPlugin_Extension
-          ).getExtraCustomConnections?.() ?? [],
+          ).getExtraDefaultConnectionValueBuilders?.() ?? [],
       );
-    for (const connection of extraCustomConnections) {
-      const customConnection = connection(this.store);
-      if (customConnection) {
-        return customConnection;
+    for (const connection of extraDefaultConnectionValueBuilders) {
+      const defaultConnection = connection(this.store);
+      if (defaultConnection) {
+        return defaultConnection;
       }
     }
 

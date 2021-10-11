@@ -114,10 +114,10 @@ const getConnectionTooltipText = (
     return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
   }
   const extraConnectionToolTipTexts = plugins.flatMap(
-    (plugin) =>
+    (plugin: StudioPlugin) =>
       (
         plugin as DSLMapping_StudioPlugin_Extension
-      ).getExtraConnectionToolTipTexts?.() ?? [],
+      ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
   );
   for (const toolTip of extraConnectionToolTipTexts) {
     const text = toolTip(connection);
@@ -170,15 +170,15 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
     currentRuntimeEditorTabState: IdentifiedConnectionsEditorTabState;
     isActive: boolean;
     isReadOnly: boolean;
-    plugins: StudioPlugin[];
   }) => {
     const {
       identifiedConnection,
       currentRuntimeEditorTabState,
       isActive,
       isReadOnly,
-      plugins,
     } = props;
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getStudioPlugins();
     const openConnection = (): void =>
       currentRuntimeEditorTabState.openIdentifiedConnection(
         identifiedConnection,
@@ -457,7 +457,6 @@ const IdentifiedConnectionEditor = observer(
     connectionEditorState: ConnectionEditorState;
     identifiedConnection: IdentifiedConnection;
     isReadOnly: boolean;
-    plugins: StudioPlugin[];
   }) => {
     const {
       runtimeEditorState,
@@ -465,9 +464,7 @@ const IdentifiedConnectionEditor = observer(
       connectionEditorState,
       identifiedConnection,
       isReadOnly,
-      plugins,
     } = props;
-    const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
     // TODO: add runtime connection id
@@ -505,6 +502,7 @@ const IdentifiedConnectionEditor = observer(
         : guaranteeType(identifiedConnection.connection, ConnectionPointer)
             .packageableConnection.value.path,
     };
+    const editorStore = useEditorStore();
     const onConnectionSelectionChange = (val: {
       label: string | React.ReactNode;
       value?: PackageableConnection;
@@ -597,7 +595,6 @@ const IdentifiedConnectionEditor = observer(
             connectionEditorState={connectionEditorState}
             disableChangingStore={true}
             isReadOnly={isReadOnly}
-            plugins={plugins}
           />
         </div>
       </div>
@@ -610,14 +607,9 @@ const IdentifiedConnectionsPerStoreEditor = observer(
     runtimeEditorState: RuntimeEditorState;
     currentRuntimeEditorTabState: IdentifiedConnectionsEditorTabState;
     isReadOnly: boolean;
-    plugins: StudioPlugin[];
   }) => {
-    const {
-      isReadOnly,
-      currentRuntimeEditorTabState,
-      runtimeEditorState,
-      plugins,
-    } = props;
+    const { isReadOnly, currentRuntimeEditorTabState, runtimeEditorState } =
+      props;
     const isEmbeddedRuntime = runtimeEditorState.isEmbeddedRuntime;
     const connectionEditorState =
       currentRuntimeEditorTabState.getConnectionEditorState();
@@ -736,7 +728,6 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                               }
                               isActive={rtConnection === identifiedConnection}
                               isReadOnly={isReadOnly}
-                              plugins={plugins}
                             />
                           ),
                         )}
@@ -782,7 +773,6 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                 connectionEditorState={connectionEditorState}
                 identifiedConnection={identifiedConnection}
                 isReadOnly={isReadOnly}
-                plugins={plugins}
               />
             )}
             {(!connectionEditorState || !identifiedConnection) && (
@@ -967,12 +957,8 @@ const RuntimeGeneralEditor = observer(
 );
 
 const RuntimeEditorPanel = observer(
-  (props: {
-    runtimeEditorState: RuntimeEditorState;
-    isReadOnly: boolean;
-    plugins: StudioPlugin[];
-  }) => {
-    const { runtimeEditorState, isReadOnly, plugins } = props;
+  (props: { runtimeEditorState: RuntimeEditorState; isReadOnly: boolean }) => {
+    const { runtimeEditorState, isReadOnly } = props;
     const currentRuntimeEditorTabState = runtimeEditorState.currentTabState;
     if (
       currentRuntimeEditorTabState instanceof
@@ -984,7 +970,6 @@ const RuntimeEditorPanel = observer(
           runtimeEditorState={runtimeEditorState}
           currentRuntimeEditorTabState={currentRuntimeEditorTabState}
           isReadOnly={isReadOnly}
-          plugins={plugins}
         />
       );
     } else if (
@@ -1004,12 +989,8 @@ const RuntimeEditorPanel = observer(
 );
 
 export const RuntimeEditor = observer(
-  (props: {
-    runtimeEditorState: RuntimeEditorState;
-    isReadOnly: boolean;
-    plugins: StudioPlugin[];
-  }) => {
-    const { runtimeEditorState, isReadOnly, plugins } = props;
+  (props: { runtimeEditorState: RuntimeEditorState; isReadOnly: boolean }) => {
+    const { runtimeEditorState, isReadOnly } = props;
 
     return (
       <div className="runtime-editor">
@@ -1027,7 +1008,6 @@ export const RuntimeEditor = observer(
             <RuntimeEditorPanel
               runtimeEditorState={runtimeEditorState}
               isReadOnly={isReadOnly}
-              plugins={plugins}
             />
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -1046,7 +1026,6 @@ export const PackageableRuntimeEditor = observer(() => {
     <RuntimeEditor
       runtimeEditorState={editorState.runtimeEditorState}
       isReadOnly={isReadOnly}
-      plugins={editorStore.pluginManager.getStudioPlugins()}
     />
   );
 });
@@ -1094,7 +1073,6 @@ export const EmbeddedRuntimeEditor = observer(
             <RuntimeEditor
               runtimeEditorState={runtimeEditorState}
               isReadOnly={isReadOnly}
-              plugins={[]}
             />
           </div>
         </div>

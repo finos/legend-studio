@@ -19,11 +19,13 @@ import type { ConnectionValueState } from './editor-state/element-editor-state/c
 import type { EditorStore } from './EditorStore';
 import type { Store, Connection } from '@finos/legend-graph';
 
-export type ConnectionToolTipText = (
+export type RuntimeConnectionTooltipTextBuilder = (
   connection: Connection,
 ) => string | undefined;
 
-export type CustomConnection = (store: Store) => Connection | undefined;
+export type DefaultConnectionValueBuilder = (
+  store: Store,
+) => Connection | undefined;
 
 export type ConnectionValueEditorStateBuilder = (
   editorStore: EditorStore,
@@ -37,11 +39,23 @@ export type ConnectionEditorRenderer = (
 
 export interface DSLMapping_StudioPlugin_Extension
   extends DSL_StudioPlugin_Extension {
-  getExtraCustomConnections?(): CustomConnection[];
+  /**
+   * Get the list of the default connection type given the stores.
+   */
+  getExtraDefaultConnectionValueBuilders?(): DefaultConnectionValueBuilder[];
 
+  /**
+   * Get the list of the connection editor state builders for connections.
+   */
   getExtraConnectionValueEditorStateBuilders?(): ConnectionValueEditorStateBuilder[];
 
+  /**
+   * Get the list of the connection editor state renderers for connections.
+   */
   getExtraConnectionEditorRenderers?(): ConnectionEditorRenderer[];
 
-  getExtraConnectionToolTipTexts?(): ConnectionToolTipText[];
+  /**
+   * Get the list of the runtime connection tool tip text builders given the connection type.
+   */
+  getExtraRuntimeConnectionTooltipTextBuilders?(): RuntimeConnectionTooltipTextBuilder[];
 }

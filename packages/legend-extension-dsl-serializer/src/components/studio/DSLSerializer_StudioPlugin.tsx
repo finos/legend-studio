@@ -16,7 +16,7 @@
 
 import packageJson from '../../../package.json';
 import type {
-  ConnectionToolTipText,
+  RuntimeConnectionTooltipTextBuilder,
   DSLMapping_StudioPlugin_Extension,
   EditorStore,
   ElementEditorRenderer,
@@ -166,7 +166,7 @@ export class DSLSerializer_StudioPlugin
     ];
   }
 
-  getExtraConnectionToolTipTexts(): ConnectionToolTipText[] {
+  getExtraRuntimeConnectionTooltipTextBuilders(): RuntimeConnectionTooltipTextBuilder[] {
     return [
       (connection: Connection): string | undefined => {
         if (connection instanceof ExternalFormatConnection) {

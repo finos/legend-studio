@@ -27,18 +27,19 @@ export class SchemaSetEditorState extends ElementEditorState {
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
-    if (this.element instanceof SchemaSet) {
-      if (this.element.schemas.length !== 0) {
-        this.currentSchema =
-          this.element.schemas[this.element.schemas.length - 1];
-      }
-    }
     makeObservable(this, {
       currentSchema: observable,
       schemaSet: computed,
       setCurrentSchema: action,
       reprocess: action,
     });
+
+    if (this.element instanceof SchemaSet) {
+      if (this.element.schemas.length !== 0) {
+        this.currentSchema =
+          this.element.schemas[this.element.schemas.length - 1];
+      }
+    }
   }
 
   get schemaSet(): SchemaSet {

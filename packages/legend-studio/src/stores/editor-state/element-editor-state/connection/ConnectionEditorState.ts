@@ -385,16 +385,17 @@ export class ConnectionEditorState {
         connection,
       );
     } else {
-      const extraConnectionValueState = this.editorStore.pluginManager
-        .getStudioPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSLMapping_StudioPlugin_Extension
-            ).getExtraConnectionValueEditorStateBuilders?.() ?? [],
-        );
-      for (const stateGetter of extraConnectionValueState) {
-        const state = stateGetter(this.editorStore, connection);
+      const extraConnectionValueEditorStateBuilders =
+        this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLMapping_StudioPlugin_Extension
+              ).getExtraConnectionValueEditorStateBuilders?.() ?? [],
+          );
+      for (const stateBuilder of extraConnectionValueEditorStateBuilders) {
+        const state = stateBuilder(this.editorStore, connection);
         if (state) {
           return state;
         }
