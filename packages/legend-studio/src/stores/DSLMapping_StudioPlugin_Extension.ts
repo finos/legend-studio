@@ -45,7 +45,7 @@ export interface DSLMapping_StudioPlugin_Extension
   getExtraDefaultConnectionValueBuilders?(): DefaultConnectionValueBuilder[];
 
   /**
-   * Get the list of the connection editor state builders for connections.
+   * Get the list of editor state builders for a specified connection value.
    */
   getExtraConnectionValueEditorStateBuilders?(): ConnectionValueEditorStateBuilder[];
 
