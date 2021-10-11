@@ -29,6 +29,7 @@ import type { Class } from '@finos/legend-graph';
 import { FaLock } from 'react-icons/fa';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
 
 const ModelConnectionEditor = observer(
   (props: {
@@ -102,6 +103,8 @@ export const ConnectionEditor = observer(
   }) => {
     const { connectionEditorState, isReadOnly, disableChangingStore } = props;
     const connectionValueState = connectionEditorState.connectionValueState;
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getStudioPlugins();
 
     /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
     const renderConnectionValueEditor = (): React.ReactNode => {
@@ -130,6 +133,19 @@ export const ConnectionEditor = observer(
           />
         );
       } else {
+        const extraConnectionEditorRenderers = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_StudioPlugin_Extension
+            ).getExtraConnectionEditorRenderers?.() ?? [],
+        );
+        for (const editorRenderer of extraConnectionEditorRenderers) {
+          const editor = editorRenderer(connectionValueState, isReadOnly);
+          if (editor) {
+            return editor;
+          }
+        }
+
         return (
           <UnsupportedEditorPanel
             text={`Can't display this connection in form-mode`}

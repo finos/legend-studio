@@ -93,8 +93,13 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import type { StudioPlugin } from '../../../stores/StudioPlugin';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../stores/DSLMapping_StudioPlugin_Extension';
 
-const getConnectionTooltipText = (connection: Connection): string => {
+const getConnectionTooltipText = (
+  connection: Connection,
+  plugins: StudioPlugin[],
+): string => {
   const connectionValue =
     connection instanceof ConnectionPointer
       ? connection.packageableConnection.value.connectionValue
@@ -108,6 +113,19 @@ const getConnectionTooltipText = (connection: Connection): string => {
   } else if (connectionValue instanceof RelationalDatabaseConnection) {
     return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
   }
+  const extraConnectionToolTipTexts = plugins.flatMap(
+    (plugin: StudioPlugin) =>
+      (
+        plugin as DSLMapping_StudioPlugin_Extension
+      ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
+  );
+  for (const toolTip of extraConnectionToolTipTexts) {
+    const text = toolTip(connection);
+    if (text) {
+      return text;
+    }
+  }
+
   throw new UnsupportedOperationError(
     `Can't build tooltip text for connection`,
     connection,
@@ -159,6 +177,8 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
       isActive,
       isReadOnly,
     } = props;
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getStudioPlugins();
     const openConnection = (): void =>
       currentRuntimeEditorTabState.openIdentifiedConnection(
         identifiedConnection,
@@ -200,7 +220,10 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
           className="runtime-explorer__item__label runtime-explorer__item__label--simple"
           onClick={openConnection}
           tabIndex={-1}
-          title={getConnectionTooltipText(identifiedConnection.connection)}
+          title={getConnectionTooltipText(
+            identifiedConnection.connection,
+            plugins,
+          )}
         >
           <div className="runtime-explorer__item__label__icon">
             <ConnectionIcon />
@@ -442,7 +465,6 @@ const IdentifiedConnectionEditor = observer(
       identifiedConnection,
       isReadOnly,
     } = props;
-    const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
     // TODO: add runtime connection id
@@ -480,6 +502,7 @@ const IdentifiedConnectionEditor = observer(
         : guaranteeType(identifiedConnection.connection, ConnectionPointer)
             .packageableConnection.value.path,
     };
+    const editorStore = useEditorStore();
     const onConnectionSelectionChange = (val: {
       label: string | React.ReactNode;
       value?: PackageableConnection;

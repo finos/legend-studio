@@ -20,9 +20,9 @@ import { V1_SchemaSet } from './v1/model/packageableElements/schemaSet/V1_Schema
 import { V1_ExternalFormatConnection } from './v1/model/packageableElements/connection/V1_ExternalFormatConnection';
 import type { PlainObject } from '@finos/legend-shared';
 import {
-  assertNonNullable,
-  guaranteeNonEmptyString,
   assertType,
+  guaranteeNonEmptyString,
+  assertNonNullable,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
@@ -40,7 +40,11 @@ import {
 } from '../../../graphManager/DSLSerializer_GraphManagerHelper';
 import { V1_resolveBinding } from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';
 import { Binding } from '../../metamodels/pure/model/packageableElements/store/Binding';
-import { SchemaSet } from '../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import {
+  FORMAT_TYPE,
+  SchemaSet,
+} from '../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { Schema } from '../../metamodels/pure/model/packageableElements/schemaSet/Schema';
 import { ExternalFormatConnection } from '../../metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
 import type {
   GraphPluginManager,
@@ -60,6 +64,11 @@ import type {
   V1_PackageableElement,
   PackageableElementReference,
   Store,
+  V1_ExecutionInputGetter,
+  PureModel,
+  Mapping,
+  Runtime,
+  V1_PureModelContextData,
 } from '@finos/legend-graph';
 import {
   V1_transformElementReference,
@@ -67,6 +76,7 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
 } from '@finos/legend-graph';
+import { V1_Schema } from './v1/model/packageableElements/schemaSet/V1_Schema';
 import { ModelUnit } from '../../metamodels/pure/model/packageableElements/store/ModelUnit';
 import { V1_ModelUnit } from './v1/model/packageableElements/store/V1_ModelUnit';
 import { UrlStream } from '../../metamodels/pure/model/packageableElements/connection/UrlStream';
@@ -170,11 +180,24 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             elementProtocol.name,
           );
           const element = getSchemaSet(path, context.graph);
-          element.format = guaranteeNonEmptyString(
-            elementProtocol.format,
-            `Schema set 'format' field is missing or empty`,
+          element.format = guaranteeNonNullable(
+            Object.values(FORMAT_TYPE).find(
+              (type) => type === elementProtocol.format,
+            ),
+            `Schema format '${elementProtocol.format}' is not supported`,
           );
-          element.schemas = elementProtocol.schemas;
+          element.schemas = elementProtocol.schemas.map((schema) => {
+            const schemaElement = new Schema();
+            schemaElement.setContent(
+              guaranteeNonEmptyString(
+                schema.content,
+                `Schema 'content' field is missing or empty`,
+              ),
+            );
+            schemaElement.id = schema.id;
+            schemaElement.location = schema.location;
+            return schemaElement;
+          });
         },
       }),
     ];
@@ -250,7 +273,13 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           protocol.name = metamodel.name;
           protocol.package = metamodel.package?.fullPath ?? '';
           protocol.format = metamodel.format;
-          protocol.schemas = metamodel.schemas;
+          protocol.schemas = metamodel.schemas.map((schema) => {
+            const schemaProtocol = new V1_Schema();
+            schemaProtocol.content = schema.content;
+            schemaProtocol.id = schema.id;
+            schemaProtocol.location = schema.location;
+            return schemaProtocol;
+          });
           return protocol;
         }
         return undefined;
@@ -348,6 +377,18 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
         }
         return undefined;
       },
+    ];
+  }
+
+  override V1_getExtraExecutionInputGetters(): V1_ExecutionInputGetter[] {
+    return [
+      (
+        graph: PureModel,
+        mapping: Mapping,
+        runtime: Runtime,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter((e) => e instanceof V1_SchemaSet),
     ];
   }
 }

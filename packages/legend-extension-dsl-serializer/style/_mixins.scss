@@ -14,12 +14,31 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-art/lib/index.css';
-@import '@finos/legend-application/lib/index.css';
+@mixin flexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-@import '@finos/legend-studio/lib/index.css';
-@import '@finos/legend-extension-dsl-data-space/lib/index.css';
-@import '@finos/legend-extension-dsl-diagram/lib/index.css';
-@import '@finos/legend-extension-dsl-serializer/lib/index.css';
-@import '@finos/legend-extension-dsl-text/lib/index.css';
-@import '@finos/legend-studio-extension-query-builder/lib/index.css';
+@mixin flexVCenter {
+  display: flex;
+  align-items: center;
+}
+
+@mixin ellipsisTextOverflow {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-word;
+  text-align: left;
+}
+
+@mixin flexHSpaceBetween {
+  display: flex;
+  justify-content: space-between;
+}
+
+@mixin flexConstantDimension {
+  flex-grow: 0;
+  flex-shrink: 0;
+}

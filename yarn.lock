@@ -2038,6 +2038,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-serializer@workspace:packages/legend-extension-dsl-serializer"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
