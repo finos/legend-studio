@@ -270,6 +270,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin
           modelUnit.packageableElementIncludes =
             metamodel.modelUnit.packageableElementIncludes;
           protocol.modelUnit = modelUnit;
+          protocol.includedStores = [];
           return protocol;
         } else if (metamodel instanceof SchemaSet) {
           const protocol = new V1_SchemaSet();
@@ -303,6 +304,10 @@ export class DSLSerializer_PureProtocolProcessorPlugin
           (element) => element instanceof V1_SchemaSet,
         ),
     ];
+  }
+
+  override V1_getExtraSourceInformationKeys(): string[] {
+    return ['contentSourceInformation'];
   }
 
   V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
