@@ -23,6 +23,7 @@ import {
   optional,
   primitive,
   serialize,
+  SKIP,
 } from 'serializr';
 import type { V1_StereotypePtr } from '@finos/legend-graph';
 import {
@@ -66,8 +67,11 @@ const V1_dataSpaceSupportEmail = createModelSchema(V1_DataSpaceSupportEmail, {
 });
 
 const V1_serializeSupportInfo = (
-  protocol: V1_DataSpaceSupportInfo,
-): PlainObject<V1_DataSpaceSupportInfo> => {
+  protocol: V1_DataSpaceSupportInfo | undefined,
+): PlainObject<V1_DataSpaceSupportInfo> | typeof SKIP => {
+  if (!protocol) {
+    return SKIP;
+  }
   if (protocol instanceof V1_DataSpaceSupportEmail) {
     return serialize(V1_dataSpaceSupportEmail, protocol);
   }
@@ -75,8 +79,11 @@ const V1_serializeSupportInfo = (
 };
 
 const V1_deserializeSupportInfo = (
-  json: PlainObject<V1_DataSpaceSupportInfo>,
-): V1_DataSpaceSupportInfo => {
+  json: PlainObject<V1_DataSpaceSupportInfo> | undefined,
+): V1_DataSpaceSupportInfo | undefined => {
+  if (!json) {
+    return undefined;
+  }
   switch (json._type) {
     case V1_DATA_SPACE_SUPPORT_EMAIL_TYPE:
       return deserialize(V1_dataSpaceSupportEmail, json);
@@ -127,11 +134,9 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
         false,
       ),
   ),
-  supportInfo: optional(
-    custom(
-      (val) => V1_serializeSupportInfo(val),
-      (val) => V1_deserializeSupportInfo(val),
-    ),
+  supportInfo: custom(
+    (val) => V1_serializeSupportInfo(val),
+    (val) => V1_deserializeSupportInfo(val),
   ),
   taggedValues: custom(
     (values) =>
