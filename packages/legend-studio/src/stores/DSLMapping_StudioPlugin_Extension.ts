@@ -50,7 +50,7 @@ export interface DSLMapping_StudioPlugin_Extension
   getExtraConnectionValueEditorStateBuilders?(): ConnectionValueEditorStateBuilder[];
 
   /**
-   * Get the list of the connection editor state renderers for connections.
+   * Get the list renderers for the specified connection editor state.
    */
   getExtraConnectionEditorRenderers?(): ConnectionEditorRenderer[];
 
