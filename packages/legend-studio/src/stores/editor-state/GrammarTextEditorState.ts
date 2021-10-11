@@ -17,7 +17,11 @@
 import type { EditorStore } from '../EditorStore';
 import { action, makeAutoObservable } from 'mobx';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { PackageableElement, EngineError } from '@finos/legend-graph';
+import type {
+  PackageableElement,
+  EngineError,
+  DSLMapping_PureGraphManagerPlugin_Extension,
+} from '@finos/legend-graph';
 import {
   Profile,
   Enumeration,
@@ -114,7 +118,6 @@ export class GrammarTextEditorState {
     } else if (element instanceof GenerationSpecification) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.GENERATION_SPECIFICATION;
     } else if (element instanceof PackageableConnection) {
-      /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
       if (element.connectionValue instanceof JsonModelConnection) {
         typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.JSON_MODEL_CONNECTION;
       } else if (element.connectionValue instanceof XmlModelConnection) {
@@ -125,6 +128,21 @@ export class GrammarTextEditorState {
         element.connectionValue instanceof RelationalDatabaseConnection
       ) {
         typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RELATIONAL_DATABASE_CONNECTION;
+      }
+      const extraPureGrammarConnectionLabelers = this.editorStore.pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_PureGraphManagerPlugin_Extension
+            ).getExtraPureGrammarConnectionLabelers?.() ?? [],
+        );
+      for (const labeler of extraPureGrammarConnectionLabelers) {
+        const _typeLabel = labeler(element.connectionValue);
+        if (_typeLabel) {
+          typeLabel = _typeLabel;
+          break;
+        }
       }
     } else if (element instanceof PackageableRuntime) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME;

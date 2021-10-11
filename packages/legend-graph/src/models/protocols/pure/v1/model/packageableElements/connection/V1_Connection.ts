@@ -32,7 +32,6 @@ export enum V1_ConnectionType {
   RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
 }
 
-/* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
 export interface V1_ConnectionVisitor<T> {
   visit_Connection(connection: V1_Connection): T;
   visit_ConnectionPointer(connection: V1_ConnectionPointer): T;

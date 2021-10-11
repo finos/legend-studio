@@ -110,7 +110,7 @@ export class QueryBuilder_StudioPlugin extends StudioPlugin {
     ];
   }
 
-  override getExtraMappingExecutionQueryEditorRendererConfigurations(): MappingExecutionQueryEditorRendererConfiguration[] {
+  getExtraMappingExecutionQueryEditorRendererConfigurations(): MappingExecutionQueryEditorRendererConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
@@ -125,7 +125,7 @@ export class QueryBuilder_StudioPlugin extends StudioPlugin {
     ];
   }
 
-  override getExtraMappingTestQueryEditorRendererConfigurations(): MappingTestQueryEditorRendererConfiguration[] {
+  getExtraMappingTestQueryEditorRendererConfigurations(): MappingTestQueryEditorRendererConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
@@ -144,7 +144,7 @@ export class QueryBuilder_StudioPlugin extends StudioPlugin {
     ];
   }
 
-  override TEMP__getExtraServiceQueryEditorRendererConfigurations(): TEMP__ServiceQueryEditorRendererConfiguration[] {
+  TEMP__getExtraServiceQueryEditorRendererConfigurations(): TEMP__ServiceQueryEditorRendererConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',

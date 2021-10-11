@@ -463,7 +463,6 @@ export const V1_serializeConnectionValue = (
   allowPointer: boolean,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_Connection> => {
-  /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   if (protocol instanceof V1_JsonModelConnection) {
     return serialize(V1_jsonModelConnectionModelSchema, protocol);
   } else if (protocol instanceof V1_ModelChainConnection) {
@@ -494,7 +493,10 @@ export const V1_serializeConnectionValue = (
       return json;
     }
   }
-  throw new UnsupportedOperationError(`Can't serialize connection`, protocol);
+  throw new UnsupportedOperationError(
+    `Can't serialize connection: no compatible serializer available from plugins`,
+    protocol,
+  );
 };
 
 export const V1_deserializeConnectionValue = (
@@ -503,7 +505,6 @@ export const V1_deserializeConnectionValue = (
   plugins: PureProtocolProcessorPlugin[],
 ): V1_Connection => {
   switch (json._type) {
-    /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
     case V1_ConnectionType.JSON_MODEL_CONNECTION:
       return deserialize(V1_jsonModelConnectionModelSchema, json);
     case V1_ConnectionType.MODEL_CHAIN_CONNECTION:
@@ -535,7 +536,7 @@ export const V1_deserializeConnectionValue = (
         }
       }
       throw new UnsupportedOperationError(
-        `Can't deserialize connection of type '${json._type}'`,
+        `Can't deserialize connection of type '${json._type}': no compatible deserializer available from plugins`,
       );
     }
   }

@@ -169,6 +169,7 @@ export type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManage
 export { AbstractPureGraphManager } from './graphManager/AbstractPureGraphManager';
 export * from './graphManager/GraphManagerUtils';
 export { GRAPH_MANAGER_LOG_EVENT } from './graphManager/GraphManagerLogEvent';
+export * from './graphManager/DSLMapping_PureGraphManagerPlugin_Extension';
 export * from './graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
 export {
   ExecutionResult,

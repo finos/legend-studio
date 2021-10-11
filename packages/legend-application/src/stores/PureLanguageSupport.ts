@@ -37,7 +37,6 @@ export enum GRAMMAR_ELEMENT_TYPE_LABEL {
   CONNECTION = 'Connection',
   FILE_GENERATION = 'FileGeneration',
   GENERATION_SPECIFICATION = 'GenerationSpecification',
-  /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   JSON_MODEL_CONNECTION = 'JsonModelConnection',
   XML_MODEL_CONNECTION = 'XmlModelConnection',
   MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
@@ -135,7 +134,6 @@ export const generateLanguageMonarch = (
       GRAMMAR_ELEMENT_TYPE_LABEL.CONNECTION,
       GRAMMAR_ELEMENT_TYPE_LABEL.FILE_GENERATION,
       GRAMMAR_ELEMENT_TYPE_LABEL.GENERATION_SPECIFICATION,
-      /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
       GRAMMAR_ELEMENT_TYPE_LABEL.JSON_MODEL_CONNECTION,
       GRAMMAR_ELEMENT_TYPE_LABEL.MODEL_CHAIN_CONNECTION,
       GRAMMAR_ELEMENT_TYPE_LABEL.XML_MODEL_CONNECTION,
