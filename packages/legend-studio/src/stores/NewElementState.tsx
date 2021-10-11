@@ -485,7 +485,6 @@ export class NewElementState {
     if (this.type !== newType) {
       let driver: NewElementDriver<PackageableElement> | undefined = undefined;
       switch (newType) {
-        /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
         case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
           driver = new NewPackageableRuntimeDriver(this.editorStore);
           break;
@@ -607,7 +606,6 @@ export class NewElementState {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   createElement(name: string): PackageableElement {
     let element: PackageableElement | undefined;
     switch (this.type) {

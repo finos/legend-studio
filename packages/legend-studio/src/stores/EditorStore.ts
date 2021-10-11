@@ -994,7 +994,6 @@ export class EditorStore {
     this.setCurrentEditorState(editorState);
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   createElementState(
     element: PackageableElement,
   ): ElementEditorState | undefined {
@@ -1368,7 +1367,6 @@ export class EditorStore {
   getSupportedElementTypes(): string[] {
     return (
       [
-        /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
         PACKAGEABLE_ELEMENT_TYPE.CLASS,
         PACKAGEABLE_ELEMENT_TYPE.ENUMERATION,
         PACKAGEABLE_ELEMENT_TYPE.PROFILE,

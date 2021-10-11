@@ -1111,7 +1111,6 @@ export class EditorGraphState {
    * methods here so that we can load plugins.
    */
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getPackageableElementType(element: PackageableElement): string {
     if (element instanceof PrimitiveType) {
       return PACKAGEABLE_ELEMENT_TYPE.PRIMITIVE;

@@ -90,7 +90,6 @@ export class GrammarTextEditorState {
 
   setCurrentElementLabelRegexString(element: PackageableElement): void {
     let typeLabel: string | undefined;
-    /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     if (element instanceof Class) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.CLASS;
     } else if (element instanceof Association) {

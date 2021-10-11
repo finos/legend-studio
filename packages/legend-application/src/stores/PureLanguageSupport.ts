@@ -20,7 +20,6 @@ import type {
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 export enum GRAMMAR_ELEMENT_TYPE_LABEL {
   PROFILE = 'Profile',
   CLASS = 'Class',
@@ -37,6 +36,7 @@ export enum GRAMMAR_ELEMENT_TYPE_LABEL {
   CONNECTION = 'Connection',
   FILE_GENERATION = 'FileGeneration',
   GENERATION_SPECIFICATION = 'GenerationSpecification',
+
   JSON_MODEL_CONNECTION = 'JsonModelConnection',
   XML_MODEL_CONNECTION = 'XmlModelConnection',
   MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
@@ -119,7 +119,7 @@ export const generateLanguageMonarch = (
       'extends',
       'function',
       'projects',
-      /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
+
       GRAMMAR_ELEMENT_TYPE_LABEL.CLASS,
       GRAMMAR_ELEMENT_TYPE_LABEL.ASSOCIATION,
       GRAMMAR_ELEMENT_TYPE_LABEL.ENUMERATION,
@@ -134,6 +134,7 @@ export const generateLanguageMonarch = (
       GRAMMAR_ELEMENT_TYPE_LABEL.CONNECTION,
       GRAMMAR_ELEMENT_TYPE_LABEL.FILE_GENERATION,
       GRAMMAR_ELEMENT_TYPE_LABEL.GENERATION_SPECIFICATION,
+
       GRAMMAR_ELEMENT_TYPE_LABEL.JSON_MODEL_CONNECTION,
       GRAMMAR_ELEMENT_TYPE_LABEL.MODEL_CHAIN_CONNECTION,
       GRAMMAR_ELEMENT_TYPE_LABEL.XML_MODEL_CONNECTION,
@@ -171,7 +172,6 @@ export const generateLanguageMonarch = (
 
     parsers: [
       ...extraParsers.map((parser) => `###${parser}`),
-      /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
       '###Pure',
       '###Connection',
       '###Runtime',

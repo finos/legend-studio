@@ -421,7 +421,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   *buildSystem(
     coreModel: CoreModel,
     systemModel: SystemModel,
@@ -495,7 +494,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   *buildDependencies(
     coreModel: CoreModel,
     systemModel: SystemModel,
@@ -605,7 +603,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   *buildGraph(
     graph: PureModel,
     entities: Entity[],
@@ -1794,7 +1791,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      *
      */
     const graphData = this.getFullGraphModelData(graph);
-    /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
     const extraExecutionElements = this.pluginManager
       .getPureProtocolProcessorPlugins()
@@ -2034,7 +2030,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     service: Service,
   ): V1_PureModelContextData => {
     const graphData = this.getFullGraphModelData(graph);
-    /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
     prunedGraphData.elements = graphData.elements.filter(
       (element) => !(element instanceof V1_Service),
@@ -2258,7 +2253,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return `${elementProtocol.package}${ENTITY_PATH_DELIMITER}${name}`;
   };
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private getElementClassiferPath = (
     protocol: V1_PackageableElement,
   ): string => {
@@ -2311,7 +2305,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   };
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private graphToPureModelContextData = (
     graph: PureModel,
     options?: { keepSourceInformation?: boolean | undefined } | undefined,
@@ -2333,7 +2326,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return graphData;
   };
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private getGraphCompileContext = (
     graph: PureModel,
   ): V1_PureModelContextData => {
