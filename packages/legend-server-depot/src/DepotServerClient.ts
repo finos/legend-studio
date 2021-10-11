@@ -22,6 +22,7 @@ import type {
   ProjectDependencyCoordinates,
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities';
+import type { StoredEntity } from './models/StoredEntity';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -79,6 +80,24 @@ export class DepotServerClient extends AbstractServerClient {
     artifactId: string,
   ): Promise<PlainObject<Entity>[]> =>
     this.get(`${this._revisions(groupId, artifactId)}/latest`);
+
+  // NOTE: this is experimental API to get elements by classifier path
+  getEntitiesByClassifierPath = (
+    classifierPath: string,
+    options?: {
+      search?: string | undefined;
+      limit?: number | undefined;
+    },
+  ): Promise<PlainObject<StoredEntity>[]> =>
+    this.get(
+      `/entitiesByClassifierPath/${encodeURIComponent(classifierPath)}`,
+      undefined,
+      undefined,
+      {
+        search: options?.search,
+        limit: options?.limit,
+      },
+    );
 
   // ------------------------------------------- Dependencies -------------------------------------------
   getDependencyEntities = (
