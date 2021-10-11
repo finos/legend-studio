@@ -40,7 +40,7 @@ export type ConnectionEditorRenderer = (
 export interface DSLMapping_StudioPlugin_Extension
   extends DSL_StudioPlugin_Extension {
   /**
-   * Get the list of the default connection type given the stores.
+   * Get the list of the default connection value builder for a specified store.
    */
   getExtraDefaultConnectionValueBuilders?(): DefaultConnectionValueBuilder[];
 
