@@ -69,10 +69,11 @@ import type {
   Mapping,
   Runtime,
   V1_PureModelContextData,
+  DSLMapping_PureProtocolProcessorPlugin_Extension,
 } from '@finos/legend-graph';
 import {
+  PureProtocolProcessorPlugin,
   V1_transformElementReference,
-  DSLMapping_PureProtocolProcessorPlugin_Extension,
   V1_ElementBuilder,
   V1_initPackageableElement,
 } from '@finos/legend-graph';
@@ -87,7 +88,10 @@ const BINDING_ELEMENT_CLASSIFIER_PATH =
 const SCHEMA_SET_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::metamodel::SchemaSet';
 
-export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PureProtocolProcessorPlugin_Extension {
+export class DSLSerializer_PureProtocolProcessorPlugin
+  extends PureProtocolProcessorPlugin
+  implements DSLMapping_PureProtocolProcessorPlugin_Extension
+{
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
@@ -286,7 +290,22 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
       },
     ];
   }
-  override V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
+
+  override V1_getExtraExecutionInputGetters(): V1_ExecutionInputGetter[] {
+    return [
+      (
+        graph: PureModel,
+        mapping: Mapping,
+        runtime: Runtime,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter(
+          (element) => element instanceof V1_SchemaSet,
+        ),
+    ];
+  }
+
+  V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
     return [
       (
         connection: V1_Connection,
@@ -332,7 +351,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
     ];
   }
 
-  override V1_getExtraConnectionTransformers(): V1_ConnectionTransformer[] {
+  V1_getExtraConnectionTransformers(): V1_ConnectionTransformer[] {
     return [
       (
         metamodel: Connection,
@@ -351,7 +370,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
     ];
   }
 
-  override V1_getExtraConnectionProtocolSerializers(): V1_ConnectionProtocolSerializer[] {
+  V1_getExtraConnectionProtocolSerializers(): V1_ConnectionProtocolSerializer[] {
     return [
       (
         connectionProtocol: V1_Connection,
@@ -367,7 +386,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
     ];
   }
 
-  override V1_getExtraConnectionProtocolDeserializers(): V1_ConnectionProtocolDeserializer[] {
+  V1_getExtraConnectionProtocolDeserializers(): V1_ConnectionProtocolDeserializer[] {
     return [
       (json: PlainObject<V1_Connection>): V1_Connection | undefined => {
         if (
@@ -377,18 +396,6 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
         }
         return undefined;
       },
-    ];
-  }
-
-  override V1_getExtraExecutionInputGetters(): V1_ExecutionInputGetter[] {
-    return [
-      (
-        graph: PureModel,
-        mapping: Mapping,
-        runtime: Runtime,
-        protocolGraph: V1_PureModelContextData,
-      ): V1_PackageableElement[] =>
-        protocolGraph.elements.filter((e) => e instanceof V1_SchemaSet),
     ];
   }
 }
