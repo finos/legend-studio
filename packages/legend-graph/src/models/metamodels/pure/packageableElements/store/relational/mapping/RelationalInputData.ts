@@ -58,6 +58,7 @@ export class RelationalInputData extends InputData implements Hashable {
       data: observable,
       inputType: observable,
       setData: action,
+      setInputType: action,
       validationResult: computed,
       hashCode: computed,
     });
@@ -69,6 +70,10 @@ export class RelationalInputData extends InputData implements Hashable {
 
   setData(value: string): void {
     this.data = value;
+  }
+
+  setInputType(value: string): void {
+    this.inputType = getRelationalInputType(value);
   }
 
   get validationResult(): ValidationIssue | undefined {

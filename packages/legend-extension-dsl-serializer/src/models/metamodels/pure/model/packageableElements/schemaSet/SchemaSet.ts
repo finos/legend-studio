@@ -22,9 +22,14 @@ import { PackageableElement } from '@finos/legend-graph';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 import type { Schema } from './Schema';
 
+export enum FORMAT_TYPE {
+  FLAT_DATA = 'FlatData',
+  XSD = 'XSD',
+}
+
 export class SchemaSet extends PackageableElement implements Hashable {
-  format: string;
-  schemas: Schema[];
+  format!: FORMAT_TYPE;
+  schemas: Schema[] = [];
 
   constructor(name: string) {
     super(name);
@@ -37,12 +42,9 @@ export class SchemaSet extends PackageableElement implements Hashable {
       deleteSchema: action,
       _elementHashCode: override,
     });
-
-    this.format = '';
-    this.schemas = [];
   }
 
-  setFormat(value: string): void {
+  setFormat(value: FORMAT_TYPE): void {
     this.format = value;
   }
 

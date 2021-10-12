@@ -16,31 +16,44 @@
 
 export const TEST_DATA__roundtrip = [
   {
-    path: 'model::testDataSpace',
+    path: 'test::model::TestDataSpace',
     content: {
       _type: 'dataSpace',
-      stereotypes: [
+      artifactId: 'test-data-space',
+      defaultExecutionContext: 'INT',
+      description: 'some description 2',
+      executionContexts: [
         {
-          profile: 'meta::pure::profiles::typemodifiers',
-          value: 'abstract',
-        },
-      ],
-      taggedValues: [
-        {
-          tag: {
-            profile: 'meta::pure::profiles::doc',
-            value: 'doc',
+          defaultRuntime: {
+            path: 'test::model::TestRuntime',
+            type: 'RUNTIME',
           },
-          value: 'something',
+          description: 'some description 1',
+          mapping: {
+            path: 'test::model::TestMapping',
+            type: 'MAPPING',
+          },
+          name: 'INT',
         },
       ],
-      artifactId: 'legend-query-test',
-      groupId: 'org.finos.legend.test',
-      mapping: 'dummyMapping',
-      name: 'testDataSpace',
-      package: 'model',
-      runtime: 'dummyRuntime',
-      versionId: 'latest',
+      featuredDiagrams: [
+        {
+          path: 'test::model::TestDiagram1',
+          type: 'DIAGRAM',
+        },
+        {
+          path: 'test::model::TestDiagram2',
+          type: 'DIAGRAM',
+        },
+      ],
+      groupId: 'test.group',
+      name: 'TestDataSpace',
+      package: 'test::model',
+      supportInfo: {
+        _type: 'email',
+        address: 'testEmail@test.org',
+      },
+      versionId: '0.4.3',
     },
     classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
   },

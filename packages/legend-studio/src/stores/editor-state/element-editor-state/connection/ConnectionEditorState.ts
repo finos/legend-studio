@@ -49,6 +49,7 @@ import {
   RedshiftDatasourceSpecification,
   createValidationError,
 } from '@finos/legend-graph';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -384,6 +385,21 @@ export class ConnectionEditorState {
         connection,
       );
     } else {
+      const extraConnectionValueEditorStateBuilders =
+        this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLMapping_StudioPlugin_Extension
+              ).getExtraConnectionValueEditorStateBuilders?.() ?? [],
+          );
+      for (const stateBuilder of extraConnectionValueEditorStateBuilders) {
+        const state = stateBuilder(this.editorStore, connection);
+        if (state) {
+          return state;
+        }
+      }
       return new UnsupportedConnectionValueState(this.editorStore, connection);
     }
   }

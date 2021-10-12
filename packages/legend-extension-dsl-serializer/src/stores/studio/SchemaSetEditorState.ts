@@ -14,21 +14,32 @@
  * limitations under the License.
  */
 
-import { computed, action, makeObservable } from 'mobx';
+import { computed, action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '@finos/legend-studio';
 import { guaranteeType } from '@finos/legend-shared';
 import { ElementEditorState } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
-import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import type { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
 
 export class SchemaSetEditorState extends ElementEditorState {
+  currentSchema?: Schema | undefined;
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
+      currentSchema: observable,
       schemaSet: computed,
+      setCurrentSchema: action,
       reprocess: action,
     });
+
+    if (this.element instanceof SchemaSet) {
+      if (this.element.schemas.length !== 0) {
+        this.currentSchema =
+          this.element.schemas[this.element.schemas.length - 1];
+      }
+    }
   }
 
   get schemaSet(): SchemaSet {
@@ -37,6 +48,10 @@ export class SchemaSetEditorState extends ElementEditorState {
       SchemaSet,
       'Element inside schema set element editor state must be a SchemaSet',
     );
+  }
+
+  setCurrentSchema(value: Schema | undefined): void {
+    this.currentSchema = value;
   }
 
   reprocess(

@@ -154,7 +154,7 @@ export abstract class LegendApplication {
   }): LegendApplication {
     this.baseUrl = guaranteeNonEmptyString(
       options.baseUrl,
-      `Application setup failure: option 'baseUrl' is missing or empty`,
+      `Can't setup application: 'baseUrl' is missing or empty`,
     );
     this.pluginRegister = options.pluginRegister;
     this._isConfigured = true;

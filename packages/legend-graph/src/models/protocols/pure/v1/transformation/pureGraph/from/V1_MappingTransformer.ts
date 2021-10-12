@@ -536,10 +536,6 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
-  const id = mappingElementIdSerializer(element.id);
-  if (id) {
-    embedded.id = id;
-  }
   embedded.setImplementationId = element.inlineSetImplementation.id.value;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
@@ -585,6 +581,8 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     context,
     false,
   ) as V1_RelationalPropertyMapping;
+  // use the same property as the parent otherwise
+  embedded.otherwisePropertyMapping.property = embedded.property;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
       element.localMappingProperty,
@@ -827,9 +825,12 @@ const transformRootRelationalSetImpl = (
   classMapping.class = V1_transformElementReference(element.class);
   classMapping.distinct = element.distinct ?? false;
   classMapping.id = mappingElementIdSerializer(element.id);
-  classMapping.mainTable = V1_transformTableAliasToTablePointer(
-    element.mainTableAlias,
-  );
+  if (element.mainTableAlias) {
+    classMapping.mainTable = V1_transformTableAliasToTablePointer(
+      element.mainTableAlias,
+    );
+  }
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.primaryKey = element.primaryKey.map((pk) =>
     V1_transformRelationalOperationElement(pk, context),
   );

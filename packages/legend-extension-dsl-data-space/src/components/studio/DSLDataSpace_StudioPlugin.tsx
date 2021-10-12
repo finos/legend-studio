@@ -31,7 +31,10 @@ import type {
 import { StudioPlugin } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
-import { DataSpace } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import {
+  DataSpace,
+  DataSpaceExecutionContext,
+} from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import { DataSpaceEditorState } from '../../stores/studio/DataSpaceEditorState';
 import { DataSpaceViewer } from './DataSpaceEditor';
 
@@ -106,8 +109,12 @@ export class DSLDataSpace_StudioPlugin
           dataSpace.artifactId =
             state.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
           dataSpace.versionId = 'latest';
-          dataSpace.mapping = 'dummyMapping';
-          dataSpace.runtime = 'dummyRuntime';
+          const dataSpaceExecutionContext = new DataSpaceExecutionContext();
+          dataSpaceExecutionContext.name = 'dummyContext';
+          dataSpaceExecutionContext.mapping = 'dummyMapping';
+          dataSpaceExecutionContext.defaultRuntime = 'dummyRuntime';
+          dataSpace.executionContexts = [dataSpaceExecutionContext];
+          dataSpace.defaultExecutionContext = dataSpaceExecutionContext;
           return dataSpace;
         }
         return undefined;

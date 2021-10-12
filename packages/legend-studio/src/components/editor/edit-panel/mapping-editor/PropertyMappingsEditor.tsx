@@ -99,7 +99,17 @@ export const PropertyMappingsEditor = observer(
             propertyRawType,
           );
           if (rootMappingElement) {
-            mappingEditorState.openMappingElement(rootMappingElement, true);
+            const parent = rootMappingElement.parent;
+            if (parent !== mappingEditorState.element) {
+              // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
+              editorStore.openElement(parent);
+              editorStore
+                .getCurrentEditorState(MappingEditorState)
+                .openMappingElement(rootMappingElement, false);
+            }
+            {
+              mappingEditorState.openMappingElement(rootMappingElement, true);
+            }
           } else {
             if (!isReadOnly) {
               mappingEditorState.createMappingElement({

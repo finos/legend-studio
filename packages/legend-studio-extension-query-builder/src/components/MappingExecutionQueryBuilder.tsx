@@ -54,6 +54,9 @@ export const MappingExecutionQueryBuilder = observer(
               )
               .catch(applicationStore.alertIllegalUnhandledError),
           executionState.queryState.query.isStub,
+          {
+            parametersDisabled: true,
+          },
         ),
       );
     };

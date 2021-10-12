@@ -1,5 +1,33 @@
 # @finos/legend-studio
 
+## 0.3.3
+
+### Patch Changes
+
+- [#566](https://github.com/finos/legend-studio/pull/566) [`373dcf8b`](https://github.com/finos/legend-studio/commit/373dcf8b214510ceda72212d484f179869900514) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use maven coordinates for service registration.
+
+## 0.3.2
+
+### Patch Changes
+
+- [#554](https://github.com/finos/legend-studio/pull/554) [`f1d15408`](https://github.com/finos/legend-studio/commit/f1d15408b905fb96efa8da714421a827ab396709) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revert service registration using project coordinates.
+
+## 0.3.1
+
+## 0.3.0
+
+### Minor Changes
+
+- [#537](https://github.com/finos/legend-studio/pull/537) [`c3ee3029`](https://github.com/finos/legend-studio/commit/c3ee3029307ae0987c4346d09871cf22f6007f01) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for class mapping `extends`.
+
+### Patch Changes
+
+- [#532](https://github.com/finos/legend-studio/pull/532) [`0ec098d2`](https://github.com/finos/legend-studio/commit/0ec098d20f607fd1fc848a1ce51432791e7ec717) ([@akphi](https://github.com/akphi)) - Fix the problem with Studio change detection engine where after fixing compilation issue for a project that was never properly initialized, all elements are shown as `New` instead of `Modified` ([#533](https://github.com/finos/legend-studio/issues/533))
+
+* [#535](https://github.com/finos/legend-studio/pull/535) [`ebe69b6a`](https://github.com/finos/legend-studio/commit/ebe69b6a8c33237fd11c3522e20130d9c4aa2026) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use maven coordinates for service registration.
+
+- [#537](https://github.com/finos/legend-studio/pull/537) [`c3ee3029`](https://github.com/finos/legend-studio/commit/c3ee3029307ae0987c4346d09871cf22f6007f01) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `include` mappings.
+
 ## 0.2.21
 
 ### Patch Changes

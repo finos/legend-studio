@@ -34,7 +34,6 @@ export class FloatTypeReference extends TypeReference implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.FLOAT_TYPE_REFERENCE,
-      //Boolean(this.list).toString(),
       super.hashCode,
     ]);
   }

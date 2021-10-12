@@ -53,6 +53,7 @@ import type {
   ValueSpecificationVisitor,
   InstanceValue,
   INTERNAL__UnknownValueSpecification,
+  LambdaFunction,
 } from '@finos/legend-graph';
 import {
   DerivedProperty,
@@ -77,6 +78,7 @@ import {
 } from './QueryBuilderProjectionState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
+import { QueryParameterState } from './QueryParametersState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -874,18 +876,16 @@ export class QueryBuilderLambdaProcessor
   visit_LambdaFunctionInstanceValue(
     valueSpecification: LambdaFunctionInstanceValue,
   ): void {
-    valueSpecification.values
-      .map((value) =>
-        value.expressionSequence.map((expression) =>
-          expression.accept_ValueSpecificationVisitor(
-            new QueryBuilderLambdaProcessor(
-              this.queryBuilderState,
-              this.precedingExpression,
-            ),
+    valueSpecification.values.forEach((value) =>
+      value.expressionSequence.forEach((expression) =>
+        expression.accept_ValueSpecificationVisitor(
+          new QueryBuilderLambdaProcessor(
+            this.queryBuilderState,
+            this.precedingExpression,
           ),
         ),
-      )
-      .flat();
+      ),
+    );
   }
 
   visit_AbstractPropertyExpression(
@@ -955,3 +955,32 @@ export class QueryBuilderLambdaProcessor
     throw new UnsupportedOperationError();
   }
 }
+
+const processQueryParameters = (
+  lambdaFunc: LambdaFunction,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  const queryParameterState = queryBuilderState.queryParametersState;
+  lambdaFunc.functionType.parameters.forEach((parameter) => {
+    const variableState = new QueryParameterState(
+      queryParameterState,
+      parameter,
+    );
+    variableState.mockParameterValues();
+    queryParameterState.addParameter(variableState);
+  });
+};
+
+export const processQueryBuilderLambdaFunction = (
+  queryBuilderState: QueryBuilderState,
+  lambdaFunc: LambdaFunction,
+): void => {
+  if (lambdaFunc.functionType.parameters.length) {
+    processQueryParameters(lambdaFunc, queryBuilderState);
+  }
+  lambdaFunc.expressionSequence.map((e) =>
+    e.accept_ValueSpecificationVisitor(
+      new QueryBuilderLambdaProcessor(queryBuilderState, undefined),
+    ),
+  );
+};

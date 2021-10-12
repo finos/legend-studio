@@ -75,15 +75,9 @@ const transformGenerationView = (
 const transformClassView = (element: ClassView): V1_ClassView => {
   const _classView = new V1_ClassView();
   _classView.class = V1_transformElementReference(element.class);
-  _classView.hideProperties = element.hideProperties
-    ? Boolean(element.hideProperties)
-    : undefined;
-  _classView.hideStereotypes = element.hideStereotypes
-    ? Boolean(element.hideStereotypes)
-    : undefined;
-  _classView.hideTaggedValues = element.hideTaggedValues
-    ? Boolean(element.hideTaggedValues)
-    : undefined;
+  _classView.hideProperties = element.hideProperties;
+  _classView.hideStereotypes = element.hideStereotypes;
+  _classView.hideTaggedValues = element.hideTaggedValues;
   _classView.id = element.id;
   _classView.position = createPoint(element.position.x, element.position.y);
   _classView.rectangle = createRectangle(

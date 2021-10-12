@@ -74,6 +74,9 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { useApplicationStore } from '@finos/legend-application';
+import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
+import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
+import { MdRefresh } from 'react-icons/md';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -178,6 +181,30 @@ const QueryBuilderFilterConditionEditor = observer(
           node.condition.filterState.queryBuilderState.graphManagerState.graph,
         ),
       );
+    // Drag and Drop on filter condition value
+    const handleDrop = useCallback(
+      (item: QueryBuilderParameterDragSource): void => {
+        node.condition.setValue(item.variable.parameter);
+      },
+      [node],
+    );
+    const [{ isFilterValueDragOver }, dropConnector] = useDrop(
+      () => ({
+        accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
+        drop: (
+          item: QueryBuilderParameterDragSource,
+          monitor: DropTargetMonitor,
+        ): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item);
+          }
+        },
+        collect: (monitor): { isFilterValueDragOver: boolean } => ({
+          isFilterValueDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDrop],
+    );
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__overlay__container">
@@ -226,7 +253,15 @@ const QueryBuilderFilterConditionEditor = observer(
             </button>
           </DropdownMenu>
           {node.condition.value && (
-            <div className="query-builder-filter-tree__condition-node__value">
+            <div
+              ref={dropConnector}
+              className="query-builder-filter-tree__condition-node__value dnd__overlay__container"
+            >
+              {isFilterValueDragOver && (
+                <div className="query-builder-filter-tree__node__dnd__overlay">
+                  Change Filter Value
+                </div>
+              )}
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
                 graph={
@@ -335,6 +370,14 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
+    const resetNode = (): void => {
+      if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+        node.condition.value =
+          node.condition.operator.getDefaultFilterConditionValue(
+            node.condition,
+          );
+      }
+    };
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
 
     // Drag and Drop
@@ -514,6 +557,16 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             </div>
           </div>
           <div className="query-builder-filter-tree__node__actions">
+            {node instanceof QueryBuilderFilterTreeConditionNodeData && (
+              <button
+                className="query-builder-filter-tree__node__action"
+                tabIndex={-1}
+                title="Reset Filter Value"
+                onClick={resetNode}
+              >
+                <MdRefresh />
+              </button>
+            )}
             <button
               className="query-builder-filter-tree__node__action"
               tabIndex={-1}

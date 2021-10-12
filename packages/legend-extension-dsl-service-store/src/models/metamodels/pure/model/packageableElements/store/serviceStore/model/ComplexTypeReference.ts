@@ -39,7 +39,6 @@ export class ComplexTypeReference extends TypeReference implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.COMPLEX_TYPE_REFERENCE,
-      //Boolean(this.list).toString(),
       super.hashCode,
       this.type,
       this.binding,

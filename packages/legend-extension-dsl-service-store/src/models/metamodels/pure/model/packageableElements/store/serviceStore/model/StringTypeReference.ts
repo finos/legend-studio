@@ -34,7 +34,6 @@ export class StringTypeReference extends TypeReference implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.STRING_TYPE_REFERENCE,
-      //Boolean(this.list).toString(),
       super.hashCode,
     ]);
   }

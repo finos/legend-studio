@@ -22,7 +22,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '../../../GraphManagerTestUtils';
 import type { GraphManagerState } from '../../../GraphManagerState';
-import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 
 let graphManagerState: GraphManagerState;
@@ -47,7 +47,7 @@ test(unitTest('Inline Embedded Relational Mapping'), () => {
   const mapping = graph.getMapping('mappingPackage::myMapping');
   // // person
   const personClassMapping = guaranteeType(
-    getClassMappingsByClass(mapping, graph.getClass('other::Person'))[0],
+    getOwnClassMappingsByClass(mapping, graph.getClass('other::Person'))[0],
     RootRelationalInstanceSetImplementation,
   );
   expect(personClassMapping.id.value).toBe('alias1');

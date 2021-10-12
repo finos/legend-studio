@@ -17,7 +17,7 @@
 import packageJson from '../../../../package.json';
 import { V1_Text } from './v1/model/packageableElements/text/V1_Text';
 import type { PlainObject } from '@finos/legend-shared';
-import { assertType } from '@finos/legend-shared';
+import { guaranteeNonNullable, assertType } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_textModelSchema,
@@ -91,7 +91,10 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
             Object.values(TEXT_TYPE).find(
               (type) => type === elementProtocol.type,
             ) ?? TEXT_TYPE.PLAIN_TEXT;
-          element.content = elementProtocol.content;
+          element.content = guaranteeNonNullable(
+            elementProtocol.content,
+            `Text element 'content' field is missing`,
+          );
         },
       }),
     ];

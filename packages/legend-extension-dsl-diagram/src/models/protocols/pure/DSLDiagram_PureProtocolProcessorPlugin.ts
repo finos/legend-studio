@@ -50,6 +50,8 @@ import {
 const DIAGRAM_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::diagram::Diagram';
 
+export const V1_DSLDiagram_PackageableElementPointerType = 'DIAGRAM';
+
 export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
     super(

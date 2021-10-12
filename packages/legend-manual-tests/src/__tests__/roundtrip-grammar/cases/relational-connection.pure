@@ -39,6 +39,31 @@ RelationalDatabaseConnection connection::relation::MySnowFlakeWithQuotedIdentifi
   };
 }
 
+RelationalDatabaseConnection model::MySnowflakePoxy
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'account';
+    warehouse: 'warehouseName';
+    region: 'us-east2';
+    cloudType: 'aws';
+    proxyHost: 'sampleHost';
+    proxyPort: 'samplePort';
+    nonProxyHosts: 'sample';
+    accountType: VPS;
+    organization: 'sampleOrganization';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'myName';
+    privateKeyVaultReference: 'privateKeyRef';
+    passPhraseVaultReference: 'passRef';
+  };
+}
+
 RelationalDatabaseConnection connection::relation::MySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag2
 {
   store: store::db;
@@ -98,6 +123,17 @@ RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdenti
     name: 'myDb';
     host: 'somehost';
     port: 999;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::H2ConnectionWithCsvData
+{
+  store: store::db;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'field1,field2';
   };
   auth: DefaultH2;
 }

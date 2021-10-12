@@ -17,26 +17,9 @@
 import type { TooltipProps } from '@material-ui/core';
 import { Tooltip } from '@material-ui/core';
 import { StubTransition } from '@finos/legend-art';
-import type { AbstractProperty, Multiplicity } from '@finos/legend-graph';
-import { DerivedProperty, MULTIPLICITY_INFINITE } from '@finos/legend-graph';
-
-const getMultiplicityDescription = (multiplicity: Multiplicity): string => {
-  if (multiplicity.lowerBound === multiplicity.upperBound) {
-    return `[${multiplicity.lowerBound.toString()}] - Must have exactly ${multiplicity.lowerBound.toString()} value(s)`;
-  } else if (
-    multiplicity.lowerBound === 0 &&
-    multiplicity.upperBound === undefined
-  ) {
-    return `[${MULTIPLICITY_INFINITE}] - May have many values`;
-  }
-  return `[${multiplicity.lowerBound}..${
-    multiplicity.upperBound ?? MULTIPLICITY_INFINITE
-  }] - ${
-    multiplicity.upperBound
-      ? `Must have from ${multiplicity.lowerBound} to ${multiplicity.upperBound} value(s)`
-      : `Must have at least ${multiplicity.lowerBound} values(s)`
-  }`;
-};
+import type { AbstractProperty } from '@finos/legend-graph';
+import { DerivedProperty } from '@finos/legend-graph';
+import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 export const QueryBuilderPropertyInfoTooltip: React.FC<{
   property: AbstractProperty;

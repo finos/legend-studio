@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-management-toolkit",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Legend Studio extension for management/admin tooling",
   "keywords": [
     "legend",
@@ -44,19 +44,19 @@
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.24",
+    "@types/react": "17.0.27",
     "@types/react-router-dom": "5.3.0",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
     "react": "17.0.2",
-    "react-icons": "4.2.0",
+    "react-icons": "4.3.1",
     "react-router-dom": "5.3.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
     "eslint": "7.32.0",
-    "jest": "27.2.1",
+    "jest": "27.2.4",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.42.1",

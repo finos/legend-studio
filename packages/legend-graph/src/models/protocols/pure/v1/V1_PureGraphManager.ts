@@ -119,7 +119,7 @@ import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda';
 import { V1_ExecuteInput } from './engine/execution/V1_ExecuteInput';
 import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput';
 import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
-import { V1_ValueSpecificationTransformer } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
+import { V1_transformRootValueSpecification } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
 import { V1_Profile } from './model/packageableElements/domain/V1_Profile';
 import { V1_Class } from './model/packageableElements/domain/V1_Class';
 import { V1_Enumeration } from './model/packageableElements/domain/V1_Enumeration';
@@ -148,6 +148,7 @@ import {
   V1_DatabaseBuilderConfig,
   V1_DatabaseBuilderInput,
   V1_DatabasePattern,
+  V1_setupDatabaseBuilderInputSerialization,
   V1_TargetDatabase,
 } from './engine/generation/V1_DatabaseBuilderInput';
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
@@ -157,7 +158,10 @@ import { V1_ServiceStore } from './model/packageableElements/store/relational/V1
 import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity';
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
-import { V1_setupEngineRuntimeSerialization } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
+import {
+  V1_setupEngineRuntimeSerialization,
+  V1_setupLegacyRuntimeSerialization,
+} from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
@@ -380,7 +384,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this.extensions = new V1_GraphBuilderExtensions(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
-    // setup (de)serializer using plugins
+    // setup serialization plugins
     V1_setupPureModelContextDataSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
@@ -388,6 +392,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     V1_setupEngineRuntimeSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupLegacyRuntimeSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupDatabaseBuilderInputSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
   }
@@ -1665,14 +1675,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     valueSpecification: ValueSpecification,
   ): Record<PropertyKey, unknown> {
     return V1_serializeValueSpecification(
-      valueSpecification.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationTransformer(
-          [],
-          new Map<string, unknown[]>(),
-          true,
-          false,
-        ),
-      ),
+      V1_transformRootValueSpecification(valueSpecification),
     ) as Record<PropertyKey, unknown>;
   }
 
@@ -1946,7 +1949,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async registerService(
     graph: PureModel,
     service: Service,
-    projectId: string,
+    groupdId: string,
+    artifactId: string,
     server: string,
     executionMode: ServiceExecutionMode,
     version: string | undefined,
@@ -1966,7 +1970,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
-        const sdlcInfo = new V1_AlloySdlc(projectId, version);
+        const sdlcInfo = new V1_AlloySdlc(groupdId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         // data
         const data = new V1_PureModelContextData();
@@ -1992,7 +1996,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.PROD: {
-        const sdlcInfo = new V1_AlloySdlc(projectId, version);
+        const sdlcInfo = new V1_AlloySdlc(groupdId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(
@@ -2033,17 +2037,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
     prunedGraphData.elements = graphData.elements.filter(
-      (element) =>
-        element instanceof V1_Class ||
-        element instanceof V1_Enumeration ||
-        element instanceof V1_Profile ||
-        element instanceof V1_Association ||
-        element instanceof V1_ConcreteFunctionDefinition ||
-        element instanceof V1_Measure ||
-        element instanceof V1_Store ||
-        element instanceof V1_PackageableConnection ||
-        element instanceof V1_Mapping ||
-        element instanceof V1_PackageableRuntime,
+      (element) => !(element instanceof V1_Service),
     );
     prunedGraphData.elements.push(this.elementToProtocol<V1_Service>(service));
     return prunedGraphData;

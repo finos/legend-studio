@@ -40,6 +40,7 @@ import type {
   PackageableElementReference,
 } from '@finos/legend-graph';
 import {
+  getAllClassMappings,
   PackageableRuntime,
   Runtime,
   EngineRuntime,
@@ -64,6 +65,7 @@ import {
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
 } from '@finos/legend-graph';
+import type { DSLMapping_StudioPlugin_Extension } from '../../DSLMapping_StudioPlugin_Extension';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
@@ -87,7 +89,7 @@ const getStoresFromMappings = (
 ): Store[] =>
   uniq(
     mappings.flatMap((mapping) =>
-      mapping.allClassMappings
+      getAllClassMappings(mapping)
         .map((setImplementation) =>
           getClassMappingStore(setImplementation, graph),
         )
@@ -207,7 +209,7 @@ export const getRuntimeExplorerTreeData = (
   const nodes = new Map<string, RuntimeExplorerTreeNodeData>();
   const allSourceClassesFromMappings = uniq(
     runtimeValue.mappings.flatMap((mapping) =>
-      mapping.value.allClassMappings
+      getAllClassMappings(mapping.value)
         .map((setImplementation) => getMappingElementSource(setImplementation))
         .filter((source): source is Class => source instanceof Class),
     ),
@@ -439,6 +441,21 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
         new DefaultH2AuthenticationStrategy(),
       );
     }
+    const extraDefaultConnectionValueBuilders = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).getExtraDefaultConnectionValueBuilders?.() ?? [],
+      );
+    for (const connection of extraDefaultConnectionValueBuilders) {
+      const defaultConnection = connection(this.store);
+      if (defaultConnection) {
+        return defaultConnection;
+      }
+    }
+
     throw new UnsupportedOperationError(
       `Can't create custom connection for the specified store`,
       this.store,
@@ -538,7 +555,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
     if (!this.identifiedConnections.length) {
       const allSourceClassesFromMappings = uniq(
         this.runtimeEditorState.runtimeValue.mappings.flatMap((mapping) =>
-          mapping.value.allClassMappings
+          getAllClassMappings(mapping.value)
             .map((setImplementation) =>
               getMappingElementSource(setImplementation),
             )

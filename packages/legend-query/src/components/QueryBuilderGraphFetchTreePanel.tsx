@@ -123,6 +123,8 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
       <div className="query-builder-graph-fetch-tree__node__actions">
         <button
           className="query-builder-graph-fetch-tree__node__action"
+          title="Remove"
+          tabIndex={-1}
           onClick={deleteNode}
         >
           <TimesIcon />

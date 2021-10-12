@@ -1,0 +1,68 @@
+###Diagram
+Diagram model::diagram
+{
+  classView 3afb6477-8f3e-4005-8353-e13145057d1f
+  {
+    class: model::Class_1;
+    position: (579.0,213.0);
+    rectangle: (65.369140625,30.0);
+  }
+  classView 57eccdd6-4e8e-4167-846e-734b41522d8a
+  {
+    class: model::Class_2;
+    position: (216.0,194.0);
+    rectangle: (131.0,103.0);
+  }
+  classView 16afe4af-3aa2-4851-9f17-32b8dbcd6e1a
+  {
+    class: model::Class_3;
+    position: (422.0,93.0);
+    rectangle: (65.369140625,30.0);
+  }
+  classView 9d8b8c7f-1148-4d30-b72c-f9b94a3c06b7
+  {
+    class: model::Class_4;
+    position: (518.0,304.0);
+    rectangle: (65.369140625,30.0);
+  }
+  propertyView
+  {
+    property: model::Class_2.property_1;
+    source: 57eccdd6-4e8e-4167-846e-734b41522d8a;
+    target: 16afe4af-3aa2-4851-9f17-32b8dbcd6e1a;
+    points: [(301.0,249.0),(284.0,128.0),(442.0,112.0)];
+  }
+  propertyView
+  {
+    property: model::Class_1.property_1;
+    source: 3afb6477-8f3e-4005-8353-e13145057d1f;
+    target: 16afe4af-3aa2-4851-9f17-32b8dbcd6e1a;
+    points: [(608.0,229.0),(606.0,103.0),(450.0,107.0)];
+  }
+  generalizationView
+  {
+    source: 57eccdd6-4e8e-4167-846e-734b41522d8a;
+    target: 3afb6477-8f3e-4005-8353-e13145057d1f;
+    points: [(280.8154296875,243.5),(615.0,226.0)];
+  }
+}
+
+
+###Pure
+Class model::Class_1
+{
+  property_1: model::Class_3[1];
+}
+
+Class model::Class_2 extends model::Class_1
+{
+  property_1: model::Class_3[1];
+}
+
+Class model::Class_3
+{
+}
+
+Class model::Class_4
+{
+}

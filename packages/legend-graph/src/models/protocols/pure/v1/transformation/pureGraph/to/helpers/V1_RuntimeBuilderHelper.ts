@@ -42,12 +42,12 @@ export const V1_buildEngineRuntime = (
       protocolStoreConnections.storeConnections.map((identifiedConnection) => {
         assertNonEmptyString(
           identifiedConnection.id,
-          'Runtime connection ID is missing',
+          `Runtime connection 'id' field is missing`,
         );
         // make sure runtime connection IDs are unique
         assertTrue(
           !connectionIds.has(identifiedConnection.id),
-          'Runtime connection ID must be unique',
+          `Runtime connection ID must be unique`,
         );
         connectionIds.add(identifiedConnection.id);
         const connection =
@@ -57,7 +57,7 @@ export const V1_buildEngineRuntime = (
         // make sure connection are indexed by store properly
         assertTrue(
           connection.store.value === store.value,
-          'Runtime connections must be correctly indexed by store',
+          `Runtime connections must be correctly indexed by store`,
         );
         return new IdentifiedConnection(identifiedConnection.id, connection);
       });

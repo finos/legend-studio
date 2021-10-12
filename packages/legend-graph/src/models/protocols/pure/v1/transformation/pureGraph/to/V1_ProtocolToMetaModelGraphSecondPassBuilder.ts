@@ -110,7 +110,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
     enumeration.values = element.values.map((enumValue) => {
-      assertNonEmptyString(enumValue.value, 'Enum value name is missing');
+      assertNonEmptyString(
+        enumValue.value,
+        `Enum value 'value' field is missing or empty`,
+      );
       const _enum = new Enum(enumValue.value, enumeration);
       _enum.stereotypes = enumValue.stereotypes
         .map((stereotype) => this.context.resolveStereotype(stereotype))
@@ -125,7 +128,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   visit_Measure(element: V1_Measure): void {
     assertNonNullable(
       element.canonicalUnit,
-      'Measure canonical unit is missing',
+      `Measure 'canonicalUnit' field is missing`,
     );
     const measure = this.context.graph.getMeasure(
       this.context.graph.buildPath(element.package, element.name),
@@ -166,11 +169,11 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   ): void {
     assertNonEmptyString(
       protocol.returnType,
-      'Function return type is missing',
+      `Function 'returnType' field is missing or empty`,
     );
     assertNonNullable(
       protocol.returnMultiplicity,
-      'Function return type multiplicity is missing',
+      `Function 'returnMultiplicity' field is missing`,
     );
     const func = this.context.graph.getFunction(
       this.context.graph.buildPath(protocol.package, protocol.name),
@@ -213,8 +216,16 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     );
   }
 
+<<<<<<< HEAD
   /*visit_ServiceStore(element: V1_ServiceStore): void {
     assertNonEmptyString(element.docLink, 'Service store doc link is missing');
+=======
+  visit_ServiceStore(element: V1_ServiceStore): void {
+    assertNonEmptyString(
+      element.docLink,
+      `Service store 'docLink' field is missing`,
+    );
+>>>>>>> upstream/master
     const serviceStore = this.context.graph.getServiceStore(
       this.context.graph.buildPath(element.package, element.name),
     );
@@ -230,7 +241,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     mapping.includes = element.includedMappings.map((i) => {
       assertNonEmptyString(
         i.includedMappingPath,
-        'Mapping include path is missing',
+        `Mapping include 'includedMappingPath' field is missing or empty`,
       );
       assertTrue(
         !mappingIncludesSet.has(i.includedMappingPath),
@@ -246,7 +257,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Service(element: V1_Service): void {
-    assertNonEmptyString(element.pattern, 'Service pattern is missing');
+    assertNonEmptyString(
+      element.pattern,
+      `Service 'pattern' field is missing or empty`,
+    );
     const service = this.context.graph.getService(
       this.context.graph.buildPath(element.package, element.name),
     );
@@ -277,7 +291,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_FileGeneration(element: V1_FileGenerationSpecification): void {
-    assertNonEmptyString(element.type, 'File generation type is missing');
+    assertNonEmptyString(
+      element.type,
+      `File generation 'type' field is missing or empty`,
+    );
     const fileGeneration = this.context.graph.getFileGeneration(
       this.context.graph.buildPath(element.package, element.name),
     );

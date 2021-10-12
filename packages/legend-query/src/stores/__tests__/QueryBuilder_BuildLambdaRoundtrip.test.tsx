@@ -31,6 +31,7 @@ import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M.json';
 import {
+  TEST_DATA__lambda_simpleSingleConditionFilterWithParameter,
   TEST_DATA__lambda_enumerationOperatorFilter,
   TEST_DATA__lambda_existsChainFilter,
   TEST_DATA__lambda_existsChainFilterWithCustomVariableName,
@@ -150,6 +151,12 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__getAllWithOneConditionFilter,
     undefined,
   ],
+  [
+    'Simple filter with parameter',
+    relationalFilterCtx,
+    TEST_DATA__lambda_simpleSingleConditionFilterWithParameter,
+    undefined,
+  ],
   // group condition
   [
     'Filter with group condition',
@@ -230,6 +237,7 @@ describe(
       const queryBuilderState = new QueryBuilderState(
         applicationStore,
         graphManagerState,
+        {},
       );
       // do the check using input and output lambda
       const rawLambda = inputLambda ?? lambda;

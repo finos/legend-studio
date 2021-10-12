@@ -86,15 +86,15 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Operation class mapping class is missing',
+      `Operation class mapping 'class' field is missing or empty`,
     );
     assertNonNullable(
       classMapping.root,
-      'Operation class mapping root flag is missing',
+      `Operation class mapping 'root' field is missing`,
     );
     assertNonNullable(
       classMapping.operation,
-      'Operation class mapping operation is missing',
+      `Operation class mapping operation is missing`,
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     return new OperationSetImplementation(
@@ -111,11 +111,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Model-to-model class mapping class is missing',
+      `Pure instance class mapping 'class' field is missing or empty`,
     );
     assertNonNullable(
       classMapping.root,
-      'Model-to-model class mapping root flag is missing',
+      `Pure instance class mapping 'root' field is missing`,
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     const srcClassReference = classMapping.srcClass
@@ -139,11 +139,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Flat-data class mapping class is missing',
+      `Flat-data class mapping 'class' field is missing or empty`,
     );
     assertNonNullable(
       classMapping.root,
-      'Flat-data class mapping root flag is missing',
+      `Flat-data class mapping 'root' field is missing`,
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     const sourceRootRecordType =
@@ -173,11 +173,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Relational class mapping class is missing',
+      `Relational class mapping 'class' field is missing or empty`,
     );
     assertNonNullable(
       classMapping.root,
-      'Relational class mapping root flag is missing',
+      `Relational class mapping 'root' field is missing`,
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     const rootRelationalInstanceSetImplementation =
@@ -198,11 +198,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      'Aggregation-aware class mapping class is missing',
+      `Aggregation-aware class mapping 'class' field is missing or empty`,
     );
     assertNonNullable(
       classMapping.root,
-      'Aggregation-aware class mapping root flag is missing',
+      `Aggregation-aware class mapping 'root' field is missing`,
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     const mapping = this.context.graph.getMapping(this.parent.path);

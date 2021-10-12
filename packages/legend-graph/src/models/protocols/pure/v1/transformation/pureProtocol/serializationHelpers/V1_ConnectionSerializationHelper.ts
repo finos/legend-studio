@@ -166,8 +166,13 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.SNOWFLAKE),
     accountName: primitive(),
+    accountType: optional(primitive()),
     cloudType: optional(primitive()),
     databaseName: primitive(),
+    nonProxyHosts: optional(primitive()),
+    organization: optional(primitive()),
+    proxyHost: optional(primitive()),
+    proxyPort: optional(primitive()),
     quotedIdentifiersIgnoreCase: optional(primitive()),
     region: primitive(),
     warehouseName: primitive(),
@@ -456,7 +461,7 @@ export const V1_deserializeAuthenticationStrategy = (
 export const V1_serializeConnectionValue = (
   protocol: V1_Connection,
   allowPointer: boolean,
-  plugins?: PureProtocolProcessorPlugin[] | undefined,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_Connection> => {
   /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   if (protocol instanceof V1_JsonModelConnection) {
@@ -477,18 +482,16 @@ export const V1_serializeConnectionValue = (
       `Serializing connection pointer is not allowed here`,
     );
   }
-  if (plugins !== undefined) {
-    const extraConnectionProtocolSerializers = plugins.flatMap(
-      (plugin) =>
-        (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
-        ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
-    );
-    for (const serializer of extraConnectionProtocolSerializers) {
-      const json = serializer(protocol);
-      if (json) {
-        return json;
-      }
+  const extraConnectionProtocolSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraConnectionProtocolSerializers) {
+    const json = serializer(protocol);
+    if (json) {
+      return json;
     }
   }
   throw new UnsupportedOperationError(`Can't serialize connection`, protocol);
@@ -497,7 +500,7 @@ export const V1_serializeConnectionValue = (
 export const V1_deserializeConnectionValue = (
   json: PlainObject<V1_Connection>,
   allowPointer: boolean,
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_Connection => {
   switch (json._type) {
     /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
@@ -519,18 +522,16 @@ export const V1_deserializeConnectionValue = (
         `Deserializing connection pointer is not allowed here`,
       );
     default: {
-      if (plugins !== undefined) {
-        const extraConnectionProtocolDeserializers = plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
-            ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
-        );
-        for (const deserializer of extraConnectionProtocolDeserializers) {
-          const protocol = deserializer(json);
-          if (protocol) {
-            return protocol;
-          }
+      const extraConnectionProtocolDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
+      );
+      for (const deserializer of extraConnectionProtocolDeserializers) {
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
         }
       }
       throw new UnsupportedOperationError(
@@ -566,25 +567,15 @@ export const V1_deserializeDatabaseConnectionValue = (
 };
 
 export const V1_packageableConnectionModelSchema = (
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_PackageableConnection> =>
   createModelSchema(V1_PackageableConnection, {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE,
     ),
     connectionValue: custom(
-      (val) => {
-        if (plugins !== undefined) {
-          return V1_serializeConnectionValue(val, false, plugins);
-        }
-        return V1_serializeConnectionValue(val, false);
-      },
-      (val) => {
-        if (plugins !== undefined) {
-          return V1_deserializeConnectionValue(val, false, plugins);
-        }
-        return V1_deserializeConnectionValue(val, false);
-      },
+      (val) => V1_serializeConnectionValue(val, false, plugins),
+      (val) => V1_deserializeConnectionValue(val, false, plugins),
     ),
     name: primitive(),
     package: primitive(),

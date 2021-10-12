@@ -131,19 +131,17 @@ export class QueryBuilderSetupState {
   }
 
   setMapping(val: Mapping | undefined): void {
-    if (!this.mappingIsReadOnly) {
-      this.mapping = val;
-      const runtimeToPick = getNullableFirstElement(this.possibleRuntimes);
-      if (runtimeToPick) {
-        this.setRuntime(
-          new RuntimePointer(
-            PackageableElementExplicitReference.create(runtimeToPick),
-          ),
-        );
-      } else {
-        // TODO?: we should consider if we allow people to use custom runtime here
-        this.setRuntime(undefined);
-      }
+    this.mapping = val;
+    const runtimeToPick = getNullableFirstElement(this.possibleRuntimes);
+    if (runtimeToPick) {
+      this.setRuntime(
+        new RuntimePointer(
+          PackageableElementExplicitReference.create(runtimeToPick),
+        ),
+      );
+    } else {
+      // TODO?: we should consider if we allow people to use custom runtime here
+      this.setRuntime(undefined);
     }
   }
 }

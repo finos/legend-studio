@@ -36,6 +36,7 @@ import type {
   InstanceSetImplementation,
 } from '@finos/legend-graph';
 import {
+  getAllClassMappings,
   getDecoratedSetImplementationPropertyMappings,
   getLeafSetImplementations,
   PurePropertyMapping,
@@ -93,7 +94,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   ): void {
     setImplementation.setParameters(
       setImplementation.parameters.filter((param) =>
-        setImplementation.parent.allClassMappings.find(
+        getAllClassMappings(setImplementation.parent).find(
           (setImp) => setImp === param.setImplementation.value,
         ),
       ),

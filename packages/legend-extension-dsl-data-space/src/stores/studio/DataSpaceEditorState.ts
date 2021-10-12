@@ -51,7 +51,7 @@ export class DataSpaceEditorState extends ElementEditorState {
       reprocess: action,
     });
 
-    this.dataSpace.diagrams.forEach((diagram) => {
+    this.dataSpace.featuredDiagrams.forEach((diagram) => {
       this.diagrams.push(
         this.editorStore.graphManagerState.graph.getExtensionElement(
           diagram,

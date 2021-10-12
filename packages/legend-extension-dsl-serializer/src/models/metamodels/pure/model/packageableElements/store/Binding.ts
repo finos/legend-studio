@@ -19,14 +19,14 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import type { PackageableElementVisitor } from '@finos/legend-graph';
 import { Store } from '@finos/legend-graph';
-import { ModelUnit } from './ModelUnit';
+import type { ModelUnit } from './ModelUnit';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 
 export class Binding extends Store implements Hashable {
   schemaSet?: string | undefined;
   schemaId?: string | undefined;
-  contentType: string;
-  modelUnit: ModelUnit;
+  contentType!: string;
+  modelUnit!: ModelUnit;
 
   constructor(name: string) {
     super(name);
@@ -42,9 +42,6 @@ export class Binding extends Store implements Hashable {
       setModelUnit: action,
       _elementHashCode: override,
     });
-
-    this.contentType = '';
-    this.modelUnit = new ModelUnit([], []);
   }
 
   setSchemaSet(value: string): void {

@@ -75,8 +75,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_SectionIndex(element: V1_SectionIndex): PackageableElement {
-    assertNonEmptyString(element.package, 'Section index package is missing');
-    assertNonEmptyString(element.name, 'Section index is missing');
+    assertNonEmptyString(
+      element.package,
+      `Section index 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Section index 'name' field is missing or empty`,
+    );
     const sectionIndex = new SectionIndex(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -91,8 +97,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_Profile(element: V1_Profile): PackageableElement {
-    assertNonEmptyString(element.package, 'Profile package is missing');
-    assertNonEmptyString(element.name, 'Profile name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Profile 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Profile 'name' field is missing or empty`,
+    );
     const profile = new Profile(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -110,8 +122,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_Enumeration(element: V1_Enumeration): PackageableElement {
-    assertNonEmptyString(element.package, 'Enumeration package is missing');
-    assertNonEmptyString(element.name, 'Enumeration name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Enumeration 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Enumeration 'name' field is missing or empty`,
+    );
     const pureEnumeration = new Enumeration(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -129,8 +147,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_Measure(element: V1_Measure): PackageableElement {
-    assertNonEmptyString(element.package, 'Measure package is missing');
-    assertNonEmptyString(element.name, 'Measure name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Measure 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Measure 'name' field is missing or empty`,
+    );
     const pureMeasure = new Measure(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -148,8 +172,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_Class(element: V1_Class): PackageableElement {
-    assertNonEmptyString(element.package, 'Class package is missing');
-    assertNonEmptyString(element.name, 'Class name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Class 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Class 'name' field is missing or empty`,
+    );
     const _class = new Class(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -167,8 +197,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_Association(element: V1_Association): PackageableElement {
-    assertNonEmptyString(element.package, 'Association package is missing');
-    assertNonEmptyString(element.name, 'Association name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Association 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Association 'name' field is missing or empty`,
+    );
     const association = new Association(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -188,8 +224,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   visit_ConcreteFunctionDefinition(
     element: V1_ConcreteFunctionDefinition,
   ): PackageableElement {
-    assertNonEmptyString(element.package, 'Function package is missing');
-    assertNonEmptyString(element.name, 'Function name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Function 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Function 'name' field is missing or empty`,
+    );
     const func = new ConcreteFunctionDefinition(
       element.name,
       // This is just a stub to fill in when we first create the function
@@ -217,8 +259,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_FlatData(element: V1_FlatData): PackageableElement {
-    assertNonEmptyString(element.package, 'Flat-data store package is missing');
-    assertNonEmptyString(element.name, 'Flat data store name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Flat-data store 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Flat data store 'name' field is missing or empty`,
+    );
     const flatData = new FlatData(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -236,8 +284,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_Database(element: V1_Database): PackageableElement {
-    assertNonEmptyString(element.package, 'Database store package is missing');
-    assertNonEmptyString(element.name, 'Database store name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Database store 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Database store 'name' field is missing or empty`,
+    );
     const database = new Database(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -254,9 +308,21 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     return database;
   }
 
+<<<<<<< HEAD
   /*visit_ServiceStore(element: V1_ServiceStore): PackageableElement {
     assertNonEmptyString(element.package, 'Service store package is missing');
     assertNonEmptyString(element.name, 'Service store name is missing');
+=======
+  visit_ServiceStore(element: V1_ServiceStore): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Service store 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Service store 'name' field is missing or empty`,
+    );
+>>>>>>> upstream/master
     const serviceStore = new ServiceStore(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -274,8 +340,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }*/
 
   visit_Mapping(element: V1_Mapping): PackageableElement {
-    assertNonEmptyString(element.package, 'Mapping package is missing');
-    assertNonEmptyString(element.name, 'Mapping name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Mapping 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Mapping 'name' field is missing or empty`,
+    );
     const pureMapping = new Mapping(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -293,8 +365,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_Service(element: V1_Service): PackageableElement {
-    assertNonEmptyString(element.package, 'Service package is missing');
-    assertNonEmptyString(element.name, 'Service name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Service 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Service 'name' field is missing or empty`,
+    );
     const service = new Service(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -370,8 +448,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   }
 
   visit_PackageableRuntime(element: V1_PackageableRuntime): PackageableElement {
-    assertNonEmptyString(element.package, 'Runtime package is missing');
-    assertNonEmptyString(element.name, 'Runtime name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Runtime 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Runtime 'name' field is missing or empty`,
+    );
     const runtime = new PackageableRuntime(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
@@ -391,8 +475,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   visit_PackageableConnection(
     element: V1_PackageableConnection,
   ): PackageableElement {
-    assertNonEmptyString(element.package, 'Connection package is missing');
-    assertNonEmptyString(element.name, 'Connection name is missing');
+    assertNonEmptyString(
+      element.package,
+      `Connection 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Connection 'name' field is missing or empty`,
+    );
     const connection = new PackageableConnection(element.name);
     const path = this.context.currentSubGraph.buildPath(
       element.package,
