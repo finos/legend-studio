@@ -18,14 +18,12 @@ import { observable, action, makeAutoObservable, flowResult } from 'mobx';
 import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import {
-  assertErrorThrown,
-  LogEvent,
-  ActionState,
-  assertNonNullable,
-} from '@finos/legend-shared';
+import { assertErrorThrown, LogEvent, ActionState } from '@finos/legend-shared';
 import { generateSetupRoute } from './LegendStudioRouter';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
+import type {
+  SDLCServerClient,
+  WorkspaceIdentifier,
+} from '@finos/legend-server-sdlc';
 import {
   ImportReport,
   Project,
@@ -58,13 +56,13 @@ const buildProjectOption = (project: Project): ProjectOption => ({
 
 export interface WorkspaceOption {
   label: string;
-  value: string;
+  value: Workspace;
   __isNew__?: boolean | undefined;
 }
 
 const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
   label: workspace.workspaceId,
-  value: workspace.workspaceId,
+  value: workspace,
 });
 
 export class SetupStore {
@@ -296,11 +294,13 @@ export class SetupStore {
         )) as Workspace[]
       ).map((workspace) => workspace.workspaceId);
       const workspaceMap = observable<string, Workspace>(new Map());
+
       (
         (yield this.sdlcServerClient.getWorkspaces(
           projectId,
-        )) as PlainObject<Workspace>[]
+        )) as PlainObject<Workspace>[][]
       )
+        .flat()
         .map((workspace) => Workspace.serialization.fromJson(workspace))
         .forEach((workspace) => {
           // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
@@ -310,7 +310,7 @@ export class SetupStore {
           ) {
             workspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
           }
-          workspaceMap.set(workspace.workspaceId, workspace);
+          workspaceMap.set(workspace.id, workspace);
         });
       this.workspacesByProject.set(projectId, workspaceMap);
     } catch (error) {
@@ -325,30 +325,32 @@ export class SetupStore {
     }
   }
 
-  *createWorkspace(projectId: string, workspaceId?: string): GeneratorFn<void> {
+  *createWorkspace(
+    projectId: string,
+    workspaceIdentifier: WorkspaceIdentifier,
+  ): GeneratorFn<void> {
     this.createWorkspaceState.inProgress();
     try {
-      assertNonNullable(workspaceId, 'workspace ID is required');
       const workspace = Workspace.serialization.fromJson(
         (yield this.sdlcServerClient.createWorkspace(
           projectId,
-          workspaceId,
+          workspaceIdentifier,
         )) as PlainObject<Workspace>,
       );
       const existingWorkspaceForProject: Map<string, Workspace> | undefined =
         this.workspacesByProject.get(projectId);
       if (existingWorkspaceForProject) {
-        existingWorkspaceForProject.set(workspaceId, workspace);
+        existingWorkspaceForProject.set(workspace.id, workspace);
       } else {
         const newWorkspaceMap = observable<string, Workspace>(new Map());
-        newWorkspaceMap.set(workspaceId, workspace);
+        newWorkspaceMap.set(workspace.id, workspace);
         this.workspacesByProject.set(projectId, newWorkspaceMap);
       }
       this.applicationStore.notifySuccess(
         `Workspace '${workspace.workspaceId}' is succesfully created`,
       );
       this.setCurrentProjectId(projectId);
-      this.setCurrentWorkspaceId(workspaceId);
+      this.setCurrentWorkspaceId(workspace.id);
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
     } catch (error) {

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+import type { WorkspaceIdentifier } from '@finos/legend-server-sdlc';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { generatePath } from 'react-router-dom';
 
 export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
   SDLC_SERVER_KEY = 'sdlcServerKey',
   PROJECT_ID = 'projectId',
   WORKSPACE_ID = 'workspaceId',
+  GROUP_WORKSPACE_ID = 'groupWorkspaceId',
   REVISION_ID = 'revisionId',
   VERSION_ID = 'versionId',
   REVIEW_ID = 'reviewId',
@@ -57,12 +60,29 @@ export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   EDIT: generateRoutePatternWithSDLCServerKey(
     `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}/`,
   ),
+  EDIT_GROUP: generateRoutePatternWithSDLCServerKey(
+    `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
+  ),
   SETUP: generateRoutePatternWithSDLCServerKey(
     `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}?/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}?`,
   ),
+  SETUP_GROUP: generateRoutePatternWithSDLCServerKey(
+    `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
+  ),
 });
 
-export const generateSetupRoute = (
+const generateGroupWorkspaceSetupRoute = (
+  sdlcServerKey: string,
+  projectId: string | undefined,
+  groupWorkspaceId: string,
+): string =>
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP, {
+    sdlcServerKey,
+    projectId,
+    groupWorkspaceId,
+  });
+
+const generateWorkspaceSetupRoute = (
   sdlcServerKey: string,
   projectId: string | undefined,
   workspaceId?: string,
@@ -72,7 +92,36 @@ export const generateSetupRoute = (
     projectId,
     workspaceId,
   });
-export const generateEditorRoute = (
+
+export const generateSetupRoute = (
+  sdlcServerKey: string,
+  projectId: string | undefined,
+  workspace?: WorkspaceIdentifier,
+): string =>
+  workspace?.workspaceType === WorkspaceType.GROUP
+    ? generateGroupWorkspaceSetupRoute(
+        sdlcServerKey,
+        projectId,
+        workspace.workspaceId,
+      )
+    : generateWorkspaceSetupRoute(
+        sdlcServerKey,
+        projectId,
+        workspace?.workspaceId,
+      );
+
+const generateGroupWorkspaceEditorRoute = (
+  sdlcServerKey: string,
+  projectId: string,
+  groupWorkspaceId: string,
+): string =>
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP, {
+    sdlcServerKey,
+    projectId,
+    groupWorkspaceId,
+  });
+
+const generateWorkspaceEditorRoute = (
   sdlcServerKey: string,
   projectId: string,
   workspaceId: string,
@@ -82,6 +131,23 @@ export const generateEditorRoute = (
     projectId,
     workspaceId,
   });
+export const generateEditorRoute = (
+  sdlcServerKey: string,
+  projectId: string,
+  workspace: WorkspaceIdentifier,
+): string =>
+  workspace.workspaceType === WorkspaceType.GROUP
+    ? generateGroupWorkspaceEditorRoute(
+        sdlcServerKey,
+        projectId,
+        workspace.workspaceId,
+      )
+    : generateWorkspaceEditorRoute(
+        sdlcServerKey,
+        projectId,
+        workspace.workspaceId,
+      );
+
 export const generateReviewRoute = (
   sdlcServerKey: string,
   projectId: string,
@@ -149,10 +215,12 @@ export interface ViewerPathParams {
 
 export interface EditorPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]?: string;
 }
 
 export interface SetupPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]?: string;
 }

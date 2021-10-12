@@ -36,7 +36,6 @@ import {
   Review,
   ReviewState,
   RevisionAlias,
-  WorkspaceType,
 } from '@finos/legend-server-sdlc';
 import { ActionAlertActionType } from '@finos/legend-application';
 
@@ -160,7 +159,7 @@ export class WorkspaceReviewState {
       const currentWorkspaceRevision =
         (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentWorkspace,
           RevisionAlias.CURRENT,
         )) as Revision;
       const reviews = (yield this.editorStore.sdlcServerClient.getReviews(
@@ -211,7 +210,7 @@ export class WorkspaceReviewState {
       });
       yield this.editorStore.sdlcServerClient.createWorkspace(
         this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.currentWorkspace,
       );
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
@@ -268,7 +267,7 @@ export class WorkspaceReviewState {
           {
             workspaceId: this.sdlcState.currentWorkspaceId,
             title,
-            workspaceType: WorkspaceType.USER,
+            workspaceType: this.sdlcState.currentWorkspace.workspaceType,
             description,
           },
         )) as PlainObject<Review>,

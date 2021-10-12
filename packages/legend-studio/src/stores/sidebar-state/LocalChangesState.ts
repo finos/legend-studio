@@ -147,7 +147,7 @@ export class LocalChangesState {
 
   downloadLocalChanges = (): void => {
     const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
-      this.sdlcState.currentWorkspaceId
+      this.sdlcState.currentWorkspace
     })_${format(new Date(Date.now()), DATE_TIME_FORMAT)}.json`;
     const content = JSON.stringify(
       {
@@ -201,7 +201,7 @@ export class LocalChangesState {
       const latestRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.performEntityChanges(
           this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentWorkspace,
           {
             message:
               syncMessage ??
@@ -236,7 +236,7 @@ export class LocalChangesState {
         const entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.sdlcState.currentProjectId,
-            this.sdlcState.currentWorkspaceId,
+            this.sdlcState.currentWorkspace,
             latestRevision.id,
           )) as Entity[];
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(

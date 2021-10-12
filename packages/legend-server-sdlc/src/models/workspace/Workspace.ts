@@ -28,10 +28,15 @@ export enum WorkspaceType {
   GROUP = 'GROUP',
 }
 
-export class Workspace {
+export interface WorkspaceIdentifier {
+  workspaceId: string;
+  workspaceType: WorkspaceType;
+}
+
+export class Workspace implements WorkspaceIdentifier {
   projectId!: string;
   workspaceId!: string;
-  userId!: string;
+  userId: string | null = null;
   type = WorkspaceAccessType.WORKSPACE;
 
   static readonly serialization = new SerializationFactory(
@@ -41,4 +46,16 @@ export class Workspace {
       workspaceId: primitive(),
     }),
   );
+
+  get isGroupWorkspace(): boolean {
+    return this.workspaceType === WorkspaceType.GROUP;
+  }
+
+  get workspaceType(): WorkspaceType {
+    return this.userId === null ? WorkspaceType.GROUP : WorkspaceType.USER;
+  }
+
+  get id(): string {
+    return `${this.workspaceType}/${this.workspaceId}`;
+  }
 }

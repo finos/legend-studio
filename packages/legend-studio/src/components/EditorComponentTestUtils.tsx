@@ -39,6 +39,7 @@ import type {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import {
+  WorkspaceType,
   TEST__SDLCServerClientProvider,
   TEST__getTestSDLCServerClient,
 } from '@finos/legend-server-sdlc';
@@ -334,7 +335,10 @@ export const TEST__setUpEditor = async (
       generateEditorRoute(
         mockedEditorStore.applicationStore.config.sdlcServerKey,
         (workspace as unknown as Workspace).projectId,
-        (workspace as unknown as Workspace).workspaceId,
+        {
+          workspaceId: (workspace as unknown as Workspace).workspaceId,
+          workspaceType: WorkspaceType.USER,
+        },
       ),
     ],
   });
@@ -362,7 +366,7 @@ export const TEST__setUpEditor = async (
     expect(mockedEditorStore.sdlcState.currentProject).toBeDefined(),
   );
   await waitFor(() =>
-    expect(mockedEditorStore.sdlcState.currentWorkspace).toBeDefined(),
+    expect(mockedEditorStore.sdlcState.currentNullableWorkspace).toBeDefined(),
   );
   // assert immutable models have been model
   await waitFor(() =>

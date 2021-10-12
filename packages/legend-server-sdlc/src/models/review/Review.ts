@@ -23,6 +23,7 @@ import {
   optional,
 } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import type { WorkspaceType } from '../workspace/Workspace';
 
 export enum ReviewState {
   OPEN = 'OPEN',
@@ -43,6 +44,7 @@ export class Review {
   closedAt?: Date;
   lastUpdatedAt?: Date;
   committedAt?: Date;
+  workspaceType!: WorkspaceType;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Review, {
@@ -75,6 +77,7 @@ export class Review {
       title: primitive(),
       webURL: primitive(),
       workspaceId: primitive(),
+      workspaceType: primitive(),
     }),
   );
 }

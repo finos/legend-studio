@@ -186,7 +186,7 @@ export class WorkspaceUpdaterState {
       this.sdlcState.isWorkspaceOutdated =
         (yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
           this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentWorkspace,
         )) as boolean;
 
       if (!this.sdlcState.isWorkspaceOutdated) {
@@ -272,7 +272,7 @@ export class WorkspaceUpdaterState {
       const workspaceUpdateReport =
         (yield this.editorStore.sdlcServerClient.updateWorkspace(
           this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentWorkspace,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.log.info(
         LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_UPDATED),
@@ -315,7 +315,7 @@ export class WorkspaceUpdaterState {
       const workspaceBaseRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(
           this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentWorkspace,
           RevisionAlias.BASE,
         )) as PlainObject<Revision>,
       );

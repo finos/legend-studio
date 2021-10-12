@@ -29,7 +29,10 @@ import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
-import type { EntityDiff } from '@finos/legend-server-sdlc';
+import type {
+  EntityDiff,
+  WorkspaceIdentifier,
+} from '@finos/legend-server-sdlc';
 import {
   Build,
   Project,
@@ -50,7 +53,7 @@ export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
 export class EditorSdlcState {
   editorStore: EditorStore;
   currentProject?: Project | undefined;
-  currentWorkspace?: Workspace | undefined;
+  currentNullableWorkspace?: Workspace | undefined;
   currentRevision?: Revision | undefined;
   isWorkspaceOutdated = false;
   workspaceBuilds: Build[] = [];
@@ -83,12 +86,18 @@ export class EditorSdlcState {
       `Can't get current project`,
     ).projectId;
   }
+
   get currentWorkspaceId(): string {
-    return guaranteeNonNullable(
-      this.currentWorkspace,
-      `Can't get current workspace`,
-    ).workspaceId;
+    return this.currentWorkspace.workspaceId;
   }
+
+  get currentWorkspace(): Workspace {
+    return guaranteeNonNullable(
+      this.currentNullableWorkspace,
+      `Can't get current workspace`,
+    );
+  }
+
   get currentRevisionId(): string {
     return guaranteeNonNullable(
       this.currentRevision,
@@ -100,7 +109,7 @@ export class EditorSdlcState {
     this.currentProject = val;
   };
   setCurrentWorkspace = (val: Workspace): void => {
-    this.currentWorkspace = val;
+    this.currentNullableWorkspace = val;
   };
   setCurrentRevision = (val: Revision): void => {
     this.currentRevision = val;
@@ -133,14 +142,14 @@ export class EditorSdlcState {
 
   *fetchCurrentWorkspace(
     projectId: string,
-    workspaceId: string,
+    workspaceIdenifier: WorkspaceIdentifier,
     options?: { suppressNotification?: boolean },
   ): GeneratorFn<void> {
     try {
-      this.currentWorkspace = Workspace.serialization.fromJson(
+      this.currentNullableWorkspace = Workspace.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getWorkspace(
           projectId,
-          workspaceId,
+          workspaceIdenifier,
         )) as PlainObject<Workspace>,
       );
       const isInConflictResolutionMode = (yield flowResult(
@@ -148,7 +157,8 @@ export class EditorSdlcState {
       )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setMode(EDITOR_MODE.CONFLICT_RESOLUTION);
-        this.currentWorkspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
+        this.currentNullableWorkspace.type =
+          WorkspaceAccessType.CONFLICT_RESOLUTION;
         this.editorStore.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
       }
     } catch (error) {
@@ -185,13 +195,13 @@ export class EditorSdlcState {
   *checkIfCurrentWorkspaceIsInConflictResolutionMode(): GeneratorFn<boolean> {
     return (yield this.editorStore.sdlcServerClient.checkIfWorkspaceIsInConflictResolutionMode(
       this.currentProjectId,
-      this.currentWorkspaceId,
+      this.currentWorkspace,
     )) as boolean;
   }
 
   *fetchCurrentRevision(
     projectId: string,
-    workspaceId: string,
+    workspaceId: WorkspaceIdentifier,
   ): GeneratorFn<void> {
     try {
       this.currentRevision = Revision.serialization.fromJson(
@@ -223,11 +233,11 @@ export class EditorSdlcState {
       this.isWorkspaceOutdated = this.editorStore.isInConflictResolutionMode
         ? ((yield this.editorStore.sdlcServerClient.isConflictResolutionOutdated(
             this.currentProjectId,
-            this.currentWorkspaceId,
+            this.currentWorkspace,
           )) as boolean)
         : ((yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
             this.currentProjectId,
-            this.currentWorkspaceId,
+            this.currentWorkspace,
           )) as boolean);
     } catch (error) {
       assertErrorThrown(error);
@@ -244,7 +254,7 @@ export class EditorSdlcState {
   handleChangeDetectionRefreshIssue(error: Error): void {
     if (
       !this.currentProject ||
-      !this.currentWorkspace ||
+      !this.currentNullableWorkspace ||
       (error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND)
     ) {
@@ -266,7 +276,7 @@ export class EditorSdlcState {
         const latestRevision = Revision.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getRevision(
             this.currentProjectId,
-            this.currentWorkspaceId,
+            this.currentWorkspace,
             RevisionAlias.CURRENT,
           )) as PlainObject<Revision>,
         );
@@ -278,14 +288,14 @@ export class EditorSdlcState {
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.currentProjectId,
-            this.currentWorkspaceId,
+            this.currentWorkspace,
             this.currentRevisionId,
           )) as Entity[];
       } else {
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
             this.currentProjectId,
-            this.currentWorkspaceId,
+            this.currentWorkspace,
             RevisionAlias.CURRENT,
           )) as Entity[];
       }
@@ -316,7 +326,7 @@ export class EditorSdlcState {
       const workspaceBaseEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
           this.currentProjectId,
-          this.currentWorkspaceId,
+          this.currentWorkspace,
           RevisionAlias.BASE,
         )) as Entity[];
       this.editorStore.changeDetectionState.workspaceBaseRevisionState.setEntities(
@@ -375,7 +385,7 @@ export class EditorSdlcState {
       this.workspaceBuilds = (
         (yield this.editorStore.sdlcServerClient.getBuildsByRevision(
           this.currentProjectId,
-          this.currentWorkspaceId,
+          this.currentWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Build>[]
       ).map((build) => Build.serialization.fromJson(build));

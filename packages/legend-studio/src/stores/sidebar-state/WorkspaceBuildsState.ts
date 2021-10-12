@@ -45,7 +45,7 @@ export class WorkspaceBuildsState {
       this.builds = (
         (yield this.editorStore.sdlcServerClient.getBuilds(
           this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentWorkspace,
           undefined,
           undefined,
           undefined,

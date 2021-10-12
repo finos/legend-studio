@@ -800,7 +800,7 @@ export class EditorGraphState {
           ProjectConfiguration.serialization.fromJson(
             (yield this.editorStore.sdlcServerClient.getConfiguration(
               this.editorStore.sdlcState.currentProjectId,
-              this.editorStore.sdlcState.currentWorkspaceId,
+              this.editorStore.sdlcState.currentWorkspace,
             )) as PlainObject<ProjectConfiguration>,
           ),
         );

@@ -777,7 +777,7 @@ export const Explorer = observer(() => {
     !editorStore.graphManagerState.graph.buildState.hasFailed;
   const showExplorerTrees =
     sdlcState.currentProject &&
-    sdlcState.currentWorkspace &&
+    sdlcState.currentNullableWorkspace &&
     editorStore.graphManagerState.graph.buildState.hasSucceeded &&
     editorStore.explorerTreeState.buildState.hasCompleted;
   // conflict resolution
@@ -813,7 +813,8 @@ export const Explorer = observer(() => {
           <div className="panel__header explorer__header">
             <div className="panel__header__title">
               <div className="panel__header__title__label">
-                {sdlcState.currentWorkspace && !editorStore.isInViewerMode
+                {sdlcState.currentNullableWorkspace &&
+                !editorStore.isInViewerMode
                   ? 'workspace'
                   : 'project'}
               </div>
@@ -821,7 +822,8 @@ export const Explorer = observer(() => {
                 {editorStore.isInViewerMode &&
                   (sdlcState.currentProject?.name ?? '(unknown) ')}
                 {!editorStore.isInViewerMode &&
-                  (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
+                  (sdlcState.currentNullableWorkspace?.workspaceId ??
+                    '(unknown) ')}
               </div>
             </div>
             <ProjectExplorerActionPanel

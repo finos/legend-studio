@@ -80,7 +80,10 @@ import type { PackageableElementOption } from './shared/PackageableElementOption
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
 import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
+import type {
+  SDLCServerClient,
+  WorkspaceIdentifier,
+} from '@finos/legend-server-sdlc';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import type {
   PackageableElement,
@@ -408,7 +411,7 @@ export class EditorStore {
     return (
       Boolean(
         this.sdlcState.currentProject &&
-          this.sdlcState.currentWorkspace &&
+          this.sdlcState.currentNullableWorkspace &&
           this.sdlcState.currentRevision,
       ) && this.graphManagerState.systemModel.buildState.hasSucceeded
     );
@@ -517,7 +520,10 @@ export class EditorStore {
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */
-  *initialize(projectId: string, workspaceId: string): GeneratorFn<void> {
+  *initialize(
+    projectId: string,
+    workspaceIdentifier: WorkspaceIdentifier,
+  ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
        * Since React `fast-refresh` will sometimes cause `Editor` to rerender, this method will be called again
@@ -589,11 +595,11 @@ export class EditorStore {
       return;
     }
     yield flowResult(
-      this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId, {
+      this.sdlcState.fetchCurrentWorkspace(projectId, workspaceIdentifier, {
         suppressNotification: true,
       }),
     );
-    if (!this.sdlcState.currentWorkspace) {
+    if (!this.sdlcState.currentNullableWorkspace) {
       // If the workspace is not found,
       // we will not automatically redirect the user to the setup page as they will lose the URL
       // instead, we give them the option to:
@@ -608,7 +614,7 @@ export class EditorStore {
           });
           const workspace = await this.sdlcServerClient.createWorkspace(
             projectId,
-            workspaceId,
+            workspaceIdentifier,
           );
           this.applicationStore.setBlockingAlert(undefined);
           this.applicationStore.notifySuccess(
@@ -661,7 +667,7 @@ export class EditorStore {
                 generateSetupRoute(
                   this.applicationStore.config.sdlcServerKey,
                   projectId,
-                  workspaceId,
+                  workspaceIdentifier,
                 ),
               );
             },
@@ -672,7 +678,7 @@ export class EditorStore {
       return;
     }
     yield Promise.all([
-      this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
+      this.sdlcState.fetchCurrentRevision(projectId, workspaceIdentifier),
       this.graphManagerState.initializeSystem(), // this can be moved inside of `setupEngine`
       this.graphManagerState.graphManager.initialize(
         {
@@ -770,11 +776,11 @@ export class EditorStore {
       const result = (yield Promise.all([
         this.sdlcServerClient.getEntities(
           this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentWorkspace,
         ),
         this.sdlcServerClient.getConfiguration(
           this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.currentWorkspace,
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];

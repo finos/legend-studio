@@ -104,6 +104,42 @@
       height: 1.8rem;
     }
   }
+
+  &__workspace__label {
+    display: flex;
+
+    &__tag {
+      @include flexCenter;
+
+      width: 8rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      padding: 0 0.5rem;
+      font-size: 1rem;
+      margin-right: 1rem;
+      cursor: default;
+
+      &--group {
+        color: var(--color-light-grey-100);
+        background: var(--color-green-200);
+      }
+
+      &--user {
+        color: var(--color-light-grey-100);
+        background: var(--color-purple-200);
+      }
+    }
+
+    &__name {
+      @include flexVCenter;
+
+      height: 1.8rem;
+    }
+  }
+
+  &__workspace__selector {
+    margin-top: 1rem;
+  }
 }
 
 .setup-selector {

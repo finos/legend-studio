@@ -34,6 +34,7 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { StudioConfig } from '../../application/StudioConfig';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
@@ -43,7 +44,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const isInConflictResolutionMode = editorStore.isInConflictResolutionMode;
   // SDLC
   const projectId = params.projectId;
-  const workspaceId = params.workspaceId;
+  const workspaceId = params.workspaceId ?? params.groupWorkspaceId;
+  const workspaceType = params.groupWorkspaceId
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
   const currentProject = editorStore.sdlcState.currentProject;
   const goToWorkspaceUpdater = (): void =>
     editorStore.setActiveActivity(
@@ -150,7 +154,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               to={generateSetupRoute(
                 applicationStore.config.sdlcServerKey,
                 projectId,
-                workspaceId,
+                workspaceId
+                  ? {
+                      workspaceId,
+                      workspaceType,
+                    }
+                  : undefined,
               )}
             >
               {workspaceId}

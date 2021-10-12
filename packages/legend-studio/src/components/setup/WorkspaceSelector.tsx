@@ -25,6 +25,17 @@ import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { StudioConfig } from '../../application/StudioConfig';
 
+const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
+  <div className="setup__workspace__label">
+    <div
+      className={`setup__workspace__label__tag setup__workspace__label__tag--${option.value.workspaceType.toLowerCase()}`}
+    >
+      {option.value.workspaceType}
+    </div>
+    <div className="setup__workspace__label__name">{option.label}</div>
+  </div>
+);
+
 export const WorkspaceSelector = observer(
   (
     props: {
@@ -40,7 +51,7 @@ export const WorkspaceSelector = observer(
     const options =
       setupStore.currentProjectWorkspaceOptions.sort(compareLabelFn);
     const selectedOption =
-      options.find((option) => option.value === currentWorkspaceId) ?? null;
+      options.find((option) => option.value.id === currentWorkspaceId) ?? null;
     const isLoadingOptions =
       setupStore.loadProjectsState.isInProgress ||
       setupStore.loadWorkspacesState.isInProgress;
@@ -50,7 +61,7 @@ export const WorkspaceSelector = observer(
         (val !== null || selectedOption !== null) &&
         (!val || !selectedOption || val.value !== selectedOption.value)
       ) {
-        setupStore.setCurrentWorkspaceId(val?.value);
+        setupStore.setCurrentWorkspaceId(val?.value.id);
         onChange(Boolean(selectedOption));
         applicationStore.navigator.goTo(
           generateSetupRoute(
@@ -99,6 +110,7 @@ export const WorkspaceSelector = observer(
           disabled={!setupStore.currentProjectId || isLoadingOptions}
           isLoading={isLoadingOptions}
           onChange={onSelectionChange}
+          formatOptionLabel={formatOptionLabel}
           value={selectedOption}
           placeholder={workspaceSelectorPlacerHold}
           isClearable={true}

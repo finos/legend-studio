@@ -54,6 +54,7 @@ import {
   ApplicationBackdrop,
   useApplicationStore,
 } from '@finos/legend-application';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],
@@ -72,7 +73,10 @@ const buildHotkeySupport = (
 export const EditorInner = observer(() => {
   const params = useParams<EditorPathParams>();
   const projectId = params.projectId;
-  const workspaceId = params.workspaceId;
+  const workspaceId = params.workspaceId ?? params.groupWorkspaceId ?? '';
+  const workspaceType = params.groupWorkspaceId
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
 
@@ -122,10 +126,13 @@ export const EditorInner = observer(() => {
 
   // Initialize the app
   useEffect(() => {
-    flowResult(editorStore.initialize(projectId, workspaceId)).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
-  }, [editorStore, applicationStore, projectId, workspaceId]);
+    flowResult(
+      editorStore.initialize(projectId, {
+        workspaceId: workspaceId,
+        workspaceType,
+      }),
+    ).catch(applicationStore.alertIllegalUnhandledError);
+  }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
 
   // Browser Navigation Blocking (reload, close tab, go to another URL)
   // NOTE: there is no way to customize the alert message for now since Chrome removed support for it

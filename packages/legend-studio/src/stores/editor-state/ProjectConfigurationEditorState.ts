@@ -167,7 +167,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.isUpdatingConfiguration = true;
       yield this.editorStore.sdlcServerClient.updateConfiguration(
         this.editorStore.sdlcState.currentProjectId,
-        this.editorStore.sdlcState.currentWorkspaceId,
+        this.editorStore.sdlcState.currentWorkspace,
         UpdateProjectConfigurationCommand.serialization.toJson(
           updateConfigurationCommand,
         ),
@@ -177,13 +177,13 @@ export class ProjectConfigurationEditorState extends EditorState {
       yield flowResult(
         this.editorStore.sdlcState.fetchCurrentWorkspace(
           this.editorStore.sdlcState.currentProjectId,
-          this.editorStore.sdlcState.currentWorkspaceId,
+          this.editorStore.sdlcState.currentWorkspace,
         ),
       );
       yield flowResult(
         this.sdlcState.fetchCurrentRevision(
           this.editorStore.sdlcState.currentProjectId,
-          this.editorStore.sdlcState.currentWorkspaceId,
+          this.editorStore.sdlcState.currentWorkspace,
         ),
       );
       yield flowResult(this.editorStore.initMode());

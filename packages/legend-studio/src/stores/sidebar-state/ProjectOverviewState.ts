@@ -81,8 +81,10 @@ export class ProjectOverviewState {
       this.projectWorkspaces = (
         (yield this.editorStore.sdlcServerClient.getWorkspaces(
           this.sdlcState.currentProjectId,
-        )) as PlainObject<Workspace>[]
-      ).map((workspace) => Workspace.serialization.fromJson(workspace));
+        )) as PlainObject<Workspace>[][]
+      )
+        .flat()
+        .map((workspace) => Workspace.serialization.fromJson(workspace));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -94,18 +96,18 @@ export class ProjectOverviewState {
     }
   }
 
-  *deleteWorkspace(workspaceId: string): GeneratorFn<void> {
+  *deleteWorkspace(workspace: Workspace): GeneratorFn<void> {
     try {
       this.isDeletingWorkspace = true;
       yield this.editorStore.sdlcServerClient.deleteWorkspace(
         this.sdlcState.currentProjectId,
-        workspaceId,
+        workspace,
       );
       this.projectWorkspaces = this.projectWorkspaces.filter(
-        (workspace) => workspace.workspaceId !== workspaceId,
+        (workspace) => workspace.id !== workspace.id,
       );
       // redirect to home page if current workspace is deleted
-      if (this.editorStore.sdlcState.currentWorkspaceId === workspaceId) {
+      if (this.editorStore.sdlcState.currentWorkspace.id === workspace.id) {
         this.editorStore.applicationStore.notifyWarning(
           'Current workspace is deleted. Redirecting to home page',
         );

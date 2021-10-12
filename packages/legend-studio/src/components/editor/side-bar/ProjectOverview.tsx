@@ -46,9 +46,7 @@ const WorkspaceViewerContextMenu = observer<
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const deleteWorkspace = applicationStore.guaranteeSafeAction(() =>
-      flowResult(
-        editorStore.projectOverviewState.deleteWorkspace(workspace.workspaceId),
-      ),
+      flowResult(editorStore.projectOverviewState.deleteWorkspace(workspace)),
     );
 
     return (
@@ -75,6 +73,9 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
     useState(false);
   const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
   const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+  const workspaceLabel = workspace.isGroupWorkspace
+    ? `${workspace.workspaceId}[GROUP]`
+    : workspace.workspaceId;
   return (
     <ContextMenu
       content={<WorkspaceViewerContextMenu workspace={workspace} />}
@@ -96,13 +97,13 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         to={generateEditorRoute(
           applicationStore.config.sdlcServerKey,
           workspace.projectId,
-          workspace.workspaceId,
+          workspace,
         )}
         title={'Go to workspace detail'}
       >
         <div className="project-overview__item__link__content">
           <span className="project-overview__item__link__content__name">
-            {workspace.workspaceId}
+            {workspaceLabel}
           </span>
         </div>
       </Link>
