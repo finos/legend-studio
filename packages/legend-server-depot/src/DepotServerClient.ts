@@ -100,6 +100,7 @@ export class DepotServerClient extends AbstractServerClient {
     );
 
   // ------------------------------------------- Dependencies -------------------------------------------
+
   getDependencyEntities = (
     groupId: string,
     artifactId: string,
