@@ -36,7 +36,7 @@ import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState';
 import { LocalChangesState } from './sidebar-state/LocalChangesState';
 import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState';
-import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
+import { WorkspaceWorkflowsState } from './sidebar-state/WorkspaceWorkflowsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -165,7 +165,7 @@ export class EditorStore {
   modelLoaderState: ModelLoaderState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
-  workspaceBuildsState: WorkspaceBuildsState;
+  workspaceWorkflowsState: WorkspaceWorkflowsState;
   workspaceUpdaterState: WorkspaceUpdaterState;
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
@@ -269,7 +269,10 @@ export class EditorStore {
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);
-    this.workspaceBuildsState = new WorkspaceBuildsState(this, this.sdlcState);
+    this.workspaceWorkflowsState = new WorkspaceWorkflowsState(
+      this,
+      this.sdlcState,
+    );
     this.workspaceUpdaterState = new WorkspaceUpdaterState(
       this,
       this.sdlcState,

@@ -29,63 +29,65 @@ import {
 } from 'react-icons/fa';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
-import { BuildStatus } from '@finos/legend-server-sdlc';
+import { WorkflowStatus } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 
-const getBuildStatusIcon = (buildStatus: BuildStatus): React.ReactNode => {
-  switch (buildStatus) {
-    case BuildStatus.PENDING:
+const getWorkflowStatusIcon = (
+  workflowStatus: WorkflowStatus,
+): React.ReactNode => {
+  switch (workflowStatus) {
+    case WorkflowStatus.PENDING:
       return (
         <div
           title="Pipeline is suspended"
-          className="workspace-builds__item__link__content__status__indicator workspace-builds__item__link__content__status__indicator--suspended"
+          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--suspended"
         >
           <FaPauseCircle />
         </div>
       );
-    case BuildStatus.IN_PROGRESS:
+    case WorkflowStatus.IN_PROGRESS:
       return (
         <div
           title="Pipeline is running"
-          className="workspace-builds__item__link__content__status__indicator workspace-builds__item__link__content__status__indicator--in-progress"
+          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--in-progress"
         >
           <FaCircleNotch />
         </div>
       );
-    case BuildStatus.SUCCEEDED:
+    case WorkflowStatus.SUCCEEDED:
       return (
         <div
           title="Pipeline succeeded"
-          className="workspace-builds__item__link__content__status__indicator workspace-builds__item__link__content__status__indicator--succeeded"
+          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--succeeded"
         >
           <FaCheckCircle />
         </div>
       );
-    case BuildStatus.FAILED:
+    case WorkflowStatus.FAILED:
       return (
         <div
           title="Pipeline failed"
-          className="workspace-builds__item__link__content__status__indicator workspace-builds__item__link__content__status__indicator--failed"
+          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--failed"
         >
           <FaTimesCircle />
         </div>
       );
-    case BuildStatus.CANCELED:
+    case WorkflowStatus.CANCELED:
       return (
         <div
           title="Pipeline is canceled"
-          className="workspace-builds__item__link__content__status__indicator workspace-builds__item__link__content__status__indicator--canceled"
+          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--canceled"
         >
           <FaBan />
         </div>
       );
-    case BuildStatus.UNKNOWN:
+    case WorkflowStatus.UNKNOWN:
     default:
       return (
         <div
           title="Pipeline status is unknown"
-          className="workspace-builds__item__link__content__status__indicator workspace-builds__item__link__content__status__indicator--unknown"
+          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--unknown"
         >
           <FaQuestionCircle />
         </div>
@@ -93,34 +95,37 @@ const getBuildStatusIcon = (buildStatus: BuildStatus): React.ReactNode => {
   }
 };
 
-export const WorkspaceBuilds = observer(() => {
+export const WorkspaceWorkflows = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
-  const workspaceBuildsState = editorStore.workspaceBuildsState;
-  const isDispatchingAction = workspaceBuildsState.isFetchingBuilds;
+  const workspaceWorkflowsState = editorStore.workspaceWorkflowsState;
+  const isDispatchingAction = workspaceWorkflowsState.isFetchingWorkflows;
   const refresh = applicationStore.guaranteeSafeAction(() =>
-    flowResult(workspaceBuildsState.fetchAllWorkspaceBuilds()),
+    flowResult(workspaceWorkflowsState.fetchAllWorkspaceWorkflows()),
   );
 
   useEffect(() => {
-    flowResult(workspaceBuildsState.fetchAllWorkspaceBuilds()).catch(
+    flowResult(workspaceWorkflowsState.fetchAllWorkspaceWorkflows()).catch(
       applicationStore.alertIllegalUnhandledError,
     );
-  }, [applicationStore, workspaceBuildsState]);
+  }, [applicationStore, workspaceWorkflowsState]);
 
   return (
-    <div className="panel workspace-builds">
+    <div className="panel workspace-workflows">
       <div className="panel__header side-bar__header">
-        <div className="panel__header__title workspace-builds__header__title">
+        <div className="panel__header__title workspace-workflows__header__title">
           <div className="panel__header__title__content side-bar__header__title__content">
-            WORKSPACE BUILDS
+            WORKSPACE WORKFLOWS
           </div>
         </div>
         <div className="panel__header__actions side-bar__header__actions">
           <button
             className={clsx(
-              'panel__header__action side-bar__header__action workspace-builds__refresh-btn',
-              { 'workspace-builds__refresh-btn--loading': isDispatchingAction },
+              'panel__header__action side-bar__header__action workspace-workflows__refresh-btn',
+              {
+                'workspace-workflows__refresh-btn--loading':
+                  isDispatchingAction,
+              },
             )}
             disabled={isDispatchingAction}
             onClick={refresh}
@@ -136,35 +141,35 @@ export const WorkspaceBuilds = observer(() => {
         <div className="panel side-bar__panel">
           <div className="panel__header">
             <div className="panel__header__title">
-              <div className="panel__header__title__content">BUILDS</div>
+              <div className="panel__header__title__content">WORKFLOWS</div>
             </div>
             <div
               className="side-bar__panel__header__changes-count"
               data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
             >
-              {workspaceBuildsState.builds.length}
+              {workspaceWorkflowsState.workflows.length}
             </div>
           </div>
           <div className="panel__content">
-            {workspaceBuildsState.builds.map((build) => (
+            {workspaceWorkflowsState.workflows.map((workflow) => (
               <a
-                key={build.id}
-                className="side-bar__panel__item workspace-builds__item__link"
+                key={workflow.id}
+                className="side-bar__panel__item workspace-workflows__item__link"
                 rel="noopener noreferrer"
                 target="_blank"
-                href={build.webURL}
+                href={workflow.webURL}
                 title={'See build detail'}
               >
-                <div className="workspace-builds__item__link__content">
-                  <span className="workspace-builds__item__link__content__status">
-                    {getBuildStatusIcon(build.status)}
+                <div className="workspace-workflows__item__link__content">
+                  <span className="workspace-workflows__item__link__content__status">
+                    {getWorkflowStatusIcon(workflow.status)}
                   </span>
-                  <span className="workspace-builds__item__link__content__id">
-                    #{build.id}
+                  <span className="workspace-workflows__item__link__content__id">
+                    #{workflow.id}
                   </span>
-                  <span className="workspace-builds__item__link__content__created-at">
+                  <span className="workspace-workflows__item__link__content__created-at">
                     created{' '}
-                    {formatDistanceToNow(build.createdAt, {
+                    {formatDistanceToNow(workflow.createdAt, {
                       includeSeconds: true,
                       addSuffix: true,
                     })}

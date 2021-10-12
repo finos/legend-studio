@@ -22,7 +22,7 @@ import type {
 } from './models/workspace/Workspace';
 import { WorkspaceType } from './models/workspace/Workspace';
 import type { Revision, RevisionAlias } from './models/revision/Revision';
-import type { Build, BuildStatus } from './models/build/Build';
+import type { Workflow, WorkflowStatus } from './models/workflow/Workflow';
 import type { Review, ReviewState } from './models/review/Review';
 import type { Version } from './models/version/Version';
 import type { WorkspaceUpdateReport } from './models/workspace/WorkspaceUpdateReport';
@@ -331,33 +331,33 @@ export class SDLCServerClient extends AbstractServerClient {
       `${this.networkClient.baseUrl}/configuration/latestProjectStructureVersion`,
     );
 
-  // ------------------------------------------- Build -------------------------------------------
+  // ------------------------------------------- Workflow -------------------------------------------
 
-  private _builds = (
+  private _workflows = (
     projectId: string,
     workspace: WorkspaceIdentifier | undefined,
-  ): string => `${this._adaptiveWorkspace(projectId, workspace)}/builds`;
+  ): string => `${this._adaptiveWorkspace(projectId, workspace)}/workflows`;
 
-  getBuilds = (
+  getWorkflows = (
     projectId: string,
     workspace: WorkspaceIdentifier | undefined,
-    status: BuildStatus | undefined,
+    status: WorkflowStatus | undefined,
     revisionIds: string[] | undefined,
     limit: number | undefined,
-  ): Promise<PlainObject<Build>[]> =>
+  ): Promise<PlainObject<Workflow>[]> =>
     this.networkClient.get(
-      this._builds(projectId, workspace),
+      this._workflows(projectId, workspace),
       undefined,
       undefined,
       { status, revisionIds, limit },
     );
-  getBuildsByRevision = (
+  getWorkflowsByRevision = (
     projectId: string,
     workspace: WorkspaceIdentifier | undefined,
     revisionId: string | RevisionAlias,
-  ): Promise<PlainObject<Build>[]> =>
+  ): Promise<PlainObject<Workflow>[]> =>
     this.networkClient.get(
-      this._builds(projectId, workspace),
+      this._workflows(projectId, workspace),
       undefined,
       undefined,
       { revisionId },

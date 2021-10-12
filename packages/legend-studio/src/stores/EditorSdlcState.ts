@@ -34,7 +34,7 @@ import type {
   WorkspaceIdentifier,
 } from '@finos/legend-server-sdlc';
 import {
-  Build,
+  Workflow,
   Project,
   ProjectType,
   Revision,
@@ -56,7 +56,7 @@ export class EditorSdlcState {
   currentNullableWorkspace?: Workspace | undefined;
   currentRevision?: Revision | undefined;
   isWorkspaceOutdated = false;
-  workspaceBuilds: Build[] = [];
+  workspaceWorkflows: Workflow[] = [];
   projectVersions: Version[] = [];
   isCheckingIfWorkspaceIsOutdated = false;
   isFetchingProjectVersions = false;
@@ -380,15 +380,15 @@ export class EditorSdlcState {
     }
   }
 
-  *fetchWorkspaceBuilds(): GeneratorFn<void> {
+  *fetchWorkspaceWorkflows(): GeneratorFn<void> {
     try {
-      this.workspaceBuilds = (
-        (yield this.editorStore.sdlcServerClient.getBuildsByRevision(
+      this.workspaceWorkflows = (
+        (yield this.editorStore.sdlcServerClient.getWorkflowsByRevision(
           this.currentProjectId,
           this.currentWorkspace,
           RevisionAlias.CURRENT,
-        )) as PlainObject<Build>[]
-      ).map((build) => Build.serialization.fromJson(build));
+        )) as PlainObject<Workflow>[]
+      ).map((workflow) => Workflow.serialization.fromJson(workflow));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(

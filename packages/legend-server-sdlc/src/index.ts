@@ -22,7 +22,7 @@ export * from './models/comparison/EntityDiff';
 export * from './models/review/Review';
 export * from './models/review/ReviewCommands';
 
-export * from './models/build/Build';
+export * from './models/workflow/Workflow';
 
 export * from './models/project/Project';
 export * from './models/project/ImportReport';
