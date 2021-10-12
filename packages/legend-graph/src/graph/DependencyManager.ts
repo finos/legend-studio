@@ -114,7 +114,6 @@ export class DependencyManager {
     return Array.from(this.projectDependencyModelsIndex.values());
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getOwnProfile = (path: string): Profile | undefined =>
     this.models.map((dep) => dep.getOwnProfile(path)).find(isNonNullable);
   getOwnType = (path: string): Type | undefined =>
@@ -167,7 +166,6 @@ export class DependencyManager {
       .find(isNonNullable);
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   get profiles(): Profile[] {
     return this.models.map((dep) => Array.from(dep.ownProfiles)).flat();
   }

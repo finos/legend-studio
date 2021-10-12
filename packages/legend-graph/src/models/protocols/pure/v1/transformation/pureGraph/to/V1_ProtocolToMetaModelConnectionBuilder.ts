@@ -83,7 +83,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       }
     }
     throw new UnsupportedOperationError(
-      `Can't build new connection: no compatible builder available from plugins`,
+      `Can't build connection: no compatible builder available from plugins`,
       connection,
     );
   }
@@ -105,7 +105,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       assertType(
         this.embeddedConnectionStore.value,
         ModelStore,
-        `Embedded Model chain connection store must be 'ModelStore'`,
+        `Embedded model chain connection store must be 'ModelStore'`,
       );
     } else {
       assertTrue(

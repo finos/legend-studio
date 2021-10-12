@@ -39,6 +39,7 @@ import type {
   KeyedSingleExecutionTest,
   Runtime,
   ExecutionResult,
+  Connection,
 } from '@finos/legend-graph';
 import {
   extractExecutionResultValues,
@@ -61,6 +62,7 @@ import {
   PureClientVersion,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -162,7 +164,6 @@ export class TestContainerState {
         ? runtime.packageableRuntime.value.runtimeValue
         : guaranteeType(runtime, EngineRuntime);
     newRuntime.mappings = runtimeValue.mappings;
-    /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
     runtimeValue.connections.forEach((storeConnections) => {
       storeConnections.storeConnections.forEach((identifiedConnection) => {
         const connection =
@@ -238,10 +239,36 @@ export class TestContainerState {
             ),
           );
         } else {
-          throw new UnsupportedOperationError(
-            `Can't apply test data for runtime connection`,
-            connection,
-          );
+          let testConnection: Connection | undefined;
+          const extraServiceTestRuntimeConnectionBuilders =
+            this.editorStore.pluginManager
+              .getStudioPlugins()
+              .flatMap(
+                (plugin) =>
+                  (
+                    plugin as DSLMapping_StudioPlugin_Extension
+                  ).TEMP__getExtraServiceTestRuntimeConnectionBuilders?.() ??
+                  [],
+              );
+          for (const builder of extraServiceTestRuntimeConnectionBuilders) {
+            testConnection = builder(connection, newRuntime, testData);
+            if (testConnection) {
+              break;
+            }
+          }
+          if (testConnection) {
+            newRuntime.addIdentifiedConnection(
+              new IdentifiedConnection(
+                newRuntime.generateIdentifiedConnectionId(),
+                testConnection,
+              ),
+            );
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't build service test runtime connection: no compatible builder available from plugins`,
+              connection,
+            );
+          }
         }
       });
     });

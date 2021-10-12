@@ -93,12 +93,11 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioPlugin } from '../../../stores/StudioPlugin';
 import type { DSLMapping_StudioPlugin_Extension } from '../../../stores/DSLMapping_StudioPlugin_Extension';
 
 const getConnectionTooltipText = (
   connection: Connection,
-  plugins: StudioPlugin[],
+  editorStore: EditorStore,
 ): string => {
   const connectionValue =
     connection instanceof ConnectionPointer
@@ -113,21 +112,22 @@ const getConnectionTooltipText = (
   } else if (connectionValue instanceof RelationalDatabaseConnection) {
     return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
   }
-  const extraConnectionToolTipTexts = plugins.flatMap(
-    (plugin: StudioPlugin) =>
-      (
-        plugin as DSLMapping_StudioPlugin_Extension
-      ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
-  );
-  for (const toolTip of extraConnectionToolTipTexts) {
-    const text = toolTip(connection);
-    if (text) {
-      return text;
+  const extraConnectionToolTipTexts = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_StudioPlugin_Extension
+        ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
+    );
+  for (const builder of extraConnectionToolTipTexts) {
+    const tooltipText = builder(connection);
+    if (tooltipText) {
+      return tooltipText;
     }
   }
-
   throw new UnsupportedOperationError(
-    `Can't build tooltip text for connection`,
+    `Can't build tooltip text for connection: no compatible builder available from plugins`,
     connection,
   );
 };
@@ -178,7 +178,6 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
       isReadOnly,
     } = props;
     const editorStore = useEditorStore();
-    const plugins = editorStore.pluginManager.getStudioPlugins();
     const openConnection = (): void =>
       currentRuntimeEditorTabState.openIdentifiedConnection(
         identifiedConnection,
@@ -222,7 +221,7 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
           tabIndex={-1}
           title={getConnectionTooltipText(
             identifiedConnection.connection,
-            plugins,
+            editorStore,
           )}
         >
           <div className="runtime-explorer__item__label__icon">
@@ -511,7 +510,7 @@ const IdentifiedConnectionEditor = observer(
         let customConnection: Connection;
         try {
           customConnection =
-            currentRuntimeEditorTabState.createNewCustomConnection();
+            currentRuntimeEditorTabState.createDefaultConnection();
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.notifyWarning(error.message);

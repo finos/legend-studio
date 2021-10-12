@@ -123,29 +123,12 @@ const IMPORT_RULES = {
 };
 
 const TYPESCRIPT_RULES = {
-  '@typescript-eslint/ban-types': [
-    WARN,
-    {
-      // the default config disallows the use of 'object' and `Function` (which happen to be one of our element type) so we have to customize it
-      // See https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/ban-types.md
-      types: {
-        String: { message: `Use 'string' instead`, fixWith: 'string' },
-        Boolean: { message: `Use 'boolean' instead`, fixWith: 'boolean' },
-        Number: { message: `Use 'number' instead`, fixWith: 'number' },
-        Symbol: { message: `Use 'symbol' instead`, fixWith: 'symbol' },
-        Object: { message: `Use 'object' instead`, fixWith: 'object' },
-      },
-      extendDefaults: false,
-    },
-  ],
-  '@typescript-eslint/camelcase': OFF,
-  '@typescript-eslint/class-name-casing': OFF,
+  '@typescript-eslint/ban-types': WARN,
   '@typescript-eslint/consistent-type-imports': WARN,
   '@typescript-eslint/explicit-function-return-type': [
     WARN,
     { allowTypedFunctionExpressions: true },
   ],
-  '@typescript-eslint/explicit-member-accessibility': OFF,
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],
   '@typescript-eslint/no-var-requires': OFF,
   '@typescript-eslint/no-unused-vars': [

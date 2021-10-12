@@ -215,7 +215,6 @@ export const V1_deserializePackageableElement = (
     (plugin) => plugin.V1_getExtraElementProtocolDeserializers?.() ?? [],
   );
   switch (json._type) {
-    /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     case V1_PROFILE_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_profileSchema, json);
     case V1_ENUMERATION_ELEMENT_PROTOCOL_TYPE:

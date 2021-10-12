@@ -42,8 +42,8 @@ export const V1_EXTERNAL_FORMAT_CONNECTION_ELEMENT_PROTOCOL_TYPE =
 
 const V1_schemaModelSchema = createModelSchema(V1_Schema, {
   content: primitive(),
-  id: primitive(),
-  location: primitive(),
+  id: optional(primitive()),
+  location: optional(primitive()),
 });
 
 export const V1_schemaSetModelSchema = createModelSchema(V1_SchemaSet, {
@@ -62,13 +62,14 @@ const V1_modelUnitModelSchema = createModelSchema(V1_ModelUnit, {
 export const V1_bindingModelSchema = createModelSchema(V1_Binding, {
   _type: usingConstantValueSchema(V1_BINDING_ELEMENT_PROTOCOL_TYPE),
   contentType: primitive(),
+  includedStores: list(primitive()),
   modelUnit: custom(
     (val) => serialize(V1_modelUnitModelSchema, val),
     (val) => deserialize(V1_modelUnitModelSchema, val),
   ),
   name: primitive(),
   package: primitive(),
-  schemaId: primitive(),
+  schemaId: optional(primitive()),
   schemaSet: primitive(),
 });
 

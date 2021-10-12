@@ -350,7 +350,6 @@ export class V1_GraphBuilderContext {
     return EnumValueImplicitReference.create(ownerReference, value);
   };
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   resolveElement = (
     path: string,
     includePackage: boolean,

@@ -73,6 +73,7 @@ import {
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
 } from '@finos/legend-graph';
+import type { DSLMapping_StudioPlugin_Extension } from './DSLMapping_StudioPlugin_Extension';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -158,7 +159,6 @@ export abstract class NewConnectionValueDriver<T extends Connection> {
   abstract createConnection(store: Store): T;
 }
 
-/* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
 export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureModelConnection> {
   class?: Class | undefined;
 
@@ -215,7 +215,7 @@ export class NewFlatDataConnectionDriver extends NewConnectionValueDriver<FlatDa
   }
 }
 
-export class NewRelationalDbConnectionDriver extends NewConnectionValueDriver<RelationalDatabaseConnection> {
+export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDriver<RelationalDatabaseConnection> {
   constructor(editorStore: EditorStore) {
     super(editorStore);
 
@@ -290,16 +290,14 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
         );
         break;
       case CONNECTION_TYPE.RELATIONAL:
-        this.newConnectionValueDriver = new NewRelationalDbConnectionDriver(
-          this.editorStore,
-        );
+        this.newConnectionValueDriver =
+          new NewRelationalDatabaseConnectionDriver(this.editorStore);
         break;
       default:
         null;
     }
   }
 
-  /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   getNewConnectionValueDriverBasedOnStore(
     store: Store | undefined,
   ): NewConnectionValueDriver<Connection> {
@@ -308,9 +306,26 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
     } else if (store instanceof FlatData) {
       return new NewFlatDataConnectionDriver(this.editorStore);
     } else if (store instanceof Database) {
-      return new NewRelationalDbConnectionDriver(this.editorStore);
+      return new NewRelationalDatabaseConnectionDriver(this.editorStore);
     }
-    throw new UnsupportedOperationError();
+    const extraNewConnectionDriverCreators = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).getExtraNewConnectionDriverCreators?.() ?? [],
+      );
+    for (const creator of extraNewConnectionDriverCreators) {
+      const driver = creator(this.editorStore, store);
+      if (driver) {
+        return driver;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't create new connection driver for store: no compatible creator available from plugins`,
+      store,
+    );
   }
 
   setStore(store: Store | undefined): void {
@@ -470,7 +485,6 @@ export class NewElementState {
     if (this.type !== newType) {
       let driver: NewElementDriver<PackageableElement> | undefined = undefined;
       switch (newType) {
-        /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
         case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
           driver = new NewPackageableRuntimeDriver(this.editorStore);
           break;
@@ -592,7 +606,6 @@ export class NewElementState {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   createElement(name: string): PackageableElement {
     let element: PackageableElement | undefined;
     switch (this.type) {

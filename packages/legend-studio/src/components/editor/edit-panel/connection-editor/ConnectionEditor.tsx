@@ -106,7 +106,6 @@ export const ConnectionEditor = observer(
     const editorStore = useEditorStore();
     const plugins = editorStore.pluginManager.getStudioPlugins();
 
-    /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
     const renderConnectionValueEditor = (): React.ReactNode => {
       if (connectionValueState instanceof JsonModelConnectionValueState) {
         return (
@@ -148,7 +147,7 @@ export const ConnectionEditor = observer(
 
         return (
           <UnsupportedEditorPanel
-            text={`Can't display this connection in form-mode`}
+            text="Can't display this connection in form-mode"
             isReadOnly={isReadOnly}
           />
         );

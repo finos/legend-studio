@@ -19,6 +19,7 @@
 .execution-plan-viewer {
   height: 100%;
   width: 100%;
+
   &__close-btn {
     border-color: var(--color-blue-200);
     background: var(--color-blue-300);
@@ -27,9 +28,11 @@
   .input-type {
     background-color: var(--color-dark-grey-400);
   }
+
   .input-label {
     background-color: var(--color-dark-grey-300);
   }
+
   .table-view {
     padding: 2rem;
     height: calc(100% - 3rem);

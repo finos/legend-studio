@@ -29,7 +29,6 @@ export enum CORE_DND_TYPE {
   TYPE_TREE_ENUM = 'TYPE_TREE_ENUM',
   TYPE_TREE_PRIMITIVE = 'TYPE_TREE_PRIMITIVE',
   // project explorer tree
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   PROJECT_EXPLORER_PACKAGE = 'PROJECT_EXPLORER_PACKAGE',
   PROJECT_EXPLORER_CLASS = 'PROJECT_EXPLORER_CLASS',
   PROJECT_EXPLORER_ASSOCIATION = 'PROJECT_EXPLORER_ASSOCIATION',

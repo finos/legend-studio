@@ -16,7 +16,7 @@
 
 import type { PlainObject } from '@finos/legend-shared';
 import type { Connection } from '../../metamodels/pure/packageableElements/connection/Connection';
-import { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
+import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
 import type { V1_Connection } from '../pure/v1/model/packageableElements/connection/V1_Connection';
 import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext';
 import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext';
@@ -42,7 +42,8 @@ export type V1_ConnectionProtocolDeserializer = (
   json: PlainObject<V1_Connection>,
 ) => V1_Connection | undefined;
 
-export abstract class DSLMapping_PureProtocolProcessorPlugin_Extension extends PureProtocolProcessorPlugin {
+export interface DSLMapping_PureProtocolProcessorPlugin_Extension
+  extends PureProtocolProcessorPlugin {
   V1_getExtraConnectionBuilders?(): V1_ConnectionBuilder[];
 
   V1_getExtraConnectionTransformers?(): V1_ConnectionTransformer[];

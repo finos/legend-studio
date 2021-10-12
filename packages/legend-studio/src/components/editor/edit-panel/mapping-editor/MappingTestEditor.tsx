@@ -79,6 +79,7 @@ import {
   RelationalInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -91,7 +92,9 @@ const MappingTestQueryEditor = observer(
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
-          plugin.getExtraMappingTestQueryEditorRendererConfigurations?.() ?? [],
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).getExtraMappingTestQueryEditorRendererConfigurations?.() ?? [],
       )
       .filter(isNonNullable)
       .map((config) => (
