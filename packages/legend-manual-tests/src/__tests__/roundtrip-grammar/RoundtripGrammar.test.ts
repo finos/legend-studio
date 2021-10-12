@@ -271,15 +271,11 @@ const cases: [string, string, boolean][] = fs
   ]);
 
 describe('Grammar roundtrip test', () => {
-  test.each(cases)(
-    '%s',
-    async (testName, filePath, isSkipped) => {
-      if (!isSkipped) {
-        await checkGrammarRoundtrip(testName, filePath, {
-          debug: false,
-        });
-      }
-    },
-    10000,
-  );
+  test.each(cases)('%s', async (testName, filePath, isSkipped) => {
+    if (!isSkipped) {
+      await checkGrammarRoundtrip(testName, filePath, {
+        debug: false,
+      });
+    }
+  });
 });
