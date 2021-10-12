@@ -20,12 +20,6 @@
       "tags": ["doc", "todo"]
     },
     {
-      "package": "meta::pure::profiles",
-      "_type": "profile",
-      "name": "enterprise",
-      "tags": ["taxonomyNodes"]
-    },
-    {
       "package": "meta::pure::metamodel::type",
       "_type": "class",
       "name": "Any",
