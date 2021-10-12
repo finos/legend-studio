@@ -125,6 +125,7 @@ export const unauthenticated = (response: Response): boolean =>
  * should be optional and configurable.
  */
 export const autoReAuthenticate = (url: string): Promise<void> =>
+  // eslint-disable-next-line @typescript-eslint/ban-types
   new Promise((resolve: Function): void => {
     const id = 'AUTO_AUTHENTICATION_IFRAME';
     const previous = document.getElementById(id);

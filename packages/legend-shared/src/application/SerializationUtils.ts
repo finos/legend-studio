@@ -63,7 +63,7 @@ export const usingModelSchema = <T>(schema: ModelSchema<T>): PropSchema =>
     (value) => deserialize(schema, value),
   );
 
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const serializeArray = (
   values: any,
   itemSerializer: (val: any) => any,
@@ -87,7 +87,7 @@ export const deserializeArray = (
   }
   return skipIfEmpty ? SKIP : [];
 };
-/* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export const usingConstantValueSchema = (
   value: unknown | typeof SKIP,

@@ -27,7 +27,7 @@ export type ApplicationSetup = (
 
 export type ApplicationPageRenderEntry = {
   urlPattern: string;
-  component: React.FC<{}> | React.ReactElement;
+  component: React.FC | React.ReactElement;
 };
 
 export type ExplorerContextMenuItemRendererConfiguration = {
