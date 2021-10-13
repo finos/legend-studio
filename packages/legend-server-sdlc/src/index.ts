@@ -29,6 +29,7 @@ export * from './models/project/ImportReport';
 export * from './models/project/ProjectCommands';
 
 export * from './models/workspace/Workspace';
+export * from './models/workspace/WorkspaceUtil';
 export * from './models/workspace/WorkspaceUpdateReport';
 
 export * from './models/revision/Revision';

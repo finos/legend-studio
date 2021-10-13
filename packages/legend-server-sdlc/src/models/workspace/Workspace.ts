@@ -47,15 +47,7 @@ export class Workspace implements WorkspaceIdentifier {
     }),
   );
 
-  get isGroupWorkspace(): boolean {
-    return this.workspaceType === WorkspaceType.GROUP;
-  }
-
   get workspaceType(): WorkspaceType {
     return this.userId === null ? WorkspaceType.GROUP : WorkspaceType.USER;
-  }
-
-  get id(): string {
-    return `${this.workspaceType}/${this.workspaceId}`;
   }
 }

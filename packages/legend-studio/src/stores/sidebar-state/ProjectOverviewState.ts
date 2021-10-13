@@ -33,6 +33,7 @@ import {
   Version,
   Workspace,
   Review,
+  isWorkspaceEqual,
 } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 
@@ -104,10 +105,12 @@ export class ProjectOverviewState {
         workspace,
       );
       this.projectWorkspaces = this.projectWorkspaces.filter(
-        (workspace) => workspace.id !== workspace.id,
+        (w) => !isWorkspaceEqual(workspace, w),
       );
       // redirect to home page if current workspace is deleted
-      if (this.editorStore.sdlcState.currentWorkspace.id === workspace.id) {
+      if (
+        isWorkspaceEqual(this.editorStore.sdlcState.currentWorkspace, workspace)
+      ) {
         this.editorStore.applicationStore.notifyWarning(
           'Current workspace is deleted. Redirecting to home page',
         );

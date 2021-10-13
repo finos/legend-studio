@@ -108,26 +108,13 @@
   &__workspace__label {
     display: flex;
 
-    &__tag {
-      @include flexCenter;
-
-      width: 8rem;
-      height: 1.8rem;
-      border-radius: 0.2rem;
-      padding: 0 0.5rem;
-      font-size: 1rem;
-      margin-right: 1rem;
-      cursor: default;
-
-      &--group {
-        color: var(--color-light-grey-100);
-        background: var(--color-green-200);
-      }
-
-      &--user {
-        color: var(--color-light-grey-100);
-        background: var(--color-purple-200);
-      }
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.7rem;
+      min-width: 1.7rem;
+      margin-right: 1rem
     }
 
     &__name {

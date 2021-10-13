@@ -147,7 +147,7 @@ export class LocalChangesState {
 
   downloadLocalChanges = (): void => {
     const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
-      this.sdlcState.currentWorkspace
+      this.sdlcState.currentWorkspace.workspaceId
     })_${format(new Date(Date.now()), DATE_TIME_FORMAT)}.json`;
     const content = JSON.stringify(
       {

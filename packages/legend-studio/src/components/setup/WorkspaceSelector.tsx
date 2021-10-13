@@ -18,8 +18,9 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WorkspaceOption } from '../../stores/SetupStore';
 import type { SelectComponent } from '@finos/legend-art';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaUserFriends, FaUser } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
@@ -27,10 +28,12 @@ import type { StudioConfig } from '../../application/StudioConfig';
 
 const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
   <div className="setup__workspace__label">
-    <div
-      className={`setup__workspace__label__tag setup__workspace__label__tag--${option.value.workspaceType.toLowerCase()}`}
-    >
-      {option.value.workspaceType}
+    <div className="setup__workspace__label-icon">
+      {option.value.workspaceType === WorkspaceType.GROUP ? (
+        <FaUserFriends />
+      ) : (
+        <FaUser />
+      )}
     </div>
     <div className="setup__workspace__label__name">{option.label}</div>
   </div>
@@ -51,7 +54,10 @@ export const WorkspaceSelector = observer(
     const options =
       setupStore.currentProjectWorkspaceOptions.sort(compareLabelFn);
     const selectedOption =
-      options.find((option) => option.value.id === currentWorkspaceId) ?? null;
+      options.find(
+        (option) =>
+          setupStore.getWorkspaceId(option.value) === currentWorkspaceId,
+      ) ?? null;
     const isLoadingOptions =
       setupStore.loadProjectsState.isInProgress ||
       setupStore.loadWorkspacesState.isInProgress;
@@ -61,7 +67,9 @@ export const WorkspaceSelector = observer(
         (val !== null || selectedOption !== null) &&
         (!val || !selectedOption || val.value !== selectedOption.value)
       ) {
-        setupStore.setCurrentWorkspaceId(val?.value.id);
+        setupStore.setCurrentWorkspaceId(
+          val?.value ? setupStore.getWorkspaceId(val.value) : undefined,
+        );
         onChange(Boolean(selectedOption));
         applicationStore.navigator.goTo(
           generateSetupRoute(

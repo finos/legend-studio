@@ -171,13 +171,15 @@ export class WorkspaceReviewState {
         1,
       )) as Review[];
       const review = reviews.find(
-        (r) => r.workspaceId === this.sdlcState.currentWorkspaceId,
+        (r) =>
+          r.workspaceId === this.sdlcState.currentWorkspace.workspaceId &&
+          r.workspaceType === this.sdlcState.currentWorkspace.workspaceType,
       ) as PlainObject<Review> | undefined;
       if (reviews.length) {
         try {
           assertNonNullable(
             review,
-            `Opened review associated with HEAD revision '${currentWorkspaceRevision.id}' of workspace '${this.sdlcState.currentWorkspaceId}' found, but the retrieved review does not belong to the workspace`,
+            `Opened review associated with HEAD revision '${currentWorkspaceRevision.id}' of workspace '${this.sdlcState.currentWorkspace.workspaceType}' found, but the retrieved review does not belong to the workspace`,
           );
         } catch (error) {
           assertErrorThrown(error);
@@ -260,12 +262,12 @@ export class WorkspaceReviewState {
     try {
       const description =
         reviewDescription ??
-        `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.currentWorkspaceId}`;
+        `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.currentWorkspace.workspaceId}`;
       this.workspaceReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.createReview(
           this.sdlcState.currentProjectId,
           {
-            workspaceId: this.sdlcState.currentWorkspaceId,
+            workspaceId: this.sdlcState.currentWorkspace.workspaceId,
             title,
             workspaceType: this.sdlcState.currentWorkspace.workspaceType,
             description,

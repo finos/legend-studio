@@ -310,7 +310,7 @@ export class SetupStore {
           ) {
             workspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
           }
-          workspaceMap.set(workspace.id, workspace);
+          workspaceMap.set(this.getWorkspaceId(workspace), workspace);
         });
       this.workspacesByProject.set(projectId, workspaceMap);
     } catch (error) {
@@ -323,6 +323,10 @@ export class SetupStore {
     } finally {
       this.loadWorkspacesState.reset();
     }
+  }
+
+  getWorkspaceId(workspace: WorkspaceIdentifier): string {
+    return `${workspace.workspaceType}/${workspace.workspaceId}`;
   }
 
   *createWorkspace(
@@ -340,17 +344,20 @@ export class SetupStore {
       const existingWorkspaceForProject: Map<string, Workspace> | undefined =
         this.workspacesByProject.get(projectId);
       if (existingWorkspaceForProject) {
-        existingWorkspaceForProject.set(workspace.id, workspace);
+        existingWorkspaceForProject.set(
+          this.getWorkspaceId(workspace),
+          workspace,
+        );
       } else {
         const newWorkspaceMap = observable<string, Workspace>(new Map());
-        newWorkspaceMap.set(workspace.id, workspace);
+        newWorkspaceMap.set(this.getWorkspaceId(workspace), workspace);
         this.workspacesByProject.set(projectId, newWorkspaceMap);
       }
       this.applicationStore.notifySuccess(
         `Workspace '${workspace.workspaceId}' is succesfully created`,
       );
       this.setCurrentProjectId(projectId);
-      this.setCurrentWorkspaceId(workspace.id);
+      this.setCurrentWorkspaceId(this.getWorkspaceId(workspace));
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
     } catch (error) {

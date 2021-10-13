@@ -66,7 +66,6 @@ export class EditorSdlcState {
     makeAutoObservable(this, {
       editorStore: false,
       currentProjectId: false,
-      currentWorkspaceId: false,
       currentRevisionId: false,
       setCurrentProject: action,
       setCurrentWorkspace: action,
@@ -85,10 +84,6 @@ export class EditorSdlcState {
       this.currentProject,
       `Can't get current project`,
     ).projectId;
-  }
-
-  get currentWorkspaceId(): string {
-    return this.currentWorkspace.workspaceId;
   }
 
   get currentWorkspace(): Workspace {
