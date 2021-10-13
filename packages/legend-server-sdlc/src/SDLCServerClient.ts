@@ -351,7 +351,7 @@ export class SDLCServerClient extends AbstractServerClient {
       undefined,
       { status, revisionIds, limit },
     );
-  getWorkflowsByRevision = (
+  getBuildsByRevision = (
     projectId: string,
     workspace: WorkspaceIdentifier | undefined,
     revisionId: string | RevisionAlias,

@@ -1,4 +1,5 @@
 ---
+"@finos/legend-server-sdlc": patch
 '@finos/legend-studio': patch
 ---
 
