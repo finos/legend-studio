@@ -33,7 +33,7 @@ import type { Workspace } from '@finos/legend-server-sdlc';
 import {
   NewVersionType,
   WorkspaceType,
-  isWorkspaceEqual,
+  areWorkspacesEquivalent,
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
@@ -71,7 +71,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore<StudioConfig>();
-  const isActive = isWorkspaceEqual(
+  const isActive = areWorkspacesEquivalent(
     editorStore.sdlcState.activeWorkspace,
     workspace,
   );

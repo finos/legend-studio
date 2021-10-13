@@ -200,7 +200,7 @@ export class LocalChangesState {
     try {
       const latestRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.performEntityChanges(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
           {
             message:
@@ -235,7 +235,7 @@ export class LocalChangesState {
          */
         const entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-            this.sdlcState.activeProjectId,
+            this.sdlcState.activeProject.projectId,
             this.sdlcState.activeWorkspace,
             latestRevision.id,
           )) as Entity[];

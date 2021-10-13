@@ -208,7 +208,7 @@ export class ConflictResolutionState {
     );
     const projectConfiguration =
       (yield this.editorStore.sdlcServerClient.getConfigurationOfWorkspaceInConflictResolutionMode(
-        this.sdlcState.activeProjectId,
+        this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       )) as PlainObject<ProjectConfiguration>;
     this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
@@ -356,7 +356,7 @@ export class ConflictResolutionState {
       // fetch latest revision
       const latestRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
@@ -368,7 +368,7 @@ export class ConflictResolutionState {
       );
       const entities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
           this.sdlcState.activeRevision.id,
         )) as Entity[];
@@ -402,7 +402,7 @@ export class ConflictResolutionState {
     try {
       const workspaceBaseEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
           RevisionAlias.BASE,
         )) as Entity[];
@@ -469,7 +469,7 @@ export class ConflictResolutionState {
       const entityChanges =
         this.editorStore.graphState.computeLocalEntityChanges();
       yield this.editorStore.sdlcServerClient.acceptConflictResolution(
-        this.sdlcState.activeProjectId,
+        this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
         {
           message: `resolving update merge conflicts for workspace from ${
@@ -536,7 +536,7 @@ export class ConflictResolutionState {
         showLoading: true,
       });
       yield this.editorStore.sdlcServerClient.discardConflictResolutionChanges(
-        this.sdlcState.activeProjectId,
+        this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
@@ -592,7 +592,7 @@ export class ConflictResolutionState {
         showLoading: true,
       });
       yield this.editorStore.sdlcServerClient.abortConflictResolution(
-        this.sdlcState.activeProjectId,
+        this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);

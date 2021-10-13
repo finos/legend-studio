@@ -65,7 +65,6 @@ export class EditorSdlcState {
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
       editorStore: false,
-      activeProjectId: false,
       setCurrentProject: action,
       setCurrentWorkspace: action,
       setCurrentRevision: action,
@@ -76,10 +75,6 @@ export class EditorSdlcState {
 
   get isCurrentProjectInProduction(): boolean {
     return this.currentProject?.projectType === ProjectType.PRODUCTION;
-  }
-
-  get activeProjectId(): string {
-    return this.activeProject.projectId;
   }
 
   get activeProject(): Project {
@@ -175,7 +170,7 @@ export class EditorSdlcState {
       this.isFetchingProjectVersions = true;
       this.projectVersions = (
         (yield this.editorStore.sdlcServerClient.getVersions(
-          this.activeProjectId,
+          this.activeProject.projectId,
         )) as PlainObject<Version>[]
       ).map((version) => Version.serialization.fromJson(version));
     } catch (error) {
@@ -191,7 +186,7 @@ export class EditorSdlcState {
 
   *checkIfCurrentWorkspaceIsInConflictResolutionMode(): GeneratorFn<boolean> {
     return (yield this.editorStore.sdlcServerClient.checkIfWorkspaceIsInConflictResolutionMode(
-      this.activeProjectId,
+      this.activeProject.projectId,
       this.activeWorkspace,
     )) as boolean;
   }
@@ -229,11 +224,11 @@ export class EditorSdlcState {
       this.isCheckingIfWorkspaceIsOutdated = true;
       this.isWorkspaceOutdated = this.editorStore.isInConflictResolutionMode
         ? ((yield this.editorStore.sdlcServerClient.isConflictResolutionOutdated(
-            this.activeProjectId,
+            this.activeProject.projectId,
             this.activeWorkspace,
           )) as boolean)
         : ((yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
-            this.activeProjectId,
+            this.activeProject.projectId,
             this.activeWorkspace,
           )) as boolean);
     } catch (error) {
@@ -272,7 +267,7 @@ export class EditorSdlcState {
         // NOTE: this check is already covered in conflict resolution mode so we don't need to do it here
         const latestRevision = Revision.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getRevision(
-            this.activeProjectId,
+            this.activeProject.projectId,
             this.activeWorkspace,
             RevisionAlias.CURRENT,
           )) as PlainObject<Revision>,
@@ -284,14 +279,14 @@ export class EditorSdlcState {
         );
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-            this.activeProjectId,
+            this.activeProject.projectId,
             this.activeWorkspace,
             this.activeRevision.id,
           )) as Entity[];
       } else {
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-            this.activeProjectId,
+            this.activeProject.projectId,
             this.activeWorkspace,
             RevisionAlias.CURRENT,
           )) as Entity[];
@@ -322,7 +317,7 @@ export class EditorSdlcState {
     try {
       const workspaceBaseEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-          this.activeProjectId,
+          this.activeProject.projectId,
           this.activeWorkspace,
           RevisionAlias.BASE,
         )) as Entity[];
@@ -352,7 +347,7 @@ export class EditorSdlcState {
     try {
       const projectLatestEntities =
         (yield this.editorStore.sdlcServerClient.getEntities(
-          this.activeProjectId,
+          this.activeProject.projectId,
           undefined,
         )) as Entity[];
       this.editorStore.changeDetectionState.projectLatestRevisionState.setEntities(
@@ -381,7 +376,7 @@ export class EditorSdlcState {
     try {
       this.workspaceWorkflows = (
         (yield this.editorStore.sdlcServerClient.getWorkflowsByRevision(
-          this.activeProjectId,
+          this.activeProject.projectId,
           this.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Workflow>[]

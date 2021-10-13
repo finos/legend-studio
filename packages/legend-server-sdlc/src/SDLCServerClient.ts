@@ -196,7 +196,9 @@ export class SDLCServerClient extends AbstractServerClient {
     Promise.all([
       this.networkClient.get(this._workspaces(projectId)),
       this.networkClient.get(this._groupWorkspaces(projectId)),
-    ]).then((r) => r.flat()) as Promise<PlainObject<Workspace>[]>;
+    ]).then((workspaces) => workspaces.flat()) as Promise<
+      PlainObject<Workspace>[]
+    >;
   getWorkspace = (
     projectId: string,
     workspace: WorkspaceIdentifier,

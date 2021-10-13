@@ -16,7 +16,7 @@
 
 import type { WorkspaceIdentifier } from './Workspace';
 
-export const isWorkspaceEqual = (
+export const areWorkspacesEquivalent = (
   workspace: WorkspaceIdentifier,
   otherWorkspace: WorkspaceIdentifier,
 ): boolean =>

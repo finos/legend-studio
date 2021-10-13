@@ -187,7 +187,7 @@ export class ModelLoaderState extends EditorState {
         entities.length
       } entities]`;
       yield this.editorStore.sdlcServerClient.updateEntities(
-        this.editorStore.sdlcState.activeProjectId,
+        this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.replace, entities, message },
       );

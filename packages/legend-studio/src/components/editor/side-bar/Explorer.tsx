@@ -196,7 +196,7 @@ const ExplorerContextMenu = observer(
           {config.renderer(editorStore, node?.packageableElement)}
         </Fragment>
       ));
-    const projectId = editorStore.sdlcState.activeProjectId;
+    const projectId = editorStore.sdlcState.activeProject.projectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const _package = node
       ? node.packageableElement instanceof Package

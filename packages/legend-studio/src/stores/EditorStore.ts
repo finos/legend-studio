@@ -778,11 +778,11 @@ export class EditorStore {
       // fetch workspace entities and config at the same time
       const result = (yield Promise.all([
         this.sdlcServerClient.getEntities(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
         ),
         this.sdlcServerClient.getConfiguration(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];

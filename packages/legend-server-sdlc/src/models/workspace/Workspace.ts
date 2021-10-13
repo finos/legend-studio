@@ -36,7 +36,7 @@ export interface WorkspaceIdentifier {
 export class Workspace implements WorkspaceIdentifier {
   projectId!: string;
   workspaceId!: string;
-  userId: string | null = null;
+  userId?: string | null;
   type = WorkspaceAccessType.WORKSPACE;
 
   static readonly serialization = new SerializationFactory(

@@ -185,7 +185,7 @@ export class WorkspaceUpdaterState {
       this.isRefreshingWorkspaceUpdater = true;
       this.sdlcState.isWorkspaceOutdated =
         (yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
         )) as boolean;
 
@@ -271,7 +271,7 @@ export class WorkspaceUpdaterState {
       });
       const workspaceUpdateReport =
         (yield this.editorStore.sdlcServerClient.updateWorkspace(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.log.info(
@@ -314,14 +314,14 @@ export class WorkspaceUpdaterState {
       // in those case, we will get the time from the base revision
       const workspaceBaseRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
           RevisionAlias.BASE,
         )) as PlainObject<Revision>,
       );
       const baseReviewObj = getNullableFirstElement(
         (yield this.editorStore.sdlcServerClient.getReviews(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           ReviewState.COMMITTED,
           [workspaceBaseRevision.id],
           undefined,
@@ -334,7 +334,7 @@ export class WorkspaceUpdaterState {
         : undefined;
       this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = (
         (yield this.editorStore.sdlcServerClient.getReviews(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           ReviewState.COMMITTED,
           undefined,
           baseReview

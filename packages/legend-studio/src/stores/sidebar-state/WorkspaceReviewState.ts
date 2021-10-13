@@ -158,12 +158,12 @@ export class WorkspaceReviewState {
       this.isFetchingCurrentWorkspaceReview = true;
       const currentWorkspaceRevision =
         (yield this.editorStore.sdlcServerClient.getRevision(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as Revision;
       const reviews = (yield this.editorStore.sdlcServerClient.getReviews(
-        this.sdlcState.activeProjectId,
+        this.sdlcState.activeProject.projectId,
         ReviewState.OPEN,
         [currentWorkspaceRevision.id, currentWorkspaceRevision.id],
         undefined,
@@ -211,7 +211,7 @@ export class WorkspaceReviewState {
         showLoading: true,
       });
       yield this.editorStore.sdlcServerClient.createWorkspace(
-        this.sdlcState.activeProjectId,
+        this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
       this.editorStore.applicationStore.navigator.reload();
@@ -235,7 +235,7 @@ export class WorkspaceReviewState {
     this.isClosingWorkspaceReview = true;
     try {
       yield this.editorStore.sdlcServerClient.rejectReview(
-        this.sdlcState.activeProjectId,
+        this.sdlcState.activeProject.projectId,
         this.workspaceReview.id,
       );
       this.workspaceReview = undefined;
@@ -265,7 +265,7 @@ export class WorkspaceReviewState {
         `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.activeWorkspace.workspaceId}`;
       this.workspaceReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.createReview(
-          this.sdlcState.activeProjectId,
+          this.sdlcState.activeProject.projectId,
           {
             workspaceId: this.sdlcState.activeWorkspace.workspaceId,
             title,
@@ -311,7 +311,7 @@ export class WorkspaceReviewState {
 
     try {
       yield this.editorStore.sdlcServerClient.commitReview(
-        this.sdlcState.activeProjectId,
+        this.sdlcState.activeProject.projectId,
         review.id,
         { message: `${review.title} [review]` },
       );
@@ -335,7 +335,7 @@ export class WorkspaceReviewState {
               this.editorStore.applicationStore.navigator.goTo(
                 generateSetupRoute(
                   this.editorStore.applicationStore.config.sdlcServerKey,
-                  this.editorStore.sdlcState.activeProjectId,
+                  this.editorStore.sdlcState.activeProject.projectId,
                 ),
               ),
             default: true,
