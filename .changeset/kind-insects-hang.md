@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-Replace depreacted workspace `builds` with workspace `workflows` to track pipeline progress.
+Use `Workflow API` instead of the _deprecated_ `Build API`.
