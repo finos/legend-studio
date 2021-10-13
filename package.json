@@ -79,7 +79,7 @@
     "@finos/stylelint-config-legend-studio": "workspace:*",
     "@juggle/resize-observer": "3.3.1",
     "@types/jest": "27.0.2",
-    "@types/node": "16.10.3",
+    "@types/node": "16.10.4",
     "chalk": "4.1.2",
     "cross-env": "7.0.3",
     "eslint": "8.0.0",
@@ -93,7 +93,7 @@
     "semver": "7.3.5",
     "sort-package-json": "1.52.0",
     "stylelint": "13.13.1",
-    "typescript": "4.4.3",
+    "typescript": "4.4.4",
     "yargs": "17.2.1"
   },
   "engines": {

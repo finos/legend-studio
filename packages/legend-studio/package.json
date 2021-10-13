@@ -46,7 +46,7 @@
     "@finos/legend-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
     "@testing-library/react": "12.1.2",
-    "@types/react": "17.0.27",
+    "@types/react": "17.0.29",
     "@types/react-dom": "17.0.9",
     "@types/react-router-dom": "5.3.1",
     "date-fns": "2.25.0",
@@ -76,7 +76,7 @@
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.42.1",
-    "typescript": "4.4.3"
+    "typescript": "4.4.4"
   },
   "peerDependencies": {
     "react": "^17.0.0"
