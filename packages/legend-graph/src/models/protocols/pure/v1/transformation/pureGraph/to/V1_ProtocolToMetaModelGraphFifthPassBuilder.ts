@@ -40,7 +40,6 @@ import type { V1_GenerationSpecification } from '../../../model/packageableEleme
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import { V1_buildDatabaseSchemaViewsSecondPass } from './helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
 export class V1_ProtocolToMetaModelGraphFifthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -106,12 +105,6 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
       V1_buildDatabaseSchemaViewsSecondPass(schema, this.context, database),
     );
   }
-
-  /*visit_ServiceStore(element: V1_ServiceStore): void {
-    this.context.graph.getServiceStore(
-      this.context.graph.buildPath(element.package, element.name),
-    );
-  }*/
 
   visit_Mapping(element: V1_Mapping): void {
     throw new UnsupportedOperationError();

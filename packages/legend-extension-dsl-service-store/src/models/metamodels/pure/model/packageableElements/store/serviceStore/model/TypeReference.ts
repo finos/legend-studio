@@ -21,7 +21,7 @@ import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceSto
 
 export abstract class TypeReference implements Hashable {
   private readonly _$nominalTypeBrand!: 'TypeReference';
-  list: boolean;
+  list!: boolean;
 
   constructor(list: boolean) {
     this.list = list;

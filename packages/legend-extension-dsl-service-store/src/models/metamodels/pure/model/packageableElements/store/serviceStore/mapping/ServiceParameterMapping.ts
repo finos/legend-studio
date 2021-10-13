@@ -38,8 +38,7 @@ export class ServiceParameterMapping implements Hashable {
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_PARAMETER_MAPPING,
-      //this.type,
-      this.serviceParameter,
+      this.serviceParameter.name,
       this.transform,
     ]);
   }

@@ -23,7 +23,7 @@ import type { Service } from '../model/Service';
 import type { RootServiceInstanceSetImplementation } from './RootServiceInstanceSetImplementation';
 
 export class ServiceMapping implements Hashable {
-  owner: RootServiceInstanceSetImplementation;
+  owner!: RootServiceInstanceSetImplementation;
   service!: Service;
   parameterMappings: ServiceParameterMapping[] = [];
 
@@ -40,7 +40,7 @@ export class ServiceMapping implements Hashable {
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_MAPPING,
-      this.service,
+      this.service.id,
       hashArray(this.parameterMappings),
     ]);
   }

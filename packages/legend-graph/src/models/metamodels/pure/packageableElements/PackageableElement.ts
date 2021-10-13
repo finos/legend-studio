@@ -44,7 +44,6 @@ import type { FileGenerationSpecification } from './fileGeneration/FileGeneratio
 import type { GenerationSpecification } from './generationSpecification/GenerationSpecification';
 import type { Measure } from './domain/Measure';
 import type { SectionIndex } from './section/SectionIndex';
-import type { ServiceStore } from './store/relational/model/ServiceStore';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -63,7 +62,6 @@ export interface PackageableElementVisitor<T> {
 
   visit_FlatData(element: FlatData): T;
   visit_Database(element: Database): T;
-  //visit_ServiceStore(element: ServiceStore): T;
   visit_Service(element: Service): T;
   visit_FileGenerationSpecification(element: FileGenerationSpecification): T;
   visit_GenerationSpecification(element: GenerationSpecification): T;

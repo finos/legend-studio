@@ -19,10 +19,12 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { TypeReference } from './TypeReference';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
+import type { Class } from '@finos/legend-graph';
+import type { Binding } from '@finos/legend-extension-dsl-serializer';
 
 export class ComplexTypeReference extends TypeReference implements Hashable {
-  type!: string;
-  binding!: string;
+  type!: Class;
+  binding!: Binding;
 
   constructor(list: boolean) {
     super(list);
@@ -32,16 +34,14 @@ export class ComplexTypeReference extends TypeReference implements Hashable {
       binding: observable,
       hashCode: computed,
     });
-
-    this.list = list;
   }
 
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.COMPLEX_TYPE_REFERENCE,
       super.hashCode,
-      this.type,
-      this.binding,
+      this.type.path,
+      this.binding.path,
     ]);
   }
 }

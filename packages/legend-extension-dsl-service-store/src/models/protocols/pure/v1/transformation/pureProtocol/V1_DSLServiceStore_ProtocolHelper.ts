@@ -20,6 +20,7 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
+import type { ModelSchema } from 'serializr';
 import {
   alias,
   createModelSchema,
@@ -51,9 +52,12 @@ import { V1_ServiceMapping } from '../../model/packageableElements/store/service
 import { V1_ServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServicePtr';
 import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
 import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
+import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
 import { V1_Multiplicity, V1_rawLambdaModelSchema } from '@finos/legend-graph';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
+import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
+import type { SecurityScheme_PureProtocolPlugin_Extension } from '../../../SecurityScheme_PureProtocolPlugin_Extension';
 
 export const V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE = 'serviceStore';
 export const V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE = 'serviceStore';
@@ -70,6 +74,11 @@ enum V1_ReferenceType {
   FLOAT_TYPE_REFERENCE = 'float',
   INTEGER_TYPE_REFERENCE = 'integer',
   STRING_TYPE_REFERENCE = 'string',
+}
+
+enum V1_ServiceParameterMappingType {
+  PROPERTY_INDEXED_PARAMETER_MAPPING = 'property',
+  PARAMETER_INDEXED_PARAMETER_MAPPING = 'parameter',
 }
 
 const V1_booleanTypeReferenceModelSchema = createModelSchema(
@@ -129,10 +138,6 @@ const V1_serializeTypeReference = (
     return serialize(V1_stringTypeReferenceModelSchema, protocol);
   }
   return SKIP;
-  /* throw new UnsupportedOperationError(
-    `Can't serialize type reference: no compatible serializer available from plugins`,
-    protocol,
-  );*/
 };
 
 const V1_deserializeTypeReference = (
@@ -150,9 +155,6 @@ const V1_deserializeTypeReference = (
     case V1_ReferenceType.INTEGER_TYPE_REFERENCE:
       return deserialize(V1_integerTypeReferenceModelSchema, json);
     default: {
-      /*throw new UnsupportedOperationError(
-        `Can't deserialize type reference '${json._type}': no compatible deserializer available from plugins`,
-      );*/
       return SKIP;
     }
   }
@@ -170,46 +172,127 @@ const V1_serviceParameterModelSchema = createModelSchema(V1_ServiceParameter, {
   enumeration: optional(primitive()),
   location: primitive(),
   name: primitive(),
-  serializationFormat: usingModelSchema(V1_serializationFormatModelSchema),
+  serializationFormat: optional(
+    usingModelSchema(V1_serializationFormatModelSchema),
+  ),
   type: custom(
     (val) => V1_serializeTypeReference(val),
     (val) => V1_deserializeTypeReference(val),
   ),
 });
 
-const V1_serviceModelSchema = createModelSchema(V1_Service, {
-  _type: usingConstantValueSchema(V1_ServiceStoreElementType.SERVICE),
-  id: primitive(),
-  requestBody: custom(
-    (val) => V1_serializeTypeReference(val),
-    (val) => V1_deserializeTypeReference(val),
-  ),
-  method: primitive(),
-  parameters: list(usingModelSchema(V1_serviceParameterModelSchema)),
-  path: primitive(),
-  response: usingModelSchema(V1_complexTypeReferenceModelSchema),
-  security: list(primitive()),
-});
+const V1_serializeSecurityScheme = (
+  protocol: V1_SecurityScheme,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_SecurityScheme> => {
+  const extraSecuritySchemeProtocolSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as SecurityScheme_PureProtocolPlugin_Extension
+      ).V1_getExtraSecuritySchemeProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraSecuritySchemeProtocolSerializers) {
+    const json = serializer(protocol);
+    if (json) {
+      return json;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize security scheme: no compatible serializer available from plugins`,
+    protocol,
+  );
+};
 
-const V1_serviceGroupModelSchema = createModelSchema(V1_ServiceGroup, {
-  _type: usingConstantValueSchema(V1_ServiceStoreElementType.SERVICE_GROUP),
-  id: primitive(),
-  path: primitive(),
-  elements: list(
-    custom(
-      (val) => V1_serializeServiceStoreElement(val),
-      (val) => V1_deserializeServiceStoreElement(val),
+const V1_deserializeSecurityScheme = (
+  json: PlainObject<V1_SecurityScheme>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_SecurityScheme => {
+  const extraSecuritySchemeProtocolDeserializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as SecurityScheme_PureProtocolPlugin_Extension
+      ).V1_getExtraSecuritySchemeProtocolDeserializers?.() ?? [],
+  );
+  for (const deserializer of extraSecuritySchemeProtocolDeserializers) {
+    const protocol = deserializer(json);
+    if (protocol) {
+      return protocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize authentication strategy of type '${json._type}': no compatible deserializer available from plugins`,
+  );
+};
+
+const V1_serviceModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_Service> =>
+  createModelSchema(V1_Service, {
+    _type: usingConstantValueSchema(V1_ServiceStoreElementType.SERVICE),
+    id: primitive(),
+    requestBody: optional(
+      custom(
+        (val) => V1_serializeTypeReference(val),
+        (val) => V1_deserializeTypeReference(val),
+      ),
     ),
-  ),
-});
+    method: primitive(),
+    parameters: list(usingModelSchema(V1_serviceParameterModelSchema)),
+    path: primitive(),
+    response: usingModelSchema(V1_complexTypeReferenceModelSchema),
+    security: list(
+      custom(
+        (val) => V1_serializeSecurityScheme(val, plugins),
+        (val) => V1_deserializeSecurityScheme(val, plugins),
+      ),
+    ),
+  });
+
+const V1_serviceGroupModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ServiceGroup> =>
+  createModelSchema(V1_ServiceGroup, {
+    _type: usingConstantValueSchema(V1_ServiceStoreElementType.SERVICE_GROUP),
+    elements: list(
+      custom(
+        (val) => {
+          if (val instanceof V1_Service) {
+            return serialize(V1_serviceModelSchema(plugins), val);
+          } else if (val instanceof V1_ServiceGroup) {
+            return serialize(V1_serviceGroupModelSchema(plugins), val);
+          }
+          throw new UnsupportedOperationError(
+            `Can't serialize service store element: no compatible serializer available from plugins`,
+            val,
+          );
+        },
+        (val) => {
+          switch (val._type) {
+            case V1_ServiceStoreElementType.SERVICE:
+              return deserialize(V1_serviceModelSchema(plugins), val);
+            case V1_ServiceStoreElementType.SERVICE_GROUP:
+              return deserialize(V1_serviceGroupModelSchema(plugins), val);
+            default: {
+              throw new UnsupportedOperationError(
+                `Can't deserialize service store element of type '${val._type}': no compatible deserializer available from plugins`,
+              );
+            }
+          }
+        },
+      ),
+    ),
+    id: primitive(),
+    path: primitive(),
+  });
 
 const V1_serializeServiceStoreElement = (
   protocol: V1_ServiceStoreElement,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_ServiceStoreElement> => {
   if (protocol instanceof V1_Service) {
-    return serialize(V1_serviceModelSchema, protocol);
+    return serialize(V1_serviceModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_ServiceGroup) {
-    return serialize(V1_serviceGroupModelSchema, protocol);
+    return serialize(V1_serviceGroupModelSchema(plugins), protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize service store element: no compatible serializer available from plugins`,
@@ -219,12 +302,13 @@ const V1_serializeServiceStoreElement = (
 
 const V1_deserializeServiceStoreElement = (
   json: PlainObject<V1_ServiceStoreElement>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_ServiceStoreElement => {
   switch (json._type) {
     case V1_ServiceStoreElementType.SERVICE:
-      return deserialize(V1_serviceModelSchema, json);
+      return deserialize(V1_serviceModelSchema(plugins), json);
     case V1_ServiceStoreElementType.SERVICE_GROUP:
-      return deserialize(V1_serviceGroupModelSchema, json);
+      return deserialize(V1_serviceGroupModelSchema(plugins), json);
     default: {
       throw new UnsupportedOperationError(
         `Can't deserialize service store element of type '${json._type}': no compatible deserializer available from plugins`,
@@ -236,28 +320,32 @@ const V1_deserializeServiceStoreElement = (
 const V1_serviceGroupPtrModelSchema = createModelSchema(V1_ServiceGroupPtr, {
   serviceStore: primitive(),
   serviceGroup: primitive(),
-  parent: object(V1_ServiceGroupPtr),
+  parent: optional(object(V1_ServiceGroupPtr)),
 });
 
 const V1_servicePtrModelSchema = createModelSchema(V1_ServicePtr, {
-  serviceStore: primitive(),
   service: primitive(),
-  parent: usingModelSchema(V1_serviceGroupPtrModelSchema),
+  serviceStore: primitive(),
+  parent: optional(usingModelSchema(V1_serviceGroupPtrModelSchema)),
 });
 
 const V1_parameterIndexedParameterMappingModelSchema = createModelSchema(
   V1_ParameterIndexedParameterMapping,
   {
-    _type: usingConstantValueSchema('parameter'),
-    transform: usingModelSchema(V1_rawLambdaModelSchema),
+    _type: usingConstantValueSchema(
+      V1_ServiceParameterMappingType.PARAMETER_INDEXED_PARAMETER_MAPPING,
+    ),
     serviceParameter: primitive(),
+    transform: usingModelSchema(V1_rawLambdaModelSchema),
   },
 );
 
 const V1_propertyIndexedParameterMappingModelSchema = createModelSchema(
   V1_PropertyIndexedParameterMapping,
   {
-    _type: usingConstantValueSchema('property'),
+    _type: usingConstantValueSchema(
+      V1_ServiceParameterMappingType.PROPERTY_INDEXED_PARAMETER_MAPPING,
+    ),
     property: primitive(),
     serviceParameter: primitive(),
   },
@@ -294,13 +382,13 @@ const V1_deserializeServiceParameterMapping = (
 };
 
 const V1_serviceMappingModelSchema = createModelSchema(V1_ServiceMapping, {
-  service: usingModelSchema(V1_servicePtrModelSchema),
   parameterMappings: list(
     custom(
       (val) => V1_serializeServiceParameterMapping(val),
       (val) => V1_deserializeServiceParameterMapping(val),
     ),
   ),
+  service: usingModelSchema(V1_servicePtrModelSchema),
 });
 
 const V1_localMappingPropertyModelSchema = createModelSchema(
@@ -312,30 +400,33 @@ const V1_localMappingPropertyModelSchema = createModelSchema(
   },
 );
 
-export const V1_serviceStoreModelSchema = createModelSchema(V1_ServiceStore, {
-  _type: usingConstantValueSchema(V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE),
-  description: optional(primitive()),
-  elements: list(
-    custom(
-      (val) => V1_serializeServiceStoreElement(val),
-      (val) => V1_deserializeServiceStoreElement(val),
+export const V1_serviceStoreModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ServiceStore> =>
+  createModelSchema(V1_ServiceStore, {
+    _type: usingConstantValueSchema(V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE),
+    description: optional(primitive()),
+    elements: list(
+      custom(
+        (val) => V1_serializeServiceStoreElement(val, plugins),
+        (val) => V1_deserializeServiceStoreElement(val, plugins),
+      ),
     ),
-  ),
-  name: primitive(),
-  package: primitive(),
-});
+    name: primitive(),
+    package: primitive(),
+  });
 
 export const V1_rootServiceStoreClassMappingModelSchema = createModelSchema(
   V1_RootServiceStoreClassMapping,
   {
     _type: usingConstantValueSchema(V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE),
     class: primitive(),
-    id: optional(primitive()),
-    root: primitive(),
     localMappingProperties: list(
       usingModelSchema(V1_localMappingPropertyModelSchema),
     ),
+    root: primitive(),
     servicesMapping: list(usingModelSchema(V1_serviceMappingModelSchema)),
+    id: optional(primitive()),
   },
 );
 
@@ -343,9 +434,9 @@ export const V1_serviceStoreConnectionModelSchema = createModelSchema(
   V1_ServiceStoreConnection,
   {
     _type: usingConstantValueSchema(V1_SERVICE_STORE_CONNECTION_PROTOCOL_TYPE),
+    baseUrl: primitive(),
+    store: alias('element', optional(primitive())),
     name: primitive(),
     package: primitive(),
-    store: alias('element', optional(primitive())),
-    baseUrl: primitive(),
   },
 );

@@ -66,7 +66,6 @@ import {
   FlatDataConnection,
   Database,
   PackageableElementExplicitReference,
-  ServiceStore,
   RelationalDatabaseConnection,
   DatabaseType,
   StaticDatasourceSpecification,
@@ -633,9 +632,6 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.DATABASE:
         element = new Database(name);
-        break;
-      case PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE:
-        element = new ServiceStore(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
         const service = new Service(name);

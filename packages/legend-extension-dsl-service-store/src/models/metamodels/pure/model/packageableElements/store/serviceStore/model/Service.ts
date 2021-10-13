@@ -15,7 +15,7 @@
  */
 
 import { observable, computed, makeObservable } from 'mobx';
-import {guaranteeType, hashArray} from '@finos/legend-shared';
+import { guaranteeType, hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
 import { ServiceStoreElement } from './ServiceStoreElement';
@@ -75,11 +75,11 @@ export class Service extends ServiceStoreElement implements Hashable {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE,
       super.hashCode,
-      this.requestBody ?? new StringTypeReference(true),
+      this.requestBody ?? new StringTypeReference(false),
       this.method,
       hashArray(this.parameters),
       this.response,
-      hashArray(this.security ?? []),
+      hashArray(this.security),
     ]);
   }
 }

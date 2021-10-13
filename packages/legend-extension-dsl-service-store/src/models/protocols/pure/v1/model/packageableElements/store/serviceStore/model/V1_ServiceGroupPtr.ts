@@ -19,8 +19,8 @@ import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../DSLServiceStore_ModelUtils';
 
 export class V1_ServiceGroupPtr implements Hashable {
-  serviceStore = '';
-  serviceGroup = '';
+  serviceStore!: string;
+  serviceGroup!: string;
   parent?: V1_ServiceGroupPtr | undefined;
 
   get hashCode(): string {

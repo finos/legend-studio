@@ -73,7 +73,6 @@ import {
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { V1_buildSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper';
-import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
 export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -215,23 +214,6 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       V1_buildSchema(schema, database, this.context),
     );
   }
-
-<<<<<<< HEAD
-  /*visit_ServiceStore(element: V1_ServiceStore): void {
-    assertNonEmptyString(element.docLink, 'Service store doc link is missing');
-=======
-  visit_ServiceStore(element: V1_ServiceStore): void {
-    assertNonEmptyString(
-      element.docLink,
-      `Service store 'docLink' field is missing`,
-    );
->>>>>>> upstream/master
-    const serviceStore = this.context.graph.getServiceStore(
-      this.context.graph.buildPath(element.package, element.name),
-    );
-    // TODO includedStores
-    serviceStore.docLink = element.docLink;
-  }*/
 
   visit_Mapping(element: V1_Mapping): void {
     const mapping = this.context.graph.getMapping(

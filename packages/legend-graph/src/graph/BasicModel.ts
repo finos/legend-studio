@@ -50,7 +50,6 @@ import {
 import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
 import type { Section } from '../models/metamodels/pure/packageableElements/section/Section';
-import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import { PureGraphExtension } from './PureGraphExtension';
 import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
 import { DataType } from '../models/metamodels/pure/packageableElements/domain/DataType';
@@ -168,7 +167,6 @@ export abstract class BasicModel {
       ownStores: computed,
       ownFlatDatas: computed,
       ownDatabases: computed,
-      ownServiceStores: computed,
       ownMappings: computed,
       ownServices: computed,
       ownRuntimes: computed,
@@ -261,11 +259,6 @@ export abstract class BasicModel {
   get ownDatabases(): Database[] {
     return Array.from(this.storesIndex.values()).filter(
       (store: Store): store is Database => store instanceof Database,
-    );
-  }
-  get ownServiceStores(): ServiceStore[] {
-    return Array.from(this.storesIndex.values()).filter(
-      (store: Store): store is ServiceStore => store instanceof ServiceStore,
     );
   }
   get ownMappings(): Mapping[] {

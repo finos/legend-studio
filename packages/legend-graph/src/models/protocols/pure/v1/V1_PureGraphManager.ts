@@ -154,7 +154,6 @@ import {
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database';
-import { V1_ServiceStore } from './model/packageableElements/store/relational/V1_ServiceStore';
 import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity';
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
@@ -2286,9 +2285,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_ELEMENT_PATH.FLAT_DATA;
     } else if (protocol instanceof V1_Database) {
       return CORE_ELEMENT_PATH.DATABASE;
-    } /*else if (protocol instanceof V1_ServiceStore) {
-      return CORE_ELEMENT_PATH.SERVICE_STORE;
-    }*/ else if (protocol instanceof V1_Service) {
+    } else if (protocol instanceof V1_Service) {
       return CORE_ELEMENT_PATH.SERVICE;
     } else if (protocol instanceof V1_FileGenerationSpecification) {
       return CORE_ELEMENT_PATH.FILE_GENERATION;

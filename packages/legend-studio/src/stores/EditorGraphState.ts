@@ -78,7 +78,6 @@ import {
   Measure,
   Unit,
   Database,
-  ServiceStore,
   SectionIndex,
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
@@ -1135,8 +1134,6 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE;
     } else if (element instanceof Database) {
       return PACKAGEABLE_ELEMENT_TYPE.DATABASE;
-    } else if (element instanceof ServiceStore) {
-      return PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE;
     } else if (element instanceof Mapping) {
       return PACKAGEABLE_ELEMENT_TYPE.MAPPING;
     } else if (element instanceof Service) {

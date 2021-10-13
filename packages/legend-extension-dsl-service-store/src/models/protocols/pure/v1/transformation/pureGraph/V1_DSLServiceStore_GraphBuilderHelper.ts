@@ -21,9 +21,49 @@ import type {
   V1_GraphBuilderContext,
 } from '@finos/legend-graph';
 import type { V1_ServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServicePtr';
-import type { Service } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/Service';
+import {
+  Service,
+  HTTP_METHOD,
+} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/Service';
 import type { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
-import type { ServiceGroup } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceGroup';
+import { ServiceGroup } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceGroup';
+import type { V1_TypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
+import type { TypeReference } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
+import { V1_BooleanTypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_BooleanTypeReference';
+import { BooleanTypeReference } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/BooleanTypeReference';
+import { V1_ComplexTypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_ComplexTypeReference';
+import { ComplexTypeReference } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ComplexTypeReference';
+import { getBinding } from '@finos/legend-extension-dsl-serializer';
+import { V1_FloatTypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_FloatTypeReference';
+import { FloatTypeReference } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/FloatTypeReference';
+import { V1_IntegerTypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_IntegerTypeReference';
+import { IntegerTypeReference } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/IntegerTypeReference';
+import { V1_StringTypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_StringTypeReference';
+import { StringTypeReference } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/StringTypeReference';
+import {
+  assertNonNullable,
+  guaranteeNonEmptyString,
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import type { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
+import {
+  LOCATION,
+  ServiceParameter,
+} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceParameter';
+import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
+import { ServiceParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceParameterMapping';
+import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
+import { RawLambda, V1_AppliedProperty } from '@finos/legend-graph';
+import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
+import { object } from 'serializr';
+import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
+import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreElement';
+import { V1_Service } from '../../model/packageableElements/store/serviceStore/model/V1_Service';
+import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroup';
+import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
+import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
+import type { SecurityScheme_PureProtocolPlugin_Extension } from '../../../SecurityScheme_PureProtocolPlugin_Extension';
 
 export const V1_resolveServiceStore = (
   path: string,
@@ -62,4 +102,182 @@ export const V1_resolveService = (
     );
     return parentServiceGroup.getService(servicePtr.service);
   }
+};
+
+export const V1_buildTypeReference = (
+  protocol: V1_TypeReference,
+  context: V1_GraphBuilderContext,
+): TypeReference => {
+  if (protocol instanceof V1_BooleanTypeReference) {
+    const booleanTypeReference = new BooleanTypeReference(protocol.list);
+    return booleanTypeReference;
+  } else if (protocol instanceof V1_ComplexTypeReference) {
+    const complexTypeReference = new ComplexTypeReference(protocol.list);
+    complexTypeReference.type = context.graph.getClass(protocol.type);
+    complexTypeReference.binding = getBinding(protocol.binding, context.graph);
+    return complexTypeReference;
+  } else if (protocol instanceof V1_FloatTypeReference) {
+    const floatTypeReference = new FloatTypeReference(protocol.list);
+    return floatTypeReference;
+  } else if (protocol instanceof V1_IntegerTypeReference) {
+    const integerTypeReference = new IntegerTypeReference(protocol.list);
+    return integerTypeReference;
+  }
+  if (protocol instanceof V1_StringTypeReference) {
+    const stringTypeReference = new StringTypeReference(protocol.list);
+    return stringTypeReference;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build type reference: no compatible builder available from plugins`,
+    protocol,
+  );
+};
+
+export const V1_buildServiceParameter = (
+  protocol: V1_ServiceParameter,
+  context: V1_GraphBuilderContext,
+): ServiceParameter => {
+  const serviceParameter = new ServiceParameter();
+  serviceParameter.name = guaranteeNonEmptyString(
+    protocol.name,
+    `Service paramater 'name' field is missing or empty`,
+  );
+  assertNonNullable(protocol.type, `Service parameter 'type' field is missing`);
+  serviceParameter.type = V1_buildTypeReference(protocol.type, context);
+  serviceParameter.location = guaranteeNonNullable(
+    Object.values(LOCATION).find((type) => type === protocol.location),
+    `Service parameter location '${protocol.location}' is not supported`,
+  );
+  serviceParameter.enumeration = protocol.enumeration;
+  serviceParameter.serializationFormat = protocol.serializationFormat;
+  return serviceParameter;
+};
+
+export const V1_buildLambdaFromProperty = (protocol: string): RawLambda => {
+  const prop = new V1_AppliedProperty();
+  prop.property = protocol;
+  prop.parameters = [];
+  const lambda = new RawLambda(object, prop);
+  return lambda;
+};
+
+export const V1_buildServiceParameterMapping = (
+  protocol: V1_ServiceParameterMapping,
+  service: Service,
+): ServiceParameterMapping => {
+  if (protocol instanceof V1_ParameterIndexedParameterMapping) {
+    const mapping = new ServiceParameterMapping();
+    mapping.type = 'parameter';
+    mapping.serviceParameter = service.getParameter(protocol.serviceParameter);
+    const lambda = new RawLambda(
+      protocol.transform.parameters,
+      protocol.transform.body,
+    );
+    mapping.transform = lambda;
+    return mapping;
+  } else if (protocol instanceof V1_PropertyIndexedParameterMapping) {
+    const mapping = new ServiceParameterMapping();
+    mapping.type = 'property';
+    mapping.serviceParameter = service.getParameter(protocol.serviceParameter);
+    mapping.transform = V1_buildLambdaFromProperty(protocol.property);
+    return mapping;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build service parameter mapping: no compatible builder available from plugins`,
+    protocol,
+  );
+};
+
+const V1_buildSecurityScheme = (
+  protocol: V1_SecurityScheme,
+  context: V1_GraphBuilderContext,
+): SecurityScheme => {
+  const extraSecuritySchemeBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as SecurityScheme_PureProtocolPlugin_Extension
+      ).V1_getExtraSecuritySchemeBuilders?.() ?? [],
+  );
+  for (const builder of extraSecuritySchemeBuilders) {
+    const securityScheme = builder(protocol, context);
+    if (securityScheme) {
+      return securityScheme;
+    }
+  }
+  throw new UnsupportedOperationError(`Can't build security scheme`, protocol);
+};
+
+export const V1_buildServiceStoreElement = (
+  protocol: V1_ServiceStoreElement,
+  owner: ServiceStore,
+  context: V1_GraphBuilderContext,
+  parent?: ServiceGroup | undefined,
+): ServiceStoreElement => {
+  if (protocol instanceof V1_Service) {
+    const service = new Service(
+      guaranteeNonEmptyString(
+        protocol.id,
+        `Service 'id' field is missing or empty`,
+      ),
+      guaranteeNonEmptyString(
+        protocol.path,
+        `Service 'path' field is missing or empty`,
+      ),
+      owner,
+      parent,
+    );
+    if (protocol.requestBody !== undefined) {
+      service.requestBody = V1_buildTypeReference(
+        protocol.requestBody,
+        context,
+      );
+    }
+    service.method = guaranteeNonNullable(
+      Object.values(HTTP_METHOD).find((type) => type === protocol.method),
+      `Service method '${protocol.method}' is not supported`,
+    );
+    service.parameters = protocol.parameters.map((parameter) =>
+      V1_buildServiceParameter(parameter, context),
+    );
+    assertNonNullable(protocol.response, `Service 'response' field is missing`);
+    service.response = new ComplexTypeReference(protocol.response.list);
+    service.response.type = context.graph.getClass(
+      guaranteeNonEmptyString(
+        protocol.response.type,
+        `Service response 'type' field is missing or empty`,
+      ),
+    );
+    service.response.binding = getBinding(
+      guaranteeNonEmptyString(
+        protocol.response.binding,
+        `Service response 'binding' field is missing or empty`,
+      ),
+      context.graph,
+    );
+    service.security = protocol.security.map((securityScheme) =>
+      V1_buildSecurityScheme(securityScheme, context),
+    );
+    return service;
+  } else if (protocol instanceof V1_ServiceGroup) {
+    const serviceGroup = new ServiceGroup(
+      guaranteeNonEmptyString(
+        protocol.id,
+        `Service group 'id' field is missing or empty`,
+      ),
+      guaranteeNonEmptyString(
+        protocol.path,
+        `Service group 'path' field is missing or empty`,
+      ),
+      owner,
+      parent,
+    );
+    serviceGroup.elements = protocol.elements.map((element) =>
+      V1_buildServiceStoreElement(element, owner, context, serviceGroup),
+    );
+    return serviceGroup;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build service store element: no compatible builder available from plugins`,
+    protocol,
+  );
 };

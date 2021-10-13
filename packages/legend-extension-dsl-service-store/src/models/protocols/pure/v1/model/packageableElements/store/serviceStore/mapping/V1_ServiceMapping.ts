@@ -17,17 +17,17 @@
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../DSLServiceStore_ModelUtils';
-import { V1_ServicePtr } from '../model/V1_ServicePtr';
+import type { V1_ServicePtr } from '../model/V1_ServicePtr';
 import type { V1_ServiceParameterMapping } from './V1_ServiceParameterMapping';
 
 export class V1_ServiceMapping implements Hashable {
-  service: V1_ServicePtr = new V1_ServicePtr();
+  service!: V1_ServicePtr;
   parameterMappings: V1_ServiceParameterMapping[] = [];
 
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_MAPPING,
-      this.service,
+      this.service.service,
       hashArray(this.parameterMappings),
     ]);
   }

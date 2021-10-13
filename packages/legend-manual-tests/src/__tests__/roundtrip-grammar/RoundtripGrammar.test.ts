@@ -57,6 +57,7 @@ import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
+import { DSLServiceStore_GraphPreset } from '@finos/legend-extension-dsl-service-store';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -80,6 +81,7 @@ const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'DSLDataSpace-basic.pure': SKIP, // Needs https://github.com/finos/legend-engine/pull/397 to be merged
   'DSLSerializer-basic.pure': SKIP, // To be fixed - https://github.com/finos/legend-studio/pull/534
+  'DSLServiceStore-basic.pure': SKIP, // To be fixed - https://github.com/finos/legend-studio/pull/534
   // post processor mismatch between engine (undefined) vs studio ([])
   'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
@@ -137,6 +139,7 @@ const checkGrammarRoundtrip = async (
     new DSLDiagram_GraphPreset(),
     new DSLSerializer_GraphPreset(),
     new DSLDataSpace_GraphPreset(),
+    new DSLServiceStore_GraphPreset(),
   ]);
   pluginManager.install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);

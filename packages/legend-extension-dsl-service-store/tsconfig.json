@@ -13,6 +13,7 @@
     { "path": "../legend-studio" },
     { "path": "../legend-shared" },
     { "path": "../legend-model-storage" },
-    { "path": "../legend-art" }
+    { "path": "../legend-art" },
+    { "path": "../legend-extension-dsl-serializer" }
   ]
 }

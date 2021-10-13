@@ -16,11 +16,67 @@
 
 export const roundtripTestData = [
   {
-    path: 'test::ServiceStore1',
+    path: 'test::A',
+    content: {
+      _type: 'class',
+      name: 'A',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'z',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'anything::schemaSet1',
+    content: {
+      _type: 'externalFormatSchemaSet',
+      format: 'FlatData',
+      name: 'schemaSet1',
+      package: 'anything',
+      schemas: [
+        {
+          content: 'test content',
+          id: 'id1',
+          location: 'location1',
+        },
+        {
+          content: 'test content2',
+          id: 'id2',
+          location: 'location2',
+        },
+      ],
+    },
+    classifierPath: 'meta::external::shared::format::metamodel::SchemaSet',
+  },
+  {
+    path: 'anything::binding1',
+    content: {
+      _type: 'binding',
+      contentType: 'test',
+      modelUnit: {
+        packageableElementExcludes: [],
+        packageableElementIncludes: [],
+      },
+      name: 'binding1',
+      package: 'anything',
+      schemaSet: 'schemaSet1',
+    },
+    classifierPath: 'meta::external::shared::format::binding::Binding',
+  },
+  {
+    path: 'anything::ServiceStore1',
     content: {
       _type: 'serviceStore',
       name: 'ServiceStore1',
-      package: 'test',
+      package: 'anything',
       elements: [
         {
           _type: 'service',
@@ -40,7 +96,7 @@ export const roundtripTestData = [
           path: '/testService',
           response: {
             _type: 'complex',
-            binding: 'test::Binding',
+            binding: 'anything::binding1',
             list: false,
             type: 'test::A',
           },
@@ -49,6 +105,142 @@ export const roundtripTestData = [
       ],
     },
     classifierPath: 'meta::external::store::service::metamodel::ServiceStore',
+  },
+  {
+    path: 'anything::ServiceStore2',
+    content: {
+      _type: 'serviceStore',
+      name: 'ServiceStore2',
+      package: 'anything',
+      elements: [
+        {
+          _type: 'serviceGroup',
+          elements: [
+            {
+              _type: 'service',
+              id: 'TestService1',
+              method: 'GET',
+              parameters: [
+                {
+                  location: 'QUERY',
+                  name: 'param',
+                  serializationFormat: {},
+                  type: {
+                    _type: 'string',
+                    list: false,
+                  },
+                },
+                {
+                  location: 'QUERY',
+                  name: 'param2',
+                  serializationFormat: {},
+                  type: {
+                    _type: 'integer',
+                    list: false,
+                  },
+                },
+              ],
+              path: '/testService1',
+              response: {
+                _type: 'complex',
+                binding: 'anything::binding1',
+                list: false,
+                type: 'test::A',
+              },
+              security: [],
+            },
+            {
+              _type: 'service',
+              id: 'TestService2',
+              method: 'GET',
+              parameters: [
+                {
+                  location: 'QUERY',
+                  name: 'param1',
+                  serializationFormat: {},
+                  type: {
+                    _type: 'boolean',
+                    list: false,
+                  },
+                },
+              ],
+              path: '/testService2',
+              response: {
+                _type: 'complex',
+                binding: 'anything::binding1',
+                list: false,
+                type: 'test::A',
+              },
+              security: [],
+            },
+          ],
+          id: 'TestServiceGroup',
+          path: '/testServices',
+        },
+      ],
+    },
+    classifierPath: 'meta::external::store::service::metamodel::ServiceStore',
+  },
+  {
+    path: 'anything::mapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'serviceStore',
+          class: 'test::A',
+          localMappingProperties: [],
+          servicesMapping: [
+            {
+              parameterMappings: [
+                {
+                  _type: 'parameter',
+                  serviceParameter: 'serializationFormat',
+                  transform: {
+                    _type: 'lambda',
+                    body: [
+                      {
+                        _type: 'string',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        values: ['CSV'],
+                      },
+                    ],
+                    parameters: [],
+                  },
+                },
+              ],
+              service: {
+                service: 'TestService',
+                serviceStore: 'anything::ServiceStore1',
+              },
+            },
+          ],
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'mapping',
+      package: 'anything',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'anything::tConn',
+    content: {
+      _type: 'connection',
+      name: 'tConn',
+      package: 'anything',
+      connectionValue: {
+        _type: 'serviceStore',
+        baseUrl: 'test',
+        element: 'anything::ServiceStore1',
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
   {
     path: '__internal__::SectionIndex',
@@ -60,14 +252,32 @@ export const roundtripTestData = [
         {
           _type: 'importAware',
           imports: [],
-          elements: [],
+          elements: ['test::A'],
           parserName: 'Pure',
         },
         {
           _type: 'importAware',
-          imports: [],
-          elements: ['test::ServiceStore1'],
+          imports: ['anything'],
+          elements: ['anything::ServiceStore1'],
           parserName: 'ServiceStore',
+        },
+        {
+          _type: 'importAware',
+          imports: ['anything'],
+          elements: ['anything::ServiceStore2'],
+          parserName: 'ServiceStore',
+        },
+        {
+          _type: 'importAware',
+          imports: ['anything'],
+          elements: ['anything::mapping'],
+          parserName: 'Mapping',
+        },
+        {
+          _type: 'importAware',
+          imports: ['anything'],
+          elements: ['anything::tConn'],
+          parserName: 'Connection',
         },
       ],
     },

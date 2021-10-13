@@ -20,7 +20,6 @@ import type { Hashable } from '@finos/legend-shared';
 import { SerializationFormat } from './SerializationFormat';
 import type { TypeReference } from './TypeReference';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
-import { StringTypeReference } from './StringTypeReference';
 
 export enum LOCATION {
   PATH = 'PATH',
@@ -29,7 +28,7 @@ export enum LOCATION {
 
 export class ServiceParameter implements Hashable {
   name!: string;
-  type?: TypeReference | undefined;
+  type!: TypeReference;
   location!: LOCATION;
   enumeration?: string | undefined;
   serializationFormat?: SerializationFormat | undefined;
@@ -49,7 +48,7 @@ export class ServiceParameter implements Hashable {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_PARAMETER,
       this.name,
-      this.type ?? new StringTypeReference(true),
+      this.type,
       this.location,
       this.enumeration ?? '',
       this.serializationFormat ?? new SerializationFormat(),

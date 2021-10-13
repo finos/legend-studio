@@ -18,13 +18,19 @@ import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import { roundtripTestData } from './TEST_DATA_DSLServiceStore_Roundtrip';
 import { DSLServiceStore_GraphPreset } from '../../DSLServiceStore_Extension';
+import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import {
   TEST__GraphPluginManager,
   TEST__checkBuildingElementsRoundtrip,
 } from '@finos/legend-graph';
 
 const pluginManager = new TEST__GraphPluginManager();
-pluginManager.usePresets([new DSLServiceStore_GraphPreset()]).install();
+pluginManager
+  .usePresets([
+    new DSLServiceStore_GraphPreset(),
+    new DSLSerializer_GraphPreset(),
+  ])
+  .install();
 
 test(unitTest('DSL ServiceStore import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(

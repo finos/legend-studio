@@ -19,12 +19,10 @@ import { V1_ServiceStore } from './v1/model/packageableElements/store/serviceSto
 import type { PlainObject } from '@finos/legend-shared';
 import {
   assertNonEmptyString,
-  assertNonNullable,
   assertType,
   guaranteeNonNullable,
-  UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { deserialize, map, object, serialize } from 'serializr';
+import { deserialize, serialize } from 'serializr';
 import {
   V1_serviceStoreModelSchema,
   V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE,
@@ -35,7 +33,6 @@ import {
 } from './v1/transformation/pureProtocol/V1_DSLServiceStore_ProtocolHelper';
 import { getServiceStore } from '../../../graphManager/DSLServiceStore_GraphManagerHelper';
 import { ServiceStore } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
-import type { ServiceStoreElement } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreElement';
 import type {
   GraphPluginManager,
   PackageableElement,
@@ -62,334 +59,46 @@ import type {
   V1_ConnectionProtocolDeserializer,
   V1_ConnectionProtocolSerializer,
   V1_ConnectionTransformer,
+  DSLMapping_PureProtocolProcessorPlugin_Extension,
 } from '@finos/legend-graph';
 import {
-  DSLMapping_PureProtocolProcessorPlugin_Extension,
+  PureProtocolProcessorPlugin,
   fromElementPathToMappingElementId,
   getClassMappingById,
   InferableMappingElementIdImplicitValue,
   InferableMappingElementRootExplicitValue,
-  RawLambda,
+  Multiplicity,
   V1_ElementBuilder,
   V1_initPackageableElement,
-  V1_RawLambda,
   V1_transformElementReference,
 } from '@finos/legend-graph';
-import type { V1_ServiceStoreElement } from './v1/model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
-import {
-  Service,
-  HTTP_METHOD,
-} from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/Service';
-import { ServiceGroup } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceGroup';
-import { V1_Service } from './v1/model/packageableElements/store/serviceStore/model/V1_Service';
-import { V1_ServiceGroup } from './v1/model/packageableElements/store/serviceStore/model/V1_ServiceGroup';
-import { StringTypeReference } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/StringTypeReference';
-import { V1_StringTypeReference } from './v1/model/packageableElements/store/serviceStore/model/V1_StringTypeReference';
-import { V1_BooleanTypeReference } from './v1/model/packageableElements/store/serviceStore/model/V1_BooleanTypeReference';
-import { BooleanTypeReference } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/BooleanTypeReference';
-import { FloatTypeReference } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/FloatTypeReference';
-import { V1_FloatTypeReference } from './v1/model/packageableElements/store/serviceStore/model/V1_FloatTypeReference';
-import { IntegerTypeReference } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/IntegerTypeReference';
-import { V1_IntegerTypeReference } from './v1/model/packageableElements/store/serviceStore/model/V1_IntegerTypeReference';
-import { ComplexTypeReference } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ComplexTypeReference';
-import { V1_ComplexTypeReference } from './v1/model/packageableElements/store/serviceStore/model/V1_ComplexTypeReference';
-import type { TypeReference } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
-import type { V1_TypeReference } from './v1/model/packageableElements/store/serviceStore/model/V1_TypeReference';
-import {
-  ServiceParameter,
-  LOCATION,
-} from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceParameter';
-import { V1_ServiceParameter } from './v1/model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
 import { V1_RootServiceStoreClassMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_RootServiceStoreClassMapping';
 import { RootServiceInstanceSetImplementation } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/RootServiceInstanceSetImplementation';
 import { LocalMappingProperty } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/LocalMappingProperty';
 import { ServiceMapping } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceMapping';
 import { V1_ServiceStoreConnection } from './v1/model/packageableElements/store/serviceStore/connection/V1_ServicestoreConnection';
 import {
+  V1_buildServiceParameterMapping,
+  V1_buildServiceStoreElement,
   V1_resolveService,
   V1_resolveServiceStore,
 } from './v1/transformation/pureGraph/V1_DSLServiceStore_GraphBuilderHelper';
 import { ServiceStoreConnection } from '../../metamodels/pure/model/packageableElements/store/serviceStore/connection/ServiceStoreConnection';
-import { ServiceParameterMapping } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceParameterMapping';
-import { ServicePtr } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServicePtr';
 import { V1_ServiceMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ServiceMapping';
-import type { V1_ServiceParameterMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
-import { V1_ServicePtr } from './v1/model/packageableElements/store/serviceStore/model/V1_ServicePtr';
-import { V1_ParameterIndexedParameterMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
-import { V1_PropertyIndexedParameterMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
-import { V1_ServiceGroupPtr } from './v1/model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
+import {
+  V1_transformServiceParameterMapping,
+  V1_transformServiceStoreElement,
+  V1_transformServiceToServicePtr,
+} from './v1/transformation/pureGraph/V1_DSLServiceStore_TransformerHelper';
 
 const SERVICE_STORE_ELEMENT_CLASSIFIER_PATH =
   'meta::external::store::service::metamodel::ServiceStore';
 
-const V1_buildTypeReference = (protocol: V1_TypeReference): TypeReference => {
-  if (protocol instanceof V1_BooleanTypeReference) {
-    const booleanTypeReference = new BooleanTypeReference(protocol.list);
-    return booleanTypeReference;
-  } else if (protocol instanceof V1_ComplexTypeReference) {
-    const complexTypeReference = new ComplexTypeReference(protocol.list);
-    complexTypeReference.type = protocol.type;
-    complexTypeReference.binding = protocol.binding;
-    return complexTypeReference;
-  } else if (protocol instanceof V1_FloatTypeReference) {
-    const floatTypeReference = new FloatTypeReference(protocol.list);
-    return floatTypeReference;
-  } else if (protocol instanceof V1_IntegerTypeReference) {
-    const integerTypeReference = new IntegerTypeReference(protocol.list);
-    return integerTypeReference;
-  }
-  if (protocol instanceof V1_StringTypeReference) {
-    const stringTypeReference = new StringTypeReference(protocol.list);
-    return stringTypeReference;
-  }
-  throw new UnsupportedOperationError(
-    `Can't build type reference: no compatible builder available from plugins`,
-    protocol,
-  );
-};
-
-const V1_buildServiceParameter = (
-  protocol: V1_ServiceParameter,
-): ServiceParameter => {
-  const serviceParameter = new ServiceParameter();
-  serviceParameter.name = protocol.name;
-  if (protocol.type !== undefined) {
-    serviceParameter.type = V1_buildTypeReference(protocol.type);
-  }
-  serviceParameter.location =
-    Object.values(LOCATION).find((type) => type === protocol.location) ??
-    LOCATION.PATH;
-  serviceParameter.enumeration = protocol.enumeration;
-  serviceParameter.serializationFormat = protocol.serializationFormat;
-  return serviceParameter;
-};
-
-const V1_buildServiceParameterMapping = (
-  protocol: V1_ServiceParameterMapping,
-  service: Service,
-): ServiceParameterMapping => {
-  if (protocol instanceof V1_ParameterIndexedParameterMapping) {
-    const mapping = new ServiceParameterMapping();
-    mapping.type = 'parameter';
-    mapping.serviceParameter = service.getParameter(protocol.serviceParameter);
-    const lambda = new RawLambda(
-      protocol.transform.parameters,
-      protocol.transform.body,
-    );
-    mapping.transform = lambda;
-    return mapping;
-  } else if (protocol instanceof V1_PropertyIndexedParameterMapping) {
-    const mapping = new ServiceParameterMapping();
-    mapping.type = 'property';
-    mapping.serviceParameter = service.getParameter(protocol.serviceParameter);
-    const lambda = new RawLambda(object, object);
-    mapping.transform = lambda;
-    return mapping;
-  }
-  throw new UnsupportedOperationError(
-    `Can't build service parameter mapping: no compatible builder available from plugins`,
-    protocol,
-  );
-};
-
-const V1_buildServiceStoreElement = (
-  protocol: V1_ServiceStoreElement,
-  owner: ServiceStore,
-  parent?: ServiceGroup | undefined,
-): ServiceStoreElement => {
-  if (protocol instanceof V1_Service) {
-    const service = new Service(protocol.id, protocol.path, owner, parent);
-    if (protocol.requestBody !== undefined) {
-      service.requestBody = V1_buildTypeReference(protocol.requestBody);
-    }
-    service.method =
-      Object.values(HTTP_METHOD).find((type) => type === protocol.method) ??
-      HTTP_METHOD.POST;
-    service.parameters = protocol.parameters.map((parameter) =>
-      V1_buildServiceParameter(parameter),
-    );
-    service.response = new ComplexTypeReference(protocol.response.list);
-    service.response.type = protocol.response.type;
-    service.response.binding = protocol.response.binding;
-    service.security = protocol.security;
-    return service;
-  } else if (protocol instanceof V1_ServiceGroup) {
-    const serviceGroup = new ServiceGroup(
-      protocol.id,
-      protocol.path,
-      owner,
-      parent,
-    );
-    serviceGroup.elements = protocol.elements.map((element) =>
-      V1_buildServiceStoreElement(element, owner, serviceGroup),
-    );
-    return serviceGroup;
-  }
-  throw new UnsupportedOperationError(
-    `Can't build service store element: no compatible builder available from plugins`,
-    protocol,
-  );
-};
-
-const transformStringTypeReference = (
-  metamodel: StringTypeReference,
-): V1_StringTypeReference => {
-  const stringTypeReference = new V1_StringTypeReference();
-  stringTypeReference.list = metamodel.list;
-  return stringTypeReference;
-};
-
-const transformBooleanTypeReference = (
-  metamodel: BooleanTypeReference,
-): V1_BooleanTypeReference => {
-  const booleanTypeReference = new V1_BooleanTypeReference();
-  booleanTypeReference.list = metamodel.list;
-  return booleanTypeReference;
-};
-
-const transformFloatTypeReference = (
-  metamodel: FloatTypeReference,
-): V1_FloatTypeReference => {
-  const floatTypeReference = new V1_FloatTypeReference();
-  floatTypeReference.list = metamodel.list;
-  return floatTypeReference;
-};
-
-const transformIntegerTypeReference = (
-  metamodel: IntegerTypeReference,
-): V1_IntegerTypeReference => {
-  const integerTypeReference = new V1_IntegerTypeReference();
-  integerTypeReference.list = metamodel.list;
-  return integerTypeReference;
-};
-
-const transformComplexTypeReference = (
-  metamodel: ComplexTypeReference,
-): V1_ComplexTypeReference => {
-  const complexTypeReference = new V1_ComplexTypeReference();
-  complexTypeReference.list = metamodel.list;
-  complexTypeReference.type = metamodel.type;
-  complexTypeReference.binding = metamodel.binding;
-  return complexTypeReference;
-};
-
-const transformTypeReference = (metamodel: TypeReference): V1_TypeReference => {
-  if (metamodel instanceof BooleanTypeReference) {
-    return transformBooleanTypeReference(metamodel);
-  } else if (metamodel instanceof ComplexTypeReference) {
-    return transformComplexTypeReference(metamodel);
-  } else if (metamodel instanceof FloatTypeReference) {
-    return transformFloatTypeReference(metamodel);
-  } else if (metamodel instanceof IntegerTypeReference) {
-    return transformIntegerTypeReference(metamodel);
-  } else if (metamodel instanceof StringTypeReference) {
-    return transformStringTypeReference(metamodel);
-  }
-  throw new UnsupportedOperationError(
-    `Can't transform type reference: no compatible transformer available from plugins`,
-    metamodel,
-  );
-};
-
-const transformServiceParameterMapping = (
-  metamodel: ServiceParameterMapping,
-): V1_ServiceParameterMapping => {
-  if (metamodel.type === 'parameter') {
-    const mapping = new V1_ParameterIndexedParameterMapping();
-    mapping.serviceParameter = metamodel.serviceParameter.name;
-    const lambda = new V1_RawLambda();
-    lambda.parameters = metamodel.transform.parameters;
-    lambda.body = metamodel.transform.body;
-    mapping.transform = lambda;
-    return mapping;
-  } else if (metamodel.type === 'property') {
-    const mapping = new V1_PropertyIndexedParameterMapping();
-    mapping.serviceParameter = metamodel.serviceParameter.name;
-    mapping.property = '';
-    return mapping;
-  }
-  throw new UnsupportedOperationError(
-    `Can't transform service parameter mapping: no compatible transformer available from plugins`,
-    metamodel,
-  );
-};
-
-const transformServiceParameter = (
-  metamodel: ServiceParameter,
-): V1_ServiceParameter => {
-  const serviceParameter = new V1_ServiceParameter();
-  serviceParameter.name = metamodel.name;
-  if (metamodel.type !== undefined) {
-    serviceParameter.type = transformTypeReference(metamodel.type);
-  }
-  serviceParameter.location = metamodel.location;
-  serviceParameter.enumeration = metamodel.enumeration;
-  serviceParameter.serializationFormat = metamodel.serializationFormat;
-  return serviceParameter;
-};
-
-const transformService = (metamodel: Service): V1_Service => {
-  const service = new V1_Service();
-  service.id = metamodel.id;
-  service.path = metamodel.path;
-  if (metamodel.requestBody !== undefined) {
-    service.requestBody = transformTypeReference(metamodel.requestBody);
-  }
-  service.method = metamodel.method;
-  service.parameters = metamodel.parameters.map((parameter) =>
-    transformServiceParameter(parameter),
-  );
-  service.response = transformComplexTypeReference(metamodel.response);
-  return service;
-};
-
-const transformServiceGroup = (metamodel: ServiceGroup): V1_ServiceGroup => {
-  const serviceGroup = new V1_ServiceGroup();
-  serviceGroup.id = metamodel.id;
-  serviceGroup.path = metamodel.path;
-  serviceGroup.elements = metamodel.elements.map((element) =>
-    transformServiceStoreElement(element),
-  );
-  return serviceGroup;
-};
-
-const transformServiceToServiceGroupPtr = (
-  metamodel: ServiceGroup,
-): V1_ServiceGroupPtr => {
-  const serviceGroup = new V1_ServiceGroupPtr();
-  serviceGroup.serviceGroup = metamodel.id;
-  serviceGroup.serviceStore = metamodel.owner.path;
-  if (metamodel.parent !== undefined) {
-    serviceGroup.parent = transformServiceToServiceGroupPtr(metamodel.parent);
-  }
-  return serviceGroup;
-};
-
-const transformServiceToServicePtr = (metamodel: Service): V1_ServicePtr => {
-  const service = new V1_ServicePtr();
-  service.service = metamodel.id;
-  service.serviceStore = metamodel.owner.path;
-  if (metamodel.parent !== undefined) {
-    service.parent = transformServiceToServiceGroupPtr(metamodel.parent);
-  }
-  return service;
-};
-
-const transformServiceStoreElement = (
-  metamodel: ServiceStoreElement,
-): V1_ServiceStoreElement => {
-  if (metamodel instanceof Service) {
-    return transformService(metamodel);
-  } else if (metamodel instanceof ServiceGroup) {
-    return transformServiceGroup(metamodel);
-  }
-  throw new UnsupportedOperationError(
-    `Can't transform service store element: no compatible transformer available from plugins`,
-    metamodel,
-  );
-};
-
-export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_PureProtocolProcessorPlugin_Extension {
+export class DSLServiceStore_PureProtocolProcessorPlugin
+  extends PureProtocolProcessorPlugin
+  implements DSLMapping_PureProtocolProcessorPlugin_Extension
+{
+  plugins: PureProtocolProcessorPlugin[] = [];
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
@@ -399,6 +108,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
 
   install(pluginManager: GraphPluginManager): void {
     pluginManager.registerPureProtocolProcessorPlugin(this);
+    this.plugins = pluginManager.getPureProtocolProcessorPlugins();
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
@@ -435,7 +145,11 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
           element.description = elementProtocol.description;
           element.elements = elementProtocol.elements.map(
             (serviceStoreElement) =>
-              V1_buildServiceStoreElement(serviceStoreElement, element),
+              V1_buildServiceStoreElement(
+                serviceStoreElement,
+                element,
+                context,
+              ),
           );
         },
       }),
@@ -459,7 +173,10 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
         elementProtocol: V1_PackageableElement,
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_ServiceStore) {
-          return serialize(V1_serviceStoreModelSchema, elementProtocol);
+          return serialize(
+            V1_serviceStoreModelSchema(this.plugins),
+            elementProtocol,
+          );
         }
         return undefined;
       },
@@ -472,7 +189,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
         json: PlainObject<V1_PackageableElement>,
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE) {
-          return deserialize(V1_serviceStoreModelSchema, json);
+          return deserialize(V1_serviceStoreModelSchema(this.plugins), json);
         }
         return undefined;
       },
@@ -492,7 +209,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
           protocol.package = metamodel.package?.fullPath ?? '';
           protocol.description = metamodel.description;
           protocol.elements = metamodel.elements.map((element) =>
-            transformServiceStoreElement(element),
+            V1_transformServiceStoreElement(element, context),
           );
           return protocol;
         }
@@ -501,7 +218,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraClassMappingFirstPassBuilders(): V1_ClassMappingFirstPassBuilder[] {
+  V1_getExtraClassMappingFirstPassBuilders(): V1_ClassMappingFirstPassBuilder[] {
     return [
       (
         classMapping: V1_ClassMapping,
@@ -509,14 +226,11 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
         parent: Mapping,
       ): InstanceSetImplementation | undefined => {
         if (classMapping instanceof V1_RootServiceStoreClassMapping) {
+          console.log(classMapping);
           assertNonEmptyString(
             classMapping.class,
             'ServiceStore class mapping class is missing',
           );
-          /*assertNonNullable(
-            classMapping.root,
-            'ServiceStore class mapping root flag is missing',
-          );*/
           const targetClass = context.resolveClass(classMapping.class);
           const rootServiceInstanceSetImplementation =
             new RootServiceInstanceSetImplementation(
@@ -533,7 +247,17 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
               ),
             );
           rootServiceInstanceSetImplementation.localMappingProperties =
-            classMapping.localMappingProperties;
+            classMapping.localMappingProperties.map((localMappingProperty) => {
+              const mappingProperty = new LocalMappingProperty();
+              mappingProperty.type = localMappingProperty.type;
+              mappingProperty.name = localMappingProperty.name;
+              const multiplicity = new Multiplicity(
+                localMappingProperty.multiplicity.lowerBound,
+                localMappingProperty.multiplicity.upperBound,
+              );
+              mappingProperty.multiplicity = multiplicity;
+              return mappingProperty;
+            });
           rootServiceInstanceSetImplementation.servicesMapping =
             classMapping.servicesMapping.map((serviceMapping) => {
               const mapping = new ServiceMapping(
@@ -561,7 +285,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraClassMappingSecondPassBuilders(): V1_ClassMappingSecondPassBuilder[] {
+  V1_getExtraClassMappingSecondPassBuilders(): V1_ClassMappingSecondPassBuilder[] {
     return [
       (
         classMapping: V1_ClassMapping,
@@ -595,7 +319,11 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
               const property = new LocalMappingProperty();
               property.name = localMappingProperty.name;
               property.type = localMappingProperty.type;
-              property.multiplicity = localMappingProperty.multiplicity;
+              const multiplicity = new Multiplicity(
+                localMappingProperty.multiplicity.lowerBound,
+                localMappingProperty.multiplicity.upperBound,
+              );
+              property.multiplicity = multiplicity;
               return property;
             });
           rootServiceInstanceSetImplementation.servicesMapping =
@@ -623,7 +351,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraClassMappingValueSerializers(): V1_ClassMappingValueSerializer[] {
+  V1_getExtraClassMappingValueSerializers(): V1_ClassMappingValueSerializer[] {
     return [
       (value: V1_ClassMapping): V1_ClassMapping | undefined => {
         if (value instanceof V1_RootServiceStoreClassMapping) {
@@ -634,7 +362,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraClassMappingValueDeserializers(): V1_ClassMappingValueDeserializer[] {
+  V1_getExtraClassMappingValueDeserializers(): V1_ClassMappingValueDeserializer[] {
     return [
       (json: PlainObject<V1_ClassMapping>): V1_ClassMapping | undefined => {
         if (json._type === V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE) {
@@ -645,7 +373,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraClassMappingTransformers(): V1_ClassMappingTransformer[] {
+  V1_getExtraClassMappingTransformers(): V1_ClassMappingTransformer[] {
     return [
       (
         setImplementation: InstanceSetImplementation,
@@ -662,13 +390,13 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
           classMapping.servicesMapping = setImplementation.servicesMapping.map(
             (serviceMapping) => {
               const mapping = new V1_ServiceMapping();
-              mapping.service = transformServiceToServicePtr(
+              mapping.service = V1_transformServiceToServicePtr(
                 serviceMapping.service,
               );
               mapping.parameterMappings = serviceMapping.parameterMappings.map(
                 (parameter) => {
                   const parameterMapping =
-                    transformServiceParameterMapping(parameter);
+                    V1_transformServiceParameterMapping(parameter);
                   return parameterMapping;
                 },
               );
@@ -682,7 +410,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
+  V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
     return [
       (
         connection: V1_Connection,
@@ -717,7 +445,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraConnectionTransformers(): V1_ConnectionTransformer[] {
+  V1_getExtraConnectionTransformers(): V1_ConnectionTransformer[] {
     return [
       (
         metamodel: Connection,
@@ -734,7 +462,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraConnectionProtocolSerializers(): V1_ConnectionProtocolSerializer[] {
+  V1_getExtraConnectionProtocolSerializers(): V1_ConnectionProtocolSerializer[] {
     return [
       (
         connectionProtocol: V1_Connection,
@@ -750,7 +478,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin extends DSLMapping_Pure
     ];
   }
 
-  override V1_getExtraConnectionProtocolDeserializers(): V1_ConnectionProtocolDeserializer[] {
+  V1_getExtraConnectionProtocolDeserializers(): V1_ConnectionProtocolDeserializer[] {
     return [
       (json: PlainObject<V1_Connection>): V1_Connection | undefined => {
         if (json._type === V1_SERVICE_STORE_CONNECTION_PROTOCOL_TYPE) {

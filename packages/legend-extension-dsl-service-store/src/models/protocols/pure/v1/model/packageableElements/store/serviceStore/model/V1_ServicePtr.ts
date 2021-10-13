@@ -20,8 +20,8 @@ import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../DSLService
 import { V1_ServiceGroupPtr } from './V1_ServiceGroupPtr';
 
 export class V1_ServicePtr implements Hashable {
-  serviceStore = '';
-  service = '';
+  serviceStore!: string;
+  service!: string;
   parent?: V1_ServiceGroupPtr | undefined;
 
   get hashCode(): string {

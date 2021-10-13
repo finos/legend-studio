@@ -27,8 +27,6 @@ export class BooleanTypeReference extends TypeReference implements Hashable {
     makeObservable(this, {
       hashCode: computed,
     });
-
-    this.list = list;
   }
 
   override get hashCode(): string {

@@ -43,7 +43,10 @@ import {
   V1_buildRelationalClassMapping,
   V1_buildRelationalPrimaryKey,
 } from './helpers/V1_RelationalClassMappingBuilderHelper';
-import type { V1_ClassMappingVisitor } from '../../../model/packageableElements/mapping/V1_ClassMapping';
+import type {
+  V1_ClassMappingVisitor,
+  V1_ClassMapping,
+} from '../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
 import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
@@ -62,7 +65,6 @@ import {
   getOwnClassMappingById,
 } from '../../../../../../../helpers/MappingHelper';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
-import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping';
 
 export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>

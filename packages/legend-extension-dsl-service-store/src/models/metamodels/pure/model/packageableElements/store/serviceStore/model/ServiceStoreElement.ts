@@ -25,8 +25,8 @@ export abstract class ServiceStoreElement implements Hashable {
   private readonly _$nominalTypeBrand!: 'ServiceStoreElement';
   owner!: ServiceStore;
   parent?: ServiceGroup | undefined;
-  id: string;
-  path: string;
+  id!: string;
+  path!: string;
 
   constructor(
     id: string,

@@ -27,7 +27,6 @@ import type {
   ElementEditorStateCreator,
   ElementTypeGetter,
   ElementProjectExplorerDnDTypeGetter,
-  ElementIconGetter,
   DSL_StudioPlugin_Extension,
   NewElementState,
 } from '@finos/legend-studio';

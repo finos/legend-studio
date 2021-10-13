@@ -15,3 +15,5 @@
  */
 
 export * from './DSLSerializer_Extension';
+export * from './models/metamodels/pure/model/packageableElements/store/Binding';
+export { getBinding } from './graphManager/DSLSerializer_GraphManagerHelper';

@@ -28,7 +28,6 @@ import { Association } from '../../../../../../metamodels/pure/packageableElemen
 import { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
 import { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
 import { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
-import { ServiceStore } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
 import { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
@@ -57,7 +56,6 @@ import type { V1_PackageableConnection } from '../../../model/packageableElement
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
 export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -307,37 +305,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     this.context.currentSubGraph.setOwnStore(path, database);
     return database;
   }
-
-<<<<<<< HEAD
-  /*visit_ServiceStore(element: V1_ServiceStore): PackageableElement {
-    assertNonEmptyString(element.package, 'Service store package is missing');
-    assertNonEmptyString(element.name, 'Service store name is missing');
-=======
-  visit_ServiceStore(element: V1_ServiceStore): PackageableElement {
-    assertNonEmptyString(
-      element.package,
-      `Service store 'package' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      element.name,
-      `Service store 'name' field is missing or empty`,
-    );
->>>>>>> upstream/master
-    const serviceStore = new ServiceStore(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(serviceStore);
-    this.context.currentSubGraph.setOwnStore(path, serviceStore);
-    return serviceStore;
-  }*/
 
   visit_Mapping(element: V1_Mapping): PackageableElement {
     assertNonEmptyString(

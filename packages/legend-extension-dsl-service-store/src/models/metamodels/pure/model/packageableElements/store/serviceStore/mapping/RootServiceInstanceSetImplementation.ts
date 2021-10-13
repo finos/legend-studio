@@ -15,6 +15,7 @@
  */
 
 import { observable, action, makeObservable, computed } from 'mobx';
+import type { Hashable } from '@finos/legend-shared';
 import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type {
   Class,
@@ -30,7 +31,10 @@ import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceSto
 import type { LocalMappingProperty } from './LocalMappingProperty';
 import type { ServiceMapping } from './ServiceMapping';
 
-export class RootServiceInstanceSetImplementation extends InstanceSetImplementation {
+export class RootServiceInstanceSetImplementation
+  extends InstanceSetImplementation
+  implements Hashable
+{
   localMappingProperties: LocalMappingProperty[] = [];
   servicesMapping: ServiceMapping[] = [];
 
@@ -72,6 +76,7 @@ export class RootServiceInstanceSetImplementation extends InstanceSetImplementat
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.ROOT_SERVICE_STORE_CLASS_MAPPING,
+      super.hashCode,
       hashArray(this.localMappingProperties),
       hashArray(this.servicesMapping),
     ]);

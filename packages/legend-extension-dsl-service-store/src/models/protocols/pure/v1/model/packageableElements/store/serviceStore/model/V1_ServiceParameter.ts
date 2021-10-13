@@ -19,11 +19,10 @@ import type { Hashable } from '@finos/legend-shared';
 import { V1_SerializationFormat } from './V1_SerializationFormat';
 import type { V1_TypeReference } from './V1_TypeReference';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../DSLServiceStore_ModelUtils';
-import { V1_StringTypeReference } from './V1_StringTypeReference';
 
 export class V1_ServiceParameter implements Hashable {
   name!: string;
-  type?: V1_TypeReference | undefined;
+  type!: V1_TypeReference;
   location!: string;
   enumeration?: string | undefined;
   serializationFormat?: V1_SerializationFormat | undefined;
@@ -32,7 +31,7 @@ export class V1_ServiceParameter implements Hashable {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_PARAMETER,
       this.name,
-      this.type ?? new V1_StringTypeReference(),
+      this.type,
       this.location,
       this.enumeration ?? '',
       this.serializationFormat ?? new V1_SerializationFormat(),

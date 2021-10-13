@@ -15,14 +15,13 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import {hashArray} from "@finos/legend-shared";
-import {SERVICE_STORE_HASH_STRUCTURE} from "../../../../../../../../DSLServiceStore_ModelUtils";
-import {V1_StringTypeReference} from "./V1_StringTypeReference";
+import { hashArray } from '@finos/legend-shared';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../DSLServiceStore_ModelUtils';
 
 export abstract class V1_ServiceStoreElement implements Hashable {
   private readonly _$nominalTypeBrand!: 'V1_ServiceStoreElement';
-  id: string = '';
-  path: string = '';
+  id!: string;
+  path!: string;
 
   get hashCode(): string {
     return hashArray([

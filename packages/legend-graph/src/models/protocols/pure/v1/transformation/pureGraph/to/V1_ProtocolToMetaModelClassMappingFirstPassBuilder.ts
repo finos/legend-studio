@@ -30,7 +30,10 @@ import { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { InferableMappingElementRootExplicitValue } from '../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementRoot';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_ClassMappingVisitor } from '../../../model/packageableElements/mapping/V1_ClassMapping';
+import type {
+  V1_ClassMappingVisitor,
+  V1_ClassMapping,
+} from '../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
 import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
@@ -45,7 +48,6 @@ import { V1_resolvePathsInRawLambda } from './helpers/V1_ValueSpecificationPathR
 import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
 import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
-import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   implements V1_ClassMappingVisitor<SetImplementation>

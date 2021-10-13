@@ -18,17 +18,19 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../DSLServiceStore_ModelUtils';
 import { V1_ServiceParameterMapping } from './V1_ServiceParameterMapping';
+import { V1_buildLambdaFromProperty } from '../../../../../transformation/pureGraph/V1_DSLServiceStore_GraphBuilderHelper';
 
 export class V1_PropertyIndexedParameterMapping
   extends V1_ServiceParameterMapping
   implements Hashable
 {
-  property = '';
+  property!: string;
 
   override get hashCode(): string {
     return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.PROPERTY_INDEXED_PARAMETER_MAPPING,
-      this.property,
+      SERVICE_STORE_HASH_STRUCTURE.SERVICE_PARAMETER_MAPPING,
+      this.serviceParameter,
+      V1_buildLambdaFromProperty(this.property),
     ]);
   }
 }

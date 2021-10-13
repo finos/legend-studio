@@ -98,7 +98,6 @@ import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
-import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
