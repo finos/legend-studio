@@ -1845,7 +1845,7 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.7.2
+    "@testing-library/dom": 8.9.0
     "@testing-library/react": 12.1.2
     "@types/css-font-loading-module": 0.0.6
     "@types/react": 17.0.29
@@ -1944,7 +1944,7 @@ __metadata:
     monaco-editor: 0.29.1
     monaco-editor-webpack-plugin: 5.0.0
     postcss: 8.3.9
-    postcss-loader: 6.1.1
+    postcss-loader: 6.2.0
     react-refresh: 0.10.0
     resolve: 1.20.0
     rimraf: 3.0.2
@@ -1953,7 +1953,7 @@ __metadata:
     strip-ansi: 7.0.1
     text-table: 0.2.0
     typescript: 4.4.4
-    webpack: 5.58.1
+    webpack: 5.58.2
     wrap-ansi: 8.0.1
   languageName: unknown
   linkType: soft
@@ -2194,7 +2194,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.4
-    webpack: 5.58.1
+    webpack: 5.58.2
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.0
     webpack-dev-server: 4.3.1
@@ -2216,7 +2216,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.7.2
+    "@testing-library/dom": 8.9.0
     "@testing-library/react": 12.1.2
     "@types/papaparse": 5.2.6
     "@types/react": 17.0.29
@@ -2358,7 +2358,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.4
-    webpack: 5.58.1
+    webpack: 5.58.2
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.0
     webpack-dev-server: 4.3.1
@@ -2408,7 +2408,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.7.2
+    "@testing-library/dom": 8.9.0
     "@testing-library/react": 12.1.2
     "@types/react": 17.0.29
     cross-env: 7.0.3
@@ -2441,7 +2441,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@testing-library/dom": 8.7.2
+    "@testing-library/dom": 8.9.0
     "@testing-library/react": 12.1.2
     "@types/react": 17.0.29
     "@types/react-dom": 17.0.9
@@ -3171,7 +3171,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/dom@npm:8.7.2, @testing-library/dom@npm:^8.0.0":
+"@testing-library/dom@npm:8.9.0":
+  version: 8.9.0
+  resolution: "@testing-library/dom@npm:8.9.0"
+  dependencies:
+    "@babel/code-frame": ^7.10.4
+    "@babel/runtime": ^7.12.5
+    "@types/aria-query": ^4.2.0
+    aria-query: ^4.2.2
+    chalk: ^4.1.0
+    dom-accessibility-api: ^0.5.6
+    lz-string: ^1.4.4
+    pretty-format: ^27.0.2
+  checksum: e4b4867d997591d59a6a5898967bdd8d2edb5ec367b5f260c156f19db11bb9aef54f453f1cacbf9efd687a5eeb96a96cd7eac36063eb8fe3b5c475a16c2d8c2d
+  languageName: node
+  linkType: hard
+
+"@testing-library/dom@npm:^8.0.0":
   version: 8.7.2
   resolution: "@testing-library/dom@npm:8.7.2"
   dependencies:
@@ -3440,10 +3456,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.10.4":
-  version: 16.10.4
-  resolution: "@types/node@npm:16.10.4"
-  checksum: 0ed43dd58af42da2c6a695459dd502a6e189be51710145a443a621c1e91d38abc55436c8e48a243edc611fa4b934d94c972c3729b0575deeb47784873aaa54ae
+"@types/node@npm:16.10.8":
+  version: 16.10.8
+  resolution: "@types/node@npm:16.10.8"
+  checksum: e4d35774ff5a195aca2079131acc189ace1be568423c88ee332944206f2c5a632999e8eca461f65c204baa482b3ae9a0e92727185c94d009d82a6af0fa5edd80
   languageName: node
   linkType: hard
 
@@ -9475,7 +9491,7 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 27.0.2
-    "@types/node": 16.10.4
+    "@types/node": 16.10.8
     chalk: 4.1.2
     cross-env: 7.0.3
     eslint: 8.0.0
@@ -11330,9 +11346,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-loader@npm:6.1.1":
-  version: 6.1.1
-  resolution: "postcss-loader@npm:6.1.1"
+"postcss-loader@npm:6.2.0":
+  version: 6.2.0
+  resolution: "postcss-loader@npm:6.2.0"
   dependencies:
     cosmiconfig: ^7.0.0
     klona: ^2.0.4
@@ -11340,7 +11356,7 @@ __metadata:
   peerDependencies:
     postcss: ^7.0.0 || ^8.0.1
     webpack: ^5.0.0
-  checksum: 3c32d123813efeaede39cbd990a5c2275d0feeb3e3d2b9ad8f0bbf37e1e6d28f24d3174e4eebe9db4f563d57052dc9b5fb3f699f7527f639769d88e907a99490
+  checksum: 240a807b696ceab4fac88ca713a9264a322af49d021f5056da8d6ce00307d80d8ad429595221498b6c4d44edaf825b54e8d84b4eb7e517fec41e2909d4a5f75d
   languageName: node
   linkType: hard
 
@@ -14629,9 +14645,9 @@ typescript@4.4.4:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.58.1":
-  version: 5.58.1
-  resolution: "webpack@npm:5.58.1"
+"webpack@npm:5.58.2":
+  version: 5.58.2
+  resolution: "webpack@npm:5.58.2"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -14662,7 +14678,7 @@ typescript@4.4.4:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: e05576c5c7410c9ef25dc3595a870f93b34e3b44778e7df5ccbc1d40a51edb755223959f938b6e8b9b4e2285eb938da2464a08c9103597ff3131cb98c19a1d86
+  checksum: 775da3b72c181204ca3f5200c144dde874fec8e059ba6c08dc9596e33e8408fd55c9c21ab5996124fe4b65963a54817bd4dfbb79fb89f307c9bf6054d69eaef5
   languageName: node
   linkType: hard
 

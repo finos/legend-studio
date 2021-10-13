@@ -79,7 +79,7 @@
     "@finos/stylelint-config-legend-studio": "workspace:*",
     "@juggle/resize-observer": "3.3.1",
     "@types/jest": "27.0.2",
-    "@types/node": "16.10.4",
+    "@types/node": "16.10.8",
     "chalk": "4.1.2",
     "cross-env": "7.0.3",
     "eslint": "8.0.0",
