@@ -62,6 +62,7 @@ import {
   GenerationSpecification,
   Class,
   Enumeration,
+  ConcreteFunctionDefinition,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
 
@@ -129,7 +130,8 @@ export class GraphGenerationState {
       const currentElement = this.editorStore.currentEditorState.element;
       if (
         currentElement instanceof Class ||
-        currentElement instanceof Enumeration
+        currentElement instanceof Enumeration ||
+        currentElement instanceof ConcreteFunctionDefinition
       ) {
         return this.fileGenerationConfigurations
           .slice()
