@@ -414,7 +414,7 @@ export class EditorStore {
     return (
       Boolean(
         this.sdlcState.currentProject &&
-          this.sdlcState.currentNullableWorkspace &&
+          this.sdlcState.currentWorkspace &&
           this.sdlcState.currentRevision,
       ) && this.graphManagerState.systemModel.buildState.hasSucceeded
     );
@@ -602,7 +602,7 @@ export class EditorStore {
         suppressNotification: true,
       }),
     );
-    if (!this.sdlcState.currentNullableWorkspace) {
+    if (!this.sdlcState.currentWorkspace) {
       // If the workspace is not found,
       // we will not automatically redirect the user to the setup page as they will lose the URL
       // instead, we give them the option to:
@@ -778,12 +778,12 @@ export class EditorStore {
       // fetch workspace entities and config at the same time
       const result = (yield Promise.all([
         this.sdlcServerClient.getEntities(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspace,
+          this.sdlcState.activeProjectId,
+          this.sdlcState.activeWorkspace,
         ),
         this.sdlcServerClient.getConfiguration(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspace,
+          this.sdlcState.activeProjectId,
+          this.sdlcState.activeWorkspace,
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];

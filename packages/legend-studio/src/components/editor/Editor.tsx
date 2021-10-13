@@ -40,7 +40,10 @@ import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
-import type { EditorPathParams } from '../../stores/LegendStudioRouter';
+import type {
+  EditorPathParams,
+  GroupEditorPathParams,
+} from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
@@ -71,12 +74,16 @@ const buildHotkeySupport = (
 };
 
 export const EditorInner = observer(() => {
-  const params = useParams<EditorPathParams>();
+  const params = useParams<EditorPathParams | GroupEditorPathParams>();
   const projectId = params.projectId;
-  const workspaceId = params.workspaceId ?? params.groupWorkspaceId ?? '';
-  const workspaceType = params.groupWorkspaceId
+  const workspaceType = (params as { groupWorkspaceId: string | undefined })
+    .groupWorkspaceId
     ? WorkspaceType.GROUP
     : WorkspaceType.USER;
+  const workspaceId =
+    workspaceType === WorkspaceType.GROUP
+      ? (params as GroupEditorPathParams).groupWorkspaceId
+      : (params as EditorPathParams).workspaceId;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
 
@@ -128,7 +135,7 @@ export const EditorInner = observer(() => {
   useEffect(() => {
     flowResult(
       editorStore.initialize(projectId, {
-        workspaceId: workspaceId,
+        workspaceId,
         workspaceType,
       }),
     ).catch(applicationStore.alertIllegalUnhandledError);

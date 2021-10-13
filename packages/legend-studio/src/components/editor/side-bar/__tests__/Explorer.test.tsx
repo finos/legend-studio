@@ -42,7 +42,7 @@ test(integrationTest('Package Explorer'), async () => {
   const explorerTitle = explorerTitleLabel.parentElement as HTMLElement;
   getByText(
     explorerTitle,
-    guaranteeNonNullable(mockedEditorStore.sdlcState.currentNullableWorkspace)
+    guaranteeNonNullable(mockedEditorStore.sdlcState.currentWorkspace)
       .workspaceId,
   );
   packageRootChildren.forEach((p) =>

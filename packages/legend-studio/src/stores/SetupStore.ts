@@ -25,6 +25,7 @@ import type {
   WorkspaceIdentifier,
 } from '@finos/legend-server-sdlc';
 import {
+  WorkspaceType,
   ImportReport,
   Project,
   ProjectType,
@@ -70,7 +71,7 @@ export class SetupStore {
   sdlcServerClient: SDLCServerClient;
 
   currentProjectId?: string | undefined;
-  currentWorkspaceId?: string | undefined;
+  currentWorkspaceIdentifier?: WorkspaceIdentifier | undefined;
   projects?: Map<string, Project> | undefined;
   workspacesByProject = new Map<string, Map<string, Workspace>>();
   loadWorkspacesState = ActionState.create();
@@ -91,7 +92,7 @@ export class SetupStore {
       setCreateProjectModal: action,
       setCreateWorkspaceModal: action,
       setCurrentProjectId: action,
-      setCurrentWorkspaceId: action,
+      setCurrentWorkspaceIdentifier: action,
       setImportProjectSuccessReport: action,
     });
 
@@ -114,6 +115,30 @@ export class SetupStore {
       ? this.currentProjectWorkspaces.get(this.currentWorkspaceId)
       : undefined;
   }
+  get currentWorkspaceId(): string | undefined {
+    return this.currentWorkspaceIdentifier
+      ? this.getWorkspaceId(this.currentWorkspaceIdentifier)
+      : undefined;
+  }
+
+  init(
+    workspaceId: string | undefined,
+    groupWorkspaceId: string | undefined,
+  ): void {
+    if (workspaceId) {
+      this.setCurrentWorkspaceIdentifier({
+        workspaceId,
+        workspaceType: WorkspaceType.USER,
+      });
+    } else if (groupWorkspaceId) {
+      this.setCurrentWorkspaceIdentifier({
+        workspaceId: groupWorkspaceId,
+        workspaceType: WorkspaceType.GROUP,
+      });
+    } else {
+      this.setCurrentWorkspaceIdentifier(undefined);
+    }
+  }
 
   setCreateProjectModal(modal: boolean): void {
     this.showCreateProjectModal = modal;
@@ -124,9 +149,10 @@ export class SetupStore {
   setCurrentProjectId(id: string | undefined): void {
     this.currentProjectId = id;
   }
-  setCurrentWorkspaceId(id: string | undefined): void {
-    this.currentWorkspaceId = id;
+  setCurrentWorkspaceIdentifier(val: WorkspaceIdentifier | undefined): void {
+    this.currentWorkspaceIdentifier = val;
   }
+
   setImportProjectSuccessReport(
     importProjectSuccessReport: ImportProjectSuccessReport | undefined,
   ): void {
@@ -298,9 +324,8 @@ export class SetupStore {
       (
         (yield this.sdlcServerClient.getWorkspaces(
           projectId,
-        )) as PlainObject<Workspace>[][]
+        )) as PlainObject<Workspace>[]
       )
-        .flat()
         .map((workspace) => Workspace.serialization.fromJson(workspace))
         .forEach((workspace) => {
           // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
@@ -357,7 +382,7 @@ export class SetupStore {
         `Workspace '${workspace.workspaceId}' is succesfully created`,
       );
       this.setCurrentProjectId(projectId);
-      this.setCurrentWorkspaceId(this.getWorkspaceId(workspace));
+      this.setCurrentWorkspaceIdentifier(workspace);
       this.setCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
     } catch (error) {

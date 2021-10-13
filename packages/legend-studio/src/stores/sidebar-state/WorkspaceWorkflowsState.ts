@@ -44,8 +44,8 @@ export class WorkspaceWorkflowsState {
       // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
       this.workflows = (
         (yield this.editorStore.sdlcServerClient.getWorkflows(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspace,
+          this.sdlcState.activeProjectId,
+          this.sdlcState.activeWorkspace,
           undefined,
           undefined,
           undefined,

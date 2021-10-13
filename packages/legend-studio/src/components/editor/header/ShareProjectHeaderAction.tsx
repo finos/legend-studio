@@ -39,7 +39,7 @@ const ShareModal = observer(
     const [selectedVersion, setSelectedVersion] = useState<
       Version | undefined
     >();
-    const projectId = editorStore.sdlcState.currentProjectId;
+    const projectId = editorStore.sdlcState.activeProjectId;
     const projectLink = selectedVersion
       ? applicationStore.navigator.generateLocation(
           generateViewVersionRoute(

@@ -213,12 +213,17 @@ export interface ViewerPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH]?: string;
 }
 
-export interface EditorPathParams {
+export interface CoreEditorPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]?: string;
 }
 
+export interface EditorPathParams extends CoreEditorPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]: string;
+}
+
+export interface GroupEditorPathParams extends CoreEditorPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: string;
+}
 export interface SetupPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;

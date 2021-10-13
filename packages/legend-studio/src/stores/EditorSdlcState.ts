@@ -53,7 +53,7 @@ export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
 export class EditorSdlcState {
   editorStore: EditorStore;
   currentProject?: Project | undefined;
-  currentNullableWorkspace?: Workspace | undefined;
+  currentWorkspace?: Workspace | undefined;
   currentRevision?: Revision | undefined;
   isWorkspaceOutdated = false;
   workspaceWorkflows: Workflow[] = [];
@@ -65,8 +65,7 @@ export class EditorSdlcState {
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
       editorStore: false,
-      currentProjectId: false,
-      currentRevisionId: false,
+      activeProjectId: false,
       setCurrentProject: action,
       setCurrentWorkspace: action,
       setCurrentRevision: action,
@@ -79,32 +78,36 @@ export class EditorSdlcState {
     return this.currentProject?.projectType === ProjectType.PRODUCTION;
   }
 
-  get currentProjectId(): string {
-    return guaranteeNonNullable(
-      this.currentProject,
-      `Can't get current project`,
-    ).projectId;
+  get activeProjectId(): string {
+    return this.activeProject.projectId;
   }
 
-  get currentWorkspace(): Workspace {
+  get activeProject(): Project {
     return guaranteeNonNullable(
-      this.currentNullableWorkspace,
-      `Can't get current workspace`,
+      this.currentProject,
+      `Active project has not been properly set`,
     );
   }
 
-  get currentRevisionId(): string {
+  get activeWorkspace(): Workspace {
+    return guaranteeNonNullable(
+      this.currentWorkspace,
+      `Active workspace has not been properly set`,
+    );
+  }
+
+  get activeRevision(): Revision {
     return guaranteeNonNullable(
       this.currentRevision,
-      `Can't get current revision`,
-    ).id;
+      `Active revision has not been properly set`,
+    );
   }
 
   setCurrentProject = (val: Project): void => {
     this.currentProject = val;
   };
   setCurrentWorkspace = (val: Workspace): void => {
-    this.currentNullableWorkspace = val;
+    this.currentWorkspace = val;
   };
   setCurrentRevision = (val: Revision): void => {
     this.currentRevision = val;
@@ -141,7 +144,7 @@ export class EditorSdlcState {
     options?: { suppressNotification?: boolean },
   ): GeneratorFn<void> {
     try {
-      this.currentNullableWorkspace = Workspace.serialization.fromJson(
+      this.currentWorkspace = Workspace.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getWorkspace(
           projectId,
           workspaceIdenifier,
@@ -152,8 +155,7 @@ export class EditorSdlcState {
       )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setMode(EDITOR_MODE.CONFLICT_RESOLUTION);
-        this.currentNullableWorkspace.type =
-          WorkspaceAccessType.CONFLICT_RESOLUTION;
+        this.currentWorkspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
         this.editorStore.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
       }
     } catch (error) {
@@ -173,7 +175,7 @@ export class EditorSdlcState {
       this.isFetchingProjectVersions = true;
       this.projectVersions = (
         (yield this.editorStore.sdlcServerClient.getVersions(
-          this.currentProjectId,
+          this.activeProjectId,
         )) as PlainObject<Version>[]
       ).map((version) => Version.serialization.fromJson(version));
     } catch (error) {
@@ -189,8 +191,8 @@ export class EditorSdlcState {
 
   *checkIfCurrentWorkspaceIsInConflictResolutionMode(): GeneratorFn<boolean> {
     return (yield this.editorStore.sdlcServerClient.checkIfWorkspaceIsInConflictResolutionMode(
-      this.currentProjectId,
-      this.currentWorkspace,
+      this.activeProjectId,
+      this.activeWorkspace,
     )) as boolean;
   }
 
@@ -227,12 +229,12 @@ export class EditorSdlcState {
       this.isCheckingIfWorkspaceIsOutdated = true;
       this.isWorkspaceOutdated = this.editorStore.isInConflictResolutionMode
         ? ((yield this.editorStore.sdlcServerClient.isConflictResolutionOutdated(
-            this.currentProjectId,
-            this.currentWorkspace,
+            this.activeProjectId,
+            this.activeWorkspace,
           )) as boolean)
         : ((yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
-            this.currentProjectId,
-            this.currentWorkspace,
+            this.activeProjectId,
+            this.activeWorkspace,
           )) as boolean);
     } catch (error) {
       assertErrorThrown(error);
@@ -249,7 +251,7 @@ export class EditorSdlcState {
   handleChangeDetectionRefreshIssue(error: Error): void {
     if (
       !this.currentProject ||
-      !this.currentNullableWorkspace ||
+      !this.currentWorkspace ||
       (error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND)
     ) {
@@ -270,27 +272,27 @@ export class EditorSdlcState {
         // NOTE: this check is already covered in conflict resolution mode so we don't need to do it here
         const latestRevision = Revision.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getRevision(
-            this.currentProjectId,
-            this.currentWorkspace,
+            this.activeProjectId,
+            this.activeWorkspace,
             RevisionAlias.CURRENT,
           )) as PlainObject<Revision>,
         );
         // make sure there is no good recovery from this, at this point all users work risk conflict
         assertTrue(
-          latestRevision.id === this.currentRevisionId,
+          latestRevision.id === this.activeRevision.id,
           `Can't run local change detection: current workspace revision is not the latest. Please backup your work and refresh the application`,
         );
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-            this.currentProjectId,
-            this.currentWorkspace,
-            this.currentRevisionId,
+            this.activeProjectId,
+            this.activeWorkspace,
+            this.activeRevision.id,
           )) as Entity[];
       } else {
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-            this.currentProjectId,
-            this.currentWorkspace,
+            this.activeProjectId,
+            this.activeWorkspace,
             RevisionAlias.CURRENT,
           )) as Entity[];
       }
@@ -320,8 +322,8 @@ export class EditorSdlcState {
     try {
       const workspaceBaseEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-          this.currentProjectId,
-          this.currentWorkspace,
+          this.activeProjectId,
+          this.activeWorkspace,
           RevisionAlias.BASE,
         )) as Entity[];
       this.editorStore.changeDetectionState.workspaceBaseRevisionState.setEntities(
@@ -350,7 +352,7 @@ export class EditorSdlcState {
     try {
       const projectLatestEntities =
         (yield this.editorStore.sdlcServerClient.getEntities(
-          this.currentProjectId,
+          this.activeProjectId,
           undefined,
         )) as Entity[];
       this.editorStore.changeDetectionState.projectLatestRevisionState.setEntities(
@@ -379,8 +381,8 @@ export class EditorSdlcState {
     try {
       this.workspaceWorkflows = (
         (yield this.editorStore.sdlcServerClient.getWorkflowsByRevision(
-          this.currentProjectId,
-          this.currentWorkspace,
+          this.activeProjectId,
+          this.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Workflow>[]
       ).map((workflow) => Workflow.serialization.fromJson(workflow));

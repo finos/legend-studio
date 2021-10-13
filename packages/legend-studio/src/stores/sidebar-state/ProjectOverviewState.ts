@@ -81,11 +81,9 @@ export class ProjectOverviewState {
       this.isFetchingProjectWorkspaces = true;
       this.projectWorkspaces = (
         (yield this.editorStore.sdlcServerClient.getWorkspaces(
-          this.sdlcState.currentProjectId,
-        )) as PlainObject<Workspace>[][]
-      )
-        .flat()
-        .map((workspace) => Workspace.serialization.fromJson(workspace));
+          this.sdlcState.activeProjectId,
+        )) as PlainObject<Workspace>[]
+      ).map((workspace) => Workspace.serialization.fromJson(workspace));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -101,7 +99,7 @@ export class ProjectOverviewState {
     try {
       this.isDeletingWorkspace = true;
       yield this.editorStore.sdlcServerClient.deleteWorkspace(
-        this.sdlcState.currentProjectId,
+        this.sdlcState.activeProjectId,
         workspace,
       );
       this.projectWorkspaces = this.projectWorkspaces.filter(
@@ -109,7 +107,7 @@ export class ProjectOverviewState {
       );
       // redirect to home page if current workspace is deleted
       if (
-        isWorkspaceEqual(this.editorStore.sdlcState.currentWorkspace, workspace)
+        isWorkspaceEqual(this.editorStore.sdlcState.activeWorkspace, workspace)
       ) {
         this.editorStore.applicationStore.notifyWarning(
           'Current workspace is deleted. Redirecting to home page',
@@ -118,7 +116,7 @@ export class ProjectOverviewState {
         this.editorStore.applicationStore.navigator.goTo(
           generateSetupRoute(
             this.editorStore.applicationStore.config.sdlcServerKey,
-            this.editorStore.sdlcState.currentProjectId,
+            this.editorStore.sdlcState.activeProjectId,
           ),
         );
       }
@@ -141,7 +139,7 @@ export class ProjectOverviewState {
     try {
       this.isUpdatingProject = true;
       yield this.editorStore.sdlcServerClient.updateProject(
-        this.sdlcState.currentProjectId,
+        this.sdlcState.activeProjectId,
         {
           name,
           description,
@@ -152,7 +150,7 @@ export class ProjectOverviewState {
         `Project '${name}' is succesfully updated`,
       );
       yield flowResult(
-        this.sdlcState.fetchCurrentProject(this.sdlcState.currentProjectId),
+        this.sdlcState.fetchCurrentProject(this.sdlcState.activeProjectId),
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -167,7 +165,7 @@ export class ProjectOverviewState {
       this.isFetchingLatestVersion = true;
       // fetch latest version
       const version = (yield this.editorStore.sdlcServerClient.getLatestVersion(
-        this.sdlcState.currentProjectId,
+        this.sdlcState.activeProjectId,
       )) as PlainObject<Version> | undefined;
       this.latestProjectVersion = version
         ? Version.serialization.fromJson(version)
@@ -175,7 +173,7 @@ export class ProjectOverviewState {
       // fetch current project revision and set release revision ID
       this.currentProjectRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(
-          this.sdlcState.currentProjectId,
+          this.sdlcState.activeProjectId,
           undefined,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
@@ -186,7 +184,7 @@ export class ProjectOverviewState {
       if (this.latestProjectVersion) {
         const latestProjectVersionRevision = Revision.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getRevision(
-            this.sdlcState.currentProjectId,
+            this.sdlcState.activeProjectId,
             undefined,
             this.latestProjectVersion.revisionId,
           )) as PlainObject<Revision>,
@@ -197,7 +195,7 @@ export class ProjectOverviewState {
         // in those case, we will get the time from the revision
         const latestProjectVersionRevisionReviewObj = getNullableFirstElement(
           (yield this.editorStore.sdlcServerClient.getReviews(
-            this.sdlcState.currentProjectId,
+            this.sdlcState.activeProjectId,
             ReviewState.COMMITTED,
             [latestProjectVersionRevision.id],
             undefined,
@@ -213,7 +211,7 @@ export class ProjectOverviewState {
             : undefined;
         this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
           (yield this.editorStore.sdlcServerClient.getReviews(
-            this.sdlcState.currentProjectId,
+            this.sdlcState.activeProjectId,
             ReviewState.COMMITTED,
             undefined,
             latestProjectVersionRevisionReview?.committedAt ??
@@ -231,7 +229,7 @@ export class ProjectOverviewState {
       } else {
         this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
           (yield this.editorStore.sdlcServerClient.getReviews(
-            this.sdlcState.currentProjectId,
+            this.sdlcState.activeProjectId,
             ReviewState.COMMITTED,
             undefined,
             undefined,
@@ -258,7 +256,7 @@ export class ProjectOverviewState {
       this.releaseVersion.validate();
       this.latestProjectVersion = Version.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.createVersion(
-          this.sdlcState.currentProjectId,
+          this.sdlcState.activeProjectId,
           CreateVersionCommand.serialization.toJson(this.releaseVersion),
         )) as PlainObject<Version>,
       );

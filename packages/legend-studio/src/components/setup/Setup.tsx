@@ -759,16 +759,10 @@ export const SetupInner = observer(() => {
   const params = useParams<SetupPathParams>();
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore();
-  const workspaceId = params.groupWorkspaceId
-    ? `${WorkspaceType.GROUP}/${params.groupWorkspaceId}`
-    : params.workspaceId
-    ? `${WorkspaceType.USER}/${params.workspaceId}`
-    : undefined;
-
   useEffect(() => {
     setupStore.setCurrentProjectId(params.projectId);
-    setupStore.setCurrentWorkspaceId(workspaceId);
-  }, [setupStore, params, workspaceId]);
+    setupStore.init(params.workspaceId, params.groupWorkspaceId);
+  }, [setupStore, params]);
 
   useEffect(() => {
     flowResult(setupStore.fetchProjects()).catch(

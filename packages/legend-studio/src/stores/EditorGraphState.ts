@@ -217,7 +217,7 @@ export class EditorGraphState {
       this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getConfiguration(
-            this.editorStore.sdlcState.currentProjectId,
+            this.editorStore.sdlcState.activeProjectId,
             undefined,
           )) as PlainObject<ProjectConfiguration>,
         ),
@@ -799,8 +799,8 @@ export class EditorGraphState {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
           ProjectConfiguration.serialization.fromJson(
             (yield this.editorStore.sdlcServerClient.getConfiguration(
-              this.editorStore.sdlcState.currentProjectId,
-              this.editorStore.sdlcState.currentWorkspace,
+              this.editorStore.sdlcState.activeProjectId,
+              this.editorStore.sdlcState.activeWorkspace,
             )) as PlainObject<ProjectConfiguration>,
           ),
         );

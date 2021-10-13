@@ -67,9 +67,7 @@ export const WorkspaceSelector = observer(
         (val !== null || selectedOption !== null) &&
         (!val || !selectedOption || val.value !== selectedOption.value)
       ) {
-        setupStore.setCurrentWorkspaceId(
-          val?.value ? setupStore.getWorkspaceId(val.value) : undefined,
-        );
+        setupStore.setCurrentWorkspaceIdentifier(val?.value);
         onChange(Boolean(selectedOption));
         applicationStore.navigator.goTo(
           generateSetupRoute(

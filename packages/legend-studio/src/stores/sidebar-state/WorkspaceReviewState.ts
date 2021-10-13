@@ -158,12 +158,12 @@ export class WorkspaceReviewState {
       this.isFetchingCurrentWorkspaceReview = true;
       const currentWorkspaceRevision =
         (yield this.editorStore.sdlcServerClient.getRevision(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspace,
+          this.sdlcState.activeProjectId,
+          this.sdlcState.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as Revision;
       const reviews = (yield this.editorStore.sdlcServerClient.getReviews(
-        this.sdlcState.currentProjectId,
+        this.sdlcState.activeProjectId,
         ReviewState.OPEN,
         [currentWorkspaceRevision.id, currentWorkspaceRevision.id],
         undefined,
@@ -172,14 +172,14 @@ export class WorkspaceReviewState {
       )) as Review[];
       const review = reviews.find(
         (r) =>
-          r.workspaceId === this.sdlcState.currentWorkspace.workspaceId &&
-          r.workspaceType === this.sdlcState.currentWorkspace.workspaceType,
+          r.workspaceId === this.sdlcState.activeWorkspace.workspaceId &&
+          r.workspaceType === this.sdlcState.activeWorkspace.workspaceType,
       ) as PlainObject<Review> | undefined;
       if (reviews.length) {
         try {
           assertNonNullable(
             review,
-            `Opened review associated with HEAD revision '${currentWorkspaceRevision.id}' of workspace '${this.sdlcState.currentWorkspace.workspaceType}' found, but the retrieved review does not belong to the workspace`,
+            `Opened review associated with HEAD revision '${currentWorkspaceRevision.id}' of workspace '${this.sdlcState.activeWorkspace.workspaceType}' found, but the retrieved review does not belong to the workspace`,
           );
         } catch (error) {
           assertErrorThrown(error);
@@ -211,8 +211,8 @@ export class WorkspaceReviewState {
         showLoading: true,
       });
       yield this.editorStore.sdlcServerClient.createWorkspace(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspace,
+        this.sdlcState.activeProjectId,
+        this.sdlcState.activeWorkspace,
       );
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
@@ -235,7 +235,7 @@ export class WorkspaceReviewState {
     this.isClosingWorkspaceReview = true;
     try {
       yield this.editorStore.sdlcServerClient.rejectReview(
-        this.sdlcState.currentProjectId,
+        this.sdlcState.activeProjectId,
         this.workspaceReview.id,
       );
       this.workspaceReview = undefined;
@@ -262,14 +262,14 @@ export class WorkspaceReviewState {
     try {
       const description =
         reviewDescription ??
-        `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.currentWorkspace.workspaceId}`;
+        `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.activeWorkspace.workspaceId}`;
       this.workspaceReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.createReview(
-          this.sdlcState.currentProjectId,
+          this.sdlcState.activeProjectId,
           {
-            workspaceId: this.sdlcState.currentWorkspace.workspaceId,
+            workspaceId: this.sdlcState.activeWorkspace.workspaceId,
             title,
-            workspaceType: this.sdlcState.currentWorkspace.workspaceType,
+            workspaceType: this.sdlcState.activeWorkspace.workspaceType,
             description,
           },
         )) as PlainObject<Review>,
@@ -311,7 +311,7 @@ export class WorkspaceReviewState {
 
     try {
       yield this.editorStore.sdlcServerClient.commitReview(
-        this.sdlcState.currentProjectId,
+        this.sdlcState.activeProjectId,
         review.id,
         { message: `${review.title} [review]` },
       );
@@ -335,7 +335,7 @@ export class WorkspaceReviewState {
               this.editorStore.applicationStore.navigator.goTo(
                 generateSetupRoute(
                   this.editorStore.applicationStore.config.sdlcServerKey,
-                  this.editorStore.sdlcState.currentProjectId,
+                  this.editorStore.sdlcState.activeProjectId,
                 ),
               ),
             default: true,

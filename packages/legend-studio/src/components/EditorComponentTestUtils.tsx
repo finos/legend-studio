@@ -366,7 +366,7 @@ export const TEST__setUpEditor = async (
     expect(mockedEditorStore.sdlcState.currentProject).toBeDefined(),
   );
   await waitFor(() =>
-    expect(mockedEditorStore.sdlcState.currentNullableWorkspace).toBeDefined(),
+    expect(mockedEditorStore.sdlcState.currentWorkspace).toBeDefined(),
   );
   // assert immutable models have been model
   await waitFor(() =>

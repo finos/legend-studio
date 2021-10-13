@@ -72,7 +72,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore<StudioConfig>();
   const isActive = isWorkspaceEqual(
-    editorStore.sdlcState.currentWorkspace,
+    editorStore.sdlcState.activeWorkspace,
     workspace,
   );
   const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
