@@ -44,7 +44,6 @@ export const getElementTypeLabel = (
   type: string | undefined,
 ): string | undefined => {
   switch (type) {
-    /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     case PACKAGEABLE_ELEMENT_TYPE.PACKAGE:
     case PACKAGEABLE_ELEMENT_TYPE.CLASS:
     case PACKAGEABLE_ELEMENT_TYPE.ENUMERATION:
@@ -208,7 +207,6 @@ const NewConnectionValueDriverEditor = observer(() => {
     NewPackageableConnectionDriver,
   );
   const newConnectionValueDriver = newConnectionDriver.newConnectionValueDriver;
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   if (newConnectionValueDriver instanceof NewPureModelConnectionDriver) {
     return (
       <NewPureModelConnectionDriverEditor

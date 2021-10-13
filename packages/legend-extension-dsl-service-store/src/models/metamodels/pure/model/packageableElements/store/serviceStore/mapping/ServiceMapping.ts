@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
+import { observable, computed, makeObservable, action } from 'mobx';
+import { addUniqueEntry, deleteEntry, hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
 import type { ServiceParameterMapping } from './ServiceParameterMapping';
@@ -31,10 +31,25 @@ export class ServiceMapping implements Hashable {
     makeObservable(this, {
       service: observable,
       parameterMappings: observable,
+      setService: action,
+      addServiceMapping: action,
+      deleteServiceMapping: action,
       hashCode: computed,
     });
 
     this.owner = owner;
+  }
+
+  setService(value: string): void {
+    this.service.setId(value);
+  }
+
+  addServiceMapping(value: ServiceParameterMapping): void {
+    addUniqueEntry(this.parameterMappings, value);
+  }
+
+  deleteServiceMapping(value: ServiceParameterMapping): void {
+    deleteEntry(this.parameterMappings, value);
   }
 
   get hashCode(): string {

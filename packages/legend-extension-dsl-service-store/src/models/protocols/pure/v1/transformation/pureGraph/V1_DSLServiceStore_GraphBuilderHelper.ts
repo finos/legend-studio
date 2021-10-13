@@ -64,6 +64,8 @@ import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceSt
 import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
 import type { SecurityScheme_PureProtocolPlugin_Extension } from '../../../SecurityScheme_PureProtocolPlugin_Extension';
+import { SerializationFormat } from "../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SerializationFormat";
+import type { V1_SerializationFormat } from "../../model/packageableElements/store/serviceStore/model/V1_SerializationFormat";
 
 export const V1_resolveServiceStore = (
   path: string,
@@ -133,6 +135,13 @@ export const V1_buildTypeReference = (
   );
 };
 
+const V1_buildSerializationFormat = (protocol: V1_SerializationFormat) : SerializationFormat => {
+  const serializationFormat = new SerializationFormat();
+  serializationFormat.style = protocol.style;
+  serializationFormat.explode = protocol.explode;
+  return serializationFormat;
+};
+
 export const V1_buildServiceParameter = (
   protocol: V1_ServiceParameter,
   context: V1_GraphBuilderContext,
@@ -149,7 +158,9 @@ export const V1_buildServiceParameter = (
     `Service parameter location '${protocol.location}' is not supported`,
   );
   serviceParameter.enumeration = protocol.enumeration;
-  serviceParameter.serializationFormat = protocol.serializationFormat;
+  if (protocol.serializationFormat !== undefined){
+    serviceParameter.serializationFormat = V1_buildSerializationFormat(protocol.serializationFormat);
+  }
   return serviceParameter;
 };
 

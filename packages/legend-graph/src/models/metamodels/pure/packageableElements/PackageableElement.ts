@@ -211,7 +211,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
   ): T;
 }
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 export enum PACKAGEABLE_ELEMENT_TYPE {
   PRIMITIVE = 'PRIMITIVE',
   PACKAGE = 'PACKAGE',

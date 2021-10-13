@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import type { Multiplicity } from '@finos/legend-graph';
@@ -30,8 +30,23 @@ export class LocalMappingProperty implements Hashable {
       name: observable,
       type: observable,
       multiplicity: observable,
+      setName: action,
+      setType: action,
+      setMultiplicity: action,
       hashCode: computed,
     });
+  }
+
+  setName(value: string): void {
+    this.name = value;
+  }
+
+  setType(value: string): void {
+    this.type = value;
+  }
+
+  setMultiplicity(value: Multiplicity): void {
+    this.multiplicity = value;
   }
 
   get hashCode(): string {

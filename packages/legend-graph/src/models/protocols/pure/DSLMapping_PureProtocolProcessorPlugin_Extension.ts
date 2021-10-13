@@ -18,7 +18,7 @@ import type { PlainObject } from '@finos/legend-shared';
 import type { Connection } from '../../metamodels/pure/packageableElements/connection/Connection';
 import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { InstanceSetImplementation } from '../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
-import { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
+import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
 import type { V1_Connection } from '../pure/v1/model/packageableElements/connection/V1_Connection';
 import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext';
 import type { V1_ClassMapping } from '../pure/v1/model/packageableElements/mapping/V1_ClassMapping';
@@ -70,7 +70,8 @@ export type V1_ConnectionProtocolDeserializer = (
   json: PlainObject<V1_Connection>,
 ) => V1_Connection | undefined;
 
-export abstract class DSLMapping_PureProtocolProcessorPlugin_Extension extends PureProtocolProcessorPlugin {
+export interface DSLMapping_PureProtocolProcessorPlugin_Extension
+  extends PureProtocolProcessorPlugin {
   V1_getExtraClassMappingFirstPassBuilders?(): V1_ClassMappingFirstPassBuilder[];
 
   V1_getExtraClassMappingSecondPassBuilders?(): V1_ClassMappingSecondPassBuilder[];

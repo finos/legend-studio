@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SerializationFormat } from './SerializationFormat';
@@ -40,8 +40,33 @@ export class ServiceParameter implements Hashable {
       location: observable,
       enumeration: observable,
       serializationFormat: observable,
+      setName: action,
+      setType: action,
+      setLocation: action,
+      setEnumeration: action,
+      setSerializationFormat: action,
       hashCode: computed,
     });
+  }
+
+  setName(value: string): void {
+    this.name = value;
+  }
+
+  setType(value: TypeReference): void {
+    this.type = value;
+  }
+
+  setLocation(value: LOCATION): void {
+    this.location = value;
+  }
+
+  setEnumeration(value: string): void {
+    this.enumeration = value;
+  }
+
+  setSerializationFormat(value: SerializationFormat): void {
+    this.serializationFormat = value;
   }
 
   get hashCode(): string {

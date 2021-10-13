@@ -455,7 +455,7 @@ const PackageTreeNodeContainer = observer(
 );
 
 const ExplorerDropdownMenu = observer(
-  (props: {}, ref: React.Ref<HTMLDivElement>) => {
+  () => {
     const editorStore = useEditorStore();
     const _package = editorStore.explorerTreeState.getSelectedNodePackage();
     const createNewElement =

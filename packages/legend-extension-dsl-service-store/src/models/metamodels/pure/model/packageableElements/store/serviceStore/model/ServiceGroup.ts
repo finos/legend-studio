@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
-import { guaranteeType, hashArray } from '@finos/legend-shared';
+import { observable, computed, makeObservable, action } from 'mobx';
+import {
+  addUniqueEntry,
+  deleteEntry,
+  guaranteeType,
+  hashArray,
+} from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
 import { ServiceStoreElement } from './ServiceStoreElement';
@@ -35,8 +40,18 @@ export class ServiceGroup extends ServiceStoreElement implements Hashable {
 
     makeObservable(this, {
       elements: observable,
+      addElement: action,
+      deleteElement: action,
       hashCode: computed,
     });
+  }
+
+  addElement(value: ServiceStoreElement): void {
+    addUniqueEntry(this.elements, value);
+  }
+
+  deleteElement(value: ServiceStoreElement): void {
+    deleteEntry(this.elements, value);
   }
 
   getService = (value: string): Service =>

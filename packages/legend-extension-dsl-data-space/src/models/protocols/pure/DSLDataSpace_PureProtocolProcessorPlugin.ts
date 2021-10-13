@@ -15,6 +15,7 @@
  */
 
 import packageJson from '../../../../package.json';
+import V1_SYSTEM_MODELS from './v1/V1_DSLDataSpace_SystemModels.json';
 import {
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
@@ -49,6 +50,7 @@ import type {
   V1_GraphBuilderContext,
   V1_GraphTransformerContext,
   V1_PackageableElement,
+  V1_PureModelContextData,
 } from '@finos/legend-graph';
 import {
   V1_PackageableElementPointer,
@@ -179,6 +181,10 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
         },
       }),
     ];
+  }
+
+  override V1_getExtraSystemModels(): PlainObject<V1_PureModelContextData>[] {
+    return [V1_SYSTEM_MODELS];
   }
 
   override V1_getExtraElementClassifierPathGetters(): V1_ElementProtocolClassifierPathGetter[] {

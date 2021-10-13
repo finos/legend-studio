@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable, action } from 'mobx';
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
@@ -27,8 +27,18 @@ export class SerializationFormat implements Hashable {
     makeObservable(this, {
       style: observable,
       explode: observable,
+      setStyle: action,
+      setExplode: action,
       hashCode: computed,
     });
+  }
+
+  setStyle(value: string): void {
+    this.style = value;
+  }
+
+  setExplode(value: boolean): void {
+    this.explode = value;
   }
 
   get hashCode(): string {

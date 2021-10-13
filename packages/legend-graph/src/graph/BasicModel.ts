@@ -96,7 +96,6 @@ export abstract class BasicModel {
   private readonly extensions: PureGraphExtension<PackageableElement>[] = [];
   private elementSectionMap = new Map<string, Section>();
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private sectionIndicesIndex = new Map<string, SectionIndex>();
   private readonly profilesIndex = new Map<string, Profile>();
   private readonly typesIndex = new Map<string, Type>();
@@ -212,7 +211,6 @@ export abstract class BasicModel {
     });
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   get ownSectionIndices(): SectionIndex[] {
     return Array.from(this.sectionIndicesIndex.values());
   }
@@ -300,7 +298,6 @@ export abstract class BasicModel {
 
   getOwnSection = (path: string): Section | undefined =>
     this.elementSectionMap.get(path);
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getOwnSectionIndex = (path: string): SectionIndex | undefined =>
     this.sectionIndicesIndex.get(path);
   getOwnProfile = (path: string): Profile | undefined =>
@@ -355,7 +352,6 @@ export abstract class BasicModel {
   setOwnSection(path: string, val: Section): void {
     this.elementSectionMap.set(path, val);
   }
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   setOwnSectionIndex(path: string, val: SectionIndex): void {
     this.sectionIndicesIndex.set(path, val);
   }
@@ -405,7 +401,6 @@ export abstract class BasicModel {
     extension.setElement(path, val);
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   get allOwnElements(): PackageableElement[] {
     this.extensions.flatMap((extension) => extension.elements);
     return [
@@ -470,7 +465,6 @@ export abstract class BasicModel {
           Package.getOrCreatePackage(this.root, path, false),
         );
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getOwnNullableElement(
     path: string,
     includePackage?: boolean,
@@ -503,7 +497,6 @@ export abstract class BasicModel {
     return element;
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
       element.package.deleteElement(element);
@@ -548,7 +541,6 @@ export abstract class BasicModel {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   renameOwnElement(element: PackageableElement, newPath: string): void {
     const elementCurrentPath = element.path;
     // validation before renaming

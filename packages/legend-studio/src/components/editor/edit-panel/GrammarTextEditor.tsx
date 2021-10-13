@@ -44,7 +44,7 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
-  (props: {}, ref: React.Ref<HTMLDivElement>) => {
+  (props, ref: React.Ref<HTMLDivElement>) => {
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const leaveTextMode = applicationStore.guaranteeSafeAction(() =>

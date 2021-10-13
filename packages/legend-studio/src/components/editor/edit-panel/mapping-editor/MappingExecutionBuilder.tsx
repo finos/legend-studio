@@ -79,6 +79,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import { getRelationalInputTestDataEditorLanguage } from './MappingTestEditor';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -165,8 +166,9 @@ const MappingExecutionQueryEditor = observer(
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
-          plugin.getExtraMappingExecutionQueryEditorRendererConfigurations?.() ??
-          [],
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).getExtraMappingExecutionQueryEditorRendererConfigurations?.() ?? [],
       )
       .filter(isNonNullable)
       .map((config) => (

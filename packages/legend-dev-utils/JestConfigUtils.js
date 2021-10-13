@@ -30,7 +30,7 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed
   // See https://jestjs.io/docs/en/configuration#setupfilesafterenv-array
-  setupFilesAfterEnv: ['jest-extended'],
+  setupFilesAfterEnv: [],
   moduleNameMapper: {
     // Mock for non-javascript file as we don't need Jest to transform these
     // NOTE: we should not need this right now, but we leave this here just in case

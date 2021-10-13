@@ -62,6 +62,7 @@ export class FunctionExpression extends Expression {
 }
 
 export class SimpleFunctionExpression extends FunctionExpression {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   func?: PackageableElementReference<Function> | undefined;
 
   override accept_ValueSpecificationVisitor<T>(

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 import type { Hashable } from '@finos/legend-shared';
 import { hashArray } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
@@ -28,7 +28,12 @@ export abstract class TypeReference implements Hashable {
 
     makeObservable(this, {
       list: observable,
+      setList: action,
     });
+  }
+
+  setList(value: boolean): void {
+    this.list = value;
   }
 
   get hashCode(): string {

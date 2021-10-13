@@ -354,7 +354,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
       );
     } else {
       try {
-        newConnection = this.createNewCustomConnection();
+        newConnection = this.createDefaultConnection();
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.notifyWarning(error.message);
@@ -383,7 +383,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
 
   abstract get identifiedConnections(): IdentifiedConnection[];
   abstract get packageableConnections(): PackageableConnection[];
-  abstract createNewCustomConnection(): Connection;
+  abstract createDefaultConnection(): Connection;
   abstract deleteIdentifiedConnection(
     identifiedConnection: IdentifiedConnection,
   ): void;
@@ -427,8 +427,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
     );
   }
 
-  /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
-  createNewCustomConnection(): Connection {
+  createDefaultConnection(): Connection {
     if (this.store instanceof FlatData) {
       return new FlatDataConnection(
         PackageableElementExplicitReference.create(this.store),
@@ -449,15 +448,15 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
             plugin as DSLMapping_StudioPlugin_Extension
           ).getExtraDefaultConnectionValueBuilders?.() ?? [],
       );
-    for (const connection of extraDefaultConnectionValueBuilders) {
-      const defaultConnection = connection(this.store);
+    for (const builder of extraDefaultConnectionValueBuilders) {
+      const defaultConnection = builder(this.store);
       if (defaultConnection) {
         return defaultConnection;
       }
     }
 
     throw new UnsupportedOperationError(
-      `Can't create custom connection for the specified store`,
+      `Can't build default connection for the specified store: no compatible builder available from plugins`,
       this.store,
     );
   }
@@ -532,7 +531,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
     );
   }
 
-  createNewCustomConnection(): Connection {
+  createDefaultConnection(): Connection {
     return new JsonModelConnection(
       PackageableElementExplicitReference.create(
         this.editorStore.graphManagerState.graph.modelStore,

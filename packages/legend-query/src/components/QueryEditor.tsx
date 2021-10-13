@@ -190,7 +190,7 @@ const QueryEditorInner = observer(() => {
   );
 });
 
-const QueryEditor: React.FC<{}> = () => (
+const QueryEditor: React.FC = () => (
   <DndProvider backend={HTML5Backend}>
     <QueryEditorInner />
   </DndProvider>

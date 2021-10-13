@@ -233,7 +233,6 @@ export class PureModel extends BasicModel {
     path: string,
   ): FileGenerationSpecification | undefined =>
     returnUndefOnError(() => this.getFileGeneration(path));
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getType = (path: string): Type =>
     guaranteeNonNullable(
       this.getOwnType(path) ??
@@ -429,7 +428,6 @@ export class PureModel extends BasicModel {
     return multiplicity ?? new Multiplicity(lowerBound, upperBound);
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   addElement(element: PackageableElement): void {
     this.getNullableElement(element.path);
     if (element instanceof Mapping) {

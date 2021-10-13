@@ -16,7 +16,7 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
-import { roundtripTestData } from './TEST_DATA_DSLSerializer_Roundtrip';
+import { roundtripTestData } from './TEST_DATA__DSLSerializer_Roundtrip';
 import { DSLSerializer_GraphPreset } from '../../DSLSerializer_Extension';
 import {
   TEST__GraphPluginManager,

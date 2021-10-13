@@ -41,7 +41,6 @@ import {
   GenerationSpecification,
 } from '@finos/legend-graph';
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 const getElementProjectExplorerDnDType = (
   editorStore: EditorStore,
   element: PackageableElement,

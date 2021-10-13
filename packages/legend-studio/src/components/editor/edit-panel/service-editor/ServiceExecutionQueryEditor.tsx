@@ -46,6 +46,7 @@ import {
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { LightQuery } from '@finos/legend-graph';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -238,8 +239,9 @@ export const ServiceExecutionQueryEditor = observer(
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
-          plugin.TEMP__getExtraServiceQueryEditorRendererConfigurations?.() ??
-          [],
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).TEMP__getExtraServiceQueryEditorRendererConfigurations?.() ?? [],
       )
       .filter(isNonNullable)
       .map((config) => (

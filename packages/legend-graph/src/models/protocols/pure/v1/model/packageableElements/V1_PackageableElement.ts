@@ -36,7 +36,6 @@ import type { V1_GenerationSpecification } from './generationSpecification/V1_Ge
 import type { V1_Measure } from './domain/V1_Measure';
 import type { V1_SectionIndex } from './section/V1_SectionIndex';
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
   visit_SectionIndex(element: V1_SectionIndex): T;

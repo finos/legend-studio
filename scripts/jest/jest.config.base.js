@@ -37,6 +37,7 @@ export default {
   setupFilesAfterEnv: [
     ...baseConfig.setupFilesAfterEnv,
     '<rootDir>/scripts/jest/setupTestsEnv.js',
+    '@finos/legend-dev-utils/jest/setupJestExpectExtension',
   ],
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,

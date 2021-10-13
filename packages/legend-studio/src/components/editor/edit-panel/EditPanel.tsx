@@ -223,7 +223,6 @@ export const EditPanel = observer(() => {
         )
       : [];
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   const renderActiveElementTab = (): React.ReactNode => {
     if (currentEditorState instanceof ElementEditorState) {
       if (currentEditorState.generationViewMode) {

@@ -17,9 +17,6 @@
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
-import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
-import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
-import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { Class, PackageableElement } from '@finos/legend-graph';
@@ -30,7 +27,7 @@ export type ApplicationSetup = (
 
 export type ApplicationPageRenderEntry = {
   urlPattern: string;
-  component: React.FC<{}> | React.ReactElement;
+  component: React.FC | React.ReactElement;
 };
 
 export type ExplorerContextMenuItemRendererConfiguration = {
@@ -53,33 +50,6 @@ export type EditorExtensionStateCreator = (
 export type ClassPreviewRenderer = (
   _class: Class,
 ) => React.ReactNode | undefined;
-
-export type MappingExecutionQueryEditorRendererConfiguration = {
-  key: string;
-  renderer: (
-    executionState: MappingExecutionState,
-  ) => React.ReactNode | undefined;
-};
-
-export type MappingTestQueryEditorRendererConfiguration = {
-  key: string;
-  renderer: (
-    testState: MappingTestState,
-    isReadOnly: boolean,
-  ) => React.ReactNode | undefined;
-};
-
-/**
- * NOTE: this is temporary since we want to eventually move Service out to its own DSL
- * preset/plugin so this would go away
- */
-export type TEMP__ServiceQueryEditorRendererConfiguration = {
-  key: string;
-  renderer: (
-    executionState: ServicePureExecutionState,
-    isReadOnly: boolean,
-  ) => React.ReactNode | undefined;
-};
 
 export abstract class StudioPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'StudioPlugin';
@@ -117,24 +87,6 @@ export abstract class StudioPlugin extends AbstractPlugin {
    * Get the list of configurations for the renderer of editor extension states.
    */
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
-
-  /**
-   * Get the list of configurations for the renderer for mapping execution query builder.
-   */
-  getExtraMappingExecutionQueryEditorRendererConfigurations?(): MappingExecutionQueryEditorRendererConfiguration[];
-
-  /**
-   * Get the list of configurations for the renderer for mapping test query builder.
-   */
-  getExtraMappingTestQueryEditorRendererConfigurations?(): MappingTestQueryEditorRendererConfiguration[];
-
-  /**
-   * Get the list of configurations for the renderer for service execution query builder.
-   *
-   * NOTE: this is temporary since we want to eventually move Service out to its own DSL
-   * preset/plugin so this should also be moved there
-   */
-  TEMP__getExtraServiceQueryEditorRendererConfigurations?(): TEMP__ServiceQueryEditorRendererConfiguration[];
 }
 
 export type ElementTypeGetter = (
