@@ -104,10 +104,8 @@ const ReviewStatusBar = observer(() => {
               to={generateEditorRoute(
                 applicationStore.config.sdlcServerKey,
                 reviewStore.projectId,
-                {
-                  workspaceId: review.workspaceId,
-                  workspaceType: review.workspaceType,
-                },
+                review.workspaceId,
+                review.workspaceType,
               )}
             >
               {review.workspaceId}

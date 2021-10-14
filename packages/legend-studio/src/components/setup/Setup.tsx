@@ -488,6 +488,9 @@ const CreateWorkspaceModal = observer(() => {
   );
   const [workspaceName, setWorkspaceName] = useState('');
   const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(false);
+  const workspaceType = isGroupWorkspace
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
   const projectOptions = setupStore.projectOptions.sort(compareLabelFn);
   const selectedOption =
     projectOptions.find((option) => option.value === currentProjectId) ?? null;
@@ -517,12 +520,11 @@ const CreateWorkspaceModal = observer(() => {
   const createWorkspace = (): void => {
     if (currentProjectId && workspaceName) {
       flowResult(
-        setupStore.createWorkspace(currentProjectId, {
-          workspaceId: workspaceName,
-          workspaceType: isGroupWorkspace
-            ? WorkspaceType.GROUP
-            : WorkspaceType.USER,
-        }),
+        setupStore.createWorkspace(
+          currentProjectId,
+          workspaceName,
+          workspaceType,
+        ),
       ).catch(applicationStore.alertIllegalUnhandledError);
     }
   };
@@ -674,7 +676,8 @@ const SetupSelection = observer(() => {
         generateEditorRoute(
           applicationStore.config.sdlcServerKey,
           setupStore.currentProjectId,
-          setupStore.currentWorkspace,
+          setupStore.currentWorkspace.workspaceId,
+          setupStore.currentWorkspace.workspaceType,
         ),
       );
     }

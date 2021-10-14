@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { WorkspaceIdentifier } from '@finos/legend-server-sdlc';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { generatePath } from 'react-router-dom';
 
 export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
@@ -96,19 +96,16 @@ const generateWorkspaceSetupRoute = (
 export const generateSetupRoute = (
   sdlcServerKey: string,
   projectId: string | undefined,
-  workspace?: WorkspaceIdentifier,
+  workspaceId?: string | undefined,
+  workspaceType?: WorkspaceType | undefined,
 ): string =>
-  workspace?.workspaceType === WorkspaceType.GROUP
+  workspaceType === WorkspaceType.GROUP
     ? generateGroupWorkspaceSetupRoute(
         sdlcServerKey,
         projectId,
-        workspace.workspaceId,
+        guaranteeNonNullable(workspaceId),
       )
-    : generateWorkspaceSetupRoute(
-        sdlcServerKey,
-        projectId,
-        workspace?.workspaceId,
-      );
+    : generateWorkspaceSetupRoute(sdlcServerKey, projectId, workspaceId);
 
 const generateGroupWorkspaceEditorRoute = (
   sdlcServerKey: string,
@@ -134,19 +131,12 @@ const generateWorkspaceEditorRoute = (
 export const generateEditorRoute = (
   sdlcServerKey: string,
   projectId: string,
-  workspace: WorkspaceIdentifier,
+  workspaceId: string,
+  workspaceType: WorkspaceType,
 ): string =>
-  workspace.workspaceType === WorkspaceType.GROUP
-    ? generateGroupWorkspaceEditorRoute(
-        sdlcServerKey,
-        projectId,
-        workspace.workspaceId,
-      )
-    : generateWorkspaceEditorRoute(
-        sdlcServerKey,
-        projectId,
-        workspace.workspaceId,
-      );
+  workspaceType === WorkspaceType.GROUP
+    ? generateGroupWorkspaceEditorRoute(sdlcServerKey, projectId, workspaceId)
+    : generateWorkspaceEditorRoute(sdlcServerKey, projectId, workspaceId);
 
 export const generateReviewRoute = (
   sdlcServerKey: string,

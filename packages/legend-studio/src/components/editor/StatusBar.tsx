@@ -161,12 +161,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               to={generateSetupRoute(
                 applicationStore.config.sdlcServerKey,
                 projectId,
-                workspaceId
-                  ? {
-                      workspaceId,
-                      workspaceType,
-                    }
-                  : undefined,
+                workspaceId,
+                workspaceType,
               )}
             >
               {workspaceId}

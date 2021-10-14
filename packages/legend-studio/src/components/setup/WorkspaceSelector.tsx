@@ -73,7 +73,8 @@ export const WorkspaceSelector = observer(
           generateSetupRoute(
             applicationStore.config.sdlcServerKey,
             setupStore.currentProjectId ?? '',
-            val?.value,
+            val?.value.workspaceId,
+            val?.value.workspaceType,
           ),
         );
       }

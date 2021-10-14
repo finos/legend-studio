@@ -134,10 +134,7 @@ export const EditorInner = observer(() => {
   // Initialize the app
   useEffect(() => {
     flowResult(
-      editorStore.initialize(projectId, {
-        workspaceId,
-        workspaceType,
-      }),
+      editorStore.initialize(projectId, workspaceId, workspaceType),
     ).catch(applicationStore.alertIllegalUnhandledError);
   }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
 

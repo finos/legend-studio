@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type { WorkspaceIdentifier } from './Workspace';
+import type { Workspace } from './Workspace';
 
 export const areWorkspacesEquivalent = (
-  workspace: WorkspaceIdentifier,
-  otherWorkspace: WorkspaceIdentifier,
+  workspace: Workspace,
+  otherWorkspace: Workspace,
 ): boolean =>
   workspace.workspaceType === otherWorkspace.workspaceType &&
   workspace.workspaceId === otherWorkspace.workspaceId;

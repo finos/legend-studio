@@ -20,10 +20,7 @@ import type { ApplicationStore } from '@finos/legend-application';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { assertErrorThrown, LogEvent, ActionState } from '@finos/legend-shared';
 import { generateSetupRoute } from './LegendStudioRouter';
-import type {
-  SDLCServerClient,
-  WorkspaceIdentifier,
-} from '@finos/legend-server-sdlc';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import {
   WorkspaceType,
   ImportReport,
@@ -65,6 +62,11 @@ const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
   label: workspace.workspaceId,
   value: workspace,
 });
+
+export interface WorkspaceIdentifier {
+  workspaceId: string;
+  workspaceType: WorkspaceType;
+}
 
 export class SetupStore {
   applicationStore: ApplicationStore<StudioConfig>;
@@ -356,14 +358,16 @@ export class SetupStore {
 
   *createWorkspace(
     projectId: string,
-    workspaceIdentifier: WorkspaceIdentifier,
+    workspaceId: string,
+    workspaceType: WorkspaceType,
   ): GeneratorFn<void> {
     this.createWorkspaceState.inProgress();
     try {
       const workspace = Workspace.serialization.fromJson(
         (yield this.sdlcServerClient.createWorkspace(
           projectId,
-          workspaceIdentifier,
+          workspaceId,
+          workspaceType,
         )) as PlainObject<Workspace>,
       );
       const existingWorkspaceForProject: Map<string, Workspace> | undefined =

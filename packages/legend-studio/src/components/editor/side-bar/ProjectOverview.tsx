@@ -100,7 +100,8 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         to={generateEditorRoute(
           applicationStore.config.sdlcServerKey,
           workspace.projectId,
-          workspace,
+          workspace.workspaceId,
+          workspace.workspaceType,
         )}
         title={'Go to workspace detail'}
       >

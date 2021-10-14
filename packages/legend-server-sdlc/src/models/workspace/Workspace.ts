@@ -27,16 +27,10 @@ export enum WorkspaceType {
   USER = 'USER',
   GROUP = 'GROUP',
 }
-
-export interface WorkspaceIdentifier {
-  workspaceId: string;
-  workspaceType: WorkspaceType;
-}
-
-export class Workspace implements WorkspaceIdentifier {
+export class Workspace {
   projectId!: string;
   workspaceId!: string;
-  userId?: string | null;
+  userId: string | null = null;
   type = WorkspaceAccessType.WORKSPACE;
 
   static readonly serialization = new SerializationFactory(

@@ -335,10 +335,8 @@ export const TEST__setUpEditor = async (
       generateEditorRoute(
         mockedEditorStore.applicationStore.config.sdlcServerKey,
         (workspace as unknown as Workspace).projectId,
-        {
-          workspaceId: (workspace as unknown as Workspace).workspaceId,
-          workspaceType: WorkspaceType.USER,
-        },
+        (workspace as unknown as Workspace).workspaceId,
+        WorkspaceType.USER,
       ),
     ],
   });

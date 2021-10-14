@@ -29,10 +29,7 @@ import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
 import { extractEntityNameFromPath } from '@finos/legend-model-storage';
-import type {
-  EntityDiff,
-  WorkspaceIdentifier,
-} from '@finos/legend-server-sdlc';
+import type { EntityDiff, WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   Workflow,
   Project,
@@ -135,14 +132,16 @@ export class EditorSdlcState {
 
   *fetchCurrentWorkspace(
     projectId: string,
-    workspaceIdenifier: WorkspaceIdentifier,
+    workspaceId: string,
+    workspaceType: WorkspaceType,
     options?: { suppressNotification?: boolean },
   ): GeneratorFn<void> {
     try {
       this.currentWorkspace = Workspace.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getWorkspace(
           projectId,
-          workspaceIdenifier,
+          workspaceId,
+          workspaceType,
         )) as PlainObject<Workspace>,
       );
       const isInConflictResolutionMode = (yield flowResult(
@@ -193,19 +192,19 @@ export class EditorSdlcState {
 
   *fetchCurrentRevision(
     projectId: string,
-    workspaceId: WorkspaceIdentifier,
+    workspace: Workspace,
   ): GeneratorFn<void> {
     try {
       this.currentRevision = Revision.serialization.fromJson(
         this.editorStore.isInConflictResolutionMode
           ? ((yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
               projectId,
-              workspaceId,
+              workspace,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>)
           : ((yield this.editorStore.sdlcServerClient.getRevision(
               projectId,
-              workspaceId,
+              workspace,
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>),
       );

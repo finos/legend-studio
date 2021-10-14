@@ -212,7 +212,8 @@ export class WorkspaceReviewState {
       });
       yield this.editorStore.sdlcServerClient.createWorkspace(
         this.sdlcState.activeProject.projectId,
-        this.sdlcState.activeWorkspace,
+        this.sdlcState.activeWorkspace.workspaceId,
+        this.sdlcState.activeWorkspace.workspaceType,
       );
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {

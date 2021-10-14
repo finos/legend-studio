@@ -82,7 +82,7 @@ import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   SDLCServerClient,
-  WorkspaceIdentifier,
+  WorkspaceType,
 } from '@finos/legend-server-sdlc';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import type {
@@ -525,7 +525,8 @@ export class EditorStore {
    */
   *initialize(
     projectId: string,
-    workspaceIdentifier: WorkspaceIdentifier,
+    workspaceId: string,
+    workspaceType: WorkspaceType,
   ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
@@ -598,9 +599,14 @@ export class EditorStore {
       return;
     }
     yield flowResult(
-      this.sdlcState.fetchCurrentWorkspace(projectId, workspaceIdentifier, {
-        suppressNotification: true,
-      }),
+      this.sdlcState.fetchCurrentWorkspace(
+        projectId,
+        workspaceId,
+        workspaceType,
+        {
+          suppressNotification: true,
+        },
+      ),
     );
     if (!this.sdlcState.currentWorkspace) {
       // If the workspace is not found,
@@ -617,7 +623,8 @@ export class EditorStore {
           });
           const workspace = await this.sdlcServerClient.createWorkspace(
             projectId,
-            workspaceIdentifier,
+            workspaceId,
+            workspaceType,
           );
           this.applicationStore.setBlockingAlert(undefined);
           this.applicationStore.notifySuccess(
@@ -670,7 +677,8 @@ export class EditorStore {
                 generateSetupRoute(
                   this.applicationStore.config.sdlcServerKey,
                   projectId,
-                  workspaceIdentifier,
+                  workspaceId,
+                  workspaceType,
                 ),
               );
             },
@@ -681,7 +689,10 @@ export class EditorStore {
       return;
     }
     yield Promise.all([
-      this.sdlcState.fetchCurrentRevision(projectId, workspaceIdentifier),
+      this.sdlcState.fetchCurrentRevision(
+        projectId,
+        this.sdlcState.activeWorkspace,
+      ),
       this.graphManagerState.initializeSystem(), // this can be moved inside of `setupEngine`
       this.graphManagerState.graphManager.initialize(
         {
