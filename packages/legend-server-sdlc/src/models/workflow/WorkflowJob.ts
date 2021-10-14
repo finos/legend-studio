@@ -58,7 +58,8 @@ export class WorkflowJob {
       finishedAt: optional(
         custom(
           () => SKIP,
-          (value: string | undefined) => (value ? new Date(value) : undefined),
+          (value: string | null | undefined) =>
+            value ? new Date(value) : undefined,
         ),
       ),
       projectId: primitive(),
@@ -66,7 +67,8 @@ export class WorkflowJob {
       startedAt: optional(
         custom(
           () => SKIP,
-          (value: string | undefined) => (value ? new Date(value) : undefined),
+          (value: string | null | undefined) =>
+            value ? new Date(value) : undefined,
         ),
       ),
       status: primitive(),

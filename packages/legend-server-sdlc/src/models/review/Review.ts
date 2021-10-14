@@ -52,13 +52,15 @@ export class Review {
       closedAt: optional(
         custom(
           () => SKIP,
-          (value: string | undefined) => (value ? new Date(value) : undefined),
+          (value: string | null | undefined) =>
+            value ? new Date(value) : undefined,
         ),
       ),
       committedAt: optional(
         custom(
           () => SKIP,
-          (value: string | undefined) => (value ? new Date(value) : undefined),
+          (value: string | null | undefined) =>
+            value ? new Date(value) : undefined,
         ),
       ),
       createdAt: custom(
@@ -69,7 +71,8 @@ export class Review {
       lastUpdatedAt: optional(
         custom(
           () => SKIP,
-          (value: string | undefined) => (value ? new Date(value) : undefined),
+          (value: string | null | undefined) =>
+            value ? new Date(value) : undefined,
         ),
       ),
       projectId: primitive(),

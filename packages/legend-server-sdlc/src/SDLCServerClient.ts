@@ -165,7 +165,7 @@ export class SDLCServerClient extends AbstractServerClient {
     `${this._project(projectId)}/workspaces`;
   private _groupWorkspaces = (projectId: string): string =>
     `${this._project(projectId)}/groupWorkspaces`;
-  private __workspace = (
+  private _workspaceByType = (
     projectId: string,
     workspaceId: string,
     workspaceType: WorkspaceType,
@@ -174,7 +174,11 @@ export class SDLCServerClient extends AbstractServerClient {
       ? `${this._groupWorkspaces(projectId)}/${encodeURIComponent(workspaceId)}`
       : `${this._workspaces(projectId)}/${encodeURIComponent(workspaceId)}`;
   private _workspace = (projectId: string, workspace: Workspace): string =>
-    this.__workspace(projectId, workspace.workspaceId, workspace.workspaceType);
+    this._workspaceByType(
+      projectId,
+      workspace.workspaceId,
+      workspace.workspaceType,
+    );
   /**
    * This method makes it possible that we don't have to repeat the set of endpoints twice for:
    *    1. workspaceId === undefined (hence calling the project branch)
@@ -201,7 +205,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspaceType: WorkspaceType,
   ): Promise<PlainObject<Workspace>> =>
     this.networkClient.get(
-      this.__workspace(projectId, workspaceId, workspaceType),
+      this._workspaceByType(projectId, workspaceId, workspaceType),
     );
   isWorkspaceOutdated = (
     projectId: string,
@@ -222,7 +226,7 @@ export class SDLCServerClient extends AbstractServerClient {
   ): Promise<PlainObject<Workspace>> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.CREATE_WORKSPACE),
-      this.__workspace(projectId, workspaceId, workspaceType),
+      this._workspaceByType(projectId, workspaceId, workspaceType),
     );
   updateWorkspace = (
     projectId: string,

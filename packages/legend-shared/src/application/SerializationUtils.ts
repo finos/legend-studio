@@ -16,7 +16,7 @@
 
 import type { PlainObject } from '../CommonUtils';
 import type { ClazzOrModelSchema, ModelSchema, PropSchema } from 'serializr';
-import { custom, SKIP, deserialize, serialize } from 'serializr';
+import { optional, custom, SKIP, deserialize, serialize } from 'serializr';
 
 // NOTE: we need these methods because `map()` of `serializr` tries to smartly determines if it should produce object or ES6 Map
 // but we always want ES6 Map, so we would use this function
@@ -95,4 +95,16 @@ export const usingConstantValueSchema = (
   custom(
     () => value,
     () => value,
+  );
+
+/**
+ * Sometimes, servers might return primitive fields which have not been set as `null` instead of `undefined`
+ * This shema will force-convert the value to `undefined` if it's `null`.
+ */
+export const usingNullableOptionalPrimitiveSchema = (): PropSchema =>
+  optional(
+    custom(
+      (value) => value ?? SKIP,
+      (value) => value ?? undefined,
+    ),
   );
