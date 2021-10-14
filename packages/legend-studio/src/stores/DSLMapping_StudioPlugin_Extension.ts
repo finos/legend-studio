@@ -22,6 +22,23 @@ import type { ServicePureExecutionState } from './editor-state/element-editor-st
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { NewConnectionValueDriver } from './NewElementState';
+import type { SetImplementation } from '@finos/legend-graph';
+import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingElementState } from './editor-state/element-editor-state/mapping/MappingElementState';
+import type { MappingElementSource } from './editor-state/element-editor-state/mapping/MappingEditorState';
+
+export type MappingElementSources = (
+  mappingElement: MappingElement,
+) => MappingElementSource | undefined;
+
+export type SetImplemtationType = (
+  setImplementation: SetImplementation,
+) => string | undefined;
+
+export type CreateMappingElementState = (
+  mappingElement: MappingElement | undefined,
+  editorStore: EditorStore,
+) => MappingElementState | undefined;
 
 export type DefaultConnectionValueBuilder = (
   store: Store,
@@ -83,6 +100,18 @@ export type TEMP__ServiceTestRuntimeConnectionBuilder = (
 
 export interface DSLMapping_StudioPlugin_Extension
   extends DSL_StudioPlugin_Extension {
+  /**
+   * Get the list of extra set implementation types.
+   */
+  getExtraSetImplementationTypes?(): SetImplemtationType[];
+  /**
+   * Get the list of the create mapping elements states for the given class mapping.
+   */
+  getExtraCreateMappingElementStates?(): CreateMappingElementState[];
+  /**
+   * Get the list of the element sources for the given class mapping.
+   */
+  getExtraMappingElementSources?(): MappingElementSources[];
   /**
    * Get the list of the default connection value builder for a specified store.
    */

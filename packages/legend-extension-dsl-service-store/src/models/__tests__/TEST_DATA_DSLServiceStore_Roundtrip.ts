@@ -61,6 +61,7 @@ export const roundtripTestData = [
     content: {
       _type: 'binding',
       contentType: 'test',
+      includedStores: [],
       modelUnit: {
         packageableElementExcludes: [],
         packageableElementIncludes: [],
@@ -103,6 +104,7 @@ export const roundtripTestData = [
           security: [],
         },
       ],
+      includedStores: [],
     },
     classifierPath: 'meta::external::store::service::metamodel::ServiceStore',
   },
@@ -178,6 +180,7 @@ export const roundtripTestData = [
           path: '/testServices',
         },
       ],
+      includedStores: [],
     },
     classifierPath: 'meta::external::store::service::metamodel::ServiceStore',
   },

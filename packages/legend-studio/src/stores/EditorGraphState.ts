@@ -92,6 +92,7 @@ import {
   ActionAlertType,
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
+import type { DSLMapping_StudioPlugin_Extension } from './DSLMapping_StudioPlugin_Extension';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -1168,9 +1169,7 @@ export class EditorGraphState {
   }
 
   /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-  getSetImplementationType(
-    setImplementation: SetImplementation,
-  ): SET_IMPLEMENTATION_TYPE {
+  getSetImplementationType(setImplementation: SetImplementation): string {
     if (setImplementation instanceof PureInstanceSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.PUREINSTANCE;
     } else if (setImplementation instanceof OperationSetImplementation) {
@@ -1189,6 +1188,20 @@ export class EditorGraphState {
       return SET_IMPLEMENTATION_TYPE.EMBEDDED_RELATIONAL;
     } else if (setImplementation instanceof AggregationAwareSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE;
+    }
+    const extraSetImplementationTypes = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).getExtraSetImplementationTypes?.() ?? [],
+      );
+    for (const type of extraSetImplementationTypes) {
+      const setImplementationType = type(setImplementation);
+      if (setImplementationType) {
+        return setImplementationType;
+      }
     }
     throw new UnsupportedOperationError(
       `Can't classify set implementation`,

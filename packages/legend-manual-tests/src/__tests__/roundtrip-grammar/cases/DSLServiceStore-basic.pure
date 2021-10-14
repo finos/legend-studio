@@ -1,5 +1,26 @@
+###ExternalFormat
+SchemaSet test::tradeSchema
+{
+  format: FlatData;
+  schemas: [
+    {
+      content: 'section trade: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \',\';\n  nullString: \'\';\n\n  Record\n  {\n    Product           : STRING;\n    Quantity          : INTEGER;\n    \'Trade Time\'      : DATETIME;\n    Price             : DECIMAL;\n    \'Price Ccy\'       : STRING;\n   \'Settlement Ccy\'  : STRING(optional);\n    \'Settlement Rate\' : DECIMAL(optional);\n   \'Settlement Date\' : DATE;\n   \'Confirmed At\'    : DATETIME(optional);\n   \'Expiry Date\'     : DATE(optional);\n   \'Executions\'      : INTEGER(optional);\n }\n}';
+    }
+  ];
+}
+
+Binding test::gen::TestBinding
+{
+  schemaSet: test::tradeSchema;
+  contentType: 'application/x.flatdata';
+  modelIncludes: [
+    test::gen::Trade
+  ];
+}
+
+
 ###Pure
-Class test::model::A
+Class test::gen::Trade
 {
   product: String[1];
   quantity: Integer[1];
@@ -14,28 +35,9 @@ Class test::model::A
   executions: Integer[0..1];
 }
 
-###ExternalFormat
-SchemaSet test::tradeSchema
-{
-  format: FlatData;
-  schemas: [
-    {
-      content: 'section trade: DelimitedWithHeadings\n{\n  scope.untilEof;\n  delimiter: \',\';\n  nullString: \'\';\n\n  Record\n  {\n    Product           : STRING;\n    Quantity          : INTEGER;\n    \'Trade Time\'      : DATETIME;\n    Price             : DECIMAL;\n    \'Price Ccy\'       : STRING;\n   \'Settlement Ccy\'  : STRING(optional);\n    \'Settlement Rate\' : DECIMAL(optional);\n   \'Settlement Date\' : DATE;\n   \'Confirmed At\'    : DATETIME(optional);\n   \'Expiry Date\'     : DATE(optional);\n   \'Executions\'      : INTEGER(optional);\n }\n}';
-    }
-  ];
-}
-
-Binding test::Binding
-{
-  schemaSet: test::tradeSchema;
-  contentType: 'application/x.flatdata';
-  modelIncludes: [
-    test::model::A
-  ];
-}
 
 ###ServiceStore
-ServiceStore test::ServiceStore
+ServiceStore test::testServiceStoreCompilationWithSingleService1
 (
   Service TestService
   (
@@ -45,78 +47,7 @@ ServiceStore test::ServiceStore
     (
       serializationFormat : String ( location = query )
     );
-    response : test::model::A <- test::Binding;
+    response : [test::gen::Trade <- test::gen::TestBinding];
     security : [];
   )
 )
-
-ServiceStore test::ServiceStore1
-(
-  ServiceGroup TestServiceGroup
-  (
-    path : '/testServices';
-
-    Service TestService1
-    (
-      path : '/testService1';
-      method : GET;
-      parameters :
-      (
-        param : String ( location = query ),
-        param2 : Integer ( location = query )
-      );
-      response : test::model::A <- test::Binding;
-      security : [];
-    )
-    Service TestService2
-    (
-      path : '/testService2';
-      method : GET;
-      parameters :
-      (
-        param1 : Boolean ( location = query )
-      );
-      response : test::model::A <- test::Binding;
-      security : [];
-    )
-  )
-)
-
-###Mapping
-Mapping test::mapping
-(
-  *test::model::A: ServiceStore
-  {
-    ~service [test::ServiceStore] TestService
-    (
-      ~paramMapping
-      (
-        serializationFormat : 'CSV'
-      )
-    )
-  }
-)
-
-Mapping test::mapping1
-(
-  *test::model::A: ServiceStore
-  {
-    +localProp : String[1];
-
-    ~service [test::ServiceStore1] TestServiceGroup.TestService1
-    (
-      ~paramMapping
-      (
-        param : $this.localProp,
-        param2 : 1
-      )
-    )
-  }
-)
-
-###Connection
-ServiceStoreConnection simple::serviceStoreConnection
-{
-  store: test::ServiceStore;
-  baseUrl: 'http://baseUrl';
-}

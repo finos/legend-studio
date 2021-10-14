@@ -27,19 +27,30 @@ import type {
   ElementEditorStateCreator,
   ElementTypeGetter,
   ElementProjectExplorerDnDTypeGetter,
-  DSL_StudioPlugin_Extension,
   NewElementState,
+  DSLMapping_StudioPlugin_Extension,
+  SetImplemtationType,
+  CreateMappingElementState,
+  MappingElementSources,
 } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
 import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
+import type { SetImplementation } from '@finos/legend-graph';
+import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/RootServiceInstanceSetImplementation';
+import type { MappingElement } from '@finos/legend-studio';
+import type { MappingElementState } from '@finos/legend-studio';
+import { UnsupportedInstanceSetImplementationState } from '@finos/legend-studio';
+import type { MappingElementSource } from '@finos/legend-studio';
+import {Class} from "@finos/legend-graph";
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICESTORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_SERVICE_STORE';
+const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
 
 export class DSLServiceStore_StudioPlugin
   extends StudioPlugin
-  implements DSL_StudioPlugin_Extension
+  implements DSLMapping_StudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
@@ -106,5 +117,47 @@ export class DSLServiceStore_StudioPlugin
 
   getExtraGrammarTextEditorDnDTypes(): string[] {
     return [SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
+  }
+
+  getExtraSetImplementationTypes(): SetImplemtationType[] {
+    return [
+      (setImplementation: SetImplementation): string | undefined => {
+        if (setImplementation instanceof RootServiceInstanceSetImplementation) {
+          return SERVICE_STORE_MAPPING_TYPE;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraCreateMappingElementStates(): CreateMappingElementState[] {
+    return [
+      (
+        mappingElement: MappingElement | undefined,
+        editorStore: EditorStore,
+      ): MappingElementState | undefined => {
+        if (
+          mappingElement !== undefined &&
+          mappingElement instanceof RootServiceInstanceSetImplementation
+        ) {
+          return new UnsupportedInstanceSetImplementationState(
+            editorStore,
+            mappingElement,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraMappingElementSources(): MappingElementSources[] {
+    return [
+      (mappingElement: MappingElement): MappingElementSource | undefined => {
+        if (mappingElement instanceof RootServiceInstanceSetImplementation) {
+          return mappingElement.class.value;
+        }
+        return undefined;
+      },
+    ];
   }
 }

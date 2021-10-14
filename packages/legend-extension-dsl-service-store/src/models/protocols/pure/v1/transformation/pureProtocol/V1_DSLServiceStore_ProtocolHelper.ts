@@ -412,6 +412,7 @@ export const V1_serviceStoreModelSchema = (
         (val) => V1_deserializeServiceStoreElement(val, plugins),
       ),
     ),
+    includedStores: list(primitive()),
     name: primitive(),
     package: primitive(),
   });

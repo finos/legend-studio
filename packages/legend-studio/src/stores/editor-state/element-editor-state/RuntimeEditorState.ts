@@ -556,7 +556,10 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
         this.runtimeEditorState.runtimeValue.mappings.flatMap((mapping) =>
           getAllClassMappings(mapping.value)
             .map((setImplementation) =>
-              getMappingElementSource(setImplementation),
+              getMappingElementSource(
+                setImplementation,
+                this.editorStore.pluginManager.getStudioPlugins(),
+              ),
             )
             .filter((source): source is Class => source instanceof Class),
         ),
