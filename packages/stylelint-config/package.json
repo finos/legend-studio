@@ -25,7 +25,8 @@
   "scripts": {
     "clean": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.{mjs,cjs,js}\"",
-    "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
     "stylelint": "13.13.1",

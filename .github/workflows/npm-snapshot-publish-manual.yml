@@ -1,28 +1,15 @@
-name: Docker Manual Publish
+name: NPM Snapshot Publish (Manual)
 
-on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag (e.g. 1.7.0-rc.1, 0.0.1-beta)'
-        required: true
-        default: 'snapshot'
+on: workflow_dispatch
 
 jobs:
-  manual-publish-docker-image:
+  npm-publish-library-snapshots:
     # There is currently no way to limit workflow dispatch to only allow default branch
     # so we need to restrict it here
+    # See https://github.community/t/limit-branch-for-workflow-dispatch/122099
     if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
-    name: Manual Publish Docker Image
+    name: Publish Snapshots to NPM
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - image: finos/legend-studio
-            package: '@finos/legend-studio-deployment'
-          - image: finos/legend-query
-            package: '@finos/legend-query-deployment'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.3.4
@@ -41,18 +28,15 @@ jobs:
         uses: actions/setup-node@v2.4.1
         with:
           node-version: 14.x
+          # The registry URL and `NODE_AUTH_TOKEN` are needed for `npm publish` to work properly
+          # See https://github.com/actions/setup-node/blob/main/docs/advanced-usage.md#publish-to-npmjs-and-gpr-with-npm
+          registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies
         run: yarn
-      - name: Build modules
-        run: yarn build
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: finos
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Publish to Docker
-        run: yarn workspace ${{ matrix.package }} publish:docker ${{ github.event.inputs.tag }}
+      - name: Publish to NPM
+        run: yarn build && yarn publish:snapshot
         env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           # TODO: After https://github.com/finos/legend-studio/pull/227 it seems like due to either
           # the upgrade of Webpack/Typescript that we start seeing some OOM when building Webpack
           # while publishing to Docker. We should once in a while remove this line and try again.

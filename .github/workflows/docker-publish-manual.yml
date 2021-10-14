@@ -1,14 +1,20 @@
-name: Docker Snapshot
+name: Docker Publish (Manual)
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag (e.g. 1.7.0-rc.1, 0.0.1-beta)'
+        required: true
+        default: 'snapshot'
 
 jobs:
-  publish-snapshot-docker-image:
+  manual-publish-docker-image:
+    # There is currently no way to limit workflow dispatch to only allow default branch
+    # so we need to restrict it here
+    # See https://github.community/t/limit-branch-for-workflow-dispatch/122099
     if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
-    name: Publish Snapshot Docker Image
+    name: Publish Docker Image
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -38,15 +44,13 @@ jobs:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
-      - name: Build modules
-        run: yarn build
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: finos
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Publish snapshot to Docker
-        run: yarn workspace ${{ matrix.package }} publish:docker snapshot
+      - name: Publish to Docker
+        run: yarn build && yarn workspace ${{ matrix.package }} publish:docker ${{ github.event.inputs.tag }}
         env:
           # TODO: After https://github.com/finos/legend-studio/pull/227 it seems like due to either
           # the upgrade of Webpack/Typescript that we start seeing some OOM when building Webpack

@@ -39,6 +39,7 @@
     "lint:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --verbose run lint:js",
     "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\"",
     "publish:prepare": "cross-env FORCE_COLOR=1 yarn build && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:prepare",
+    "publish:snapshot": "yarn publish:prepare && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:snapshot",
     "release": "yarn publish:prepare && changeset publish",
     "release:bump": "node ./scripts/release/createVersionBumpChangeset.js",
     "release:github": "node ./scripts/release/createGithubVersion.js",
