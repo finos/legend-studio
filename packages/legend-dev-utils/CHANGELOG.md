@@ -1,5 +1,11 @@
 # @finos/legend-dev-utils
 
+## 0.0.13
+
+### Patch Changes
+
+- [#569](https://github.com/finos/legend-studio/pull/569) [`67a95bd0`](https://github.com/finos/legend-studio/commit/67a95bd0dadd00b486c2f7884e7d9a10cb91b03c) ([@akphi](https://github.com/akphi)) - Upgrade to `jest-extended@1.0.0` and export the script `jest/setupJestExpectExtension` for the narrowed-down set of extensions for `Jest.expect`.
+
 ## 0.0.12
 
 ## 0.0.11
