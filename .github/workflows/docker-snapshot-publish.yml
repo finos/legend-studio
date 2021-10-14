@@ -1,29 +1,22 @@
-name: Docker Check
+name: Docker Snapshot Publish
 
-# NOTE: this job does not scan for the latest image published on Docker Hub
-# We might need to use some other tools such as http://snyk.io/ to monitor
 on:
-  schedule:
-    - cron: '0 0 * * 2' # every Tuesday on default branch
   push:
     branches:
       - master
-      - 'release/**'
-  pull_request:
-    branches:
-      - '**'
 
 jobs:
-  check-docker-image:
-    name: Run Docker Image Checks
+  publish-snapshot-docker-image:
+    if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
+    name: Publish Docker Image
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - image: local/legend-studio
+          - image: finos/legend-studio
             package: '@finos/legend-studio-deployment'
-          - image: local/legend-query
+          - image: finos/legend-query
             package: '@finos/legend-query-deployment'
     steps:
       - name: Checkout code
@@ -45,14 +38,15 @@ jobs:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
-      - name: Build image
-        run: yarn workspace ${{ matrix.package }} build-dry:docker ${{ github.sha }}
-      - name: Scan image for security issues
-        uses: Azure/container-scan@v0
-        env:
-          # Skip `won't fix` CVEs
-          # See https://github.com/Azure/container-scan/issues/61
-          TRIVY_IGNORE_UNFIXED: true
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
         with:
-          image-name: ${{ matrix.image }}:${{ github.sha }}
-          severity-threshold: CRITICAL
+          username: finos
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Publish to Docker
+        run: yarn build && yarn workspace ${{ matrix.package }} publish:docker snapshot
+        env:
+          # TODO: After https://github.com/finos/legend-studio/pull/227 it seems like due to either
+          # the upgrade of Webpack/Typescript that we start seeing some OOM when building Webpack
+          # while publishing to Docker. We should once in a while remove this line and try again.
+          NODE_OPTIONS: '--max_old_space_size=4096'

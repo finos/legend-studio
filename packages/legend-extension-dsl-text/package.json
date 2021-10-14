@@ -33,6 +33,7 @@
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -43,7 +44,7 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.27",
+    "@types/react": "17.0.29",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
     "monaco-editor": "0.29.1",
@@ -58,7 +59,7 @@
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.42.1",
-    "typescript": "4.4.3"
+    "typescript": "4.4.4"
   },
   "peerDependencies": {
     "react": "^17.0.0"

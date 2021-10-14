@@ -15,7 +15,10 @@
  */
 
 import { createModelSchema, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+import {
+  usingNullableOptionalPrimitiveSchema,
+  SerializationFactory,
+} from '@finos/legend-shared';
 
 export enum WorkspaceAccessType {
   WORKSPACE = 'WORKSPACE',
@@ -30,18 +33,19 @@ export enum WorkspaceType {
 export class Workspace {
   projectId!: string;
   workspaceId!: string;
-  userId: string | null = null;
-  type = WorkspaceAccessType.WORKSPACE;
+  userId?: string | undefined;
+
+  accessType = WorkspaceAccessType.WORKSPACE;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(Workspace, {
       projectId: primitive(),
-      userId: primitive(),
+      userId: usingNullableOptionalPrimitiveSchema(),
       workspaceId: primitive(),
     }),
   );
 
   get workspaceType(): WorkspaceType {
-    return this.userId === null ? WorkspaceType.GROUP : WorkspaceType.USER;
+    return this.userId ? WorkspaceType.USER : WorkspaceType.GROUP;
   }
 }

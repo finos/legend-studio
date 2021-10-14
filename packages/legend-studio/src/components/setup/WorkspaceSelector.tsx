@@ -50,13 +50,14 @@ export const WorkspaceSelector = observer(
     const { onChange, create } = props;
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore<StudioConfig>();
-    const currentWorkspaceId = setupStore.currentWorkspaceId;
+    const currentWorkspaceCompositeId = setupStore.currentWorkspaceCompositeId;
     const options =
       setupStore.currentProjectWorkspaceOptions.sort(compareLabelFn);
     const selectedOption =
       options.find(
         (option) =>
-          setupStore.getWorkspaceId(option.value) === currentWorkspaceId,
+          setupStore.buildWorkspaceCompositeId(option.value) ===
+          currentWorkspaceCompositeId,
       ) ?? null;
     const isLoadingOptions =
       setupStore.loadProjectsState.isInProgress ||
@@ -81,13 +82,13 @@ export const WorkspaceSelector = observer(
     };
 
     useEffect(() => {
-      if (setupStore.currentProjectWorkspaces && !currentWorkspaceId) {
+      if (setupStore.currentProjectWorkspaces && !currentWorkspaceCompositeId) {
         onChange(false);
       }
     }, [
       setupStore.currentProjectWorkspaces,
       setupStore.currentProjectId,
-      currentWorkspaceId,
+      currentWorkspaceCompositeId,
       onChange,
     ]);
 

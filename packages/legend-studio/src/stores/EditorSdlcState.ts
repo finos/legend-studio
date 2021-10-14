@@ -149,7 +149,8 @@ export class EditorSdlcState {
       )) as boolean;
       if (isInConflictResolutionMode) {
         this.editorStore.setMode(EDITOR_MODE.CONFLICT_RESOLUTION);
-        this.currentWorkspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
+        this.currentWorkspace.accessType =
+          WorkspaceAccessType.CONFLICT_RESOLUTION;
         this.editorStore.setActiveActivity(ACTIVITY_MODE.CONFLICT_RESOLUTION);
       }
     } catch (error) {

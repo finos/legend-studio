@@ -107,19 +107,22 @@ export class SetupStore {
       ? this.projects.get(this.currentProjectId)
       : undefined;
   }
+
   get currentProjectWorkspaces(): Map<string, Workspace> | undefined {
     return this.currentProjectId
       ? this.workspacesByProject.get(this.currentProjectId)
       : undefined;
   }
+
   get currentWorkspace(): Workspace | undefined {
-    return this.currentProjectWorkspaces && this.currentWorkspaceId
-      ? this.currentProjectWorkspaces.get(this.currentWorkspaceId)
+    return this.currentProjectWorkspaces && this.currentWorkspaceCompositeId
+      ? this.currentProjectWorkspaces.get(this.currentWorkspaceCompositeId)
       : undefined;
   }
-  get currentWorkspaceId(): string | undefined {
+
+  get currentWorkspaceCompositeId(): string | undefined {
     return this.currentWorkspaceIdentifier
-      ? this.getWorkspaceId(this.currentWorkspaceIdentifier)
+      ? this.buildWorkspaceCompositeId(this.currentWorkspaceIdentifier)
       : undefined;
   }
 
@@ -335,9 +338,12 @@ export class SetupStore {
           if (
             workspacesInConflictResolutionIds.includes(workspace.workspaceId)
           ) {
-            workspace.type = WorkspaceAccessType.CONFLICT_RESOLUTION;
+            workspace.accessType = WorkspaceAccessType.CONFLICT_RESOLUTION;
           }
-          workspaceMap.set(this.getWorkspaceId(workspace), workspace);
+          workspaceMap.set(
+            this.buildWorkspaceCompositeId(workspace),
+            workspace,
+          );
         });
       this.workspacesByProject.set(projectId, workspaceMap);
     } catch (error) {
@@ -352,7 +358,7 @@ export class SetupStore {
     }
   }
 
-  getWorkspaceId(workspace: WorkspaceIdentifier): string {
+  buildWorkspaceCompositeId(workspace: WorkspaceIdentifier): string {
     return `${workspace.workspaceType}/${workspace.workspaceId}`;
   }
 
@@ -374,12 +380,15 @@ export class SetupStore {
         this.workspacesByProject.get(projectId);
       if (existingWorkspaceForProject) {
         existingWorkspaceForProject.set(
-          this.getWorkspaceId(workspace),
+          this.buildWorkspaceCompositeId(workspace),
           workspace,
         );
       } else {
         const newWorkspaceMap = observable<string, Workspace>(new Map());
-        newWorkspaceMap.set(this.getWorkspaceId(workspace), workspace);
+        newWorkspaceMap.set(
+          this.buildWorkspaceCompositeId(workspace),
+          workspace,
+        );
         this.workspacesByProject.set(projectId, newWorkspaceMap);
       }
       this.applicationStore.notifySuccess(

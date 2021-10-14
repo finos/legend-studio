@@ -650,7 +650,7 @@ const SetupSelection = observer(() => {
     setupStore.createOrImportProjectState.isInProgress;
   const disableProceedButton =
     !setupStore.currentProjectId ||
-    !setupStore.currentWorkspaceId ||
+    !setupStore.currentWorkspaceCompositeId ||
     isCreatingWorkspace ||
     isCreatingOrImportingProject;
   const onProjectChange = (focusNext: boolean): void =>
@@ -669,7 +669,7 @@ const SetupSelection = observer(() => {
     if (
       setupStore.currentProjectId &&
       setupStore.currentProject &&
-      setupStore.currentWorkspaceId &&
+      setupStore.currentWorkspaceCompositeId &&
       setupStore.currentWorkspace
     ) {
       applicationStore.navigator.goTo(
