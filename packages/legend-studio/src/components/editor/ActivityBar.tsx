@@ -245,7 +245,7 @@ export const ActivityBar = observer(() => {
       ),
     },
     !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.WORKSPACE_BUILDS,
+      mode: ACTIVITY_MODE.WORKSPACE_WORKFLOWS,
       title: 'Workspace Builds',
       icon: <FaWrench />,
     },

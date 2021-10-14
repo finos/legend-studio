@@ -111,6 +111,20 @@
     background: var(--color-dark-grey-100);
   }
 
+  &__workspace__viewer {
+    @include flexVCenter;
+
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.7rem;
+      min-width: 1.7rem;
+      height: 1.4rem;
+      margin-right: 0.5rem;
+    }
+  }
+
   &__release--empty {
     padding: 2rem;
     color: var(--color-light-grey-400);

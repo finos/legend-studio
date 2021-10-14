@@ -40,7 +40,10 @@ import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
 import type { EditorHotkey } from '../../stores/EditorStore';
-import type { EditorPathParams } from '../../stores/LegendStudioRouter';
+import type {
+  EditorPathParams,
+  GroupEditorPathParams,
+} from '../../stores/LegendStudioRouter';
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
@@ -54,6 +57,7 @@ import {
   ApplicationBackdrop,
   useApplicationStore,
 } from '@finos/legend-application';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 
 const buildHotkeySupport = (
   hotkeys: EditorHotkey[],
@@ -70,9 +74,16 @@ const buildHotkeySupport = (
 };
 
 export const EditorInner = observer(() => {
-  const params = useParams<EditorPathParams>();
+  const params = useParams<EditorPathParams | GroupEditorPathParams>();
   const projectId = params.projectId;
-  const workspaceId = params.workspaceId;
+  const workspaceType = (params as { groupWorkspaceId: string | undefined })
+    .groupWorkspaceId
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
+  const workspaceId =
+    workspaceType === WorkspaceType.GROUP
+      ? (params as GroupEditorPathParams).groupWorkspaceId
+      : (params as EditorPathParams).workspaceId;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
 
@@ -122,10 +133,10 @@ export const EditorInner = observer(() => {
 
   // Initialize the app
   useEffect(() => {
-    flowResult(editorStore.initialize(projectId, workspaceId)).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
-  }, [editorStore, applicationStore, projectId, workspaceId]);
+    flowResult(
+      editorStore.initialize(projectId, workspaceId, workspaceType),
+    ).catch(applicationStore.alertIllegalUnhandledError);
+  }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
 
   // Browser Navigation Blocking (reload, close tab, go to another URL)
   // NOTE: there is no way to customize the alert message for now since Chrome removed support for it

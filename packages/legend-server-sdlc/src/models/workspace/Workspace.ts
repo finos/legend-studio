@@ -27,11 +27,10 @@ export enum WorkspaceType {
   USER = 'USER',
   GROUP = 'GROUP',
 }
-
 export class Workspace {
   projectId!: string;
   workspaceId!: string;
-  userId!: string;
+  userId: string | null = null;
   type = WorkspaceAccessType.WORKSPACE;
 
   static readonly serialization = new SerializationFactory(
@@ -41,4 +40,8 @@ export class Workspace {
       workspaceId: primitive(),
     }),
   );
+
+  get workspaceType(): WorkspaceType {
+    return this.userId === null ? WorkspaceType.GROUP : WorkspaceType.USER;
+  }
 }

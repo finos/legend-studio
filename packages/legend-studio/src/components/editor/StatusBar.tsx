@@ -28,22 +28,33 @@ import { clsx, HammerIcon } from '@finos/legend-art';
 import { GoSync } from 'react-icons/go';
 import { STUDIO_TEST_ID } from '../StudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import type { EditorPathParams } from '../../stores/LegendStudioRouter';
+import type {
+  EditorPathParams,
+  GroupEditorPathParams,
+} from '../../stores/LegendStudioRouter';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { StudioConfig } from '../../application/StudioConfig';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
-  const params = useParams<EditorPathParams>();
+  const params = useParams<EditorPathParams | GroupEditorPathParams>();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore<StudioConfig>();
   const isInConflictResolutionMode = editorStore.isInConflictResolutionMode;
   // SDLC
   const projectId = params.projectId;
-  const workspaceId = params.workspaceId;
+  const workspaceType = (params as { groupWorkspaceId: string | undefined })
+    .groupWorkspaceId
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
+  const workspaceId =
+    workspaceType === WorkspaceType.GROUP
+      ? (params as GroupEditorPathParams).groupWorkspaceId
+      : (params as EditorPathParams).workspaceId;
   const currentProject = editorStore.sdlcState.currentProject;
   const goToWorkspaceUpdater = (): void =>
     editorStore.setActiveActivity(
@@ -151,6 +162,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                 applicationStore.config.sdlcServerKey,
                 projectId,
                 workspaceId,
+                workspaceType,
               )}
             >
               {workspaceId}

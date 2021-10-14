@@ -15,18 +15,18 @@
  */
 
 import { makeAutoObservable } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
-import { Build } from '@finos/legend-server-sdlc';
+import { Workflow } from '@finos/legend-server-sdlc';
 
-export class WorkspaceBuildsState {
+export class WorkspaceWorkflowsState {
   editorStore: EditorStore;
   sdlcState: EditorSdlcState;
-  isFetchingBuilds = false;
-  builds: Build[] = [];
+  isFetchingWorkflows = false;
+  workflows: Workflow[] = [];
 
   constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
     makeAutoObservable(this, {
@@ -38,19 +38,19 @@ export class WorkspaceBuildsState {
     this.sdlcState = sdlcState;
   }
 
-  *fetchAllWorkspaceBuilds(): GeneratorFn<void> {
+  *fetchAllWorkspaceWorkflows(): GeneratorFn<void> {
     try {
-      this.isFetchingBuilds = true;
-      // NOTE: this network call can take a while, so we might consider limiting the number of builds to 10 or so
-      this.builds = (
-        (yield this.editorStore.sdlcServerClient.getBuilds(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+      this.isFetchingWorkflows = true;
+      // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
+      this.workflows = (
+        (yield this.editorStore.sdlcServerClient.getWorkflows(
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
           undefined,
           undefined,
           undefined,
-        )) as PlainObject<Build>[]
-      ).map((build) => Build.serialization.fromJson(build));
+        )) as PlainObject<Workflow>[]
+      ).map((workflow) => Workflow.serialization.fromJson(workflow));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -59,7 +59,7 @@ export class WorkspaceBuildsState {
       );
       this.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.isFetchingBuilds = false;
+      this.isFetchingWorkflows = false;
     }
   }
 }

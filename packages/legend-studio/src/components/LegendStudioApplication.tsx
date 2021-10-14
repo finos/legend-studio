@@ -119,12 +119,18 @@ export const LegendStudioApplicationRoot = observer(() => {
           <Route
             exact={true}
             strict={true}
-            path={LEGEND_STUDIO_ROUTE_PATTERN.EDIT}
+            path={[
+              LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
+              LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+            ]}
             component={Editor}
           />
           <Route
             exact={true}
-            path={LEGEND_STUDIO_ROUTE_PATTERN.SETUP}
+            path={[
+              LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
+              LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+            ]}
             component={Setup}
           />
           {extraApplicationPageRenderEntries.map((entry) => (

@@ -14,70 +14,63 @@
  * limitations under the License.
  */
 
-import { User } from '../User';
 import {
-  SKIP,
   custom,
+  SKIP,
   createModelSchema,
   primitive,
   optional,
 } from 'serializr';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import type { WorkspaceType } from '../workspace/Workspace';
+import { SerializationFactory } from '@finos/legend-shared';
 
-export enum ReviewState {
-  OPEN = 'OPEN',
-  COMMITTED = 'COMMITTED',
-  CLOSED = 'CLOSED',
+export enum WorkflowJobStatus {
+  WAITING = 'WAITING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  SUCCEEDED = 'SUCCEEDED',
+  FAILED = 'FAILED',
+  CANCELED = 'CANCELED',
+  WAITING_MANUAL = 'WAITING_MANUAL',
+  SKIPPED = 'SKIPPED',
   UNKNOWN = 'UNKNOWN',
 }
 
-export class Review {
+export class WorkflowJob {
   id!: string;
-  state!: ReviewState;
-  author!: User;
-  title!: string;
+  workflowId!: string;
+  name!: string;
   projectId!: string;
-  workspaceId!: string;
-  webURL!: string;
+  revisionId!: string;
+  status!: WorkflowJobStatus;
   createdAt!: Date;
-  closedAt?: Date;
-  lastUpdatedAt?: Date;
-  committedAt?: Date;
-  workspaceType!: WorkspaceType;
+  startedAt?: Date;
+  finishedAt?: Date;
+  webURL!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(Review, {
-      author: usingModelSchema(User.serialization.schema),
-      closedAt: optional(
-        custom(
-          () => SKIP,
-          (value: string | undefined) => (value ? new Date(value) : undefined),
-        ),
-      ),
-      committedAt: optional(
-        custom(
-          () => SKIP,
-          (value: string | undefined) => (value ? new Date(value) : undefined),
-        ),
-      ),
+    createModelSchema(WorkflowJob, {
+      id: primitive(),
+      workflowId: primitive(),
+      name: primitive(),
       createdAt: custom(
         () => SKIP,
         (value: string) => new Date(value),
       ),
-      id: primitive(),
-      lastUpdatedAt: optional(
+      finishedAt: optional(
         custom(
           () => SKIP,
           (value: string | undefined) => (value ? new Date(value) : undefined),
         ),
       ),
       projectId: primitive(),
-      state: primitive(),
-      title: primitive(),
+      revisionId: primitive(),
+      startedAt: optional(
+        custom(
+          () => SKIP,
+          (value: string | undefined) => (value ? new Date(value) : undefined),
+        ),
+      ),
+      status: primitive(),
       webURL: primitive(),
-      workspaceId: primitive(),
-      workspaceType: primitive(),
     }),
   );
 }

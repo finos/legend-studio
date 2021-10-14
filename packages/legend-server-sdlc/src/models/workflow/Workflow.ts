@@ -23,7 +23,7 @@ import {
 } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 
-export enum BuildStatus {
+export enum WorkflowStatus {
   PENDING = 'PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   SUCCEEDED = 'SUCCEEDED',
@@ -32,18 +32,18 @@ export enum BuildStatus {
   UNKNOWN = 'UNKNOWN',
 }
 
-export class Build {
+export class Workflow {
   id!: string;
   projectId!: string;
   revisionId!: string;
-  status!: BuildStatus;
+  status!: WorkflowStatus;
   createdAt!: Date;
   startedAt?: Date;
   finishedAt?: Date;
   webURL!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(Build, {
+    createModelSchema(Workflow, {
       id: primitive(),
       createdAt: custom(
         () => SKIP,

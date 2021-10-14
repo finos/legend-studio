@@ -17,8 +17,9 @@
 import type { Project, SdlcMode, ProjectType } from './models/project/Project';
 import type { ImportReport } from './models/project/ImportReport';
 import type { Workspace } from './models/workspace/Workspace';
+import { WorkspaceType } from './models/workspace/Workspace';
 import type { Revision, RevisionAlias } from './models/revision/Revision';
-import type { Build, BuildStatus } from './models/build/Build';
+import type { Workflow, WorkflowStatus } from './models/workflow/Workflow';
 import type { Review, ReviewState } from './models/review/Review';
 import type { Version } from './models/version/Version';
 import type { WorkspaceUpdateReport } from './models/workspace/WorkspaceUpdateReport';
@@ -162,8 +163,18 @@ export class SDLCServerClient extends AbstractServerClient {
 
   private _workspaces = (projectId: string): string =>
     `${this._project(projectId)}/workspaces`;
-  private _workspace = (projectId: string, workspaceId: string): string =>
-    `${this._workspaces(projectId)}/${encodeURIComponent(workspaceId)}`;
+  private _groupWorkspaces = (projectId: string): string =>
+    `${this._project(projectId)}/groupWorkspaces`;
+  private __workspace = (
+    projectId: string,
+    workspaceId: string,
+    workspaceType: WorkspaceType,
+  ): string =>
+    workspaceType === WorkspaceType.GROUP
+      ? `${this._groupWorkspaces(projectId)}/${encodeURIComponent(workspaceId)}`
+      : `${this._workspaces(projectId)}/${encodeURIComponent(workspaceId)}`;
+  private _workspace = (projectId: string, workspace: Workspace): string =>
+    this.__workspace(projectId, workspace.workspaceId, workspace.workspaceType);
   /**
    * This method makes it possible that we don't have to repeat the set of endpoints twice for:
    *    1. workspaceId === undefined (hence calling the project branch)
@@ -171,85 +182,92 @@ export class SDLCServerClient extends AbstractServerClient {
    */
   private _adaptiveWorkspace = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
   ): string =>
-    workspaceId
-      ? this._workspace(projectId, workspaceId)
+    workspace
+      ? this._workspace(projectId, workspace)
       : this._project(projectId);
 
   getWorkspaces = (projectId: string): Promise<PlainObject<Workspace>[]> =>
-    this.networkClient.get(this._workspaces(projectId));
+    Promise.all([
+      this.networkClient.get(this._workspaces(projectId)),
+      this.networkClient.get(this._groupWorkspaces(projectId)),
+    ]).then((workspaces) => workspaces.flat()) as Promise<
+      PlainObject<Workspace>[]
+    >;
   getWorkspace = (
     projectId: string,
     workspaceId: string,
+    workspaceType: WorkspaceType,
   ): Promise<PlainObject<Workspace>> =>
-    this.networkClient.get(this._workspace(projectId, workspaceId));
+    this.networkClient.get(
+      this.__workspace(projectId, workspaceId, workspaceType),
+    );
   isWorkspaceOutdated = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace,
   ): Promise<boolean> =>
-    this.networkClient.get(
-      `${this._workspace(projectId, workspaceId)}/outdated`,
-    );
+    this.networkClient.get(`${this._workspace(projectId, workspace)}/outdated`);
   checkIfWorkspaceIsInConflictResolutionMode = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace,
   ): Promise<boolean> =>
     this.networkClient.get(
-      `${this._workspace(projectId, workspaceId)}/inConflictResolutionMode`,
+      `${this._workspace(projectId, workspace)}/inConflictResolutionMode`,
     );
   createWorkspace = (
     projectId: string,
     workspaceId: string,
+    workspaceType: WorkspaceType,
   ): Promise<PlainObject<Workspace>> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.CREATE_WORKSPACE),
-      this._workspace(projectId, workspaceId),
+      this.__workspace(projectId, workspaceId, workspaceType),
     );
   updateWorkspace = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace,
   ): Promise<PlainObject<WorkspaceUpdateReport>> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.UPDATE_WORKSPACE),
-      `${this._workspace(projectId, workspaceId)}/update`,
+      `${this._workspace(projectId, workspace)}/update`,
     );
   deleteWorkspace = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace,
   ): Promise<PlainObject<Workspace>> =>
     this.deleteWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.DELETE_WORKSPACE),
-      this._workspace(projectId, workspaceId),
+      this._workspace(projectId, workspace),
     );
 
   // ------------------------------------------- Revision -------------------------------------------
 
   private _revisions = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspaceId: Workspace | undefined,
   ): string => `${this._adaptiveWorkspace(projectId, workspaceId)}/revisions`;
   private _revision = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): string =>
     `${this._adaptiveWorkspace(
       projectId,
-      workspaceId,
+      workspace,
     )}/revisions/${encodeURIComponent(revisionId)}`;
 
   getRevisions = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
   ): Promise<PlainObject<Revision>[]> =>
-    this.networkClient.get(this._revisions(projectId, workspaceId));
+    this.networkClient.get(this._revisions(projectId, workspace));
   getRevision = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Revision>> =>
-    this.networkClient.get(this._revision(projectId, workspaceId, revisionId));
+    this.networkClient.get(this._revision(projectId, workspace, revisionId));
 
   // ------------------------------------------- Version -------------------------------------------
 
@@ -283,15 +301,14 @@ export class SDLCServerClient extends AbstractServerClient {
 
   private _configuration = (
     projectId: string,
-    workspaceId: string | undefined,
-  ): string =>
-    `${this._adaptiveWorkspace(projectId, workspaceId)}/configuration`;
+    workspace: Workspace | undefined,
+  ): string => `${this._adaptiveWorkspace(projectId, workspace)}/configuration`;
 
   getConfiguration = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
   ): Promise<PlainObject<ProjectConfiguration>> =>
-    this.networkClient.get(this._configuration(projectId, workspaceId));
+    this.networkClient.get(this._configuration(projectId, workspace));
   getConfigurationByVersion = (
     projectId: string,
     versionId: string,
@@ -301,12 +318,12 @@ export class SDLCServerClient extends AbstractServerClient {
     );
   updateConfiguration = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
     command: PlainObject<UpdateProjectConfigurationCommand>,
   ): Promise<PlainObject<Revision>> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.UPDATE_CONFIGURATION),
-      this._configuration(projectId, workspaceId),
+      this._configuration(projectId, workspace),
       command,
     );
   getLatestProjectStructureVersion = (): Promise<
@@ -316,33 +333,33 @@ export class SDLCServerClient extends AbstractServerClient {
       `${this.networkClient.baseUrl}/configuration/latestProjectStructureVersion`,
     );
 
-  // ------------------------------------------- Build -------------------------------------------
+  // ------------------------------------------- Workflow -------------------------------------------
 
-  private _builds = (
+  private _workflows = (
     projectId: string,
-    workspaceId: string | undefined,
-  ): string => `${this._adaptiveWorkspace(projectId, workspaceId)}/builds`;
+    workspace: Workspace | undefined,
+  ): string => `${this._adaptiveWorkspace(projectId, workspace)}/workflows`;
 
-  getBuilds = (
+  getWorkflows = (
     projectId: string,
-    workspaceId: string | undefined,
-    status: BuildStatus | undefined,
+    workspace: Workspace | undefined,
+    status: WorkflowStatus | undefined,
     revisionIds: string[] | undefined,
     limit: number | undefined,
-  ): Promise<PlainObject<Build>[]> =>
+  ): Promise<PlainObject<Workflow>[]> =>
     this.networkClient.get(
-      this._builds(projectId, workspaceId),
+      this._workflows(projectId, workspace),
       undefined,
       undefined,
       { status, revisionIds, limit },
     );
-  getBuildsByRevision = (
+  getWorkflowsByRevision = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
-  ): Promise<PlainObject<Build>[]> =>
+  ): Promise<PlainObject<Workflow>[]> =>
     this.networkClient.get(
-      this._builds(projectId, workspaceId),
+      this._workflows(projectId, workspace),
       undefined,
       undefined,
       { revisionId },
@@ -352,21 +369,21 @@ export class SDLCServerClient extends AbstractServerClient {
 
   private _entities = (
     projectId: string,
-    workspaceId: string | undefined,
-  ): string => `${this._adaptiveWorkspace(projectId, workspaceId)}/entities`;
+    workspace: Workspace | undefined,
+  ): string => `${this._adaptiveWorkspace(projectId, workspace)}/entities`;
 
   getEntities = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
   ): Promise<PlainObject<Entity>[]> =>
-    this.networkClient.get(this._entities(projectId, workspaceId));
+    this.networkClient.get(this._entities(projectId, workspace));
   getEntitiesByRevision = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Entity>[]> =>
     this.networkClient.get(
-      `${this._revision(projectId, workspaceId, revisionId)}/entities`,
+      `${this._revision(projectId, workspace, revisionId)}/entities`,
     );
   getEntitiesByVersion = (
     projectId: string,
@@ -375,22 +392,22 @@ export class SDLCServerClient extends AbstractServerClient {
     this.networkClient.get(`${this._version(projectId, versionId)}/entities`);
   updateEntities = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
     command: PlainObject<UpdateEntitiesCommand>,
   ): Promise<PlainObject<Revision>> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.UPDATE_ENTITIES),
-      this._entities(projectId, workspaceId),
+      this._entities(projectId, workspace),
       command,
     );
   performEntityChanges = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
     command: PerformEntitiesChangesCommand,
   ): Promise<PlainObject<Revision>> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.PERFORM_ENTITY_CHANGES),
-      `${this._adaptiveWorkspace(projectId, workspaceId)}/entityChanges`,
+      `${this._adaptiveWorkspace(projectId, workspace)}/entityChanges`,
       command,
     );
 
@@ -484,9 +501,9 @@ export class SDLCServerClient extends AbstractServerClient {
 
   private _conflictResolution = (
     projectId: string,
-    workspaceId: string | undefined,
+    workspace: Workspace | undefined,
   ): string =>
-    `${this._adaptiveWorkspace(projectId, workspaceId)}/conflictResolution`;
+    `${this._adaptiveWorkspace(projectId, workspace)}/conflictResolution`;
 
   getWorkspacesInConflictResolutionMode = (
     projectId: string,
@@ -494,59 +511,59 @@ export class SDLCServerClient extends AbstractServerClient {
     this.networkClient.get(this._conflictResolution(projectId, undefined));
   abortConflictResolution = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace | undefined,
   ): Promise<void> =>
-    this.networkClient.delete(this._conflictResolution(projectId, workspaceId));
+    this.networkClient.delete(this._conflictResolution(projectId, workspace));
   discardConflictResolutionChanges = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace | undefined,
   ): Promise<void> =>
     this.networkClient.post(
-      `${this._conflictResolution(projectId, workspaceId)}/discardChanges`,
+      `${this._conflictResolution(projectId, workspace)}/discardChanges`,
     );
   acceptConflictResolution = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace | undefined,
     command: PlainObject<PerformEntitiesChangesCommand>,
   ): Promise<void> =>
     this.networkClient.post(
-      `${this._conflictResolution(projectId, workspaceId)}/accept`,
+      `${this._conflictResolution(projectId, workspace)}/accept`,
       command,
     );
   isConflictResolutionOutdated = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace | undefined,
   ): Promise<boolean> =>
     this.networkClient.get(
-      `${this._conflictResolution(projectId, workspaceId)}/outdated`,
+      `${this._conflictResolution(projectId, workspace)}/outdated`,
     );
   getConflictResolutionRevision = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Revision>> =>
     this.networkClient.get(
       `${this._conflictResolution(
         projectId,
-        workspaceId,
+        workspace,
       )}/revisions/${revisionId}`,
     );
   getEntitiesByRevisionFromWorkspaceInConflictResolutionMode = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Entity>[]> =>
     this.networkClient.get(
       `${this._conflictResolution(
         projectId,
-        workspaceId,
+        workspace,
       )}/revisions/${revisionId}/entities`,
     );
   getConfigurationOfWorkspaceInConflictResolutionMode = (
     projectId: string,
-    workspaceId: string,
+    workspace: Workspace | undefined,
   ): Promise<PlainObject<ProjectConfiguration>> =>
     this.networkClient.get(
-      `${this._conflictResolution(projectId, workspaceId)}/configuration`,
+      `${this._conflictResolution(projectId, workspace)}/configuration`,
     );
 }

@@ -147,13 +147,13 @@ export class LocalChangesState {
 
   downloadLocalChanges = (): void => {
     const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
-      this.sdlcState.currentWorkspaceId
+      this.sdlcState.activeWorkspace.workspaceId
     })_${format(new Date(Date.now()), DATE_TIME_FORMAT)}.json`;
     const content = JSON.stringify(
       {
         message: '', // TODO?
         entityChanges: this.editorStore.graphState.computeLocalEntityChanges(),
-        revisionId: this.sdlcState.currentRevisionId,
+        revisionId: this.sdlcState.activeRevision.id,
       },
       undefined,
       TAB_SIZE,
@@ -200,8 +200,8 @@ export class LocalChangesState {
     try {
       const latestRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.performEntityChanges(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
           {
             message:
               syncMessage ??
@@ -213,7 +213,7 @@ export class LocalChangesState {
                   : `${localChanges.length} entities`
               }]`,
             entityChanges: localChanges,
-            revisionId: this.sdlcState.currentRevisionId,
+            revisionId: this.sdlcState.activeRevision.id,
           },
         )) as PlainObject<Revision>,
       );
@@ -235,8 +235,8 @@ export class LocalChangesState {
          */
         const entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-            this.sdlcState.currentProjectId,
-            this.sdlcState.currentWorkspaceId,
+            this.sdlcState.activeProject.projectId,
+            this.sdlcState.activeWorkspace,
             latestRevision.id,
           )) as Entity[];
         this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
