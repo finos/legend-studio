@@ -44,7 +44,7 @@ jobs:
         run: yarn release:bump ${{ github.event.inputs.bump_type }}
       - name: Prepare for the next development cycle
         env:
-          APPLICATION_WORKSPACE_DIR: ./packages/lib1
+          APPLICATION_WORKSPACE_DIR: ./packages/legend-studio-deployment
           BUMP_TYPE: ${{ github.event.inputs.bump_type }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node ./scripts/release/prepareNewRelease.js
