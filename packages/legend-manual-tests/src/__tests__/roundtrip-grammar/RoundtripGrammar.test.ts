@@ -78,17 +78,17 @@ enum ROUNTRIP_TEST_PHASES {
 const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
-  'DSLDiagram-basic.pure': SKIP, // Needs https://github.com/finos/legend-engine/pull/397 to be merged
-  'DSLDataSpace-basic.pure': SKIP, // Needs https://github.com/finos/legend-engine/pull/397 to be merged
   // post processor mismatch between engine (undefined) vs studio ([])
   'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
   'embedded-relational-mapping.pure': SKIP,
   'nested-embedded-relational-mapping.pure': SKIP,
   'relational-mapping-filter.pure': SKIP,
-  // TODO: remove these two when the issue of source Id in relational property mapping is resolved.
+
+  // TODO: remove these when the issue of source ID in relational property mapping is resolved.
   // Engine is removing these sources when the owner is the parent class mapping and studio is not
   'basic-class-mapping-extends.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
   'basic-inline-embedded-mapping.pure': [
