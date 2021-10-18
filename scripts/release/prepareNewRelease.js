@@ -17,6 +17,8 @@
 import * as github from '@actions/github';
 import chalk from 'chalk';
 import semver from 'semver';
+import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
@@ -49,6 +51,40 @@ const nextReleaseVersion = semver.inc(latestReleaseVersion, bumpType);
 const prepareNewRelease = async () => {
   const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
 
+  // Push release version bump changeset
+  console.log(`Pushing release version bump changeset...`);
+  const isChangesetNew = Boolean(
+    execSync('git status --porcelain', { encoding: 'utf-8' }),
+  );
+
+  if (!isChangesetNew) {
+    console.log(
+      chalk.yellow(
+        `(skipped) Next release version bump changeset already existed`,
+      ),
+    );
+  } else {
+    const CHANGESET_LOCATION = '.changeset/new-version.md';
+    const changesetContent = Buffer.from(
+      readFileSync(resolve(__dirname, `../../${CHANGESET_LOCATION}`), 'utf-8'),
+    ).toString('base64');
+    try {
+      await octokit.rest.repos.createOrUpdateFileContents({
+        path: CHANGESET_LOCATION,
+        message: 'prepare for the next development iteration',
+        content: changesetContent,
+        ...github.context.repo,
+      });
+      console.log(chalk.green(`\u2713 Pushed release version bump changeset`));
+    } catch (error) {
+      console.log(
+        chalk.red(
+          `Failed to push release version bump changeset. Error:\n${error.message}`,
+        ),
+      );
+    }
+  }
+
   // Create release branch for the latest release from the release tag
   console.log(
     `Creating release branch for release v${latestReleaseVersion}...`,
@@ -64,18 +100,18 @@ const prepareNewRelease = async () => {
         sha: latestVersionTag.data.object.sha,
         ...github.context.repo,
       });
+      console.log(
+        chalk.green(
+          `\u2713 Created release branch 'release/${latestReleaseVersion}'`,
+        ),
+      );
     } catch {
       console.log(
         chalk.yellow(
-          `Release branch 'release/${latestReleaseVersion}' already existed`,
+          `(skipped) Release branch 'release/${latestReleaseVersion}' already existed`,
         ),
       );
     }
-    console.log(
-      chalk.green(
-        `\u2713 Created release branch 'release/${latestReleaseVersion}'`,
-      ),
-    );
   } catch (error) {
     console.log(
       chalk.red(
@@ -182,14 +218,14 @@ const prepareNewRelease = async () => {
       } else {
         console.log(
           chalk.yellow(
-            `New release milestone '${nextReleaseVersion}' already existed. Aborting...`,
+            `(skipped) New release milestone '${nextReleaseVersion}' already existed`,
           ),
         );
       }
     } else {
       console.log(
         chalk.yellow(
-          `Can't find milestone for the latest release version '${latestReleaseVersion}'. Aborting...`,
+          `(skipped) Can't find milestone for the latest release version '${latestReleaseVersion}'`,
         ),
       );
     }

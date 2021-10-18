@@ -40,20 +40,9 @@ jobs:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
-      - name: Create changeset for the next release version bump
-        # Setting user name and email is required to push in workflow action
-        # We use the `github-actions[bot]` which has a stable ID, email, and username
-        # See https://stackoverflow.com/a/58393457
-        # See https://github.community/t/github-actions-bot-email-address/17204/6
-        # See https://api.github.com/users/github-actions%5Bbot%5D
-        run: |
-          yarn release:bump ${{ github.event.inputs.bump_type }}
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "prepare for the next development iteration"
-          git push
-      - name: Create release branch and update milestone
+      - name: Create release version bump
+        run: yarn release:bump ${{ github.event.inputs.bump_type }}
+      - name: Prepare for the next development cycle
         env:
           APPLICATION_WORKSPACE_DIR: ./packages/lib1
           BUMP_TYPE: ${{ github.event.inputs.bump_type }}
