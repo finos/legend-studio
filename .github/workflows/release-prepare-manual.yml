@@ -19,7 +19,6 @@ jobs:
     # so we need to restrict it here
     # See https://github.community/t/limit-branch-for-workflow-dispatch/122099
     if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
-    if: github.ref == 'refs/heads/master'
     name: Prepare New Release
     runs-on: ubuntu-latest
     steps:
