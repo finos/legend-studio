@@ -1,0 +1,56 @@
+name: '🚀 Feature Request'
+description: 'I have a specific suggestion for Studio!'
+title: 'Feature request: <title>'
+labels: ['Type: Feature Request']
+body:
+  # Context
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to suggest a new feature! Please fill out this form as completely as possible.
+  - type: checkboxes
+    attributes:
+      label: Similar requests
+      description: |
+        Please search to see if [an issue already exists](https://github.com/finos/legend-studio/issues?q=is%3Aissue+label%3A%22Type%3A+Feature+Request%22) for a similar feature request.
+      options:
+        - label: I have searched and found no existing similar requests
+          required: true
+
+  # Describe the feature and its implementation plan
+  - type: textarea
+    attributes:
+      label: What problems are you trying to solve?
+      description: |
+        A concise description of what the problem is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the solution you would like to see implemented
+      description: |
+        A detailed description of the solution in terms of use case, user interface, and workflow.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe alternatives you have considered
+      description: |
+        What alternatives/workarounds you have used and evaluated?
+    validations:
+      required: true
+
+  # Extra context
+  - type: textarea
+    attributes:
+      label: Documentation, Design, Adoption, Migration Strategy
+      description: |
+        If you can, explain how users will be able to use this and how it might be documented.
+        If the feature involves change in user interface, a mock-up will be super helpful
+        **Tip:** To attach files, click on this area to highlight it and then drag them in. See [this guide](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files).
+  - type: checkboxes
+    attributes:
+      label: Contribution
+      description: |
+        Check this if you would like to implement a PR, we are more than happy to help you go through [the process](https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md).
+      options:
+        - label: I would like to work on this feature

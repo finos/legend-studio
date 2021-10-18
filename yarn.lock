@@ -6277,7 +6277,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"envinfo@npm:^7.7.3":
+"envinfo@npm:7.8.1, envinfo@npm:^7.7.3":
   version: 7.8.1
   resolution: "envinfo@npm:7.8.1"
   bin:
@@ -9494,6 +9494,7 @@ __metadata:
     "@types/node": 16.10.8
     chalk: 4.1.2
     cross-env: 7.0.3
+    envinfo: 7.8.1
     eslint: 8.0.0
     fs-extra: 10.0.0
     husky: 7.0.2

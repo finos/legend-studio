@@ -16,18 +16,16 @@ NC='\033[0m' # No color
 # ----------------------------------------- MAIN ------------------------------------------------
 
 DOCKER_IMAGE_NAME="$1"
-if [[ -z "$2" ]]; then
-  DOCKER_IMAGE_VERSION=$(cat ./package.json | jq .version | jq -r)
-else
-  DOCKER_IMAGE_VERSION="$2"
-fi
-
 ALREADY_PUBLISHED=true
 
 if [[ -z "$2" ]]; then
+  DOCKER_IMAGE_VERSION=$(cat ./package.json | jq .version | jq -r)
   docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION >/dev/null 2>&1 || {
     ALREADY_PUBLISHED=false
   }
+else
+  DOCKER_IMAGE_VERSION="$2"
+  ALREADY_PUBLISHED=false
 fi
 
 if [[ $ALREADY_PUBLISHED = true ]]; then

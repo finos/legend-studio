@@ -1,0 +1,62 @@
+name: Prepare New Release (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version Bump Type (major/minor)'
+        required: true
+        default: 'minor'
+
+jobs:
+  # This job follows the steps detailed in the standard release flow
+  # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#standard-releases
+  # 1. Create a new release milestone and move over open issues in the current milestone. Close the current milestone.
+  # 2. Create the release branch for the latest release tag
+  # 4. Create the changesets to prepare for the next release version bump
+  prepare-new-release:
+    # There is currently no way to limit workflow dispatch to only allow default branch
+    # so we need to restrict it here
+    # See https://github.community/t/limit-branch-for-workflow-dispatch/122099
+    if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
+    if: github.ref == 'refs/heads/master'
+    name: Prepare New Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.4
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: yarn
+      - name: Create changeset for the next release version bump
+        # Setting user name and email is required to push in workflow action
+        # We use the `github-actions[bot]` which has a stable ID, email, and username
+        # See https://stackoverflow.com/a/58393457
+        # See https://github.community/t/github-actions-bot-email-address/17204/6
+        # See https://api.github.com/users/github-actions%5Bbot%5D
+        run: |
+          yarn release:bump ${{ github.event.inputs.bump_type }}
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "prepare for the next development iteration"
+          git push
+      - name: Create release branch and update milestone
+        env:
+          APPLICATION_WORKSPACE_DIR: ./packages/lib1
+          BUMP_TYPE: ${{ github.event.inputs.bump_type }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node ./scripts/release/prepareNewRelease.js

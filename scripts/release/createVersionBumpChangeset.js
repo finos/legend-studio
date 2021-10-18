@@ -25,6 +25,24 @@ const changesetConfig = loadJSON(
   resolve(__dirname, '../../.changeset/config.json'),
 );
 
+const bumpType = process.argv[2];
+
+if (!bumpType) {
+  console.log(
+    chalk.red(
+      `Release version bump type is required (choose between 'major' and 'minor').`,
+    ),
+  );
+  process.exit(1);
+} else if (!['major', 'minor'].includes(bumpType)) {
+  console.log(
+    chalk.red(
+      `Unsupported release version bump type '${bumpType}', please choose between 'major' and 'minor'.`,
+    ),
+  );
+  process.exit(1);
+}
+
 const packagesToBump = changesetConfig.linked[0];
 // NOTE: changeset's config structure could change so we would like to do some validation
 if (
@@ -44,7 +62,7 @@ writeFileSync(
   resolve(__dirname, '../../.changeset/new-version.md'),
   [
     '---',
-    ...packagesToBump.map((line) => `  '${line}': minor`),
+    ...packagesToBump.map((line) => `  '${line}': ${bumpType}`),
     '---',
     '',
   ].join('\n'),

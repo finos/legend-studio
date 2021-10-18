@@ -30,8 +30,7 @@ jobs:
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
         uses: actions/setup-node@v2.4.1
         with:
@@ -78,8 +77,8 @@ jobs:
         # no quick way to rerun this step, but to do a bump in a dependent modules (e.g.
         # `@finos/legend-studio` in order to trigger a version bump in `@finos/legend-studio-deployment`
         if: steps.changesets.outputs.published == 'true'
-        run: >
-          yarn workspace @finos/legend-studio-deployment publish:docker &&
+        run: |
+          yarn workspace @finos/legend-studio-deployment publish:docker
           yarn workspace @finos/legend-query-deployment publish:docker
         env:
           # TODO: After https://github.com/finos/legend-studio/pull/227 it seems like due to either
