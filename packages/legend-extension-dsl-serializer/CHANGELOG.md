@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-serializer
 
+## 0.2.0
+
+### Minor Changes
+
+- [#534](https://github.com/finos/legend-studio/pull/534) [`a116f644`](https://github.com/finos/legend-studio/commit/a116f6449cedf810aa13ec1e45e271b3c38fa69c) ([@gayathrir11](https://github.com/gayathrir11)) - Add form support for `SchemaSet`
+
 ## 0.1.3
 
 ## 0.1.2

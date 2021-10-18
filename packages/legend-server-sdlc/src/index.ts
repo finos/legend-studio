@@ -22,13 +22,14 @@ export * from './models/comparison/EntityDiff';
 export * from './models/review/Review';
 export * from './models/review/ReviewCommands';
 
-export * from './models/build/Build';
+export * from './models/workflow/Workflow';
 
 export * from './models/project/Project';
 export * from './models/project/ImportReport';
 export * from './models/project/ProjectCommands';
 
 export * from './models/workspace/Workspace';
+export * from './models/workspace/WorkspaceUtil';
 export * from './models/workspace/WorkspaceUpdateReport';
 
 export * from './models/revision/Revision';

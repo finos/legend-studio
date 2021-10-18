@@ -105,6 +105,7 @@ const ReviewStatusBar = observer(() => {
                 applicationStore.config.sdlcServerKey,
                 reviewStore.projectId,
                 review.workspaceId,
+                review.workspaceType,
               )}
             >
               {review.workspaceId}

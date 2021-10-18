@@ -36,7 +36,7 @@ import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState';
 import { LocalChangesState } from './sidebar-state/LocalChangesState';
 import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState';
-import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
+import { WorkspaceWorkflowsState } from './sidebar-state/WorkspaceWorkflowsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -80,7 +80,10 @@ import type { PackageableElementOption } from './shared/PackageableElementOption
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
 import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
+import type {
+  SDLCServerClient,
+  WorkspaceType,
+} from '@finos/legend-server-sdlc';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import type {
   PackageableElement,
@@ -161,7 +164,7 @@ export class EditorStore {
   modelLoaderState: ModelLoaderState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
-  workspaceBuildsState: WorkspaceBuildsState;
+  workspaceWorkflowsState: WorkspaceWorkflowsState;
   workspaceUpdaterState: WorkspaceUpdaterState;
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
@@ -265,7 +268,10 @@ export class EditorStore {
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);
-    this.workspaceBuildsState = new WorkspaceBuildsState(this, this.sdlcState);
+    this.workspaceWorkflowsState = new WorkspaceWorkflowsState(
+      this,
+      this.sdlcState,
+    );
     this.workspaceUpdaterState = new WorkspaceUpdaterState(
       this,
       this.sdlcState,
@@ -516,7 +522,11 @@ export class EditorStore {
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */
-  *initialize(projectId: string, workspaceId: string): GeneratorFn<void> {
+  *initialize(
+    projectId: string,
+    workspaceId: string,
+    workspaceType: WorkspaceType,
+  ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
        * Since React `fast-refresh` will sometimes cause `Editor` to rerender, this method will be called again
@@ -588,9 +598,14 @@ export class EditorStore {
       return;
     }
     yield flowResult(
-      this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId, {
-        suppressNotification: true,
-      }),
+      this.sdlcState.fetchCurrentWorkspace(
+        projectId,
+        workspaceId,
+        workspaceType,
+        {
+          suppressNotification: true,
+        },
+      ),
     );
     if (!this.sdlcState.currentWorkspace) {
       // If the workspace is not found,
@@ -608,6 +623,7 @@ export class EditorStore {
           const workspace = await this.sdlcServerClient.createWorkspace(
             projectId,
             workspaceId,
+            workspaceType,
           );
           this.applicationStore.setBlockingAlert(undefined);
           this.applicationStore.notifySuccess(
@@ -661,6 +677,7 @@ export class EditorStore {
                   this.applicationStore.config.sdlcServerKey,
                   projectId,
                   workspaceId,
+                  workspaceType,
                 ),
               );
             },
@@ -671,7 +688,10 @@ export class EditorStore {
       return;
     }
     yield Promise.all([
-      this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
+      this.sdlcState.fetchCurrentRevision(
+        projectId,
+        this.sdlcState.activeWorkspace,
+      ),
       this.graphManagerState.initializeSystem(), // this can be moved inside of `setupEngine`
       this.graphManagerState.graphManager.initialize(
         {
@@ -768,12 +788,12 @@ export class EditorStore {
       // fetch workspace entities and config at the same time
       const result = (yield Promise.all([
         this.sdlcServerClient.getEntities(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
         ),
         this.sdlcServerClient.getConfiguration(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];

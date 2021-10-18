@@ -12,14 +12,23 @@ We will go into details in the following sections:
 
 ## Standard releases
 
-As mentioned, the release process for libraries is backed by [changesets](https://github.com/atlassian/changesets). We will go in more details about that in the next sub section. The release process for application is really what we want to discuss in depth here. We adopt a `trunk-based development approach` and our release process here is very similar to [Github flow](https://docs.github.com/en/get-started/quickstart/github-flow), which champions CI/CD.
+Our development and release process follow [Github flow](https://docs.github.com/en/get-started/quickstart/github-flow). As mentioned, the release process for libraries is backed by [changesets](https://github.com/atlassian/changesets), but the release process for applications is what we want to focus here. The highlights are:
 
-- New features will be added to the default branch
-- Application version bump will **always** be minor bumps (e.g. `1.6.0`, `1.7.0`)
-- When we want to do a new release, create a changeset with minor bump for all of the applications, e.g. `@finos/legend-studio-app`, `@finos/legend-query-app`, etc. if this is not already been done as part of any changesets. Approve and merge the `New Release` will trigger a pipeline to publish a new release.
-- After cutting a release, at the beginning of a new application version bump, we will:
-- [create a release branch](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository#creating-a-branch) for that version (i.e. `release/1.6.0`, `release/1.7.0`), this will be used for adding bug fixes and creating [patch releases](#patch-releases)
-- Bump minor version for all applications `yarn release:bump`
+- New features will be added to the `default branch`.
+- A `standard release` is done by cutting a new release off the `default branch`.
+- **All** applications' versions are kept the similar.
+- For standard releases, applications' versions bump will **always** be at least `minor` bumps (e.g. `1.6.0`, `1.7.0`), `patch` bumps are only meant for [stabilizing a past standard release](#patch-releases).
+
+The `standard release` process, in particular, goes like this:
+
+- Release coordinators need to approve and merge `New Release` PR to create a patch release.
+- After the release, coordinators must run the workflow [Prepare New Release (Manual)](https://github.com/finos/legend-studio/actions/workflows/release-prepare-manual.yml).
+
+> Preparing a new release comprises several steps:
+>
+> - Create a new release branch off the latest release tag (e.g. `release/0.4.0` branch for tag `v0.4.0`).
+> - Add and commit new `minor` bump changeset for next standard release.
+> - Move all open issues in the latest release milestone to the next release milestone.
 
 ### Changesets
 
@@ -30,23 +39,26 @@ We use `changesets` to automate our versioning and release process via [github a
 
 ## Patch releases
 
-Patch release is meant for fixing bugs for a standard release. After a standard release being done, release coordinators should have create a release branch corresponding to that release, for example `release/1.4.0`. Developers working on bug fixes for this particular version will be creating PRs against this branch.
+Patch release is meant for introducing bug fixes to a past release. After a `standard release`, release coordinators should have created a release branch corresponding to that release, for example `release/1.4.0`. Developers working on bug fixes for version `1.4.0` **must** create PRs against this branch to patch. We also use `changesets` to ochestrate the release process, so the process goes like this:
 
-We also use `changesets` to ochestrate the release process for patch release, release coordinate need to approve and merge `New Patch Release` PR to create a patch release.
-
-When a new patch release is cut (e.g. `1.6.1`, `1.7.1`, `1.7.2`), release coordinator need to `cherry pick` the commits on the release branch onto the default branch. **Note: please do not merge the release branch back onto the default branch!**. To do this, you can follow [this guide](https://stackoverflow.com/a/3933416). In particular, you can cherry pick between the 2 release commit on this branch (e.g. between `1.6.0` and `1.6.1`) using Git command like `git cherry-pick A..B`, then create a PR against default branch for this. You must follow the naming convention for this PR - `Cherry-picking changes in version $VERSION`, e.g. `Cherry-picking changes in version 0.4.0`. A small note here is that this will fail `changesets` CI check as the changesets have been used to create the patch release so we can ignore the failure of this CI check and go ahead to merge and approve this cherry-picking PR. For the format of the cherry-picking PRs, please check out [these](https://github.com/finos/legend-studio/pull/494) [examples](https://github.com/finos/legend-studio/pull/518).
+- Release coordinators need to approve and merge `New Patch Release` PR to create a patch release.
+- After a new patch release is cut (e.g. `1.6.1`, `1.7.1`, `1.7.2`), release coordinator need to `cherry pick` the commits on the release branch onto the default branch. **Note: please do not merge the release branch back onto the default branch!**. To do this, you can follow [this guide](https://stackoverflow.com/a/3933416). In particular, you can cherry pick between the 2 release commit on this branch (e.g. between `1.6.0` and `1.6.1`) using Git command like `git cherry-pick A..B`, then create a PR against default branch for this. The `cherry-pick` PR name **must follow** the format `Cherry-picking changes in version $VERSION` (e.g. `Cherry-picking changes in version 0.4.0`) or else the pipeline will fail. Check out [these](https://github.com/finos/legend-studio/pull/494) [examples](https://github.com/finos/legend-studio/pull/518).
+- Future patch releases for a `standard release` will be done on the same release branch. For example, `1.4.2` will be done on top of `1.4.1` on branch `release/1.4.0`.
 
 > Note that cherry-picking the patch changes back onto the default branch is a **must**, otherwise, we might risk publishing packages with the same versions on NPM when doing a release on the default branch. Also, please note that since the changesets have been consumed as part of the patch release, **there should not be any changeset files added**, if the PR name follows the convention, changeset checks will be skipped, if you made a mistake, you must update the PR name and [repush](https://github.community/t/when-changing-the-pr-title-github-event-pull-request-title-wont-pick-up-the-new-title/171784/2) to skip the changeset check, re-running jobs is not enough.
 
 ## Dev/Beta/RC releases
 
-> This is still Work-in-progess. We haven't really had the need for this type of release, so we haven't setup the pipeline for these releases yet.
+> `development` releases are meant only for libraries, while `snapshot`, `beta`, and `rc` releases are restricted only to applications. Also, all of these releases are cut off the default branch.
 
-`Development` releases are meant for both libraries and applications, but `beta` and `rc` releases are only restricted to applications. All of these are cut off the default branch. _Currently, we have no need for this, so there are works to be done to make this happen:_
+For libraries' releases, we publish their versioned packages to [NPM](https://www.npmjs.com/).
 
-- [ ] First and foremost, we will not rely on `changeset` for any of these releases
-- [ ] For `dev` release, make sure the format of **all** libraries' version is `0.0.0-dev-{COMMIT_SHA}-{DATE-YYYYMMDD}`, for example `0.0.0-dev-33226fada-20210913`. We need to create a separate Github actions that run a script that calls `npm publish --tag dev` to publish libraries to `NPM` [with the appropriate dist-tags](https://docs.npmjs.com/cli/v7/commands/npm-dist-tag#purpose) and publish to `DockerHub` under the `SNAPSHOT` tag (subjected to change)
-- [ ] For `beta` and `rc`, we will only publish the application, for these, we will need to create a sepearte Github actions that can potentially [take inputs](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs) for the release types (`alpha`, `beta`, `rc`), the version and the suffix number to formulate a sensible version number, e.g. `1.7.0-rc.1` and publish this to `DockerHub`
+- `development` releases can be triggered manually using the workflow [NPM Snapshot Publish (Manual)](https://github.com/finos/legend-studio/actions/workflows/npm-snapshot-publish-manual.yml). Published packages will be available in `dev` channel with version format `0.0.0-dev-{commitSHA}-{date}-${timestamp}` (e.g. `0.0.0-dev-a1e1e35a-20210916-1634347595932`).
+
+For applications' releases, we publish their images to [DockerHub](https://hub.docker.com/).
+
+- `Snapshot` releases are automated via the workflow [Docker Snapshot Publish](https://github.com/finos/legend-studio/actions/workflows/docker-publish-manual.yml).
+- `beta`, `alpha`, `rc`, etc. releases (or any releases with `semver-compliant` tag) can be triggered manually using the workflow [Docker Publish (Manual)](https://github.com/finos/legend-studio/actions/workflows/docker-publish-manual.yml). Note, we expect the version tag to be [semver-compliant](https://semver.org/) (e.g. `1.7.0-rc.1`, `1.9.0-beta`)
 
 ## Release notes
 

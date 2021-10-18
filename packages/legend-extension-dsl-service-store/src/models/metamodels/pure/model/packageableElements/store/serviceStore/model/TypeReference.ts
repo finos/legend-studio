@@ -23,9 +23,7 @@ export abstract class TypeReference implements Hashable {
   private readonly _$nominalTypeBrand!: 'TypeReference';
   list!: boolean;
 
-  constructor(list: boolean) {
-    this.list = list;
-
+  constructor() {
     makeObservable(this, {
       list: observable,
       setList: action,

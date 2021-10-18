@@ -21,8 +21,8 @@ import { TypeReference } from './TypeReference';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
 
 export class FloatTypeReference extends TypeReference implements Hashable {
-  constructor(list: boolean) {
-    super(list);
+  constructor() {
+    super();
 
     makeObservable(this, {
       hashCode: computed,

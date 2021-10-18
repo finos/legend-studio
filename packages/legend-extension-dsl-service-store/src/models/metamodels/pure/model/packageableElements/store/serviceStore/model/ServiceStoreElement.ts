@@ -28,17 +28,7 @@ export abstract class ServiceStoreElement implements Hashable {
   id!: string;
   path!: string;
 
-  constructor(
-    id: string,
-    path: string,
-    owner: ServiceStore,
-    parent: ServiceGroup | undefined,
-  ) {
-    this.id = id;
-    this.path = path;
-    this.owner = owner;
-    this.parent = parent;
-
+  constructor() {
     makeObservable(this, {
       id: observable,
       path: observable,

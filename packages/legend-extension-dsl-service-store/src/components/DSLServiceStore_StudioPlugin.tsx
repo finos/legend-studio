@@ -18,6 +18,7 @@ import packageJson from '../../package.json';
 import {
   StudioPlugin,
   UnsupportedElementEditorState,
+  UnsupportedInstanceSetImplementationState,
 } from '@finos/legend-studio';
 import type {
   StudioPluginManager,
@@ -32,16 +33,16 @@ import type {
   SetImplemtationType,
   CreateMappingElementState,
   MappingElementSources,
+  MappingElement,
+  MappingElementState,
+  MappingElementSource,
 } from '@finos/legend-studio';
-import type { PackageableElement } from '@finos/legend-graph';
+import type {
+  PackageableElement,
+  SetImplementation,
+} from '@finos/legend-graph';
 import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
-import type { SetImplementation } from '@finos/legend-graph';
 import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/RootServiceInstanceSetImplementation';
-import type { MappingElement } from '@finos/legend-studio';
-import type { MappingElementState } from '@finos/legend-studio';
-import { UnsupportedInstanceSetImplementationState } from '@finos/legend-studio';
-import type { MappingElementSource } from '@finos/legend-studio';
-import {Class} from "@finos/legend-graph";
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICESTORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

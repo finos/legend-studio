@@ -15,12 +15,7 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import {
-  hashArray,
-  addUniqueEntry,
-  deleteEntry,
-  guaranteeType,
-} from '@finos/legend-shared';
+import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import type { PackageableElementVisitor } from '@finos/legend-graph';
 import { Store } from '@finos/legend-graph';
@@ -71,34 +66,6 @@ export class ServiceStore extends Store implements Hashable {
         }
         return undefined;
       },
-    );
-
-  getService = (value: string): Service =>
-    guaranteeType(
-      this.elements.find(
-        (element: ServiceStoreElement): Service | undefined => {
-          if (element instanceof Service && element.id === value) {
-            return element;
-          }
-          return undefined;
-        },
-      ),
-      Service,
-      `Can't find service '${value}'`,
-    );
-
-  getServiceGroup = (value: string): ServiceGroup =>
-    guaranteeType(
-      this.elements.find(
-        (element: ServiceStoreElement): ServiceGroup | undefined => {
-          if (element instanceof ServiceGroup && element.id === value) {
-            return element;
-          }
-          return undefined;
-        },
-      ),
-      ServiceGroup,
-      `Can't find service group '${value}'`,
     );
 
   protected override get _elementHashCode(): string {

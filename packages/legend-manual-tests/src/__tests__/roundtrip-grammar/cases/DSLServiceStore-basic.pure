@@ -51,3 +51,27 @@ ServiceStore test::testServiceStoreCompilationWithSingleService1
     security : [];
   )
 )
+
+
+###Mapping
+Mapping test::mapping
+(
+  *test::gen::Trade: ServiceStore
+  {
+    ~service [test::testServiceStoreCompilationWithSingleService1] TestService
+    (
+      ~paramMapping
+      (
+        serializationFormat : 'CSV'
+      )
+    )
+  }
+)
+
+
+###Connection
+ServiceStoreConnection simple::serviceStoreConnection
+{
+  store: test::testServiceStoreCompilationWithSingleService1;
+  baseUrl: 'http://baseUrl';
+}

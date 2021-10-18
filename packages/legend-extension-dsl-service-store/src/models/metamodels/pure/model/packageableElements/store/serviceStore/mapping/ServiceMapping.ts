@@ -27,7 +27,7 @@ export class ServiceMapping implements Hashable {
   service!: Service;
   parameterMappings: ServiceParameterMapping[] = [];
 
-  constructor(owner: RootServiceInstanceSetImplementation) {
+  constructor() {
     makeObservable(this, {
       service: observable,
       parameterMappings: observable,
@@ -36,8 +36,6 @@ export class ServiceMapping implements Hashable {
       deleteServiceMapping: action,
       hashCode: computed,
     });
-
-    this.owner = owner;
   }
 
   setService(value: string): void {

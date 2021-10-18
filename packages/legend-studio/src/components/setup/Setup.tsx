@@ -21,6 +21,9 @@ import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-art';
 import {
+  CheckSquareIcon,
+  clsx,
+  SquareIcon,
   compareLabelFn,
   CustomSelectorInput,
   PanelLoadingIndicator,
@@ -40,7 +43,7 @@ import {
 import { AppHeader } from '../shared/AppHeader';
 import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
 import { flowResult } from 'mobx';
-import { ProjectType } from '@finos/legend-server-sdlc';
+import { ProjectType, WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   useApplicationStore,
   NotificationSnackbar,
@@ -484,6 +487,10 @@ const CreateWorkspaceModal = observer(() => {
     setupStore.currentProjectId,
   );
   const [workspaceName, setWorkspaceName] = useState('');
+  const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(false);
+  const workspaceType = isGroupWorkspace
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
   const projectOptions = setupStore.projectOptions.sort(compareLabelFn);
   const selectedOption =
     projectOptions.find((option) => option.value === currentProjectId) ?? null;
@@ -513,7 +520,11 @@ const CreateWorkspaceModal = observer(() => {
   const createWorkspace = (): void => {
     if (currentProjectId && workspaceName) {
       flowResult(
-        setupStore.createWorkspace(currentProjectId, workspaceName),
+        setupStore.createWorkspace(
+          currentProjectId,
+          workspaceName,
+          workspaceType,
+        ),
       ).catch(applicationStore.alertIllegalUnhandledError);
     }
   };
@@ -531,7 +542,10 @@ const CreateWorkspaceModal = observer(() => {
       projectSelectorRef.current?.focus();
     }
   };
-
+  const toggle = (event: React.FormEvent<HTMLButtonElement>): void => {
+    event.preventDefault();
+    setIsGroupWorkspace(!isGroupWorkspace);
+  };
   return (
     <Dialog
       open={showCreateWorkspaceModal}
@@ -549,37 +563,71 @@ const CreateWorkspaceModal = observer(() => {
             isLoading={setupStore.createWorkspaceState.isInProgress}
           />
           <div className="setup-create__form setup-create__form__workspace">
-            <CustomSelectorInput
-              className="setup-selector__input"
-              ref={projectSelectorRef}
-              options={projectOptions}
-              disabled={
-                dispatchingActions ||
-                isFetchingProjects ||
-                !projectOptions.length
-              }
-              isLoading={isFetchingProjects}
-              onChange={onSelectionChange}
-              value={selectedOption}
-              placeholder={projectSelectorPlaceholder}
-              isClearable={true}
-              escapeClearsValue={true}
-              darkMode={true}
-            />
-            <input
-              className="setup-create__form__workspace-name__input"
-              ref={workspaceNameInputRef}
-              spellCheck={false}
-              disabled={dispatchingActions}
-              placeholder={'Workspace Name'}
-              value={workspaceName}
-              onChange={changeWorkspaceName}
-              name={`Type workspace name`}
-            />
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Project Name
+              </div>
+              <CustomSelectorInput
+                className="setup-selector__input setup__workspace__selector"
+                ref={projectSelectorRef}
+                options={projectOptions}
+                disabled={
+                  dispatchingActions ||
+                  isFetchingProjects ||
+                  !projectOptions.length
+                }
+                isLoading={isFetchingProjects}
+                onChange={onSelectionChange}
+                value={selectedOption}
+                placeholder={projectSelectorPlaceholder}
+                isClearable={true}
+                escapeClearsValue={true}
+                darkMode={true}
+              />
+            </div>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Workspace Name
+              </div>
+              <input
+                className="setup-create__form__workspace-name__input"
+                ref={workspaceNameInputRef}
+                spellCheck={false}
+                disabled={dispatchingActions}
+                placeholder={'Workspace Name'}
+                value={workspaceName}
+                onChange={changeWorkspaceName}
+                name={`Type workspace name`}
+              />
+            </div>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Group Workspace
+              </div>
+              <div className="panel__content__form__section__toggler">
+                <button
+                  onClick={toggle}
+                  className={clsx(
+                    'panel__content__form__section__toggler__btn',
+                    {
+                      'panel__content__form__section__toggler__btn--toggled':
+                        isGroupWorkspace,
+                    },
+                  )}
+                  tabIndex={-1}
+                >
+                  {isGroupWorkspace ? <CheckSquareIcon /> : <SquareIcon />}
+                </button>
+                <div className="panel__content__form__section__toggler__prompt">
+                  Group workspaces can be edited by all users in the
+                  corresponding project.
+                </div>
+              </div>
+            </div>
           </div>
           <button
             disabled={dispatchingActions || !workspaceName || !currentProjectId}
-            className="btn u-pull-right"
+            className="btn btn--dark u-pull-right"
           >
             Create
           </button>
@@ -601,7 +649,7 @@ const SetupSelection = observer(() => {
     setupStore.createOrImportProjectState.isInProgress;
   const disableProceedButton =
     !setupStore.currentProjectId ||
-    !setupStore.currentWorkspaceId ||
+    !setupStore.currentWorkspaceCompositeId ||
     isCreatingWorkspace ||
     isCreatingOrImportingProject;
   const onProjectChange = (focusNext: boolean): void =>
@@ -620,14 +668,15 @@ const SetupSelection = observer(() => {
     if (
       setupStore.currentProjectId &&
       setupStore.currentProject &&
-      setupStore.currentWorkspaceId &&
+      setupStore.currentWorkspaceCompositeId &&
       setupStore.currentWorkspace
     ) {
       applicationStore.navigator.goTo(
         generateEditorRoute(
           applicationStore.config.sdlcServerKey,
           setupStore.currentProjectId,
-          setupStore.currentWorkspaceId,
+          setupStore.currentWorkspace.workspaceId,
+          setupStore.currentWorkspace.workspaceType,
         ),
       );
     }
@@ -712,10 +761,9 @@ export const SetupInner = observer(() => {
   const params = useParams<SetupPathParams>();
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore();
-
   useEffect(() => {
     setupStore.setCurrentProjectId(params.projectId);
-    setupStore.setCurrentWorkspaceId(params.workspaceId);
+    setupStore.init(params.workspaceId, params.groupWorkspaceId);
   }, [setupStore, params]);
 
   useEffect(() => {

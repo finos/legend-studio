@@ -17,15 +17,21 @@
 import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
 import type { EditorStore } from './EditorStore';
-import type { Store, Connection, Runtime } from '@finos/legend-graph';
+import type {
+  Store,
+  Connection,
+  Runtime,
+  SetImplementation,
+} from '@finos/legend-graph';
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { NewConnectionValueDriver } from './NewElementState';
-import type { SetImplementation } from '@finos/legend-graph';
-import type { MappingElement } from './editor-state/element-editor-state/mapping/MappingEditorState';
+import type {
+  MappingElement,
+  MappingElementSource,
+} from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { MappingElementState } from './editor-state/element-editor-state/mapping/MappingElementState';
-import type { MappingElementSource } from './editor-state/element-editor-state/mapping/MappingEditorState';
 
 export type MappingElementSources = (
   mappingElement: MappingElement,

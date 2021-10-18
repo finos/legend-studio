@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 0.1.4
+
+### Patch Changes
+
+- [#569](https://github.com/finos/legend-studio/pull/569) [`67a95bd0`](https://github.com/finos/legend-studio/commit/67a95bd0dadd00b486c2f7884e7d9a10cb91b03c) ([@akphi](https://github.com/akphi)) - Improve extension mechanism for connection.
+
 ## 0.1.3
 
 ### Patch Changes

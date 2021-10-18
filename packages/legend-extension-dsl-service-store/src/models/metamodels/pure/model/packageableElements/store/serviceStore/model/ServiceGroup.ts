@@ -15,28 +15,16 @@
  */
 
 import { observable, computed, makeObservable, action } from 'mobx';
-import {
-  addUniqueEntry,
-  deleteEntry,
-  guaranteeType,
-  hashArray,
-} from '@finos/legend-shared';
+import { addUniqueEntry, deleteEntry, hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../DSLServiceStore_ModelUtils';
 import { ServiceStoreElement } from './ServiceStoreElement';
-import type { ServiceStore } from './ServiceStore';
-import { Service } from './Service';
 
 export class ServiceGroup extends ServiceStoreElement implements Hashable {
   elements: ServiceStoreElement[] = [];
 
-  constructor(
-    id: string,
-    path: string,
-    owner: ServiceStore,
-    parent: ServiceGroup | undefined,
-  ) {
-    super(id, path, owner, parent);
+  constructor() {
+    super();
 
     makeObservable(this, {
       elements: observable,
@@ -53,20 +41,6 @@ export class ServiceGroup extends ServiceStoreElement implements Hashable {
   deleteElement(value: ServiceStoreElement): void {
     deleteEntry(this.elements, value);
   }
-
-  getService = (value: string): Service =>
-    guaranteeType(
-      this.elements.find(
-        (element: ServiceStoreElement): Service | undefined => {
-          if (element instanceof Service && element.id === value) {
-            return element;
-          }
-          return undefined;
-        },
-      ),
-      Service,
-      `Can't find service '${value}'`,
-    );
 
   override get hashCode(): string {
     return hashArray([

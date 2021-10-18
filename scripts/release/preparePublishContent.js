@@ -43,7 +43,7 @@ const preparePublishContent = async () => {
         )
       ).default
     : undefined;
-  console.log(`Preparing publish content for workspace '${workspaceName}'...`);
+  console.log(`Preparing publish content for workspace ${workspaceName}...`);
 
   try {
     const publishContentDir =
@@ -107,7 +107,7 @@ const preparePublishContent = async () => {
           JSON.stringify(newTsConfigContent, null, 2),
           (err) => {
             console.log(
-              `Can't write full Typescript config file '${resolvedSourcePath}' to path '${resolvedTargetPath}' for package '${packageJson.name}'. Error: ${err.message}`,
+              `Can't write full Typescript config file '${resolvedSourcePath}' to path '${resolvedTargetPath}' for workspace ${workspaceName}. Error: ${err.message}`,
             );
             process.exit(1);
           },
@@ -171,13 +171,13 @@ const preparePublishContent = async () => {
     );
     console.log(
       chalk.green(
-        `Successfully prepared publish content for workspace '${workspaceName}'!\n`,
+        `Successfully prepared publish content for workspace ${workspaceName}\n`,
       ),
     );
   } catch (e) {
     console.log(
       chalk.red(
-        `\u2A2F Failed to prepare publish content for workspace '${workspaceName}'\n`,
+        `\u2A2F Failed to prepare publish content for workspace ${workspaceName}\n`,
       ),
     );
     throw e;

@@ -39,6 +39,7 @@ import type {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import {
+  WorkspaceType,
   TEST__SDLCServerClientProvider,
   TEST__getTestSDLCServerClient,
 } from '@finos/legend-server-sdlc';
@@ -335,6 +336,7 @@ export const TEST__setUpEditor = async (
         mockedEditorStore.applicationStore.config.sdlcServerKey,
         (workspace as unknown as Workspace).projectId,
         (workspace as unknown as Workspace).workspaceId,
+        WorkspaceType.USER,
       ),
     ],
   });

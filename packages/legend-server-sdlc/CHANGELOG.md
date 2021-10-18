@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 0.0.7
+
+### Patch Changes
+
+- [#568](https://github.com/finos/legend-studio/pull/568) [`46ccd87d`](https://github.com/finos/legend-studio/commit/46ccd87d3bd7c65ab26cb5b1c58d9ed007e5cc78) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `Workflow API` instead of the _deprecated_ `Build API`.
+
 ## 0.0.6
 
 ## 0.0.5

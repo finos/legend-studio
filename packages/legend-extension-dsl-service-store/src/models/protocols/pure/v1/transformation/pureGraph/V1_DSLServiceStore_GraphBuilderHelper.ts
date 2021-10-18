@@ -44,6 +44,7 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
@@ -64,8 +65,35 @@ import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceSt
 import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
 import type { SecurityScheme_PureProtocolPlugin_Extension } from '../../../SecurityScheme_PureProtocolPlugin_Extension';
-import { SerializationFormat } from "../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SerializationFormat";
-import type { V1_SerializationFormat } from "../../model/packageableElements/store/serviceStore/model/V1_SerializationFormat";
+import { SerializationFormat } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SerializationFormat';
+import type { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_SerializationFormat';
+
+const getService = (elements: ServiceStoreElement[], value: string): Service =>
+  guaranteeType(
+    elements.find((element: ServiceStoreElement): Service | undefined => {
+      if (element instanceof Service && element.id === value) {
+        return element;
+      }
+      return undefined;
+    }),
+    Service,
+    `Can't find service '${value}'`,
+  );
+
+const getServiceGroup = (
+  elements: ServiceStoreElement[],
+  value: string,
+): ServiceGroup =>
+  guaranteeType(
+    elements.find((element: ServiceStoreElement): ServiceGroup | undefined => {
+      if (element instanceof ServiceGroup && element.id === value) {
+        return element;
+      }
+      return undefined;
+    }),
+    ServiceGroup,
+    `Can't find service group '${value}'`,
+  );
 
 export const V1_resolveServiceStore = (
   path: string,
@@ -80,13 +108,16 @@ export const V1_resolveServiceGroup = (
   store: PackageableElementImplicitReference<ServiceStore>,
 ): ServiceGroup => {
   if (serviceGroupPtr.parent === undefined) {
-    return store.value.getServiceGroup(serviceGroupPtr.serviceGroup);
+    return getServiceGroup(store.value.elements, serviceGroupPtr.serviceGroup);
   } else {
     const parentServiceGroup = V1_resolveServiceGroup(
       serviceGroupPtr.parent,
       store,
     );
-    return store.value.getServiceGroup(parentServiceGroup.id);
+    return getServiceGroup(
+      parentServiceGroup.elements,
+      serviceGroupPtr.serviceGroup,
+    );
   }
 };
 
@@ -96,13 +127,13 @@ export const V1_resolveService = (
 ): Service => {
   const serviceStore = V1_resolveServiceStore(servicePtr.serviceStore, context);
   if (servicePtr.parent === undefined) {
-    return serviceStore.value.getService(servicePtr.service);
+    return getService(serviceStore.value.elements, servicePtr.service);
   } else {
     const parentServiceGroup = V1_resolveServiceGroup(
       servicePtr.parent,
       serviceStore,
     );
-    return parentServiceGroup.getService(servicePtr.service);
+    return getService(parentServiceGroup.elements, servicePtr.service);
   }
 };
 
@@ -111,22 +142,27 @@ export const V1_buildTypeReference = (
   context: V1_GraphBuilderContext,
 ): TypeReference => {
   if (protocol instanceof V1_BooleanTypeReference) {
-    const booleanTypeReference = new BooleanTypeReference(protocol.list);
+    const booleanTypeReference = new BooleanTypeReference();
+    booleanTypeReference.list = protocol.list;
     return booleanTypeReference;
   } else if (protocol instanceof V1_ComplexTypeReference) {
-    const complexTypeReference = new ComplexTypeReference(protocol.list);
+    const complexTypeReference = new ComplexTypeReference();
+    complexTypeReference.list = protocol.list;
     complexTypeReference.type = context.graph.getClass(protocol.type);
     complexTypeReference.binding = getBinding(protocol.binding, context.graph);
     return complexTypeReference;
   } else if (protocol instanceof V1_FloatTypeReference) {
-    const floatTypeReference = new FloatTypeReference(protocol.list);
+    const floatTypeReference = new FloatTypeReference();
+    floatTypeReference.list = protocol.list;
     return floatTypeReference;
   } else if (protocol instanceof V1_IntegerTypeReference) {
-    const integerTypeReference = new IntegerTypeReference(protocol.list);
+    const integerTypeReference = new IntegerTypeReference();
+    integerTypeReference.list = protocol.list;
     return integerTypeReference;
   }
   if (protocol instanceof V1_StringTypeReference) {
-    const stringTypeReference = new StringTypeReference(protocol.list);
+    const stringTypeReference = new StringTypeReference();
+    stringTypeReference.list = protocol.list;
     return stringTypeReference;
   }
   throw new UnsupportedOperationError(
@@ -135,7 +171,9 @@ export const V1_buildTypeReference = (
   );
 };
 
-const V1_buildSerializationFormat = (protocol: V1_SerializationFormat) : SerializationFormat => {
+const V1_buildSerializationFormat = (
+  protocol: V1_SerializationFormat,
+): SerializationFormat => {
   const serializationFormat = new SerializationFormat();
   serializationFormat.style = protocol.style;
   serializationFormat.explode = protocol.explode;
@@ -158,8 +196,10 @@ export const V1_buildServiceParameter = (
     `Service parameter location '${protocol.location}' is not supported`,
   );
   serviceParameter.enumeration = protocol.enumeration;
-  if (protocol.serializationFormat !== undefined){
-    serviceParameter.serializationFormat = V1_buildSerializationFormat(protocol.serializationFormat);
+  if (protocol.serializationFormat !== undefined) {
+    serviceParameter.serializationFormat = V1_buildSerializationFormat(
+      protocol.serializationFormat,
+    );
   }
   return serviceParameter;
 };
@@ -225,18 +265,17 @@ export const V1_buildServiceStoreElement = (
   parent?: ServiceGroup | undefined,
 ): ServiceStoreElement => {
   if (protocol instanceof V1_Service) {
-    const service = new Service(
-      guaranteeNonEmptyString(
-        protocol.id,
-        `Service 'id' field is missing or empty`,
-      ),
-      guaranteeNonEmptyString(
-        protocol.path,
-        `Service 'path' field is missing or empty`,
-      ),
-      owner,
-      parent,
+    const service = new Service();
+    service.id = guaranteeNonEmptyString(
+      protocol.id,
+      `Service 'id' field is missing or empty`,
     );
+    service.path = guaranteeNonEmptyString(
+      protocol.path,
+      `Service 'path' field is missing or empty`,
+    );
+    service.owner = owner;
+    service.parent = parent;
     if (protocol.requestBody !== undefined) {
       service.requestBody = V1_buildTypeReference(
         protocol.requestBody,
@@ -251,7 +290,8 @@ export const V1_buildServiceStoreElement = (
       V1_buildServiceParameter(parameter, context),
     );
     assertNonNullable(protocol.response, `Service 'response' field is missing`);
-    service.response = new ComplexTypeReference(protocol.response.list);
+    service.response = new ComplexTypeReference();
+    service.response.list = protocol.response.list;
     service.response.type = context.graph.getClass(
       guaranteeNonEmptyString(
         protocol.response.type,
@@ -270,18 +310,18 @@ export const V1_buildServiceStoreElement = (
     );
     return service;
   } else if (protocol instanceof V1_ServiceGroup) {
-    const serviceGroup = new ServiceGroup(
-      guaranteeNonEmptyString(
-        protocol.id,
-        `Service group 'id' field is missing or empty`,
-      ),
-      guaranteeNonEmptyString(
-        protocol.path,
-        `Service group 'path' field is missing or empty`,
-      ),
-      owner,
-      parent,
+    const serviceGroup = new ServiceGroup();
+    serviceGroup.id = guaranteeNonEmptyString(
+      protocol.id,
+      `Service group 'id' field is missing or empty`,
     );
+    serviceGroup.path = guaranteeNonEmptyString(
+      protocol.path,
+      `Service group 'path' field is missing or empty`,
+    );
+    serviceGroup.owner = owner;
+    serviceGroup.parent = parent;
+
     serviceGroup.elements = protocol.elements.map((element) =>
       V1_buildServiceStoreElement(element, owner, context, serviceGroup),
     );

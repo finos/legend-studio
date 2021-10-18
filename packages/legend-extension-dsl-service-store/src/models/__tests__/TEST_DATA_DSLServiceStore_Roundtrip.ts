@@ -193,6 +193,7 @@ export const roundtripTestData = [
           _type: 'serviceStore',
           class: 'test::A',
           localMappingProperties: [],
+          root: 'true',
           servicesMapping: [
             {
               parameterMappings: [

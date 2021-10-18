@@ -26,8 +26,8 @@ export class ComplexTypeReference extends TypeReference implements Hashable {
   type!: Class;
   binding!: Binding;
 
-  constructor(list: boolean) {
-    super(list);
+  constructor() {
+    super();
 
     makeObservable(this, {
       type: observable,

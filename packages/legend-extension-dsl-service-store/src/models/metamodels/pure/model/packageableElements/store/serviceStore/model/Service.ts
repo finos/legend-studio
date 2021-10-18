@@ -29,8 +29,6 @@ import type { SecurityScheme } from './SecurityScheme';
 import type { TypeReference } from './TypeReference';
 import type { ComplexTypeReference } from './ComplexTypeReference';
 import { StringTypeReference } from './StringTypeReference';
-import type { ServiceStore } from './ServiceStore';
-import type { ServiceGroup } from './ServiceGroup';
 
 export enum HTTP_METHOD {
   GET = 'GET',
@@ -44,13 +42,8 @@ export class Service extends ServiceStoreElement implements Hashable {
   response!: ComplexTypeReference;
   security: SecurityScheme[] = [];
 
-  constructor(
-    id: string,
-    path: string,
-    owner: ServiceStore,
-    parent: ServiceGroup | undefined,
-  ) {
-    super(id, path, owner, parent);
+  constructor() {
+    super();
 
     makeObservable(this, {
       requestBody: observable,
@@ -115,7 +108,7 @@ export class Service extends ServiceStoreElement implements Hashable {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE,
       super.hashCode,
-      this.requestBody ?? new StringTypeReference(false),
+      this.requestBody ?? new StringTypeReference(),
       this.method,
       hashArray(this.parameters),
       this.response,

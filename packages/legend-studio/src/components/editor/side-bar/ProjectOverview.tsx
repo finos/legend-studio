@@ -17,7 +17,7 @@
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
-import { FaInfoCircle, FaTimes } from 'react-icons/fa';
+import { FaInfoCircle, FaTimes, FaUserFriends, FaUser } from 'react-icons/fa';
 import { MdModeEdit } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
 import { Link } from 'react-router-dom';
@@ -30,7 +30,11 @@ import {
 } from '../../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import type { Workspace } from '@finos/legend-server-sdlc';
-import { NewVersionType } from '@finos/legend-server-sdlc';
+import {
+  NewVersionType,
+  WorkspaceType,
+  areWorkspacesEquivalent,
+} from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { StudioConfig } from '../../../application/StudioConfig';
@@ -46,9 +50,7 @@ const WorkspaceViewerContextMenu = observer<
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const deleteWorkspace = applicationStore.guaranteeSafeAction(() =>
-      flowResult(
-        editorStore.projectOverviewState.deleteWorkspace(workspace.workspaceId),
-      ),
+      flowResult(editorStore.projectOverviewState.deleteWorkspace(workspace)),
     );
 
     return (
@@ -69,8 +71,10 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore<StudioConfig>();
-  const isActive =
-    editorStore.sdlcState.currentWorkspaceId === workspace.workspaceId;
+  const isActive = areWorkspacesEquivalent(
+    editorStore.sdlcState.activeWorkspace,
+    workspace,
+  );
   const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
     useState(false);
   const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -97,13 +101,21 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
           applicationStore.config.sdlcServerKey,
           workspace.projectId,
           workspace.workspaceId,
+          workspace.workspaceType,
         )}
         title={'Go to workspace detail'}
       >
-        <div className="project-overview__item__link__content">
-          <span className="project-overview__item__link__content__name">
+        <div className="project-overview__item__link__content project-overview__workspace__viewer">
+          <div className="project-overview__workspace__viewer-icon">
+            {workspace.workspaceType === WorkspaceType.GROUP ? (
+              <FaUserFriends />
+            ) : (
+              <FaUser />
+            )}
+          </div>
+          <div className="project-overview__item__link__content__name">
             {workspace.workspaceId}
-          </span>
+          </div>
         </div>
       </Link>
     </ContextMenu>

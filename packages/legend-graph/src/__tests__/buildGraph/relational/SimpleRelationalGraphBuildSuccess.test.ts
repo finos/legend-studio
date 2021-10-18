@@ -41,7 +41,7 @@ beforeEach(async () => {
 
 test(unitTest('Relational database is loaded properly'), () => {
   const graph = graphManagerState.graph;
-  expect(graph.ownStores).toHaveLength(3);
+  expect(graph.ownStores).toHaveLength(2);
   expect(graph.ownDatabases).toHaveLength(2);
   // db
   const db = graph.getDatabase('meta::relational::tests::db');

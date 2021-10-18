@@ -19,6 +19,7 @@ import { V1_ServiceStore } from './v1/model/packageableElements/store/serviceSto
 import type { PlainObject } from '@finos/legend-shared';
 import {
   assertNonEmptyString,
+  assertNonNullable,
   assertType,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -226,10 +227,13 @@ export class DSLServiceStore_PureProtocolProcessorPlugin
         parent: Mapping,
       ): InstanceSetImplementation | undefined => {
         if (classMapping instanceof V1_RootServiceStoreClassMapping) {
-          console.log(classMapping);
           assertNonEmptyString(
             classMapping.class,
             'ServiceStore class mapping class is missing',
+          );
+          assertNonNullable(
+            classMapping.root,
+            `ServiceStore class mapping 'root' field is missing`,
           );
           const targetClass = context.resolveClass(classMapping.class);
           const rootServiceInstanceSetImplementation =
@@ -260,9 +264,8 @@ export class DSLServiceStore_PureProtocolProcessorPlugin
             });
           rootServiceInstanceSetImplementation.servicesMapping =
             classMapping.servicesMapping.map((serviceMapping) => {
-              const mapping = new ServiceMapping(
-                rootServiceInstanceSetImplementation,
-              );
+              const mapping = new ServiceMapping();
+              mapping.owner = rootServiceInstanceSetImplementation;
               mapping.service = V1_resolveService(
                 serviceMapping.service,
                 context,
@@ -328,9 +331,8 @@ export class DSLServiceStore_PureProtocolProcessorPlugin
             });
           rootServiceInstanceSetImplementation.servicesMapping =
             classMapping.servicesMapping.map((serviceMapping) => {
-              const mapping = new ServiceMapping(
-                rootServiceInstanceSetImplementation,
-              );
+              const mapping = new ServiceMapping();
+              mapping.owner = rootServiceInstanceSetImplementation;
               mapping.service = V1_resolveService(
                 serviceMapping.service,
                 context,
@@ -385,6 +387,7 @@ export class DSLServiceStore_PureProtocolProcessorPlugin
             setImplementation.class,
           );
           classMapping.id = setImplementation.id.valueForSerialization;
+          classMapping.root = setImplementation.root.valueForSerialization;
           classMapping.localMappingProperties =
             setImplementation.localMappingProperties;
           classMapping.servicesMapping = setImplementation.servicesMapping.map(

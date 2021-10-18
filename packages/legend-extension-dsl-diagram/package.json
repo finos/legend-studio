@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Legend extension for Diagram DSL",
   "keywords": [
     "legend",
@@ -33,6 +33,7 @@
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -44,7 +45,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@material-ui/core": "4.12.3",
-    "@types/react": "17.0.27",
+    "@types/react": "17.0.29",
     "mobx": "6.3.3",
     "mobx-react-lite": "3.2.1",
     "react": "17.0.2",
@@ -64,7 +65,7 @@
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.42.1",
-    "typescript": "4.4.3"
+    "typescript": "4.4.4"
   },
   "peerDependencies": {
     "react": "^17.0.0"
