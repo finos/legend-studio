@@ -13,7 +13,7 @@ jobs:
   # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#standard-releases
   # 1. Create a new release milestone and move over open issues in the current milestone. Close the current milestone.
   # 2. Create the release branch for the latest release tag
-  # 4. Create the changesets to prepare for the next release version bump
+  # 4. Create a PR with the changesets to prepare for the next release version bump
   prepare-new-release:
     # There is currently no way to limit workflow dispatch to only allow default branch
     # so we need to restrict it here

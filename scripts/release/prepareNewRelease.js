@@ -22,8 +22,11 @@ import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import { fileURLToPath } from 'url';
+import { VERSION_BUMP_CHANGESET_PATH } from './versionBumpChangesetUtils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const DEFAULT_BRANCH_NAME = 'master';
 
 const applicationWorkspaceDir = process.env.APPLICATION_WORKSPACE_DIR;
 const bumpType = process.env.BUMP_TYPE;
@@ -55,7 +58,7 @@ const prepareNewRelease = async () => {
   const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
 
   // Push release version bump changeset
-  console.log(`Pushing release version bump changeset...`);
+  console.log(`Creating release version bump changeset PR...`);
   const isChangesetNew = Boolean(
     execSync('git status --porcelain', { encoding: 'utf-8' }),
   );
@@ -67,22 +70,51 @@ const prepareNewRelease = async () => {
       ),
     );
   } else {
-    const CHANGESET_LOCATION = '.changeset/new-version.md';
     const changesetContent = Buffer.from(
-      readFileSync(resolve(__dirname, `../../${CHANGESET_LOCATION}`), 'utf-8'),
+      readFileSync(
+        resolve(__dirname, `../../${VERSION_BUMP_CHANGESET_PATH}`),
+        'utf-8',
+      ),
     ).toString('base64');
+    const CHANGESET_PR_BRANCH_NAME = 'bot/prepare-release';
     try {
+      const defaultBranchRef = (
+        await octokit.rest.git.getRef({
+          ref: `heads/${DEFAULT_BRANCH_NAME}`,
+          ...github.context.repo,
+        })
+      ).data;
+      await octokit.rest.git.createRef({
+        ref: `refs/heads/${CHANGESET_PR_BRANCH_NAME}`,
+        sha: defaultBranchRef.object.sha,
+        ...github.context.repo,
+      });
       await octokit.rest.repos.createOrUpdateFileContents({
-        path: CHANGESET_LOCATION,
+        path: VERSION_BUMP_CHANGESET_PATH,
         message: 'prepare for the next development iteration',
+        branch: CHANGESET_PR_BRANCH_NAME,
         content: changesetContent,
         ...github.context.repo,
       });
-      console.log(chalk.green(`\u2713 Pushed release version bump changeset`));
+      const changesetPR = (
+        await octokit.rest.pulls.create({
+          title: 'Prepare New Release',
+          head: CHANGESET_PR_BRANCH_NAME,
+          base: DEFAULT_BRANCH_NAME,
+          body: `## ⚠️ Merge this before doing another release!\nAdd changeset to bump versions for the next release`,
+          ...github.context.repo,
+        })
+      ).data;
+      console.log(
+        chalk.green(
+          `\u2713 Created a PR to push release version bump changeset: ${changesetPR.html_url}`,
+        ),
+      );
     } catch (error) {
       console.log(
         chalk.red(
-          `Failed to push release version bump changeset. Error:\n${error.message}`,
+          `Failed to push release version bump changeset. Error:\n${error.message}\n` +
+            `Please run \`yarn release:bump\` and commit this changeset.`,
         ),
       );
     }
