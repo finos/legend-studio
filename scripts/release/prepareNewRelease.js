@@ -101,6 +101,7 @@ const prepareNewRelease = async () => {
       });
       // NOTE: we don't need to handle the case where we update the changeset file
       // because of the assumptions we make on the timing of this process.
+      // See https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
       await octokit.rest.repos.createOrUpdateFileContents({
         path: VERSION_BUMP_CHANGESET_PATH,
         message: 'prepare for the next development iteration',
