@@ -19,8 +19,11 @@ import chalk from 'chalk';
 import semver from 'semver';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const applicationWorkspaceDir = process.env.APPLICATION_WORKSPACE_DIR;
 const bumpType = process.env.BUMP_TYPE;
