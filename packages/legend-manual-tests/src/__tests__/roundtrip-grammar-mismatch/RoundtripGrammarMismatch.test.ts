@@ -101,6 +101,8 @@ const logSuccess = (phase: ROUNTRIP_TEST_PHASES, debug?: boolean): void => {
 const isTestSkipped = (filePath: string): boolean =>
   Object.keys(EXCLUSIONS).includes(basename(filePath)) &&
   EXCLUSIONS[basename(filePath)] === SKIP;
+const isPartialTest = (filePath: string): boolean =>
+  Object.keys(EXCLUSIONS).includes(basename(filePath));
 
 const checkGrammarRoundtripMismatch = async (
   testCase: string,
@@ -215,12 +217,13 @@ const checkGrammarRoundtripMismatch = async (
   }
 };
 
-const testNameFrom = (fileName: string, toSkip: boolean): string => {
-  const name = basename(fileName, '.pure').split('-').join(' ');
-  return `${toSkip ? '(SKIPPED) ' : ''}${name[0].toUpperCase()}${name.substring(
-    1,
-    name.length,
-  )}`;
+const testNameFrom = (filePath: string): string => {
+  const isSkipped = isTestSkipped(filePath);
+  const isPartial = isPartialTest(filePath);
+  const name = basename(filePath, '.pure').split('-').join(' ');
+  return `${
+    isSkipped ? '(SKIPPED) ' : isPartial ? '(partial) ' : ''
+  }${name[0].toUpperCase()}${name.substring(1, name.length)}`;
 };
 
 const cases: [string, string, boolean][] = fs
@@ -228,7 +231,7 @@ const cases: [string, string, boolean][] = fs
   .map((caseName) => resolve(TEST_CASE_DIR, caseName))
   .filter((filePath) => fs.statSync(filePath).isFile())
   .map((filePath) => [
-    testNameFrom(filePath, isTestSkipped(filePath)),
+    testNameFrom(filePath),
     filePath,
     isTestSkipped(filePath),
   ]);
