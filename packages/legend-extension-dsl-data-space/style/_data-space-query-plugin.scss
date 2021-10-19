@@ -16,7 +16,15 @@
 
 @use './mixins' as *;
 
-.data-space-viewer {
+.query-setup__landing-page__option--data-space:hover {
+  background: var(--color-yellow-100);
+}
+
+.query-setup__landing-page__icon--data-space {
+  font-size: 1.3rem;
+}
+
+.query-setup__data-space-viewer {
   display: flex;
   flex-direction: column;
   height: 100%;

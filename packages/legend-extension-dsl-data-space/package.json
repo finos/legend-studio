@@ -43,6 +43,7 @@
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
+    "@finos/legend-query": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@types/react": "17.0.30",
@@ -76,6 +77,7 @@
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-graph-manager",
     "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-graph",
     "studioPreset": "@finos/legend-studio-preset-dsl-data-space",
-    "studioPlugin": "@finos/legend-studio-plugin-dsl-data-space"
+    "studioPlugin": "@finos/legend-studio-plugin-dsl-data-space",
+    "queryPlugin": "@finos/legend-query-plugin-dsl-data-space"
   }
 }

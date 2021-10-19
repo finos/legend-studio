@@ -26,17 +26,20 @@ import {
   RobotIcon,
   UserIcon,
 } from '@finos/legend-art';
-import { debounce } from '@finos/legend-shared';
+import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import {
   generateCreateQueryRoute,
   generateExistingQueryRoute,
   generateServiceQueryRoute,
 } from '../stores/LegendQueryRouter';
-import type { ServiceExecutionOption } from '../stores/QuerySetupStore';
+import type {
+  QuerySetupState,
+  ServiceExecutionOption,
+} from '../stores/QuerySetupStore';
 import {
   CreateQuerySetupState,
   ExistingQuerySetupState,
@@ -791,6 +794,16 @@ const CreateQuerySetup = observer(
 const QuerySetupLandingPage = observer(() => {
   const setupStore = useQuerySetupStore();
   const queryStore = useQueryStore();
+  const extraQuerySetupOptions = queryStore.pluginManager
+    .getQueryPlugins()
+    .flatMap(
+      (plugin) =>
+        plugin.getExtraQuerySetupOptionRendererConfigurations?.() ?? [],
+    )
+    .filter(isNonNullable)
+    .map((config) => (
+      <Fragment key={config.key}>{config.renderer(setupStore)}</Fragment>
+    ));
   const editQuery = (): void =>
     setupStore.setSetupState(new ExistingQuerySetupState(queryStore));
   const loadServiceQuery = (): void =>
@@ -823,8 +836,9 @@ const QuerySetupLandingPage = observer(() => {
             Load an existing query
           </div>
         </button>
+        {extraQuerySetupOptions}
         <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--service-query"
+          className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--service-query"
           onClick={loadServiceQuery}
         >
           <div className="query-setup__landing-page__option__icon">
@@ -835,7 +849,7 @@ const QuerySetupLandingPage = observer(() => {
           </div>
         </button>
         <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--create-query"
+          className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--create-query"
           onClick={createQuery}
         >
           <div className="query-setup__landing-page__option__icon">
@@ -852,20 +866,34 @@ const QuerySetupLandingPage = observer(() => {
 
 const QuerySetupInner = observer(() => {
   const setupStore = useQuerySetupStore();
+  const queryStore = useQueryStore();
   const querySetupState = setupStore.querySetupState;
+  const renderQuerySetupScreen = (
+    setupState: QuerySetupState,
+  ): React.ReactNode => {
+    if (setupState instanceof ExistingQuerySetupState) {
+      return <ExistingQuerySetup querySetupState={setupState} />;
+    } else if (setupState instanceof ServiceQuerySetupState) {
+      return <ServiceQuerySetup querySetupState={setupState} />;
+    } else if (setupState instanceof CreateQuerySetupState) {
+      return <CreateQuerySetup querySetupState={setupState} />;
+    }
+    const extraQuerySetupRenderers = queryStore.pluginManager
+      .getQueryPlugins()
+      .flatMap((plugin) => plugin.getExtraQuerySetupRenderers?.() ?? []);
+    for (const querySetupRenderer of extraQuerySetupRenderers) {
+      const elementEditor = querySetupRenderer(setupState);
+      if (elementEditor) {
+        return elementEditor;
+      }
+    }
+    return null;
+  };
 
   return (
     <div className="query-setup">
       {!querySetupState && <QuerySetupLandingPage />}
-      {querySetupState instanceof ExistingQuerySetupState && (
-        <ExistingQuerySetup querySetupState={querySetupState} />
-      )}
-      {querySetupState instanceof ServiceQuerySetupState && (
-        <ServiceQuerySetup querySetupState={querySetupState} />
-      )}
-      {querySetupState instanceof CreateQuerySetupState && (
-        <CreateQuerySetup querySetupState={querySetupState} />
-      )}
+      {querySetupState && renderQuerySetupScreen(querySetupState)}
     </div>
   );
 });

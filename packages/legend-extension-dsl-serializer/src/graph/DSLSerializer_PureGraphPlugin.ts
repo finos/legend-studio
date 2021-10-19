@@ -30,7 +30,7 @@ export class DSLSerializer_PureGraphPlugin extends PureGraphPlugin {
   }
 
   install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphPlugins(this);
+    pluginManager.registerPureGraphPlugin(this);
   }
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {

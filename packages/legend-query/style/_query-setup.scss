@@ -76,6 +76,10 @@
     &--create-query:hover {
       background: var(--color-lime-75);
     }
+
+    &--advanced {
+      background: var(--color-dark-grey-500);
+    }
   }
 
   &__option + &__option {
