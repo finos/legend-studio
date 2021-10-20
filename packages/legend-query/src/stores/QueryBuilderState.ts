@@ -397,18 +397,28 @@ export class QueryBuilderState {
   }
 
   get mappingOptions(): PackageableElementOption<Mapping>[] {
-    return this.graphManagerState.graph.ownMappings
-      .concat(this.graphManagerState.graph.dependencyManager.mappings)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Mapping>);
+    return this.mappings.map(
+      (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
+    );
+  }
+
+  get mappings(): Mapping[] {
+    return this.graphManagerState.graph.ownMappings.concat(
+      this.graphManagerState.graph.dependencyManager.mappings,
+    );
   }
 
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    return this.graphManagerState.graph.ownRuntimes
-      .concat(this.graphManagerState.graph.dependencyManager.runtimes)
-      .map(
-        (e) =>
-          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
-      );
+    return this.runtimes.map(
+      (e) =>
+        buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
+    );
+  }
+
+  get runtimes(): PackageableRuntime[] {
+    return this.graphManagerState.graph.ownRuntimes.concat(
+      this.graphManagerState.graph.dependencyManager.runtimes,
+    );
   }
 
   get serviceOptions(): PackageableElementOption<Service>[] {
