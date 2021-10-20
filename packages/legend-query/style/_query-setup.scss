@@ -341,6 +341,18 @@
     }
   }
 
+  &__group--inline {
+    height: 2.8rem;
+    display: flex;
+  }
+
+  &__group--inline &__group__title {
+    margin-right: 0.5rem;
+    justify-content: center;
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+
   &__group + &__group {
     margin-top: 1rem;
   }

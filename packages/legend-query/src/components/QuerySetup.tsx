@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { SelectComponent } from '@finos/legend-art';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -24,12 +25,13 @@ import {
   PencilIcon,
   PlusIcon,
   RobotIcon,
+  SearchIcon,
   UserIcon,
 } from '@finos/legend-art';
 import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import {
   generateCreateQueryRoute,
@@ -78,6 +80,7 @@ const ExistingQuerySetup = observer(
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
     const queryStore = useQueryStore();
+    const querySearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
     const back = (): void => {
       setupStore.setSetupState(undefined);
@@ -116,7 +119,7 @@ const ExistingQuerySetup = observer(
       ? buildQueryOption(querySetupState.currentQuery)
       : null;
     const onQueryOptionChange = (option: QueryOption | null): void => {
-      if (option?.value !== querySetupState.currentQuery?.id) {
+      if (option?.value !== querySetupState.currentQuery) {
         querySetupState.setCurrentQuery(option?.value.id);
       }
     };
@@ -194,6 +197,10 @@ const ExistingQuerySetup = observer(
       );
     }, [querySetupState, applicationStore]);
 
+    useEffect(() => {
+      querySearchRef.current?.focus();
+    }, []);
+
     return (
       <div className="query-setup__wizard query-setup__existing-query">
         <div className="query-setup__wizard__header query-setup__existing-query__header">
@@ -219,10 +226,13 @@ const ExistingQuerySetup = observer(
           </button>
         </div>
         <div className="query-setup__wizard__content">
-          <div className="query-setup__wizard__group">
-            <div className="query-setup__wizard__group__title">Query</div>
+          <div className="query-setup__wizard__group query-setup__wizard__group--inline">
+            <div className="query-setup__wizard__group__title">
+              <SearchIcon />
+            </div>
             <div className="query-setup__existing-query__input">
               <CustomSelectorInput
+                ref={querySearchRef}
                 className="query-setup__wizard__selector"
                 options={queryOptions}
                 isLoading={querySetupState.loadQueriesState.isInProgress}

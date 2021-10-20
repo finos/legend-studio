@@ -50,6 +50,7 @@ export {
   FaEnvelope as EnvelopIcon,
   FaSkull as SkullIcon,
   FaDollarSign as DollarIcon,
+  FaSearch as SearchIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

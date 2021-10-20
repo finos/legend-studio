@@ -14,197 +14,149 @@
  * limitations under the License.
  */
 
+import { useApplicationStore } from '@finos/legend-application';
+import type { SelectComponent } from '@finos/legend-art';
+import {
+  PanelLoadingIndicator,
+  ArrowLeftIcon,
+  CustomSelectorInput,
+  SearchIcon,
+} from '@finos/legend-art';
+import { useQuerySetupStore, useQueryStore } from '@finos/legend-query';
+import { debounce } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import type { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type {
+  DataSpaceQuerySetupState,
+  LightDataSpace,
+} from '../../stores/query/DataSpaceQuerySetupState';
 
-// type QueryOption = { label: string; value: LightQuery };
-// const buildQueryOption = (query: LightQuery): QueryOption => ({
-//   label: query.name,
-//   value: query,
-// });
+type DataSpaceOption = { label: string; value: LightDataSpace };
+const buildDataSpaceOption = (dataSpace: LightDataSpace): DataSpaceOption => ({
+  label: dataSpace.path,
+  value: dataSpace,
+});
 
 export const DataspaceQuerySetup = observer(
   (props: { querySetupState: DataSpaceQuerySetupState }) => {
-    // const { querySetupState } = props;
-    // const applicationStore = useApplicationStore();
-    // const setupStore = useQuerySetupStore();
-    // const queryStore = useQueryStore();
-    // const [searchText, setSearchText] = useState('');
-    // const back = (): void => {
-    //   setupStore.setSetupState(undefined);
-    //   querySetupState.setCurrentQuery(undefined);
-    //   setupStore.queryStore.graphManagerState.resetGraph();
-    // };
-    // const next = (): void => {
-    //   if (querySetupState.currentQuery) {
-    //     queryStore.setQueryInfoState(
-    //       new ExistingQueryInfoState(
-    //         querySetupState.queryStore,
-    //         querySetupState.currentQuery,
-    //       ),
-    //     );
-    //     applicationStore.navigator.goTo(
-    //       generateExistingQueryRoute(querySetupState.currentQuery.id),
-    //     );
-    //   }
-    //   setupStore.setSetupState(undefined);
-    // };
-    // const canProceed = querySetupState.currentQuery;
+    const { querySetupState } = props;
+    const applicationStore = useApplicationStore();
+    const setupStore = useQuerySetupStore();
+    const queryStore = useQueryStore();
+    const dataSpaceSearchRef = useRef<SelectComponent>(null);
+    const [searchText, setSearchText] = useState('');
 
-    // // show current user queries only
-    // const toggleShowCurrentUserQueriesOnly = (): void => {
-    //   querySetupState.setShowCurrentUserQueriesOnly(
-    //     !querySetupState.showCurrentUserQueriesOnly,
-    //   );
-    //   flowResult(querySetupState.loadQueries(searchText)).catch(
-    //     applicationStore.alertIllegalUnhandledError,
-    //   );
-    // };
+    const back = (): void => {
+      setupStore.setSetupState(undefined);
+      querySetupState.setCurrentDataSpace(undefined);
+      queryStore.graphManagerState.resetGraph();
+    };
 
-    // // query
-    // const queryOptions = querySetupState.queries.map(buildQueryOption);
-    // const selectedQueryOption = querySetupState.currentQuery
-    //   ? buildQueryOption(querySetupState.currentQuery)
-    //   : null;
-    // const onQueryOptionChange = (option: QueryOption | null): void => {
-    //   if (option?.value !== querySetupState.currentQuery?.id) {
-    //     querySetupState.setCurrentQuery(option?.value.id);
-    //   }
-    // };
-    // const formatQueryOptionLabel = (option: QueryOption): React.ReactNode => {
-    //   const deleteQuery: React.MouseEventHandler<HTMLButtonElement> = (
-    //     event,
-    //   ) => {
-    //     event.preventDefault();
-    //     event.stopPropagation();
-    //     queryStore.graphManagerState.graphManager
-    //       .deleteQuery(option.value.id)
-    //       .then(() =>
-    //         flowResult(querySetupState.loadQueries('')).catch(
-    //           applicationStore.alertIllegalUnhandledError,
-    //         ),
-    //       )
-    //       .catch(applicationStore.alertIllegalUnhandledError);
-    //   };
-    //   if (option.value.id === querySetupState.currentQuery?.id) {
-    //     return option.label;
-    //   }
-    //   return (
-    //     <div className="query-setup__existing-query__query-option">
-    //       <div className="query-setup__existing-query__query-option__label">
-    //         {option.label}
-    //       </div>
-    //       {querySetupState.showCurrentUserQueriesOnly && (
-    //         <button
-    //           className="query-setup__existing-query__query-option__action"
-    //           tabIndex={-1}
-    //           onClick={deleteQuery}
-    //         >
-    //           Delete
-    //         </button>
-    //       )}
-    //       {!querySetupState.showCurrentUserQueriesOnly &&
-    //         Boolean(option.value.owner) && (
-    //           <div
-    //             className={clsx(
-    //               'query-setup__existing-query__query-option__user',
-    //               {
-    //                 'query-setup__existing-query__query-option__user--mine':
-    //                   option.value.isCurrentUserQuery,
-    //               },
-    //             )}
-    //           >
-    //             {option.value.isCurrentUserQuery ? 'mine' : option.value.owner}
-    //           </div>
-    //         )}
-    //     </div>
-    //   );
-    // };
+    // query
+    const dataSpaceOptions =
+      querySetupState.dataSpaces.map(buildDataSpaceOption);
+    const selectedDataSpaceOption = querySetupState.currentDataSpace
+      ? buildDataSpaceOption(querySetupState.currentDataSpace)
+      : null;
+    const onDataSpaceOptionChange = (option: DataSpaceOption | null): void => {
+      if (option?.value !== querySetupState.currentDataSpace) {
+        queryStore.graphManagerState.resetGraph();
+        querySetupState.setCurrentDataSpace(option?.value);
+      }
+    };
+    const formatQueryOptionLabel = (
+      option: DataSpaceOption,
+    ): React.ReactNode => (
+      <div className="query-setup__data-space__option">
+        <div className="query-setup__data-space__option__label">
+          {option.label}
+        </div>
+        <div className="query-setup__data-space__option__gav">
+          {option.value.content.groupId}:{option.value.content.artifactId}:
+          {option.value.content.versionId}
+        </div>
+      </div>
+    );
 
-    // // search text
-    // const debouncedLoadQueries = useMemo(
-    //   () =>
-    //     debounce((input: string): void => {
-    //       flowResult(querySetupState.loadQueries(input)).catch(
-    //         applicationStore.alertIllegalUnhandledError,
-    //       );
-    //     }, 500),
-    //   [applicationStore, querySetupState],
-    // );
-    // const onSearchTextChange = (value: string): void => {
-    //   if (value !== searchText) {
-    //     setSearchText(value);
-    //     debouncedLoadQueries.cancel();
-    //     debouncedLoadQueries(value);
-    //   }
-    // };
+    // search text
+    const debouncedLoadDataSpaces = useMemo(
+      () =>
+        debounce((input: string): void => {
+          flowResult(querySetupState.loadDataSpaces(input)).catch(
+            applicationStore.alertIllegalUnhandledError,
+          );
+        }, 500),
+      [applicationStore, querySetupState],
+    );
+    const onSearchTextChange = (value: string): void => {
+      if (value !== searchText) {
+        setSearchText(value);
+        debouncedLoadDataSpaces.cancel();
+        debouncedLoadDataSpaces(value);
+      }
+    };
 
-    // useEffect(() => {
-    //   flowResult(querySetupState.loadQueries('')).catch(
-    //     applicationStore.alertIllegalUnhandledError,
-    //   );
-    // }, [querySetupState, applicationStore]);
+    useEffect(() => {
+      flowResult(querySetupState.loadDataSpaces('')).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [querySetupState, applicationStore]);
+
+    useEffect(() => {
+      if (querySetupState.currentDataSpace) {
+        flowResult(
+          querySetupState.setUpDataSpace(querySetupState.currentDataSpace),
+        ).catch(applicationStore.alertIllegalUnhandledError);
+      }
+    }, [querySetupState, applicationStore, querySetupState.currentDataSpace]);
+
+    useEffect(() => {
+      dataSpaceSearchRef.current?.focus();
+    }, []);
 
     return (
-      <div>Arrron</div>
-      // <div className="query-setup__wizard query-setup__existing-query">
-      //   <div className="query-setup__wizard__header query-setup__existing-query__header">
-      //     <button
-      //       className="query-setup__wizard__header__btn"
-      //       onClick={back}
-      //       title="Back to Main Menu"
-      //     >
-      //       <ArrowLeftIcon />
-      //     </button>
-      //     <div className="query-setup__wizard__header__title">
-      //       Loading an existing query...
-      //     </div>
-      //     <button
-      //       className={clsx('query-setup__wizard__header__btn', {
-      //         'query-setup__wizard__header__btn--ready': canProceed,
-      //       })}
-      //       onClick={next}
-      //       disabled={!canProceed}
-      //       title="Proceed"
-      //     >
-      //       <ArrowRightIcon />
-      //     </button>
-      //   </div>
-      //   <div className="query-setup__wizard__content">
-      //     <div className="query-setup__wizard__group">
-      //       <div className="query-setup__wizard__group__title">Query</div>
-      //       <div className="query-setup__existing-query__input">
-      //         <CustomSelectorInput
-      //           className="query-setup__wizard__selector"
-      //           options={queryOptions}
-      //           isLoading={querySetupState.loadQueriesState.isInProgress}
-      //           onInputChange={onSearchTextChange}
-      //           inputValue={searchText}
-      //           onChange={onQueryOptionChange}
-      //           value={selectedQueryOption}
-      //           placeholder="Search for query by name..."
-      //           isClearable={true}
-      //           escapeClearsValue={true}
-      //           darkMode={true}
-      //           formatOptionLabel={formatQueryOptionLabel}
-      //         />
-      //         <button
-      //           className={clsx('query-setup__existing-query__btn', {
-      //             'query-setup__existing-query__btn--active':
-      //               querySetupState.showCurrentUserQueriesOnly,
-      //           })}
-      //           tabIndex={-1}
-      //           title={`[${
-      //             querySetupState.showCurrentUserQueriesOnly ? 'on' : 'off'
-      //           }] Toggle show only queries of current user`}
-      //           onClick={toggleShowCurrentUserQueriesOnly}
-      //         >
-      //           <UserIcon />
-      //         </button>
-      //       </div>
-      //     </div>
-      //   </div>
-      // </div>
+      <div className="query-setup__wizard query-setup__data-space">
+        <div className="query-setup__wizard__header query-setup__data-space__header">
+          <button
+            className="query-setup__wizard__header__btn"
+            onClick={back}
+            title="Back to Main Menu"
+          >
+            <ArrowLeftIcon />
+          </button>
+          <div className="query-setup__wizard__header__title">
+            Creating query from data space...
+          </div>
+        </div>
+        <div className="query-setup__wizard__content">
+          <div className="query-setup__wizard__group query-setup__wizard__group--inline query-setup__data-space__input-group">
+            <div className="query-setup__wizard__group__title">
+              <SearchIcon />
+            </div>
+            <CustomSelectorInput
+              ref={dataSpaceSearchRef}
+              className="query-setup__wizard__selector"
+              options={dataSpaceOptions}
+              isLoading={querySetupState.loadDataSpacesState.isInProgress}
+              onInputChange={onSearchTextChange}
+              inputValue={searchText}
+              onChange={onDataSpaceOptionChange}
+              value={selectedDataSpaceOption}
+              placeholder="Search for data space by name..."
+              isClearable={true}
+              escapeClearsValue={true}
+              darkMode={true}
+              formatOptionLabel={formatQueryOptionLabel}
+            />
+          </div>
+          <div className="query-setup__data-space__view">
+            <PanelLoadingIndicator
+              isLoading={querySetupState.setUpDataSpaceState.isInProgress}
+            />
+          </div>
+        </div>
+      </div>
     );
   },
 );

@@ -108,10 +108,10 @@ import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram';
 //     return (
 //       <>
 //         {dataSpaceEditorState.diagrams.length !== 0 && (
-//           <div className="query-setup__data-space-viewer__main-panel__content query-setup__data-space-viewer__overview-panel">
-//             <div className="query-setup__data-space-viewer__overview-panel__header">
+//           <div className="query-setup__data-space__viewer__main-panel__content query-setup__data-space__viewer__overview-panel">
+//             <div className="query-setup__data-space__viewer__overview-panel__header">
 //               <CustomSelectorInput
-//                 className="query-setup__data-space-viewer__overview-panel__diagram-selector"
+//                 className="query-setup__data-space__viewer__overview-panel__diagram-selector"
 //                 options={diagramOptions}
 //                 onChange={onDiagramOptionChange}
 //                 value={selectedDiagramOption}
@@ -119,7 +119,7 @@ import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram';
 //                 darkMode={true}
 //               />
 //             </div>
-//             <div className="query-setup__data-space-viewer__overview-panel__content">
+//             <div className="query-setup__data-space__viewer__overview-panel__content">
 //               {dataSpaceEditorState.currentDiagram && (
 //                 <DataSpaceDiagramCanvas
 //                   dataSpaceEditorState={dataSpaceEditorState}
@@ -172,41 +172,41 @@ export const DataSpaceViewer = observer(() => {
   // ];
 
   // return (
-  //   <div className="query-setup__data-space-viewer">
-  //     <div className="query-setup__data-space-viewer__header">
-  //       <div className="query-setup__data-space-viewer__path">{dataSpace.path}</div>
-  //       <div className="query-setup__data-space-viewer__gav">
-  //         <div className="query-setup__data-space-viewer__gav__group-id">
+  //   <div className="query-setup__data-space__viewer">
+  //     <div className="query-setup__data-space__viewer__header">
+  //       <div className="query-setup__data-space__viewer__path">{dataSpace.path}</div>
+  //       <div className="query-setup__data-space__viewer__gav">
+  //         <div className="query-setup__data-space__viewer__gav__group-id">
   //           {dataSpace.groupId}
   //         </div>
-  //         <div className="query-setup__data-space-viewer__gav__separator">:</div>
-  //         <div className="query-setup__data-space-viewer__gav__artifact-id">
+  //         <div className="query-setup__data-space__viewer__gav__separator">:</div>
+  //         <div className="query-setup__data-space__viewer__gav__artifact-id">
   //           {dataSpace.artifactId}
   //         </div>
-  //         <div className="query-setup__data-space-viewer__gav__separator">:</div>
-  //         <div className="query-setup__data-space-viewer__gav__version-id">
+  //         <div className="query-setup__data-space__viewer__gav__separator">:</div>
+  //         <div className="query-setup__data-space__viewer__gav__version-id">
   //           {dataSpace.versionId}
   //         </div>
   //       </div>
-  //       <div className="query-setup__data-space-viewer__description">
+  //       <div className="query-setup__data-space__viewer__description">
   //         {dataSpace.description ? (
   //           dataSpace.description
   //         ) : (
-  //           <div className="query-setup__data-space-viewer__description--empty">
+  //           <div className="query-setup__data-space__viewer__description--empty">
   //             No description
   //           </div>
   //         )}
   //       </div>
   //     </div>
-  //     <div className="query-setup__data-space-viewer__content">
-  //       <div className="query-setup__data-space-viewer__body">
-  //         <div className="query-setup__data-space-viewer__activity-bar">
-  //           <div className="query-setup__data-space-viewer__activity-bar__items">
+  //     <div className="query-setup__data-space__viewer__content">
+  //       <div className="query-setup__data-space__viewer__body">
+  //         <div className="query-setup__data-space__viewer__activity-bar">
+  //           <div className="query-setup__data-space__viewer__activity-bar__items">
   //             {activities.map((activity) => (
   //               <button
   //                 key={activity.mode}
-  //                 className={clsx('query-setup__data-space-viewer__activity-bar__item', {
-  //                   'query-setup__data-space-viewer__activity-bar__item--active':
+  //                 className={clsx('query-setup__data-space__viewer__activity-bar__item', {
+  //                   'query-setup__data-space__viewer__activity-bar__item--active':
   //                     dataSpaceEditorState.currentActivity === activity.mode,
   //                 })}
   //                 onClick={changeActivity(activity.mode)}
@@ -218,7 +218,7 @@ export const DataSpaceViewer = observer(() => {
   //             ))}
   //           </div>
   //         </div>
-  //         <div className="query-setup__data-space-viewer__main-panel">
+  //         <div className="query-setup__data-space__viewer__main-panel">
   //           {dataSpaceEditorState.currentActivity ===
   //             DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS && (
   //             <DataSpaceModelsOverview
@@ -227,20 +227,20 @@ export const DataSpaceViewer = observer(() => {
   //           )}
   //           {/* {dataSpaceEditorState.currentActivity ===
   //             DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION && (
-  //             <div className="query-setup__data-space-viewer__main-panel__content query-setup__data-space-viewer__execution-panel">
-  //               <div className="query-setup__data-space-viewer__panel__info-entry">
-  //                 <div className="query-setup__data-space-viewer__panel__info-entry__icon">
+  //             <div className="query-setup__data-space__viewer__main-panel__content query-setup__data-space__viewer__execution-panel">
+  //               <div className="query-setup__data-space__viewer__panel__info-entry">
+  //                 <div className="query-setup__data-space__viewer__panel__info-entry__icon">
   //                   <MappingIcon />
   //                 </div>
-  //                 <div className="query-setup__data-space-viewer__panel__info-entry__content">
+  //                 <div className="query-setup__data-space__viewer__panel__info-entry__content">
   //                   {dataSpace.mapping}
   //                 </div>
   //               </div>
-  //               <div className="query-setup__data-space-viewer__panel__info-entry">
-  //                 <div className="query-setup__data-space-viewer__panel__info-entry__icon">
+  //               <div className="query-setup__data-space__viewer__panel__info-entry">
+  //                 <div className="query-setup__data-space__viewer__panel__info-entry__icon">
   //                   <RuntimeIcon />
   //                 </div>
-  //                 <div className="query-setup__data-space-viewer__panel__info-entry__content">
+  //                 <div className="query-setup__data-space__viewer__panel__info-entry__content">
   //                   {dataSpace.runtime}
   //                 </div>
   //               </div>
@@ -252,12 +252,12 @@ export const DataSpaceViewer = observer(() => {
   //           )}
   //           {/* {dataSpaceEditorState.currentActivity ===
   //             DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT && (
-  //             <div className="query-setup__data-space-viewer__main-panel__content query-setup__data-space-viewer__support-panel">
-  //               <div className="query-setup__data-space-viewer__panel__info-entry">
-  //                 <div className="query-setup__data-space-viewer__panel__info-entry__icon">
+  //             <div className="query-setup__data-space__viewer__main-panel__content query-setup__data-space__viewer__support-panel">
+  //               <div className="query-setup__data-space__viewer__panel__info-entry">
+  //                 <div className="query-setup__data-space__viewer__panel__info-entry__icon">
   //                   <EnvelopIcon />
   //                 </div>
-  //                 <div className="query-setup__data-space-viewer__panel__info-entry__content">
+  //                 <div className="query-setup__data-space__viewer__panel__info-entry__content">
   //                   {dataSpace.supportInfo ?? '(no support contact available)'}
   //                 </div>
   //               </div>

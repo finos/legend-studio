@@ -21,6 +21,8 @@ export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID';
 export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pure/QueryBuilder_PureProtocolProcessorPlugin';
 
 export { QueryBuilder } from './components/QueryBuilder';
+export { useQuerySetupStore } from './components/QuerySetupStoreProvider';
+export { useQueryStore } from './components/QueryStoreProvider';
 
 export { QueryPluginManager } from './application/QueryPluginManager';
 

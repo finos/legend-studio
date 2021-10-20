@@ -90,7 +90,9 @@ export class DepotServerClient extends AbstractServerClient {
     },
   ): Promise<PlainObject<StoredEntity>[]> =>
     this.get(
-      `/entitiesByClassifierPath/${encodeURIComponent(classifierPath)}`,
+      `${
+        this.networkClient.baseUrl
+      }/entitiesByClassifierPath/${encodeURIComponent(classifierPath)}`,
       undefined,
       undefined,
       {

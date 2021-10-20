@@ -14,186 +14,285 @@
  * limitations under the License.
  */
 
+import type { Diagram } from '@finos/legend-extension-dsl-diagram';
+import { getDiagram } from '@finos/legend-extension-dsl-diagram';
+import type {
+  Mapping,
+  PackageableElementReference,
+  PackageableRuntime,
+  PureModel,
+} from '@finos/legend-graph';
+import { PackageableElementExplicitReference } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-model-storage';
 import type { QueryStore } from '@finos/legend-query';
 import { QuerySetupState } from '@finos/legend-query';
-import type { DataSpace } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import type { StoredEntity } from '@finos/legend-server-depot';
+import { ProjectData } from '@finos/legend-server-depot';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import {
+  assertTrue,
+  guaranteeNonEmptyString,
+  isObject,
+  isString,
+} from '@finos/legend-shared';
+import {
+  ActionState,
+  assertErrorThrown,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import type { DataSpaceSupportInfo } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import { DataSpaceSupportEmail } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
 
-// import {
-//   action,
-//   computed,
-//   flow,
-//   flowResult,
-//   makeAutoObservable,
-//   makeObservable,
-//   observable,
-// } from 'mobx';
-// import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-// import {
-//   ActionState,
-//   assertErrorThrown,
-//   guaranteeNonNullable,
-// } from '@finos/legend-shared';
-// import type {
-//   LightQuery,
-//   Mapping,
-//   PackageableRuntime,
-//   Service,
-// } from '@finos/legend-graph';
-// import { PureSingleExecution, PureMultiExecution } from '@finos/legend-graph';
-// import type { QueryStore } from './QueryStore';
-// import { ProjectData } from '@finos/legend-server-depot';
-// import type { PackageableElementOption } from '@finos/legend-application';
+export type LightDataSpace = Entity & {
+  path: string;
+  content: {
+    groupId: string;
+    artifactId: string;
+    versionId: string;
+  };
+};
+
+export class ResolvedDataSpaceExecutionContext {
+  name!: string;
+  description?: string | undefined;
+  mapping!: PackageableElementReference<Mapping>;
+  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
+}
+
+export class ResolvedDataSpace {
+  groupId!: string;
+  artifactId!: string;
+  versionId!: string;
+  executionContexts: ResolvedDataSpaceExecutionContext[] = [];
+  defaultExecutionContext!: ResolvedDataSpaceExecutionContext;
+  featuredDiagrams: PackageableElementReference<Diagram>[] = [];
+  description?: string | undefined;
+  supportInfo?: DataSpaceSupportInfo | undefined;
+}
+
+const resolveDataSpace = (
+  lightDataSpace: LightDataSpace,
+  graph: PureModel,
+): ResolvedDataSpace => {
+  const data = lightDataSpace.content;
+  const dataSpace = new ResolvedDataSpace();
+  dataSpace.groupId = guaranteeNonEmptyString(
+    data.groupId,
+    `Data space 'groupId' field is missing or empty`,
+  );
+  dataSpace.artifactId = guaranteeNonEmptyString(
+    data.artifactId,
+    `Data space 'artifactId' field is missing or empty`,
+  );
+  dataSpace.versionId = guaranteeNonEmptyString(
+    data.versionId,
+    `Data space 'versionId' field is missing or empty`,
+  );
+  assertTrue(
+    Array.isArray(data.executionContexts),
+    `Data space 'executionContexts' field must be a list`,
+  );
+  dataSpace.executionContexts = (
+    guaranteeNonNullable(
+      data.executionContexts,
+      `Data space 'executionContexts' field is missing`,
+    ) as Record<PropertyKey, unknown>[]
+  ).map((contextData) => {
+    const context = new ResolvedDataSpaceExecutionContext();
+    assertTrue(
+      isString(contextData.name),
+      `Data space execution context 'name' field must be a string`,
+    );
+    context.name = guaranteeNonEmptyString(
+      contextData.name as string,
+      `Data space execution context 'name' field is missing or empty`,
+    );
+    context.description = contextData.description as string | undefined;
+    assertTrue(
+      isObject(contextData.mapping) &&
+        isString((contextData.mapping as Record<PropertyKey, unknown>).path),
+      `Data space execution context 'mapping' field must be an element pointer`,
+    );
+    context.mapping = PackageableElementExplicitReference.create(
+      graph.getMapping(
+        (contextData.mapping as Record<PropertyKey, unknown>).path as string,
+      ),
+    );
+    assertTrue(
+      isObject(contextData.defaultRuntime) &&
+        isString(
+          (contextData.defaultRuntime as Record<PropertyKey, unknown>).path,
+        ),
+      `Data space execution context 'defaultRuntime' field must be an element pointer`,
+    );
+    context.defaultRuntime = PackageableElementExplicitReference.create(
+      graph.getRuntime(
+        (contextData.defaultRuntime as Record<PropertyKey, unknown>)
+          .path as string,
+      ),
+    );
+    return context;
+  });
+  assertTrue(
+    isString(data.defaultExecutionContext),
+    `Data space 'defaultExecutionContext' field must be a string`,
+  );
+  dataSpace.defaultExecutionContext = guaranteeNonNullable(
+    dataSpace.executionContexts.find(
+      (context) =>
+        context.name ===
+        guaranteeNonEmptyString(
+          data.defaultExecutionContext as string,
+          `Data space 'defaultExecutionContext' field is missing or empty`,
+        ),
+    ),
+    `Can't find default execution context '${data.defaultExecutionContext}'`,
+  );
+  dataSpace.description = data.description as string | undefined;
+  if (data.featuredDiagrams) {
+    assertTrue(
+      Array.isArray(data.featuredDiagrams),
+      `Data space 'featuredDiagrams' field must be a list`,
+    );
+    dataSpace.featuredDiagrams = (
+      (data.featuredDiagrams as Record<PropertyKey, unknown>[]) ?? []
+    ).map((pointer) => {
+      assertTrue(
+        isObject(pointer) &&
+          isString((pointer as Record<PropertyKey, unknown>).path),
+        `Data space 'featuredDiagrams' field must be a list of element pointers`,
+      );
+      return PackageableElementExplicitReference.create(
+        getDiagram(
+          (pointer as Record<PropertyKey, unknown>).path as string,
+          graph,
+        ),
+      );
+    });
+  }
+  if (data.supportInfo) {
+    switch ((data.supportInfo as Record<PropertyKey, unknown>)._type) {
+      case 'asd': {
+        const supportEmail = new DataSpaceSupportEmail();
+        supportEmail.address = guaranteeNonEmptyString(
+          (data.supportInfo as Record<PropertyKey, unknown>).address as string,
+          `Data space support email 'address' field is missing or empty`,
+        );
+        dataSpace.supportInfo = supportEmail;
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+  return dataSpace;
+};
 
 export class DataSpaceQuerySetupState extends QuerySetupState {
-  dataSpaces: DataSpace[] = [];
-  // projects: ProjectData[] = [];
-  // loadProjectsState = ActionState.create();
-  // currentProject?: ProjectData | undefined;
-  // currentVersionId?: string | undefined;
-  // currentMapping?: Mapping | undefined;
-  // currentRuntime?: PackageableRuntime | undefined;
+  dataSpaces: LightDataSpace[] = [];
+  loadDataSpacesState = ActionState.create();
+  setUpDataSpaceState = ActionState.create();
+  currentDataSpace?: LightDataSpace | undefined;
+  currentResolvedDataSpace?: ResolvedDataSpace | undefined;
 
   constructor(queryStore: QueryStore) {
     super(queryStore);
 
-    // makeObservable(this, {
-    //   projects: observable,
-    //   currentProject: observable,
-    //   currentVersionId: observable,
-    //   currentMapping: observable,
-    //   currentRuntime: observable,
-    //   runtimeOptions: computed,
-    //   setCurrentProject: action,
-    //   setCurrentVersionId: action,
-    //   setCurrentMapping: action,
-    //   setCurrentRuntime: action,
-    //   loadProjects: flow,
-    // });
+    makeObservable(this, {
+      dataSpaces: observable,
+      currentDataSpace: observable.ref,
+      currentResolvedDataSpace: observable,
+      setCurrentDataSpace: action,
+      loadDataSpaces: flow,
+      setUpDataSpace: flow,
+    });
   }
 
-  // setCurrentProject(val: ProjectData | undefined): void {
-  //   this.currentProject = val;
-  // }
+  setCurrentDataSpace(val: LightDataSpace | undefined): void {
+    this.currentDataSpace = val;
+  }
 
-  // setCurrentVersionId(val: string | undefined): void {
-  //   this.currentVersionId = val;
-  // }
+  *loadDataSpaces(searchText: string): GeneratorFn<void> {
+    if (this.queryStore.initState.isInInitialState) {
+      yield flowResult(this.queryStore.initialize());
+    } else if (this.queryStore.initState.isInProgress) {
+      return;
+    }
+    const isValidSearchString = searchText.length >= 3;
+    this.loadDataSpacesState.inProgress();
+    try {
+      this.dataSpaces = (
+        (yield this.queryStore.depotServerClient.getEntitiesByClassifierPath(
+          DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+          {
+            search: isValidSearchString ? searchText : undefined,
+            limit: 10,
+          },
+        )) as StoredEntity[]
+      )
+        .map((storedEntity) => storedEntity.entity)
+        .map(
+          (entity) =>
+            ({
+              ...entity,
+              path: entity.path,
+              content: {
+                ...entity.content,
+                groupId: guaranteeNonNullable(
+                  entity.content.groupId,
+                  `Data space 'groupId' field is missing`,
+                ),
+                artifactId: guaranteeNonNullable(
+                  entity.content.artifactId,
+                  `Data space 'artifactId' field is missing`,
+                ),
+                versionId: guaranteeNonNullable(
+                  entity.content.versionId,
+                  `Data space 'versionId' field is missing`,
+                ),
+              },
+            } as LightDataSpace),
+        );
+      this.loadDataSpacesState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.loadDataSpacesState.fail();
+      this.queryStore.applicationStore.notifyError(error);
+    }
+  }
 
-  // setCurrentMapping(val: Mapping | undefined): void {
-  //   this.currentMapping = val;
-  // }
-
-  // setCurrentRuntime(val: PackageableRuntime | undefined): void {
-  //   this.currentRuntime = val;
-  // }
-
-  // get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-  //   return this.currentMapping
-  //     ? this.queryStore.queryBuilderState.runtimeOptions.filter((option) =>
-  //         option.value.runtimeValue.mappings
-  //           .map((mappingReference) => mappingReference.value)
-  //           .includes(guaranteeNonNullable(this.currentMapping)),
-  //       )
-  //     : [];
-  // }
-
-  // *loadProjects(): GeneratorFn<void> {
-  //   this.loadProjectsState.inProgress();
-  //   try {
-  //     this.projects = (
-  //       (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-  //     ).map((project) => ProjectData.serialization.fromJson(project));
-  //     this.loadProjectsState.pass();
-  //   } catch (error) {
-  //     assertErrorThrown(error);
-  //     this.loadProjectsState.fail();
-  //     this.queryStore.applicationStore.notifyError(error);
-  //   }
-  // }
+  *setUpDataSpace(dataSpace: LightDataSpace): GeneratorFn<void> {
+    if (this.queryStore.initState.isInInitialState) {
+      yield flowResult(this.queryStore.initialize());
+    } else if (this.queryStore.initState.isInProgress) {
+      return;
+    }
+    this.setUpDataSpaceState.inProgress();
+    try {
+      const projectData = ProjectData.serialization.fromJson(
+        (yield flowResult(
+          this.queryStore.depotServerClient.getProject(
+            dataSpace.content.groupId,
+            dataSpace.content.artifactId,
+          ),
+        )) as PlainObject<ProjectData>,
+      );
+      yield flowResult(
+        this.queryStore.buildGraph(projectData, dataSpace.content.versionId),
+      );
+      const resolvedDataSpace = resolveDataSpace(
+        dataSpace,
+        this.queryStore.graphManagerState.graph,
+      );
+      this.currentResolvedDataSpace = resolvedDataSpace;
+      this.setUpDataSpaceState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.setUpDataSpaceState.fail();
+      this.queryStore.applicationStore.notifyError(error);
+    }
+  }
 }
-
-// export interface ServiceExecutionOption {
-//   label: string;
-//   value: { service: Service; key?: string };
-// }
-
-// export class ServiceQuerySetupState extends QuerySetupState {
-//   projects: ProjectData[] = [];
-//   loadProjectsState = ActionState.create();
-//   currentProject?: ProjectData | undefined;
-//   currentVersionId?: string | undefined;
-//   currentService?: Service | undefined;
-//   currentServiceExecutionKey?: string | undefined;
-
-//   constructor(queryStore: QueryStore) {
-//     super(queryStore);
-
-//     makeObservable(this, {
-//       projects: observable,
-//       currentProject: observable,
-//       currentVersionId: observable,
-//       currentService: observable,
-//       currentServiceExecutionKey: observable,
-//       setCurrentProject: action,
-//       setCurrentVersionId: action,
-//       setCurrentServiceExecution: action,
-//       loadProjects: flow,
-//     });
-//   }
-
-//   setCurrentProject(val: ProjectData | undefined): void {
-//     this.currentProject = val;
-//   }
-
-//   setCurrentVersionId(val: string | undefined): void {
-//     this.currentVersionId = val;
-//   }
-
-//   setCurrentServiceExecution(
-//     service: Service | undefined,
-//     key: string | undefined,
-//   ): void {
-//     this.currentService = service;
-//     this.currentServiceExecutionKey = key;
-//   }
-
-//   get serviceExecutionOptions(): ServiceExecutionOption[] {
-//     return this.queryStore.queryBuilderState.serviceOptions.flatMap(
-//       (option) => {
-//         const service = option.value;
-//         const serviceExecution = service.execution;
-//         if (serviceExecution instanceof PureSingleExecution) {
-//           return {
-//             label: service.name,
-//             value: {
-//               service,
-//             },
-//           };
-//         } else if (serviceExecution instanceof PureMultiExecution) {
-//           return serviceExecution.executionParameters.map((parameter) => ({
-//             label: `${service.name} [${parameter.key}]`,
-//             value: {
-//               service,
-//               key: parameter.key,
-//             },
-//           }));
-//         }
-//         return [];
-//       },
-//     );
-//   }
-
-//   *loadProjects(): GeneratorFn<void> {
-//     this.loadProjectsState.inProgress();
-//     try {
-//       this.projects = (
-//         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-//       ).map((project) => ProjectData.serialization.fromJson(project));
-//       this.loadProjectsState.pass();
-//     } catch (error) {
-//       assertErrorThrown(error);
-//       this.loadProjectsState.fail();
-//       this.queryStore.applicationStore.notifyError(error);
-//     }
-//   }
-// }

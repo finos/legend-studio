@@ -64,7 +64,7 @@ import {
 } from '@finos/legend-graph';
 import { V1_DSLDiagram_PackageableElementPointerType } from '@finos/legend-extension-dsl-diagram';
 
-const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
+export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
 
 export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
@@ -169,7 +169,10 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
               elementProtocol.supportInfo instanceof V1_DataSpaceSupportEmail
             ) {
               const supportEmail = new DataSpaceSupportEmail();
-              supportEmail.address = elementProtocol.supportInfo.address;
+              supportEmail.address = guaranteeNonEmptyString(
+                elementProtocol.supportInfo.address,
+                `Data space support email 'address' field is missing or empty`,
+              );
               element.supportInfo = supportEmail;
             } else {
               throw new UnsupportedOperationError(
