@@ -2727,8 +2727,8 @@ export class DiagramRenderer {
           this.mouseOverClassView,
           eventPointInModelCoordinate,
         );
+        this.setRightClick(false);
       }
-      this.setRightClick(false);
       return;
     }
     this.clearScreen();

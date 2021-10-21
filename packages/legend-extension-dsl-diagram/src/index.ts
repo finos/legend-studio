@@ -20,7 +20,6 @@ export { DiagramEditorState } from './stores/studio/DiagramEditorState';
 
 export { DiagramRenderer } from './DiagramRenderer';
 
-export { getDiagram } from './graphManager/DSLDiagram_GraphManagerHelper';
 export { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
 export { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
 export {
