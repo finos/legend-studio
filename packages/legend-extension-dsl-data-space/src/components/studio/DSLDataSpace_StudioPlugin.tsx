@@ -23,8 +23,14 @@ import type {
   ElementIconGetter,
   DSL_StudioPlugin_Extension,
   NewElementState,
+  ElementEditorStateCreator,
+  EditorStore,
+  ElementEditorState,
 } from '@finos/legend-studio';
-import { StudioPlugin } from '@finos/legend-studio';
+import {
+  UnsupportedElementEditorState,
+  StudioPlugin,
+} from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
@@ -99,6 +105,20 @@ export class DSLDataSpace_StudioPlugin
           dataSpace.executionContexts = [dataSpaceExecutionContext];
           dataSpace.defaultExecutionContext = dataSpaceExecutionContext;
           return dataSpace;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraElementEditorStateCreators(): ElementEditorStateCreator[] {
+    return [
+      (
+        editorStore: EditorStore,
+        element: PackageableElement,
+      ): ElementEditorState | undefined => {
+        if (element instanceof DataSpace) {
+          return new UnsupportedElementEditorState(editorStore, element);
         }
         return undefined;
       },
