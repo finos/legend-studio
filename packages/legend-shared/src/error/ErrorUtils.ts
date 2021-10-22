@@ -22,6 +22,7 @@ import { printObject } from '../CommonUtils';
 // See https://github.com/microsoft/TypeScript/issues/13219
 export abstract class ApplicationError extends Error {
   override message = '';
+  getFullErrorMessage = (): string => this.message;
 }
 
 // Since Javascript does not fully support rethrowing error, we need to customize and manipulate the stack trace
