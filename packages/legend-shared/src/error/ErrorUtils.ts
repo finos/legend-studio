@@ -17,11 +17,21 @@
 import type { SuperGenericFunction } from '../CommonUtils';
 import { printObject } from '../CommonUtils';
 
-// a generic error that does not have a stack trace, it is useful for try-catch logic
-// as Typescript current catch phrase is not typed
-// See https://github.com/microsoft/TypeScript/issues/13219
+/**
+ * A generic error that can be used for building other errors in the application
+ * which does not require Javascript stack trace.
+ *
+ * If the Javascript stack trace is needed to trace back where the problem occurs,
+ * `EnrichedError` is the more suitable candidate.
+ *
+ * This type of error is useful for wrapping the innermost error or errors coming
+ * from the servers. Since we enforce in the app that errors thrown must be of type
+ * `Error`, this acts as a good wrapper to manage errors better.
+ * See https://github.com/microsoft/TypeScript/issues/13219
+ */
 export abstract class ApplicationError extends Error {
   override message = '';
+
   getFullErrorMessage = (): string => this.message;
 }
 

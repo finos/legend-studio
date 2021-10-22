@@ -72,6 +72,9 @@
 
     &--expanded {
       overflow: auto;
+      // since the full message might contain newline characters
+      // we must use `pre-line`
+      // See https://developer.mozilla.org/en-US/docs/Web/CSS/white-space
       white-space: pre-line;
     }
   }

@@ -16,6 +16,7 @@
 
 import type { Log, SuperGenericFunction } from '@finos/legend-shared';
 import {
+  assertTrue,
   LogEvent,
   assertErrorThrown,
   isString,
@@ -205,7 +206,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   }
 
   notifyError(
-    content: unknown,
+    content: Error | string,
     actions?: NotificationAction[],
     autoHideDuration?: number | null,
   ): void {
@@ -214,18 +215,9 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       message = content.getFullErrorMessage();
     } else if (content instanceof Error) {
       message = content.message;
-    } else if (isString(content)) {
-      message = content;
     } else {
-      message = undefined;
-      this.log.error(
-        LogEvent.create(
-          APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
-        ),
-        'Unable to display error in notification',
-        message,
-      );
-      this.notifyIllegalState('Unable to display error');
+      assertTrue(isString(content), `Can't display error`);
+      message = content;
     }
     if (message) {
       this.setNotification(
