@@ -25,6 +25,8 @@ import {
   baseTextEditorSettings,
   disableEditorHotKeys,
   resetLineNumberGutterWidth,
+  clsx,
+  WordWrapIcon,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -81,6 +83,9 @@ export const GrammarTextEditor = observer(() => {
   const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
     flowResult(editorStore.toggleTextMode()),
   );
+
+  const toggleWordWrap = (): void =>
+    grammarTextEditorState.setWrapText(!grammarTextEditorState.wrapText);
 
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
@@ -180,6 +185,9 @@ export const GrammarTextEditor = observer(() => {
     if (currentValue !== graphGrammarText) {
       editor.setValue(graphGrammarText);
     }
+    editor.updateOptions({
+      wordWrap: grammarTextEditorState.wrapText ? 'on' : 'off',
+    });
     resetLineNumberGutterWidth(editor);
     const editorModel = editor.getModel();
     if (editorModel) {
@@ -292,6 +300,21 @@ export const GrammarTextEditor = observer(() => {
             </div>
             <div className="edit-panel__header__tab__label">Text Mode</div>
           </ContextMenu>
+        </div>
+        <div className="edit-panel__header__actions">
+          <button
+            className={clsx('edit-panel__header__action', {
+              'edit-panel__header__action--active':
+                grammarTextEditorState.wrapText,
+            })}
+            onClick={toggleWordWrap}
+            tabIndex={-1}
+            title={`[${
+              grammarTextEditorState.wrapText ? 'on' : 'off'
+            }] Toggle word wrap`}
+          >
+            <WordWrapIcon className="edit-panel__icon__word-wrap" />
+          </button>
         </div>
       </ContextMenu>
       <div className="panel__content edit-panel__content">

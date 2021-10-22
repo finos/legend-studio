@@ -62,6 +62,7 @@ export class GrammarTextEditorState {
   editorStore: EditorStore;
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
+  wrapText = false;
   error?: EngineError | undefined;
 
   constructor(editorStore: EditorStore) {
@@ -69,6 +70,7 @@ export class GrammarTextEditorState {
       editorStore: false,
       setError: action,
       setGraphGrammarText: action,
+      setWrapText: action,
       resetCurrentElementLabelRegexString: action,
       setCurrentElementLabelRegexString: action,
     });
@@ -82,6 +84,10 @@ export class GrammarTextEditorState {
 
   setGraphGrammarText(code: string): void {
     this.graphGrammarText = code;
+  }
+
+  setWrapText(val: boolean): void {
+    this.wrapText = val;
   }
 
   resetCurrentElementLabelRegexString(): void {

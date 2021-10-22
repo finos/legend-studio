@@ -61,8 +61,12 @@ export {
   MdTextFields as StringTypeIcon,
   MdMoreVert as MoreVerticalIcon,
   MdMoreHoriz as MoreHorizontalIcon,
+  MdWrapText as WrapTextIcon,
 } from 'react-icons/md';
-export { VscError as ErrorIcon } from 'react-icons/vsc';
+export {
+  VscError as ErrorIcon,
+  VscWordWrap as WordWrapIcon,
+} from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
   GoChevronUp as ChevronUpIcon,
