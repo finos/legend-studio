@@ -48,7 +48,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-extension-query-builder": "workspace:*",
-    "@types/react": "17.0.30",
+    "@types/react": "17.0.31",
     "react": "17.0.2"
   },
   "devDependencies": {
@@ -57,7 +57,7 @@
     "eslint": "8.0.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.43.2",
+    "sass": "1.43.3",
     "typescript": "4.4.4"
   },
   "publishConfig": {
