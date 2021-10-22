@@ -50,6 +50,8 @@ import {
 } from '../../../../../graphManager/action/EngineError';
 import type { V1_SourceInformation } from '../model/V1_SourceInformation';
 import { SourceInformation } from '../../../../../graphManager/action/SourceInformation';
+import { ExecutionError } from '../../../../../graphManager/action/ExecutionError';
+import type { V1_ExecutionError } from './execution/V1_ExecutionError';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -316,4 +318,13 @@ export const V1_buildParserError = (protocol: V1_ParserError): ParserError => {
     ? buildSourceInformation(protocol.sourceInformation)
     : undefined;
   return metamodel;
+};
+
+export const V1_buildExecutionError = (
+  protocol: V1_ExecutionError,
+): ExecutionError => {
+  const executionError = new ExecutionError();
+  executionError.message = protocol.message;
+  executionError.stack = protocol.trace;
+  return executionError;
 };

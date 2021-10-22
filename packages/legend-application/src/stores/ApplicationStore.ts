@@ -210,7 +210,9 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     autoHideDuration?: number | null,
   ): void {
     let message: string | undefined;
-    if (content instanceof Error || content instanceof ApplicationError) {
+    if (content instanceof ApplicationError) {
+      message = content.getFullErrorMessage();
+    } else if (content instanceof Error) {
       message = content.message;
     } else if (isString(content)) {
       message = content;
