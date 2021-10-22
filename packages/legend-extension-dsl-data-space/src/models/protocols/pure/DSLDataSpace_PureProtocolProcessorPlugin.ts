@@ -57,8 +57,8 @@ import type {
   V1_PackageableElement,
   V1_PureModelContextData,
 } from '@finos/legend-graph';
-import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import {
+  PackageableElementExplicitReference,
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
   V1_buildTaggedValue,

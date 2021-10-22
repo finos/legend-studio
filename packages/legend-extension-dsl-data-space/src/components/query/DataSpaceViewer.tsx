@@ -31,9 +31,9 @@ import {
   StarIcon,
   LightBulbIcon,
 } from '@finos/legend-art';
-import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../../stores/query/DataSpaceEditorState';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram';
+import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../../stores/query/DataSpaceQuerySetupState';
 import type { DataSpaceViewerState } from '../../stores/query/DataSpaceQuerySetupState';
 import { DataSpaceSupportEmail } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import type { DataSpaceSupportInfo } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
