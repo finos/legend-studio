@@ -19,6 +19,7 @@ export {
   FaFile as FileIcon,
   FaLongArrowAltRight as LongArrowRightIcon,
   FaTimes as TimesIcon,
+  FaTimesCircle as TimesCircleIcon,
   FaPlus as PlusIcon,
   FaCog as CogIcon,
   FaEye as EyeIcon,
@@ -51,6 +52,8 @@ export {
   FaSkull as SkullIcon,
   FaDollarSign as DollarIcon,
   FaSearch as SearchIcon,
+  FaStar as StarIcon,
+  FaLightbulb as LightBulbIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

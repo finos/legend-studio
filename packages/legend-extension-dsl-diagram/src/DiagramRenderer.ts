@@ -223,8 +223,9 @@ export class DiagramRenderer {
   onAddClassViewClick: (point: Point) => void = noop();
   onClassViewRightClick: (classView: ClassView, point: Point) => void = noop();
   onBackgroundDoubleClick: (point: Point) => void = noop();
+  onClassViewDoubleClick: (classView: ClassView, point: Point) => void = noop();
+  onClassNameDoubleClick: (classView: ClassView, point: Point) => void = noop();
   handleEditClassView: (classView: ClassView) => void = noop();
-  handleEditClassName: (classView: ClassView, point: Point) => void = noop();
   handleEditProperty: (
     property: AbstractProperty,
     point: Point,
@@ -2474,7 +2475,7 @@ export class DiagramRenderer {
 
     // Check double click on class name
     if (this.mouseOverClassName) {
-      this.handleEditClassName(
+      this.onClassNameDoubleClick(
         this.mouseOverClassName,
         eventPointInModelCoordinate,
       );
@@ -2489,7 +2490,7 @@ export class DiagramRenderer {
       ),
     );
     if (selectedClass) {
-      this.handleEditClassView(selectedClass);
+      this.onClassViewDoubleClick(selectedClass, eventPointInModelCoordinate);
       return;
     }
 

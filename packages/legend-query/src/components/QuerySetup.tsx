@@ -815,11 +815,11 @@ const QuerySetupLandingPage = observer(() => {
       <Fragment key={config.key}>{config.renderer(setupStore)}</Fragment>
     ));
   const editQuery = (): void =>
-    setupStore.setSetupState(new ExistingQuerySetupState(queryStore));
+    setupStore.setSetupState(new ExistingQuerySetupState(setupStore));
   const loadServiceQuery = (): void =>
-    setupStore.setSetupState(new ServiceQuerySetupState(queryStore));
+    setupStore.setSetupState(new ServiceQuerySetupState(setupStore));
   const createQuery = (): void =>
-    setupStore.setSetupState(new CreateQuerySetupState(queryStore));
+    setupStore.setSetupState(new CreateQuerySetupState(setupStore));
 
   useEffect(() => {
     setupStore.initialize();

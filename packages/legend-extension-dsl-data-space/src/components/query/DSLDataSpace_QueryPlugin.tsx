@@ -44,9 +44,7 @@ export class DSLDataSpace_QueryPlugin extends QueryPlugin {
           setupStore: QuerySetupStore,
         ): React.ReactNode | undefined => {
           const createQuery = (): void =>
-            setupStore.setSetupState(
-              new DataSpaceQuerySetupState(setupStore.queryStore),
-            );
+            setupStore.setSetupState(new DataSpaceQuerySetupState(setupStore));
           return (
             <button
               className="query-setup__landing-page__option query-setup__landing-page__option--data-space"

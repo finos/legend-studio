@@ -17,6 +17,10 @@
 import { useApplicationStore } from '@finos/legend-application';
 import type { SelectComponent } from '@finos/legend-art';
 import {
+  ArrowRightIcon,
+  clsx,
+  BlankPanelContent,
+  TimesCircleIcon,
   PanelLoadingIndicator,
   ArrowLeftIcon,
   CustomSelectorInput,
@@ -31,6 +35,7 @@ import type {
   DataSpaceQuerySetupState,
   LightDataSpace,
 } from '../../stores/query/DataSpaceQuerySetupState';
+import { DataSpaceViewer } from './DataSpaceViewer';
 
 type DataSpaceOption = { label: string; value: LightDataSpace };
 const buildDataSpaceOption = (dataSpace: LightDataSpace): DataSpaceOption => ({
@@ -46,6 +51,15 @@ export const DataspaceQuerySetup = observer(
     const queryStore = useQueryStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
+
+    const next = (): void => {
+      if (querySetupState.dataSpaceViewerState) {
+        flowResult(querySetupState.proceedToCreateQuery()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
+    const canProceed = querySetupState.dataSpaceViewerState;
 
     const back = (): void => {
       setupStore.setSetupState(undefined);
@@ -63,6 +77,7 @@ export const DataspaceQuerySetup = observer(
       if (option?.value !== querySetupState.currentDataSpace) {
         queryStore.graphManagerState.resetGraph();
         querySetupState.setCurrentDataSpace(option?.value);
+        querySetupState.setDataSpaceViewerState(undefined);
       }
     };
     const formatQueryOptionLabel = (
@@ -128,6 +143,16 @@ export const DataspaceQuerySetup = observer(
           <div className="query-setup__wizard__header__title">
             Creating query from data space...
           </div>
+          <button
+            className={clsx('query-setup__wizard__header__btn', {
+              'query-setup__wizard__header__btn--ready': canProceed,
+            })}
+            onClick={next}
+            disabled={!canProceed}
+            title="Proceed"
+          >
+            <ArrowRightIcon />
+          </button>
         </div>
         <div className="query-setup__wizard__content">
           <div className="query-setup__wizard__group query-setup__wizard__group--inline query-setup__data-space__input-group">
@@ -154,6 +179,28 @@ export const DataspaceQuerySetup = observer(
             <PanelLoadingIndicator
               isLoading={querySetupState.setUpDataSpaceState.isInProgress}
             />
+            {querySetupState.dataSpaceViewerState && (
+              <DataSpaceViewer
+                dataSpaceViewerState={querySetupState.dataSpaceViewerState}
+              />
+            )}
+            {!querySetupState.dataSpaceViewerState &&
+              querySetupState.setUpDataSpaceState.isInProgress && (
+                <BlankPanelContent>Setting up data space...</BlankPanelContent>
+              )}
+            {!querySetupState.dataSpaceViewerState &&
+              querySetupState.setUpDataSpaceState.hasFailed && (
+                <BlankPanelContent>
+                  <div className="query-setup__data-space__view--failed">
+                    <div className="query-setup__data-space__view--failed__icon">
+                      <TimesCircleIcon />
+                    </div>
+                    <div className="query-setup__data-space__view--failed__text">
+                      Can&apos;t load data space
+                    </div>
+                  </div>
+                </BlankPanelContent>
+              )}
           </div>
         </div>
       </div>

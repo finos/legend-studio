@@ -343,7 +343,7 @@ export class DiagramEditorState extends ElementEditorState {
 
   setupRenderer(): void {
     this.renderer.setIsReadOnly(this.isReadOnly);
-    this.renderer.handleEditClassView = (classView: ClassView): void => {
+    const handleEditClassView = (classView: ClassView): void => {
       this.setSidePanelState(
         new DiagramEditorClassViewEditorSidePanelState(
           this.editorStore,
@@ -353,6 +353,8 @@ export class DiagramEditorState extends ElementEditorState {
       );
       this.sidePanelDisplayState.open();
     };
+    this.renderer.onClassViewDoubleClick = handleEditClassView;
+    this.renderer.handleEditClassView = handleEditClassView;
     const createNewClassView = (point: Point): void => {
       if (!this.isReadOnly) {
         this.setInlineClassCreatorState(
@@ -369,7 +371,7 @@ export class DiagramEditorState extends ElementEditorState {
       this.setShowContextMenu(true);
       this.setContextMenuClassView(classView);
     };
-    this.renderer.handleEditClassName = (
+    this.renderer.onClassNameDoubleClick = (
       classView: ClassView,
       point: Point,
     ): void => {

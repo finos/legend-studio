@@ -14,36 +14,46 @@
  * limitations under the License.
  */
 
-import type { Diagram } from '@finos/legend-extension-dsl-diagram';
-import { getDiagram } from '@finos/legend-extension-dsl-diagram';
 import type {
-  Mapping,
-  PackageableElementReference,
-  PackageableRuntime,
-  PureModel,
-} from '@finos/legend-graph';
-import { PackageableElementExplicitReference } from '@finos/legend-graph';
+  ClassView,
+  DiagramRenderer,
+} from '@finos/legend-extension-dsl-diagram';
+import {
+  Diagram,
+  DIAGRAM_INTERACTION_MODE,
+} from '@finos/legend-extension-dsl-diagram';
+import type { Class, PackageableRuntime } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
-import type { QueryStore } from '@finos/legend-query';
-import { QuerySetupState } from '@finos/legend-query';
+import type { QuerySetupStore } from '@finos/legend-query';
+import {
+  CreateQueryInfoState,
+  QuerySetupState,
+  generateCreateQueryRoute,
+} from '@finos/legend-query';
 import type { StoredEntity } from '@finos/legend-server-depot';
 import { ProjectData } from '@finos/legend-server-depot';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import {
-  assertTrue,
-  guaranteeNonEmptyString,
-  isObject,
-  isString,
-} from '@finos/legend-shared';
 import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import type { DataSpaceSupportInfo } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import { DataSpaceSupportEmail } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
+import type {
+  ResolvedDataSpace,
+  ResolvedDataSpaceExecutionContext,
+} from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+import {
+  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+  getResolvedDataSpace,
+} from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
 
 export type LightDataSpace = Entity & {
   path: string;
@@ -54,165 +64,189 @@ export type LightDataSpace = Entity & {
   };
 };
 
-export class ResolvedDataSpaceExecutionContext {
-  name!: string;
-  description?: string | undefined;
-  mapping!: PackageableElementReference<Mapping>;
-  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
+export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
+  MODELS = 'MODELS',
+  EXECUTION = 'EXECUTION',
+  ENTITLEMENT = 'ENTITLEMENT',
+  SUPPORT = 'SUPPORT',
 }
 
-export class ResolvedDataSpace {
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
-  executionContexts: ResolvedDataSpaceExecutionContext[] = [];
-  defaultExecutionContext!: ResolvedDataSpaceExecutionContext;
-  featuredDiagrams: PackageableElementReference<Diagram>[] = [];
-  description?: string | undefined;
-  supportInfo?: DataSpaceSupportInfo | undefined;
-}
+export class DataSpaceViewerState {
+  setupState: DataSpaceQuerySetupState;
+  dataSpace: ResolvedDataSpace;
+  _renderer?: DiagramRenderer | undefined;
+  currentDiagram?: Diagram | undefined;
+  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS;
+  currentExecutionContext: ResolvedDataSpaceExecutionContext;
+  currentRuntime: PackageableRuntime;
+  showOnlyFeaturedDiagrams = true;
 
-const resolveDataSpace = (
-  lightDataSpace: LightDataSpace,
-  graph: PureModel,
-): ResolvedDataSpace => {
-  const data = lightDataSpace.content;
-  const dataSpace = new ResolvedDataSpace();
-  dataSpace.groupId = guaranteeNonEmptyString(
-    data.groupId,
-    `Data space 'groupId' field is missing or empty`,
-  );
-  dataSpace.artifactId = guaranteeNonEmptyString(
-    data.artifactId,
-    `Data space 'artifactId' field is missing or empty`,
-  );
-  dataSpace.versionId = guaranteeNonEmptyString(
-    data.versionId,
-    `Data space 'versionId' field is missing or empty`,
-  );
-  assertTrue(
-    Array.isArray(data.executionContexts),
-    `Data space 'executionContexts' field must be a list`,
-  );
-  dataSpace.executionContexts = (
-    guaranteeNonNullable(
-      data.executionContexts,
-      `Data space 'executionContexts' field is missing`,
-    ) as Record<PropertyKey, unknown>[]
-  ).map((contextData) => {
-    const context = new ResolvedDataSpaceExecutionContext();
-    assertTrue(
-      isString(contextData.name),
-      `Data space execution context 'name' field must be a string`,
-    );
-    context.name = guaranteeNonEmptyString(
-      contextData.name as string,
-      `Data space execution context 'name' field is missing or empty`,
-    );
-    context.description = contextData.description as string | undefined;
-    assertTrue(
-      isObject(contextData.mapping) &&
-        isString((contextData.mapping as Record<PropertyKey, unknown>).path),
-      `Data space execution context 'mapping' field must be an element pointer`,
-    );
-    context.mapping = PackageableElementExplicitReference.create(
-      graph.getMapping(
-        (contextData.mapping as Record<PropertyKey, unknown>).path as string,
-      ),
-    );
-    assertTrue(
-      isObject(contextData.defaultRuntime) &&
-        isString(
-          (contextData.defaultRuntime as Record<PropertyKey, unknown>).path,
-        ),
-      `Data space execution context 'defaultRuntime' field must be an element pointer`,
-    );
-    context.defaultRuntime = PackageableElementExplicitReference.create(
-      graph.getRuntime(
-        (contextData.defaultRuntime as Record<PropertyKey, unknown>)
-          .path as string,
-      ),
-    );
-    return context;
-  });
-  assertTrue(
-    isString(data.defaultExecutionContext),
-    `Data space 'defaultExecutionContext' field must be a string`,
-  );
-  dataSpace.defaultExecutionContext = guaranteeNonNullable(
-    dataSpace.executionContexts.find(
-      (context) =>
-        context.name ===
-        guaranteeNonEmptyString(
-          data.defaultExecutionContext as string,
-          `Data space 'defaultExecutionContext' field is missing or empty`,
-        ),
-    ),
-    `Can't find default execution context '${data.defaultExecutionContext}'`,
-  );
-  dataSpace.description = data.description as string | undefined;
-  if (data.featuredDiagrams) {
-    assertTrue(
-      Array.isArray(data.featuredDiagrams),
-      `Data space 'featuredDiagrams' field must be a list`,
-    );
-    dataSpace.featuredDiagrams = (
-      (data.featuredDiagrams as Record<PropertyKey, unknown>[]) ?? []
-    ).map((pointer) => {
-      assertTrue(
-        isObject(pointer) &&
-          isString((pointer as Record<PropertyKey, unknown>).path),
-        `Data space 'featuredDiagrams' field must be a list of element pointers`,
-      );
-      return PackageableElementExplicitReference.create(
-        getDiagram(
-          (pointer as Record<PropertyKey, unknown>).path as string,
-          graph,
-        ),
-      );
+  constructor(
+    setupState: DataSpaceQuerySetupState,
+    dataSpace: ResolvedDataSpace,
+  ) {
+    makeObservable(this, {
+      _renderer: observable,
+      currentDiagram: observable,
+      currentActivity: observable,
+      currentExecutionContext: observable,
+      currentRuntime: observable,
+      showOnlyFeaturedDiagrams: observable,
+      renderer: computed,
+      setRenderer: action,
+      setCurrentDiagram: action,
+      setCurrentActivity: action,
+      setCurrentExecutionContext: action,
+      setCurrentRuntime: action,
+      setShowOnlyFeaturedDiagrams: action,
     });
+
+    this.setupState = setupState;
+    this.dataSpace = dataSpace;
+    this.currentExecutionContext = this.dataSpace.defaultExecutionContext;
+    this.currentRuntime =
+      this.dataSpace.defaultExecutionContext.defaultRuntime.value;
+    this.currentDiagram = this.dataSpace.featuredDiagrams.length
+      ? this.dataSpace.featuredDiagrams[0].value
+      : this.diagrams.length
+      ? this.diagrams[0]
+      : undefined;
   }
-  if (data.supportInfo) {
-    switch ((data.supportInfo as Record<PropertyKey, unknown>)._type) {
-      case 'asd': {
-        const supportEmail = new DataSpaceSupportEmail();
-        supportEmail.address = guaranteeNonEmptyString(
-          (data.supportInfo as Record<PropertyKey, unknown>).address as string,
-          `Data space support email 'address' field is missing or empty`,
-        );
-        dataSpace.supportInfo = supportEmail;
-        break;
+
+  get renderer(): DiagramRenderer {
+    return guaranteeNonNullable(
+      this._renderer,
+      `Diagram renderer must be initialized (this is likely caused by calling this method at the wrong place)`,
+    );
+  }
+
+  get isDiagramRendererInitialized(): boolean {
+    return Boolean(this._renderer);
+  }
+
+  get featuredDiagrams(): Diagram[] {
+    return this.dataSpace.featuredDiagrams.map((ref) => ref.value);
+  }
+
+  get diagrams(): Diagram[] {
+    return this.setupState.queryStore.graphManagerState.graph
+      .getExtensionElements(Diagram)
+      .concat(
+        this.setupState.queryStore.graphManagerState.graph.dependencyManager.getExtensionElements(
+          Diagram,
+        ),
+      );
+  }
+
+  get runtimes(): PackageableRuntime[] {
+    return this.setupState.queryStore.graphManagerState.graph.ownRuntimes
+      .concat(
+        this.setupState.queryStore.graphManagerState.graph.dependencyManager
+          .runtimes,
+      )
+      .filter((runtime) =>
+        runtime.runtimeValue.mappings
+          .map((mapping) => mapping.value)
+          .includes(this.currentExecutionContext.mapping.value),
+      );
+  }
+
+  // NOTE: we have tried to use React to control the cursor and
+  // could not overcome the jank/lag problem, so we settle with CSS-based approach
+  // See https://css-tricks.com/using-css-cursors/
+  // See https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+  get diagramCursorClass(): string {
+    if (!this.isDiagramRendererInitialized) {
+      return '';
+    }
+    if (this.renderer.middleClick || this.renderer.rightClick) {
+      return 'diagram-editor__cursor--grabbing';
+    }
+    switch (this.renderer.interactionMode) {
+      case DIAGRAM_INTERACTION_MODE.LAYOUT: {
+        if (this.renderer.mouseOverClassView) {
+          return 'diagram-editor__cursor--pointer';
+        }
+        return '';
       }
-      default: {
-        break;
+      default:
+        return '';
+    }
+  }
+
+  setRenderer(val: DiagramRenderer): void {
+    this._renderer = val;
+  }
+
+  setCurrentDiagram(val: Diagram): void {
+    this.currentDiagram = val;
+  }
+
+  setCurrentActivity(val: DATA_SPACE_VIEWER_ACTIVITY_MODE): void {
+    this.currentActivity = val;
+  }
+
+  setCurrentExecutionContext(val: ResolvedDataSpaceExecutionContext): void {
+    this.currentExecutionContext = val;
+    this.currentRuntime = val.defaultRuntime.value;
+  }
+
+  setCurrentRuntime(val: PackageableRuntime): void {
+    this.currentRuntime = val;
+  }
+
+  setShowOnlyFeaturedDiagrams(val: boolean): void {
+    this.showOnlyFeaturedDiagrams = val;
+    // if we only show featured diagrams and the current diagram is not featured
+    // either set it to the first featured diagram we can find or show nothing
+    if (val) {
+      if (
+        this.currentDiagram &&
+        !this.featuredDiagrams.includes(this.currentDiagram)
+      ) {
+        this.currentDiagram = this.dataSpace.featuredDiagrams.length
+          ? this.dataSpace.featuredDiagrams[0].value
+          : undefined;
       }
     }
   }
-  return dataSpace;
-};
+
+  setupRenderer(): void {
+    this.renderer.setIsReadOnly(true);
+    this.renderer.onClassViewDoubleClick = (classView: ClassView): void => {
+      this.setupState.proceedToCreateQuery(classView.class.value);
+    };
+  }
+}
 
 export class DataSpaceQuerySetupState extends QuerySetupState {
   dataSpaces: LightDataSpace[] = [];
   loadDataSpacesState = ActionState.create();
   setUpDataSpaceState = ActionState.create();
   currentDataSpace?: LightDataSpace | undefined;
-  currentResolvedDataSpace?: ResolvedDataSpace | undefined;
+  dataSpaceViewerState?: DataSpaceViewerState | undefined;
 
-  constructor(queryStore: QueryStore) {
-    super(queryStore);
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
 
     makeObservable(this, {
       dataSpaces: observable,
       currentDataSpace: observable.ref,
-      currentResolvedDataSpace: observable,
+      dataSpaceViewerState: observable,
       setCurrentDataSpace: action,
+      setDataSpaceViewerState: action,
       loadDataSpaces: flow,
       setUpDataSpace: flow,
+      proceedToCreateQuery: flow,
     });
   }
 
   setCurrentDataSpace(val: LightDataSpace | undefined): void {
     this.currentDataSpace = val;
+  }
+
+  setDataSpaceViewerState(val: DataSpaceViewerState | undefined): void {
+    this.dataSpaceViewerState = val;
   }
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
@@ -283,16 +317,51 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       yield flowResult(
         this.queryStore.buildGraph(projectData, dataSpace.content.versionId),
       );
-      const resolvedDataSpace = resolveDataSpace(
-        dataSpace,
+      const resolvedDataSpace = getResolvedDataSpace(
+        dataSpace.content,
         this.queryStore.graphManagerState.graph,
       );
-      this.currentResolvedDataSpace = resolvedDataSpace;
+      this.dataSpaceViewerState = new DataSpaceViewerState(
+        this,
+        resolvedDataSpace,
+      );
       this.setUpDataSpaceState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.setUpDataSpaceState.fail();
       this.queryStore.applicationStore.notifyError(error);
+    }
+  }
+
+  *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
+    if (this.dataSpaceViewerState) {
+      const projectData = ProjectData.serialization.fromJson(
+        (yield flowResult(
+          this.queryStore.depotServerClient.getProject(
+            this.dataSpaceViewerState.dataSpace.groupId,
+            this.dataSpaceViewerState.dataSpace.artifactId,
+          ),
+        )) as PlainObject<ProjectData>,
+      );
+      const queryInfoState = new CreateQueryInfoState(
+        this.queryStore,
+        projectData,
+        this.dataSpaceViewerState.dataSpace.versionId,
+        this.dataSpaceViewerState.currentExecutionContext.mapping.value,
+        this.dataSpaceViewerState.currentRuntime,
+      );
+      queryInfoState.class = _class;
+      this.queryStore.setQueryInfoState(queryInfoState);
+      this.queryStore.applicationStore.navigator.goTo(
+        generateCreateQueryRoute(
+          this.dataSpaceViewerState.dataSpace.groupId,
+          this.dataSpaceViewerState.dataSpace.artifactId,
+          this.dataSpaceViewerState.dataSpace.versionId,
+          this.dataSpaceViewerState.currentExecutionContext.mapping.value.path,
+          this.dataSpaceViewerState.currentRuntime.path,
+        ),
+      );
+      this.setupStore.setSetupState(undefined);
     }
   }
 }
