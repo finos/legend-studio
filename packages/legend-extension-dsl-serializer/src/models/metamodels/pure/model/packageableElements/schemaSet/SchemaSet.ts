@@ -25,6 +25,7 @@ import type { Schema } from './Schema';
 export enum FORMAT_TYPE {
   FLAT_DATA = 'FlatData',
   XSD = 'XSD',
+  JSON = 'JSON',
 }
 
 export class SchemaSet extends PackageableElement implements Hashable {
