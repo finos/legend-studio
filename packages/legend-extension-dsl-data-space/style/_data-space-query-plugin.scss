@@ -144,7 +144,7 @@
     overflow: auto;
     line-height: 1.6rem;
     color: var(--color-dark-grey-500);
-    font-family: 'Roboto', sans-serif;
+    font-family: Roboto, sans-serif;
     font-size: 1.2rem;
 
     &--empty {
@@ -159,7 +159,7 @@
     @include flexCenter;
 
     height: calc(100% - 17rem);
-    padding: 0 2rem 2rem 2rem;
+    padding: 0 2rem 2rem;
   }
 
   &__body {
@@ -394,7 +394,7 @@
       overflow: auto;
       line-height: 1.6rem;
       color: var(--color-dark-grey-500);
-      font-family: 'Roboto', sans-serif;
+      font-family: Roboto, sans-serif;
       font-size: 1.2rem;
 
       &--empty {
