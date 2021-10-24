@@ -122,6 +122,7 @@ export { V1_Collection } from './models/protocols/pure/v1/model/valueSpecificati
 export { V1_Lambda } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Lambda';
 export { V1_Variable } from './models/protocols/pure/v1/model/valueSpecification/V1_Variable';
 export { V1_ValueSpecification } from './models/protocols/pure/v1/model/valueSpecification/V1_ValueSpecification';
+export { V1_Multiplicity } from './models/protocols/pure/v1/model/packageableElements/domain/V1_Multiplicity';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -238,4 +239,3 @@ export * from './DSLService_Exports';
 export * from './DSLGenerationSpecification_Exports';
 export * from './StoreFlatData_Exports';
 export * from './StoreRelational_Exports';
-export * from './DSLDomain_Exports';

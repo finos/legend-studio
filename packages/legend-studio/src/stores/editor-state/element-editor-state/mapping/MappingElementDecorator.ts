@@ -481,10 +481,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     throw new UnsupportedOperationError();
   }
 
-  visit_InstanceSetImplementation(
-    setImplementation: InstanceSetImplementation,
-  ): void {
-    return undefined;
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+    throw new UnsupportedOperationError();
   }
 }
 
@@ -576,9 +574,7 @@ export class MappingElementDecorationCleaner
     throw new UnsupportedOperationError();
   }
 
-  visit_InstanceSetImplementation(
-    setImplementation: InstanceSetImplementation,
-  ): void {
-    return undefined;
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+    throw new UnsupportedOperationError();
   }
 }

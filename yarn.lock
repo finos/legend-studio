@@ -2055,35 +2055,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-extension-dsl-service-store@workspace:*, @finos/legend-extension-dsl-service-store@workspace:packages/legend-extension-dsl-service-store":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-extension-dsl-service-store@workspace:packages/legend-extension-dsl-service-store"
-  dependencies:
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-dsl-serializer": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.29
-    cross-env: 7.0.3
-    eslint: 8.0.0
-    jest: 27.2.5
-    mobx: 6.3.3
-    mobx-react-lite: 3.2.1
-    monaco-editor: 0.29.1
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    rimraf: 3.0.2
-    sass: 1.42.1
-    serializr: 2.0.5
-    typescript: 4.4.4
-  peerDependencies:
-    react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-extension-dsl-text@workspace:*, @finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text":
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text"
@@ -2129,6 +2100,35 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-extension-external-store-service@workspace:*, @finos/legend-extension-external-store-service@workspace:packages/legend-extension-external-store-service":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-external-store-service@workspace:packages/legend-extension-external-store-service"
+  dependencies:
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-dsl-serializer": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@types/react": 17.0.29
+    cross-env: 7.0.3
+    eslint: 8.0.0
+    jest: 27.2.5
+    mobx: 6.3.3
+    mobx-react-lite: 3.2.1
+    monaco-editor: 0.29.1
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    rimraf: 3.0.2
+    sass: 1.42.1
+    serializr: 2.0.5
+    typescript: 4.4.4
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-graph@workspace:*, @finos/legend-graph@workspace:packages/legend-graph":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph@workspace:packages/legend-graph"
@@ -2158,8 +2158,8 @@ __metadata:
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-serializer": "workspace:*"
-    "@finos/legend-extension-dsl-service-store": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-external-store-service": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     axios: 0.23.0
@@ -2197,9 +2197,9 @@ __metadata:
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-serializer": "workspace:*"
-    "@finos/legend-extension-dsl-service-store": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
+    "@finos/legend-extension-external-store-service": "workspace:*"
     "@finos/legend-query": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 17.0.29
@@ -2361,9 +2361,9 @@ __metadata:
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-serializer": "workspace:*"
-    "@finos/legend-extension-dsl-service-store": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
+    "@finos/legend-extension-external-store-service": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-extension-query-builder": "workspace:*"

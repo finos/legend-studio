@@ -33,15 +33,15 @@ import type {
 } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { MappingElementState } from './editor-state/element-editor-state/mapping/MappingElementState';
 
-export type MappingElementSources = (
+export type MappingElementSourceGetter = (
   mappingElement: MappingElement,
 ) => MappingElementSource | undefined;
 
-export type SetImplemtationType = (
+export type SetImplemtationClassifier = (
   setImplementation: SetImplementation,
 ) => string | undefined;
 
-export type CreateMappingElementState = (
+export type MappingElementStateCreator = (
   mappingElement: MappingElement | undefined,
   editorStore: EditorStore,
 ) => MappingElementState | undefined;
@@ -109,15 +109,18 @@ export interface DSLMapping_StudioPlugin_Extension
   /**
    * Get the list of extra set implementation types.
    */
-  getExtraSetImplementationTypes?(): SetImplemtationType[];
+  getExtraSetImplementationClassifiers?(): SetImplemtationClassifier[];
+
   /**
    * Get the list of the create mapping elements states for the given class mapping.
    */
-  getExtraCreateMappingElementStates?(): CreateMappingElementState[];
+  getExtraMappingElementStateCreators?(): MappingElementStateCreator[];
+
   /**
    * Get the list of the element sources for the given class mapping.
    */
-  getExtraMappingElementSources?(): MappingElementSources[];
+  getExtraMappingElementSourceGetters?(): MappingElementSourceGetter[];
+
   /**
    * Get the list of the default connection value builder for a specified store.
    */

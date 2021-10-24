@@ -1,5 +1,5 @@
 ---
-"@finos/legend-extension-dsl-service-store": minor
+"@finos/legend-extension-external-store-service": minor
 ---
 
 Add graph support for `DSL ServiceStore`

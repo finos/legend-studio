@@ -41,7 +41,7 @@
       "path": "packages/legend-extension-external-format-json-schema"
     },
     {
-      "path": "packages/legend-extension-dsl-service-store"
+      "path": "packages/legend-extension-external-store-service"
     }
   ]
 }

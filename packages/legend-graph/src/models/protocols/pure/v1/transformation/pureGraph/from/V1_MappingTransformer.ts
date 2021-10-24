@@ -1010,7 +1010,7 @@ export class V1_SetImplementationTransformer
     this.context = context;
   }
 
-  visit_InstanceSetImplementation(
+  visit_SetImplementation(
     setImplementation: InstanceSetImplementation,
   ): V1_ClassMapping | undefined {
     const extraClassMappingTransformers = this.context.plugins.flatMap(

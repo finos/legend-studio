@@ -36,9 +36,7 @@ import type { AggregationAwareSetImplementation } from './aggregationAware/Aggre
 import type { InstanceSetImplementation } from './InstanceSetImplementation';
 
 export interface SetImplementationVisitor<T> {
-  visit_InstanceSetImplementation(
-    setImplementation: InstanceSetImplementation,
-  ): T;
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): T;

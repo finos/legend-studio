@@ -78,7 +78,7 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
       }
     }
     throw new UnsupportedOperationError(
-      `Can't build new connection: no compatible builder available from plugins`,
+      `Can't build new class mapping: no compatible builder available from plugins`,
       classMapping,
     );
   }

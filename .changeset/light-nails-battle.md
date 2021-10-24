@@ -1,5 +1,6 @@
 ---
-"@finos/legend-graph": patch
+"@finos/legend-graph": minor
 ---
 
-Add extension mechanism for ClassMapping and remove code for existing ServiceStore
+Add extension mechanism for `class mapping`
+Remove code for existing `ServiceStoreService store`

@@ -220,14 +220,14 @@ export const getMappingElementSource = (
     );
   }
   if (plugins !== undefined) {
-    const extraMappingElementSources = plugins.flatMap(
+    const extraMappingElementSourceGetters = plugins.flatMap(
       (plugin) =>
         (
           plugin as DSLMapping_StudioPlugin_Extension
-        ).getExtraMappingElementSources?.() ?? [],
+        ).getExtraMappingElementSourceGetters?.() ?? [],
     );
-    for (const source of extraMappingElementSources) {
-      const mappingElementSource = source(mappingElement);
+    for (const sourceGetter of extraMappingElementSourceGetters) {
+      const mappingElementSource = sourceGetter(mappingElement);
       if (mappingElementSource) {
         return mappingElementSource;
       }
@@ -235,7 +235,7 @@ export const getMappingElementSource = (
   }
 
   throw new UnsupportedOperationError(
-    `Can't derive source of mapping element`,
+    `Can't derive source of mapping element: no compatible source available from plugins`,
     mappingElement,
   );
 };
@@ -1036,23 +1036,22 @@ export class MappingEditorState extends ElementEditorState {
     } else if (
       mappingElement instanceof EmbeddedRelationalInstanceSetImplementation ||
       mappingElement instanceof AggregationAwareSetImplementation
-      // mappingElement instanceof InstanceSetImplementation
     ) {
       return new UnsupportedInstanceSetImplementationState(
         this.editorStore,
         mappingElement,
       );
     }
-    const extraCreateMappingElementStates = this.editorStore.pluginManager
+    const extraMappingElementStateCreators = this.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
             plugin as DSLMapping_StudioPlugin_Extension
-          ).getExtraCreateMappingElementStates?.() ?? [],
+          ).getExtraMappingElementStateCreators?.() ?? [],
       );
-    for (const elementState of extraCreateMappingElementStates) {
-      const mappingElementState = elementState(
+    for (const elementStateCreator of extraMappingElementStateCreators) {
+      const mappingElementState = elementStateCreator(
         mappingElement,
         this.editorStore,
       );

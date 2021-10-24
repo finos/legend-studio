@@ -1189,22 +1189,22 @@ export class EditorGraphState {
     } else if (setImplementation instanceof AggregationAwareSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE;
     }
-    const extraSetImplementationTypes = this.editorStore.pluginManager
+    const extraSetImplementationClassifiers = this.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
             plugin as DSLMapping_StudioPlugin_Extension
-          ).getExtraSetImplementationTypes?.() ?? [],
+          ).getExtraSetImplementationClassifiers?.() ?? [],
       );
-    for (const type of extraSetImplementationTypes) {
-      const setImplementationType = type(setImplementation);
-      if (setImplementationType) {
-        return setImplementationType;
+    for (const Classifier of extraSetImplementationClassifiers) {
+      const setImplementationClassifier = Classifier(setImplementation);
+      if (setImplementationClassifier) {
+        return setImplementationClassifier;
       }
     }
     throw new UnsupportedOperationError(
-      `Can't classify set implementation`,
+      `Can't classify set implementation: no compatible classifer available from plugins`,
       setImplementation,
     );
   }

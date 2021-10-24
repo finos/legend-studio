@@ -1,5 +1,5 @@
 ---
-"@finos/legend-studio": patch
+"@finos/legend-studio": minor
 ---
 
-Add extension mechanism for ClassMapping in form mode
+Add extension mechanism for `class mapping` in form mode

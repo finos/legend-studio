@@ -21,7 +21,7 @@ import { BrowserConsole } from '@finos/legend-shared';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
-import { DSLServiceStore_GraphPreset } from '@finos/legend-extension-dsl-service-store';
+import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 
 export class LegendQueryApplication {
   static run(baseUrl: string): void {
@@ -33,7 +33,7 @@ export class LegendQueryApplication {
         new DSLDataSpace_GraphPreset(),
         new EFJSONSchema_GraphPreset(),
         new DSLSerializer_GraphPreset(),
-        new DSLServiceStore_GraphPreset(),
+        new ESService_GraphPreset(),
       ])
       .withLoggers([new BrowserConsole()])
       .start()

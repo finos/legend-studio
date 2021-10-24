@@ -25,8 +25,8 @@
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-serializer": "workspace:*",
-    "@finos/legend-extension-dsl-service-store": "workspace:*",
     "@finos/legend-extension-dsl-text": "workspace:*",
+    "@finos/legend-extension-external-store-service": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*"
   },

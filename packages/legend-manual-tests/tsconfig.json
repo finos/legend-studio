@@ -25,7 +25,7 @@
       "path": "../legend-extension-dsl-serializer"
     },
     {
-      "path": "../legend-extension-dsl-service-store"
+      "path": "../legend-extension-external-store-service"
     }
   ]
 }
