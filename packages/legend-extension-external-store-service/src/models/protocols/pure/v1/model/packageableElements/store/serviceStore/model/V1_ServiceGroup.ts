@@ -28,7 +28,8 @@ export class V1_ServiceGroup
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_GROUP,
-      super.hashCode,
+      this.id,
+      this.path,
       hashArray(this.elements),
     ]);
   }

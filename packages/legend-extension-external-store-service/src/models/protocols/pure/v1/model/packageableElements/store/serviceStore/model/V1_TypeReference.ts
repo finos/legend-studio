@@ -40,7 +40,7 @@ export class V1_ComplexTypeReference
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.COMPLEX_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
       this.type,
       this.binding,
     ]);
@@ -54,7 +54,7 @@ export class V1_BooleanTypeReference
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.BOOLEAN_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
     ]);
   }
 }
@@ -66,7 +66,7 @@ export class V1_FloatTypeReference
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.FLOAT_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
     ]);
   }
 }
@@ -78,7 +78,7 @@ export class V1_IntegerTypeReference
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.INTEGER_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
     ]);
   }
 }
@@ -90,7 +90,7 @@ export class V1_StringTypeReference
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.STRING_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
     ]);
   }
 }

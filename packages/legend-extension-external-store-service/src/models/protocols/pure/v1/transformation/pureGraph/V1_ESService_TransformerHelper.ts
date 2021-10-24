@@ -49,7 +49,7 @@ import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/p
 import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
 import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
-import type { SecurityScheme_PureProtocolPlugin_Extension } from '../../../SecurityScheme_PureProtocolPlugin_Extension';
+import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
 
 export const V1_transformStringTypeReference = (
   metamodel: StringTypeReference,
@@ -160,7 +160,7 @@ const V1_transformSecurityScheme = (
   const extraSecuritySchemeTransformers = context.plugins.flatMap(
     (plugin) =>
       (
-        plugin as SecurityScheme_PureProtocolPlugin_Extension
+        plugin as ExternalStoreService_PureProtocolPlugin_Extension
       ).V1_getExtraSecuritySchemeTransformers?.() ?? [],
   );
   for (const transformer of extraSecuritySchemeTransformers) {

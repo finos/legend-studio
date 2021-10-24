@@ -27,7 +27,6 @@ import {
   primitive,
   list,
   optional,
-  SKIP,
   custom,
   serialize,
   deserialize,
@@ -59,7 +58,7 @@ import { V1_Multiplicity, V1_rawLambdaModelSchema } from '@finos/legend-graph';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
-import type { SecurityScheme_PureProtocolPlugin_Extension } from '../../../SecurityScheme_PureProtocolPlugin_Extension';
+import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
 
 export const V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE = 'serviceStore';
 export const V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE = 'serviceStore';
@@ -127,7 +126,7 @@ const V1_complexTypeReferenceModelSchema = createModelSchema(
 
 const V1_serializeTypeReference = (
   protocol: V1_TypeReference,
-): PlainObject<V1_TypeReference> | typeof SKIP => {
+): PlainObject<V1_TypeReference> => {
   if (protocol instanceof V1_BooleanTypeReference) {
     return serialize(V1_booleanTypeReferenceModelSchema, protocol);
   } else if (protocol instanceof V1_ComplexTypeReference) {
@@ -139,12 +138,15 @@ const V1_serializeTypeReference = (
   } else if (protocol instanceof V1_StringTypeReference) {
     return serialize(V1_stringTypeReferenceModelSchema, protocol);
   }
-  return SKIP;
+  throw new UnsupportedOperationError(
+    `Can't serialize type reference`,
+    protocol,
+  );
 };
 
 const V1_deserializeTypeReference = (
   json: PlainObject<V1_TypeReference>,
-): V1_TypeReference | typeof SKIP => {
+): V1_TypeReference => {
   switch (json._type) {
     case V1_ReferenceType.STRING_TYPE_REFERENCE:
       return deserialize(V1_stringTypeReferenceModelSchema, json);
@@ -157,7 +159,9 @@ const V1_deserializeTypeReference = (
     case V1_ReferenceType.INTEGER_TYPE_REFERENCE:
       return deserialize(V1_integerTypeReferenceModelSchema, json);
     default: {
-      return SKIP;
+      throw new UnsupportedOperationError(
+        `Can't deserialize type reference of type '${json._type}'`,
+      );
     }
   }
 };
@@ -190,7 +194,7 @@ const V1_serializeSecurityScheme = (
   const extraSecuritySchemeProtocolSerializers = plugins.flatMap(
     (plugin) =>
       (
-        plugin as SecurityScheme_PureProtocolPlugin_Extension
+        plugin as ExternalStoreService_PureProtocolPlugin_Extension
       ).V1_getExtraSecuritySchemeProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraSecuritySchemeProtocolSerializers) {
@@ -212,7 +216,7 @@ const V1_deserializeSecurityScheme = (
   const extraSecuritySchemeProtocolDeserializers = plugins.flatMap(
     (plugin) =>
       (
-        plugin as SecurityScheme_PureProtocolPlugin_Extension
+        plugin as ExternalStoreService_PureProtocolPlugin_Extension
       ).V1_getExtraSecuritySchemeProtocolDeserializers?.() ?? [],
   );
   for (const deserializer of extraSecuritySchemeProtocolDeserializers) {
@@ -234,8 +238,18 @@ const V1_serviceModelSchema = (
     id: primitive(),
     requestBody: optional(
       custom(
-        (val) => V1_serializeTypeReference(val),
-        (val) => V1_deserializeTypeReference(val),
+        (val) => {
+          if (val !== undefined) {
+            return V1_serializeTypeReference(val);
+          }
+          return undefined;
+        },
+        (val) => {
+          if (val !== undefined) {
+            return V1_deserializeTypeReference(val);
+          }
+          return undefined;
+        },
       ),
     ),
     method: primitive(),

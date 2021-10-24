@@ -107,17 +107,17 @@ export type TEMP__ServiceTestRuntimeConnectionBuilder = (
 export interface DSLMapping_StudioPlugin_Extension
   extends DSL_StudioPlugin_Extension {
   /**
-   * Get the list of extra set implementation types.
+   * Get the list of extra set implementation classifiers.
    */
   getExtraSetImplementationClassifiers?(): SetImplemtationClassifier[];
 
   /**
-   * Get the list of the create mapping elements states for the given class mapping.
+   * Get the list of the mapping element state creators for the given class mapping.
    */
   getExtraMappingElementStateCreators?(): MappingElementStateCreator[];
 
   /**
-   * Get the list of the element sources for the given class mapping.
+   * Get the list of the element source getters for the given class mapping.
    */
   getExtraMappingElementSourceGetters?(): MappingElementSourceGetter[];
 

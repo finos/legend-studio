@@ -38,7 +38,8 @@ export class V1_ServiceStoreService
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE,
-      super.hashCode,
+      this.id,
+      this.path,
       this.requestBody ?? '',
       this.method,
       hashArray(this.parameters),

@@ -56,7 +56,7 @@ export class BooleanTypeReference extends TypeReference implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.BOOLEAN_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
     ]);
   }
 }
@@ -78,7 +78,7 @@ export class ComplexTypeReference extends TypeReference implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.COMPLEX_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
       this.type.path,
       this.binding.path,
     ]);
@@ -97,7 +97,7 @@ export class FloatTypeReference extends TypeReference implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.FLOAT_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
     ]);
   }
 }
@@ -114,7 +114,7 @@ export class IntegerTypeReference extends TypeReference implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.INTEGER_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
     ]);
   }
 }
@@ -131,7 +131,7 @@ export class StringTypeReference extends TypeReference implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.STRING_TYPE_REFERENCE,
-      super.hashCode,
+      this.list.toString(),
     ]);
   }
 }

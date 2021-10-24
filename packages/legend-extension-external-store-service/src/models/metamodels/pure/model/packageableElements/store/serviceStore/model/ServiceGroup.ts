@@ -45,7 +45,8 @@ export class ServiceGroup extends ServiceStoreElement implements Hashable {
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_GROUP,
-      super.hashCode,
+      this.id,
+      this.path,
       hashArray(this.elements),
     ]);
   }
