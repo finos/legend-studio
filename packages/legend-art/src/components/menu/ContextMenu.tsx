@@ -21,27 +21,13 @@ import { BaseMenu } from '../BaseMuiComponents';
 export const ContextMenu: React.FC<{
   menuProps?: Partial<MenuProps>;
   content?: React.ReactNode;
-  /**
-   * A flag that allows controlling when the menu is open.
-   * Together with the native trigger for context menu, if this flag is specified, its value
-   * must be `true` in order for the menu to be displayed.
-   */
-  open?: boolean;
   onClose?: () => void;
   onOpen?: () => void;
   className?: string;
   disabled?: boolean;
 }> = (props) => {
-  const {
-    className,
-    children,
-    menuProps,
-    content,
-    open,
-    disabled,
-    onClose,
-    onOpen,
-  } = props;
+  const { className, children, menuProps, content, disabled, onClose, onOpen } =
+    props;
   const contextMenuRoot = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element>();
@@ -115,7 +101,7 @@ export const ContextMenu: React.FC<{
       {children}
       <BaseMenu
         key={`${left}, ${top}`} // if coordinate changes, re-render the menu
-        open={(open === undefined || open) && isOpen}
+        open={isOpen}
         anchorPosition={{ left, top }}
         onClose={close}
         anchorReference="anchorPosition"

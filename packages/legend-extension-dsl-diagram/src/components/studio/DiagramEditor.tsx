@@ -1328,7 +1328,7 @@ export const DiagramEditor = observer(() => {
           content={
             <DiagramEditorContextMenu diagramEditorState={diagramEditorState} />
           }
-          open={diagramEditorState.showContextMenu}
+          disabled={!diagramEditorState.showContextMenu}
           menuProps={{ elevation: 7 }}
           onClose={onContextMenuClose}
         >
