@@ -125,7 +125,6 @@ const IMPORT_RULES = {
 const TYPESCRIPT_RULES = {
   '@typescript-eslint/ban-types': WARN,
   '@typescript-eslint/consistent-type-imports': WARN,
-  '@typescript-eslint/consistent-type-exports': WARN,
   '@typescript-eslint/explicit-function-return-type': [
     WARN,
     { allowTypedFunctionExpressions: true },
