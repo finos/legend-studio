@@ -15,19 +15,11 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 
 export abstract class V1_ServiceStoreElement implements Hashable {
   private readonly _$nominalTypeBrand!: 'V1_ServiceStoreElement';
   id!: string;
   path!: string;
 
-  get hashCode(): string {
-    return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.SERVICE_STORE_ELEMENT,
-      this.id,
-      this.path,
-    ]);
-  }
+  abstract get hashCode(): string;
 }

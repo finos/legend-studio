@@ -22,12 +22,7 @@ export abstract class V1_TypeReference implements Hashable {
   private readonly _$nominalTypeBrand!: 'V1_TypeReference';
   list!: boolean;
 
-  get hashCode(): string {
-    return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.TYPE_REFERENCE,
-      this.list.toString(),
-    ]);
-  }
+  abstract get hashCode(): string;
 }
 
 export class V1_ComplexTypeReference

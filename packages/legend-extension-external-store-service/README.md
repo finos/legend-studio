@@ -1,3 +1,3 @@
 # @finos/legend-extension-external-store-service
 
-Legend Studio extension for `ServiceStoreService Store`
+Legend Studio extension for `Service Store`

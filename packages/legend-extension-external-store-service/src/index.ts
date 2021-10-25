@@ -15,3 +15,4 @@
  */
 
 export * from './ESService_Extension';
+export * from './models/protocols/pure/ExternalStoreService_PureProtocolPlugin_Extension';

@@ -16,7 +16,7 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
-import { roundtripTestData } from './TEST_DATA_ESService_Roundtrip';
+import { roundtripTestData } from './TEST_DATA__ESService_Roundtrip';
 import { ESService_GraphPreset } from '../../ESService_Extension';
 import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import {
@@ -29,7 +29,7 @@ pluginManager
   .usePresets([new ESService_GraphPreset(), new DSLSerializer_GraphPreset()])
   .install();
 
-test(unitTest('DSL ServiceStore import resolution roundtrip'), async () => {
+test(unitTest('ESService import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     roundtripTestData as Entity[],
     pluginManager,

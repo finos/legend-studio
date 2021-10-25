@@ -18,8 +18,6 @@ import { observable, makeObservable, action } from 'mobx';
 import type { Hashable } from '@finos/legend-shared';
 import type { ServiceStore } from './ServiceStore';
 import type { ServiceGroup } from './ServiceGroup';
-import { hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 
 export abstract class ServiceStoreElement implements Hashable {
   private readonly _$nominalTypeBrand!: 'ServiceStoreElement';
@@ -45,11 +43,5 @@ export abstract class ServiceStoreElement implements Hashable {
     this.path = value;
   }
 
-  get hashCode(): string {
-    return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.SERVICE_STORE_ELEMENT,
-      this.id,
-      this.path,
-    ]);
-  }
+  abstract get hashCode(): string;
 }

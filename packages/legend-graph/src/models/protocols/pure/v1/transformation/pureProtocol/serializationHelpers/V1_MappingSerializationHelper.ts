@@ -582,7 +582,7 @@ function V1_serializeClassMapping(
       (plugin) =>
         (
           plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
-        ).V1_getExtraClassMappingValueSerializers?.() ?? [],
+        ).V1_getExtraClassMappingSerializers?.() ?? [],
     );
     for (const serializer of extraClassMappingSerializers) {
       const json = serializer(value);
@@ -617,7 +617,7 @@ function V1_deserializeClassMapping(
           (plugin) =>
             (
               plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
-            ).V1_getExtraClassMappingValueDeserializers?.() ?? [],
+            ).V1_getExtraClassMappingDeserializers?.() ?? [],
         );
         for (const deserializer of extraClassMappingDeserializers) {
           const protocol = deserializer(json);

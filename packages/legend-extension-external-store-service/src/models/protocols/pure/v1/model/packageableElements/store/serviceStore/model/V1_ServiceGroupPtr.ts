@@ -28,6 +28,7 @@ export class V1_ServiceGroupPtr implements Hashable {
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_GROUP_PTR,
       this.serviceStore,
       this.serviceGroup,
+      this.parent ?? '',
     ]);
   }
 }

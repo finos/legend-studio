@@ -17,11 +17,11 @@
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
-import type { V1_ServicePtr } from '../model/V1_ServicePtr';
+import type { V1_ServiceStoreServicePtr } from '../model/V1_ServiceStoreServicePtr';
 import type { V1_ServiceParameterMapping } from './V1_ServiceParameterMapping';
 
 export class V1_ServiceMapping implements Hashable {
-  service!: V1_ServicePtr;
+  service!: V1_ServiceStoreServicePtr;
   parameterMappings: V1_ServiceParameterMapping[] = [];
 
   get hashCode(): string {

@@ -50,7 +50,7 @@ import { V1_ServiceStoreConnection } from '../../model/packageableElements/store
 import { V1_RootServiceStoreClassMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_RootServiceStoreClassMapping';
 import { V1_LocalMappingProperty } from '../../model/packageableElements/store/serviceStore/mapping/V1_LocalMappingProperty';
 import { V1_ServiceMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceMapping';
-import { V1_ServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServicePtr';
+import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
 import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
 import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
 import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
@@ -236,6 +236,9 @@ const V1_serviceModelSchema = (
   createModelSchema(V1_ServiceStoreService, {
     _type: usingConstantValueSchema(V1_ServiceStoreElementType.SERVICE),
     id: primitive(),
+    method: primitive(),
+    parameters: list(usingModelSchema(V1_serviceParameterModelSchema)),
+    path: primitive(),
     requestBody: optional(
       custom(
         (val) => {
@@ -252,9 +255,6 @@ const V1_serviceModelSchema = (
         },
       ),
     ),
-    method: primitive(),
-    parameters: list(usingModelSchema(V1_serviceParameterModelSchema)),
-    path: primitive(),
     response: usingModelSchema(V1_complexTypeReferenceModelSchema),
     security: list(
       custom(
@@ -334,15 +334,15 @@ const V1_deserializeServiceStoreElement = (
 };
 
 const V1_serviceGroupPtrModelSchema = createModelSchema(V1_ServiceGroupPtr, {
+  parent: optional(object(V1_ServiceGroupPtr)),
   serviceStore: primitive(),
   serviceGroup: primitive(),
-  parent: optional(object(V1_ServiceGroupPtr)),
 });
 
-const V1_servicePtrModelSchema = createModelSchema(V1_ServicePtr, {
+const V1_servicePtrModelSchema = createModelSchema(V1_ServiceStoreServicePtr, {
+  parent: optional(usingModelSchema(V1_serviceGroupPtrModelSchema)),
   service: primitive(),
   serviceStore: primitive(),
-  parent: optional(usingModelSchema(V1_serviceGroupPtrModelSchema)),
 });
 
 const V1_parameterIndexedParameterMappingModelSchema = createModelSchema(
@@ -410,9 +410,9 @@ const V1_serviceMappingModelSchema = createModelSchema(V1_ServiceMapping, {
 const V1_localMappingPropertyModelSchema = createModelSchema(
   V1_LocalMappingProperty,
   {
+    multiplicity: object(V1_Multiplicity),
     name: primitive(),
     type: primitive(),
-    multiplicity: object(V1_Multiplicity),
   },
 );
 
@@ -438,12 +438,12 @@ export const V1_rootServiceStoreClassMappingModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE),
     class: primitive(),
+    id: optional(primitive()),
     localMappingProperties: list(
       usingModelSchema(V1_localMappingPropertyModelSchema),
     ),
     root: primitive(),
     servicesMapping: list(usingModelSchema(V1_serviceMappingModelSchema)),
-    id: optional(primitive()),
   },
 );
 

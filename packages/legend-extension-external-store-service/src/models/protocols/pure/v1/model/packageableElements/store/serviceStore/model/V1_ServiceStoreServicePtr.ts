@@ -19,14 +19,14 @@ import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 import type { V1_ServiceGroupPtr } from './V1_ServiceGroupPtr';
 
-export class V1_ServicePtr implements Hashable {
+export class V1_ServiceStoreServicePtr implements Hashable {
   serviceStore!: string;
   service!: string;
   parent?: V1_ServiceGroupPtr | undefined;
 
   get hashCode(): string {
     return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.SERVICE_PTR,
+      SERVICE_STORE_HASH_STRUCTURE.SERVICE_STORE_SERVICE_PTR,
       this.serviceStore,
       this.service,
       this.parent ?? '',

@@ -36,12 +36,7 @@ export abstract class TypeReference implements Hashable {
     this.list = value;
   }
 
-  get hashCode(): string {
-    return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.TYPE_REFERENCE,
-      this.list.toString(),
-    ]);
-  }
+  abstract get hashCode(): string;
 }
 
 export class BooleanTypeReference extends TypeReference implements Hashable {

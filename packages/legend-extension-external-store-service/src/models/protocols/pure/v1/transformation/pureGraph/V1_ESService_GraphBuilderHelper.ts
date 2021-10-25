@@ -20,7 +20,7 @@ import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,
 } from '@finos/legend-graph';
-import type { V1_ServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServicePtr';
+import type { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
 import {
   ServiceStoreService,
   HTTP_METHOD,
@@ -72,19 +72,12 @@ import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../..
 import { SerializationFormat } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SerializationFormat';
 import type { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_SerializationFormat';
 
-const getService = (
+const getServiceStoreService = (
   elements: ServiceStoreElement[],
   value: string,
 ): ServiceStoreService =>
   guaranteeType(
-    elements.find(
-      (element: ServiceStoreElement): ServiceStoreService | undefined => {
-        if (element instanceof ServiceStoreService && element.id === value) {
-          return element;
-        }
-        return undefined;
-      },
-    ),
+    elements.find((element) => element.id === value),
     ServiceStoreService,
     `Can't find service '${value}'`,
   );
@@ -94,12 +87,7 @@ const getServiceGroup = (
   value: string,
 ): ServiceGroup =>
   guaranteeType(
-    elements.find((element: ServiceStoreElement): ServiceGroup | undefined => {
-      if (element instanceof ServiceGroup && element.id === value) {
-        return element;
-      }
-      return undefined;
-    }),
+    elements.find((element) => element.id === value),
     ServiceGroup,
     `Can't find service group '${value}'`,
   );
@@ -131,18 +119,24 @@ export const V1_resolveServiceGroup = (
 };
 
 export const V1_resolveService = (
-  servicePtr: V1_ServicePtr,
+  servicePtr: V1_ServiceStoreServicePtr,
   context: V1_GraphBuilderContext,
 ): ServiceStoreService => {
   const serviceStore = V1_resolveServiceStore(servicePtr.serviceStore, context);
   if (servicePtr.parent === undefined) {
-    return getService(serviceStore.value.elements, servicePtr.service);
+    return getServiceStoreService(
+      serviceStore.value.elements,
+      servicePtr.service,
+    );
   } else {
     const parentServiceGroup = V1_resolveServiceGroup(
       servicePtr.parent,
       serviceStore,
     );
-    return getService(parentServiceGroup.elements, servicePtr.service);
+    return getServiceStoreService(
+      parentServiceGroup.elements,
+      servicePtr.service,
+    );
   }
 };
 
@@ -168,8 +162,7 @@ export const V1_buildTypeReference = (
     const integerTypeReference = new IntegerTypeReference();
     integerTypeReference.list = protocol.list;
     return integerTypeReference;
-  }
-  if (protocol instanceof V1_StringTypeReference) {
+  } else if (protocol instanceof V1_StringTypeReference) {
     const stringTypeReference = new StringTypeReference();
     stringTypeReference.list = protocol.list;
     return stringTypeReference;

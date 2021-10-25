@@ -7,6 +7,7 @@
     "legend-extension",
     "extension",
     "store",
+    "external-store",
     "service-store"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-external-store-service",

@@ -43,11 +43,11 @@ export type V1_ClassMappingTransformer = (
   context: V1_GraphTransformerContext,
 ) => V1_ClassMapping | undefined;
 
-export type V1_ClassMappingValueSerializer = (
+export type V1_ClassMappingSerializer = (
   value: V1_ClassMapping,
 ) => V1_ClassMapping | undefined;
 
-export type V1_ClassMappingValueDeserializer = (
+export type V1_ClassMappingDeserializer = (
   json: PlainObject<V1_ClassMapping>,
 ) => V1_ClassMapping | undefined;
 
@@ -78,9 +78,9 @@ export interface DSLMapping_PureProtocolProcessorPlugin_Extension
 
   V1_getExtraClassMappingTransformers?(): V1_ClassMappingTransformer[];
 
-  V1_getExtraClassMappingValueSerializers?(): V1_ClassMappingValueSerializer[];
+  V1_getExtraClassMappingSerializers?(): V1_ClassMappingSerializer[];
 
-  V1_getExtraClassMappingValueDeserializers?(): V1_ClassMappingValueDeserializer[];
+  V1_getExtraClassMappingDeserializers?(): V1_ClassMappingDeserializer[];
 
   V1_getExtraConnectionBuilders?(): V1_ConnectionBuilder[];
 

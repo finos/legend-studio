@@ -45,7 +45,7 @@ export class SerializationFormat implements Hashable {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERIALIZATION_FORMAT,
       this.style ?? '',
-      Boolean(this.explode ?? true).toString(),
+      this.explode?.toString() ?? '',
     ]);
   }
 }

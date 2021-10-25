@@ -23,7 +23,7 @@ import type {
   InferableMappingElementRoot,
   Mapping,
   PackageableElementReference,
-  PurePropertyMapping,
+  PropertyMapping,
   SetImplementationVisitor,
 } from '@finos/legend-graph';
 import { InstanceSetImplementation } from '@finos/legend-graph';
@@ -95,7 +95,18 @@ export class RootServiceInstanceSetImplementation
   findPropertyMapping(
     propertyName: string,
     targetId: string | undefined,
-  ): PurePropertyMapping | undefined {
-    return undefined;
+  ): PropertyMapping | undefined {
+    let properties = undefined;
+    properties = this.propertyMappings.filter(
+      (propertyMapping) => propertyMapping.property.value.name === propertyName,
+    );
+    if (targetId === undefined || properties.length === 1) {
+      return properties[0];
+    }
+    return properties.find(
+      (propertyMapping) =>
+        propertyMapping.targetSetImplementation &&
+        propertyMapping.targetSetImplementation.id.value === targetId,
+    );
   }
 }

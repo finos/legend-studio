@@ -21,8 +21,6 @@ import type { PackageableElementVisitor } from '@finos/legend-graph';
 import { Store } from '@finos/legend-graph';
 import type { ServiceStoreElement } from './ServiceStoreElement';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import { ServiceGroup } from './ServiceGroup';
-import { ServiceStoreService } from './ServiceStoreService';
 
 export class ServiceStore extends Store implements Hashable {
   description?: string | undefined;
@@ -52,21 +50,6 @@ export class ServiceStore extends Store implements Hashable {
   deleteElement(value: ServiceStoreElement): void {
     deleteEntry(this.elements, value);
   }
-
-  findService = (
-    value: string,
-    serviceGroup: ServiceGroup,
-  ): ServiceStoreElement | undefined =>
-    serviceGroup.elements.find(
-      (element: ServiceStoreElement): ServiceStoreService | undefined => {
-        if (element instanceof ServiceStoreService && element.id === value) {
-          return element;
-        } else if (element instanceof ServiceGroup) {
-          this.findService(value, element);
-        }
-        return undefined;
-      },
-    );
 
   protected override get _elementHashCode(): string {
     return hashArray([

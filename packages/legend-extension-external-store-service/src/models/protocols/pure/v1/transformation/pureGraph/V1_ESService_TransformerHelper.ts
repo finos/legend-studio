@@ -44,7 +44,7 @@ import { V1_ServiceStoreService } from '../../model/packageableElements/store/se
 import { ServiceGroup } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceGroup';
 import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroup';
 import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
-import { V1_ServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServicePtr';
+import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
 import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreElement';
 import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
@@ -212,8 +212,8 @@ export const V1_transformServiceToServiceGroupPtr = (
 
 export const V1_transformServiceToServicePtr = (
   metamodel: ServiceStoreService,
-): V1_ServicePtr => {
-  const service = new V1_ServicePtr();
+): V1_ServiceStoreServicePtr => {
+  const service = new V1_ServiceStoreServicePtr();
   service.service = metamodel.id;
   service.serviceStore = metamodel.owner.path;
   if (metamodel.parent !== undefined) {

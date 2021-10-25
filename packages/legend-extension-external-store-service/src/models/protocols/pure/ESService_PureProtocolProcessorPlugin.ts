@@ -48,8 +48,8 @@ import type {
   V1_ClassMappingFirstPassBuilder,
   V1_ClassMappingSecondPassBuilder,
   V1_ClassMappingTransformer,
-  V1_ClassMappingValueDeserializer,
-  V1_ClassMappingValueSerializer,
+  V1_ClassMappingDeserializer,
+  V1_ClassMappingSerializer,
   Mapping,
   InstanceSetImplementation,
   Connection,
@@ -99,7 +99,6 @@ export class ESService_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
   implements DSLMapping_PureProtocolProcessorPlugin_Extension
 {
-  plugins: PureProtocolProcessorPlugin[] = [];
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
@@ -109,7 +108,6 @@ export class ESService_PureProtocolProcessorPlugin
 
   install(pluginManager: GraphPluginManager): void {
     pluginManager.registerPureProtocolProcessorPlugin(this);
-    this.plugins = pluginManager.getPureProtocolProcessorPlugins();
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
@@ -172,10 +170,11 @@ export class ESService_PureProtocolProcessorPlugin
     return [
       (
         elementProtocol: V1_PackageableElement,
+        plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_ServiceStore) {
           return serialize(
-            V1_serviceStoreModelSchema(this.plugins),
+            V1_serviceStoreModelSchema(plugins),
             elementProtocol,
           );
         }
@@ -188,9 +187,10 @@ export class ESService_PureProtocolProcessorPlugin
     return [
       (
         json: PlainObject<V1_PackageableElement>,
+        plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE) {
-          return deserialize(V1_serviceStoreModelSchema(this.plugins), json);
+          return deserialize(V1_serviceStoreModelSchema(plugins), json);
         }
         return undefined;
       },
@@ -353,7 +353,7 @@ export class ESService_PureProtocolProcessorPlugin
     ];
   }
 
-  V1_getExtraClassMappingValueSerializers(): V1_ClassMappingValueSerializer[] {
+  V1_getExtraClassMappingSerializers(): V1_ClassMappingSerializer[] {
     return [
       (value: V1_ClassMapping): V1_ClassMapping | undefined => {
         if (value instanceof V1_RootServiceStoreClassMapping) {
@@ -364,7 +364,7 @@ export class ESService_PureProtocolProcessorPlugin
     ];
   }
 
-  V1_getExtraClassMappingValueDeserializers(): V1_ClassMappingValueDeserializer[] {
+  V1_getExtraClassMappingDeserializers(): V1_ClassMappingDeserializer[] {
     return [
       (json: PlainObject<V1_ClassMapping>): V1_ClassMapping | undefined => {
         if (json._type === V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE) {

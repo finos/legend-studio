@@ -108,7 +108,7 @@ export class V1_PackageableElementSerializer
     elementProtocol: V1_PackageableElement,
   ): PlainObject<V1_PackageableElement> {
     for (const serializer of this.extraElementProtocolSerializers) {
-      const elementProtocolJson = serializer(elementProtocol);
+      const elementProtocolJson = serializer(elementProtocol, this.plugins);
       if (elementProtocolJson) {
         return elementProtocolJson;
       }
@@ -238,7 +238,7 @@ export const V1_deserializePackageableElement = (
       return deserialize(V1_sectionIndexModelSchema, json);
     default: {
       for (const deserializer of extraElementProtocolDeserializers) {
-        const elementProtocol = deserializer(json);
+        const elementProtocol = deserializer(json, plugins);
         if (elementProtocol) {
           return elementProtocol;
         }
