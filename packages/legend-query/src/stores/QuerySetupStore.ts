@@ -41,10 +41,12 @@ import { ProjectData } from '@finos/legend-server-depot';
 import type { PackageableElementOption } from '@finos/legend-application';
 
 export abstract class QuerySetupState {
+  setupStore: QuerySetupStore;
   queryStore: QueryStore;
 
-  constructor(queryStore: QueryStore) {
-    this.queryStore = queryStore;
+  constructor(setupStore: QuerySetupStore) {
+    this.setupStore = setupStore;
+    this.queryStore = setupStore.queryStore;
   }
 }
 
@@ -55,8 +57,8 @@ export class ExistingQuerySetupState extends QuerySetupState {
   currentQuery?: LightQuery | undefined;
   showCurrentUserQueriesOnly = false;
 
-  constructor(queryStore: QueryStore) {
-    super(queryStore);
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
 
     makeObservable(this, {
       queries: observable,
@@ -123,8 +125,8 @@ export class CreateQuerySetupState extends QuerySetupState {
   currentMapping?: Mapping | undefined;
   currentRuntime?: PackageableRuntime | undefined;
 
-  constructor(queryStore: QueryStore) {
-    super(queryStore);
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
 
     makeObservable(this, {
       projects: observable,
@@ -195,8 +197,8 @@ export class ServiceQuerySetupState extends QuerySetupState {
   currentService?: Service | undefined;
   currentServiceExecutionKey?: string | undefined;
 
-  constructor(queryStore: QueryStore) {
-    super(queryStore);
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
 
     makeObservable(this, {
       projects: observable,

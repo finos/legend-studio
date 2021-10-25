@@ -35,6 +35,7 @@ import {
   V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper';
 import { getDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper';
+import type { DataSpaceSupportInfo } from '../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import {
   DataSpace,
   DataSpaceExecutionContext,
@@ -42,7 +43,11 @@ import {
 } from '../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import type {
   GraphPluginManager,
+  Mapping,
   PackageableElement,
+  PackageableElementReference,
+  PackageableRuntime,
+  PureModel,
   V1_ElementProtocolClassifierPathGetter,
   V1_ElementProtocolDeserializer,
   V1_ElementProtocolSerializer,
@@ -53,6 +58,7 @@ import type {
   V1_PureModelContextData,
 } from '@finos/legend-graph';
 import {
+  PackageableElementExplicitReference,
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
   V1_buildTaggedValue,
@@ -62,9 +68,12 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
 } from '@finos/legend-graph';
-import { V1_DSLDiagram_PackageableElementPointerType } from '@finos/legend-extension-dsl-diagram';
+import {
+  Diagram,
+  V1_DSLDiagram_PackageableElementPointerType,
+} from '@finos/legend-extension-dsl-diagram';
 
-const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
+export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
 
 export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
@@ -161,15 +170,20 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
             `Can't find default execution context '${elementProtocol.defaultExecutionContext}'`,
           );
           element.description = elementProtocol.description;
-          element.featuredDiagrams = (
-            elementProtocol.featuredDiagrams ?? []
-          ).map((pointer) => pointer.path);
+          if (elementProtocol.featuredDiagrams) {
+            element.featuredDiagrams = elementProtocol.featuredDiagrams.map(
+              (pointer) => pointer.path,
+            );
+          }
           if (elementProtocol.supportInfo) {
             if (
               elementProtocol.supportInfo instanceof V1_DataSpaceSupportEmail
             ) {
               const supportEmail = new DataSpaceSupportEmail();
-              supportEmail.address = elementProtocol.supportInfo.address;
+              supportEmail.address = guaranteeNonEmptyString(
+                elementProtocol.supportInfo.address,
+                `Data space support email 'address' field is missing or empty`,
+              );
               element.supportInfo = supportEmail;
             } else {
               throw new UnsupportedOperationError(
@@ -288,3 +302,102 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
     ];
   }
 }
+
+export class ResolvedDataSpaceExecutionContext {
+  name!: string;
+  description?: string | undefined;
+  mapping!: PackageableElementReference<Mapping>;
+  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
+}
+
+/**
+ * When we actually need to use the data space, we want to resolve all of its
+ * element pointers to actual reference, hence this model.
+ */
+export class ResolvedDataSpace {
+  path!: string;
+  groupId!: string;
+  artifactId!: string;
+  versionId!: string;
+  executionContexts: ResolvedDataSpaceExecutionContext[] = [];
+  defaultExecutionContext!: ResolvedDataSpaceExecutionContext;
+  featuredDiagrams: PackageableElementReference<Diagram>[] = [];
+  description?: string | undefined;
+  supportInfo?: DataSpaceSupportInfo | undefined;
+}
+
+export const getResolvedDataSpace = (
+  json: PlainObject<V1_DataSpace>,
+  graph: PureModel,
+): ResolvedDataSpace => {
+  const dataSpace = new ResolvedDataSpace();
+  if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
+    const protocol = deserialize(V1_dataSpaceModelSchema, json);
+    dataSpace.path = protocol.path;
+    dataSpace.groupId = guaranteeNonEmptyString(
+      protocol.groupId,
+      `Data space 'groupId' field is missing or empty`,
+    );
+    dataSpace.artifactId = guaranteeNonEmptyString(
+      protocol.artifactId,
+      `Data space 'artifactId' field is missing or empty`,
+    );
+    dataSpace.versionId = guaranteeNonEmptyString(
+      protocol.versionId,
+      `Data space 'versionId' field is missing or empty`,
+    );
+    dataSpace.executionContexts = protocol.executionContexts.map(
+      (contextProtocol) => {
+        const context = new ResolvedDataSpaceExecutionContext();
+        context.name = guaranteeNonEmptyString(
+          contextProtocol.name,
+          `Data space execution context 'name' field is missing or empty`,
+        );
+        context.description = contextProtocol.description;
+        context.mapping = PackageableElementExplicitReference.create(
+          graph.getMapping(contextProtocol.mapping.path),
+        );
+        context.defaultRuntime = PackageableElementExplicitReference.create(
+          graph.getRuntime(contextProtocol.defaultRuntime.path),
+        );
+        return context;
+      },
+    );
+    dataSpace.defaultExecutionContext = guaranteeNonNullable(
+      dataSpace.executionContexts.find(
+        (context) =>
+          context.name ===
+          guaranteeNonEmptyString(
+            protocol.defaultExecutionContext,
+            `Data space 'defaultExecutionContext' field is missing or empty`,
+          ),
+      ),
+      `Can't find default execution context '${protocol.defaultExecutionContext}'`,
+    );
+    dataSpace.description = protocol.description;
+    if (protocol.featuredDiagrams) {
+      dataSpace.featuredDiagrams = protocol.featuredDiagrams.map((pointer) =>
+        PackageableElementExplicitReference.create(
+          graph.getExtensionElement(pointer.path, Diagram),
+        ),
+      );
+    }
+    if (protocol.supportInfo) {
+      if (protocol.supportInfo instanceof V1_DataSpaceSupportEmail) {
+        const supportEmail = new DataSpaceSupportEmail();
+        supportEmail.address = guaranteeNonEmptyString(
+          protocol.supportInfo.address,
+          `Data space support email 'address' field is missing or empty`,
+        );
+        dataSpace.supportInfo = supportEmail;
+      } else {
+        throw new UnsupportedOperationError(
+          `Can't build data space support info`,
+          protocol.supportInfo,
+        );
+      }
+    }
+    return dataSpace;
+  }
+  throw new UnsupportedOperationError(`Can't resolve data space`, json);
+};

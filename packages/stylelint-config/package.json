@@ -29,18 +29,20 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "stylelint": "13.13.1",
-    "stylelint-config-prettier": "9.0.2",
-    "stylelint-config-standard": "22.0.0",
-    "stylelint-scss": "3.21.0"
+    "postcss": "8.3.11",
+    "postcss-scss": "4.0.1",
+    "stylelint": "14.0.0",
+    "stylelint-config-prettier": "9.0.3",
+    "stylelint-config-standard": "23.0.0",
+    "stylelint-scss": "4.0.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.0.0",
+    "eslint": "8.1.0",
     "rimraf": "3.0.2"
   },
   "peerDependencies": {
-    "stylelint": "^13.0.0"
+    "stylelint": "^14.0.0"
   },
   "publishConfig": {
     "directory": "build/publishContent"

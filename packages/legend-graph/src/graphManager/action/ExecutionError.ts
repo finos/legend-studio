@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { ApplicationError } from '@finos/legend-shared';
+import { EngineError } from './EngineError';
 
-export class ExecutionError extends ApplicationError {
-  override stack = '';
+export class ExecutionError extends EngineError {
+  declare stack: string;
+
   override getFullErrorMessage = (): string =>
     `${this.message}\n\n${this.stack}`;
 }

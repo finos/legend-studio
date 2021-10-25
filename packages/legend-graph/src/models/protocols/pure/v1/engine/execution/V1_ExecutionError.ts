@@ -18,16 +18,12 @@ import { createModelSchema, primitive } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 
 export class V1_ExecutionError {
-  message = '';
-  trace = '';
-  code = -1;
-  status = 'error';
+  message!: string;
+  trace!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_ExecutionError, {
-      code: primitive(),
       message: primitive(),
-      status: primitive(),
       trace: primitive(),
     }),
   );

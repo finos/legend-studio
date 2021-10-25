@@ -76,6 +76,10 @@
     &--create-query:hover {
       background: var(--color-lime-75);
     }
+
+    &--advanced {
+      background: var(--color-dark-grey-500);
+    }
   }
 
   &__option + &__option {
@@ -125,7 +129,7 @@
 
     flex-direction: column;
     height: 16.9rem;
-    padding: 2.5rem 0 1rem 0;
+    padding: 2.5rem 0 1rem;
   }
 
   &__graph {
@@ -154,7 +158,7 @@
 
     flex-direction: column;
     height: 16.9rem;
-    padding: 2.5rem 0 1rem 0;
+    padding: 2.5rem 0 1rem;
   }
 
   &__graph {
@@ -177,7 +181,7 @@
   }
 
   .query-setup__wizard__content {
-    padding: 2rem 3rem 3rem 3rem;
+    padding: 2rem 3rem 3rem;
   }
 
   .query-setup__wizard__selector {
@@ -335,6 +339,18 @@
       font-size: 1.3rem;
       user-select: none;
     }
+  }
+
+  &__group--inline {
+    height: 2.8rem;
+    display: flex;
+  }
+
+  &__group--inline &__group__title {
+    margin-right: 0.5rem;
+    justify-content: center;
+    width: 2.8rem;
+    height: 2.8rem;
   }
 
   &__group + &__group {

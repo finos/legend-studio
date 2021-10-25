@@ -84,11 +84,24 @@ const prepareNewRelease = async () => {
           ...github.context.repo,
         })
       ).data;
+      // clean the PR branch just in case
+      try {
+        await octokit.rest.git.deleteRef({
+          ref: `refs/heads/${CHANGESET_PR_BRANCH_NAME}`,
+          sha: defaultBranchRef.object.sha,
+          ...github.context.repo,
+        });
+      } catch {
+        // do nothing
+      }
       await octokit.rest.git.createRef({
         ref: `refs/heads/${CHANGESET_PR_BRANCH_NAME}`,
         sha: defaultBranchRef.object.sha,
         ...github.context.repo,
       });
+      // NOTE: we don't need to handle the case where we update the changeset file
+      // because of the assumptions we make on the timing of this process.
+      // See https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
       await octokit.rest.repos.createOrUpdateFileContents({
         path: VERSION_BUMP_CHANGESET_PATH,
         message: 'prepare for the next development iteration',
@@ -98,10 +111,10 @@ const prepareNewRelease = async () => {
       });
       const changesetPR = (
         await octokit.rest.pulls.create({
-          title: 'Prepare New Release',
+          title: `Prepare New Release`,
           head: CHANGESET_PR_BRANCH_NAME,
           base: DEFAULT_BRANCH_NAME,
-          body: `## ⚠️ Merge this before doing another release!\nAdd changeset to bump versions for the next release`,
+          body: `## ⚠️ Merge this before creating another release!\nAdd changeset to bump versions for the next release. Learn more about this process [here](https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#standard-releases).`,
           ...github.context.repo,
         })
       ).data;

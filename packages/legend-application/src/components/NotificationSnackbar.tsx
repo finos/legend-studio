@@ -139,7 +139,7 @@ export const NotificationSnackbar = observer(() => {
                 'notification__message__content__text--expanded': isExpanded,
               })}
               onClick={handleCopy}
-              title={'Click to Copy'}
+              title="Click to Copy"
             >
               {message}
             </div>
