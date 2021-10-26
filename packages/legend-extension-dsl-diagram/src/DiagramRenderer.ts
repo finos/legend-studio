@@ -201,7 +201,7 @@ export class DiagramRenderer {
 
   // Relationship
   startClassView?: ClassView | undefined;
-  addRelationshipToDiagramFn?:
+  handleAddRelationship?:
     | ((start: ClassView, target: ClassView) => RelationshipView | undefined)
     | undefined;
 
@@ -221,15 +221,17 @@ export class DiagramRenderer {
 
   // interactions
   onAddClassViewClick: (point: Point) => void = noop();
+  onClassViewRightClick: (classView: ClassView, point: Point) => void = noop();
   onBackgroundDoubleClick: (point: Point) => void = noop();
-  editClassView: (classView: ClassView) => void = noop();
-  editClassName: (classView: ClassView, point: Point) => void = noop();
-  editProperty: (
+  onClassViewDoubleClick: (classView: ClassView, point: Point) => void = noop();
+  onClassNameDoubleClick: (classView: ClassView, point: Point) => void = noop();
+  handleEditClassView: (classView: ClassView) => void = noop();
+  handleEditProperty: (
     property: AbstractProperty,
     point: Point,
     propertyHolderView: PropertyHolderView | undefined,
   ) => void = noop();
-  addSimpleProperty: (classView: ClassView) => void = noop();
+  handleAddSimpleProperty: (classView: ClassView) => void = noop();
 
   constructor(div: HTMLDivElement, diagram: Diagram) {
     makeObservable(this, {
@@ -547,7 +549,7 @@ export class DiagramRenderer {
     if (editMode === DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP) {
       switch (relationshipMode) {
         case DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE: {
-          this.addRelationshipToDiagramFn = (
+          this.handleAddRelationship = (
             startClassView: ClassView,
             targetClassView: ClassView,
           ): RelationshipView | undefined => {
@@ -590,7 +592,7 @@ export class DiagramRenderer {
           break;
         }
         case DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY: {
-          this.addRelationshipToDiagramFn = (
+          this.handleAddRelationship = (
             startClassView: ClassView,
             targetClassView: ClassView,
           ): PropertyView | undefined => {
@@ -1986,6 +1988,43 @@ export class DiagramRenderer {
     this.ctx.lineWidth = 1;
   }
 
+  /**
+   * Reorder will move the class view to the top of the class view array of the diagram,
+   * This will bring it to front.
+   */
+  private reorderDiagramDomain(
+    firstClass: ClassView,
+    diagram: Diagram,
+  ): ClassView[] {
+    const newClasses = diagram.classViews.filter(
+      (classView) => classView !== firstClass,
+    );
+    newClasses.push(firstClass);
+    return newClasses;
+  }
+
+  // TODO: add doc
+  private potentiallyShiftRelationships(
+    assoViews: RelationshipView[],
+    selectedClasses: ClassView[],
+    newMovingDeltaX: number,
+    newMovingDeltaY: number,
+  ): void {
+    assoViews.forEach((assoView) => {
+      if (
+        selectedClasses.indexOf(assoView.from.classView.value) !== -1 &&
+        selectedClasses.indexOf(assoView.to.classView.value) !== -1
+      ) {
+        assoView.setPath(
+          assoView.path.map(
+            (point) =>
+              new Point(point.x - newMovingDeltaX, point.y - newMovingDeltaY),
+          ),
+        );
+      }
+    });
+  }
+
   keydown(e: KeyboardEvent): void {
     // Remove selected view(s)
     if ('Delete' === e.key) {
@@ -2047,7 +2086,7 @@ export class DiagramRenderer {
     // we need to call `preventDefault` to avoid typing `e` in the property name input
     else if ('e' === e.key) {
       if (this.selectedClassProperty) {
-        this.editProperty(
+        this.handleEditProperty(
           this.selectedClassProperty.property,
           this.selectedClassProperty.selectionPoint,
           undefined,
@@ -2056,7 +2095,7 @@ export class DiagramRenderer {
       } else if (this.selectedPropertyOrAssociation) {
         // TODO: we might want to revise this to allow edit property holder view
         // on the side panel instead of showing the inline property editor
-        this.editProperty(
+        this.handleEditProperty(
           this.selectedPropertyOrAssociation.property.value,
           this.selectedPoint ??
             (this.selectedPropertyOrAssociation.path.length
@@ -2066,7 +2105,7 @@ export class DiagramRenderer {
         );
         e.preventDefault();
       } else if (this.selectedClasses.length === 1) {
-        this.editClassView(this.selectedClasses[0]);
+        this.handleEditClassView(this.selectedClasses[0]);
       }
     }
 
@@ -2173,7 +2212,7 @@ export class DiagramRenderer {
     // Add a new simple property to selected class
     else if (e.altKey && 'ArrowDown' === e.code) {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
-        this.addSimpleProperty(this.selectedClasses[0]);
+        this.handleAddSimpleProperty(this.selectedClasses[0]);
       }
     }
 
@@ -2336,7 +2375,7 @@ export class DiagramRenderer {
           if (
             this.startClassView &&
             this.selectionStart &&
-            this.addRelationshipToDiagramFn
+            this.handleAddRelationship
           ) {
             const eventPointInModelCoordinate =
               this.canvasCoordinateToModelCoordinate(
@@ -2351,7 +2390,7 @@ export class DiagramRenderer {
               ) {
                 const targetClassView = this.diagram.classViews[i];
 
-                const gview = this.addRelationshipToDiagramFn(
+                const gview = this.handleAddRelationship(
                   this.startClassView,
                   this.diagram.classViews[i],
                 );
@@ -2408,43 +2447,6 @@ export class DiagramRenderer {
     this.drawScreen();
   }
 
-  /**
-   * Reorder will move the class view to the top of the class view array of the diagram,
-   * This will bring it to front.
-   */
-  private reorderDiagramDomain(
-    firstClass: ClassView,
-    diagram: Diagram,
-  ): ClassView[] {
-    const newClasses = diagram.classViews.filter(
-      (classView) => classView !== firstClass,
-    );
-    newClasses.push(firstClass);
-    return newClasses;
-  }
-
-  // TODO: add doc
-  private potentiallyShiftRelationships(
-    assoViews: RelationshipView[],
-    selectedClasses: ClassView[],
-    newMovingDeltaX: number,
-    newMovingDeltaY: number,
-  ): void {
-    assoViews.forEach((assoView) => {
-      if (
-        selectedClasses.indexOf(assoView.from.classView.value) !== -1 &&
-        selectedClasses.indexOf(assoView.to.classView.value) !== -1
-      ) {
-        assoView.setPath(
-          assoView.path.map(
-            (point) =>
-              new Point(point.x - newMovingDeltaX, point.y - newMovingDeltaY),
-          ),
-        );
-      }
-    });
-  }
-
   mousedblclick(e: MouseEvent): void {
     if (
       [
@@ -2463,7 +2465,7 @@ export class DiagramRenderer {
 
     // Check double click on class property
     if (this.mouseOverClassProperty) {
-      this.editProperty(
+      this.handleEditProperty(
         this.mouseOverClassProperty,
         eventPointInModelCoordinate,
         undefined,
@@ -2473,7 +2475,10 @@ export class DiagramRenderer {
 
     // Check double click on class name
     if (this.mouseOverClassName) {
-      this.editClassName(this.mouseOverClassName, eventPointInModelCoordinate);
+      this.onClassNameDoubleClick(
+        this.mouseOverClassName,
+        eventPointInModelCoordinate,
+      );
       return;
     }
 
@@ -2485,13 +2490,13 @@ export class DiagramRenderer {
       ),
     );
     if (selectedClass) {
-      this.editClassView(selectedClass);
+      this.onClassViewDoubleClick(selectedClass, eventPointInModelCoordinate);
       return;
     }
 
     // Check double click on line property label
     if (this.mouseOverPropertyHolderViewLabel) {
-      this.editProperty(
+      this.handleEditProperty(
         this.mouseOverPropertyHolderViewLabel.property.value,
         eventPointInModelCoordinate,
         this.mouseOverPropertyHolderViewLabel,
@@ -2514,13 +2519,16 @@ export class DiagramRenderer {
     this.selectedPoint = undefined;
     this.startClassView = undefined;
 
+    const eventPointInCanvasCoordinate = this.eventCoordinateToCanvasCoordinate(
+      new Point(e.x, e.y),
+    );
+    const eventPointInModelCoordinate = this.canvasCoordinateToModelCoordinate(
+      eventPointInCanvasCoordinate,
+    );
+
     // left click
     if (e.button === 0) {
       this.setLeftClick(true);
-      const eventPointInCanvasCoordinate =
-        this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y));
-      const eventPointInModelCoordinate =
-        this.canvasCoordinateToModelCoordinate(eventPointInCanvasCoordinate);
 
       switch (this.interactionMode) {
         case DIAGRAM_INTERACTION_MODE.PAN: {
@@ -2703,11 +2711,7 @@ export class DiagramRenderer {
           break;
       }
     }
-
-    // NOTE: right now, in any mode, we allow to use middle click and
-    // right click to move the diagram. However, if we support context menu
-    // using right click in the future, we need to adjust to only allow
-    // middle click to move here.
+    // middle click
     else if (e.button === 1) {
       e.returnValue = false;
       this.setMiddleClick(true);
@@ -2719,6 +2723,13 @@ export class DiagramRenderer {
       e.returnValue = false;
       this.setRightClick(true);
       this.positionBeforeLastMove = new Point(e.x, e.y);
+      if (this.mouseOverClassView) {
+        this.onClassViewRightClick(
+          this.mouseOverClassView,
+          eventPointInModelCoordinate,
+        );
+        this.setRightClick(false);
+      }
       return;
     }
     this.clearScreen();

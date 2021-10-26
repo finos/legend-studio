@@ -66,6 +66,7 @@ import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/f
 import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin';
 import {
   V1_buildCompilationError,
+  V1_buildExecutionError,
   V1_buildGenerationConfigurationDescription,
   V1_buildImportConfigurationDescription,
   V1_buildParserError,
@@ -82,6 +83,7 @@ import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationRe
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
 import { serialize } from 'serializr';
+import { V1_ExecutionError } from './execution/V1_ExecutionError';
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -397,17 +399,29 @@ export class V1_Engine {
     input: V1_ExecuteInput,
     useLosslessParse: boolean,
   ): Promise<V1_ExecutionResult> {
-    const executionResultInText = await (
-      (await this.engineServerClient.execute(
-        V1_ExecuteInput.serialization.toJson(input),
-        true,
-      )) as Response
-    ).text();
-    return V1_serializeExecutionResult(
-      useLosslessParse
-        ? losslessParse(executionResultInText)
-        : JSON.parse(executionResultInText),
-    );
+    try {
+      const executionResultInText = await (
+        (await this.engineServerClient.execute(
+          V1_ExecuteInput.serialization.toJson(input),
+          true,
+        )) as Response
+      ).text();
+      return V1_serializeExecutionResult(
+        useLosslessParse
+          ? losslessParse(executionResultInText)
+          : JSON.parse(executionResultInText),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   generateExecutionPlan(

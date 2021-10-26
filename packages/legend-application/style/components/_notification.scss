@@ -32,6 +32,11 @@
   &__message__content {
     display: flex;
     align-items: flex-start;
+    cursor: pointer;
+
+    &:active {
+      background: var(--color-dark-grey-100);
+    }
   }
 
   &__message__content__icon {
@@ -60,9 +65,18 @@
   }
 
   &__message__content__text {
-    max-height: 10rem;
+    @include ellipsisTextOverflow;
+
+    max-height: 20rem;
     max-width: 60rem;
-    overflow: auto;
+
+    &--expanded {
+      overflow: auto;
+      // since the full message might contain newline characters
+      // we must use `pre-line`
+      // See https://developer.mozilla.org/en-US/docs/Web/CSS/white-space
+      white-space: pre-line;
+    }
   }
 
   &__actions {

@@ -39,6 +39,7 @@ import type {
   RawLambda,
   Service,
   GraphManagerState,
+  Class,
 } from '@finos/legend-graph';
 import {
   getAllClassMappings,
@@ -87,6 +88,7 @@ export class CreateQueryInfoState extends QueryInfoState {
   versionId: string;
   mapping: Mapping;
   runtime: PackageableRuntime;
+  class?: Class | undefined;
 
   constructor(
     queryStore: QueryStore,
@@ -564,6 +566,7 @@ export class QueryStore {
       this.queryBuilderState.querySetupState.runtime = new RuntimePointer(
         PackageableElementExplicitReference.create(queryInfoState.runtime),
       );
+      this.queryBuilderState.querySetupState._class = queryInfoState.class;
       if (!this.queryBuilderState.querySetupState._class) {
         const possibleTargets = getAllClassMappings(
           this.queryBuilderState.querySetupState.mapping,

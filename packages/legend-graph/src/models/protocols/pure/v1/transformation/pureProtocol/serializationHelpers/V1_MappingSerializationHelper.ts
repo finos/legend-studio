@@ -563,7 +563,7 @@ const aggregationAwareClassMappingModelSchema = createModelSchema(
 function V1_serializeClassMapping(
   value: V1_ClassMapping,
   plugins?: PureProtocolProcessorPlugin[] | undefined,
-): V1_ClassMapping | typeof SKIP {
+): V1_ClassMapping {
   if (value instanceof V1_OperationClassMapping) {
     return serialize(operationClassMappingModelSchema, value);
   } else if (value instanceof V1_PureInstanceClassMapping) {
@@ -591,13 +591,16 @@ function V1_serializeClassMapping(
       }
     }
   }
-  return SKIP;
+  throw new UnsupportedOperationError(
+    `Can't serialize class mapping: no compatible serializer available from plugins`,
+    value,
+  );
 }
 
 function V1_deserializeClassMapping(
   json: PlainObject<V1_ClassMapping>,
   plugins?: PureProtocolProcessorPlugin[],
-): V1_ClassMapping | typeof SKIP {
+): V1_ClassMapping {
   switch (json._type) {
     case V1_ClassMappingType.OPERATION:
       return deserialize(operationClassMappingModelSchema, json);
@@ -626,7 +629,9 @@ function V1_deserializeClassMapping(
           }
         }
       }
-      return SKIP;
+      throw new UnsupportedOperationError(
+        `Can't deserialize class mapping of type '${json._type}': no compatible deserializer available from plugins`,
+      );
     }
   }
 }

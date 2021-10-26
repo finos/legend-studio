@@ -22,12 +22,12 @@ Our development and release process follow [Github flow](https://docs.github.com
 The `standard release` process, in particular, goes like this:
 
 - Release coordinators need to approve and merge `New Release` PR to create a patch release.
-- After the release, coordinators must run the workflow [Prepare New Release (Manual)](https://github.com/finos/legend-studio/actions/workflows/release-prepare-manual.yml).
+- After the release, coordinators must run the workflow [Prepare New Release (Manual)](https://github.com/finos/legend-studio/actions/workflows/release-prepare-manual.yml) and approve the `Prepare New Release` PR.
 
 > Preparing a new release comprises several steps:
 >
 > - Create a new release branch off the latest release tag (e.g. `release/0.4.0` branch for tag `v0.4.0`).
-> - Add and commit new `minor` bump changeset for next standard release.
+> - Create a PR with the version bump changeset for next standard release.
 > - Move all open issues in the latest release milestone to the next release milestone.
 
 ### Changesets

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-import { getConfigLoader } from '@finos/legend-dev-utils/DevUtils';
+import { createModelSchema, primitive } from 'serializr';
+import { SerializationFactory } from '@finos/legend-shared';
 
-// NOTE: `cosmiconfig` does not work with ESM config so unfortunately
-// we cannot rely on this right now to load config, we will temporarily
-// hard-code the config path
-// See https://github.com/davidtheclark/cosmiconfig/issues/224
-export const configLoader = getConfigLoader('_package');
+export class V1_ExecutionError {
+  message!: string;
+  trace!: string;
 
-export const resolvePackageConfig = (filePath) => {
-  const result = configLoader.search(filePath);
-  return result?.config;
-};
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_ExecutionError, {
+      message: primitive(),
+      trace: primitive(),
+    }),
+  );
+}

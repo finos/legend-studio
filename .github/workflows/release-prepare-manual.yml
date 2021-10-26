@@ -13,7 +13,7 @@ jobs:
   # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#standard-releases
   # 1. Create a new release milestone and move over open issues in the current milestone. Close the current milestone.
   # 2. Create the release branch for the latest release tag
-  # 4. Create the changesets to prepare for the next release version bump
+  # 4. Create a PR with the changesets to prepare for the next release version bump
   prepare-new-release:
     # There is currently no way to limit workflow dispatch to only allow default branch
     # so we need to restrict it here
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.5
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
@@ -40,22 +40,11 @@ jobs:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
-      - name: Create changeset for the next release version bump
-        # Setting user name and email is required to push in workflow action
-        # We use the `github-actions[bot]` which has a stable ID, email, and username
-        # See https://stackoverflow.com/a/58393457
-        # See https://github.community/t/github-actions-bot-email-address/17204/6
-        # See https://api.github.com/users/github-actions%5Bbot%5D
-        run: |
-          yarn release:bump ${{ github.event.inputs.bump_type }}
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "prepare for the next development iteration"
-          git push
-      - name: Create release branch and update milestone
+      - name: Create release version bump
+        run: yarn release:bump ${{ github.event.inputs.bump_type }}
+      - name: Prepare for the next development cycle
         env:
-          APPLICATION_WORKSPACE_DIR: ./packages/lib1
+          APPLICATION_WORKSPACE_DIR: ./packages/legend-studio-deployment
           BUMP_TYPE: ${{ github.event.inputs.bump_type }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node ./scripts/release/prepareNewRelease.js

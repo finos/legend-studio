@@ -27,6 +27,7 @@ import type {
   TracerServicePluginManager,
 } from '@finos/legend-shared';
 import { AbstractPluginManager } from '@finos/legend-shared';
+import type { QueryPlugin } from '../stores/QueryPlugin';
 
 export class QueryPluginManager
   extends AbstractPluginManager
@@ -40,6 +41,7 @@ export class QueryPluginManager
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
+  private queryPlugins: QueryPlugin[] = [];
 
   private constructor() {
     super();
@@ -67,8 +69,12 @@ export class QueryPluginManager
     this.pureGraphManagerPlugins.push(plugin);
   }
 
-  registerPureGraphPlugins(plugin: PureGraphPlugin): void {
+  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
     this.pureGraphPlugins.push(plugin);
+  }
+
+  registerQueryPlugin(plugin: QueryPlugin): void {
+    this.queryPlugins.push(plugin);
   }
 
   getTelemetryServicePlugins(): TelemetryServicePlugin[] {
@@ -89,5 +95,9 @@ export class QueryPluginManager
 
   getPureGraphPlugins(): PureGraphPlugin[] {
     return [...this.pureGraphPlugins];
+  }
+
+  getQueryPlugins(): QueryPlugin[] {
+    return [...this.queryPlugins];
   }
 }

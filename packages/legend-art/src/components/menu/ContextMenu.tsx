@@ -29,13 +29,13 @@ export const ContextMenu: React.FC<{
   const { className, children, menuProps, content, disabled, onClose, onOpen } =
     props;
   const contextMenuRoot = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element>();
   const [left, setLeft] = useState(0);
   const [top, setTop] = useState(0);
   const reset = (): void => {
     setAnchorEl(undefined);
-    setOpen(false);
+    setIsOpen(false);
     setTop(0);
     setLeft(0);
   };
@@ -86,7 +86,7 @@ export const ContextMenu: React.FC<{
         }
       }
       setAnchorEl(eventTarget);
-      setOpen(true);
+      setIsOpen(true);
       setTop(clientY);
       setLeft(clientX);
     }
@@ -101,7 +101,7 @@ export const ContextMenu: React.FC<{
       {children}
       <BaseMenu
         key={`${left}, ${top}`} // if coordinate changes, re-render the menu
-        open={open}
+        open={isOpen}
         anchorPosition={{ left, top }}
         onClose={close}
         anchorReference="anchorPosition"

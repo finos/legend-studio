@@ -22,6 +22,8 @@ import type { GraphPluginManager } from '@finos/legend-graph';
 import type { StudioPluginManager } from '@finos/legend-studio';
 import { DSLDataSpace_StudioPlugin } from './components/studio/DSLDataSpace_StudioPlugin';
 import { DSLDataSpace_PureGraphPlugin } from './graph/DSLDataSpace_PureGraphPlugin';
+import type { QueryPluginManager } from '@finos/legend-query';
+import { DSLDataSpace_QueryPlugin } from './components/query/DSLDataSpace_QueryPlugin';
 
 export class DSLDataSpace_GraphPreset extends AbstractPreset {
   constructor() {
@@ -42,6 +44,19 @@ export class DSLDataSpace_StudioPreset extends AbstractPreset {
 
   install(pluginManager: StudioPluginManager): void {
     new DSLDataSpace_StudioPlugin().install(pluginManager);
+    new DSLDataSpace_PureGraphPlugin().install(pluginManager);
+    new DSLDataSpace_PureGraphManagerPlugin().install(pluginManager);
+    new DSLDataSpace_PureProtocolProcessorPlugin().install(pluginManager);
+  }
+}
+
+export class DSLDataSpace_QueryPreset extends AbstractPreset {
+  constructor() {
+    super(packageJson.extensions.studioPreset, packageJson.version);
+  }
+
+  install(pluginManager: QueryPluginManager): void {
+    new DSLDataSpace_QueryPlugin().install(pluginManager);
     new DSLDataSpace_PureGraphPlugin().install(pluginManager);
     new DSLDataSpace_PureGraphManagerPlugin().install(pluginManager);
     new DSLDataSpace_PureProtocolProcessorPlugin().install(pluginManager);

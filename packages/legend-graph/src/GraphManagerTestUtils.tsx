@@ -45,7 +45,7 @@ export class TEST__GraphPluginManager
     this.pureProtocolProcessorPlugins.push(plugin);
   }
 
-  registerPureGraphPlugins(plugin: PureGraphPlugin): void {
+  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
     this.pureGraphPlugins.push(plugin);
   }
 

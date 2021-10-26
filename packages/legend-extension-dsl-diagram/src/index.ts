@@ -15,8 +15,10 @@
  */
 
 export * from './DSLDiagram_Extension';
+export * from './components/studio/DSLDiagram_StudioPlugin_Extension';
+export { DiagramEditorState } from './stores/studio/DiagramEditorState';
 
-export { DiagramRenderer } from './DiagramRenderer';
+export { DiagramRenderer, DIAGRAM_INTERACTION_MODE } from './DiagramRenderer';
 
 export { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
 export { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';

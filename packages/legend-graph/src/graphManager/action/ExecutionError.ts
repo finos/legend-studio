@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import { EngineError } from './EngineError';
 
-export default ForkTsCheckerWebpackPlugin;
+export class ExecutionError extends EngineError {
+  declare stack: string;
+
+  override getFullErrorMessage = (): string =>
+    `${this.message}\n\n${this.stack}`;
+}

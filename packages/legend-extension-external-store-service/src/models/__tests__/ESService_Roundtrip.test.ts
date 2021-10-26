@@ -29,7 +29,7 @@ pluginManager
   .usePresets([new ESService_GraphPreset(), new DSLSerializer_GraphPreset()])
   .install();
 
-test(unitTest('ESService import resolution roundtrip'), async () => {
+test(unitTest('Service store import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     roundtripTestData as Entity[],
     pluginManager,

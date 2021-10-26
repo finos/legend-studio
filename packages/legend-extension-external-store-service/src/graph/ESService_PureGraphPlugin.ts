@@ -29,7 +29,7 @@ export class ESService_PureGraphPlugin extends PureGraphPlugin {
   }
 
   install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphPlugins(this);
+    pluginManager.registerPureGraphPlugin(this);
   }
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {

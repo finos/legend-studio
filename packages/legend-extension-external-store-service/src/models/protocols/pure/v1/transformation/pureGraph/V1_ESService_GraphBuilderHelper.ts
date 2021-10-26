@@ -48,7 +48,6 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
-  guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
@@ -71,26 +70,11 @@ import type { V1_SecurityScheme } from '../../model/packageableElements/store/se
 import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
 import { SerializationFormat } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SerializationFormat';
 import type { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_SerializationFormat';
-
-const getServiceStoreService = (
-  elements: ServiceStoreElement[],
-  value: string,
-): ServiceStoreService =>
-  guaranteeType(
-    elements.find((element) => element.id === value),
-    ServiceStoreService,
-    `Can't find service '${value}'`,
-  );
-
-const getServiceGroup = (
-  elements: ServiceStoreElement[],
-  value: string,
-): ServiceGroup =>
-  guaranteeType(
-    elements.find((element) => element.id === value),
-    ServiceGroup,
-    `Can't find service group '${value}'`,
-  );
+import {
+  getServiceStoreService,
+  getServiceGroup,
+  getParameter,
+} from '../../../../../../helpers/ESService_Helper';
 
 export const V1_resolveServiceStore = (
   path: string,
@@ -218,7 +202,10 @@ export const V1_buildServiceParameterMapping = (
   if (protocol instanceof V1_ParameterIndexedParameterMapping) {
     const mapping = new ServiceParameterMapping();
     mapping.type = 'parameter';
-    mapping.serviceParameter = service.getParameter(protocol.serviceParameter);
+    mapping.serviceParameter = getParameter(
+      protocol.serviceParameter,
+      service.parameters,
+    );
     const lambda = new RawLambda(
       protocol.transform.parameters,
       protocol.transform.body,
@@ -228,7 +215,10 @@ export const V1_buildServiceParameterMapping = (
   } else if (protocol instanceof V1_PropertyIndexedParameterMapping) {
     const mapping = new ServiceParameterMapping();
     mapping.type = 'property';
-    mapping.serviceParameter = service.getParameter(protocol.serviceParameter);
+    mapping.serviceParameter = getParameter(
+      protocol.serviceParameter,
+      service.parameters,
+    );
     mapping.transform = V1_buildLambdaFromProperty(protocol.property);
     return mapping;
   }

@@ -294,7 +294,7 @@
   &__configuration__item {
     @include flexVCenter;
 
-    margin: 0 0 1rem 0;
+    margin: 0 0 1rem;
   }
 
   &__configuration__item__dropdown {
@@ -463,7 +463,7 @@
   &__explorer,
   &__parameters {
     .panel__content {
-      padding: 0.5rem 0 0.5rem 0;
+      padding: 0.5rem 0;
     }
   }
 

@@ -278,6 +278,12 @@ export abstract class BasicModel {
     return Array.from(this.generationSpecificationsIndex.values());
   }
 
+  getExtensionElements<T extends PackageableElement>(
+    extensionElementClass: Clazz<T>,
+  ): T[] {
+    return this.getExtensionForElementClass(extensionElementClass).elements;
+  }
+
   getExtensionForElementClass<T extends PackageableElement>(
     _class: Clazz<T>,
   ): PureGraphExtension<T> {

@@ -15,16 +15,11 @@
  */
 
 import { observable, computed, makeObservable, action } from 'mobx';
-import {
-  addUniqueEntry,
-  deleteEntry,
-  guaranteeType,
-  hashArray,
-} from '@finos/legend-shared';
+import { addUniqueEntry, deleteEntry, hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import { ServiceStoreElement } from './ServiceStoreElement';
-import { ServiceParameter } from './ServiceParameter';
+import type { ServiceParameter } from './ServiceParameter';
 import type { SecurityScheme } from './SecurityScheme';
 import type { TypeReference, ComplexTypeReference } from './TypeReference';
 
@@ -90,20 +85,6 @@ export class ServiceStoreService
   deleteSecurity(value: SecurityScheme): void {
     deleteEntry(this.security, value);
   }
-
-  getParameter = (value: string): ServiceParameter =>
-    guaranteeType(
-      this.parameters.find(
-        (parameter: ServiceParameter): ServiceParameter | undefined => {
-          if (parameter.name === value) {
-            return parameter;
-          }
-          return undefined;
-        },
-      ),
-      ServiceParameter,
-      `Can't find service parameter '${value}'`,
-    );
 
   override get hashCode(): string {
     return hashArray([

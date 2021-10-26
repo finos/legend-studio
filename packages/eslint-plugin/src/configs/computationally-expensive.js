@@ -27,6 +27,7 @@ const IMPORT_RULES = {
 const TYPESCRIPT_RULES = {
   // NOTE: following rules are classified as `type-aware` linting rule, which has huge initial performance impact on linting
   // They require parserServices to be generated so we have to specify 'parserOptions.project' property for @typescript-esint/parser
+  '@typescript-eslint/consistent-type-exports': ERROR,
   '@typescript-eslint/prefer-nullish-coalescing': ERROR,
   '@typescript-eslint/prefer-optional-chain': ERROR,
   '@typescript-eslint/no-unnecessary-condition': ERROR,

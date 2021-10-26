@@ -69,7 +69,7 @@ export class StudioPluginManager
     this.pureGraphManagerPlugins.push(plugin);
   }
 
-  registerPureGraphPlugins(plugin: PureGraphPlugin): void {
+  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
     this.pureGraphPlugins.push(plugin);
   }
 

@@ -216,6 +216,13 @@ export class DependencyManager {
   get sectionIndices(): SectionIndex[] {
     return this.models.map((dep) => Array.from(dep.ownSectionIndices)).flat();
   }
+  getExtensionElements<T extends PackageableElement>(
+    extensionElementClass: Clazz<T>,
+  ): T[] {
+    return this.models
+      .map((dep) => dep.getExtensionElements(extensionElementClass))
+      .flat();
+  }
 
   getModel(projectId: string): BasicModel {
     return guaranteeNonNullable(

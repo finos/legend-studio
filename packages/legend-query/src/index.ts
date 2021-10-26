@@ -21,7 +21,15 @@ export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID';
 export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pure/QueryBuilder_PureProtocolProcessorPlugin';
 
 export { QueryBuilder } from './components/QueryBuilder';
+export { useQuerySetupStore } from './components/QuerySetupStoreProvider';
+export { useQueryStore } from './components/QueryStoreProvider';
 
+export { QueryPluginManager } from './application/QueryPluginManager';
+
+export * from './stores/QueryPlugin';
+export * from './stores/LegendQueryRouter';
+export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore';
+export { QueryStore, CreateQueryInfoState } from './stores/QueryStore';
 export { QueryBuilderState } from './stores/QueryBuilderState';
 export type { QueryBuilderConfig } from './stores/QueryBuilderState';
 export { QueryBuilderExplorerTreeRootNodeData } from './stores/QueryBuilderExplorerState';

@@ -19,6 +19,7 @@ export {
   FaFile as FileIcon,
   FaLongArrowAltRight as LongArrowRightIcon,
   FaTimes as TimesIcon,
+  FaTimesCircle as TimesCircleIcon,
   FaPlus as PlusIcon,
   FaCog as CogIcon,
   FaEye as EyeIcon,
@@ -50,6 +51,9 @@ export {
   FaEnvelope as EnvelopIcon,
   FaSkull as SkullIcon,
   FaDollarSign as DollarIcon,
+  FaSearch as SearchIcon,
+  FaStar as StarIcon,
+  FaLightbulb as LightBulbIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {
@@ -57,8 +61,12 @@ export {
   MdTextFields as StringTypeIcon,
   MdMoreVert as MoreVerticalIcon,
   MdMoreHoriz as MoreHorizontalIcon,
+  MdWrapText as WrapTextIcon,
 } from 'react-icons/md';
-export { VscError as ErrorIcon } from 'react-icons/vsc';
+export {
+  VscError as ErrorIcon,
+  VscWordWrap as WordWrapIcon,
+} from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
   GoChevronUp as ChevronUpIcon,

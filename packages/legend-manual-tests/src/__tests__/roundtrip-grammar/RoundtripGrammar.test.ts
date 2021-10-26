@@ -79,18 +79,18 @@ enum ROUNTRIP_TEST_PHASES {
 const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
-  'DSLDiagram-basic.pure': SKIP, // Needs https://github.com/finos/legend-engine/pull/397 to be merged
-  'DSLDataSpace-basic.pure': SKIP, // Needs https://github.com/finos/legend-engine/pull/397 to be merged
   'ESService-basic.pure': SKIP, //Needs https://github.com/finos/legend-engine/pull/417 to be merged
   // post processor mismatch between engine (undefined) vs studio ([])
   'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
   'embedded-relational-mapping.pure': SKIP,
   'nested-embedded-relational-mapping.pure': SKIP,
   'relational-mapping-filter.pure': SKIP,
-  // TODO: remove these two when the issue of source Id in relational property mapping is resolved.
+
+  // TODO: remove these when the issue of source ID in relational property mapping is resolved.
   // Engine is removing these sources when the owner is the parent class mapping and studio is not
   'basic-class-mapping-extends.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
   'basic-inline-embedded-mapping.pure': [
@@ -127,6 +127,8 @@ const logSuccess = (phase: ROUNTRIP_TEST_PHASES, debug?: boolean): void => {
 const isTestSkipped = (filePath: string): boolean =>
   Object.keys(EXCLUSIONS).includes(basename(filePath)) &&
   EXCLUSIONS[basename(filePath)] === SKIP;
+const isPartialTest = (filePath: string): boolean =>
+  Object.keys(EXCLUSIONS).includes(basename(filePath));
 
 const checkGrammarRoundtrip = async (
   testCase: string,
@@ -255,12 +257,13 @@ const checkGrammarRoundtrip = async (
   }
 };
 
-const testNameFrom = (fileName: string, toSkip: boolean): string => {
-  const name = basename(fileName, '.pure').split('-').join(' ');
-  return `${toSkip ? '(SKIPPED) ' : ''}${name[0].toUpperCase()}${name.substring(
-    1,
-    name.length,
-  )}`;
+const testNameFrom = (filePath: string): string => {
+  const isSkipped = isTestSkipped(filePath);
+  const isPartial = isPartialTest(filePath);
+  const name = basename(filePath, '.pure').split('-').join(' ');
+  return `${
+    isSkipped ? '(SKIPPED) ' : isPartial ? '(partial) ' : ''
+  }${name[0].toUpperCase()}${name.substring(1, name.length)}`;
 };
 
 const cases: [string, string, boolean][] = fs
@@ -268,7 +271,7 @@ const cases: [string, string, boolean][] = fs
   .map((caseName) => resolve(TEST_CASE_DIR, caseName))
   .filter((filePath) => fs.statSync(filePath).isFile())
   .map((filePath) => [
-    testNameFrom(filePath, isTestSkipped(filePath)),
+    testNameFrom(filePath),
     filePath,
     isTestSkipped(filePath),
   ]);

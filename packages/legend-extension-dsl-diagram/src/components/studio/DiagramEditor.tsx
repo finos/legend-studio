@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, Fragment } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
@@ -38,6 +38,7 @@ import {
 } from '../../stores/studio/DiagramEditorState';
 import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  ContextMenu,
   getControlledResizablePanelProps,
   BasePopover,
   BlankPanelContent,
@@ -82,7 +83,11 @@ import {
 } from 'react-icons/fi';
 import { IoResize } from 'react-icons/io5';
 import { Dialog } from '@material-ui/core';
-import { prettyCONSTName } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { useApplicationStore } from '@finos/legend-application';
@@ -94,6 +99,42 @@ import {
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
+import type { DSLDiagram_StudioPlugin_Extension } from './DSLDiagram_StudioPlugin_Extension';
+
+const DiagramEditorContextMenu = observer(
+  (
+    props: {
+      diagramEditorState: DiagramEditorState;
+    },
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const { diagramEditorState } = props;
+    const editorStore = useEditorStore();
+    const extraClassViewContextMenuItems =
+      diagramEditorState.contextMenuClassView
+        ? editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSLDiagram_StudioPlugin_Extension
+                ).getExtraClassViewContextMenuItemRendererConfigurations?.() ??
+                [],
+            )
+            .filter(isNonNullable)
+            .map((config) => (
+              <Fragment key={config.key}>
+                {config.renderer(
+                  diagramEditorState,
+                  guaranteeNonNullable(diagramEditorState.contextMenuClassView),
+                )}
+              </Fragment>
+            ))
+        : [];
+    return <MenuContent>{extraClassViewContextMenuItems}</MenuContent>;
+  },
+  { forwardRef: true },
+);
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -1269,6 +1310,7 @@ export const DiagramEditor = observer(() => {
   const diagramEditorState =
     editorStore.getCurrentEditorState(DiagramEditorState);
   const diagramCanvasRef = useRef<HTMLDivElement>(null);
+  const onContextMenuClose = (): void => diagramEditorState.closeContextMenu();
 
   return (
     <div className="diagram-editor">
@@ -1281,7 +1323,15 @@ export const DiagramEditor = observer(() => {
         {diagramEditorState.isDiagramRendererInitialized && (
           <DiagramEditorOverlay diagramEditorState={diagramEditorState} />
         )}
-        <div className="diagram-editor__stage">
+        <ContextMenu
+          className="diagram-editor__stage"
+          content={
+            <DiagramEditorContextMenu diagramEditorState={diagramEditorState} />
+          }
+          disabled={!diagramEditorState.showContextMenu}
+          menuProps={{ elevation: 7 }}
+          onClose={onContextMenuClose}
+        >
           {diagramEditorState.isDiagramRendererInitialized && (
             <DiagramEditorToolPanel diagramEditorState={diagramEditorState} />
           )}
@@ -1302,7 +1352,7 @@ export const DiagramEditor = observer(() => {
               />
             </>
           )}
-        </div>
+        </ContextMenu>
       </div>
     </div>
   );

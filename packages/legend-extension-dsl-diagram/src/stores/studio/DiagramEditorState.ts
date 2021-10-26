@@ -180,6 +180,8 @@ export class DiagramEditorState extends ElementEditorState {
     | undefined;
   inlineClassCreatorState?: DiagramEditorInlineClassCreatorState | undefined;
   inlineClassRenamerState?: DiagramEditorInlineClassRenamerState | undefined;
+  showContextMenu = false;
+  contextMenuClassView?: ClassView | undefined;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -192,6 +194,8 @@ export class DiagramEditorState extends ElementEditorState {
       inlinePropertyEditorState: observable,
       inlineClassCreatorState: observable,
       inlineClassRenamerState: observable,
+      showContextMenu: observable,
+      contextMenuClassView: observable,
       renderer: computed,
       diagram: computed,
       isDiagramRendererInitialized: computed,
@@ -201,6 +205,8 @@ export class DiagramEditorState extends ElementEditorState {
       setInlinePropertyEditorState: action,
       setInlineClassCreatorState: action,
       setInlineClassRenamerState: action,
+      setShowContextMenu: action,
+      setContextMenuClassView: action,
       reprocess: action,
     });
   }
@@ -323,9 +329,21 @@ export class DiagramEditorState extends ElementEditorState {
     this.inlineClassCreatorState = val;
   }
 
+  setShowContextMenu(val: boolean): void {
+    this.showContextMenu = val;
+  }
+
+  setContextMenuClassView(val: ClassView | undefined): void {
+    this.contextMenuClassView = val;
+  }
+
+  closeContextMenu(): void {
+    this.setShowContextMenu(false);
+  }
+
   setupRenderer(): void {
     this.renderer.setIsReadOnly(this.isReadOnly);
-    this.renderer.editClassView = (classView: ClassView): void => {
+    const handleEditClassView = (classView: ClassView): void => {
       this.setSidePanelState(
         new DiagramEditorClassViewEditorSidePanelState(
           this.editorStore,
@@ -335,6 +353,8 @@ export class DiagramEditorState extends ElementEditorState {
       );
       this.sidePanelDisplayState.open();
     };
+    this.renderer.onClassViewDoubleClick = handleEditClassView;
+    this.renderer.handleEditClassView = handleEditClassView;
     const createNewClassView = (point: Point): void => {
       if (!this.isReadOnly) {
         this.setInlineClassCreatorState(
@@ -344,7 +364,14 @@ export class DiagramEditorState extends ElementEditorState {
     };
     this.renderer.onBackgroundDoubleClick = createNewClassView;
     this.renderer.onAddClassViewClick = createNewClassView;
-    this.renderer.editClassName = (
+    this.renderer.onClassViewRightClick = (
+      classView: ClassView,
+      point: Point,
+    ): void => {
+      this.setShowContextMenu(true);
+      this.setContextMenuClassView(classView);
+    };
+    this.renderer.onClassNameDoubleClick = (
       classView: ClassView,
       point: Point,
     ): void => {
@@ -354,7 +381,7 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
-    this.renderer.editProperty = (
+    this.renderer.handleEditProperty = (
       property: AbstractProperty,
       point: Point,
       propertyHolderView: PropertyHolderView | undefined,
@@ -370,7 +397,7 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
-    this.renderer.addSimpleProperty = (classView: ClassView): void => {
+    this.renderer.handleAddSimpleProperty = (classView: ClassView): void => {
       if (!this.isReadOnly && !classView.class.value.isReadOnly) {
         const _class = classView.class.value;
         _class.addProperty(

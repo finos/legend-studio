@@ -45,7 +45,7 @@ export const setup = (outputDir) => {
           url: 'http://localhost:6060/api',
         },
         depot: {
-          url: 'http://localhost:9090/api',
+          url: 'http://localhost:9090/depot/api',
         },
       },
       undefined,

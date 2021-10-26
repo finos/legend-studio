@@ -199,35 +199,35 @@
 .merge-editor__current {
   &__header {
     background: var(--color-merge--current);
-    opacity: 0.5;
+    opacity: 50%;
   }
 
   &__content {
     background: var(--color-merge--current);
-    opacity: 0.2;
+    opacity: 20%;
   }
 }
 
 .merge-editor__base {
   &__header {
     background: var(--color-merge--base);
-    opacity: 0.5;
+    opacity: 50%;
   }
 
   &__content {
     background: var(--color-merge--base);
-    opacity: 0.2;
+    opacity: 20%;
   }
 }
 
 .merge-editor__incoming {
   &__header {
     background: var(--color-merge--incoming);
-    opacity: 0.5;
+    opacity: 50%;
   }
 
   &__content {
     background: var(--color-merge--incoming);
-    opacity: 0.2;
+    opacity: 20%;
   }
 }

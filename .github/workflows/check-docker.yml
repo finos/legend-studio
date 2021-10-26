@@ -27,7 +27,7 @@ jobs:
             package: '@finos/legend-query-deployment'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.3.5
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
@@ -49,9 +49,15 @@ jobs:
       - name: Scan image for security issues
         uses: Azure/container-scan@v0
         env:
+          # This internally uses `trivy` CLI, so we can pass `trivy` CLI flags to customize
+          # See https://aquasecurity.github.io/trivy/v0.20.1/getting-started/cli/config/
+          #
           # Skip `won't fix` CVEs
           # See https://github.com/Azure/container-scan/issues/61
           TRIVY_IGNORE_UNFIXED: true
+          # Manually increase timeout as the default 2-minute is not enough
+          # See https://github.com/Azure/container-scan/issues/109
+          TRIVY_TIMEOUT: 10m
         with:
           image-name: ${{ matrix.image }}:${{ github.sha }}
           severity-threshold: CRITICAL
