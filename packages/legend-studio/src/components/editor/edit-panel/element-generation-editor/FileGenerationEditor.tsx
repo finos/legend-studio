@@ -226,6 +226,27 @@ export const GenerationResultViewer = observer(
     const regenerate = applicationStore.guaranteeSafeAction(() =>
       flowResult(fileGenerationState.generate()),
     );
+    const visualizeMorphir = () => {
+      console.log('visualizer works');
+      fileGenerationState.networkClient.post(
+        `http://0.0.0.0:9901/insight`,
+        (fileNode! as GenerationFile).content,
+      );
+      window.open('http://0.0.0.0:9901/insight');
+    };
+    const visualizeBosque = async () => {
+      const code =
+        fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
+          fileGenerationState.editorStore.graphManagerState.graph,
+        );
+      console.log('srcsrc boy:');
+      console.log(await code);
+      fileGenerationState.networkClient.post(`http://0.0.0.0:9900/lint`, {
+        ir: (fileNode! as GenerationFile).content,
+        src: await code,
+      });
+      window.open('http://localhost:3050');
+    };
 
     return (
       <ResizablePanelGroup orientation="vertical">
@@ -283,6 +304,26 @@ export const GenerationResultViewer = observer(
                   <div className="panel__header__title__label">file</div>
                   <div className="panel__header__title__content generation-result-viewer__file__header-name">
                     {fileNode.name}
+                  </div>
+                  <div className="panel__header__title__content generation-result-viewer__file__header-visualize-button">
+                    <button
+                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                      // disabled={isReadOnly}
+                      onClick={visualizeMorphir}
+                      tabIndex={-1}
+                    >
+                      Visualize Generated IR
+                    </button>
+                  </div>
+                  <div className="panel__header__title__content generation-result-viewer__file__header-visualize-button">
+                    <button
+                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                      // disabled={isReadOnly}
+                      onClick={visualizeBosque}
+                      tabIndex={-1}
+                    >
+                      View Bosque Feedback
+                    </button>
                   </div>
                 </div>
               )}

@@ -457,12 +457,16 @@ export class V1_Engine {
     generationMode: GenerationMode,
     model: V1_PureModelContextData,
   ): Promise<V1_GenerationOutput[]> {
+    const grammar = this.pureModelContextDataToPureCode(model);
+    const reparsedPureModelContextData = this.pureCodeToPureModelContextData(
+      await grammar,
+    );
     return (
       await this.engineServerClient.generateFile(
         generationMode,
         type,
         V1_GenerateFileInput.serialization.toJson(
-          new V1_GenerateFileInput(model, configs),
+          new V1_GenerateFileInput(await reparsedPureModelContextData, configs), // takes input PMCD
         ),
       )
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));

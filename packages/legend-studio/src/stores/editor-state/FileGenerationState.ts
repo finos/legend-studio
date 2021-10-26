@@ -33,6 +33,7 @@ import {
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
 import type { GeneratorFn } from '@finos/legend-shared';
+import { NetworkClient } from '@finos/legend-shared';
 import {
   assertErrorThrown,
   addUniqueEntry,
@@ -62,6 +63,7 @@ export class FileGenerationState {
   directoryTreeData?: TreeData<GenerationTreeNodeData> | undefined;
   selectedNode?: GenerationTreeNodeData | undefined;
   filesIndex = new Map<string, GenerationFile>();
+  networkClient: NetworkClient;
 
   constructor(
     editorStore: EditorStore,
@@ -86,6 +88,7 @@ export class FileGenerationState {
 
     this.editorStore = editorStore;
     this.fileGeneration = fileGeneration;
+    this.networkClient = new NetworkClient();
     this.root = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
   }
 
@@ -116,11 +119,13 @@ export class FileGenerationState {
         this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
           this.fileGeneration.type,
         ).generationMode;
+      // const rawPureModelContextData =
+      //   this.editorStore.graphManagerState.graphManager.get
       const result =
         (yield this.editorStore.graphManagerState.graphManager.generateFile(
           this.fileGeneration,
           mode,
-          this.editorStore.graphManagerState.graph,
+          this.editorStore.graphManagerState.graph, // input the PureModel
         )) as GenerationOutput[];
       this.processGenerationResult(result);
     } catch (error) {
