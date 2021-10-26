@@ -1847,9 +1847,9 @@ __metadata:
     "@testing-library/dom": 8.10.1
     "@testing-library/react": 12.1.2
     "@types/css-font-loading-module": 0.0.6
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     "@types/react-dom": 17.0.10
-    "@types/react-router-dom": 5.3.1
+    "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
     eslint: 8.1.0
     history: 5.0.1
@@ -1880,7 +1880,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@material-ui/core": 4.12.3
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     "@types/react-select": 4.0.18
     "@types/react-window": 1.8.5
     clsx: 1.1.1
@@ -1928,7 +1928,7 @@ __metadata:
     circular-dependency-plugin: 5.2.2
     clean-webpack-plugin: 4.0.0
     cross-env: 7.0.3
-    css-loader: 6.4.0
+    css-loader: 6.5.0
     cssnano: 5.0.8
     eslint: 8.1.0
     html-webpack-plugin: 5.5.0
@@ -1967,7 +1967,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     cross-env: 7.0.3
     eslint: 8.1.0
     jest: 27.3.1
@@ -2000,7 +2000,7 @@ __metadata:
     "@finos/legend-studio": "workspace:*"
     "@material-ui/core": 4.12.3
     "@testing-library/react": 12.1.2
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     cross-env: 7.0.3
     eslint: 8.1.0
     jest: 27.3.1
@@ -2033,7 +2033,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     cross-env: 7.0.3
     eslint: 8.1.0
     jest: 27.3.1
@@ -2063,7 +2063,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     cross-env: 7.0.3
     eslint: 8.1.0
     jest: 27.3.1
@@ -2199,7 +2199,7 @@ __metadata:
     "@finos/legend-extension-external-store-service": "workspace:*"
     "@finos/legend-query": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     cross-env: 7.0.3
     eslint: 8.1.0
     npm-run-all: 4.1.5
@@ -2247,9 +2247,9 @@ __metadata:
     "@testing-library/dom": 8.10.1
     "@testing-library/react": 12.1.2
     "@types/papaparse": 5.3.1
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     "@types/react-dom": 17.0.10
-    "@types/react-router-dom": 5.3.1
+    "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
     date-fns: 2.25.0
     eslint: 8.1.0
@@ -2364,7 +2364,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-extension-query-builder": "workspace:*"
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     cross-env: 7.0.3
     eslint: 8.1.0
     npm-run-all: 4.1.5
@@ -2404,8 +2404,8 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.32
-    "@types/react-router-dom": 5.3.1
+    "@types/react": 17.0.33
+    "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
     eslint: 8.1.0
     jest: 27.3.1
@@ -2440,7 +2440,7 @@ __metadata:
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.10.1
     "@testing-library/react": 12.1.2
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     cross-env: 7.0.3
     eslint: 8.1.0
     jest: 27.3.1
@@ -2473,9 +2473,9 @@ __metadata:
     "@material-ui/core": 4.12.3
     "@testing-library/dom": 8.10.1
     "@testing-library/react": 12.1.2
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     "@types/react-dom": 17.0.10
-    "@types/react-router-dom": 5.3.1
+    "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
     date-fns: 2.25.0
     eslint: 8.1.0
@@ -2533,7 +2533,7 @@ __metadata:
     postcss: 8.3.11
     postcss-scss: 4.0.1
     rimraf: 3.0.2
-    stylelint: 14.0.0
+    stylelint: 14.0.1
     stylelint-config-prettier: 9.0.3
     stylelint-config-standard: 23.0.0
     stylelint-scss: 4.0.0
@@ -3438,10 +3438,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.11.5":
-  version: 16.11.5
-  resolution: "@types/node@npm:16.11.5"
-  checksum: 290382b32606f0edf4b0b4d3e50283fdf18591c48f0088c22f114196d7f032973720afaba9c11a5acf8411a97c40c94cb89efb5a49691b77ec47917d501916be
+"@types/node@npm:16.11.6":
+  version: 16.11.6
+  resolution: "@types/node@npm:16.11.6"
+  checksum: 6e19634766ff589d3d2f361c2196b671f8f133cdadc5ad347a621c360d8994b6c4fbccfb2ad9c60c588c593831a96497c9c6b77d2b7e91be723384b94f6368e7
   languageName: node
   linkType: hard
 
@@ -3512,14 +3512,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-router-dom@npm:5.3.1":
-  version: 5.3.1
-  resolution: "@types/react-router-dom@npm:5.3.1"
+"@types/react-router-dom@npm:5.3.2":
+  version: 5.3.2
+  resolution: "@types/react-router-dom@npm:5.3.2"
   dependencies:
     "@types/history": "*"
     "@types/react": "*"
     "@types/react-router": "*"
-  checksum: 44621f53c124eb42e0c90fd8c393534b6679c0613dc94577705cec1ed93ee475cd5130fea5aedbf7b53175f4c49753d132eb113480a088982d774a482b373120
+  checksum: 90f052dc5a43a77edaf41d2afa781c8ed2164cd7922b3cdf5daae446b02a2f279382425e6efc338260782c0a24d25a6101e3658acb41c8a053695968a351ea96
   languageName: node
   linkType: hard
 
@@ -3574,14 +3574,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:17.0.32":
-  version: 17.0.32
-  resolution: "@types/react@npm:17.0.32"
+"@types/react@npm:17.0.33":
+  version: 17.0.33
+  resolution: "@types/react@npm:17.0.33"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: 952d33bf948b6f4ce52fbf4118d9c99c97427aa3270a6bcde9f1156bb3898f1662d8f6ca128d095b4677acaff3971b3f761940dbb437366f656ad584eb69b108
+  checksum: 5f53f3dae034229ff1eccb5de1c16d046696e883f8eae81b86e95c532798e655015e4edff8a6c9ec8f1c0ef12bb60dec43622d06256ba33ba6069e67a74b8d4e
   languageName: node
   linkType: hard
 
@@ -5404,9 +5404,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:6.4.0":
-  version: 6.4.0
-  resolution: "css-loader@npm:6.4.0"
+"css-loader@npm:6.5.0":
+  version: 6.5.0
+  resolution: "css-loader@npm:6.5.0"
   dependencies:
     icss-utils: ^5.1.0
     postcss: ^8.2.15
@@ -5418,7 +5418,7 @@ __metadata:
     semver: ^7.3.5
   peerDependencies:
     webpack: ^5.0.0
-  checksum: e842905fce973517dab8ae1e1f6412691c9b4164fbaf94f10ef2ec073c9aa97b5cf9a753a45965fd44aab6528e068be85fd2f8437c6126a823399458dff04282
+  checksum: 4f3e7b93df79293dca910de41c741486155ea8248e048ea51a74fc5570d3acb962b5be0b6740f3ad8006b40eb4ef375124de4f9507aebf7a42f5ca7b8a7807d1
   languageName: node
   linkType: hard
 
@@ -9217,7 +9217,7 @@ __metadata:
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@juggle/resize-observer": 3.3.1
     "@types/jest": 27.0.2
-    "@types/node": 16.11.5
+    "@types/node": 16.11.6
     chalk: 4.1.2
     cross-env: 7.0.3
     envinfo: 7.8.1
@@ -9226,12 +9226,12 @@ __metadata:
     husky: 7.0.4
     inquirer: 8.2.0
     jest: 27.3.1
-    lint-staged: 11.2.4
+    lint-staged: 11.2.6
     prettier: 2.4.1
     rimraf: 3.0.2
     semver: 7.3.5
     sort-package-json: 1.52.0
-    stylelint: 14.0.0
+    stylelint: 14.0.1
     typescript: 4.4.4
     yargs: 17.2.1
   languageName: unknown
@@ -9278,18 +9278,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:11.2.4":
-  version: 11.2.4
-  resolution: "lint-staged@npm:11.2.4"
+"lint-staged@npm:11.2.6":
+  version: 11.2.6
+  resolution: "lint-staged@npm:11.2.6"
   dependencies:
     cli-truncate: 2.1.0
     colorette: ^1.4.0
     commander: ^8.2.0
+    cosmiconfig: ^7.0.1
     debug: ^4.3.2
     enquirer: ^2.3.6
     execa: ^5.1.1
-    js-yaml: ^4.1.0
-    lilconfig: ^2.0.3
     listr2: ^3.12.2
     micromatch: ^4.0.4
     normalize-path: ^3.0.0
@@ -9299,7 +9298,7 @@ __metadata:
     supports-color: 8.1.1
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 9c1478d1903029a1db15b81c3f4d56a99b28774871961d18ea38dff1d7648bbca2eaa55c53c5c71732add89994bb07d3b91ce127495a7e586f519dfdb8a45938
+  checksum: b9071621db351c553579bd18df3d80fb753f851c4f1f72db0aaf12e713eab25b6d8a044dab2957817de7da02054a63f7725a49c763aee09295133f0d554f4d3f
   languageName: node
   linkType: hard
 
@@ -12921,7 +12920,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"string-width@npm:^1.0.2 || 2 || 3 || 4, string-width@npm:^4.1.0, string-width@npm:^4.2.0, string-width@npm:^4.2.2, string-width@npm:^4.2.3":
+"string-width@npm:^1.0.2 || 2 || 3 || 4, string-width@npm:^4.1.0, string-width@npm:^4.2.0, string-width@npm:^4.2.3":
   version: 4.2.3
   resolution: "string-width@npm:4.2.3"
   dependencies:
@@ -13164,9 +13163,9 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"stylelint@npm:14.0.0":
-  version: 14.0.0
-  resolution: "stylelint@npm:14.0.0"
+"stylelint@npm:14.0.1":
+  version: 14.0.1
+  resolution: "stylelint@npm:14.0.1"
   dependencies:
     balanced-match: ^2.0.0
     cosmiconfig: ^7.0.1
@@ -13177,7 +13176,7 @@ resolve@^2.0.0-next.3:
     file-entry-cache: ^6.0.1
     get-stdin: ^8.0.0
     global-modules: ^2.0.0
-    globby: ^11.0.3
+    globby: ^11.0.4
     globjoin: ^0.1.4
     html-tags: ^3.1.0
     ignore: ^5.1.8
@@ -13199,8 +13198,8 @@ resolve@^2.0.0-next.3:
     postcss-value-parser: ^4.1.0
     resolve-from: ^5.0.0
     specificity: ^0.4.1
-    string-width: ^4.2.2
-    strip-ansi: ^6.0.0
+    string-width: ^4.2.3
+    strip-ansi: ^6.0.1
     style-search: ^0.1.0
     svg-tags: ^1.0.0
     table: ^6.7.2
@@ -13208,7 +13207,7 @@ resolve@^2.0.0-next.3:
     write-file-atomic: ^3.0.3
   bin:
     stylelint: bin/stylelint.js
-  checksum: 3a3258e0077ccc8347a4374bc9f38c215db269bb90d3d4e416e35c6b39be6e4856b6b76b2f602a17d152ce631fe11dfa455c13695ee6caf8e5d50f641584d10c
+  checksum: 7279f25282a7d61956921e05b570a7c587cb3292635b114565fe9b1e25eb3f2884aafe6c4e47b7deecadbf5f113e58a69e78a37dd8a8c2a88a566a08911aa910
   languageName: node
   linkType: hard
 

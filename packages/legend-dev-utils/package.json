@@ -60,7 +60,7 @@
     "chalk": "4.1.2",
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "4.0.0",
-    "css-loader": "6.4.0",
+    "css-loader": "6.5.0",
     "cssnano": "5.0.8",
     "html-webpack-plugin": "5.5.0",
     "isbinaryfile": "4.0.8",
