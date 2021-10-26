@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@babel/core": "7.15.8",
+    "@changesets/assemble-release-plan": "5.0.1",
     "@changesets/changelog-github": "0.4.1",
     "@changesets/config": "1.6.1",
     "@changesets/get-release-plan": "3.0.1",

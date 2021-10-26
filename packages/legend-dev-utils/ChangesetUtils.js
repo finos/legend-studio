@@ -23,6 +23,7 @@ import { error, warn, info, log } from '@changesets/logger';
 import { getPackages } from '@manypkg/get-packages';
 import { read } from '@changesets/config';
 import writeChangeset from '@changesets/write';
+import assembleReleasePlan from '@changesets/assemble-release-plan';
 
 /**
  * Ref `master` does not seem to be available in github-actions pipeline when using with action/checkout
@@ -177,4 +178,18 @@ export async function generateChangeset(cwd, message, sinceRef) {
     ),
   );
   info(chalk.blue(resolve(resolve(cwd, '.changeset'), `${changesetID}.md`)));
+}
+
+export async function getNextReleasePlan(cwd) {
+  const packages = await getPackages(cwd);
+  const config = await read(cwd, packages);
+
+  const releasePlan = assembleReleasePlan.default(
+    await readChangesets.default(cwd),
+    packages,
+    config,
+    undefined,
+  );
+
+  return releasePlan.releases;
 }

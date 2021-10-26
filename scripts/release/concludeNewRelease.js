@@ -18,7 +18,6 @@ import * as github from '@actions/github';
 import * as githubActionCore from '@actions/core';
 import chalk from 'chalk';
 import semver from 'semver';
-import { execSync } from 'child_process';
 
 /**
  * Changesets generate tags and Github release by default, but this is cluttering the
@@ -61,19 +60,43 @@ const concludeNewRelease = async () => {
         // Check the following links for Github actions API reference
         // See https://octokit.github.io/rest.js/v18/
         // See https://docs.github.com/en/rest/reference/repos#releases
-        const release = await octokit.rest.repos.getReleaseByTag({
-          tag,
-          ...github.context.repo,
-        });
-        await octokit.rest.repos.deleteRelease({
-          release_id: release.data.id,
-          ...github.context.repo,
-        });
+        let release;
+        try {
+          release = (
+            await octokit.rest.repos.getReleaseByTag({
+              tag,
+              ...github.context.repo,
+            })
+          ).data;
+        } catch {
+          release = undefined;
+        }
+        if (release) {
+          await octokit.rest.repos.deleteRelease({
+            release_id: release.id,
+            ...github.context.repo,
+          });
+        }
+
         // Delete the tags published by `changesets/action`
-        execSync(`git push --delete origin ${tag}`, {
-          cwd: process.cwd(),
-          stdio: ['pipe', 'pipe', 'inherit'], // only print error
-        });
+        let tagRef;
+        try {
+          tagRef = (
+            await octokit.rest.git.getRef({
+              ref: `tags/${tag}`,
+              ...github.context.repo,
+            })
+          ).data;
+        } catch {
+          tagRef = undefined;
+        }
+        if (tagRef) {
+          await octokit.rest.git.deleteRef({
+            ref: `tags/${tag}`,
+            ...github.context.repo,
+          });
+        }
+
         console.log(`\u2713 Removed release and tag ${tag}`);
       } catch (error) {
         tagsNotRemoved.push(tag);
@@ -85,8 +108,8 @@ const concludeNewRelease = async () => {
   );
 
   if (tagsNotRemoved.length) {
-    console.warn(
-      `The following tags and their respective releases are not removed from Github. Please manually remove them on Github:\n${tagsNotRemoved
+    githubActionCore.error(
+      `The following tags and/or their respective releases are not removed from Github. Please manually remove them on Github:\n${tagsNotRemoved
         .map((tag) => `- ${tag}`)
         .join('\n')}`,
     );
@@ -114,7 +137,7 @@ const concludeNewRelease = async () => {
       await octokit.rest.repos.createRelease({
         tag_name: `v${currentReleaseVersion}`,
         name: `Version ${currentReleaseVersion}`,
-        body: `👋  _We are crafting a release note for this version..._\n> Meanwhile, please refer to the latest release pull request for a summary of code changes.`,
+        body: `👋  _We are crafting a release note for this version..._\n> Meanwhile, please refer to the release pull request for a summary of code changes.`,
         ...github.context.repo,
       });
       console.log(
@@ -123,7 +146,7 @@ const concludeNewRelease = async () => {
         ),
       );
     } catch (error) {
-      githubActionCore.warning(
+      githubActionCore.error(
         `Failed to create release with tag v${currentReleaseVersion}. Please manually create this release tag on Github.`,
       );
     }
@@ -149,14 +172,12 @@ const concludeNewRelease = async () => {
           ),
         );
       } catch {
-        console.log(
-          chalk.yellow(
-            `(skipped) Release branch 'release/${currentReleaseVersion}' already existed`,
-          ),
+        githubActionCore.warning(
+          `(skipped) Release branch 'release/${currentReleaseVersion}' already existed`,
         );
       }
     } catch (error) {
-      githubActionCore.warning(
+      githubActionCore.error(
         `Release tag 'v${currentReleaseVersion}' has not been created. Please make sure to manually create tag 'v${currentReleaseVersion}' and the release branch 'release/${currentReleaseVersion}' from that tag.`,
       );
     }
@@ -257,21 +278,17 @@ const concludeNewRelease = async () => {
             chalk.green(`\u2713 Closed milestone ${currentReleaseVersion}`),
           );
         } else {
-          console.log(
-            chalk.yellow(
-              `(skipped) New release milestone '${nextReleaseVersion}' already existed`,
-            ),
+          githubActionCore.warning(
+            `(skipped) New release milestone '${nextReleaseVersion}' already existed`,
           );
         }
       } else {
-        console.log(
-          chalk.yellow(
-            `(skipped) Can't find milestone for the latest release version '${currentReleaseVersion}'`,
-          ),
+        githubActionCore.warning(
+          `(skipped) Can't find milestone for the latest release version '${currentReleaseVersion}'`,
         );
       }
     } catch (error) {
-      githubActionCore.warning(
+      githubActionCore.error(
         `Failed to prepare next release milestone. Error:\n${error.message}\nPlease manually prepare next release milestone and close the current release milestone`,
       );
     }
