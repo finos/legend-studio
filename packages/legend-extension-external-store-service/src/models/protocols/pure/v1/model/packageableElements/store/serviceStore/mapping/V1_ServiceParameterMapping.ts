@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 
-export class V1_ServiceParameterMapping implements Hashable {
+export abstract class V1_ServiceParameterMapping implements Hashable {
   serviceParameter!: string;
 
-  get hashCode(): string {
-    return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.SERVICE_PARAMETER_MAPPING,
-      this.serviceParameter,
-    ]);
-  }
+  abstract get hashCode(): string;
 }

@@ -35,7 +35,7 @@ import type { ServiceParameterMapping } from '../../../../../metamodels/pure/mod
 import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
 import type { V1_GraphTransformerContext } from '@finos/legend-graph';
-import { V1_AppliedProperty, V1_RawLambda } from '@finos/legend-graph';
+import { V1_RawLambda } from '@finos/legend-graph';
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
 import type { ServiceParameter } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceParameter';
 import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
@@ -50,6 +50,8 @@ import type { V1_ServiceStoreElement } from '../../model/packageableElements/sto
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
 import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
 import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
+import { ParameterIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ParameterIndexedParameterMapping';
+import { PropertyIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/PropertyIndexedParameterMapping';
 
 export const V1_transformStringTypeReference = (
   metamodel: StringTypeReference,
@@ -116,7 +118,7 @@ export const V1_transformTypeReference = (
 export const V1_transformServiceParameterMapping = (
   metamodel: ServiceParameterMapping,
 ): V1_ServiceParameterMapping => {
-  if (metamodel.type === 'parameter') {
+  if (metamodel instanceof ParameterIndexedParameterMapping) {
     const mapping = new V1_ParameterIndexedParameterMapping();
     mapping.serviceParameter = metamodel.serviceParameter.name;
     const lambda = new V1_RawLambda();
@@ -124,15 +126,10 @@ export const V1_transformServiceParameterMapping = (
     lambda.body = metamodel.transform.body;
     mapping.transform = lambda;
     return mapping;
-  } else if (metamodel.type === 'property') {
+  } else if (metamodel instanceof PropertyIndexedParameterMapping) {
     const mapping = new V1_PropertyIndexedParameterMapping();
     mapping.serviceParameter = metamodel.serviceParameter.name;
-    if (metamodel.transform.body !== undefined) {
-      if (metamodel.transform.body instanceof V1_AppliedProperty) {
-        const property: V1_AppliedProperty = metamodel.transform.body;
-        mapping.property = property.property;
-      }
-    }
+    mapping.property = metamodel.property;
     return mapping;
   }
   throw new UnsupportedOperationError(

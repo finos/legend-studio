@@ -28,7 +28,7 @@ export class V1_ParameterIndexedParameterMapping
 
   override get hashCode(): string {
     return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.SERVICE_PARAMETER_MAPPING,
+      SERVICE_STORE_HASH_STRUCTURE.PARAMETER_INDEXED_PARAMETER_MAPPING,
       this.serviceParameter,
       this.transform,
     ]);

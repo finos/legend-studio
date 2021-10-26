@@ -56,11 +56,10 @@ import {
   ServiceParameter,
 } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceParameter';
 import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
-import { ServiceParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceParameterMapping';
+import type { ServiceParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceParameterMapping';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
-import { RawLambda, V1_AppliedProperty } from '@finos/legend-graph';
+import { RawLambda } from '@finos/legend-graph';
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
-import { object } from 'serializr';
 import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
 import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreElement';
 import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreService';
@@ -75,6 +74,8 @@ import {
   getServiceGroup,
   getParameter,
 } from '../../../../../../helpers/ESService_Helper';
+import { ParameterIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ParameterIndexedParameterMapping';
+import { PropertyIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/PropertyIndexedParameterMapping';
 
 export const V1_resolveServiceStore = (
   path: string,
@@ -187,21 +188,12 @@ export const V1_buildServiceParameter = (
   return serviceParameter;
 };
 
-export const V1_buildLambdaFromProperty = (protocol: string): RawLambda => {
-  const prop = new V1_AppliedProperty();
-  prop.property = protocol;
-  prop.parameters = [];
-  const lambda = new RawLambda(object, prop);
-  return lambda;
-};
-
 export const V1_buildServiceParameterMapping = (
   protocol: V1_ServiceParameterMapping,
   service: ServiceStoreService,
 ): ServiceParameterMapping => {
   if (protocol instanceof V1_ParameterIndexedParameterMapping) {
-    const mapping = new ServiceParameterMapping();
-    mapping.type = 'parameter';
+    const mapping = new ParameterIndexedParameterMapping();
     mapping.serviceParameter = getParameter(
       protocol.serviceParameter,
       service.parameters,
@@ -213,13 +205,12 @@ export const V1_buildServiceParameterMapping = (
     mapping.transform = lambda;
     return mapping;
   } else if (protocol instanceof V1_PropertyIndexedParameterMapping) {
-    const mapping = new ServiceParameterMapping();
-    mapping.type = 'property';
+    const mapping = new PropertyIndexedParameterMapping();
     mapping.serviceParameter = getParameter(
       protocol.serviceParameter,
       service.parameters,
     );
-    mapping.transform = V1_buildLambdaFromProperty(protocol.property);
+    mapping.property = protocol.property;
     return mapping;
   }
   throw new UnsupportedOperationError(
