@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-import { resolve } from 'path';
-import { resolveFullTsConfig } from './TypescriptConfigUtils.js';
-
 export const getBaseConfig = ({ babelConfigPath }) => ({
   transform: {
     // Since `babel-jest` will not do type checking for the test code.
@@ -53,35 +50,6 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
     'jest-watch-typeahead/testname',
   ],
 });
-
-export const buildModuleNameMapperFromTsConfigPathMapping = ({
-  dirname,
-  tsConfigPath,
-  excludePaths = [],
-}) => {
-  if (!dirname) {
-    throw new Error(`\`dirname\` is required to build Jest module name mapper`);
-  }
-  const tsConfig = resolveFullTsConfig(tsConfigPath);
-  const paths = tsConfig?.compilerOptions?.paths;
-  const baseUrl = tsConfig?.compilerOptions?.baseUrl;
-  const basePath = baseUrl ? resolve(dirname, baseUrl) : dirname;
-  if (paths) {
-    const aliases = {};
-    Object.entries(paths).forEach(([key, value]) => {
-      if (excludePaths.includes(key)) {
-        return;
-      }
-      const regexp = `^${key.replace('*', '(.*)').replace('/', '\\/')}$`;
-      const replacement = (Array.isArray(value) ? value : [value]).map((val) =>
-        val.replace('*', '$1'),
-      );
-      aliases[regexp] = replacement.map((val) => resolve(basePath, val));
-    });
-    return aliases;
-  }
-  return {};
-};
 
 export const unitTest = (testName) => `[UNIT] ${testName}`;
 export const integrationTest = (testName) => `[INTEGRATION] ${testName}`;
