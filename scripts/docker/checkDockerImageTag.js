@@ -17,7 +17,7 @@
 import semver from 'semver';
 import chalk from 'chalk';
 
-const imageTag = process.env.IMAGE_TAG;
+const imageTag = process.argv[2];
 
 if (!imageTag) {
   console.log(chalk.red(`\u2A2F No Docker image tag provided`));

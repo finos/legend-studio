@@ -2108,7 +2108,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.32
+    "@types/react": 17.0.33
     cross-env: 7.0.3
     eslint: 8.1.0
     jest: 27.3.1
