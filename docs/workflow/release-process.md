@@ -80,7 +80,7 @@ For each new release, we should:
 >
 > Also note that this is done from your local device, so you would need `admin` access to push changes to Github as well as right to publish packages on `Docker` and `NPM`. As said, this is quite cumbersome and error-prone, therefore, we try to avoid it as much as possible.
 
-For **versioning**, we can run `yarn version` to merge all the changesets, update the `CHANGELOG.md` and bump versions in `package.json` files. For **publishing**, follow the steps below.
+For **versioning**, we can run `yarn release:version` to merge all the changesets, update the `CHANGELOG.md` and bump versions in `package.json` files. For **publishing**, follow the steps below.
 
 ```sh
 # ---------------------------- NPM ----------------------------

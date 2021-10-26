@@ -19,8 +19,12 @@ import chalk from 'chalk';
 
 const imageTag = process.env.IMAGE_TAG;
 
+if (!imageTag) {
+  console.log(chalk.red(`\u2A2F No Docker image tag provided`));
+  process.exit(1);
+}
+
 if (imageTag !== 'snapshot' && !semver.valid(imageTag)) {
-  console.log(
-    chalk.red(`\u2A2F Invalid Docker image version tag '${imageTag}'`),
-  );
+  console.log(chalk.red(`\u2A2F Invalid Docker image tag '${imageTag}'`));
+  process.exit(1);
 }

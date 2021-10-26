@@ -43,15 +43,14 @@
     "publish:snapshot": "yarn publish:prepare && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:snapshot",
     "release": "yarn publish:prepare && changeset publish",
     "release:bump": "node ./scripts/release/createVersionBumpChangeset.js",
-    "release:github": "node ./scripts/release/createGithubVersion.js",
+    "release:version": "changeset version && yarn install && yarn fix:format",
     "setup": "yarn install && node ./scripts/workflow/checkNodeVersion.js && yarn git:install-hooks && yarn workspaces foreach --topological-dev --verbose run setup && yarn build",
     "start": "yarn dev",
     "test": "jest",
     "test:ci": "yarn build && yarn test:coverage",
     "test:coverage": "jest --coverage",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
-    "test:watch": "jest --watch",
-    "version": "changeset version && yarn install && yarn fix:format"
+    "test:watch": "jest --watch"
   },
   "lint-staged": {
     "*.{html,md,mdx}": [
@@ -72,6 +71,7 @@
     "last 2 Chrome versions"
   ],
   "devDependencies": {
+    "@actions/core": "1.6.0",
     "@actions/github": "5.0.0",
     "@babel/core": "7.15.8",
     "@changesets/cli": "2.17.0",
