@@ -43,7 +43,10 @@ import {
   V1_buildRelationalClassMapping,
   V1_buildRelationalPrimaryKey,
 } from './helpers/V1_RelationalClassMappingBuilderHelper';
-import type { V1_ClassMappingVisitor } from '../../../model/packageableElements/mapping/V1_ClassMapping';
+import type {
+  V1_ClassMappingVisitor,
+  V1_ClassMapping,
+} from '../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
 import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
@@ -61,6 +64,7 @@ import {
   getAllEnumerationMappings,
   getOwnClassMappingById,
 } from '../../../../../../../helpers/MappingHelper';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 
 export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
@@ -71,6 +75,18 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   constructor(context: V1_GraphBuilderContext, parent: Mapping) {
     this.context = context;
     this.parent = parent;
+  }
+
+  visit_ClassMapping(classMapping: V1_ClassMapping): void {
+    const extraClassMappingBuilders = this.context.extensions.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraClassMappingSecondPassBuilders?.() ?? [],
+    );
+    for (const builder of extraClassMappingBuilders) {
+      builder(classMapping, this.context, this.parent);
+    }
   }
 
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): void {

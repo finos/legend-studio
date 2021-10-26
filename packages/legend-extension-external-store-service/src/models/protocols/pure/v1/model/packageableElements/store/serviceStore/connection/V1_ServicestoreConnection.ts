@@ -16,25 +16,25 @@
 
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
-import { V1_Store } from '../../../../model/packageableElements/store/V1_Store';
-import type { V1_PackageableElementVisitor } from '../../../../model/packageableElements/V1_PackageableElement';
+import type { V1_ConnectionVisitor } from '@finos/legend-graph';
+import { V1_Connection } from '@finos/legend-graph';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 
-export class V1_ServiceStore extends V1_Store implements Hashable {
-  docLink!: string;
+export class V1_ServiceStoreConnection
+  extends V1_Connection
+  implements Hashable
+{
+  baseUrl!: string;
 
-  override get hashCode(): string {
+  get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_STORE,
-      this.path,
-      hashArray(this.includedStores),
-      this.docLink,
+      SERVICE_STORE_HASH_STRUCTURE.SERVICE_STORE_CONNECTION,
+      this.store ?? '',
+      this.baseUrl,
     ]);
   }
 
-  accept_PackageableElementVisitor<T>(
-    visitor: V1_PackageableElementVisitor<T>,
-  ): T {
-    return visitor.visit_ServiceStore(this);
+  accept_ConnectionVisitor<T>(visitor: V1_ConnectionVisitor<T>): T {
+    return visitor.visit_Connection(this);
   }
 }

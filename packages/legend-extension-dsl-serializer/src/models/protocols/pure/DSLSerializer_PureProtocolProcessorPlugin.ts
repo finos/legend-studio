@@ -224,6 +224,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin
     return [
       (
         elementProtocol: V1_PackageableElement,
+        plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_Binding) {
           return serialize(V1_bindingModelSchema, elementProtocol);
@@ -239,6 +240,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin
     return [
       (
         json: PlainObject<V1_PackageableElement>,
+        plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_BINDING_ELEMENT_PROTOCOL_TYPE) {
           return deserialize(V1_bindingModelSchema, json);

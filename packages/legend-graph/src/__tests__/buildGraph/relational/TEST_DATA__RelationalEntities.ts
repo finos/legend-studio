@@ -6987,16 +6987,6 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
     classifierPath: 'meta::relational::metamodel::Database',
   },
   {
-    path: 'meta::pure::functions::io::tests::http::testService',
-    content: {
-      _type: 'serviceStore',
-      name: 'testService',
-      package: 'meta::pure::functions::io::tests::http',
-      docLink: 'testSeviceConnection',
-    },
-    classifierPath: 'meta::servicestore::metamodel::ServiceStore',
-  },
-  {
     path: 'meta::relational::tests::simpleRelationalMapping',
     content: {
       _type: 'mapping',
@@ -8432,11 +8422,6 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
           _type: 'default',
           elements: ['meta::relational::tests::dbInc'],
           parserName: 'Relational',
-        },
-        {
-          _type: 'default',
-          elements: ['meta::pure::functions::io::tests::http::testService'],
-          parserName: 'ServiceStore',
         },
         {
           _type: 'importAware',
@@ -12612,16 +12597,6 @@ export const TEST_DATA__embeddedRelationalTestData = [
     classifierPath: 'meta::relational::metamodel::Database',
   },
   {
-    path: 'meta::pure::functions::io::tests::http::testService',
-    content: {
-      _type: 'serviceStore',
-      name: 'testService',
-      package: 'meta::pure::functions::io::tests::http',
-      docLink: 'testSeviceConnection',
-    },
-    classifierPath: 'meta::servicestore::metamodel::ServiceStore',
-  },
-  {
     path: 'meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded',
     content: {
       _type: 'mapping',
@@ -12914,11 +12889,6 @@ export const TEST_DATA__embeddedRelationalTestData = [
             'meta::relational::tests::mapping::embedded::model::store::myDB',
           ],
           parserName: 'Relational',
-        },
-        {
-          _type: 'default',
-          elements: ['meta::pure::functions::io::tests::http::testService'],
-          parserName: 'ServiceStore',
         },
         {
           _type: 'importAware',

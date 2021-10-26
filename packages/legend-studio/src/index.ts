@@ -70,3 +70,6 @@ export * from './stores/StoreRelational_StudioPlugin_Extension';
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
+export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
+export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
+export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';

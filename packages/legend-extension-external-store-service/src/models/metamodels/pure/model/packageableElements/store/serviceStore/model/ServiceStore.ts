@@ -14,37 +14,55 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
+import { observable, action, makeObservable, override } from 'mobx';
+import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { observable, makeObservable, override } from 'mobx';
-import { Store } from '../../Store';
-import type { PackageableElementVisitor } from '../../../PackageableElement';
+import type { PackageableElementVisitor } from '@finos/legend-graph';
+import { Store } from '@finos/legend-graph';
+import type { ServiceStoreElement } from './ServiceStoreElement';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 
 export class ServiceStore extends Store implements Hashable {
-  docLink!: string;
+  description?: string | undefined;
+  elements: ServiceStoreElement[] = [];
 
   constructor(name: string) {
     super(name);
 
     makeObservable<ServiceStore, '_elementHashCode'>(this, {
-      docLink: observable,
+      description: observable,
+      elements: observable,
+      setDescription: action,
+      addElement: action,
+      deleteElement: action,
       _elementHashCode: override,
     });
   }
 
+  setDescription(value: string): void {
+    this.description = value;
+  }
+
+  addElement(value: ServiceStoreElement): void {
+    addUniqueEntry(this.elements, value);
+  }
+
+  deleteElement(value: ServiceStoreElement): void {
+    deleteEntry(this.elements, value);
+  }
+
   protected override get _elementHashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_STORE,
+      SERVICE_STORE_HASH_STRUCTURE.SERVICE_STORE,
       this.path,
-      hashArray(this.includes.map((include) => include.hashValue)),
-      this.docLink,
+      this.description ?? '',
+      hashArray(this.elements),
     ]);
   }
 
   accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {
-    return visitor.visit_ServiceStore(this);
+    return visitor.visit_PackageableElement(this);
   }
 }

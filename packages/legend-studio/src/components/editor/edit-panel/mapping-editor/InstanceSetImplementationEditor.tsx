@@ -93,7 +93,10 @@ export const InstanceSetImplementationSourceExplorer = observer(
       mappingEditorState.currentTabState instanceof MappingElementState
         ? mappingEditorState.currentTabState
         : undefined;
-    const srcElement = getMappingElementSource(setImplementation);
+    const srcElement = getMappingElementSource(
+      setImplementation,
+      editorStore.pluginManager.getStudioPlugins(),
+    );
     const sourceLabel = getSourceElementLabel(srcElement);
     // `null` is when we want to open the modal using the existing source
     // `undefined` is to close the source modal

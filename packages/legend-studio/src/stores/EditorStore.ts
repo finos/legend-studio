@@ -102,7 +102,6 @@ import {
   ConcreteFunctionDefinition,
   Measure,
   Database,
-  ServiceStore,
   FlatData,
   Mapping,
   Service,
@@ -1034,7 +1033,6 @@ export class EditorStore {
     } else if (
       element instanceof Measure ||
       element instanceof Database ||
-      element instanceof ServiceStore ||
       element instanceof FlatData
     ) {
       return new UnsupportedElementEditorState(this, element);

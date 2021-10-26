@@ -216,6 +216,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
     return [
       (
         elementProtocol: V1_PackageableElement,
+        plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_DataSpace) {
           return serialize(V1_dataSpaceModelSchema, elementProtocol);
@@ -229,6 +230,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
     return [
       (
         json: PlainObject<V1_PackageableElement>,
+        plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
           return deserialize(V1_dataSpaceModelSchema, json);

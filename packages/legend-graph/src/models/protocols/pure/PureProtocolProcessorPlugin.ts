@@ -41,10 +41,12 @@ export type V1_ElementTransformer = (
 
 export type V1_ElementProtocolSerializer = (
   protocol: V1_PackageableElement,
+  plugins: PureProtocolProcessorPlugin[],
 ) => PlainObject<V1_PackageableElement> | undefined;
 
 export type V1_ElementProtocolDeserializer = (
   protocol: PlainObject<V1_PackageableElement>,
+  plugins: PureProtocolProcessorPlugin[],
 ) => V1_PackageableElement | undefined;
 
 export type V1_FunctionExpressionBuilder = (

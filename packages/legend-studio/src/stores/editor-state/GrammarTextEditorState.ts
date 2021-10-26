@@ -41,7 +41,6 @@ import {
   Measure,
   Database,
   RelationalDatabaseConnection,
-  ServiceStore,
 } from '@finos/legend-graph';
 import { GRAMMAR_ELEMENT_TYPE_LABEL } from '@finos/legend-application';
 
@@ -112,8 +111,6 @@ export class GrammarTextEditorState {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA;
     } else if (element instanceof Database) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.DATABASE;
-    } else if (element instanceof ServiceStore) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE_STORE;
     } else if (element instanceof Mapping) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING;
     } else if (element instanceof Service) {

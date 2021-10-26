@@ -50,7 +50,6 @@ import type { V1_GenerationSpecification } from '../../../model/packageableEleme
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
@@ -154,12 +153,6 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     );
     element.schemas.forEach((schema) =>
       V1_buildDatabaseSchemaViewsFirstPass(schema, database, this.context),
-    );
-  }
-
-  visit_ServiceStore(element: V1_ServiceStore): void {
-    this.context.graph.getServiceStore(
-      this.context.graph.buildPath(element.package, element.name),
     );
   }
 

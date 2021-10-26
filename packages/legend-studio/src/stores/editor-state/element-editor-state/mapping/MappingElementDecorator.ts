@@ -33,6 +33,7 @@ import type {
   RootRelationalInstanceSetImplementation,
   AggregationAwareSetImplementation,
   PropertyMapping,
+  InstanceSetImplementation,
 } from '@finos/legend-graph';
 import {
   getAllClassMappings,
@@ -477,7 +478,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new UnsupportedOperationError();
+    return;
+  }
+
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+    //TODO: Implement this later https://github.com/finos/legend-studio/pull/580
+    return;
   }
 }
 
@@ -566,6 +572,11 @@ export class MappingElementDecorationCleaner
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new UnsupportedOperationError();
+    return;
+  }
+
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+    //TODO: Implement this later https://github.com/finos/legend-studio/pull/580
+    return;
   }
 }

@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-import type { ServiceStore } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ServiceStore';
-import { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
-import { V1_initPackageableElement } from './V1_CoreTransformerHelper';
+import { hashArray } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
+import { V1_ServiceParameterMapping } from './V1_ServiceParameterMapping';
 
-export const V1_transformServiceStore = (
-  element: ServiceStore,
-): V1_ServiceStore => {
-  const serviceStore = new V1_ServiceStore();
-  V1_initPackageableElement(serviceStore, element);
-  serviceStore.docLink = element.docLink;
-  return serviceStore;
-};
+export class V1_PropertyIndexedParameterMapping
+  extends V1_ServiceParameterMapping
+  implements Hashable
+{
+  property!: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      SERVICE_STORE_HASH_STRUCTURE.PROPERTY_INDEXED_PARAMETER_MAPPING,
+      this.serviceParameter,
+      this.property,
+    ]);
+  }
+}

@@ -57,6 +57,7 @@ import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
+import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -78,6 +79,7 @@ enum ROUNTRIP_TEST_PHASES {
 const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
+  'ESService-basic.pure': SKIP, //Needs https://github.com/finos/legend-engine/pull/417 to be merged
   // post processor mismatch between engine (undefined) vs studio ([])
   'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
@@ -139,6 +141,7 @@ const checkGrammarRoundtrip = async (
     new DSLDiagram_GraphPreset(),
     new DSLSerializer_GraphPreset(),
     new DSLDataSpace_GraphPreset(),
+    new ESService_GraphPreset(),
   ]);
   pluginManager.install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);

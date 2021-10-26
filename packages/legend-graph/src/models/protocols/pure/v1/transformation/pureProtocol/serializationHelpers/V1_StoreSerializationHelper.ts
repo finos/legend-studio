@@ -32,7 +32,6 @@ import {
   serializeArray,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';
 import type { V1_FlatDataDataType } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
@@ -51,18 +50,6 @@ import {
   V1_FlatDataString,
 } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
 import { V1_FlatDataSection } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataSection';
-
-// ------------------------------------------ Service Store ------------------------------------------
-
-export const V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE = 'serviceStore';
-
-export const V1_serviceStoreModelSchema = createModelSchema(V1_ServiceStore, {
-  _type: usingConstantValueSchema(V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE),
-  docLink: primitive(),
-  includedStores: list(primitive()),
-  name: primitive(),
-  package: primitive(),
-});
 
 // ------------------------------------------ Flat Data ------------------------------------------
 
