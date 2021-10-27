@@ -56,7 +56,12 @@ const prepareNewStandardRelease = async () => {
       existingChangesetFile = undefined;
     }
     // this means there are no changes needed to be committed, hence skip
-    if (existingChangesetFile?.content === newChangesetContent) {
+    if (
+      // NOTE: on Github, file's base64 encoded content are chunked into short lines
+      // so we want to remove these line breaks for accurate comparison
+      existingChangesetFile?.content?.replaceAll('\n', '') ===
+      newChangesetContent
+    ) {
       githubActionCore.warning(
         `(skipped) Next release version bump changeset already existed`,
       );
