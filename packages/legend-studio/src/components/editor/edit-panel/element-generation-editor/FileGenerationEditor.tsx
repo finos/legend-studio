@@ -227,7 +227,6 @@ export const GenerationResultViewer = observer(
       flowResult(fileGenerationState.generate()),
     );
     const visualizeMorphir = () => {
-      console.log('visualizer works');
       fileGenerationState.networkClient.post(
         `http://0.0.0.0:9901/insight`,
         (fileNode! as GenerationFile).content,
@@ -239,8 +238,6 @@ export const GenerationResultViewer = observer(
         fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
           fileGenerationState.editorStore.graphManagerState.graph,
         );
-      console.log('srcsrc boy:');
-      console.log(await code);
       fileGenerationState.networkClient.post(`http://0.0.0.0:9900/lint`, {
         ir: (fileNode! as GenerationFile).content,
         src: await code,
