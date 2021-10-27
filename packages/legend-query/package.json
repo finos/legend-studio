@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-query",
-  "version": "0.0.15",
+  "version": "0.1.0",
   "description": "Legend Query core",
   "keywords": [
     "legend",

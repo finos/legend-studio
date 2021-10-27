@@ -1,5 +1,11 @@
 # @finos/legend-studio-extension-query-builder
 
+## 0.1.0
+
+### Minor Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Add the ability to open query via class views' context menus in diagram editor.
+
 ## 0.0.6
 
 ## 0.0.5

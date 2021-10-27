@@ -1,5 +1,11 @@
 # @finos/stylelint-config-legend-studio
 
+## 1.0.0
+
+### Major Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Upgraded to `stylelint@14`.
+
 ## 0.0.24
 
 ## 0.0.23

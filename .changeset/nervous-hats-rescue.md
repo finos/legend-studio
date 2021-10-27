@@ -1,3 +1,0 @@
----
-'@finos/legend-studio': minor
----

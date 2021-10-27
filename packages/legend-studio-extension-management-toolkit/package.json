@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-management-toolkit",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Legend Studio extension for management/admin tooling",
   "keywords": [
     "legend",
