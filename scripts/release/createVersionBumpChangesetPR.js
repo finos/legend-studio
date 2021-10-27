@@ -55,12 +55,21 @@ const prepareNewStandardRelease = async () => {
     } catch (error) {
       existingChangesetFile = undefined;
     }
+    console.log('debugging', existingChangesetFile); // debugging
     // this means there are no changes needed to be committed, hence skip
-    if (existingChangesetFile?.content === newChangesetContent) {
-      githubActionCore.warning(
-        `(skipped) Next release version bump changeset already existed`,
-      );
-      return;
+    if (existingChangesetFile?.content) {
+      const content = `${existingChangesetFile.content}`;
+      // NOTE: on Github, file's base64 encoded content are chunked into short lines
+      // so we want to remove these line breaks for accurate comparison
+      if (
+        content.replace('\n', '') ===
+        newChangesetContent
+      ) {
+        githubActionCore.warning(
+          `(skipped) Next release version bump changeset already existed`,
+        );
+        return;
+      }
     }
 
     const defaultBranchRef = (
