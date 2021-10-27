@@ -18,17 +18,14 @@ import { writeFileSync } from 'fs';
 import {
   generateVersionBumpChangeset,
   getPackagesToBumpVersion,
-  RESOLVED_VERSION_BUMP_CHANGESET_PATH,
-} from './versionBumpChangesetUtils.js';
+} from './releaseVersionUtils.js';
 import chalk from 'chalk';
 
 const bumpType = process.argv[2];
 const packagesToBump = getPackagesToBumpVersion();
+const changesetInfo = generateVersionBumpChangeset(packagesToBump, bumpType);
 
-writeFileSync(
-  RESOLVED_VERSION_BUMP_CHANGESET_PATH,
-  generateVersionBumpChangeset(packagesToBump, bumpType),
-);
+writeFileSync(changesetInfo.path, changesetInfo.content);
 
 console.log(
   [

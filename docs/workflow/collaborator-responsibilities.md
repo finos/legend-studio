@@ -20,9 +20,10 @@ The most important thing to pay attention to as maintainers is when merging PRs,
 - When PR are submitted against the release branch, coordinators need to check if these need documentation or not: new feature and interface change almost always guarantee documentation change, bug fixes, if notable also require documentation.
 - Communicate about the timeline and progress with `developers` and `reviewers`.
 - Carry out the actual release:
-  - Merge the `New Release` and `New Patch Relase` PRs to cut new releases.
-  - Post `standard release`, run the workflow [Prepare New Release (Manual)](https://github.com/finos/legend-studio/actions/workflows/release-prepare-manual.yml) and update the root `CHANGELOG.md` as well as Github release to point at the `release notes` for the new release.
-  - Post `patch release`, `cherry-pick` the changes from the release branch back on to the default branch to keep the development branch up to date.
+  - Merge the auto-generated release PRs to cut new releases (see [example](https://github.com/finos/legend-studio/pull/576))
+  - Before a `standard release` or an `iteration release`, run the workflow [Prepare New Release (Manual)](https://github.com/finos/legend-studio/actions/workflows/release-prepare-manual.yml) and merge the new release version bump changeset PR.
+  - After a `standard release`, update the Github release to point at the `release notes` for the new release.
+  - After a `recovery release`, `cherry-pick` the changes from the release branch back on to the default branch to keep the development branch up to date.
 
 > Learn more in-depth about the release process and post-release tasks of the release coordinators in [this guide](./release-process.md).
 

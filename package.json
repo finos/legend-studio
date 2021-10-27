@@ -43,15 +43,14 @@
     "publish:snapshot": "yarn publish:prepare && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:snapshot",
     "release": "yarn publish:prepare && changeset publish",
     "release:bump": "node ./scripts/release/createVersionBumpChangeset.js",
-    "release:github": "node ./scripts/release/createGithubVersion.js",
+    "release:version": "changeset version && yarn install && yarn fix:format",
     "setup": "yarn install && node ./scripts/workflow/checkNodeVersion.js && yarn git:install-hooks && yarn workspaces foreach --topological-dev --verbose run setup && yarn build",
     "start": "yarn dev",
     "test": "jest",
     "test:ci": "yarn build && yarn test:coverage",
     "test:coverage": "jest --coverage",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
-    "test:watch": "jest --watch",
-    "version": "changeset version && yarn install && yarn fix:format"
+    "test:watch": "jest --watch"
   },
   "lint-staged": {
     "*.{html,md,mdx}": [
@@ -72,6 +71,7 @@
     "last 2 Chrome versions"
   ],
   "devDependencies": {
+    "@actions/core": "1.6.0",
     "@actions/github": "5.0.0",
     "@babel/core": "7.15.8",
     "@changesets/cli": "2.17.0",
@@ -81,7 +81,7 @@
     "@finos/stylelint-config-legend-studio": "workspace:*",
     "@juggle/resize-observer": "3.3.1",
     "@types/jest": "27.0.2",
-    "@types/node": "16.11.5",
+    "@types/node": "16.11.6",
     "chalk": "4.1.2",
     "cross-env": "7.0.3",
     "envinfo": "7.8.1",
@@ -90,12 +90,12 @@
     "husky": "7.0.4",
     "inquirer": "8.2.0",
     "jest": "27.3.1",
-    "lint-staged": "11.2.4",
+    "lint-staged": "11.2.6",
     "prettier": "2.4.1",
     "rimraf": "3.0.2",
     "semver": "7.3.5",
     "sort-package-json": "1.52.0",
-    "stylelint": "14.0.0",
+    "stylelint": "14.0.1",
     "typescript": "4.4.4",
     "yargs": "17.2.1"
   },

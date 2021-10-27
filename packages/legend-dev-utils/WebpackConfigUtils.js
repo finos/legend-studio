@@ -73,14 +73,9 @@ const getBaseWebpackConfig = (
       level: 'info',
     },
     stats: {
-      // Make `webpack-dev-middleware` less verbose, consider `quiet` and `noInfo` options as well
-      // NOTE: Use custom reporter to output errors and warnings from TS fork checker in `stylish` format. It's less verbose and
-      // repetitive. Since we use the custom plugin, we want to mute `errors` and `warnings` from `webpack-dev-middleware`
-      // See https://github.com/webpack-contrib/webpack-stylish
-      // See https://github.com/TypeStrong/fork-ts-checker-webpack-plugin/issues/119
       all: false,
-      errors: isEnvProduction,
-      warnings: isEnvProduction,
+      errors: true,
+      warnings: true,
       logging: 'warn',
       colors: true,
       timings: true,

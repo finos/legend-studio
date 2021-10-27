@@ -21,26 +21,29 @@ import chalk from 'chalk';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export const VERSION_BUMP_CHANGESET_PATH = '.changeset/new-version.md';
-export const RESOLVED_VERSION_BUMP_CHANGESET_PATH = resolve(
+const CHANGESET_DIR = resolve(__dirname, '../../.changeset');
+export const CHANGESET_CONFIG_PATH = resolve(CHANGESET_DIR, 'config.json');
+export const STANDARD_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH =
+  '.changeset/new-version.md';
+export const ITERATION_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH =
+  '.changeset/new-iteration.md';
+export const STANDARD_RELEASE_VERSION_BUMP_CHANGESET_PATH = resolve(
   __dirname,
-  `../../${VERSION_BUMP_CHANGESET_PATH}`,
+  `../../${STANDARD_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH}`,
+);
+export const ITERATION_RELEASE_VERSION_BUMP_CHANGESET_PATH = resolve(
+  __dirname,
+  `../../${ITERATION_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH}`,
 );
 
 export const getPackagesToBumpVersion = () => {
-  const changesetConfig = loadJSON(
-    resolve(__dirname, '../../.changeset/config.json'),
-  );
+  const changesetConfig = loadJSON(CHANGESET_CONFIG_PATH);
   const packagesToBump = changesetConfig.linked[0];
   // NOTE: changeset's config structure could change so we would like to do some validation
-  if (
-    !Array.isArray(packagesToBump) ||
-    packagesToBump.length === 0 ||
-    !packagesToBump.includes('@finos/legend-studio-app')
-  ) {
+  if (!Array.isArray(packagesToBump) || packagesToBump.length === 0) {
     console.log(
       chalk.red(
-        `Can't find the list of application deployment packages to bump versions for! Make sure to check changesets config file '.changeset/config.json'`,
+        `Can't find the list of application deployment packages to bump versions for! Make sure to check changeset config file '.changeset/config.json'`,
       ),
     );
     process.exit(1);
@@ -65,10 +68,16 @@ export const generateVersionBumpChangeset = (packagesToBump, bumpType) => {
     process.exit(1);
   }
 
-  return [
-    '---',
-    ...packagesToBump.map((line) => `  '${line}': ${bumpType}`),
-    '---',
-    '',
-  ].join('\n');
+  return {
+    path:
+      bumpType === 'major'
+        ? STANDARD_RELEASE_VERSION_BUMP_CHANGESET_PATH
+        : ITERATION_RELEASE_VERSION_BUMP_CHANGESET_PATH,
+    content: [
+      '---',
+      ...packagesToBump.map((line) => `  '${line}': ${bumpType}`),
+      '---',
+      '',
+    ].join('\n'),
+  };
 };
