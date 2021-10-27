@@ -77,17 +77,30 @@ const prepareNewStandardRelease = async () => {
       });
       // NOTE: we don't need to handle the case where we update the changeset file
       // because of the assumptions we make on the timing of this process.
+      // if we got the error: "sha" wasn't supplied
+      // it means we're trying to update the file, instead of creating it,
+      // which means that the changeset has already been created, but its content is stale
       // See https://docs.github.com/en/rest/reference/repos#create-or-update-file-contents
-      await octokit.rest.repos.createOrUpdateFileContents({
-        path:
-          bumpType === 'major'
-            ? STANDARD_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH
-            : ITERATION_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH,
-        message: 'prepare for new release',
-        branch: CHANGESET_PR_BRANCH_NAME,
-        content: changesetContent,
-        ...github.context.repo,
-      });
+      try {
+        await octokit.rest.repos.createOrUpdateFileContents({
+          path:
+            bumpType === 'major'
+              ? STANDARD_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH
+              : ITERATION_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH,
+          message: 'prepare for new release',
+          branch: CHANGESET_PR_BRANCH_NAME,
+          content: changesetContent,
+          ...github.context.repo,
+        });
+      } catch (error) {
+        throw new Error(
+          `Can't commit version bump changeset. This usually happens when the changeset file '${
+            bumpType === 'major'
+              ? STANDARD_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH
+              : ITERATION_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH
+          }' exists, but its content is stale. Error:\n${error.message}`,
+        );
+      }
       const changesetPR = (
         await octokit.rest.pulls.create({
           title: `Prepare New ${
@@ -107,7 +120,7 @@ const prepareNewStandardRelease = async () => {
     } catch (error) {
       githubActionCore.error(
         `Failed to create PR for next release version bump changeset. Error:\n${error.message}\n` +
-          `Please run \`yarn release:bump major\` and commit this changeset.`,
+          `Please run \`yarn release:bump major\` and manually commit this changeset.`,
       );
       process.exit(1);
     }

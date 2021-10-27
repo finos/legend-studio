@@ -1865,7 +1865,7 @@ __metadata:
     react-router: 5.2.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     serializr: 2.0.5
     typescript: 4.4.4
   peerDependencies:
@@ -1899,7 +1899,7 @@ __metadata:
     react-select: 4.3.1
     react-window: 1.8.6
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     typescript: 4.4.4
   peerDependencies:
     react: ^17.0.0
@@ -1946,7 +1946,7 @@ __metadata:
     react-refresh: 0.10.0
     resolve: 1.20.0
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     sass-loader: 12.2.0
     typescript: 4.4.4
     webpack: 5.60.0
@@ -1979,7 +1979,7 @@ __metadata:
     react-dom: 17.0.2
     react-resize-detector: 6.7.6
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     serializr: 2.0.5
     typescript: 4.4.4
   peerDependencies:
@@ -2014,7 +2014,7 @@ __metadata:
     react-icons: 4.3.1
     react-resize-detector: 6.7.6
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     serializr: 2.0.5
     typescript: 4.4.4
   peerDependencies:
@@ -2044,7 +2044,7 @@ __metadata:
     react: 17.0.2
     react-icons: 4.3.1
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     serializr: 2.0.5
     typescript: 4.4.4
   peerDependencies:
@@ -2073,7 +2073,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     serializr: 2.0.5
     typescript: 4.4.4
   peerDependencies:
@@ -2118,7 +2118,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     serializr: 2.0.5
     typescript: 4.4.4
   peerDependencies:
@@ -2205,7 +2205,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     typescript: 4.4.4
   languageName: unknown
   linkType: soft
@@ -2269,7 +2269,7 @@ __metadata:
     react-router: 5.2.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     typescript: 4.4.4
   peerDependencies:
     react: ^17.0.0
@@ -2370,7 +2370,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     typescript: 4.4.4
   languageName: unknown
   linkType: soft
@@ -2416,7 +2416,7 @@ __metadata:
     react-icons: 4.3.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     typescript: 4.4.4
   peerDependencies:
     react: ^17.0.0
@@ -2451,7 +2451,7 @@ __metadata:
     react-dom: 17.0.2
     react-icons: 4.3.1
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     typescript: 4.4.4
   peerDependencies:
     react: ^17.0.0
@@ -2496,7 +2496,7 @@ __metadata:
     react-router: 5.2.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.43.3
+    sass: 1.43.4
     serializr: 2.0.5
     sql-formatter: 4.0.2
     typescript: 4.4.4
@@ -12282,14 +12282,14 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"sass@npm:1.43.3":
-  version: 1.43.3
-  resolution: "sass@npm:1.43.3"
+"sass@npm:1.43.4":
+  version: 1.43.4
+  resolution: "sass@npm:1.43.4"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
   bin:
     sass: sass.js
-  checksum: d253980cdafe6eab223cd57a44a49a43fc3123c0459c3d09d7f95ab4d4f2a8e3559996c6bfeed5be8dc428c85fd5b8f3cd165a0ede695df9fbd002f2094f8ea1
+  checksum: 9af80105dabd32752c60b4557115832982cf1019c02c952db6a26c61a3e18dc95044c896685e6e9a6d6dd6643fc411ecf2ea4a8a431a8a08a7510a45d5a492ae
   languageName: node
   linkType: hard
 
