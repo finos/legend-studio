@@ -9,9 +9,9 @@ on:
 jobs:
   check-changeset:
     name: Validate Changesets
-    # When cherry-picking changes in recovery release, since the changesets should already been consumed
+    # When cherry-picking changes in recovery releases, since the changesets should already been consumed
     # as part of the release, we will skip this checks.
-    # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#patch-releases
+    # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#recovery-releases
     if: "github.event.pull_request.base.ref != 'master' || !startsWith(github.event.pull_request.title, 'Cherry-picking changes in version ')"
     runs-on: ubuntu-latest
     steps:
