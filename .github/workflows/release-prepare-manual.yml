@@ -35,8 +35,6 @@ jobs:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
-      - name: Create release version bump
-        run: yarn release:bump ${{ github.event.inputs.bump_type }}
       - name: Create PR for new release version bump
         env:
           BUMP_TYPE: ${{ github.event.inputs.bump_type }}
