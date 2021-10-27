@@ -653,6 +653,7 @@ const V1_objectInputData = createModelSchema(V1_ObjectInputData, {
   data: primitive(),
   inputType: primitive(),
   sourceClass: primitive(),
+  textElements: list(primitive()),
 });
 
 const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
@@ -661,6 +662,7 @@ const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
   sourceFlatData: usingModelSchema(
     V1_packageableElementPointerDeserializerSchema,
   ),
+  textElements: list(primitive()),
 });
 
 const V1_relationalInputData = createModelSchema(V1_RelationalInputData, {
@@ -668,6 +670,7 @@ const V1_relationalInputData = createModelSchema(V1_RelationalInputData, {
   data: primitive(),
   database: primitive(),
   inputType: primitive(),
+  textElements: list(primitive()),
 });
 
 const V1_expectedOutputMappingTestAssertModelSchema = createModelSchema(

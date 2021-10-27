@@ -15682,6 +15682,7 @@ export const TEST_DATA__FlatDataInputDataRoundtrip = [
                 path: 'tFlatData',
                 type: 'STORE',
               },
+              textElements: [],
             },
           ],
           name: 'defaultTest',

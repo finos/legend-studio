@@ -35,6 +35,7 @@ import type {
   V1_ElementProtocolDeserializer,
   V1_ElementProtocolSerializer,
   V1_ElementTransformer,
+  V1_ExecutionInputGetter,
   V1_GraphBuilderContext,
   V1_GraphTransformerContext,
   V1_PackageableElement,
@@ -43,6 +44,10 @@ import {
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
+  Mapping,
+  PureModel,
+  Runtime,
+  V1_PureModelContextData,
 } from '@finos/legend-graph';
 
 const TEXT_ELEMENT_CLASSIFIER_PATH = 'meta::pure::metamodel::text::Text';
@@ -155,6 +160,21 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
           return protocol;
         }
         return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraExecutionInputGetters(): V1_ExecutionInputGetter[] {
+    return [
+      (
+        graph: PureModel,
+        mapping: Mapping,
+        runtime: Runtime,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] => {
+        return protocolGraph.elements
+          .filter((ele) => ele instanceof V1_Text)
+          .flat();
       },
     ];
   }

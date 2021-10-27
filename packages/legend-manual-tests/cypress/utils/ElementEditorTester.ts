@@ -197,6 +197,10 @@ export class ElementEditorTester extends EndToEndTester {
     }).as('postExecute');
     cy.route({
       method: 'POST',
+      url: `${this.engineServer}/api/pure/v1/execution/doMappingTest`,
+    }).as('doMappinTest');
+    cy.route({
+      method: 'POST',
       url: `${this.engineServer}/api/pure/v1/execution/generatePlan`,
     }).as('postGeneratePlan');
     cy.route({

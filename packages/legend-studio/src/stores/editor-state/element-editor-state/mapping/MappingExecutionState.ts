@@ -235,6 +235,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
         ),
         ObjectInputType.JSON,
         tryToMinifyJSONString('{}'),
+        [],
       ),
     );
 
@@ -279,6 +280,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
       ),
       this.inputData.inputType,
       tryToMinifyJSONString(this.inputData.data),
+      [],
     );
   }
 }
@@ -299,6 +301,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
           guaranteeNonNullable(rootFlatDataRecordType.owner.owner),
         ),
         '',
+        [],
       ),
     );
 
@@ -335,6 +338,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
         guaranteeNonNullable(this.inputData.sourceFlatData.value),
       ),
       this.inputData.data,
+      [],
     );
   }
 }
@@ -356,6 +360,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
         ),
         '',
         RelationalInputType.SQL,
+        [],
       ),
     );
 
@@ -403,6 +408,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
       ),
       this.inputData.data,
       this.inputData.inputType,
+      this.inputData.textElements,
     );
   }
 }
@@ -630,6 +636,7 @@ export class MappingExecutionState {
     }
   }
 
+  //needs to be changes to doMappingTest end-point need to confirm
   *executeMapping(): GeneratorFn<void> {
     try {
       const query = this.queryState.query;

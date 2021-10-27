@@ -83,7 +83,11 @@ import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationRe
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
 import { serialize } from 'serializr';
+<<<<<<< HEAD
 import { V1_ExecutionError } from './execution/V1_ExecutionError';
+=======
+import { V1_ExecuteMappingTestInput } from './execution/V1_ExecuteMappingTestInput';
+>>>>>>> Support text elements to be used as input data for mapping test
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -422,6 +426,23 @@ export class V1_Engine {
       }
       throw error;
     }
+  }
+
+  async executeMappingTest(
+    input: V1_ExecuteMappingTestInput,
+    useLosslessParse: boolean,
+  ): Promise<V1_ExecutionResult> {
+    const executionResultInText = await (
+      (await this.engineServerClient.doMappingTest(
+        V1_ExecuteMappingTestInput.serialization.toJson(input),
+        true,
+      )) as Response
+    ).text();
+    return V1_serializeExecutionResult(
+      useLosslessParse
+        ? losslessParse(executionResultInText)
+        : JSON.parse(executionResultInText),
+    );
   }
 
   generateExecutionPlan(

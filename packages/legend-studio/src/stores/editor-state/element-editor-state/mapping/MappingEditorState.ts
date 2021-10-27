@@ -1390,17 +1390,20 @@ export class MappingEditorState extends ElementEditorState {
         source
           ? createMockDataForMappingElementSource(source, this.editorStore)
           : '{}',
+        [],
       );
     } else if (source instanceof RootFlatDataRecordType) {
       inputData = new FlatDataInputData(
         PackageableElementExplicitReference.create(source.owner.owner),
         createMockDataForMappingElementSource(source, this.editorStore),
+        [],
       );
     } else if (source instanceof Table || source instanceof View) {
       inputData = new RelationalInputData(
         PackageableElementExplicitReference.create(source.schema.owner),
         createMockDataForMappingElementSource(source, this.editorStore),
         RelationalInputType.SQL,
+        [],
       );
     } else {
       throw new UnsupportedOperationError(

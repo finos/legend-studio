@@ -24,6 +24,9 @@ import { PackageableElement } from '@finos/legend-graph';
 export enum TEXT_TYPE {
   PLAIN_TEXT = 'plainText',
   MARKDOWN = 'markdown',
+  SQL = 'sql',
+  CSV = 'csv',
+  JSON = 'json',
 }
 
 export class Text extends PackageableElement implements Hashable {

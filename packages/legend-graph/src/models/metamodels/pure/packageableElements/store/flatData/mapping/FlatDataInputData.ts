@@ -31,10 +31,12 @@ import { createValidationError } from '../../../../../../../helpers/ValidationHe
 export class FlatDataInputData extends InputData implements Hashable {
   sourceFlatData: PackageableElementReference<FlatData>;
   data: string;
+  textElements: string[];
 
   constructor(
     sourceFlatData: PackageableElementReference<FlatData>,
     data: string,
+    textElements: string[],
   ) {
     super();
 
@@ -47,6 +49,7 @@ export class FlatDataInputData extends InputData implements Hashable {
 
     this.sourceFlatData = sourceFlatData;
     this.data = data;
+    this.textElements = textElements;
   }
 
   setData(value: string): void {
@@ -70,6 +73,7 @@ export class FlatDataInputData extends InputData implements Hashable {
         this.sourceFlatData.hashValue,
       ),
       this.data,
+      hashArray(this.textElements),
     ]);
   }
 }

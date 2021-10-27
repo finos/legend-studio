@@ -238,7 +238,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
     return runtime;
   }
 }
-
+// TODO: remove runtime since now we dont require to provide them for running mapping test
 export class MappingTestFlatDataInputDataState extends MappingTestInputDataState {
   declare inputData: FlatDataInputData;
 
@@ -493,6 +493,7 @@ export class MappingTestState {
           ),
           ObjectInputType.JSON,
           tryToMinifyJSONString('{}'),
+          [],
         ),
       );
       if (populateWithMockData) {
@@ -512,6 +513,7 @@ export class MappingTestState {
             guaranteeNonNullable(source.owner.owner),
           ),
           '',
+          [],
         ),
       );
       if (populateWithMockData) {
@@ -530,6 +532,7 @@ export class MappingTestState {
           ),
           '',
           RelationalInputType.SQL,
+          [],
         ),
       );
       if (populateWithMockData) {
@@ -624,14 +627,12 @@ export class MappingTestState {
     }
     const startTime = Date.now();
     try {
-      const runtime = this.inputDataState.runtime;
       this.isRunningTest = true;
       const result =
-        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+        (yield this.editorStore.graphManagerState.graphManager.executeMappingTest(
           this.editorStore.graphManagerState.graph,
           this.mappingEditorState.mapping,
-          this.test.query,
-          runtime,
+          this.queryState.test.name,
           PureClientVersion.VX_X_X,
           true,
         )) as ExecutionResult;

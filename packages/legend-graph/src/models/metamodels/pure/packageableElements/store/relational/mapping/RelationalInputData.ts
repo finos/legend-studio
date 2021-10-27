@@ -46,11 +46,13 @@ export class RelationalInputData extends InputData implements Hashable {
   database: PackageableElementReference<Database>;
   data: string;
   inputType: RelationalInputType;
+  textElements: string[];
 
   constructor(
     database: PackageableElementReference<Database>,
     data: string,
     inputType: RelationalInputType,
+    textElements: string[],
   ) {
     super();
 
@@ -66,6 +68,7 @@ export class RelationalInputData extends InputData implements Hashable {
     this.database = database;
     this.data = data;
     this.inputType = inputType;
+    this.textElements = textElements;
   }
 
   setData(value: string): void {
@@ -91,6 +94,7 @@ export class RelationalInputData extends InputData implements Hashable {
       this.database.hashValue,
       this.data,
       this.inputType,
+      hashArray(this.textElements),
     ]);
   }
 }

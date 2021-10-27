@@ -37,7 +37,12 @@ const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
     case TEXT_TYPE.MARKDOWN:
       return EDITOR_LANGUAGE.MARKDOWN;
     case TEXT_TYPE.PLAIN_TEXT:
+    case TEXT_TYPE.CSV:
       return EDITOR_LANGUAGE.TEXT;
+    case TEXT_TYPE.JSON:
+      return EDITOR_LANGUAGE.JSON;
+    case TEXT_TYPE.SQL:
+      return EDITOR_LANGUAGE.SQL;
     default:
       throw new UnsupportedOperationError(
         `Can't derive text editor format for text content of type '${type}'`,

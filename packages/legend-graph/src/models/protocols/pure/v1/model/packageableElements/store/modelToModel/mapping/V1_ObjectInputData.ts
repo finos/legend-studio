@@ -28,6 +28,7 @@ export class V1_ObjectInputData extends V1_InputData implements Hashable {
   inputType = V1_ObjectInputType.JSON; // default value for backward compatibility
   sourceClass!: string;
   data!: string;
+  textElements: string[] = [];
 
   get hashCode(): string {
     return hashArray([
@@ -35,6 +36,7 @@ export class V1_ObjectInputData extends V1_InputData implements Hashable {
       this.sourceClass,
       this.inputType,
       this.data,
+      hashArray(this.textElements),
     ]);
   }
 }

@@ -236,6 +236,7 @@ const transformObjectInputData = (
   inputData.data = element.data;
   inputData.inputType = V1_getObjectInputType(element.inputType);
   inputData.sourceClass = V1_transformElementReference(element.sourceClass);
+  inputData.textElements = element.textElements;
   return inputData;
 };
 
@@ -248,6 +249,7 @@ const transformFlatDataInputData = (
     V1_PackageableElementPointerType.STORE,
     element.sourceFlatData,
   );
+  inputData.textElements = element.textElements;
   return inputData;
 };
 
@@ -258,6 +260,7 @@ const transformRelationalInputData = (
   inputData.data = element.data;
   inputData.inputType = element.inputType;
   inputData.database = V1_transformElementReference(element.database);
+  inputData.textElements = element.textElements;
   return inputData;
 };
 

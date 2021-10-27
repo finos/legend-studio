@@ -23,12 +23,14 @@ import type { V1_PackageableElementPointer } from '../../../../../model/packagea
 export class V1_FlatDataInputData extends V1_InputData implements Hashable {
   sourceFlatData!: V1_PackageableElementPointer;
   data!: string;
+  textElements: string[] = [];
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
       this.sourceFlatData,
       this.data,
+      hashArray(this.textElements),
     ]);
   }
 }

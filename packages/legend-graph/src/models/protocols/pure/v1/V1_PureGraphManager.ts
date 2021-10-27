@@ -203,6 +203,8 @@ import {
 } from '../../../../graphManager/GraphManagerUtils';
 import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { GraphPluginManager } from '../../../../GraphPluginManager';
+import { V1_ExecuteMappingTestInput } from './engine/execution/V1_ExecuteMappingTestInput';
+import { EngineRuntime } from '../../../metamodels/pure/packageableElements/runtime/Runtime';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1832,6 +1834,60 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return executeInput;
   };
 
+  private createMappingTestExecutionInput = (
+    graph: PureModel,
+    mapping: Mapping,
+    testId: string,
+    clientVersion: string,
+  ): V1_ExecuteMappingTestInput => {
+    /**
+     * NOTE: to lessen network load, we might need to think of a way to only include relevant part of the pure model context data here
+     *
+     * Graph data models can be classified based on dependency hieararchy:
+     * 1. Building blocks: models that all other models depend on: e.g. domain models, connections, etc.
+     * 2. Consumers: models that depends on other models: e.g. mapping, service, etc.
+     * 3. Unrelated: models that depends on nothing and vice versa: e.g. text
+     *
+     * It would be great if we can provide a way to walk the mapping to select only relevant part, but the problem is we cannot really walk the lambda
+     * object to identify relevant classes yet. so the more economical way to to base on the classification above and the knowledge about hierarchy between
+     * models (e.g. service can use mapping, runtime, connection, store, etc.) we can roughly prune the graph model data by group. Following is an example
+     * for mapping used for execution, but this can generalized if we introduce hierarchy/ranking for model type
+     *
+     */
+    const graphData = this.getFullGraphModelData(graph);
+    const prunedGraphData = new V1_PureModelContextData();
+    const extraExecutionElements = this.pluginManager
+      .getPureProtocolProcessorPlugins()
+      .flatMap((element) => element.V1_getExtraExecutionInputGetters?.() ?? [])
+      .flatMap((getter) =>
+        getter(graph, mapping, new EngineRuntime(), graphData),
+      );
+    prunedGraphData.elements = graphData.elements
+      .filter(
+        (element) =>
+          element instanceof V1_Class ||
+          element instanceof V1_Enumeration ||
+          element instanceof V1_Profile ||
+          element instanceof V1_Association ||
+          element instanceof V1_ConcreteFunctionDefinition ||
+          element instanceof V1_Measure ||
+          element instanceof V1_Store ||
+          element instanceof V1_PackageableConnection ||
+          element instanceof V1_PackageableRuntime ||
+          element instanceof V1_Mapping,
+      )
+      .concat(extraExecutionElements);
+    // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
+    // packageable runtime and connection just to play with execution.
+    const executeMappingTestInput = new V1_ExecuteMappingTestInput();
+    executeMappingTestInput.clientVersion = clientVersion;
+    executeMappingTestInput.mapping = mapping.path;
+    executeMappingTestInput.model = prunedGraphData;
+    executeMappingTestInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
+    executeMappingTestInput.testId = testId;
+    return executeMappingTestInput;
+  };
+
   async executeMapping(
     graph: PureModel,
     mapping: Mapping,
@@ -1847,6 +1903,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           mapping,
           lambda,
           runtime,
+          clientVersion,
+        ),
+        useLosslessParse,
+      ),
+    );
+  }
+
+  async executeMappingTest(
+    graph: PureModel,
+    mapping: Mapping,
+    testId: string,
+    clientVersion: string,
+    useLosslessParse: boolean,
+  ): Promise<ExecutionResult> {
+    return V1_buildExecutionResult(
+      await this.engine.executeMappingTest(
+        this.createMappingTestExecutionInput(
+          graph,
+          mapping,
+          testId,
           clientVersion,
         ),
         useLosslessParse,

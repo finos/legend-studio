@@ -45,6 +45,7 @@ import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
 import type { V1_LightQuery, V1_Query } from './query/V1_Query';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage';
 import type { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
+import type { V1_ExecuteMappingTestInput } from './execution/V1_ExecuteMappingTestInput';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -278,6 +279,21 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.EXECUTE),
       `${this._execution()}/execute`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+      { skipProcessing: Boolean(returnResultAsText) },
+    );
+
+  doMappingTest = (
+    input: PlainObject<V1_ExecuteMappingTestInput>,
+    returnResultAsText?: boolean,
+  ): Promise<PlainObject<V1_ExecutionResult> | Response> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.EXECUTE),
+      `${this._execution()}/doMappingTest`,
       input,
       {},
       undefined,

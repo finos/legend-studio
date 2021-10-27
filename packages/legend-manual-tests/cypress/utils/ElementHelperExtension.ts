@@ -135,6 +135,10 @@ export class MappingHelperExtension extends ElementHelperExtension {
       method: 'POST',
       url: `${eningeServer}/api/pure/v1/execution/execute`,
     }).as('execute');
+    cy.route({
+      method: 'POST',
+      url: `${eningeServer}/api/pure/v1/execution/doMappingTest`,
+    }).as('doMappingTest');
   };
 }
 

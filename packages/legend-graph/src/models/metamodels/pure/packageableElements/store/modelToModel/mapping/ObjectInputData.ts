@@ -51,11 +51,13 @@ export class ObjectInputData extends InputData implements Hashable {
   sourceClass: PackageableElementReference<Class>;
   inputType: ObjectInputType;
   data: string;
+  textElements: string[];
 
   constructor(
     sourceClass: PackageableElementReference<Class>,
     inputType: ObjectInputType,
     data: string,
+    textElements: string[],
   ) {
     super();
 
@@ -74,6 +76,7 @@ export class ObjectInputData extends InputData implements Hashable {
       inputType === ObjectInputType.JSON
         ? tryToMinifyLosslessJSONString(data)
         : data;
+    this.textElements = textElements;
   }
 
   setData(val: string): void {
@@ -102,6 +105,7 @@ export class ObjectInputData extends InputData implements Hashable {
       this.sourceClass.hashValue,
       this.inputType,
       this.data,
+      hashArray(this.textElements),
     ]);
   }
 }

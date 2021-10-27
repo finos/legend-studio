@@ -34,8 +34,9 @@ import {
 } from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumValueMapping';
 import { MappingTest } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingTest';
 import {
-  ObjectInputData,
   getObjectInputType,
+  ObjectInputData,
+  ObjectInputType,
 } from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import type { InputData } from '../../../../../../../metamodels/pure/packageableElements/mapping/InputData';
 import { FlatDataInputData } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData';
@@ -65,6 +66,7 @@ import { V1_RelationalInputData } from '../../../../model/packageableElements/st
 import {
   getRelationalInputType,
   RelationalInputData,
+  RelationalInputType,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
 import { getAllClassMappings } from '../../../../../../../../helpers/MappingHelper';
 
@@ -205,6 +207,14 @@ const V1_buildMappingTestInputData = (
       inputData.sourceClass,
       `Object input data 'sourceClass' field is missing`,
     );
+    if (inputData.textElements.length > 0) {
+      return new ObjectInputData(
+        context.resolveClass(inputData.sourceClass),
+        ObjectInputType.JSON,
+        '{}',
+        inputData.textElements,
+      );
+    }
     assertNonNullable(
       inputData.inputType,
       `Object input data 'inputType' field is missing`,
@@ -217,12 +227,20 @@ const V1_buildMappingTestInputData = (
       context.resolveClass(inputData.sourceClass),
       getObjectInputType(inputData.inputType),
       inputData.data,
+      [],
     );
   } else if (inputData instanceof V1_FlatDataInputData) {
     assertNonNullable(
       inputData.sourceFlatData,
       `Flat-data input data 'sourceFlatData' field is missing`,
     );
+    if (inputData.textElements.length > 0) {
+      return new FlatDataInputData(
+        context.resolveFlatDataStore(inputData.sourceFlatData.path),
+        '',
+        inputData.textElements,
+      );
+    }
     assertNonNullable(
       inputData.data,
       `Flat-data input data 'data' field is missing`,
@@ -230,8 +248,17 @@ const V1_buildMappingTestInputData = (
     return new FlatDataInputData(
       context.resolveFlatDataStore(inputData.sourceFlatData.path),
       inputData.data,
+      [],
     );
   } else if (inputData instanceof V1_RelationalInputData) {
+    if (inputData.textElements.length > 0) {
+      return new RelationalInputData(
+        context.resolveDatabase(inputData.database),
+        '',
+        RelationalInputType.SQL,
+        inputData.textElements,
+      );
+    }
     assertNonNullable(
       inputData.database,
       `Relational input data 'database' field is missing`,
@@ -248,6 +275,7 @@ const V1_buildMappingTestInputData = (
       context.resolveDatabase(inputData.database),
       inputData.data,
       getRelationalInputType(inputData.inputType),
+      [],
     );
   }
   throw new UnsupportedOperationError(

@@ -100,18 +100,21 @@ test(unitTest('JSON Object input data should be minified'), () => {
     PackageableElementExplicitReference.create(Class.createStub()),
     ObjectInputType.JSON,
     '{"a":1}',
+    [],
   );
 
   const test2 = new ObjectInputData(
     PackageableElementExplicitReference.create(Class.createStub()),
     ObjectInputType.JSON,
     '{\n  "a":1\n}',
+    [],
   );
 
   const test3 = new ObjectInputData(
     PackageableElementExplicitReference.create(Class.createStub()),
     ObjectInputType.JSON,
     '{\n  "a":1, \n "b" : {\n  "b1":"hello"\n} \n}',
+    [],
   );
 
   expect(test1.data === losslessStringify(losslessParse(test1.data)));

@@ -23,6 +23,7 @@ export class V1_RelationalInputData extends V1_InputData implements Hashable {
   database!: string;
   data!: string;
   inputType!: string;
+  textElements: string[] = [];
 
   get hashCode(): string {
     return hashArray([
@@ -30,6 +31,7 @@ export class V1_RelationalInputData extends V1_InputData implements Hashable {
       this.database,
       this.data,
       this.inputType,
+      hashArray(this.textElements),
     ]);
   }
 }
