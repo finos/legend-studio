@@ -59,14 +59,15 @@ const prepareNewStandardRelease = async () => {
     if (
       // NOTE: on Github, file's base64 encoded content are chunked into short lines
       // so we want to remove these line breaks for accurate comparison
-      existingChangesetFile?.content?.replaceAll('\n', '') ===
-      newChangesetContent
+      existingChangesetFile?.content &&
+      existingChangesetFile.content.replaceAll('\n', '') === newChangesetContent
     ) {
       githubActionCore.warning(
         `(skipped) Next release version bump changeset already existed`,
       );
       return;
     }
+    console.log(existingChangesetFile); // debugging
 
     const defaultBranchRef = (
       await octokit.rest.git.getRef({
