@@ -1,5 +1,15 @@
 # @finos/legend-studio
 
+## 0.4.0
+
+### Minor Changes
+
+- [#580](https://github.com/finos/legend-studio/pull/580) [`7318c222`](https://github.com/finos/legend-studio/commit/7318c2223d5653be18f00a489aa00b3143a600fe) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for `class mapping` in form mode
+
+### Patch Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Support word-wraping for text-mode.
+
 ## 0.3.4
 
 ### Patch Changes

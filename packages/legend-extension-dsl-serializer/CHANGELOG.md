@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-serializer
 
+## 0.2.1
+
+### Patch Changes
+
+- [#592](https://github.com/finos/legend-studio/pull/592) [`9bb9cdcc`](https://github.com/finos/legend-studio/commit/9bb9cdcccbe619ea1f8d059429a9df8436809b49) ([@gayathrir11](https://github.com/gayathrir11)) - Add `JSON` format type for `SchemaSet`
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,5 +1,15 @@
 # @finos/legend-query
 
+## 0.1.0
+
+### Minor Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Created an extension mechanism for query setup.
+
+### Patch Changes
+
+- [#588](https://github.com/finos/legend-studio/pull/588) [`83c05ada`](https://github.com/finos/legend-studio/commit/83c05ada3f309766cc7e4ec59f2ef0cba02d9ee6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - List possible `mappings` and `runtimes` from dependency projects in query setup.
+
 ## 0.0.15
 
 ## 0.0.14

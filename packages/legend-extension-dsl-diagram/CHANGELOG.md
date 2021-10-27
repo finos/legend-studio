@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram
 
+## 0.1.0
+
+### Minor Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Support context menu for class views. Cleanup diagram renderer event handlers: they now align with the events that trigger them, not their purpose, e.g. we changed `handleEditClassView` to `onClassViewDoubleClick`.
+
 ## 0.0.13
 
 ## 0.0.12
