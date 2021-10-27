@@ -16,3 +16,5 @@
 
 export * from './ESService_Extension';
 export * from './models/protocols/pure/ExternalStoreService_PureProtocolPlugin_Extension';
+export { SecurityScheme } from './models/metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
+export { V1_SecurityScheme } from './models/protocols/pure/v1/model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
