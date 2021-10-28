@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaAsterisk, FaLongArrowAltDown, FaEdit } from 'react-icons/fa';
 import {
@@ -443,6 +443,14 @@ export const InstanceSetImplementationEditor = observer(
         PureInstanceSetImplementationState &&
       instanceSetImplementationState.mappingElement.filter;
 
+    const plugins = editorStore.pluginManager.getStudioPlugins();
+
+    const mappingElementDecorationCleaner = useMemo(() => {
+      const cleaner = new MappingElementDecorationCleaner();
+      cleaner.plugins = plugins;
+      return cleaner;
+    }, [plugins]);
+
     useEffect(() => {
       if (!isReadOnly) {
         instanceSetImplementationState.decorate();
@@ -463,13 +471,14 @@ export const InstanceSetImplementationEditor = observer(
         ? noop()
         : (): void =>
             setImplementation.accept_SetImplementationVisitor(
-              new MappingElementDecorationCleaner(),
+              mappingElementDecorationCleaner,
             );
     }, [
       applicationStore,
       setImplementation,
       isReadOnly,
       instanceSetImplementationState,
+      mappingElementDecorationCleaner,
     ]);
 
     useEffect(() => {

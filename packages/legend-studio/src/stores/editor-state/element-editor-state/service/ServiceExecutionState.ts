@@ -474,7 +474,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       decorateRuntimeWithNewMapping(
         this.selectedExecutionConfiguration.runtime,
         this.selectedExecutionConfiguration.mapping.value,
-        this.editorStore.graphManagerState.graph,
+        this.editorStore,
       );
       this.selectedExecutionConfiguration.setRuntime(customRuntime);
     }

@@ -729,7 +729,10 @@ export class MappingExecutionState {
           );
         } else {
           this.setInputDataStateBasedOnSource(
-            getMappingElementSource(setImplementation),
+            getMappingElementSource(
+              setImplementation,
+              this.editorStore.pluginManager.getStudioPlugins(),
+            ),
             true,
           );
         }
@@ -746,7 +749,10 @@ export class MappingExecutionState {
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void =>
                 this.setInputDataStateBasedOnSource(
-                  getMappingElementSource(setImplementation),
+                  getMappingElementSource(
+                    setImplementation,
+                    this.editorStore.pluginManager.getStudioPlugins(),
+                  ),
                   true,
                 ),
             },

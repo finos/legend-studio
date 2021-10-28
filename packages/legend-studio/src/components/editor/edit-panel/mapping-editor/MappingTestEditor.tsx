@@ -80,6 +80,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
+import type { StudioPlugin } from '../../../../stores/StudioPlugin';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -148,7 +149,10 @@ const MappingTestQueryEditor = observer(
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void =>
                   testState.setInputDataStateBasedOnSource(
-                    getMappingElementSource(setImplementation),
+                    getMappingElementSource(
+                      setImplementation,
+                      editorStore.pluginManager.getStudioPlugins(),
+                    ),
                     true,
                   ),
               },
@@ -400,8 +404,12 @@ export const MappingTestInputDataTypeBuilder = observer(
 );
 
 export const MappingTestInputDataBuilder = observer(
-  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
-    const { testState, isReadOnly } = props;
+  (props: {
+    testState: MappingTestState;
+    isReadOnly: boolean;
+    plugins: StudioPlugin[];
+  }) => {
+    const { testState, isReadOnly, plugins } = props;
     const inputDataState = testState.inputDataState;
 
     // Class mapping selector
@@ -415,13 +423,13 @@ export const MappingTestInputDataBuilder = observer(
       (setImplementation: SetImplementation | undefined): void => {
         testState.setInputDataStateBasedOnSource(
           setImplementation
-            ? getMappingElementSource(setImplementation)
+            ? getMappingElementSource(setImplementation, plugins)
             : undefined,
           true,
         );
         hideClassMappingSelectorModal();
       },
-      [testState],
+      [testState, plugins],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);
@@ -595,8 +603,12 @@ export const MappingTestAssertionBuilder = observer(
 );
 
 export const MappingTestBuilder = observer(
-  (props: { testState: MappingTestState; isReadOnly: boolean }) => {
-    const { testState, isReadOnly } = props;
+  (props: {
+    testState: MappingTestState;
+    isReadOnly: boolean;
+    plugins: StudioPlugin[];
+  }) => {
+    const { testState, isReadOnly, plugins } = props;
     const applicationStore = useApplicationStore();
 
     // In case we switch out to another tab to do editing on some class, we want to refresh the test state data so that we can detect problem in deep fetch tree
@@ -627,6 +639,7 @@ export const MappingTestBuilder = observer(
               key={testState.inputDataState.uuid}
               testState={testState}
               isReadOnly={isReadOnly}
+              plugins={plugins}
             />
           </ResizablePanel>
           <ResizablePanelSplitter>
@@ -648,6 +661,7 @@ export const MappingTestBuilder = observer(
 export const MappingTestEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
+    const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const selectedTab = testState.selectedTab;
     const changeTab =
@@ -729,7 +743,11 @@ export const MappingTestEditor = observer(
         </div>
         <div className="mapping-test-editor__content">
           {selectedTab === MAPPING_TEST_EDITOR_TAB_TYPE.SETUP && (
-            <MappingTestBuilder testState={testState} isReadOnly={isReadOnly} />
+            <MappingTestBuilder
+              testState={testState}
+              isReadOnly={isReadOnly}
+              plugins={editorStore.pluginManager.getStudioPlugins()}
+            />
           )}
           {selectedTab === MAPPING_TEST_EDITOR_TAB_TYPE.RESULT && (
             <div className="mapping-test-editor__result">

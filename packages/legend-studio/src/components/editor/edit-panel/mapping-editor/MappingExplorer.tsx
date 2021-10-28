@@ -97,6 +97,8 @@ export const MappingExplorerContextMenu = observer(
           currentMappingElement,
         );
       } else if (currentMappingElement instanceof SetImplementation) {
+        const mappingElementDecorator = new MappingElementDecorator();
+        mappingElementDecorator.editorStore = editorStore;
         currentMappingElement.accept_SetImplementationVisitor(
           new MappingElementDecorator(),
         );

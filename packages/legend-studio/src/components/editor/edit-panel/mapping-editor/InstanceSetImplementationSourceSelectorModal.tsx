@@ -145,7 +145,11 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     });
     const sourceSelectorRef = useRef<SelectComponent>(null);
     const selectedSourceType = buildMappingElementSourceOption(
-      sourceElementToSelect ?? getMappingElementSource(setImplementation),
+      sourceElementToSelect ??
+        getMappingElementSource(
+          setImplementation,
+          editorStore.pluginManager.getStudioPlugins(),
+        ),
     );
     const changeSourceType = (
       val: MappingElementSourceSelectOption | null,

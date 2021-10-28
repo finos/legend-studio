@@ -23,6 +23,7 @@ import {
 import type {
   StudioPluginManager,
   NewElementFromStateCreator,
+  RuntimeConnectionTooltipTextBuilder,
   EditorStore,
   ElementEditorState,
   ElementEditorStateCreator,
@@ -38,11 +39,13 @@ import type {
   MappingElementSource,
 } from '@finos/legend-studio';
 import type {
+  Connection,
   PackageableElement,
   SetImplementation,
 } from '@finos/legend-graph';
 import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
 import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/RootServiceInstanceSetImplementation';
+import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ServiceStoreConnection';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -156,6 +159,17 @@ export class ESService_StudioPlugin
       (mappingElement: MappingElement): MappingElementSource | undefined => {
         if (mappingElement instanceof RootServiceInstanceSetImplementation) {
           return mappingElement.class.value;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraRuntimeConnectionTooltipTextBuilders(): RuntimeConnectionTooltipTextBuilder[] {
+    return [
+      (connection: Connection): string | undefined => {
+        if (connection instanceof ServiceStoreConnection) {
+          return `Service store connection \u2020 store ${connection.store.value.path}`;
         }
         return undefined;
       },
