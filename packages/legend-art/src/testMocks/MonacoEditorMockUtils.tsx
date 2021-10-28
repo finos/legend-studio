@@ -35,6 +35,10 @@ export enum MockedMonacoEditorMarkerSeverity {
   Error = 8,
 }
 
+export enum MockedMonacoEditorEndOfLinePreference {
+  LF = 1,
+}
+
 export const MockedMonacoEditorModel = {
   dispose: jest.fn(),
   updateOptions: jest.fn(),
@@ -79,6 +83,7 @@ export const MockedMonacoEditorAPI = {
   setModelMarkers: jest.fn(),
   setModelLanguage: jest.fn(),
   defineTheme: jest.fn(),
+  EndOfLinePreference: MockedMonacoEditorEndOfLinePreference,
 };
 
 export const MockedMonacoEditorLanguagesAPI = {

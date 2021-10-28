@@ -37,7 +37,7 @@ export class DepotServerClient extends AbstractServerClient {
       baseUrl: config.serverUrl,
     });
     this.TEMP__useLegacyDepotServerAPIRoutes = Boolean(
-      config?.TEMP__useLegacyDepotServerAPIRoutes,
+      config.TEMP__useLegacyDepotServerAPIRoutes,
     );
   }
 
