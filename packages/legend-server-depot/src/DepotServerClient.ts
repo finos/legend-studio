@@ -26,13 +26,19 @@ import type { StoredEntity } from './models/StoredEntity';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
+  TEMP__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 }
 
 export class DepotServerClient extends AbstractServerClient {
+  private TEMP__useLegacyDepotServerAPIRoutes = false;
+
   constructor(config: DepotServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
     });
+    this.TEMP__useLegacyDepotServerAPIRoutes = Boolean(
+      config?.TEMP__useLegacyDepotServerAPIRoutes,
+    );
   }
 
   // ------------------------------------------- Projects -------------------------------------------
@@ -89,17 +95,25 @@ export class DepotServerClient extends AbstractServerClient {
       limit?: number | undefined;
     },
   ): Promise<PlainObject<StoredEntity>[]> =>
-    this.get(
-      `${
-        this.networkClient.baseUrl
-      }/entitiesByClassifierPath/${encodeURIComponent(classifierPath)}`,
-      undefined,
-      undefined,
-      {
-        search: options?.search,
-        limit: options?.limit,
-      },
-    );
+    this.TEMP__useLegacyDepotServerAPIRoutes
+      ? this.get(
+          `${this.networkClient.baseUrl}/classifiers/${encodeURIComponent(
+            classifierPath,
+          )}`,
+          undefined,
+          undefined,
+        )
+      : this.get(
+          `${
+            this.networkClient.baseUrl
+          }/entitiesByClassifierPath/${encodeURIComponent(classifierPath)}`,
+          undefined,
+          undefined,
+          {
+            search: options?.search,
+            limit: options?.limit,
+          },
+        );
 
   // ------------------------------------------- Dependencies -------------------------------------------
 
