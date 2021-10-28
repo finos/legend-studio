@@ -174,7 +174,8 @@ export const V1_transformTableAliasToTablePointer = (
   tablePtr.database = options?.TEMPORARY__resolveToFullPath
     ? tableAlias.relation.ownerReference.value.path
     : tableAlias.relation.ownerReference.valueForSerialization ?? '';
-  /* @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph */
+  // FIXME: Sometimes, we interpret this, so to maintain roundtrip stability, we need to handle this differrently
+  // See https://github.com/finos/legend-studio/issues/295
   tablePtr.mainTableDb = tablePtr.database;
   tablePtr.schema = tableAlias.isSelfJoinTarget
     ? SELF_JOIN_SCHEMA_NAME
@@ -188,7 +189,8 @@ export const V1_transformTableAliasToTablePointer = (
 export const V1_transformTableToTablePointer = (table: Table): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
   tablePtr.database = table.schema.owner.path;
-  /* @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph */
+  // FIXME: Sometimes, we interpret this, so to maintain roundtrip stability, we need to handle this differrently
+  // See https://github.com/finos/legend-studio/issues/295
   tablePtr.mainTableDb = tablePtr.database;
   tablePtr.schema = table.schema.name;
   tablePtr.table = table.name;

@@ -55,6 +55,8 @@ import {
   setErrorMarkers,
   revealError,
   resetLineNumberGutterWidth,
+  getEditorValue,
+  normalizeLineEnding,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView';
 import { MdCompareArrows } from 'react-icons/md';
@@ -157,8 +159,9 @@ const MergeConflictEditor = observer(
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
     const [hasInitializedTextValue, setInitializedTextValue] = useState(false);
-    const value = conflictEditorState.mergedText;
-    const currentValue = editor?.getValue() ?? '';
+    const value = conflictEditorState.mergedText
+      ? normalizeLineEnding(conflictEditorState.mergedText)
+      : undefined;
     const error = conflictEditorState.mergeEditorParserError;
     const decorations = useRef<string[]>([]);
     const mergeConflictResolutionCodeLensDisposer = useRef<
@@ -211,7 +214,7 @@ const MergeConflictEditor = observer(
       onDidChangeModelContentEventDisposer.current?.dispose();
       onDidChangeModelContentEventDisposer.current =
         editor.onDidChangeModelContent(() => {
-          conflictEditorState.setMergedText(editor.getValue());
+          conflictEditorState.setMergedText(getEditorValue(editor));
           conflictEditorState.clearMergeEditorError();
         });
 
@@ -523,6 +526,7 @@ const MergeConflictEditor = observer(
     useEffect(() => {
       if (editor) {
         const editorModel = editor.getModel();
+        const currentValue = getEditorValue(editor);
         if (editorModel && value !== undefined && currentValue !== value) {
           if (!hasInitializedTextValue) {
             editor.setValue(value);
@@ -543,7 +547,7 @@ const MergeConflictEditor = observer(
           }
         }
       }
-    }, [editor, currentValue, value, hasInitializedTextValue]);
+    }, [editor, value, hasInitializedTextValue]);
 
     useEffect(() => {
       if (editor) {

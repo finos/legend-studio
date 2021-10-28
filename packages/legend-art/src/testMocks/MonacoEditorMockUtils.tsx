@@ -38,6 +38,7 @@ export enum MockedMonacoEditorMarkerSeverity {
 export const MockedMonacoEditorModel = {
   dispose: jest.fn(),
   updateOptions: jest.fn(),
+  getValue: jest.fn(),
   getLineCount: jest.fn(),
   getLineMaxColumn: jest.fn(),
   pushStackElement: jest.fn(),
