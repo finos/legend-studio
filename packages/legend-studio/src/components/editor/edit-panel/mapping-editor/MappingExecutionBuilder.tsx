@@ -48,12 +48,7 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { NewServiceModal } from '../service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import {
-  guaranteeType,
-  uniq,
-  isNonNullable,
-  prettyCONSTName,
-} from '@finos/legend-shared';
+import { guaranteeType, uniq, isNonNullable } from '@finos/legend-shared';
 import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,
@@ -78,7 +73,6 @@ import {
   RelationalInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { getRelationalInputTestDataEditorLanguage } from './MappingTestEditor';
 import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
 
 interface ClassMappingSelectOption {
@@ -153,6 +147,17 @@ export const ClassMappingSelectorModal = observer(
     );
   },
 );
+
+export const getRelationalInputTestDataEditorLanguage = (
+  type: RelationalInputType,
+): EDITOR_LANGUAGE => {
+  switch (type) {
+    case RelationalInputType.SQL:
+      return EDITOR_LANGUAGE.SQL;
+    default:
+      return EDITOR_LANGUAGE.TEXT;
+  }
+};
 
 const MappingExecutionQueryEditor = observer(
   (props: { executionState: MappingExecutionState }) => {
@@ -472,7 +477,7 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
   },
 );
 
-export const MappingExecutionInputDataTypeBuilder = observer(
+const RelationalMappingExecutionInputDataTypeSelector = observer(
   (props: { inputDataState: MappingExecutionRelationalInputDataState }) => {
     const { inputDataState } = props;
 
@@ -484,24 +489,27 @@ export const MappingExecutionInputDataTypeBuilder = observer(
 
     return (
       <DropdownMenu
-        className="edit-panel__header__tab"
+        className="mapping-execution-builder__input-data-panel__type-selector"
         content={
           <MenuContent>
             {Object.keys(RelationalInputType).map((mode) => (
               <MenuContentItem
                 key={mode}
-                className="edit-panel__header__dropdown__tab__option"
+                className="mapping-execution-builder__input-data-panel__type-selector__option"
                 onClick={changeInputType(mode)}
               >
-                {prettyCONSTName(mode)}
+                {mode}
               </MenuContentItem>
             ))}
           </MenuContent>
         }
       >
-        <div className="edit-panel__header__tab__content">
-          <div className="edit-panel__header__tab__label">
-            {prettyCONSTName(inputDataState.inputData.inputType)}
+        <div
+          className="mapping-execution-builder__input-data-panel__type-selector__value"
+          title="Choose input data type..."
+        >
+          <div className="mapping-execution-builder__input-data-panel__type-selector__value__label">
+            {inputDataState.inputData.inputType}
           </div>
           <CaretDownIcon />
         </div>
@@ -575,14 +583,16 @@ export const MappingExecutionInputDataBuilder = observer(
       inputDataBuilder = null;
     }
 
-    //input type builder
-    let inputTypeBuilder: React.ReactNode;
+    // input type builder
+    let inputTypeSelector: React.ReactNode;
     if (inputDataState instanceof MappingExecutionRelationalInputDataState) {
-      inputTypeBuilder = (
-        <MappingExecutionInputDataTypeBuilder inputDataState={inputDataState} />
+      inputTypeSelector = (
+        <RelationalMappingExecutionInputDataTypeSelector
+          inputDataState={inputDataState}
+        />
       );
     } else {
-      inputTypeBuilder = null;
+      inputTypeSelector = null;
     }
 
     const clearInputData = (): void =>
@@ -601,6 +611,7 @@ export const MappingExecutionInputDataBuilder = observer(
             <div className="panel__header__title__label">input data</div>
           </div>
           <div className="panel__header__actions">
+            {inputTypeSelector}
             <button
               className="panel__header__action"
               tabIndex={-1}
@@ -617,7 +628,6 @@ export const MappingExecutionInputDataBuilder = observer(
             >
               <PencilIcon />
             </button>
-            {inputTypeBuilder}
           </div>
         </div>
         {inputDataBuilder}
