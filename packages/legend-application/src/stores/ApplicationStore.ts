@@ -205,11 +205,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     );
   }
 
-  notifyError(
-    content: Error | string,
-    actions?: NotificationAction[],
-    autoHideDuration?: number | null,
-  ): void {
+  notifyError(content: Error | string, actions?: NotificationAction[]): void {
     let message: string | undefined;
     if (content instanceof ApplicationError) {
       message = content.getFullErrorMessage();
@@ -225,9 +221,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
           NOTIFCATION_SEVERITY.ERROR,
           message,
           actions ?? [],
-          autoHideDuration === null
-            ? undefined
-            : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+          undefined,
         ),
       );
     }
