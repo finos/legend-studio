@@ -345,6 +345,7 @@ export abstract class AbstractPureGraphManager {
   // structurally in Studio
 
   abstract HACKY_createGetAllLambda(_class: Class): RawLambda;
+  // NOTE: Input should be a regular string, can't be escaped.
   abstract HACKY_createServiceTestAssertLambda(assertData: string): RawLambda;
   abstract HACKY_extractServiceTestAssertionData(
     query: RawLambda,

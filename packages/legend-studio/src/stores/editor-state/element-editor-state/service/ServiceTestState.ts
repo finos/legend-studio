@@ -136,7 +136,7 @@ export class TestContainerState {
       this.testContainer.assert =
         this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-          toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
+          tryToMinifyLosslessJSONString(this.assertionData),
         );
     }
   }
