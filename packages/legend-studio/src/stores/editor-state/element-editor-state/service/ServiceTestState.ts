@@ -29,7 +29,6 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToFormatJSONString,
-  toGrammarString,
   fromGrammarString,
   createUrlStringFromData,
 } from '@finos/legend-shared';
