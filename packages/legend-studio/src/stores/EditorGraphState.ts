@@ -339,8 +339,6 @@ export class EditorGraphState {
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
         this.editorStore.applicationStore.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
-          undefined,
-          null,
         );
         const projectConfigurationEditorState =
           this.editorStore.projectConfigurationEditorState;
