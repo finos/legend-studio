@@ -542,7 +542,9 @@ const CreateWorkspaceModal = observer(() => {
       projectSelectorRef.current?.focus();
     }
   };
-  const toggle = (event: React.FormEvent<HTMLButtonElement>): void => {
+  const toggleGroupWorkspace = (
+    event: React.FormEvent<HTMLButtonElement>,
+  ): void => {
     event.preventDefault();
     setIsGroupWorkspace(!isGroupWorkspace);
   };
@@ -606,7 +608,8 @@ const CreateWorkspaceModal = observer(() => {
               </div>
               <div className="panel__content__form__section__toggler">
                 <button
-                  onClick={toggle}
+                  onClick={toggleGroupWorkspace}
+                  type="button" // prevent this toggler being activated on form submission
                   className={clsx(
                     'panel__content__form__section__toggler__btn',
                     {

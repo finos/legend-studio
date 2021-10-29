@@ -27,6 +27,8 @@ import {
   resetLineNumberGutterWidth,
   clsx,
   WordWrapIcon,
+  getEditorValue,
+  normalizeLineEnding,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -77,7 +79,7 @@ export const GrammarTextEditor = observer(() => {
   const currentElementLabelRegexString =
     grammarTextEditorState.currentElementLabelRegexString;
   const error = grammarTextEditorState.error;
-  const graphGrammarText = grammarTextEditorState.graphGrammarText;
+  const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
 
   const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
@@ -104,7 +106,7 @@ export const GrammarTextEditor = observer(() => {
         theme: EDITOR_THEME.LEGEND,
       });
       _editor.onDidChangeModelContent(() => {
-        grammarTextEditorState.setGraphGrammarText(_editor.getValue());
+        grammarTextEditorState.setGraphGrammarText(getEditorValue(_editor));
         editorStore.graphState.clearCompilationError();
         // we can technically can reset the current element label regex string here
         // but if we do that on first load, the cursor will not jump to the current element
@@ -181,9 +183,9 @@ export const GrammarTextEditor = observer(() => {
 
   if (editor) {
     // Set the value of the editor
-    const currentValue = editor.getValue();
-    if (currentValue !== graphGrammarText) {
-      editor.setValue(graphGrammarText);
+    const currentValue = getEditorValue(editor);
+    if (currentValue !== value) {
+      editor.setValue(value);
     }
     editor.updateOptions({
       wordWrap: grammarTextEditorState.wrapText ? 'on' : 'off',

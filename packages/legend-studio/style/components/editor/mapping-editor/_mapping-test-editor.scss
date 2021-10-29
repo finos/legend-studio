@@ -144,6 +144,36 @@
     position: relative;
   }
 
+  &__input-data-panel__type-selector {
+    @include flexVCenter;
+
+    padding: 0 1rem;
+    cursor: pointer;
+    color: var(--color-light-grey-400);
+    background: var(--color-dark-grey-80);
+    margin-right: 0.5rem;
+
+    &__option {
+      @include flexCenter;
+
+      width: 6.2rem;
+      height: 2.6rem;
+    }
+
+    &__value {
+      @include flexVCenter;
+
+      height: 100%;
+      width: 100%;
+    }
+
+    &__value__label {
+      color: inherit;
+      padding: 0 0.5rem;
+      white-space: nowrap;
+    }
+  }
+
   &__result-panel__content {
     position: relative;
   }

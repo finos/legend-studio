@@ -28,7 +28,15 @@ export interface QueryConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
-  depot: { url: string };
+  depot: {
+    url: string;
+    /**
+     * This is needed since some of our legacy infrastructure does not yet support
+     * the new API calls, we need to update them to use the latest version of
+     * finos/legend-depot though
+     */
+    TEMP__useLegacyDepotServerAPIRoutes?: boolean;
+  };
   engine: { url: string; queryUrl?: string };
   extensions?: Record<PropertyKey, unknown>;
 }
@@ -37,6 +45,7 @@ export class QueryConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
+  readonly TEMP__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
   constructor(
     configData: QueryConfigurationData,
@@ -58,5 +67,7 @@ export class QueryConfig extends LegendApplicationConfig {
       configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
     );
+    this.TEMP__useLegacyDepotServerAPIRoutes =
+      configData.depot.TEMP__useLegacyDepotServerAPIRoutes;
   }
 }

@@ -104,6 +104,8 @@ export const LegendQueryApplication = observer(
         <DepotServerClientProvider
           config={{
             serverUrl: config.depotServerUrl,
+            TEMP__useLegacyDepotServerAPIRoutes:
+              config.TEMP__useLegacyDepotServerAPIRoutes,
           }}
         >
           <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
