@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 0.1.1
+
+### Patch Changes
+
+- [#620](https://github.com/finos/legend-studio/pull/620) [`efe01d92`](https://github.com/finos/legend-studio/commit/efe01d9218034dc358420b65f20da9715eb55589) ([@akphi](https://github.com/akphi)) - Add a temporary flag `TEMP__useLegacyDepotServerAPIRoutes` in `depot` server config to allow pointing certain APIs at old endpoint. This is expected to be removed soon but provided as a workaround for older infrastructure.
+
 ## 0.1.0
 
 ### Minor Changes

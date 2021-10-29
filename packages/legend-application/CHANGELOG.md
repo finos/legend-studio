@@ -1,5 +1,12 @@
 # @finos/legend-application
 
+## 0.1.1
+
+### Patch Changes
+
+- [#618](https://github.com/finos/legend-studio/pull/618) [`dcf06d09`](https://github.com/finos/legend-studio/commit/dcf06d09bc82d84e05a3d1e6af0d7f445c3d0b39) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Avoid auto-hiding error notification.
+  Fix the width of expanded notification window.
+
 ## 0.1.0
 
 ### Minor Changes
