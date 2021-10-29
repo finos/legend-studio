@@ -52,7 +52,7 @@ export const roundtripTestData = [
     path: 'anything::binding1',
     content: {
       _type: 'binding',
-      contentType: 'test',
+      contentType: 'application/json',
       includedStores: [],
       modelUnit: {
         packageableElementExcludes: [],
@@ -60,7 +60,7 @@ export const roundtripTestData = [
       },
       name: 'binding1',
       package: 'anything',
-      schemaSet: 'schemaSet1',
+      schemaSet: 'anything::schemaSet1',
     },
     classifierPath: 'meta::external::shared::format::binding::Binding',
   },

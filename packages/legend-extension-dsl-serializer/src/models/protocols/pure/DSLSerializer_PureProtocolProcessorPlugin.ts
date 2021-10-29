@@ -38,8 +38,14 @@ import {
   getBinding,
   getSchemaSet,
 } from '../../../graphManager/DSLSerializer_GraphManagerHelper';
-import { V1_resolveBinding } from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';
-import { Binding } from '../../metamodels/pure/model/packageableElements/store/Binding';
+import {
+  V1_buildPackageableElement,
+  V1_resolveBinding,
+} from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';
+import {
+  Binding,
+  CONTENT_TYPE,
+} from '../../metamodels/pure/model/packageableElements/store/Binding';
 import {
   FORMAT_TYPE,
   SchemaSet,
@@ -62,7 +68,6 @@ import type {
   V1_GraphTransformerContext,
   V1_Connection,
   V1_PackageableElement,
-  PackageableElementReference,
   Store,
   V1_ExecutionInputGetter,
   PureModel,
@@ -76,6 +81,7 @@ import {
   V1_transformElementReference,
   V1_ElementBuilder,
   V1_initPackageableElement,
+  PackageableElementReference,
 } from '@finos/legend-graph';
 import { V1_Schema } from './v1/model/packageableElements/schemaSet/V1_Schema';
 import { ModelUnit } from '../../metamodels/pure/model/packageableElements/store/ModelUnit';
@@ -135,22 +141,31 @@ export class DSLSerializer_PureProtocolProcessorPlugin
           );
           const element = getBinding(path, context.graph);
           element.schemaId = elementProtocol.schemaId;
-          element.schemaSet = elementProtocol.schemaSet;
-          element.contentType = guaranteeNonEmptyString(
-            elementProtocol.contentType,
-            `Binding 'contentType' field is missing or empty`,
+          if (elementProtocol.schemaSet !== undefined) {
+            element.schemaSet = getSchemaSet(
+              elementProtocol.schemaSet,
+              context.graph,
+            );
+          }
+          element.contentType = guaranteeNonNullable(
+            Object.values(CONTENT_TYPE).find(
+              (type) => type === elementProtocol.contentType,
+            ),
+            `Binding 'contentType' '${elementProtocol.contentType}' is not supported`,
           );
           assertNonNullable(
             elementProtocol.modelUnit,
             `Binding 'modelUnit' field is missing`,
           );
           const modelUnit = new ModelUnit();
-          modelUnit.setPackageableElementIncludes(
-            elementProtocol.modelUnit.packageableElementIncludes,
-          );
-          modelUnit.setPackageableElementExcludes(
-            elementProtocol.modelUnit.packageableElementExcludes,
-          );
+          modelUnit.packageableElementIncludes =
+            elementProtocol.modelUnit.packageableElementIncludes.map(
+              (element) => V1_buildPackageableElement(element, context),
+            );
+          modelUnit.packageableElementExcludes =
+            elementProtocol.modelUnit.packageableElementExcludes.map(
+              (element) => V1_buildPackageableElement(element, context),
+            );
           element.modelUnit = modelUnit;
         },
       }),
@@ -264,13 +279,21 @@ export class DSLSerializer_PureProtocolProcessorPlugin
           protocol.name = metamodel.name;
           protocol.package = metamodel.package?.fullPath ?? '';
           protocol.schemaId = metamodel.schemaId;
-          protocol.schemaSet = metamodel.schemaSet;
+          protocol.schemaSet = metamodel.schemaSet?.path;
           protocol.contentType = metamodel.contentType;
           const modelUnit = new V1_ModelUnit();
           modelUnit.packageableElementExcludes =
-            metamodel.modelUnit.packageableElementExcludes;
+            metamodel.modelUnit.packageableElementExcludes.map((path) =>
+              path instanceof PackageableElementReference
+                ? path.valueForSerialization ?? ''
+                : path,
+            );
           modelUnit.packageableElementIncludes =
-            metamodel.modelUnit.packageableElementIncludes;
+            metamodel.modelUnit.packageableElementIncludes.map((path) =>
+              path instanceof PackageableElementReference
+                ? path.valueForSerialization ?? ''
+                : path,
+            );
           protocol.modelUnit = modelUnit;
           protocol.includedStores = [];
           return protocol;

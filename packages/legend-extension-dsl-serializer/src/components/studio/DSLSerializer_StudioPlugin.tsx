@@ -16,7 +16,10 @@
 
 import packageJson from '../../../package.json';
 import type {
-  RuntimeConnectionTooltipTextBuilder,
+  ConnectionEditorRenderer,
+  ConnectionValueEditorStateBuilder,
+  ConnectionValueState,
+  DefaultConnectionValueBuilder,
   DSLMapping_StudioPlugin_Extension,
   EditorStore,
   ElementEditorRenderer,
@@ -25,24 +28,41 @@ import type {
   ElementIconGetter,
   ElementProjectExplorerDnDTypeGetter,
   ElementTypeGetter,
+  NewConnectionDriverCreator,
+  NewConnectionValueDriver,
   NewElementFromStateCreator,
   NewElementState,
+  RuntimeConnectionTooltipTextBuilder,
   StudioPluginManager,
 } from '@finos/legend-studio';
-import {
-  StudioPlugin,
-  UnsupportedElementEditorState,
-} from '@finos/legend-studio';
+import { StudioPlugin } from '@finos/legend-studio';
 import { FaBuffer, FaSitemap } from 'react-icons/fa';
 import { SchemaSetEditor } from './SchemaSetElementEditor';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
-import type { Connection, PackageableElement } from '@finos/legend-graph';
+import type {
+  Connection,
+  PackageableElement,
+  Store,
+} from '@finos/legend-graph';
+import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import {
   FORMAT_TYPE,
   SchemaSet,
 } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import { Binding } from '../../models/metamodels/pure/model/packageableElements/store/Binding';
+import {
+  Binding,
+  CONTENT_TYPE,
+} from '../../models/metamodels/pure/model/packageableElements/store/Binding';
 import { ExternalFormatConnection } from '../../models/metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
+import { UrlStream } from '../../models/metamodels/pure/model/packageableElements/connection/UrlStream';
+import {
+  ExternalFormatConnectionEditor,
+  ExternalFormatConnectionValueState,
+  NewExternalFormatConnectionDriver,
+} from './ExternalFormatConnectionEditor';
+import { BindingEditorState } from '../../stores/studio/BindingEditorState';
+import { BindingEditor } from './BindingElementEditor';
+import { ModelUnit } from '../../models/metamodels/pure/model/packageableElements/store/ModelUnit';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -105,6 +125,8 @@ export class DSLSerializer_StudioPlugin
       (elementEditorState: ElementEditorState): React.ReactNode | undefined => {
         if (elementEditorState instanceof SchemaSetEditorState) {
           return <SchemaSetEditor key={elementEditorState.uuid} />;
+        } else if (elementEditorState instanceof BindingEditorState) {
+          return <BindingEditor key={elementEditorState.uuid} />;
         }
         return undefined;
       },
@@ -123,7 +145,11 @@ export class DSLSerializer_StudioPlugin
           schemaSet.setFormat(FORMAT_TYPE.FLAT_DATA);
           return schemaSet;
         } else if (type === BINDING_ELEMENT_TYPE) {
-          return new Binding(name);
+          const binding = new Binding(name);
+          binding.setContentType(CONTENT_TYPE.FLAT_DATA);
+          const modelUnit = new ModelUnit();
+          binding.modelUnit = modelUnit;
+          return binding;
         }
         return undefined;
       },
@@ -139,7 +165,7 @@ export class DSLSerializer_StudioPlugin
         if (element instanceof SchemaSet) {
           return new SchemaSetEditorState(editorStore, element);
         } else if (element instanceof Binding) {
-          return new UnsupportedElementEditorState(editorStore, element);
+          return new BindingEditorState(editorStore, element);
         }
         return undefined;
       },
@@ -171,6 +197,75 @@ export class DSLSerializer_StudioPlugin
       (connection: Connection): string | undefined => {
         if (connection instanceof ExternalFormatConnection) {
           return `External format connection \u2020 store ${connection.store.value.path}`;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraDefaultConnectionValueBuilders(): DefaultConnectionValueBuilder[] {
+    return [
+      (store: Store): Connection | undefined => {
+        if (store instanceof Binding) {
+          const externalFormatConnection = new ExternalFormatConnection(
+            PackageableElementExplicitReference.create(store),
+          );
+          const urlStream = new UrlStream();
+          urlStream.setUrl('');
+          externalFormatConnection.externalSource = urlStream;
+          return externalFormatConnection;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraConnectionValueEditorStateBuilders(): ConnectionValueEditorStateBuilder[] {
+    return [
+      (
+        editorStore: EditorStore,
+        connection: Connection,
+      ): ConnectionValueState | undefined => {
+        if (connection instanceof ExternalFormatConnection) {
+          return new ExternalFormatConnectionValueState(
+            editorStore,
+            connection,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraConnectionEditorRenderers(): ConnectionEditorRenderer[] {
+    return [
+      (
+        connectionValueState: ConnectionValueState,
+        isReadOnly: boolean,
+      ): React.ReactNode | undefined => {
+        if (
+          connectionValueState instanceof ExternalFormatConnectionValueState
+        ) {
+          return (
+            <ExternalFormatConnectionEditor
+              connectionValueState={connectionValueState}
+              isReadOnly={isReadOnly}
+            />
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraNewConnectionDriverCreators(): NewConnectionDriverCreator[] {
+    return [
+      (
+        editorStore: EditorStore,
+        store: Store,
+      ): NewConnectionValueDriver<Connection> | undefined => {
+        if (store instanceof Binding) {
+          return new NewExternalFormatConnectionDriver(editorStore);
         }
         return undefined;
       },
