@@ -653,7 +653,12 @@ export class QueryBuilderProjectionState {
           const transposedPreviewResultData = {
             columns: ['Aggregation', 'Value'],
             rows: previewResultData.columns.map((column, idx) => ({
-              values: [column, previewResultData.rows[0].values[idx]],
+              values: [
+                column,
+                guaranteeNonNullable(previewResultData.rows[0]).values[
+                  idx
+                ] as string,
+              ],
             })),
           };
           this.queryBuilderState.explorerState.previewDataState.setPreviewData(

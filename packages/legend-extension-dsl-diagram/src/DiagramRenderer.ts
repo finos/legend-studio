@@ -686,14 +686,11 @@ export class DiagramRenderer {
 
   private manageVirtualScreen(): void {
     if (this.diagram.classViews.length) {
-      let minX = this.diagram.classViews[0].position.x;
-      let minY = this.diagram.classViews[0].position.y;
-      let maxX =
-        this.diagram.classViews[0].position.x +
-        this.diagram.classViews[0].rectangle.width;
-      let maxY =
-        this.diagram.classViews[0].position.y +
-        this.diagram.classViews[0].rectangle.height;
+      const firstClassView = guaranteeNonNullable(this.diagram.classViews[0]);
+      let minX = firstClassView.position.x;
+      let minY = firstClassView.position.y;
+      let maxX = firstClassView.position.x + firstClassView.rectangle.width;
+      let maxY = firstClassView.position.y + firstClassView.rectangle.height;
       for (const classView of this.diagram.classViews) {
         minX = Math.min(minX, classView.position.x);
         minY = Math.min(minY, classView.position.y);
@@ -717,8 +714,10 @@ export class DiagramRenderer {
         );
         if (relationshipView instanceof PropertyView) {
           const box = this.drawLinePropertyText(
-            fullPath[fullPath.length - 2],
-            fullPath[fullPath.length - 1],
+            // NOTE: by the way we compute the full path, it would guarantee
+            // to always have at least 2 points
+            fullPath[fullPath.length - 2] as Point,
+            fullPath[fullPath.length - 1] as Point,
             relationshipView.to.classView.value,
             relationshipView.property.value,
             false,
@@ -1786,8 +1785,10 @@ export class DiagramRenderer {
     // const toProperty = asso instanceof.property ? asso.property : asso.association.properties[1];
     const toProperty = propertyView.property.value;
     this.drawLinePropertyText(
-      fullPath[fullPath.length - 2],
-      fullPath[fullPath.length - 1],
+      // NOTE: by the way we compute the full path, it would guarantee
+      // to always have at least 2 points
+      fullPath[fullPath.length - 2] as Point,
+      fullPath[fullPath.length - 1] as Point,
       propertyView.to.classView.value,
       toProperty,
       false,
@@ -1872,10 +1873,12 @@ export class DiagramRenderer {
       inheritance.from.classView.value,
       inheritance.to.classView.value,
     );
-    const startX = fullPath[fullPath.length - 2].x;
-    const startY = fullPath[fullPath.length - 2].y;
-    const endX = fullPath[fullPath.length - 1].x;
-    const endY = fullPath[fullPath.length - 1].y;
+    // NOTE: by the way we compute the full path, it would guarantee
+    // to always have at least 2 points
+    const startX = (fullPath[fullPath.length - 2] as Point).x;
+    const startY = (fullPath[fullPath.length - 2] as Point).y;
+    const endX = (fullPath[fullPath.length - 1] as Point).x;
+    const endY = (fullPath[fullPath.length - 1] as Point).y;
     let resultX = 0;
     let resultY = 0;
     if (endY > startY) {
@@ -1960,27 +1963,35 @@ export class DiagramRenderer {
     this.ctx.beginPath();
     this.ctx.moveTo(
       resultX +
-        (this.screenOffset.x + this.triangle[0].rotateX(angle)) * this.zoom,
+        (this.screenOffset.x + (this.triangle[0] as Point).rotateX(angle)) *
+          this.zoom,
       resultY +
-        (this.screenOffset.y + this.triangle[0].rotateY(angle)) * this.zoom,
+        (this.screenOffset.y + (this.triangle[0] as Point).rotateY(angle)) *
+          this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + this.triangle[1].rotateX(angle)) * this.zoom,
+        (this.screenOffset.x + (this.triangle[1] as Point).rotateX(angle)) *
+          this.zoom,
       resultY +
-        (this.screenOffset.y + this.triangle[1].rotateY(angle)) * this.zoom,
+        (this.screenOffset.y + (this.triangle[1] as Point).rotateY(angle)) *
+          this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + this.triangle[2].rotateX(angle)) * this.zoom,
+        (this.screenOffset.x + (this.triangle[2] as Point).rotateX(angle)) *
+          this.zoom,
       resultY +
-        (this.screenOffset.y + this.triangle[2].rotateY(angle)) * this.zoom,
+        (this.screenOffset.y + (this.triangle[2] as Point).rotateY(angle)) *
+          this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + this.triangle[0].rotateX(angle)) * this.zoom,
+        (this.screenOffset.x + (this.triangle[0] as Point).rotateX(angle)) *
+          this.zoom,
       resultY +
-        (this.screenOffset.y + this.triangle[0].rotateY(angle)) * this.zoom,
+        (this.screenOffset.y + (this.triangle[0] as Point).rotateY(angle)) *
+          this.zoom,
     );
     this.ctx.fillStyle = this.generalizationViewInheritanceTriangeFillColor;
     this.ctx.fill();
@@ -2099,13 +2110,13 @@ export class DiagramRenderer {
           this.selectedPropertyOrAssociation.property.value,
           this.selectedPoint ??
             (this.selectedPropertyOrAssociation.path.length
-              ? this.selectedPropertyOrAssociation.path[0]
+              ? (this.selectedPropertyOrAssociation.path[0] as Point)
               : this.selectedPropertyOrAssociation.from.classView.value.center()),
           this.selectedPropertyOrAssociation,
         );
         e.preventDefault();
       } else if (this.selectedClasses.length === 1) {
-        this.handleEditClassView(this.selectedClasses[0]);
+        this.handleEditClassView(this.selectedClasses[0] as ClassView);
       }
     }
 
@@ -2212,7 +2223,7 @@ export class DiagramRenderer {
     // Add a new simple property to selected class
     else if (e.altKey && 'ArrowDown' === e.code) {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
-        this.handleAddSimpleProperty(this.selectedClasses[0]);
+        this.handleAddSimpleProperty(this.selectedClasses[0] as ClassView);
       }
     }
 
@@ -2333,11 +2344,11 @@ export class DiagramRenderer {
           let nextZoomLevel: number;
           // NOTE: below the smallest recommended zoom level, we will start decrement by 10
           // and increment by 100 beyond the largest recommended zoom level.
-          if (currentZoomLevel <= DIAGRAM_ZOOM_LEVELS[0] - 10) {
+          if (currentZoomLevel <= (DIAGRAM_ZOOM_LEVELS[0] as number) - 10) {
             nextZoomLevel = Math.floor(currentZoomLevel / 10) * 10 + 10;
           } else if (
             currentZoomLevel >=
-            DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1]
+            (DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] as number)
           ) {
             nextZoomLevel = Math.floor(currentZoomLevel / 100) * 100 + 100;
           } else {
@@ -2353,11 +2364,12 @@ export class DiagramRenderer {
         case DIAGRAM_INTERACTION_MODE.ZOOM_OUT: {
           const currentZoomLevel = Math.round(this.zoom * 100);
           let nextZoomLevel: number;
-          if (currentZoomLevel <= DIAGRAM_ZOOM_LEVELS[0]) {
+          if (currentZoomLevel <= (DIAGRAM_ZOOM_LEVELS[0] as number)) {
             nextZoomLevel = Math.ceil(currentZoomLevel / 10) * 10 - 10;
           } else if (
             currentZoomLevel >=
-            DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] + 100
+            (DIAGRAM_ZOOM_LEVELS[DIAGRAM_ZOOM_LEVELS.length - 1] as number) +
+              100
           ) {
             nextZoomLevel = Math.ceil(currentZoomLevel / 100) * 100 - 100;
           } else {
@@ -2382,17 +2394,17 @@ export class DiagramRenderer {
                 this.eventCoordinateToCanvasCoordinate(new Point(e.x, e.y)),
               );
             for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
+              const targetClassView = this.diagram.classViews[i] as ClassView;
+
               if (
-                this.diagram.classViews[i].contains(
+                targetClassView.contains(
                   eventPointInModelCoordinate.x,
                   eventPointInModelCoordinate.y,
                 )
               ) {
-                const targetClassView = this.diagram.classViews[i];
-
                 const gview = this.handleAddRelationship(
                   this.startClassView,
-                  this.diagram.classViews[i],
+                  targetClassView,
                 );
 
                 if (gview) {
@@ -2540,8 +2552,9 @@ export class DiagramRenderer {
           // Check if the selection lies within the bottom right corner box of a box (so we can do resize of box here)
           // NOTE: Traverse backwards the class views to preserve z-index buffer
           for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
+            const targetClassView = this.diagram.classViews[i] as ClassView;
             if (
-              this.diagram.classViews[i]
+              targetClassView
                 .buildBottomRightCornerBox()
                 .contains(
                   eventPointInModelCoordinate.x,
@@ -2577,24 +2590,24 @@ export class DiagramRenderer {
               let anyClassesSelected = false;
               // Traverse backwards the class views to preserve z-index buffer
               for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
+                const targetClassView = this.diagram.classViews[i] as ClassView;
                 if (
-                  this.diagram.classViews[i].contains(
+                  targetClassView.contains(
                     eventPointInModelCoordinate.x,
                     eventPointInModelCoordinate.y,
                   )
                 ) {
                   if (
                     this.selectedClasses.length === 0 ||
-                    this.selectedClasses.indexOf(this.diagram.classViews[i]) ===
-                      -1
+                    this.selectedClasses.indexOf(targetClassView) === -1
                   ) {
-                    this.setSelectedClasses([this.diagram.classViews[i]]);
+                    this.setSelectedClasses([targetClassView]);
                   }
                   if (!this.isReadOnly) {
                     // Bring the class view to front
                     this.diagram.setClassViews(
                       this.reorderDiagramDomain(
-                        this.selectedClasses[0],
+                        this.selectedClasses[0] as ClassView,
                         this.diagram,
                       ),
                     );
@@ -2690,13 +2703,14 @@ export class DiagramRenderer {
           this.setSelectionStart(eventPointInModelCoordinate);
           this.startClassView = undefined;
           for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
+            const targetClassView = this.diagram.classViews[i] as ClassView;
             if (
-              this.diagram.classViews[i].contains(
+              targetClassView.contains(
                 eventPointInModelCoordinate.x,
                 eventPointInModelCoordinate.y,
               )
             ) {
-              this.startClassView = this.diagram.classViews[i];
+              this.startClassView = targetClassView;
             }
           }
           if (!this.startClassView) {
@@ -3067,8 +3081,10 @@ export class DiagramRenderer {
           propertyHolderView.to.classView.value,
         );
         const propertyInfoBox = this.drawLinePropertyText(
-          fullPath[fullPath.length - 2],
-          fullPath[fullPath.length - 1],
+          // NOTE: by the way we compute the full path, it would guarantee
+          // to always have at least 2 points
+          fullPath[fullPath.length - 2] as Point,
+          fullPath[fullPath.length - 1] as Point,
           propertyHolderView.to.classView.value,
           propertyHolderView.property.value,
           false,
@@ -3137,44 +3153,49 @@ export class DiagramRenderer {
     positionInitialClass: boolean,
     superType: boolean,
   ): [ClassView[], GeneralizationView[]] {
-    //Offsets
+    // Offsets
     const spaceY = 30;
     const spaceX = 10;
 
     classViewLevels.reverse();
 
-    const classViews = classViewLevels.flatMap((level, currentLevelIndex) => {
+    const classViews = classViewLevels.flatMap((levels, currentLevelIndex) => {
       // Get the bounding box of the precedent level
       let precedentTotalWidth = 0;
       let precedentTotalHeight = 0;
       let precedentX = 0;
       let precedentY = 0;
       if (currentLevelIndex > 0) {
-        const precedentByX = [...classViewLevels[currentLevelIndex - 1]].sort(
-          (a, b) => a.position.x - b.position.x,
-        );
-        precedentX = precedentByX[0].position.x;
-        precedentTotalWidth =
-          precedentByX[precedentByX.length - 1].position.x +
-          precedentByX[precedentByX.length - 1].rectangle.width -
-          precedentByX[0].position.x;
+        const precedent = classViewLevels[currentLevelIndex - 1] as ClassView[];
+        if (precedent.length) {
+          const precedentByX = [...precedent].sort(
+            (a, b) => a.position.x - b.position.x,
+          );
+          precedentX = (precedentByX[0] as ClassView).position.x;
+          precedentTotalWidth =
+            (precedentByX[precedentByX.length - 1] as ClassView).position.x +
+            (precedentByX[precedentByX.length - 1] as ClassView).rectangle
+              .width -
+            (precedentByX[0] as ClassView).position.x;
 
-        const precedentByY = [...classViewLevels[currentLevelIndex - 1]].sort(
-          (a, b) => a.position.y - b.position.y,
-        );
-        precedentY = precedentByY[0].position.y;
-        precedentTotalHeight =
-          precedentByY[precedentByY.length - 1].position.y +
-          precedentByY[precedentByY.length - 1].rectangle.height -
-          precedentByY[0].position.y;
+          const precedentByY = [...precedent].sort(
+            (a, b) => a.position.y - b.position.y,
+          );
+          precedentY = (precedentByY[0] as ClassView).position.y;
+          precedentTotalHeight =
+            (precedentByY[precedentByY.length - 1] as ClassView).position.y +
+            (precedentByY[precedentByY.length - 1] as ClassView).rectangle
+              .height -
+            (precedentByY[0] as ClassView).position.y;
+        }
       }
 
       // Get the bounding box of current Level
       const maxHeight = Math.max(
-        ...level.map((classView) => classView.rectangle.height),
+        ...levels.map((classView) => classView.rectangle.height),
       );
 
-      const totalWidth = level
+      const totalWidth = levels
         .map((classView) => classView.rectangle.width)
         .reduce((a, b) => a + b + spaceX);
 
@@ -3186,10 +3207,10 @@ export class DiagramRenderer {
 
       // Set layout of current level
       if (positionInitialClass || currentLevelIndex > 0) {
-        level[0].setPosition(new Point(startX, currentLevelY));
-        level.forEach((view, index) => {
-          if (index > 0) {
-            const precedent = level[index - 1];
+        (levels[0] as ClassView).setPosition(new Point(startX, currentLevelY));
+        levels.forEach((view, idx) => {
+          if (idx > 0) {
+            const precedent = levels[idx - 1] as ClassView;
             view.setPosition(
               new Point(
                 precedent.position.x + precedent.rectangle.width + spaceX,
@@ -3199,16 +3220,16 @@ export class DiagramRenderer {
           }
         });
       }
-      return level;
+      return levels;
     });
 
     const generalizationViews = (
       superType ? classViewLevels : classViewLevels.reverse()
     )
       .slice(0, classViewLevels.length - 1)
-      .flatMap((level, i) =>
+      .flatMap((level, idx) =>
         level.flatMap((fromClassView) =>
-          classViewLevels[i + 1].flatMap((toClassView) => {
+          (classViewLevels[idx + 1] as ClassView[]).flatMap((toClassView) => {
             if (
               fromClassView.class.value.generalizations
                 .map((g) => g.value.rawType)

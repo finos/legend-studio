@@ -642,7 +642,10 @@ const CreateQuerySetup = observer(
       if (querySetupState.currentMapping) {
         if (querySetupState.runtimeOptions.length) {
           querySetupState.setCurrentRuntime(
-            querySetupState.runtimeOptions[0].value,
+            (
+              querySetupState
+                .runtimeOptions[0] as PackageableElementOption<PackageableRuntime>
+            ).value,
           );
         }
       } else {

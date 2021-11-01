@@ -45,10 +45,7 @@ const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
   };
   const handleEnter = (): void => onEnter?.();
   const handleSubmit = (): void => {
-    const proceedActions = actions.filter((action) => action.default);
-    if (proceedActions.length) {
-      proceedActions[0].handler?.();
-    }
+    actions.find((action) => action.default)?.handler?.();
     handleClose();
   };
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {

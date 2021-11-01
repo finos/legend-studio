@@ -15,7 +15,11 @@
  */
 
 import { TEST_DATA__otherwiseEmbeddedRelationalTestData } from './TEST_DATA__RelationalEntities';
-import { guaranteeType, unitTest } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  unitTest,
+} from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphManagerState } from '../../../GraphManagerState';
 import {
@@ -42,7 +46,7 @@ test(unitTest('Otherwise Embedded Relational Mapping'), () => {
   const graph = graphManagerState.graph;
   const myDB = graph.getDatabase('mapping::db');
   expect(myDB.schemas).toHaveLength(1);
-  expect(myDB.schemas[0].tables).toHaveLength(2);
+  expect(guaranteeNonNullable(myDB.schemas[0]).tables).toHaveLength(2);
   expect(myDB.joins).toHaveLength(1);
 
   // mapping

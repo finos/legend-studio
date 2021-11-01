@@ -15,7 +15,7 @@
  */
 
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
-import { unitTest } from '@finos/legend-shared';
+import { guaranteeNonNullable, unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
@@ -53,17 +53,16 @@ test(unitTest('Enumeration is loaded properly'), () => {
   expect(pureEnum.values).toHaveLength(3);
   pureEnum.values.forEach((val) => expect(val instanceof Enum).toBeTruthy());
   const profile = graph.getProfile('ui::test1::ProfileTest');
-  const taggedValue = pureEnum.taggedValues[0];
+  const taggedValue = guaranteeNonNullable(pureEnum.taggedValues[0]);
   expect(taggedValue.value).toEqual('Enumeration Tag');
   expect(profile).toEqual(taggedValue.tag.value.owner);
-  const stereotype = pureEnum.stereotypes[0].value;
-  expect(profile).toEqual(stereotype.owner);
+  expect(profile).toEqual(pureEnum.stereotypes[0]?.value.owner);
 });
 
 test(unitTest('Class is loaded properly'), () => {
   const graph = graphManagerState.graph;
   const testClass = graph.getClass('ui::TestClass');
-  const stereotype = testClass.stereotypes[0].value;
+  const stereotype = guaranteeNonNullable(testClass.stereotypes[0]).value;
   expect(
     graph
       .getProfile(stereotype.owner.path)
@@ -73,13 +72,13 @@ test(unitTest('Class is loaded properly'), () => {
   const personWithoutConstraints = graph.getClass(
     'ui::test2::PersonWithoutConstraints',
   );
-  expect(personClass.generalizations[0].value.rawType).toEqual(
+  expect(personClass.generalizations[0]?.value.rawType).toEqual(
     personWithoutConstraints,
   );
   expect(personClass.constraints.length).toBe(4);
   expect(personWithoutConstraints.derivedProperties.length).toBe(1);
   expect(
-    personWithoutConstraints.derivedProperties[0].genericType.value.rawType,
+    personWithoutConstraints.derivedProperties[0]?.genericType.value.rawType,
   ).toEqual(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING));
   const degree = personWithoutConstraints.properties.find(
     (property) =>

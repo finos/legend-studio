@@ -112,7 +112,7 @@ class V1_ValueSpecificationTransformer
     valueSpecification: RootGraphFetchTreeInstanceValue,
   ): V1_ValueSpecification {
     return V1_transformGraphFetchTree(
-      valueSpecification.values[0],
+      guaranteeNonNullable(valueSpecification.values[0]),
       this.inScope,
       this.open,
       this.isParameter,
@@ -124,7 +124,7 @@ class V1_ValueSpecificationTransformer
     valueSpecification: PropertyGraphFetchTreeInstanceValue,
   ): V1_ValueSpecification {
     return V1_transformGraphFetchTree(
-      valueSpecification.values[0],
+      guaranteeNonNullable(valueSpecification.values[0]),
       this.inScope,
       this.open,
       this.isParameter,
@@ -252,7 +252,7 @@ class V1_ValueSpecificationTransformer
     valueSpecification: EnumValueInstanceValue,
   ): V1_ValueSpecification {
     const _enumValue = new V1_EnumValue();
-    const _enum = valueSpecification.values[0].value;
+    const _enum = guaranteeNonNullable(valueSpecification.values[0]).value;
     _enumValue.value = _enum.name;
     _enumValue.fullPath = _enum.owner.path;
     return _enumValue;
