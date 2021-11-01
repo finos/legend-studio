@@ -133,7 +133,7 @@ export const PropertyMappingsEditor = observer(
         ) {
           if (
             propertyMappingStates.length === 1 &&
-            propertyMappingStates[0].propertyMapping instanceof
+            propertyMappingStates[0]?.propertyMapping instanceof
               EmbeddedFlatDataPropertyMapping
           ) {
             mappingEditorState.openMappingElement(

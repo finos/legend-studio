@@ -182,7 +182,8 @@ export class FileGenerationState {
     const selectedFileNodePath =
       this.selectedNode?.fileNode.path ??
       (generationResult.length === 1
-        ? generationResult[0].generationOutput.fileName
+        ? (generationResult[0] as GenerationOutputResult).generationOutput
+            .fileName
         : undefined);
     if (selectedFileNodePath) {
       const file = this.filesIndex.get(selectedFileNodePath);

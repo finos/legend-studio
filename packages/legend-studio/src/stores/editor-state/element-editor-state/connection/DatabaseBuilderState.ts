@@ -500,7 +500,7 @@ export class DatabaseBuilderState {
       dbGraph.ownDatabases.length === 1,
       'Expected one database to be generated from grammar',
     );
-    return dbGraph.ownDatabases[0];
+    return dbGraph.ownDatabases[0] as Database;
   }
 
   private *buildDatabaseFromInput(
@@ -524,7 +524,7 @@ export class DatabaseBuilderState {
       dbGraph.ownDatabases.length === 1,
       'Expected one database to be generated from input',
     );
-    return dbGraph.ownDatabases[0];
+    return dbGraph.ownDatabases[0] as Database;
   }
 
   *createOrUpdateDatabase(): GeneratorFn<void> {

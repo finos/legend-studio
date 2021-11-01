@@ -422,7 +422,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
           new EntityChangeConflictResolution(this.entityPath, undefined),
         );
       } else if (entities.length === 1) {
-        const resolvedEntity = entities[0];
+        const resolvedEntity = entities[0] as Entity;
         // cleanup the source information since we are using this entity to compute diff
         resolvedEntity.content =
           this.editorStore.graphManagerState.graphManager.pruneSourceInformation(

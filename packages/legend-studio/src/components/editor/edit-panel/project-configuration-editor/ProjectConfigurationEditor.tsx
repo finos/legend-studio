@@ -338,7 +338,7 @@ export const ProjectConfigurationEditor = observer(() => {
       if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
         const currentProjects = Array.from(configState.projects.values());
         if (currentProjects.length) {
-          const projectToAdd = currentProjects[0];
+          const projectToAdd = currentProjects[0] as ProjectData;
           const dependencyToAdd = new ProjectDependency(
             projectToAdd.coordinates,
           );

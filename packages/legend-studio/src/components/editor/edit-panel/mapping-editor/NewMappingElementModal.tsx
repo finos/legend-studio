@@ -30,7 +30,10 @@ import {
   getAllMappingElements,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { PackageableElement } from '@finos/legend-graph';
@@ -104,7 +107,9 @@ export const NewMappingElementModal = observer(() => {
     { value: BASIC_SET_IMPLEMENTATION_TYPE.INSTANCE, label: 'Instance' },
     { value: BASIC_SET_IMPLEMENTATION_TYPE.OPERATION, label: 'Operation' },
   ];
-  const initialClassMappingType = classMappingTypeOptions[0];
+  const initialClassMappingType = guaranteeNonNullable(
+    classMappingTypeOptions[0],
+  );
   const [classMappingType, setClassMappingType] =
     useState<ClassMappingSubTypeOption | null>(initialClassMappingType);
   const changeClassMappingType = (val: ClassMappingSubTypeOption): void =>

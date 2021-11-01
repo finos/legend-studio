@@ -234,11 +234,18 @@ export const LegendStudioApplication = observer(
           // when there is only one SDLC server and the sdlc server key provided is unrecognized,
           // auto-fix the URL
           navigator.goTo(
-            generateSetupRoute(config.sdlcServerOptions[0].key, undefined),
+            generateSetupRoute(
+              guaranteeNonNullable(config.sdlcServerOptions[0]).key,
+              undefined,
+            ),
           );
         } else {
           // set this by default for the app config editor
-          config.setSDLCServerKey(config.sdlcServerOptions[0].key);
+          config.setSDLCServerKey(
+            // NOTE: when parsing the config, we should have already validate
+            // that this list is not empty
+            guaranteeNonNullable(config.sdlcServerOptions[0]).key,
+          );
         }
       }
     }, [config, navigator, sdlcServerKey]);

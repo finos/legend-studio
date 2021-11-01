@@ -349,7 +349,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
     } else if (this.packageableConnections.length) {
       newConnection = new ConnectionPointer(
         PackageableElementExplicitReference.create(
-          this.packageableConnections[0],
+          this.packageableConnections[0] as PackageableConnection,
         ),
       );
     } else {
@@ -408,7 +408,9 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
 
     this.store = store;
     if (this.identifiedConnections.length) {
-      this.openIdentifiedConnection(this.identifiedConnections[0]);
+      this.openIdentifiedConnection(
+        this.identifiedConnections[0] as IdentifiedConnection,
+      );
     }
   }
 
@@ -507,7 +509,9 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
 
     this.class = _class;
     if (this.identifiedConnections.length) {
-      this.openIdentifiedConnection(this.identifiedConnections[0]);
+      this.openIdentifiedConnection(
+        this.identifiedConnections[0] as IdentifiedConnection,
+      );
     }
   }
 
