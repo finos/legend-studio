@@ -119,13 +119,11 @@ export class FileGenerationState {
         this.editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
           this.fileGeneration.type,
         ).generationMode;
-      // const rawPureModelContextData =
-      //   this.editorStore.graphManagerState.graphManager.get
       const result =
         (yield this.editorStore.graphManagerState.graphManager.generateFile(
           this.fileGeneration,
           mode,
-          this.editorStore.graphManagerState.graph, // input the PureModel
+          this.editorStore.graphManagerState.graph,
         )) as GenerationOutput[];
       this.processGenerationResult(result);
     } catch (error) {

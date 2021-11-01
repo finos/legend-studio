@@ -85,6 +85,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import type { DSL_StudioPlugin_Extension } from '../../../../stores/StudioPlugin';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -226,24 +227,23 @@ export const GenerationResultViewer = observer(
     const regenerate = applicationStore.guaranteeSafeAction(() =>
       flowResult(fileGenerationState.generate()),
     );
-    const visualizeMorphir = () => {
-      fileGenerationState.networkClient.post(
-        `http://0.0.0.0:9901/insight`,
-        (fileNode! as GenerationFile).content,
+    const visualizeMorphirButton = fileGenerationState.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_StudioPlugin_Extension
+          ).getVisualizeMorphirButton?.() ?? [],
       );
-      window.open('http://0.0.0.0:9901/insight');
-    };
-    const visualizeBosque = async () => {
-      const code =
-        fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
-          fileGenerationState.editorStore.graphManagerState.graph,
+    const viewBosqueFeedbackButton =
+      fileGenerationState.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_StudioPlugin_Extension
+            ).getViewBosqueFeedbackButton?.() ?? [],
         );
-      fileGenerationState.networkClient.post(`http://0.0.0.0:9900/lint`, {
-        ir: (fileNode! as GenerationFile).content,
-        src: await code,
-      });
-      window.open('http://localhost:3050');
-    };
 
     return (
       <ResizablePanelGroup orientation="vertical">
@@ -309,30 +309,8 @@ export const GenerationResultViewer = observer(
                       {fileNode.name}
                     </div>
                   )}
-                  {fileGenerationState.fileGeneration.type.toLowerCase() ===
-                    `morphir` && (
-                    <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-visualize-button">
-                      <button
-                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                        onClick={visualizeMorphir}
-                        tabIndex={-1}
-                      >
-                        Visualize Generated IR
-                      </button>
-                    </div>
-                  )}
-                  {fileGenerationState.fileGeneration.type.toLowerCase() ===
-                    `morphir` && (
-                    <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-visualize-button">
-                      <button
-                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                        onClick={visualizeBosque}
-                        tabIndex={-1}
-                      >
-                        View Bosque Feedback
-                      </button>
-                    </div>
-                  )}
+                  {visualizeMorphirButton}
+                  {viewBosqueFeedbackButton}
                 </div>
               )}
             </div>

@@ -38,6 +38,8 @@ export {
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 export * from './stores/DSLMapping_StudioPlugin_Extension';
+export { GenerationFile } from './stores/shared/FileGenerationTreeUtil';
+export { FileGenerationState } from './stores/editor-state/FileGenerationState';
 
 // components
 export * from './components/editor/EditorStoreProvider';

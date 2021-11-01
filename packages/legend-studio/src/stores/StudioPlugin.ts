@@ -20,6 +20,8 @@ import type { ElementEditorState } from './editor-state/element-editor-state/Ele
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { Class, PackageableElement } from '@finos/legend-graph';
+import type { FileGenerationState } from './editor-state/FileGenerationState';
+import type { GenerationFile } from './shared/FileGenerationTreeUtil';
 
 export type ApplicationSetup = (
   pluginManager: StudioPluginManager,
@@ -141,6 +143,11 @@ export type ElementProjectExplorerDnDTypeGetter = (
   element: PackageableElement,
 ) => string | undefined;
 
+export type MorphirRedirectButton = (
+  FileGenerationState: FileGenerationState,
+  generationFile: GenerationFile,
+) => React.ReactNode | undefined;
+
 /**
  * Studio plugins for new DSL extension.
  */
@@ -214,4 +221,14 @@ export interface DSL_StudioPlugin_Extension extends StudioPlugin {
    * Get the list of the supported drag-and-drop type speficiers for grammar text editor.
    */
   getExtraGrammarTextEditorDnDTypes?(): string[];
+
+  /**
+   * Returns the Visualize Morphir IR button if file generation type is Morphir.
+   */
+  getVisualizeMorphirButton?(): MorphirRedirectButton[];
+
+  /**
+   * Returns the View Bosque Feedback button if file generation type is Morphir.
+   */
+  getViewBosqueFeedbackButton?(): MorphirRedirectButton[];
 }

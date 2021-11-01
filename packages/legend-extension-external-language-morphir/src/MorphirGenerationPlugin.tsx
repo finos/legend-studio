@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-/* eslint-disable @finos/legend-studio/no-cross-workspace-source-usage */
-
 import packageJson from '../package.json';
 
-import type { StudioPluginManager } from '@finos/legend-studio';
+import type {
+  DSL_StudioPlugin_Extension,
+  GenerationFile,
+  FileGenerationState,
+  StudioPluginManager,
+  MorphirRedirectButton,
+} from '@finos/legend-studio';
 
 import { StudioPlugin } from '@finos/legend-studio';
 import { NetworkClient } from '@finos/legend-shared';
-import type { GenerationFile } from '@finos/legend-studio/src/stores/shared/FileGenerationTreeUtil';
-import type { FileGenerationState } from '@finos/legend-studio/src/stores/editor-state/FileGenerationState';
 
-export class MorphirGenerationPlugin extends StudioPlugin {
+export class MorphirGenerationPlugin
+  extends StudioPlugin
+  implements DSL_StudioPlugin_Extension
+{
   networkClient: NetworkClient;
 
   constructor() {
@@ -37,26 +42,82 @@ export class MorphirGenerationPlugin extends StudioPlugin {
     pluginManager.registerStudioPlugin(this);
   }
 
-  visualizeMorphir(fileNode: GenerationFile): void {
-    this.networkClient.post(
-      `http://0.0.0.0:9901/insight`,
-      (fileNode as GenerationFile).content,
-    );
-    window.open('http://0.0.0.0:9901/insight');
+  visualizeMorphir =
+    (fileNode: GenerationFile): (() => void) =>
+    (): void => {
+      this.networkClient.post(
+        `http://0.0.0.0:9901/insight`,
+        (fileNode as GenerationFile).content,
+      );
+      window.open('http://0.0.0.0:9901/insight');
+    };
+
+  visualizeBosque =
+    (
+      fileGenerationState: FileGenerationState,
+      fileNode: GenerationFile,
+    ): (() => void) =>
+    (): void => {
+      const code =
+        fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
+          fileGenerationState.editorStore.graphManagerState.graph,
+        );
+      this.networkClient.post(`http://0.0.0.0:9900/lint`, {
+        ir: fileNode.content,
+        src: code,
+      });
+      window.open('http://localhost:3050');
+    };
+
+  getVisualizeMorphirButton(): MorphirRedirectButton[] {
+    return [
+      (
+        fileGenerationState: FileGenerationState,
+        fileNode: GenerationFile,
+      ): React.ReactNode | undefined => {
+        if (this.isMorphirGenerationType(fileGenerationState)) {
+          return (
+            <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-visualize-button">
+              <button
+                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                onClick={this.visualizeMorphir(fileNode)}
+                tabIndex={-1}
+              >
+                Visualize Generated IR
+              </button>
+            </div>
+          );
+        }
+        return undefined;
+      },
+    ];
   }
 
-  async visualizeBosque(
-    fileGenerationState: FileGenerationState,
-    fileNode: GenerationFile,
-  ): Promise<void> {
-    const code =
-      fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
-        fileGenerationState.editorStore.graphManagerState.graph,
-      );
-    fileGenerationState.networkClient.post(`http://0.0.0.0:9900/lint`, {
-      ir: (fileNode as GenerationFile).content,
-      src: await code,
-    });
-    window.open('http://localhost:3050');
+  getViewBosqueFeedbackButton(): MorphirRedirectButton[] {
+    return [
+      (
+        fileGenerationState: FileGenerationState,
+        fileNode: GenerationFile,
+      ): React.ReactNode | undefined => {
+        if (this.isMorphirGenerationType(fileGenerationState)) {
+          return (
+            <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-visualize-button">
+              <button
+                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                onClick={this.visualizeBosque(fileGenerationState, fileNode)}
+                tabIndex={-1}
+              >
+                View Bosque Feedback
+              </button>
+            </div>
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  isMorphirGenerationType(fileGenerationState: FileGenerationState): boolean {
+    return fileGenerationState.fileGeneration.type.toLowerCase() === `morphir`;
   }
 }
