@@ -498,7 +498,7 @@ export class QueryBuilderLambdaProcessor
         .filter(isNonNullable);
 
       this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
-        (e, idx) => e.setColumnName(aliases[idx]),
+        (e, idx) => e.setColumnName(aliases[idx] as string),
       );
 
       return;
@@ -530,7 +530,7 @@ export class QueryBuilderLambdaProcessor
       );
 
       const takeValue = getNullableNumberValueFromValueSpec(
-        valueSpecification.parametersValues[1],
+        guaranteeNonNullable(valueSpecification.parametersValues[1]),
       );
       this.queryBuilderState.resultSetModifierState.setLimit(takeValue);
 
@@ -625,7 +625,7 @@ export class QueryBuilderLambdaProcessor
       );
 
       const sortColumnName = getNullableStringValueFromValueSpec(
-        valueSpecification.parametersValues[0],
+        guaranteeNonNullable(valueSpecification.parametersValues[0]),
       );
       const queryBuilderProjectionColumnState =
         this.queryBuilderState.fetchStructureState.projectionState.columns.find(
@@ -723,7 +723,7 @@ export class QueryBuilderLambdaProcessor
         .map(getNullableStringValueFromValueSpec)
         .filter(isNonNullable);
       this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
-        (e, idx) => e.setColumnName(aliases[idx]),
+        (e, idx) => e.setColumnName(aliases[idx] as string),
       );
 
       return;
@@ -743,7 +743,9 @@ export class QueryBuilderLambdaProcessor
         `Can't process agg() expression: only support agg() in aggregation`,
       );
 
-      const columnLambdas = valueSpecification.parametersValues[0];
+      const columnLambdas = guaranteeNonNullable(
+        valueSpecification.parametersValues[0],
+      );
       columnLambdas.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(
           this.queryBuilderState,
@@ -910,8 +912,9 @@ export class QueryBuilderLambdaProcessor
       let currentPropertyExpression: ValueSpecification = valueSpecification;
       while (currentPropertyExpression instanceof AbstractPropertyExpression) {
         const propertyExpression = currentPropertyExpression;
-        currentPropertyExpression =
-          currentPropertyExpression.parametersValues[0];
+        currentPropertyExpression = guaranteeNonNullable(
+          currentPropertyExpression.parametersValues[0],
+        );
         // here we just do a simple check to ensure that if we encounter derived properties
         // the number of parameters and arguments provided match
         if (propertyExpression.func instanceof DerivedProperty) {

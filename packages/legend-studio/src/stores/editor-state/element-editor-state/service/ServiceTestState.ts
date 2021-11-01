@@ -414,7 +414,7 @@ export class SingleExecutionTestState {
     this.selectedTestContainerState = this.test.asserts.length
       ? new TestContainerState(
           editorStore,
-          this.test.asserts[0],
+          this.test.asserts[0] as TestContainer,
           serviceEditorState,
           this,
         )

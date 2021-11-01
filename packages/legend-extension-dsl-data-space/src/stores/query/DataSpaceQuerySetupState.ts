@@ -22,7 +22,11 @@ import {
   Diagram,
   DIAGRAM_INTERACTION_MODE,
 } from '@finos/legend-extension-dsl-diagram';
-import type { Class, PackageableRuntime } from '@finos/legend-graph';
+import type {
+  Class,
+  PackageableElementReference,
+  PackageableRuntime,
+} from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import type { QuerySetupStore } from '@finos/legend-query';
 import {
@@ -107,7 +111,10 @@ export class DataSpaceViewerState {
     this.currentRuntime =
       this.dataSpace.defaultExecutionContext.defaultRuntime.value;
     this.currentDiagram = this.dataSpace.featuredDiagrams.length
-      ? this.dataSpace.featuredDiagrams[0].value
+      ? (
+          this.dataSpace
+            .featuredDiagrams[0] as PackageableElementReference<Diagram>
+        ).value
       : this.diagrams.length
       ? this.diagrams[0]
       : undefined;
@@ -205,7 +212,10 @@ export class DataSpaceViewerState {
         !this.featuredDiagrams.includes(this.currentDiagram)
       ) {
         this.currentDiagram = this.dataSpace.featuredDiagrams.length
-          ? this.dataSpace.featuredDiagrams[0].value
+          ? (
+              this.dataSpace
+                .featuredDiagrams[0] as PackageableElementReference<Diagram>
+            ).value
           : undefined;
       }
     }

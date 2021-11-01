@@ -328,7 +328,12 @@ const RuntimeExplorerTreeNodeContainer = observer(
               </div>
               {/* TODO: handle when there are multiple mappings */}
               <div className="runtime-explorer__item__label__runtime__mapping__text">
-                {runtimeEditorState.runtimeValue.mappings[0].value.name}
+                {runtimeEditorState.runtimeValue.mappings.length
+                  ? (
+                      runtimeEditorState.runtimeValue
+                        .mappings[0] as PackageableElementReference<Mapping>
+                    ).value.name
+                  : '(no mapping)'}
               </div>
             </>
           )}
@@ -877,7 +882,7 @@ const RuntimeGeneralEditor = observer(
     const allowAddingMapping = !isReadOnly && Boolean(mappings.length);
     const addMapping = (): void => {
       if (allowAddingMapping) {
-        runtimeEditorState.addMapping(mappings[0]);
+        runtimeEditorState.addMapping(mappings[0] as Mapping);
       }
     };
     const handleDropMapping = useCallback(

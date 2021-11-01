@@ -521,7 +521,10 @@ export class EditorGraphState {
         if (errorCoordinates) {
           const element =
             this.editorStore.graphManagerState.graph.getNullableElement(
-              errorCoordinates[0],
+              guaranteeNonNullable(
+                errorCoordinates[0],
+                `Can't reveal compilation error: element path is missing`,
+              ),
               false,
             );
           if (element) {
@@ -1076,7 +1079,7 @@ export class EditorGraphState {
                     .join(', ')}.`,
                 );
               }
-              const projectData = projectsData[0];
+              const projectData = projectsData[0] as ProjectData;
               return new ProjectDependencyCoordinates(
                 projectData.groupId,
                 projectData.artifactId,

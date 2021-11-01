@@ -105,7 +105,7 @@ export class Association
       idx !== -1,
       `Can't find property '${property.name}' in association '${this.path}'`,
     );
-    return this.properties[(idx + 1) % 2];
+    return guaranteeNonNullable(this.properties[(idx + 1) % 2]);
   };
   getPropertyAssociatedClass = (property: AbstractProperty): Class => {
     if (property instanceof Property) {

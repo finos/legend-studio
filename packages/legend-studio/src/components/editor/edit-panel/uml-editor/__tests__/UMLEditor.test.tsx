@@ -30,7 +30,7 @@ import {
   fireEvent,
 } from '@testing-library/react';
 import TEST_DATA__m2mGraphEntities from '../../../../../stores/__tests__/TEST_DATA__M2MGraphEntities.json';
-import { integrationTest } from '@finos/legend-shared';
+import { guaranteeNonNullable, integrationTest } from '@finos/legend-shared';
 import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
@@ -129,8 +129,7 @@ test(
     expect(getAllByDisplayValue(propertyA, '1')).toHaveLength(2);
     expect(getByText(propertyA, 'String')).not.toBeNull();
     expect(getAllByRole(propertyA, 'button')).toHaveLength(2);
-    const deleteButton = getAllByRole(propertyA, 'button')[1];
-    fireEvent.click(deleteButton);
+    fireEvent.click(guaranteeNonNullable(getAllByRole(propertyA, 'button')[1]));
     expect(queryByDisplayValue(classForm, 'abcdefg')).toBeNull();
     // Sub Panel Property
     const inputB = getByDisplayValue(classForm, 'b');
@@ -138,7 +137,7 @@ test(
     const buttons = getAllByRole(propertyB, 'button');
     expect(buttons).toHaveLength(2);
     expect(queryByDisplayValue(classForm, 'ProfileTest')).toBeNull();
-    const navigateToPropertyButton = buttons[0];
+    const navigateToPropertyButton = guaranteeNonNullable(buttons[0]);
     fireEvent.click(navigateToPropertyButton);
     await waitFor(() => getByText(classForm, 'property'));
     const subPropertyPanel = getByTestId(classForm, STUDIO_TEST_ID.PANEL);
@@ -149,8 +148,9 @@ test(
     expect(getByText(subPropertyPanel, 'ProfileTest')).not.toBeNull();
     fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
     await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
-    const exitButtons = getAllByRole(subPropertyPanel, 'button');
-    fireEvent.click(exitButtons[0]);
+    fireEvent.click(
+      guaranteeNonNullable(getAllByRole(subPropertyPanel, 'button')[0]),
+    );
     expect(queryByRole(classForm, 'panel')).toBeNull();
   },
 );
@@ -177,17 +177,16 @@ test(integrationTest('Enumeration editor'), async () => {
   const parentElement = enumB.parentElement as HTMLElement;
   const buttons = queryAllByRole(parentElement, 'button');
   expect(buttons).toHaveLength(2);
-  const navigateButton = buttons[0];
-  const deleteButton = buttons[1];
-  fireEvent.click(navigateButton);
+  fireEvent.click(guaranteeNonNullable(buttons[0])); // navigate
   await waitFor(() => getByText(enumerationEditor, 'enum'));
   const subPropertyPanel = getByTestId(enumerationEditor, STUDIO_TEST_ID.PANEL);
   getByDisplayValue(subPropertyPanel, 'enumATag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
-  const deleteSubPanelButton = queryAllByRole(subPropertyPanel, 'button')[0];
-  fireEvent.click(deleteSubPanelButton);
-  fireEvent.click(deleteButton);
+  fireEvent.click(
+    guaranteeNonNullable(queryAllByRole(subPropertyPanel, 'button')[0]),
+  );
+  fireEvent.click(guaranteeNonNullable(buttons[1])); // delete
   expect(queryByText(enumerationEditor, 'enumA')).toBeNull();
 });
 
@@ -228,12 +227,12 @@ test(integrationTest('Association editor'), async () => {
   const buttons = getAllByRole(propertyTypeB, 'button');
   expect(buttons).toHaveLength(2);
   expect(queryByDisplayValue(associationEditor, 'ProfileTest')).toBeNull();
-  const navigateToPropertyButton = buttons[1];
-  fireEvent.click(navigateToPropertyButton);
+  fireEvent.click(guaranteeNonNullable(buttons[1])); // navigate
   const subPropertyPanel = getByTestId(associationEditor, STUDIO_TEST_ID.PANEL);
   getByDisplayValue(subPropertyPanel, 'association tag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
-  const deleteSubPanelButton = queryAllByRole(subPropertyPanel, 'button')[0];
-  fireEvent.click(deleteSubPanelButton);
+  fireEvent.click(
+    guaranteeNonNullable(queryAllByRole(subPropertyPanel, 'button')[0]),
+  );
 });

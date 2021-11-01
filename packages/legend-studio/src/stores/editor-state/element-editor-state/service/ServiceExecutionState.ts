@@ -42,6 +42,7 @@ import type {
   Runtime,
   ExecutionResult,
   LightQuery,
+  PackageableRuntime,
 } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
@@ -488,7 +489,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         );
       if (runtimes.length) {
         this.selectedExecutionConfiguration.setRuntime(
-          runtimes[0].runtimeValue,
+          (runtimes[0] as PackageableRuntime).runtimeValue,
         );
       } else {
         this.useCustomRuntime();

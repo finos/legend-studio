@@ -233,7 +233,7 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
       selectedStore = store;
     } else {
       const dbs = this.editorStore.graphManagerState.graph.ownDatabases;
-      selectedStore = dbs.length ? dbs[0] : Database.createStub();
+      selectedStore = dbs.length ? (dbs[0] as Database) : Database.createStub();
     }
     return new RelationalDatabaseConnection(
       PackageableElementExplicitReference.create(selectedStore),
@@ -579,7 +579,7 @@ export class NewElementState {
       let generationSpec: GenerationSpecification;
       if (generationSpecifications.length) {
         // TODO? handle case when more than one generation specification
-        generationSpec = generationSpecifications[0];
+        generationSpec = generationSpecifications[0] as GenerationSpecification;
       } else {
         generationSpec = new GenerationSpecification(
           DEFAULT_GENERATION_SPECIFICATION_NAME,
@@ -658,7 +658,7 @@ export class NewElementState {
           );
         let runtimeValue: Runtime;
         if (runtimes.length) {
-          runtimeValue = runtimes[0].runtimeValue;
+          runtimeValue = (runtimes[0] as PackageableRuntime).runtimeValue;
         } else {
           runtimeValue = new EngineRuntime();
           decorateRuntimeWithNewMapping(

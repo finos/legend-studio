@@ -22,6 +22,7 @@ import {
   guaranteeType,
   assertNonEmptyString,
   assertTrue,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../graphManager/GraphManagerLogEvent';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
@@ -270,7 +271,9 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       );
       mainTableAlias = new TableAlias();
       mainTableAlias.name = '';
-      mainTableAlias.relation = Array.from(tables.values())[0];
+      mainTableAlias.relation = guaranteeNonNullable(
+        Array.from(tables.values())[0],
+      );
       mainTableAlias.database = Array.from(dbs.values())[0];
       rootRelationalInstanceSetImplementation.mainTableAlias = mainTableAlias;
     }

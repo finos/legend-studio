@@ -63,7 +63,7 @@ export const TaggedValueEditor = observer(
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.tags.length) {
         setSelectedProfile(val);
-        taggedValue.setTag(val.value.tags[0]);
+        taggedValue.setTag(val.value.tags[0] as Tag);
       }
     };
     const visitProfile = (): void =>

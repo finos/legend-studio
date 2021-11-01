@@ -147,22 +147,22 @@ const ResultCoulumsViewer: React.FC<resultColumnsProps> = ({
   resultColumns,
 }) => (
   <div>
-    {resultColumns.map((resCol, i) => {
-      const label = resCol.label.match(/(?:"[^"]*"|^[^"]*$)/);
+    {resultColumns.map((resultColumn, i) => {
+      const label = resultColumn.label.match(/(?:"[^"]*"|^[^"]*$)/);
       if (!(label === null)) {
         return (
           <ResultColumsDataViewer
-            key={resCol.label}
-            label={label[0].replace(/"/g, '')}
-            dataType={generateDataTypeLabel(resCol.dataType)}
+            key={resultColumn.label}
+            label={label[0]?.replace(/"/g, '') ?? '(no label)'}
+            dataType={generateDataTypeLabel(resultColumn.dataType)}
           />
         );
       } else {
         return (
           <ResultColumsDataViewer
-            key={resCol.label}
-            label={resCol.label}
-            dataType={generateDataTypeLabel(resCol.dataType)}
+            key={resultColumn.label}
+            label={resultColumn.label}
+            dataType={generateDataTypeLabel(resultColumn.dataType)}
           />
         );
       }

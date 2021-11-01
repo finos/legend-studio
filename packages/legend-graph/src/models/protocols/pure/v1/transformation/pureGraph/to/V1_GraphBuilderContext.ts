@@ -21,6 +21,7 @@ import {
 import type { Log } from '@finos/legend-shared';
 import {
   uniq,
+  guaranteeNonNullable,
   assertNonEmptyString,
   guaranteeType,
 } from '@finos/legend-shared';
@@ -161,7 +162,7 @@ export class V1_GraphBuilderContext {
           isFullPath: true,
         };
       case 1:
-        return Array.from(results.values())[0];
+        return guaranteeNonNullable(Array.from(results.values())[0]);
       default:
         throw new GraphBuilderError(
           undefined,

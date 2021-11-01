@@ -46,6 +46,7 @@ import { useDrop } from 'react-dnd';
 import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   (props, ref: React.Ref<HTMLDivElement>) => {
@@ -253,7 +254,7 @@ export const GrammarTextEditor = observer(() => {
           true,
         );
         if (Array.isArray(match) && match.length) {
-          const range = match[0].range;
+          const range = guaranteeNonNullable(match[0]).range;
           editor.focus();
           editor.revealPositionInCenter({
             lineNumber: range.startLineNumber,

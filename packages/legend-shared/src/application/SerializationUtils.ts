@@ -26,7 +26,10 @@ export const deseralizeMap = <T>(
 ): Map<string, T> => {
   const result = new Map<string, T>();
   Object.keys(val).forEach((key: string) =>
-    result.set(key, schema ? deserialize(schema, val[key]) : val[key]),
+    result.set(
+      key,
+      schema ? deserialize(schema, val[key]) : (val[key] as NonNullable<T>),
+    ),
   );
   return result;
 };

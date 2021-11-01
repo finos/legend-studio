@@ -19,6 +19,7 @@ import {
   assertTrue,
   isNonNullable,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { CORE_ELEMENT_PATH } from '../../../../../../../MetaModelConst';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
@@ -117,8 +118,8 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     const association = this.context.graph.getAssociation(
       this.context.graph.buildPath(element.package, element.name),
     );
-    const first = element.properties[0];
-    const second = element.properties[1];
+    const first = guaranteeNonNullable(element.properties[0]);
+    const second = guaranteeNonNullable(element.properties[1]);
     association.setProperties([
       V1_buildAssociationProperty(first, second, this.context, association),
       V1_buildAssociationProperty(second, first, this.context, association),

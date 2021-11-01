@@ -96,19 +96,45 @@ const parseDataType = (val: string): RelationalDataType => {
       return new Other();
     default: {
       if (val.match(/^VARCHAR\(\d+\)$/)) {
-        return new VarChar(getTypeParams(val)[0]);
+        return new VarChar(
+          guaranteeNonNullable(
+            getTypeParams(val)[0],
+            `VARCHAR type size is missing`,
+          ),
+        );
       } else if (val.match(/^CHAR\(\d+\)$/)) {
-        return new Char(getTypeParams(val)[0]);
+        return new Char(
+          guaranteeNonNullable(
+            getTypeParams(val)[0],
+            `VAR type size is missing`,
+          ),
+        );
       } else if (val.match(/^VARBINARY\(\d+\)$/)) {
-        return new VarBinary(getTypeParams(val)[0]);
+        return new VarBinary(
+          guaranteeNonNullable(
+            getTypeParams(val)[0],
+            `VARBINARY type size is missing`,
+          ),
+        );
       } else if (val.match(/^BINARY\(\d+\)$/)) {
-        return new Binary(getTypeParams(val)[0]);
+        return new Binary(
+          guaranteeNonNullable(
+            getTypeParams(val)[0],
+            `BINARY type size is missing`,
+          ),
+        );
       } else if (val.match(/^DECIMAL\(\d+\)$/)) {
         const params = getTypeParams(val);
-        return new Decimal(params[0], params[1]);
+        return new Decimal(
+          guaranteeNonNullable(params[0], `Decimal type precision is missing`),
+          guaranteeNonNullable(params[1], `Decimal type scale is missing`),
+        );
       } else if (val.match(/^NUMERIC\(\d+\)$/)) {
         const params = getTypeParams(val);
-        return new Numeric(params[0], params[1]);
+        return new Numeric(
+          guaranteeNonNullable(params[0], `Decimal type precision is missing`),
+          guaranteeNonNullable(params[1], `Decimal type scale is missing`),
+        );
       }
       throw new UnsupportedOperationError(`Can't parse data type '${val}'`);
     }

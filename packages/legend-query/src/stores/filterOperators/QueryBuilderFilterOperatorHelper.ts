@@ -77,7 +77,9 @@ const getPropertyExpressionChainVariable = (
 ): VariableExpression => {
   let currentExpression: ValueSpecification = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
-    currentExpression = currentExpression.parametersValues[0];
+    currentExpression = guaranteeNonNullable(
+      currentExpression.parametersValues[0],
+    );
   }
   return guaranteeType(currentExpression, VariableExpression);
 };
@@ -96,20 +98,25 @@ const buildFilterConditionExpressionWithExists = (
 
   // 1. Decompose property expression
   const pes: AbstractPropertyExpression[] = [];
-  let currentPe: ValueSpecification =
+  let currentPropertyExpression: ValueSpecification =
     filterConditionState.propertyExpressionState.propertyExpression;
-  while (currentPe instanceof AbstractPropertyExpression) {
+  while (currentPropertyExpression instanceof AbstractPropertyExpression) {
     const pe = new AbstractPropertyExpression('', multiplicityOne);
-    pe.func = currentPe.func;
+    pe.func = currentPropertyExpression.func;
     pe.parametersValues =
-      currentPe.parametersValues.length > 1
+      currentPropertyExpression.parametersValues.length > 1
         ? // NOTE: we must retain the rest of the parameters as those are derived property parameters
-          currentPe.parametersValues.slice(1)
+          currentPropertyExpression.parametersValues.slice(1)
         : [];
     pes.push(pe);
-    currentPe = currentPe.parametersValues[0];
+    currentPropertyExpression = guaranteeNonNullable(
+      currentPropertyExpression.parametersValues[0],
+    );
   }
-  const rootVariable = guaranteeType(currentPe, VariableExpression);
+  const rootVariable = guaranteeType(
+    currentPropertyExpression,
+    VariableExpression,
+  );
 
   // 2. Traverse the list of decomposed property expression backward, every time we encounter a property of
   // multiplicity many, create a new property expression and keep track of it to later form the lambda chain
@@ -120,10 +127,12 @@ const buildFilterConditionExpressionWithExists = (
   let currentParamNameIndex = 0;
 
   for (let i = pes.length - 1; i >= 0; --i) {
-    const pe = pes[i];
+    const pe = pes[i] as AbstractPropertyExpression;
     // just keep adding to the property chain
     pe.parametersValues.unshift(
-      existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1],
+      existsLambdaPropertyChains[
+        existsLambdaPropertyChains.length - 1
+      ] as ValueSpecification,
     );
     existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1] = pe;
     // ... but if the property is of multiplicity multiple, start a new property chain
@@ -144,7 +153,7 @@ const buildFilterConditionExpressionWithExists = (
       }
       existsLambdaPropertyChains.push(
         new VariableExpression(
-          existsLambdaParamNames[currentParamNameIndex],
+          existsLambdaParamNames[currentParamNameIndex] as string,
           multiplicityOne,
         ),
       );
@@ -160,7 +169,7 @@ const buildFilterConditionExpressionWithExists = (
       multiplicityOne,
     );
     simpleFunctionExpression.parametersValues.push(
-      existsLambdaPropertyChains[i],
+      existsLambdaPropertyChains[i] as ValueSpecification,
     );
     simpleFunctionExpressions.push(simpleFunctionExpression);
   }
@@ -170,7 +179,9 @@ const buildFilterConditionExpressionWithExists = (
     multiplicityOne,
   );
   operatorEpression.parametersValues.push(
-    existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1],
+    existsLambdaPropertyChains[
+      existsLambdaPropertyChains.length - 1
+    ] as ValueSpecification,
   );
   // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
   if (filterConditionState.value) {
@@ -181,8 +192,10 @@ const buildFilterConditionExpressionWithExists = (
   // 4. Build the exists() lambda chain
   assertTrue(simpleFunctionExpressions.length >= 2);
   for (let i = simpleFunctionExpressions.length - 2; i >= 0; --i) {
-    const currentSFE = simpleFunctionExpressions[i];
-    const childSFE = simpleFunctionExpressions[i + 1];
+    const currentSFE = simpleFunctionExpressions[i] as SimpleFunctionExpression;
+    const childSFE = simpleFunctionExpressions[
+      i + 1
+    ] as SimpleFunctionExpression;
     // build child SFE lambda
     const _existsLambdaVariable = childSFE.parametersValues[0];
     const existsLambdaVariable =
@@ -199,7 +212,7 @@ const buildFilterConditionExpressionWithExists = (
     currentSFE.parametersValues.push(existsLambda);
   }
 
-  return simpleFunctionExpressions[0];
+  return simpleFunctionExpressions[0] as SimpleFunctionExpression;
 };
 
 export const buildFilterConditionExpression = (
@@ -341,17 +354,21 @@ const buildFilterConditionStateWithExists = (
               currentPe.parametersValues.slice(1)
             : [];
         pes.push(pe);
-        currentPe = currentPe.parametersValues[0];
+        currentPe = guaranteeNonNullable(currentPe.parametersValues[0]);
       }
       assertTrue(
         pes.length > 0,
         `Can't process exists() function expression: exists() usage with non-chain property expression is not supported`,
       );
       for (let i = 0; i < pes.length - 1; ++i) {
-        pes[i].parametersValues.unshift(pes[i + 1]);
+        (pes[i] as AbstractPropertyExpression).parametersValues.unshift(
+          pes[i + 1] as AbstractPropertyExpression,
+        );
       }
-      pes[pes.length - 1].parametersValues.unshift(propertyExpression);
-      propertyExpression = pes[0];
+      (
+        pes[pes.length - 1] as AbstractPropertyExpression
+      ).parametersValues.unshift(propertyExpression);
+      propertyExpression = pes[0] as AbstractPropertyExpression;
     }
 
     // 3. Build the filter condition state with the simplified property expression

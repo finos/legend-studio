@@ -313,10 +313,10 @@ const setCollectionValue = (
   const parseResult = CSVParser.parse<string[]>(value.trim(), {
     delimiter: ',',
   });
-  const parseData = parseResult.data[0]; // only take the first line
+  const parseData = parseResult.data[0] as string[]; // only take the first line
   if (parseResult.errors.length) {
     if (
-      parseResult.errors.length === 1 &&
+      parseResult.errors[0] &&
       parseResult.errors[0].code === 'UndetectableDelimiter' &&
       parseResult.errors[0].type === 'Delimiter' &&
       parseResult.data.length === 1

@@ -43,20 +43,24 @@ export class V1_ProcessingContext {
     return this.tags;
   }
 
-  getLastInferredVariableList(): Map<string, ValueSpecification> {
-    return this.inferredVariableList[this.inferredVariableList.length - 1];
+  private get lastInferredVariableList():
+    | Map<string, ValueSpecification>
+    | undefined {
+    return this.inferredVariableList.length
+      ? this.inferredVariableList[this.inferredVariableList.length - 1]
+      : undefined;
   }
 
   addInferredVariables(name: string, variable: ValueSpecification): void {
     if (!this.inferredVariableList.length) {
       this.addVariableToNewLevel(name, variable);
     } else {
-      this.getLastInferredVariableList().set(name, variable);
+      this.lastInferredVariableList?.set(name, variable);
     }
   }
 
   flushVariable(name: string): void {
-    this.getLastInferredVariableList().delete(name);
+    this.lastInferredVariableList?.delete(name);
   }
 
   removeLastVariableLevel(): void {

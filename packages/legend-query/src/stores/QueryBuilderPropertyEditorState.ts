@@ -17,6 +17,7 @@
 import { action, makeAutoObservable } from 'mobx';
 import {
   getNullableFirstElement,
+  guaranteeNonNullable,
   guaranteeType,
   isCamelCase,
   prettyCamelCase,
@@ -24,6 +25,7 @@ import {
 } from '@finos/legend-shared';
 import type {
   AbstractProperty,
+  Enum,
   PureModel,
   ValueSpecification,
 } from '@finos/legend-graph';
@@ -122,7 +124,7 @@ const fillDerivedPropertyArguments = (
         );
         if (_type.values.length) {
           const enumValueRef = EnumValueExplicitReference.create(
-            _type.values[0],
+            _type.values[0] as Enum,
           );
           enumValueInstanceValue.values = [enumValueRef];
         }
@@ -139,7 +141,9 @@ const fillDerivedPropertyArguments = (
     );
   });
   derivedPropertyExpressionState.propertyExpression.setParametersValues([
-    derivedPropertyExpressionState.propertyExpression.parametersValues[0],
+    guaranteeNonNullable(
+      derivedPropertyExpressionState.propertyExpression.parametersValues[0],
+    ),
     ...propertyArguments,
   ]);
 };

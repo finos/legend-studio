@@ -51,7 +51,7 @@ const QueryBuilderResultValues = observer(
             const row: Record<PropertyKey, unknown> = {};
             const cols = executionResult.result.columns;
             _row.values.forEach((value, idx) => {
-              row[cols[idx]] = value;
+              row[cols[idx] as string] = value;
             });
             return row;
           })

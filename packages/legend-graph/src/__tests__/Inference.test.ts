@@ -93,7 +93,7 @@ test(
       { TEMPORARY__keepSectionIndex: true },
     );
     let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
-    enumeration.taggedValues[0].setTag(
+    enumeration.taggedValues[0]?.setTag(
       graphManagerState.graph.getProfile('test::tProf').getTag('s4'),
     );
     expect(
@@ -113,7 +113,7 @@ test(
       TEST_DATA__ReferenceModification.original as Entity[],
     );
     enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
-    enumeration.taggedValues[0].setTag(
+    enumeration.taggedValues[0]?.setTag(
       graphManagerState.graph.getProfile('test2::tProf').getTag('s1'),
     );
     expect(
