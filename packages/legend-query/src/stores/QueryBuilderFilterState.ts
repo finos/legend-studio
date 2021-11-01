@@ -157,12 +157,16 @@ export class FilterConditionState {
       this.filterState.queryBuilderState,
       propertyExpression,
     );
-    if (!this.operators.includes(this.operator)) {
-      assertTrue(
-        this.operators.length !== 0,
-        `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
+
+    const newCompatibleOperators = this.operators;
+    assertTrue(
+      newCompatibleOperators.length !== 0,
+      `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
+    );
+    if (!newCompatibleOperators.includes(this.operator)) {
+      this.changeOperator(
+        newCompatibleOperators[0] as QueryBuilderFilterOperator,
       );
-      this.changeOperator(this.operators[0] as QueryBuilderFilterOperator);
     } else if (!this.operator.isCompatibleWithFilterConditionValue(this)) {
       this.setValue(this.operator.getDefaultFilterConditionValue(this));
     }

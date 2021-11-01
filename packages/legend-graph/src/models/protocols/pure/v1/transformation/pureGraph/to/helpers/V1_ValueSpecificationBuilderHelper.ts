@@ -855,7 +855,8 @@ export function V1_processProperty(
     inferredVariable?.genericType?.value.rawType;
   if (inferredVariable instanceof AbstractPropertyExpression) {
     inferredType = inferredVariable.func.genericType.value.rawType;
-  } else if (inferredType instanceof Class) {
+  }
+  if (inferredType instanceof Class) {
     const processedProperty = new AbstractPropertyExpression(
       '',
       context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
