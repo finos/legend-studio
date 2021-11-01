@@ -466,7 +466,7 @@ export class V1_Engine {
         generationMode,
         type,
         V1_GenerateFileInput.serialization.toJson(
-          new V1_GenerateFileInput(await reparsedPureModelContextData, configs), // takes input PMCD
+          new V1_GenerateFileInput(await reparsedPureModelContextData, configs),
         ),
       )
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));

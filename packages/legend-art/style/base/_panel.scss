@@ -73,6 +73,12 @@
 
   &__header__title__content {
     font-weight: bold;
+
+    @include ellipsisTextOverflow;
+  }
+
+  &__header__title__content__with__margin {
+    font-weight: bold;
     margin-right: 1.0rem;
 
     @include ellipsisTextOverflow;

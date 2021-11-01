@@ -1,1 +1,1 @@
-export * from './MorphirViewerPlugin';
+export * from './MorphirGenerationPlugin';

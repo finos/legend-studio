@@ -299,29 +299,40 @@ export const GenerationResultViewer = observer(
               {fileNode && !(fileNode instanceof GenerationDirectory) && (
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">file</div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header-name">
-                    {fileNode.name}
-                  </div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header-visualize-button">
-                    <button
-                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                      // disabled={isReadOnly}
-                      onClick={visualizeMorphir}
-                      tabIndex={-1}
-                    >
-                      Visualize Generated IR
-                    </button>
-                  </div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header-visualize-button">
-                    <button
-                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                      // disabled={isReadOnly}
-                      onClick={visualizeBosque}
-                      tabIndex={-1}
-                    >
-                      View Bosque Feedback
-                    </button>
-                  </div>
+                  {fileGenerationState.fileGeneration.type.toLowerCase() ===
+                  `morphir` ? (
+                    <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-name">
+                      {fileNode.name}
+                    </div>
+                  ) : (
+                    <div className="panel__header__title__content generation-result-viewer__file__header-name">
+                      {fileNode.name}
+                    </div>
+                  )}
+                  {fileGenerationState.fileGeneration.type.toLowerCase() ===
+                    `morphir` && (
+                    <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-visualize-button">
+                      <button
+                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                        onClick={visualizeMorphir}
+                        tabIndex={-1}
+                      >
+                        Visualize Generated IR
+                      </button>
+                    </div>
+                  )}
+                  {fileGenerationState.fileGeneration.type.toLowerCase() ===
+                    `morphir` && (
+                    <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-visualize-button">
+                      <button
+                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                        onClick={visualizeBosque}
+                        tabIndex={-1}
+                      >
+                        View Bosque Feedback
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
