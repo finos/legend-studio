@@ -2244,6 +2244,7 @@ __metadata:
     "@changesets/logger": 0.0.5
     "@changesets/read": 0.5.0
     "@changesets/write": 0.1.5
+    "@juggle/resize-observer": 3.3.1
     "@manypkg/get-packages": 1.1.2
     "@pmmmwh/react-refresh-webpack-plugin": 0.5.1
     autoprefixer: 10.4.0
@@ -9583,7 +9584,6 @@ __metadata:
     "@finos/eslint-plugin-legend-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
-    "@juggle/resize-observer": 3.3.1
     "@types/jest": 27.0.2
     "@types/node": 16.11.6
     chalk: 4.1.2

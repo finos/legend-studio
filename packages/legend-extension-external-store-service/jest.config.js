@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import base from '../../scripts/jest/jest.config.base.js';
+import base from '../../scripts/test/jest.config.base.js';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const packageJson = loadJSON('./package.json');
@@ -27,7 +27,7 @@ export default {
   testEnvironment: 'jsdom',
   setupFiles: [
     ...base.setupFiles,
-    '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
+    '@finos/legend-dev-utils/jest/setupDOMPolyfills',
   ],
   moduleNameMapper: {
     ...base.moduleNameMapper,

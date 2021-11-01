@@ -15,7 +15,7 @@
  */
 
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
-import base from '../../scripts/jest/jest.config.base.js';
+import base from '../../scripts/test/jest.config.base.js';
 
 const packageJson = loadJSON('./package.json');
 
@@ -27,7 +27,7 @@ export default {
   testEnvironment: 'jsdom',
   setupFiles: [
     ...base.setupFiles,
-    '<rootDir>/scripts/jest/setupTests/setupPolyfills.js',
+    '@finos/legend-dev-utils/jest/setupDOMPolyfills',
   ],
   moduleNameMapper: {
     ...base.moduleNameMapper,
