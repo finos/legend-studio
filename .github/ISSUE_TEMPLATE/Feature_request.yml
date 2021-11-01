@@ -36,8 +36,6 @@ body:
       label: Describe alternatives you have considered
       description: |
         What alternatives/workarounds you have used and evaluated?
-    validations:
-      required: true
 
   # Extra context
   - type: textarea
