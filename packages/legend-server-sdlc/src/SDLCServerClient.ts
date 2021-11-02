@@ -439,7 +439,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
-  ): Promise<PlainObject<Workflow>[]> =>
+  ): Promise<void> =>
     this.networkClient.post(
       `${this._workflowJob(
         projectId,
@@ -452,7 +452,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
-  ): Promise<PlainObject<Workflow>[]> =>
+  ): Promise<void> =>
     this.networkClient.post(
       `${this._workflowJob(
         projectId,
@@ -465,7 +465,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
-  ): Promise<PlainObject<Workflow>[]> =>
+  ): Promise<void> =>
     this.networkClient.post(
       `${this._workflowJob(
         projectId,

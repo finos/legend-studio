@@ -24,6 +24,8 @@ import {
   PanelLoadingIndicator,
   TreeView,
   ContextMenu,
+  ChevronDownIcon,
+  ChevronRightIcon,
 } from '@finos/legend-art';
 import { MdRefresh } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
@@ -31,8 +33,6 @@ import {
   FaCircleNotch,
   FaPauseCircle,
   FaQuestionCircle,
-  FaChevronDown,
-  FaChevronRight,
   FaBan,
   FaTimesCircle,
   FaCheckCircle,
@@ -182,7 +182,7 @@ const getWorkflowJobStatusIcon = (
       );
   }
 };
-export const WorkfloJobLogsViewer = observer(
+const WorkflowJobLogsViewer = observer(
   (props: {
     workflowState: WorkspaceWorkflowsState;
     logState: WorkflowLogState;
@@ -321,9 +321,9 @@ const WorkflowTreeNodeContainer: React.FC<
   const expandIcon = !(node instanceof WorkflowTreeNodeData) ? (
     <div />
   ) : node.isOpen ? (
-    <FaChevronDown />
+    <ChevronDownIcon />
   ) : (
-    <FaChevronRight />
+    <ChevronRightIcon />
   );
   const nodeIcon =
     node instanceof WorkflowTreeNodeData
@@ -367,11 +367,11 @@ const WorkflowTreeNodeContainer: React.FC<
             rel="noopener noreferrer"
             target="_blank"
             href={node.workflow.webURL}
-            title={'See build detail'}
+            title={'See workflow detail'}
           >
             <div className="workspace-workflows__item__link__content">
               <span className="workspace-workflows__item__link__content__id">
-                #{node.id}
+                #{node.label}
               </span>
               <span className="workspace-workflows__item__link__content__created-at">
                 created{' '}
@@ -389,7 +389,7 @@ const WorkflowTreeNodeContainer: React.FC<
             rel="noopener noreferrer"
             target="_blank"
             href={node.workflowJob.webURL}
-            title={'See build detail'}
+            title={'See job detail'}
           >
             <div className="workspace-workflows__item__link__content">
               <span className="workspace-workflows__item__link__content__id">
@@ -503,7 +503,7 @@ export const WorkspaceWorkflows = observer(() => {
           </div>
         </div>
         {workflowState.workflowJobLogState && (
-          <WorkfloJobLogsViewer
+          <WorkflowJobLogsViewer
             logState={workflowState.workflowJobLogState}
             workflowState={workflowState}
           />
