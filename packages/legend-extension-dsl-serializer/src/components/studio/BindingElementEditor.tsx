@@ -16,7 +16,6 @@
 
 import { observer } from 'mobx-react-lite';
 import type { SelectComponent } from '@finos/legend-art';
-import { TimesIcon } from '@finos/legend-art';
 import {
   clsx,
   CustomSelectorInput,
@@ -24,6 +23,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  TimesIcon,
 } from '@finos/legend-art';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import type {
@@ -257,7 +257,7 @@ const BindingGeneralEditor = observer(
       value: OptionalPackageableElementReference<SchemaSet>;
     }): void => {
       binding.setSchemaId(undefined);
-      return binding.setSchemaSet(val?.value);
+      return binding.setSchemaSet(val.value);
     };
     const selectedSchemaSet = {
       value: binding.schemaSet,
