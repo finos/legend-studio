@@ -16,4 +16,4 @@
 
 export * from './DSLSerializer_Extension';
 export * from './models/metamodels/pure/model/packageableElements/store/Binding';
-export { getBinding } from './graphManager/DSLSerializer_GraphManagerHelper';
+export { V1_resolveBinding } from './models/protocols/pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';

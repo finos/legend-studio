@@ -51,7 +51,7 @@ import {
 } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import {
   Binding,
-  CONTENT_TYPE,
+  BINDING_CONTENT_TYPE,
 } from '../../models/metamodels/pure/model/packageableElements/store/Binding';
 import { ExternalFormatConnection } from '../../models/metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
 import { UrlStream } from '../../models/metamodels/pure/model/packageableElements/connection/UrlStream';
@@ -146,7 +146,7 @@ export class DSLSerializer_StudioPlugin
           return schemaSet;
         } else if (type === BINDING_ELEMENT_TYPE) {
           const binding = new Binding(name);
-          binding.setContentType(CONTENT_TYPE.FLAT_DATA);
+          binding.setContentType(BINDING_CONTENT_TYPE.FLAT_DATA);
           const modelUnit = new ModelUnit();
           binding.modelUnit = modelUnit;
           return binding;

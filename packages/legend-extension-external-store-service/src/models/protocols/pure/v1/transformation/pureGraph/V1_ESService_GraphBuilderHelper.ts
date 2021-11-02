@@ -43,7 +43,7 @@ import {
   IntegerTypeReference,
   StringTypeReference,
 } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
-import { getBinding } from '@finos/legend-extension-dsl-serializer';
+import { V1_resolveBinding } from '@finos/legend-extension-dsl-serializer';
 import {
   assertNonNullable,
   guaranteeNonEmptyString,
@@ -137,7 +137,7 @@ export const V1_buildTypeReference = (
     const complexTypeReference = new ComplexTypeReference();
     complexTypeReference.list = protocol.list;
     complexTypeReference.type = context.graph.getClass(protocol.type);
-    complexTypeReference.binding = getBinding(protocol.binding, context.graph);
+    complexTypeReference.binding = V1_resolveBinding(protocol.binding, context);
     return complexTypeReference;
   } else if (protocol instanceof V1_FloatTypeReference) {
     const floatTypeReference = new FloatTypeReference();
@@ -281,12 +281,12 @@ export const V1_buildServiceStoreElement = (
         `Service response 'type' field is missing or empty`,
       ),
     );
-    service.response.binding = getBinding(
+    service.response.binding = V1_resolveBinding(
       guaranteeNonEmptyString(
         protocol.response.binding,
         `Service response 'binding' field is missing or empty`,
       ),
-      context.graph,
+      context,
     );
     service.security = protocol.security.map((securityScheme) =>
       V1_buildSecurityScheme(securityScheme, context),

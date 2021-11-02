@@ -17,22 +17,25 @@
 import { observable, action, makeObservable, override } from 'mobx';
 import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
-import type { PackageableElementVisitor } from '@finos/legend-graph';
+import type {
+  OptionalPackageableElementReference,
+  PackageableElementVisitor,
+} from '@finos/legend-graph';
 import { Store } from '@finos/legend-graph';
 import type { ModelUnit } from './ModelUnit';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 import type { SchemaSet } from '../schemaSet/SchemaSet';
 
-export enum CONTENT_TYPE {
+export enum BINDING_CONTENT_TYPE {
   FLAT_DATA = 'application/x.flatdata',
   XSD = 'application/xml',
   JSON = 'application/json',
 }
 
 export class Binding extends Store implements Hashable {
-  schemaSet?: SchemaSet | undefined;
+  schemaSet?: OptionalPackageableElementReference<SchemaSet>;
   schemaId?: string | undefined;
-  contentType!: CONTENT_TYPE;
+  contentType!: BINDING_CONTENT_TYPE;
   modelUnit!: ModelUnit;
 
   constructor(name: string) {
@@ -51,7 +54,7 @@ export class Binding extends Store implements Hashable {
     });
   }
 
-  setSchemaSet(value: SchemaSet | undefined): void {
+  setSchemaSet(value: OptionalPackageableElementReference<SchemaSet>): void {
     this.schemaSet = value;
   }
 
@@ -59,7 +62,7 @@ export class Binding extends Store implements Hashable {
     this.schemaId = value;
   }
 
-  setContentType(value: CONTENT_TYPE): void {
+  setContentType(value: BINDING_CONTENT_TYPE): void {
     this.contentType = value;
   }
 
@@ -71,7 +74,7 @@ export class Binding extends Store implements Hashable {
     return hashArray([
       DSL_SERIALIZER_HASH_STRUCTURE.BINDING,
       this.path,
-      this.schemaSet?.path ?? '',
+      this.schemaSet?.valueForSerialization ?? '',
       this.schemaId ?? '',
       this.contentType,
       this.modelUnit,

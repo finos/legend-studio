@@ -307,13 +307,13 @@
 .binding-general-editor {
   padding: 2rem;
 
-  &__section__header__prompt {
-    word-break: break-word;
-    font-size: 1.4rem;
-    color: var(--color-light-grey-400);
+  &__section__header__label {
+    @include flexVCenter;
+
+    font-weight: 500;
+    color: var(--color-light-grey-50);
+    margin: 0.5rem 0;
     line-height: 2rem;
-    margin-bottom: 0.8rem;
-    margin-top: 0.8rem;
     cursor: default;
   }
 
@@ -333,7 +333,7 @@
   }
 }
 
-.binding-model-editor {
+.binding-scope-editor {
   height: 56rem;
   background: var(--color-dark-grey-50);
 
@@ -414,7 +414,7 @@
   }
 }
 
-.element-editor {
+.binding-scope-entry-editor {
   display: flex;
 
   &__element {
@@ -428,11 +428,8 @@
     }
 
     &__value {
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      word-break: break-word;
-      text-align: left;
+      @include ellipsisTextOverflow;
+
       padding-left: 0.5rem;
     }
   }

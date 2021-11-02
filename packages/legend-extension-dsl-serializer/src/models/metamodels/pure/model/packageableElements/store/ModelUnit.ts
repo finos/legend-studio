@@ -24,7 +24,7 @@ import {
 import type { Hashable } from '@finos/legend-shared';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 import type { PackageableElement } from '@finos/legend-graph';
-import { PackageableElementReference } from '@finos/legend-graph';
+import type { PackageableElementReference } from '@finos/legend-graph';
 
 export class ModelUnit implements Hashable {
   packageableElementIncludes: PackageableElementReference<PackageableElement>[] =
@@ -88,18 +88,10 @@ export class ModelUnit implements Hashable {
     return hashArray([
       DSL_SERIALIZER_HASH_STRUCTURE.MODEL_UNIT,
       hashArray(
-        this.packageableElementIncludes.map((element) =>
-          element instanceof PackageableElementReference
-            ? element.hashValue
-            : element,
-        ),
+        this.packageableElementIncludes.map((element) => element.hashValue),
       ),
       hashArray(
-        this.packageableElementExcludes.map((element) =>
-          element instanceof PackageableElementReference
-            ? element.hashValue
-            : element,
-        ),
+        this.packageableElementExcludes.map((element) => element.hashValue),
       ),
     ]);
   }

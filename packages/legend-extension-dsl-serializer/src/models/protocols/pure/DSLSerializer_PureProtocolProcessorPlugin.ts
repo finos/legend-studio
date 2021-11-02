@@ -39,12 +39,13 @@ import {
   getSchemaSet,
 } from '../../../graphManager/DSLSerializer_GraphManagerHelper';
 import {
-  V1_buildPackageableElement,
   V1_resolveBinding,
+  V1_resolveSchemaSet,
+  V1_buildPackageableElement,
 } from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';
 import {
   Binding,
-  CONTENT_TYPE,
+  BINDING_CONTENT_TYPE,
 } from '../../metamodels/pure/model/packageableElements/store/Binding';
 import {
   FORMAT_TYPE,
@@ -142,13 +143,13 @@ export class DSLSerializer_PureProtocolProcessorPlugin
           const element = getBinding(path, context.graph);
           element.schemaId = elementProtocol.schemaId;
           if (elementProtocol.schemaSet !== undefined) {
-            element.schemaSet = getSchemaSet(
+            element.schemaSet = V1_resolveSchemaSet(
               elementProtocol.schemaSet,
-              context.graph,
+              context,
             );
           }
           element.contentType = guaranteeNonNullable(
-            Object.values(CONTENT_TYPE).find(
+            Object.values(BINDING_CONTENT_TYPE).find(
               (type) => type === elementProtocol.contentType,
             ),
             `Binding 'contentType' '${elementProtocol.contentType}' is not supported`,
@@ -279,7 +280,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin
           protocol.name = metamodel.name;
           protocol.package = metamodel.package?.fullPath ?? '';
           protocol.schemaId = metamodel.schemaId;
-          protocol.schemaSet = metamodel.schemaSet?.path;
+          protocol.schemaSet = metamodel.schemaSet?.valueForSerialization;
           protocol.contentType = metamodel.contentType;
           const modelUnit = new V1_ModelUnit();
           modelUnit.packageableElementExcludes =
