@@ -69,9 +69,10 @@ export type LightDataSpace = Entity & {
 };
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
-  MODELS = 'MODELS',
+  MODELS_OVERVIEW = 'MODELS_OVERVIEW',
   EXECUTION = 'EXECUTION',
   ENTITLEMENT = 'ENTITLEMENT',
+  TEST_DATA = 'TEST_DATA',
   SUPPORT = 'SUPPORT',
 }
 
@@ -80,10 +81,9 @@ export class DataSpaceViewerState {
   dataSpace: ResolvedDataSpace;
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: Diagram | undefined;
-  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS;
+  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW;
   currentExecutionContext: ResolvedDataSpaceExecutionContext;
   currentRuntime: PackageableRuntime;
-  showOnlyFeaturedDiagrams = true;
 
   constructor(
     setupState: DataSpaceQuerySetupState,
@@ -95,14 +95,12 @@ export class DataSpaceViewerState {
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
-      showOnlyFeaturedDiagrams: observable,
       renderer: computed,
       setRenderer: action,
       setCurrentDiagram: action,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
-      setShowOnlyFeaturedDiagrams: action,
     });
 
     this.setupState = setupState;
@@ -200,25 +198,6 @@ export class DataSpaceViewerState {
 
   setCurrentRuntime(val: PackageableRuntime): void {
     this.currentRuntime = val;
-  }
-
-  setShowOnlyFeaturedDiagrams(val: boolean): void {
-    this.showOnlyFeaturedDiagrams = val;
-    // if we only show featured diagrams and the current diagram is not featured
-    // either set it to the first featured diagram we can find or show nothing
-    if (val) {
-      if (
-        this.currentDiagram &&
-        !this.featuredDiagrams.includes(this.currentDiagram)
-      ) {
-        this.currentDiagram = this.dataSpace.featuredDiagrams.length
-          ? (
-              this.dataSpace
-                .featuredDiagrams[0] as PackageableElementReference<Diagram>
-            ).value
-          : undefined;
-      }
-    }
   }
 
   setupRenderer(): void {

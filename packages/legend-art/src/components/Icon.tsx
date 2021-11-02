@@ -45,6 +45,7 @@ export {
   FaArrowLeft as ArrowLeftIcon,
   FaArrowRight as ArrowRightIcon,
   FaArrowAltCircleDown as ArrowCircleDownIcon,
+  FaArrowAltCircleRight as ArrowCircleRightIcon,
   FaUser as UserIcon,
   FaShapes as ShapesIcon,
   FaScroll as ScrollIcon,
@@ -53,6 +54,9 @@ export {
   FaDollarSign as DollarIcon,
   FaSearch as SearchIcon,
   FaStar as StarIcon,
+  FaKey as KeyIcon,
+  FaExternalLinkAlt as ExternalLinkIcon,
+  FaExternalLinkSquareAlt as ExternalLinkSquareIcon,
   FaLightbulb as LightBulbIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';

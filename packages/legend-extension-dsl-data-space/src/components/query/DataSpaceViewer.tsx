@@ -28,8 +28,11 @@ import {
   MappingIcon,
   RuntimeIcon,
   CogIcon,
-  StarIcon,
   LightBulbIcon,
+  KeyIcon,
+  FlaskIcon,
+  ExternalLinkSquareIcon,
+  ExternalLinkIcon,
 } from '@finos/legend-art';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram';
@@ -107,11 +110,13 @@ const DataSpaceModelsOverview = observer(
 
     // diagram selector
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
-    const diagramOptions = (
-      dataSpaceViewerState.showOnlyFeaturedDiagrams
-        ? dataSpaceViewerState.featuredDiagrams
-        : dataSpaceViewerState.diagrams
-    ).map(buildDiagramOption);
+    const diagramOptions = dataSpaceViewerState.featuredDiagrams
+      .concat(
+        dataSpaceViewerState.diagrams.filter(
+          (diagram) => !dataSpaceViewerState.featuredDiagrams.includes(diagram),
+        ),
+      )
+      .map(buildDiagramOption);
     const selectedDiagramOption = dataSpaceViewerState.currentDiagram
       ? buildDiagramOption(dataSpaceViewerState.currentDiagram)
       : null;
@@ -135,12 +140,6 @@ const DataSpaceModelsOverview = observer(
       </div>
     );
 
-    // featured diagram toggler
-    const toggleShowFeaturedDiagrams = (): void =>
-      dataSpaceViewerState.setShowOnlyFeaturedDiagrams(
-        !dataSpaceViewerState.showOnlyFeaturedDiagrams,
-      );
-
     if (dataSpaceViewerState.diagrams.length === 0) {
       return <BlankPanelContent>No diagrams available</BlankPanelContent>;
     }
@@ -156,24 +155,6 @@ const DataSpaceModelsOverview = observer(
             darkMode={true}
             formatOptionLabel={formatDiagramOptionLabel}
           />
-          <div className="query-setup__data-space__viewer__diagrams__toggler">
-            <button
-              className={clsx(
-                'query-setup__data-space__viewer__diagrams__toggler__btn',
-                {
-                  'query-setup__data-space__viewer__diagrams__toggler__btn--active':
-                    dataSpaceViewerState.showOnlyFeaturedDiagrams,
-                },
-              )}
-              tabIndex={-1}
-              title={`[${
-                dataSpaceViewerState.showOnlyFeaturedDiagrams ? 'on' : 'off'
-              }] Toggle show only featured diagrams`}
-              onClick={toggleShowFeaturedDiagrams}
-            >
-              <StarIcon />
-            </button>
-          </div>
         </div>
         <div className="query-setup__data-space__viewer__diagrams__content">
           {dataSpaceViewerState.currentDiagram && (
@@ -395,7 +376,7 @@ export const DataSpaceViewer = observer(
 
     const activities: DataSpaceViewerActivityConfig[] = [
       {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS,
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW,
         title: 'Models Overview',
         icon: <ShapesIcon />,
       },
@@ -404,11 +385,16 @@ export const DataSpaceViewer = observer(
         title: 'Execution Context',
         icon: <PlayIcon />,
       },
-      // {
-      //   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
-      //   title: 'Entitlement',
-      //   icon: <UserIcon />,
-      // },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT,
+        title: 'Entitlement',
+        icon: <KeyIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
+        title: 'Test Data',
+        icon: <FlaskIcon />,
+      },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT,
         title: 'Support',
@@ -416,13 +402,35 @@ export const DataSpaceViewer = observer(
       },
     ];
 
+    const viewDataSpaceProject = (): void => {
+      // do nothing
+    };
+    const viewProject = (): void => {
+      // do nothing
+    };
+
     return (
       <div className="query-setup__data-space__viewer">
         <div className="query-setup__data-space__viewer__header">
-          <div className="query-setup__data-space__viewer__path">
-            {dataSpace.path}
-          </div>
-          <div className="query-setup__data-space__viewer__gav">
+          <button
+            className="query-setup__data-space__viewer__path"
+            tabIndex={-1}
+            title="View Data Space in Project"
+            onClick={viewDataSpaceProject}
+          >
+            <div className="query-setup__data-space__viewer__path__label">
+              {dataSpace.path}
+            </div>
+            <div className="query-setup__data-space__viewer__path__link">
+              <ExternalLinkSquareIcon />
+            </div>
+          </button>
+          <button
+            className="query-setup__data-space__viewer__gav"
+            tabIndex={-1}
+            title="View Project"
+            onClick={viewProject}
+          >
             <div className="query-setup__data-space__viewer__gav__group-id">
               {dataSpace.groupId}
             </div>
@@ -438,7 +446,10 @@ export const DataSpaceViewer = observer(
             <div className="query-setup__data-space__viewer__gav__version-id">
               {dataSpace.versionId}
             </div>
-          </div>
+            <div className="query-setup__data-space__viewer__gav__link">
+              <ExternalLinkIcon />
+            </div>
+          </button>
           <div
             className={clsx('query-setup__data-space__viewer__description', {
               'query-setup__data-space__viewer__description--empty':
@@ -474,7 +485,7 @@ export const DataSpaceViewer = observer(
             </div>
             <div className="query-setup__data-space__viewer__main-panel">
               {dataSpaceViewerState.currentActivity ===
-                DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS && (
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW && (
                 <DataSpaceModelsOverview
                   dataSpaceViewerState={dataSpaceViewerState}
                 />
@@ -484,6 +495,14 @@ export const DataSpaceViewer = observer(
                 <DataSpaceExecutionViewer
                   dataSpaceViewerState={dataSpaceViewerState}
                 />
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT && (
+                <BlankPanelContent>Work in Progress</BlankPanelContent>
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA && (
+                <BlankPanelContent>Work in Progress</BlankPanelContent>
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT && (
