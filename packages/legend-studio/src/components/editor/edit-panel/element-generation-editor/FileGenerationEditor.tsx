@@ -235,6 +235,17 @@ export const GenerationResultViewer = observer(
             plugin as DSL_StudioPlugin_Extension
           ).getVisualizeMorphirButton?.() ?? [],
       );
+    console.log('plugin size:');
+    console.log(
+      fileGenerationState.editorStore.pluginManager.getStudioPlugins().length,
+    );
+    fileGenerationState.editorStore.pluginManager
+      .getStudioPlugins()
+      .forEach((element) => {
+        console.log(element.getName());
+      });
+    console.log('visualize button size:');
+    console.log(visualizeMorphirButton.length);
     const viewBosqueFeedbackButton =
       fileGenerationState.editorStore.pluginManager
         .getStudioPlugins()
@@ -299,18 +310,17 @@ export const GenerationResultViewer = observer(
               {fileNode && !(fileNode instanceof GenerationDirectory) && (
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">file</div>
-                  {fileGenerationState.fileGeneration.type.toLowerCase() ===
-                  `morphir` ? (
-                    <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-name">
-                      {fileNode.name}
-                    </div>
-                  ) : (
-                    <div className="panel__header__title__content generation-result-viewer__file__header-name">
-                      {fileNode.name}
-                    </div>
-                  )}
-                  {visualizeMorphirButton}
-                  {viewBosqueFeedbackButton}
+                  <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-name">
+                    {fileNode.name}
+                  </div>
+                  {fileNode instanceof GenerationFile &&
+                    visualizeMorphirButton.forEach((e) =>
+                      e(fileGenerationState, fileNode as GenerationFile),
+                    )}
+                  {fileNode instanceof GenerationFile &&
+                    viewBosqueFeedbackButton.forEach((e) =>
+                      e(fileGenerationState, fileNode as GenerationFile),
+                    )}
                 </div>
               )}
             </div>

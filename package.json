@@ -99,8 +99,5 @@
   "engines": {
     "node": ">=14.17.1",
     "yarn": ">=1.22.10"
-  },
-  "dependencies": {
-    "node-sass": "^6.0.1"
   }
 }
