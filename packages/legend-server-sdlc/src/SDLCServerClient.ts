@@ -367,7 +367,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     workflowId: string,
-  ): Promise<PlainObject<Workflow>[]> =>
+  ): Promise<PlainObject<Workflow>> =>
     this.networkClient.get(this._workflow(projectId, workspace, workflowId));
   getWorkflows = (
     projectId: string,
@@ -382,20 +382,6 @@ export class SDLCServerClient extends AbstractServerClient {
       undefined,
       { status, revisionIds, limit },
     );
-  getWorkflowJobs = (
-    projectId: string,
-    workspace: Workspace | undefined,
-    workflowId: string,
-    status: WorkflowStatus | undefined,
-    revisionIds: string[] | undefined,
-    limit: number | undefined,
-  ): Promise<PlainObject<Workflow>[]> =>
-    this.networkClient.get(
-      this._workflowJobs(projectId, workspace, workflowId),
-      undefined,
-      undefined,
-      { status, revisionIds, limit },
-    );
   getWorkflowsByRevision = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -406,6 +392,20 @@ export class SDLCServerClient extends AbstractServerClient {
       undefined,
       undefined,
       { revisionId },
+    );
+  getWorkflowJobs = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowId: string,
+    status: WorkflowStatus | undefined,
+    revisionIds: string[] | undefined,
+    limit: number | undefined,
+  ): Promise<PlainObject<WorkflowJob>[]> =>
+    this.networkClient.get(
+      this._workflowJobs(projectId, workspace, workflowId),
+      undefined,
+      undefined,
+      { status, revisionIds, limit },
     );
   getWorkflowJob = (
     projectId: string,
@@ -439,7 +439,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
-  ): Promise<void> =>
+  ): Promise<PlainObject<WorkflowJob>> =>
     this.networkClient.post(
       `${this._workflowJob(
         projectId,
@@ -452,7 +452,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
-  ): Promise<void> =>
+  ): Promise<PlainObject<WorkflowJob>> =>
     this.networkClient.post(
       `${this._workflowJob(
         projectId,
@@ -465,7 +465,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
-  ): Promise<void> =>
+  ): Promise<PlainObject<WorkflowJob>> =>
     this.networkClient.post(
       `${this._workflowJob(
         projectId,

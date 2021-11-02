@@ -21,9 +21,10 @@ import type { EditorStore } from '../EditorStore';
 import type { EditorSdlcState } from '../EditorSdlcState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  uuid,
   assertErrorThrown,
   LogEvent,
-  isNonNullable,
+  ActionState,
 } from '@finos/legend-shared';
 import { WorkflowJob, Workflow } from '@finos/legend-server-sdlc';
 
@@ -38,30 +39,23 @@ export abstract class WorkflowExplorerTreeNodeData implements TreeNodeData {
     this.label = label;
   }
 }
+const getWorkflowNodeId = (workflowId: string): string =>
+  `workflow_${workflowId}`;
+const getJobId = (jobId: string): string => `job_${jobId}`;
 export class WorkflowTreeNodeData extends WorkflowExplorerTreeNodeData {
   workflow: Workflow;
   constructor(workflow: Workflow) {
-    super(workflow.id, workflow.id);
+    super(getWorkflowNodeId(workflow.id), workflow.id);
     this.workflow = workflow;
   }
 }
 export class WorkflowJobTreeNodeData extends WorkflowExplorerTreeNodeData {
   workflowJob: WorkflowJob;
   constructor(workflowJob: WorkflowJob) {
-    super(workflowJob.id, workflowJob.name);
+    super(getJobId(workflowJob.id), workflowJob.name);
     this.workflowJob = workflowJob;
   }
 }
-
-const addWorkflowNodeToTree = (
-  workflow: Workflow,
-  treeData: TreeData<WorkflowExplorerTreeNodeData>,
-): WorkflowTreeNodeData => {
-  const node = new WorkflowTreeNodeData(workflow);
-  treeData.rootIds.push(node.id);
-  treeData.nodes.set(node.id, node);
-  return node;
-};
 
 const addWorkflowJobNodeToTree = (
   workflowJob: WorkflowJob,
@@ -79,22 +73,12 @@ const addWorkflowJobNodeToTree = (
   return node;
 };
 
-const getWorkflowExplorerTreeNodeData = (
-  workflows: Workflow[],
-): TreeData<WorkflowExplorerTreeNodeData> => {
-  const rootIds: string[] = [];
-  const nodes = new Map<string, WorkflowExplorerTreeNodeData>();
-  const treeData = { rootIds, nodes };
-  workflows.forEach((w) => addWorkflowNodeToTree(w, treeData));
-  return treeData;
-};
-
 const updateWorkflowJobData = (
   workflowJobs: WorkflowJob[],
   workflowId: string,
   treeData: TreeData<WorkflowExplorerTreeNodeData>,
 ): void => {
-  const workflowNode = treeData.nodes.get(workflowId);
+  const workflowNode = treeData.nodes.get(getWorkflowNodeId(workflowId));
   if (workflowNode instanceof WorkflowTreeNodeData) {
     workflowNode.childrenIds?.forEach((id) => treeData.nodes.delete(id));
     workflowNode.childrenIds = [];
@@ -106,44 +90,62 @@ const updateWorkflowJobData = (
 
 export class WorkflowLogState {
   editorStore: EditorStore;
-  job: WorkflowJob;
+  sdlcState: EditorSdlcState;
+  job: WorkflowJob | undefined;
   logs: string;
-  constructor(editorStore: EditorStore, job: WorkflowJob, logs: string) {
+  fetchJobLogState = ActionState.create();
+
+  constructor(
+    editorStore: EditorStore,
+    sdlcState: EditorSdlcState,
+    job: WorkflowJob | undefined,
+    logs: string | undefined,
+  ) {
     makeAutoObservable(this, {
       editorStore: false,
       job: observable,
       logs: observable,
+      setLogs: action,
+      setJob: action,
     });
 
     this.editorStore = editorStore;
+    this.sdlcState = sdlcState;
     this.job = job;
-    this.logs = logs;
+    this.logs = logs ?? '';
   }
 
   setLogs(val: string): void {
     this.logs = val;
   }
 
-  setJob(val: WorkflowJob): void {
+  setJob(val: WorkflowJob | undefined): void {
     this.job = val;
   }
 
-  *refreshJobLogs(): GeneratorFn<void> {
+  closeModal(): void {
+    this.setJob(undefined);
+    this.setLogs('');
+  }
+
+  *refreshJobLogs(workflowJob: WorkflowJob): GeneratorFn<void> {
     try {
+      this.fetchJobLogState.inProgress();
       const job = WorkflowJob.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getWorkflowJob(
           this.editorStore.sdlcState.activeProject.projectId,
           this.editorStore.sdlcState.activeWorkspace,
-          this.job,
+          workflowJob,
         )) as PlainObject<WorkflowJob>,
       );
+      this.setJob(job);
       const logs = (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
         this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
-        this.job,
+        job,
       )) as string;
-      this.setJob(job);
       this.setLogs(logs);
+      this.fetchJobLogState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -151,146 +153,76 @@ export class WorkflowLogState {
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
+      this.fetchJobLogState.fail();
+    }
+  }
+
+  *viewJobLogs(workflowJob: WorkflowJob): GeneratorFn<void> {
+    try {
+      this.setJob(workflowJob);
+      this.fetchJobLogState.inProgress();
+      const logs = (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
+        workflowJob,
+      )) as string;
+      this.setLogs(logs);
+      this.fetchJobLogState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+      this.fetchJobLogState.fail();
     }
   }
 }
 
-export class WorkspaceWorkflowsState {
+export class WorkspaceWorkflowState {
+  uuid = uuid();
   editorStore: EditorStore;
   sdlcState: EditorSdlcState;
+  treeData: TreeData<WorkflowExplorerTreeNodeData>;
   isExecutingWorkflowRequest = false;
-  workflows: Workflow[] = [];
-  workflowTreeData: TreeData<WorkflowExplorerTreeNodeData> | undefined;
-  workflowJobLogState: WorkflowLogState | undefined;
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(
+    editorStore: EditorStore,
+    sdlcState: EditorSdlcState,
+    workflow: Workflow,
+    jobs: WorkflowJob[] | undefined,
+  ) {
     makeAutoObservable(this, {
       editorStore: false,
-      sdlcState: false,
-      workflowTreeData: observable,
+      treeData: observable.ref,
       setWorkflowTreeData: action,
-      setWorkflowJobLogState: action,
-      workflowJobLogState: observable,
     });
 
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
+    this.treeData = this.buildTreeData(workflow, jobs);
   }
 
-  setWorkflowTreeData(
-    val: TreeData<WorkflowExplorerTreeNodeData> | undefined,
-  ): void {
-    this.workflowTreeData = val;
+  setWorkflowTreeData(val: TreeData<WorkflowExplorerTreeNodeData>): void {
+    this.treeData = val;
   }
 
-  setWorkflowJobLogState(val: WorkflowLogState | undefined): void {
-    this.workflowJobLogState = val;
-  }
-
-  *fetchAllWorkspaceWorkflows(): GeneratorFn<void> {
-    try {
-      this.isExecutingWorkflowRequest = true;
-      const workflows = (
-        (yield this.editorStore.sdlcServerClient.getWorkflows(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          undefined,
-          undefined,
-          undefined,
-        )) as PlainObject<Workflow>[]
-      ).map((workflow) => Workflow.serialization.fromJson(workflow));
-      this.setWorkflowTreeData(getWorkflowExplorerTreeNodeData(workflows));
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notifyError(error);
-    } finally {
-      this.isExecutingWorkflowRequest = false;
+  buildTreeData(
+    workflow: Workflow,
+    jobs: WorkflowJob[] | undefined,
+  ): TreeData<WorkflowExplorerTreeNodeData> {
+    const rootIds: string[] = [];
+    const nodes = new Map<string, WorkflowExplorerTreeNodeData>();
+    const treeData = { rootIds, nodes };
+    const workflowNode = new WorkflowTreeNodeData(workflow);
+    treeData.rootIds.push(workflowNode.id);
+    treeData.nodes.set(workflowNode.id, workflowNode);
+    if (jobs) {
+      workflowNode.isOpen = true;
+      updateWorkflowJobData(jobs, workflow.id, treeData);
     }
-  }
-
-  *refreshWorkflows(): GeneratorFn<void> {
-    try {
-      this.isExecutingWorkflowRequest = true;
-      const workflows = (
-        (yield this.editorStore.sdlcServerClient.getWorkflows(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          undefined,
-          undefined,
-          undefined,
-        )) as PlainObject<Workflow>[]
-      ).map((workflow) => Workflow.serialization.fromJson(workflow));
-      const treeData = getWorkflowExplorerTreeNodeData(workflows);
-      // refetch open nodes
-      const currentTreeData = this.workflowTreeData;
-      if (currentTreeData) {
-        const openNodeIds = Array.from(currentTreeData.nodes.values())
-          .filter((n) => n.isOpen)
-          .map((n) => n.id);
-        const workflowToJobsMap = new Map<string, WorkflowJob[]>();
-        yield Promise.all(
-          workflows
-            .filter((workflow) => openNodeIds.includes(workflow.id))
-            .map((workflow) =>
-              this.editorStore.sdlcServerClient
-                .getWorkflowJobs(
-                  this.sdlcState.activeProject.projectId,
-                  this.sdlcState.activeWorkspace,
-                  workflow.id,
-                  undefined,
-                  undefined,
-                  undefined,
-                )
-                .then((jobs: PlainObject<WorkflowJob>[]) =>
-                  workflowToJobsMap.set(
-                    workflow.id,
-                    jobs.map((x) => WorkflowJob.serialization.fromJson(x)),
-                  ),
-                ),
-            ),
-        );
-        workflowToJobsMap.forEach((jobs, workflowId) =>
-          updateWorkflowJobData(jobs, workflowId, treeData),
-        );
-        treeData.nodes.forEach((node) => {
-          if (openNodeIds.includes(node.id)) {
-            node.isOpen = true;
-          }
-        });
-      }
-      this.setWorkflowTreeData({ ...treeData });
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notifyError(error);
-    } finally {
-      this.isExecutingWorkflowRequest = false;
-    }
-  }
-
-  *refreshWorkflow(
-    workflowId: string,
-    treeData: TreeData<WorkflowExplorerTreeNodeData>,
-  ): GeneratorFn<void> {
-    const node = treeData.nodes.get(workflowId);
-    if (node instanceof WorkflowTreeNodeData) {
-      const workflow = Workflow.serialization.fromJson(
-        (yield this.editorStore.sdlcServerClient.getWorkflow(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          workflowId,
-        )) as PlainObject<Workflow>,
-      );
-      node.workflow = workflow;
-    }
-    yield flowResult(this.fetchAllWorkspaceWorkJobs(workflowId, treeData));
+    return treeData;
   }
 
   *fetchAllWorkspaceWorkJobs(
@@ -323,6 +255,21 @@ export class WorkspaceWorkflowsState {
     }
   }
 
+  *onTreeNodeSelect(
+    node: WorkflowExplorerTreeNodeData,
+    treeData: TreeData<WorkflowExplorerTreeNodeData>,
+  ): GeneratorFn<void> {
+    if (node instanceof WorkflowTreeNodeData) {
+      if (!node.childrenIds) {
+        yield flowResult(
+          this.fetchAllWorkspaceWorkJobs(node.workflow.id, treeData),
+        );
+      }
+      node.isOpen = !node.isOpen;
+    }
+    this.setWorkflowTreeData({ ...treeData });
+  }
+
   *cancelJob(
     workflowJob: WorkflowJob,
     treeData: TreeData<WorkflowExplorerTreeNodeData>,
@@ -345,6 +292,24 @@ export class WorkspaceWorkflowsState {
     } finally {
       this.isExecutingWorkflowRequest = false;
     }
+  }
+
+  *refreshWorkflow(
+    workflowId: string,
+    treeData: TreeData<WorkflowExplorerTreeNodeData>,
+  ): GeneratorFn<void> {
+    const node = treeData.nodes.get(getWorkflowNodeId(workflowId));
+    if (node instanceof WorkflowTreeNodeData) {
+      const workflow = Workflow.serialization.fromJson(
+        (yield this.editorStore.sdlcServerClient.getWorkflow(
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+          workflowId,
+        )) as PlainObject<Workflow>,
+      );
+      node.workflow = workflow;
+    }
+    yield flowResult(this.fetchAllWorkspaceWorkJobs(workflowId, treeData));
   }
 
   *retryJob(
@@ -370,45 +335,90 @@ export class WorkspaceWorkflowsState {
       this.isExecutingWorkflowRequest = false;
     }
   }
+}
 
-  *onTreeNodeSelect(
-    node: WorkflowExplorerTreeNodeData,
-    treeData: TreeData<WorkflowExplorerTreeNodeData>,
-  ): GeneratorFn<void> {
-    if (node instanceof WorkflowTreeNodeData) {
-      if (!node.childrenIds) {
-        yield flowResult(
-          this.fetchAllWorkspaceWorkJobs(node.workflow.id, treeData),
-        );
-      }
-      node.isOpen = !node.isOpen;
-    }
-    this.setWorkflowTreeData({ ...treeData });
+export class WorkspaceWorkflowsState {
+  editorStore: EditorStore;
+  sdlcState: EditorSdlcState;
+  fetchWorkflowsState = ActionState.create();
+  logState: WorkflowLogState;
+  workflowStates: WorkspaceWorkflowState[] = [];
+
+  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+    makeAutoObservable(this, {
+      editorStore: false,
+      sdlcState: false,
+      fetchWorkflowsState: observable,
+      logState: observable,
+    });
+
+    this.editorStore = editorStore;
+    this.sdlcState = sdlcState;
+    this.logState = new WorkflowLogState(
+      this.editorStore,
+      this.sdlcState,
+      undefined,
+      undefined,
+    );
   }
 
-  getChildNodes(
-    node: WorkflowExplorerTreeNodeData,
-    treeData: TreeData<WorkflowExplorerTreeNodeData>,
-  ): WorkflowExplorerTreeNodeData[] {
-    if (node.childrenIds && node instanceof WorkflowTreeNodeData) {
-      return node.childrenIds
-        .map((id) => treeData.nodes.get(id))
-        .filter(isNonNullable);
-    }
-    return [];
-  }
-
-  *viewJobLogs(workflowJob: WorkflowJob): GeneratorFn<void> {
+  *fetchAllWorkspaceWorkflows(): GeneratorFn<void> {
     try {
-      this.isExecutingWorkflowRequest = true;
-      const logs = (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
-        this.sdlcState.activeProject.projectId,
-        this.sdlcState.activeWorkspace,
-        workflowJob,
-      )) as string;
-      this.setWorkflowJobLogState(
-        new WorkflowLogState(this.editorStore, workflowJob, logs),
+      this.fetchWorkflowsState.inProgress();
+      // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
+      const workflows = (
+        (yield this.editorStore.sdlcServerClient.getWorkflows(
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+          undefined,
+          undefined,
+          undefined,
+        )) as PlainObject<Workflow>[]
+      ).map((workflow) => Workflow.serialization.fromJson(workflow));
+      const openWorkflowIds = this.workflowStates
+        .map((workflowState) =>
+          Array.from(workflowState.treeData.nodes.values()),
+        )
+        .flat()
+        .filter(
+          (node: WorkflowExplorerTreeNodeData): node is WorkflowTreeNodeData =>
+            node instanceof WorkflowTreeNodeData,
+        )
+        .filter((node) => node.isOpen)
+        .map((node) => node.workflow.id);
+      const workflowToJobsMap = new Map<string, WorkflowJob[]>();
+      yield Promise.all(
+        workflows
+          .filter((workflow) => openWorkflowIds.includes(workflow.id))
+          // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
+          .map((workflow) =>
+            this.editorStore.sdlcServerClient
+              .getWorkflowJobs(
+                this.sdlcState.activeProject.projectId,
+                this.sdlcState.activeWorkspace,
+                workflow.id,
+                undefined,
+                undefined,
+                undefined,
+              )
+              .then((jobs: PlainObject<WorkflowJob>[]) =>
+                workflowToJobsMap.set(
+                  workflow.id,
+                  jobs.map((x) => WorkflowJob.serialization.fromJson(x)),
+                ),
+              ),
+          ),
       );
+      this.workflowStates = workflows.map(
+        (workflow) =>
+          new WorkspaceWorkflowState(
+            this.editorStore,
+            this.sdlcState,
+            workflow,
+            workflowToJobsMap.get(workflow.id),
+          ),
+      );
+      this.fetchWorkflowsState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -416,8 +426,7 @@ export class WorkspaceWorkflowsState {
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
-    } finally {
-      this.isExecutingWorkflowRequest = false;
+      this.fetchWorkflowsState.fail();
     }
   }
 }
