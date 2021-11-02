@@ -1105,7 +1105,6 @@ export class EditorGraphState {
     );
   }
 
-  /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
   getSetImplementationType(setImplementation: SetImplementation): string {
     if (setImplementation instanceof PureInstanceSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.PUREINSTANCE;

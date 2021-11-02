@@ -135,7 +135,6 @@ export enum BASIC_SET_IMPLEMENTATION_TYPE {
   INSTANCE = 'instance',
 }
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export enum SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
   PUREINSTANCE = 'pureInstance',
