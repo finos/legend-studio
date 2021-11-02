@@ -60,6 +60,9 @@ import {
 } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
 
 export type LightDataSpace = Entity & {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
   path: string;
   content: {
     groupId: string;
@@ -78,6 +81,7 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
 
 export class DataSpaceViewerState {
   setupState: DataSpaceQuerySetupState;
+  lightDataSpace: LightDataSpace;
   dataSpace: ResolvedDataSpace;
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: Diagram | undefined;
@@ -87,6 +91,7 @@ export class DataSpaceViewerState {
 
   constructor(
     setupState: DataSpaceQuerySetupState,
+    lightDataSpace: LightDataSpace,
     dataSpace: ResolvedDataSpace,
   ) {
     makeObservable(this, {
@@ -105,6 +110,7 @@ export class DataSpaceViewerState {
 
     this.setupState = setupState;
     this.dataSpace = dataSpace;
+    this.lightDataSpace = lightDataSpace;
     this.currentExecutionContext = this.dataSpace.defaultExecutionContext;
     this.currentRuntime =
       this.dataSpace.defaultExecutionContext.defaultRuntime.value;
@@ -256,24 +262,27 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           },
         )) as StoredEntity[]
       )
-        .map((storedEntity) => storedEntity.entity)
+        // .map((storedEntity) => storedEntity.entity)
         .map(
-          (entity) =>
+          (storedEntity) =>
             ({
-              ...entity,
-              path: entity.path,
+              ...storedEntity.entity,
+              groupId: storedEntity.groupId,
+              artifactId: storedEntity.artifactId,
+              versionId: storedEntity.versionId,
+              path: storedEntity.entity.path,
               content: {
-                ...entity.content,
+                ...storedEntity.entity.content,
                 groupId: guaranteeNonNullable(
-                  entity.content.groupId,
+                  storedEntity.entity.content.groupId,
                   `Data space 'groupId' field is missing`,
                 ),
                 artifactId: guaranteeNonNullable(
-                  entity.content.artifactId,
+                  storedEntity.entity.content.artifactId,
                   `Data space 'artifactId' field is missing`,
                 ),
                 versionId: guaranteeNonNullable(
-                  entity.content.versionId,
+                  storedEntity.entity.content.versionId,
                   `Data space 'versionId' field is missing`,
                 ),
               },
@@ -312,6 +321,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       );
       this.dataSpaceViewerState = new DataSpaceViewerState(
         this,
+        dataSpace,
         resolvedDataSpace,
       );
       this.setUpDataSpaceState.pass();

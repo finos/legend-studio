@@ -42,6 +42,7 @@ import { DataSpaceSupportEmail } from '../../models/metamodels/pure/model/packag
 import type { DataSpaceSupportInfo } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import type { ResolvedDataSpaceExecutionContext } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
 import type { PackageableRuntime } from '@finos/legend-graph';
+import { useQueryStore } from '@finos/legend-query';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -369,6 +370,7 @@ export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const dataSpace = dataSpaceViewerState.dataSpace;
+    const queryStore = useQueryStore();
     const changeActivity =
       (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
       (): void =>
@@ -402,12 +404,20 @@ export const DataSpaceViewer = observer(
       },
     ];
 
-    const viewDataSpaceProject = (): void => {
-      // do nothing
-    };
-    const viewProject = (): void => {
-      // do nothing
-    };
+    const viewDataSpaceProject = (): void =>
+      queryStore.viewStudioProject(
+        dataSpaceViewerState.lightDataSpace.groupId,
+        dataSpaceViewerState.lightDataSpace.artifactId,
+        dataSpaceViewerState.lightDataSpace.versionId,
+        dataSpace.path,
+      );
+    const viewProject = (): void =>
+      queryStore.viewStudioProject(
+        dataSpace.groupId,
+        dataSpace.artifactId,
+        dataSpace.versionId,
+        undefined,
+      );
 
     return (
       <div className="query-setup__data-space__viewer">

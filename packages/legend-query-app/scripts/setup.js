@@ -47,6 +47,9 @@ export const setup = (outputDir) => {
         depot: {
           url: 'http://localhost:9090/depot/api',
         },
+        studio: {
+          url: 'http://localhost:8080/studio',
+        },
       },
       undefined,
       2,

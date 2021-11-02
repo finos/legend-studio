@@ -61,6 +61,7 @@ import { generateExistingQueryRoute } from './LegendQueryRouter';
 import { QUERY_LOG_EVENT } from '../QueryLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
 import type { DepotServerClient } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import {
   ProjectData,
   ProjectVersionEntities,
@@ -750,5 +751,20 @@ export class QueryStore {
       this.buildGraphState.fail();
     }
     return dependencyEntitiesMap;
+  }
+
+  viewStudioProject(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ): void {
+    this.applicationStore.navigator.openNewWindow(
+      `${
+        this.applicationStore.config.studioUrl
+      }/-/view/gav/${generateGAVCoordinates(groupId, artifactId, versionId)}${
+        entityPath ? `/entity/${entityPath}` : ''
+      }`,
+    );
   }
 }
