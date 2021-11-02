@@ -594,7 +594,8 @@ const ExplorerTrees = observer(() => {
                 }}
               />
               <ElementRenamer />
-              <ProjectConfig />
+              {editorStore.projectConfigurationEditorState
+                .projectConfiguration && <ProjectConfig />}
               {/* SYSTEM TREE */}
               {Boolean(
                 editorStore.graphManagerState.systemModel.allOwnElements.length,
@@ -776,8 +777,6 @@ export const Explorer = observer(() => {
       editorStore.graphState.isUpdatingGraph) &&
     !editorStore.graphManagerState.graph.buildState.hasFailed;
   const showExplorerTrees =
-    sdlcState.currentProject &&
-    sdlcState.currentWorkspace &&
     editorStore.graphManagerState.graph.buildState.hasSucceeded &&
     editorStore.explorerTreeState.buildState.hasCompleted;
   // conflict resolution
@@ -812,17 +811,21 @@ export const Explorer = observer(() => {
         <div className="panel explorer">
           <div className="panel__header explorer__header">
             <div className="panel__header__title">
-              <div className="panel__header__title__label">
-                {sdlcState.currentWorkspace && !editorStore.isInViewerMode
-                  ? 'workspace'
-                  : 'project'}
-              </div>
-              <div className="panel__header__title__content">
-                {editorStore.isInViewerMode &&
-                  (sdlcState.currentProject?.name ?? '(unknown) ')}
-                {!editorStore.isInViewerMode &&
-                  (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
-              </div>
+              {sdlcState.currentProject && (
+                <>
+                  <div className="panel__header__title__label">
+                    {sdlcState.currentWorkspace && !editorStore.isInViewerMode
+                      ? 'workspace'
+                      : 'project'}
+                  </div>
+                  <div className="panel__header__title__content">
+                    {editorStore.isInViewerMode &&
+                      sdlcState.currentProject.name}
+                    {!editorStore.isInViewerMode &&
+                      (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
+                  </div>
+                </>
+              )}
             </div>
             <ProjectExplorerActionPanel
               disabled={!editorStore.explorerTreeState.buildState.hasCompleted}

@@ -46,6 +46,7 @@ import {
   ProjectVersionEntities,
   ProjectData,
   ProjectDependencyCoordinates,
+  generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 import type {
   SetImplementation,
@@ -193,78 +194,6 @@ export class EditorGraphState {
       return true;
     }
     return false;
-  }
-
-  /**
-   * Create a lean/read-only view of the project:
-   * - No change detection
-   * - No project viewer
-   * - No text mode support
-   */
-  *buildGraphForViewerMode(entities: Entity[]): GeneratorFn<void> {
-    try {
-      this.isInitializingGraph = true;
-      const startTime = Date.now();
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
-        Date.now() - startTime,
-        'ms',
-      );
-      // reset
-      this.editorStore.changeDetectionState.stop();
-      this.editorStore.graphManagerState.resetGraph();
-      // build compile context
-      this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
-        ProjectConfiguration.serialization.fromJson(
-          (yield this.editorStore.sdlcServerClient.getConfiguration(
-            this.editorStore.sdlcState.activeProject.projectId,
-            undefined,
-          )) as PlainObject<ProjectConfiguration>,
-        ),
-      );
-      const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          (yield flowResult(
-            this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, Entity[]>,
-        ),
-      );
-      this.editorStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
-      this.editorStore.explorerTreeState.buildImmutableModelTrees();
-      // build graph
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGraph(
-          this.editorStore.graphManagerState.graph,
-          entities,
-        ),
-      );
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
-        '[TOTAL]',
-        Date.now() - startTime,
-        'ms',
-      );
-      this.editorStore.explorerTreeState.build();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
-        error,
-      );
-      this.editorStore.graphManagerState.graph.buildState.fail();
-      this.editorStore.applicationStore.notifyError(
-        `Can't build graph. Error: ${error.message}`,
-      );
-    } finally {
-      this.isInitializingGraph = false;
-    }
   }
 
   *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderReport> {
@@ -1075,7 +1004,14 @@ export class EditorGraphState {
                   `Expected 1 project for project id '${dep.projectId}'. Got ${
                     projectsData.length
                   } projects with coordinates ${projectsData
-                    .map((i) => `'${i.groupId}:${i.artifactId}'`)
+                    .map(
+                      (i) =>
+                        `'${generateGAVCoordinates(
+                          i.groupId,
+                          i.artifactId,
+                          undefined,
+                        )}'`,
+                    )
                     .join(', ')}.`,
                 );
               }

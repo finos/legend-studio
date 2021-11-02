@@ -669,7 +669,6 @@ export class QueryStore {
         )) as Entity[];
       }
 
-      // build graph
       this.graphManagerState.resetGraph();
       // build dependencies
       const dependencyManager =
@@ -685,7 +684,7 @@ export class QueryStore {
         ),
       );
       this.graphManagerState.graph.setDependencyManager(dependencyManager);
-      // build Graph
+      // build graph
       yield flowResult(
         this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
