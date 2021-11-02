@@ -218,6 +218,53 @@ export const GenerationResultExplorer = observer(
   },
 );
 
+export const visualizeMorphirButtonGetter = (
+  fileGenerationState: FileGenerationState,
+  fileNode: GenerationFile,
+): React.ReactNode => {
+  const visualizeMorphirButton = fileGenerationState.editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (plugin as DSL_StudioPlugin_Extension).getVisualizeMorphirButton?.() ??
+        [],
+    );
+  for (const morphirButtonCreator of visualizeMorphirButton) {
+    const morphirButton = morphirButtonCreator(
+      fileGenerationState,
+      fileNode as GenerationFile,
+    );
+    if (morphirButton) {
+      return morphirButton;
+    }
+  }
+  return undefined;
+};
+
+export const viewBosqueFeedbackButtonGetter = (
+  fileGenerationState: FileGenerationState,
+  fileNode: GenerationFile,
+): React.ReactNode => {
+  const viewBosqueFeedbackButton = fileGenerationState.editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_StudioPlugin_Extension
+        ).getViewBosqueFeedbackButton?.() ?? [],
+    );
+  for (const bosqueButtonCreator of viewBosqueFeedbackButton) {
+    const bosqueButton = bosqueButtonCreator(
+      fileGenerationState,
+      fileNode as GenerationFile,
+    );
+    if (bosqueButton) {
+      return bosqueButton;
+    }
+  }
+  return undefined;
+};
+
 export const GenerationResultViewer = observer(
   (props: { fileGenerationState: FileGenerationState }) => {
     const { fileGenerationState } = props;
@@ -227,35 +274,20 @@ export const GenerationResultViewer = observer(
     const regenerate = applicationStore.guaranteeSafeAction(() =>
       flowResult(fileGenerationState.generate()),
     );
-    const visualizeMorphirButton = fileGenerationState.editorStore.pluginManager
-      .getStudioPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_StudioPlugin_Extension
-          ).getVisualizeMorphirButton?.() ?? [],
-      );
-    console.log('plugin size:');
-    console.log(
-      fileGenerationState.editorStore.pluginManager.getStudioPlugins().length,
-    );
-    fileGenerationState.editorStore.pluginManager
-      .getStudioPlugins()
-      .forEach((element) => {
-        console.log(element.getName());
-      });
-    console.log('visualize button size:');
-    console.log(visualizeMorphirButton.length);
+    const visualizeMorphirButton =
+      fileNode instanceof GenerationFile
+        ? visualizeMorphirButtonGetter(
+            fileGenerationState,
+            fileNode as GenerationFile,
+          )
+        : undefined;
     const viewBosqueFeedbackButton =
-      fileGenerationState.editorStore.pluginManager
-        .getStudioPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_StudioPlugin_Extension
-            ).getViewBosqueFeedbackButton?.() ?? [],
-        );
-
+      fileNode instanceof GenerationFile
+        ? viewBosqueFeedbackButtonGetter(
+            fileGenerationState,
+            fileNode as GenerationFile,
+          )
+        : undefined;
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={250} minSize={250}>
@@ -313,14 +345,9 @@ export const GenerationResultViewer = observer(
                   <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-name">
                     {fileNode.name}
                   </div>
+                  {fileNode instanceof GenerationFile && visualizeMorphirButton}
                   {fileNode instanceof GenerationFile &&
-                    visualizeMorphirButton.forEach((e) =>
-                      e(fileGenerationState, fileNode as GenerationFile),
-                    )}
-                  {fileNode instanceof GenerationFile &&
-                    viewBosqueFeedbackButton.forEach((e) =>
-                      e(fileGenerationState, fileNode as GenerationFile),
-                    )}
+                    viewBosqueFeedbackButton}
                 </div>
               )}
             </div>
