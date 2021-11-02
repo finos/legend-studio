@@ -146,11 +146,11 @@ test.only(
     );
     await waitFor(() => getAllByText(mainEditor, 'Enum_2'));
     // close
-    fireEvent.click(getAllByTitle(mappingTabs, 'Close')[0]);
+    fireEvent.click(getAllByTitle(mappingTabs, 'Close')[0] as HTMLElement);
     expect(mappingEditorState.openedTabStates).toHaveLength(2);
-    fireEvent.click(getAllByTitle(mappingTabs, 'Close')[0]);
+    fireEvent.click(getAllByTitle(mappingTabs, 'Close')[0] as HTMLElement);
     expect(mappingEditorState.openedTabStates).toHaveLength(1);
-    fireEvent.click(getAllByTitle(mappingTabs, 'Close')[0]);
+    fireEvent.click(getAllByTitle(mappingTabs, 'Close')[0] as HTMLElement);
     // assert no current tab state
     expect(mappingEditorState.openedTabStates).toHaveLength(0);
     expect(mappingEditorState.currentTabState).toBeUndefined();

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { ModelSchema } from 'serializr';
 import {
   createModelSchema,
   list,
@@ -95,6 +96,8 @@ import type { V1_AbstractFlatDataPropertyMapping } from '../../../model/packagea
 import { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
 import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -559,7 +562,8 @@ const aggregationAwareClassMappingModelSchema = createModelSchema(
 
 function V1_serializeClassMapping(
   value: V1_ClassMapping,
-): V1_ClassMapping | typeof SKIP {
+  plugins?: PureProtocolProcessorPlugin[] | undefined,
+): V1_ClassMapping {
   if (value instanceof V1_OperationClassMapping) {
     return serialize(operationClassMappingModelSchema, value);
   } else if (value instanceof V1_PureInstanceClassMapping) {
@@ -573,12 +577,30 @@ function V1_serializeClassMapping(
   } else if (value instanceof V1_AggregationAwareClassMapping) {
     return serialize(aggregationAwareClassMappingModelSchema, value);
   }
-  return SKIP;
+  if (plugins !== undefined) {
+    const extraClassMappingSerializers = plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraClassMappingSerializers?.() ?? [],
+    );
+    for (const serializer of extraClassMappingSerializers) {
+      const json = serializer(value);
+      if (json) {
+        return json;
+      }
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize class mapping: no compatible serializer available from plugins`,
+    value,
+  );
 }
 
 function V1_deserializeClassMapping(
   json: PlainObject<V1_ClassMapping>,
-): V1_ClassMapping | typeof SKIP {
+  plugins?: PureProtocolProcessorPlugin[],
+): V1_ClassMapping {
   switch (json._type) {
     case V1_ClassMappingType.OPERATION:
       return deserialize(operationClassMappingModelSchema, json);
@@ -592,8 +614,25 @@ function V1_deserializeClassMapping(
       return deserialize(relationalClassMappingModelSchema, json);
     case V1_ClassMappingType.AGGREGATION_AWARE:
       return deserialize(aggregationAwareClassMappingModelSchema, json);
-    default:
-      return SKIP;
+    default: {
+      if (plugins !== undefined) {
+        const extraClassMappingDeserializers = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+            ).V1_getExtraClassMappingDeserializers?.() ?? [],
+        );
+        for (const deserializer of extraClassMappingDeserializers) {
+          const protocol = deserializer(json);
+          if (protocol) {
+            return protocol;
+          }
+        }
+      }
+      throw new UnsupportedOperationError(
+        `Can't deserialize class mapping of type '${json._type}': no compatible deserializer available from plugins`,
+      );
+    }
   }
 }
 
@@ -946,32 +985,47 @@ const V1_mappingIncludeModelSchema = createModelSchema(V1_MappingInclude, {
   targetDatabasePath: optional(primitive()),
 });
 
-export const V1_mappingModelSchema = createModelSchema(V1_Mapping, {
-  _type: usingConstantValueSchema(V1_MAPPING_ELEMENT_PROTOCOL_TYPE),
-  associationMappings: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => V1_serializeAssociationMapping(value),
-        true,
-      ),
-    (values) =>
-      deserializeArray(
-        values,
-        (val: PlainObject<V1_AssociationMapping>) =>
-          V1_deserializeAssociationMapping(val),
-        false,
-      ),
-  ),
-  classMappings: list(
-    custom(
-      (val) => V1_serializeClassMapping(val),
-      (val) => V1_deserializeClassMapping(val),
+export const V1_mappingModelSchema = (
+  plugins?: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_Mapping> =>
+  createModelSchema(V1_Mapping, {
+    _type: usingConstantValueSchema(V1_MAPPING_ELEMENT_PROTOCOL_TYPE),
+    associationMappings: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value) => V1_serializeAssociationMapping(value),
+          true,
+        ),
+      (values) =>
+        deserializeArray(
+          values,
+          (val: PlainObject<V1_AssociationMapping>) =>
+            V1_deserializeAssociationMapping(val),
+          false,
+        ),
     ),
-  ),
-  enumerationMappings: list(usingModelSchema(V1_enumerationMappingModelSchema)),
-  includedMappings: list(usingModelSchema(V1_mappingIncludeModelSchema)),
-  name: primitive(),
-  package: primitive(),
-  tests: list(usingModelSchema(V1_mappingTestModelSchema)),
-});
+    classMappings: list(
+      custom(
+        (val) => {
+          if (plugins !== undefined) {
+            return V1_serializeClassMapping(val, plugins);
+          }
+          return V1_serializeClassMapping(val);
+        },
+        (val) => {
+          if (plugins !== undefined) {
+            return V1_deserializeClassMapping(val, plugins);
+          }
+          return V1_deserializeClassMapping(val);
+        },
+      ),
+    ),
+    enumerationMappings: list(
+      usingModelSchema(V1_enumerationMappingModelSchema),
+    ),
+    includedMappings: list(usingModelSchema(V1_mappingIncludeModelSchema)),
+    name: primitive(),
+    package: primitive(),
+    tests: list(usingModelSchema(V1_mappingTestModelSchema)),
+  });

@@ -16,7 +16,8 @@
 
 @use 'mixins' as *;
 
-@forward './data-space-viewer';
+@forward './deps';
+@forward './data-space-query-plugin';
 
 :root {
   --color-data-space: var(--color-blue-50);

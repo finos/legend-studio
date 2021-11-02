@@ -56,7 +56,6 @@ import {
   Measure,
   Unit,
 } from '../models/metamodels/pure/packageableElements/domain/Measure';
-import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import type { PureGraphPlugin } from './PureGraphPlugin';
 
 /**
@@ -300,12 +299,6 @@ export class PureModel extends BasicModel {
       this.getStore(path),
       Database,
       `Can't find database store '${path}'`,
-    );
-  getServiceStore = (path: string): ServiceStore =>
-    guaranteeType(
-      this.getStore(path),
-      ServiceStore,
-      `Can't find service store '${path}'`,
     );
   getMapping = (path: string): Mapping =>
     guaranteeNonNullable(

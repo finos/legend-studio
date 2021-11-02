@@ -17,11 +17,34 @@
 import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
 import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
 import type { EditorStore } from './EditorStore';
-import type { Store, Connection, Runtime } from '@finos/legend-graph';
+import type {
+  Store,
+  Connection,
+  Runtime,
+  SetImplementation,
+} from '@finos/legend-graph';
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { NewConnectionValueDriver } from './NewElementState';
+import type {
+  MappingElement,
+  MappingElementSource,
+} from './editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingElementState } from './editor-state/element-editor-state/mapping/MappingElementState';
+
+export type MappingElementSourceGetter = (
+  mappingElement: MappingElement,
+) => MappingElementSource | undefined;
+
+export type SetImplemtationClassifier = (
+  setImplementation: SetImplementation,
+) => string | undefined;
+
+export type MappingElementStateCreator = (
+  mappingElement: MappingElement | undefined,
+  editorStore: EditorStore,
+) => MappingElementState | undefined;
 
 export type DefaultConnectionValueBuilder = (
   store: Store,
@@ -83,6 +106,21 @@ export type TEMP__ServiceTestRuntimeConnectionBuilder = (
 
 export interface DSLMapping_StudioPlugin_Extension
   extends DSL_StudioPlugin_Extension {
+  /**
+   * Get the list of extra set implementation classifiers.
+   */
+  getExtraSetImplementationClassifiers?(): SetImplemtationClassifier[];
+
+  /**
+   * Get the list of the mapping element state creators for the given class mapping.
+   */
+  getExtraMappingElementStateCreators?(): MappingElementStateCreator[];
+
+  /**
+   * Get the list of the element source getters for the given class mapping.
+   */
+  getExtraMappingElementSourceGetters?(): MappingElementSourceGetter[];
+
   /**
    * Get the list of the default connection value builder for a specified store.
    */

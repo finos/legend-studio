@@ -110,11 +110,7 @@ export class QueryBuilderResultState {
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.queryBuilderState.applicationStore.notifyError(
-        error,
-        undefined,
-        null,
-      );
+      this.queryBuilderState.applicationStore.notifyError(error);
     } finally {
       this.isExecutingQuery = false;
     }
@@ -143,6 +139,7 @@ export class QueryBuilderResultState {
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;
     } catch (error) {
+      assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,

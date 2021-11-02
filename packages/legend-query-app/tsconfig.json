@@ -1,5 +1,5 @@
 {
-  "extends": "../../scripts/typescript/tsconfig.base.json",
+  "extends": "@finos/legend-dev-utils/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "lib",
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
@@ -14,6 +14,7 @@
     { "path": "../legend-query" },
     { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-extension-dsl-serializer" },
+    { "path": "../legend-extension-external-store-service" },
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-extension-external-format-json-schema" }

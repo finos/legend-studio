@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import base from './scripts/jest/jest.config.base.js';
+import base from './scripts/test/jest.config.base.js';
 
 export default {
   ...base,

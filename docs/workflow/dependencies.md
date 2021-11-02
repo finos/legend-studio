@@ -6,7 +6,7 @@ This details considerations to take when introducing or updating dependencies in
 
 There could be [a fair number of downsides](https://github.com/artsy/README/blob/master/playbooks/dependencies.md) to adding a new dependency, such as larger bundle size, upgrade chores, less flexibility, slower migration, and the risk of the dependency becoming vulnerable or abandoned. On the other hand, if we choose to opt out and build the exact implementation that addresses just our needs, there is the cost of development and maintenance.
 
-When consider adding a new dependency, you need to communicate with the team in forms of an RFC (or a detailed explanation in PRs). Following is a list of points to consider - if you answer `yes` to most of these questions, then you probably don’t need to write an RFC:
+When consider adding a new dependency, please communicate with the team and provide detailed explanation in the PR. Following is a list of points to consider - if you answer `yes` to most of these questions, then you probably don’t need much explanation:
 
 - Could you fit this codebase in your head after reading the source?
 - Is this obviously being used in production by the maintainers, and thus battle-tested?

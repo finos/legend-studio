@@ -15,7 +15,11 @@
  */
 
 import { TEST_DATA__inlineEmbeddedRelationalTestData } from './TEST_DATA__RelationalEntities';
-import { guaranteeType, unitTest } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  unitTest,
+} from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
@@ -41,11 +45,11 @@ test(unitTest('Inline Embedded Relational Mapping'), () => {
   const graph = graphManagerState.graph;
   const myDB = graph.getDatabase('mapping::db');
   expect(myDB.schemas).toHaveLength(1);
-  expect(myDB.schemas[0].tables).toHaveLength(1);
+  expect(guaranteeNonNullable(myDB.schemas[0]).tables).toHaveLength(1);
 
   // mapping
   const mapping = graph.getMapping('mappingPackage::myMapping');
-  // // person
+  // person
   const personClassMapping = guaranteeType(
     getOwnClassMappingsByClass(mapping, graph.getClass('other::Person'))[0],
     RootRelationalInstanceSetImplementation,

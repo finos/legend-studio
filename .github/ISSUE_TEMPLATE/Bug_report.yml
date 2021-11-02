@@ -1,0 +1,91 @@
+name: '🐛 Bug report'
+description: "If something isn't working as expected 🤔."
+title: 'Bug: <title>'
+labels: ['Type: Bug', 'Status: Unconfirmed']
+body:
+  # Context
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug report! Please fill out this form as completely as possible.
+  - type: checkboxes
+    attributes:
+      label: Similar issues
+      description: |
+        Please search to see if [an issue already exists](https://github.com/finos/legend-studio/issues?q=is%3Aissue+label%3A%22Type%3A+Bug%22+) for the bug you encountered.
+      options:
+        - label: I have searched and found no existing similar issues
+          required: true
+  - type: dropdown
+    attributes:
+      label: How are you using Studio?
+      multiple: true
+      options:
+        - Legend Studio
+        - Legend Query
+        - Docker images (e.g. finos/legend-studio)
+        - NPM libraries (e.g. @finos/legend-shared)
+    validations:
+      required: true
+
+  # Describe and reproduce the issue
+  - type: textarea
+    attributes:
+      label: Current and expected behavior
+      description: A clear and concise description of what happened vs. what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Detailed steps to reproduce the behavior. Or some screenshots and videos if applicable.
+        **Tip:** To attach files, click on this area to highlight it and then drag them in. See [this guide](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files).
+      placeholder: |
+        - Open...
+        - Click on...
+        - See error...
+  - type: textarea
+    attributes:
+      label: Model data
+      description: |
+        Please provide the **minimal** `Pure code` or `models' JSON` necessary to reproduce the bug.
+        **Tip:** In Studio, use `text-mode (F8)` to obtain models' Pure code, and `model loader (F2)` to obtain models' JSON.
+        If a single file is not sufficient, providing a `repository link`, or attaching an `archive` will do just fine.
+        **Tip:** To attach files, click on this area to highlight it and then drag them in. See [this guide](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files).
+      placeholder: |
+        ###Pure
+        Class model::MyModel {
+          property: String[1];
+        }
+      render: text
+
+  # Extra context
+  - type: textarea
+    attributes:
+      label: Environment
+      description: |
+        **Tip:** you can run `yarn run check:env-info` and paste the result below
+      placeholder: |
+        System:
+          OS: macOS 11.6
+        Browsers:
+          Chrome: 94.0.0
+        Binaries: (only relevant for developers)
+          Node: 16.8.0
+          Yarn: 3.0.1
+          npm: 7.21.0
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Possible solution and workaround
+      description: |
+        If you have investigated and have suggestions on a fix for the bug or a workaround.
+  - type: checkboxes
+    attributes:
+      label: Contribution
+      description: |
+        Check this if you would like to implement a PR, we are more than happy to help you go through [the process](https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md).
+      options:
+        - label: I would like to work on the fix for this issue

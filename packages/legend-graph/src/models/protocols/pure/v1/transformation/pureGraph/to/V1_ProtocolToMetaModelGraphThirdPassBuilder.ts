@@ -19,6 +19,7 @@ import {
   assertTrue,
   isNonNullable,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { CORE_ELEMENT_PATH } from '../../../../../../../MetaModelConst';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
@@ -50,7 +51,6 @@ import type { V1_GenerationSpecification } from '../../../model/packageableEleme
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
@@ -118,8 +118,8 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     const association = this.context.graph.getAssociation(
       this.context.graph.buildPath(element.package, element.name),
     );
-    const first = element.properties[0];
-    const second = element.properties[1];
+    const first = guaranteeNonNullable(element.properties[0]);
+    const second = guaranteeNonNullable(element.properties[1]);
     association.setProperties([
       V1_buildAssociationProperty(first, second, this.context, association),
       V1_buildAssociationProperty(second, first, this.context, association),
@@ -154,12 +154,6 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     );
     element.schemas.forEach((schema) =>
       V1_buildDatabaseSchemaViewsFirstPass(schema, database, this.context),
-    );
-  }
-
-  visit_ServiceStore(element: V1_ServiceStore): void {
-    this.context.graph.getServiceStore(
-      this.context.graph.buildPath(element.package, element.name),
     );
   }
 

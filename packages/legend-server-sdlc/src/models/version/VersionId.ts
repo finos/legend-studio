@@ -16,7 +16,11 @@
 
 import { createModelSchema, primitive } from 'serializr';
 import { action, computed, observable, makeObservable } from 'mobx';
-import { assertTrue, SerializationFactory } from '@finos/legend-shared';
+import {
+  assertTrue,
+  guaranteeNonEmptyString,
+  SerializationFactory,
+} from '@finos/legend-shared';
 
 export class VersionId {
   majorVersion: number;
@@ -72,15 +76,30 @@ export class VersionId {
 
   setId(id: string): void {
     const versionArray = id.split('.');
-    const majorVersion = parseInt(versionArray[0], 10);
-    const minorVersion = parseInt(versionArray[1], 10);
-    const patchVersion = parseInt(versionArray[2], 10);
     assertTrue(
-      versionArray.length === 3 ||
-        Boolean(majorVersion) ||
-        Boolean(minorVersion) ||
-        Boolean(patchVersion),
+      versionArray.length === 3,
       'Versions must be in the format <majorVersion>.<minVersion>.<patchVersion>',
+    );
+    const majorVersion = parseInt(
+      guaranteeNonEmptyString(
+        versionArray[0],
+        `Version ID major version is missing or empty`,
+      ),
+      10,
+    );
+    const minorVersion = parseInt(
+      guaranteeNonEmptyString(
+        versionArray[1],
+        `Version ID minor version is missing or empty`,
+      ),
+      10,
+    );
+    const patchVersion = parseInt(
+      guaranteeNonEmptyString(
+        versionArray[2],
+        `Version ID patch version is missing or empty`,
+      ),
+      10,
     );
     this.setMajorVersion(majorVersion);
     this.setMinorVersion(minorVersion);

@@ -133,8 +133,8 @@ const buildProjectionColumnLambda = (
     valueSpecification.body.length === 1,
     `Can't build projection column: only support lambda body with 1 expression`,
   );
-  let currentPropertyExpression: V1_ValueSpecification =
-    valueSpecification.body[0];
+  let currentPropertyExpression: V1_ValueSpecification = valueSpecification
+    .body[0] as V1_ValueSpecification;
   assertType(
     currentPropertyExpression,
     V1_AppliedProperty,
@@ -145,7 +145,8 @@ const buildProjectionColumnLambda = (
       currentPropertyExpression.parameters.length >= 1,
       `Can't build projection column: only support lambda body as property expression`,
     );
-    currentPropertyExpression = currentPropertyExpression.parameters[0];
+    currentPropertyExpression = currentPropertyExpression
+      .parameters[0] as V1_ValueSpecification;
   }
 
   // check lambda variable and parameter match
@@ -266,7 +267,9 @@ export const V1_buildExistsFunctionExpression = (
     `Can't build exists() expression: exists() expects 1 argument`,
   );
 
-  const precedingExpression = parameters[0].accept_ValueSpecificationVisitor(
+  const precedingExpression = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
     new V1_ValueSpecificationBuilder(
       compileContext,
       processingContext,
@@ -297,7 +300,7 @@ export const V1_buildExistsFunctionExpression = (
   }
   const processedParameters = [
     precedingExpression,
-    parameters[1].accept_ValueSpecificationVisitor(
+    (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         compileContext,
         processingContext,
@@ -325,7 +328,9 @@ export const V1_buildFilterFunctionExpression = (
     `Can't build filter() expression: filter() expects 1 argument`,
   );
 
-  const precedingExpression = parameters[0].accept_ValueSpecificationVisitor(
+  const precedingExpression = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
     new V1_ValueSpecificationBuilder(
       compileContext,
       processingContext,
@@ -352,7 +357,7 @@ export const V1_buildFilterFunctionExpression = (
   }
   const processedParams = [
     precedingExpression,
-    parameters[1].accept_ValueSpecificationVisitor(
+    (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         compileContext,
         processingContext,
@@ -385,7 +390,9 @@ export const V1_buildProjectFunctionExpression = (
   );
 
   let topLevelLambdaParameters: V1_Variable[] = [];
-  const precedingExperession = parameters[0].accept_ValueSpecificationVisitor(
+  const precedingExperession = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
     new V1_ValueSpecificationBuilder(
       compileContext,
       processingContext,
@@ -449,7 +456,7 @@ export const V1_buildProjectFunctionExpression = (
   const processedParams = [
     precedingExperession,
     processedColumnExpressions,
-    parameters[2].accept_ValueSpecificationVisitor(
+    (parameters[2] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         compileContext,
         processingContext,
@@ -478,7 +485,9 @@ export const V1_buildGroupByFunctionExpression = (
     `Can't build groupBy() expression: groupBy() expects 3 arguments`,
   );
 
-  const precedingExperession = parameters[0].accept_ValueSpecificationVisitor(
+  const precedingExperession = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
     new V1_ValueSpecificationBuilder(
       compileContext,
       processingContext,
@@ -585,7 +594,7 @@ export const V1_buildGroupByFunctionExpression = (
     precedingExperession,
     processedColumnExpressions,
     processedAggregationExpressions,
-    parameters[3].accept_ValueSpecificationVisitor(
+    (parameters[3] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         compileContext,
         processingContext,

@@ -153,7 +153,7 @@ const resolveJoinTargetRelation = (
   );
   return potentialTargetRelations.size === 0
     ? sourceRelation
-    : Array.from(potentialTargetRelations.values())[0];
+    : (Array.from(potentialTargetRelations.values())[0] as Table | View);
 };
 
 const getJoinTreeNodeData = (

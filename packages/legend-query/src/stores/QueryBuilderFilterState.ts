@@ -133,7 +133,7 @@ export class FilterConditionState {
       this.operators.length !== 0,
       `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
     );
-    this.operator = this.operators[0];
+    this.operator = this.operators[0] as QueryBuilderFilterOperator;
     this.value = this.operator.getDefaultFilterConditionValue(this);
   }
 
@@ -157,8 +157,16 @@ export class FilterConditionState {
       this.filterState.queryBuilderState,
       propertyExpression,
     );
-    if (!this.operators.includes(this.operator)) {
-      this.changeOperator(this.operators[0]);
+
+    const newCompatibleOperators = this.operators;
+    assertTrue(
+      newCompatibleOperators.length !== 0,
+      `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
+    );
+    if (!newCompatibleOperators.includes(this.operator)) {
+      this.changeOperator(
+        newCompatibleOperators[0] as QueryBuilderFilterOperator,
+      );
     } else if (!this.operator.isCompatibleWithFilterConditionValue(this)) {
       this.setValue(this.operator.getDefaultFilterConditionValue(this));
     }
@@ -337,10 +345,12 @@ const buildFilterConditionExpression = (
      * multiple clauses. This means user's intended grouping will not be kept.
      */
     if (clauses.length > 2) {
-      const firstClause = clauses[0];
-      let currentClause: ValueSpecification = clauses[clauses.length - 1];
+      const firstClause = clauses[0] as ValueSpecification;
+      let currentClause: ValueSpecification = clauses[
+        clauses.length - 1
+      ] as ValueSpecification;
       for (let i = clauses.length - 2; i > 0; --i) {
-        const clause1 = clauses[i];
+        const clause1 = clauses[i] as ValueSpecification;
         const clause2 = currentClause;
         const groupClause = new SimpleFunctionExpression(
           extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
@@ -717,7 +727,8 @@ export class QueryBuilderFilterState
               'Query builder filter tree found unexpected childless group nodes',
             );
           }
-          const childNode = this.getNode(node.childrenIds[0]);
+          const firstChildNodeId = node.childrenIds[0] as string;
+          const childNode = this.getNode(firstChildNodeId);
           if (
             childNode instanceof QueryBuilderFilterTreeBlankConditionNodeData
           ) {
@@ -726,7 +737,7 @@ export class QueryBuilderFilterState
             );
           }
           return (
-            this.getNode(node.childrenIds[0]) instanceof
+            this.getNode(firstChildNodeId) instanceof
             QueryBuilderFilterTreeConditionNodeData
           );
         });

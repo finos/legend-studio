@@ -323,7 +323,7 @@
 .query-builder__tooltip {
   border-radius: 0.2rem !important;
   background: var(--color-dark-grey-200) !important;
-  opacity: 0.9 !important;
+  opacity: 90% !important;
 
   &--right {
     margin: 0 0.5rem !important;
@@ -331,7 +331,7 @@
 
   &__arrow {
     color: var(--color-dark-grey-200) !important;
-    opacity: 0.9 !important;
+    opacity: 90% !important;
   }
 
   &__content {

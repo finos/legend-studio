@@ -16,6 +16,12 @@
 
 import packageJson from '../../package.json';
 import type {
+  ClassView,
+  ClassViewContextMenuItemRendererConfiguration,
+  DiagramEditorState,
+  DSLDiagram_StudioPlugin_Extension,
+} from '@finos/legend-extension-dsl-diagram';
+import type {
   EditorExtensionState,
   EditorExtensionStateCreator,
   EditorStore,
@@ -42,7 +48,10 @@ import type { PackageableElement } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
 import { setupLegendQueryUILibrary } from '@finos/legend-query';
 
-export class QueryBuilder_StudioPlugin extends StudioPlugin {
+export class QueryBuilder_StudioPlugin
+  extends StudioPlugin
+  implements DSLDiagram_StudioPlugin_Extension
+{
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
@@ -158,6 +167,38 @@ export class QueryBuilder_StudioPlugin extends StudioPlugin {
               isReadOnly={isReadOnly}
             />
           );
+        },
+      },
+    ];
+  }
+
+  getExtraClassViewContextMenuItemRendererConfigurations(): ClassViewContextMenuItemRendererConfiguration[] {
+    return [
+      {
+        key: 'build-query-context-menu-action',
+        renderer: (
+          diagramEditorState: DiagramEditorState,
+          classView: ClassView | undefined,
+        ): React.ReactNode | undefined => {
+          if (classView) {
+            const buildQuery = async (): Promise<void> => {
+              const queryBuilderExtension =
+                diagramEditorState.editorStore.getEditorExtensionState(
+                  QueryBuilder_EditorExtensionState,
+                );
+              await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
+              if (queryBuilderExtension.openQueryBuilder) {
+                queryBuilderExtension.queryBuilderState.querySetupState.setClass(
+                  classView.class.value,
+                );
+                queryBuilderExtension.queryBuilderState.resetData();
+              }
+            };
+            return (
+              <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
+            );
+          }
+          return undefined;
         },
       },
     ];

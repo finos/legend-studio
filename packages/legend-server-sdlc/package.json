@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-server-sdlc",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "Legend SDLC server client",
   "keywords": [
     "legend",
@@ -31,25 +31,26 @@
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "mobx": "6.3.3",
-    "mobx-react-lite": "3.2.1",
+    "mobx": "6.3.6",
+    "mobx-react-lite": "3.2.2",
     "react": "17.0.2",
     "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.0.0",
-    "jest": "27.2.5",
+    "eslint": "8.1.0",
+    "jest": "27.3.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "typescript": "4.4.3"
+    "typescript": "4.4.4"
   },
   "publishConfig": {
     "directory": "build/publishContent"

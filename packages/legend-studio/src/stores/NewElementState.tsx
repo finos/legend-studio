@@ -66,7 +66,6 @@ import {
   FlatDataConnection,
   Database,
   PackageableElementExplicitReference,
-  ServiceStore,
   RelationalDatabaseConnection,
   DatabaseType,
   StaticDatasourceSpecification,
@@ -234,7 +233,7 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
       selectedStore = store;
     } else {
       const dbs = this.editorStore.graphManagerState.graph.ownDatabases;
-      selectedStore = dbs.length ? dbs[0] : Database.createStub();
+      selectedStore = dbs.length ? (dbs[0] as Database) : Database.createStub();
     }
     return new RelationalDatabaseConnection(
       PackageableElementExplicitReference.create(selectedStore),
@@ -580,7 +579,7 @@ export class NewElementState {
       let generationSpec: GenerationSpecification;
       if (generationSpecifications.length) {
         // TODO? handle case when more than one generation specification
-        generationSpec = generationSpecifications[0];
+        generationSpec = generationSpecifications[0] as GenerationSpecification;
       } else {
         generationSpec = new GenerationSpecification(
           DEFAULT_GENERATION_SPECIFICATION_NAME,
@@ -647,9 +646,6 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.DATABASE:
         element = new Database(name);
         break;
-      case PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE:
-        element = new ServiceStore(name);
-        break;
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
         const service = new Service(name);
         const mapping = Mapping.createStub(); // since it does not really make sense to start with the first available mapping, we start with a stub
@@ -662,7 +658,7 @@ export class NewElementState {
           );
         let runtimeValue: Runtime;
         if (runtimes.length) {
-          runtimeValue = runtimes[0].runtimeValue;
+          runtimeValue = (runtimes[0] as PackageableRuntime).runtimeValue;
         } else {
           runtimeValue = new EngineRuntime();
           decorateRuntimeWithNewMapping(

@@ -127,6 +127,7 @@ export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcesso
     return [
       (
         elementProtocol: V1_PackageableElement,
+        plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_Diagram) {
           return serialize(V1_diagramModelSchema, elementProtocol);
@@ -140,6 +141,7 @@ export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcesso
     return [
       (
         json: PlainObject<V1_PackageableElement>,
+        plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_DIAGRAM_ELEMENT_PROTOCOL_TYPE) {
           return deserialize(V1_diagramModelSchema, json);

@@ -28,11 +28,11 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
-import { useEditorStore } from '@finos/legend-studio';
+import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
 import type { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
-import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
+import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { FORMAT_TYPE } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
@@ -108,7 +108,7 @@ const SchemaBasicEditor = observer(
         />
         <div className={clsx('schema-editor__content')}>
           <div className="schema-editor__content__input">
-            <TextInputEditor
+            <StudioTextInputEditor
               inputValue={schema.content}
               language={EDITOR_LANGUAGE.TEXT}
               updateInput={(val: string): void => {

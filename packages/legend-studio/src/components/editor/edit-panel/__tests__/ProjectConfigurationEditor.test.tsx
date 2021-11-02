@@ -28,6 +28,7 @@ import {
 } from '../../../EditorComponentTestUtils';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import type { EditorStore } from '../../../../stores/EditorStore';
+import type { ProjectDependency } from '@finos/legend-server-sdlc';
 
 let renderResult: RenderResult;
 
@@ -176,6 +177,10 @@ test(integrationTest('Test Project Dependency'), async () => {
     );
   expect(projectDependenciesToAdd).toHaveLength(1);
   expect(projectDependenciesToRemove).toHaveLength(1);
-  expect(projectDependenciesToAdd[0].projectId).toBe('org.finos.legend:prod-1');
-  expect(projectDependenciesToRemove[0].projectId).toBe('PROD-1');
+  expect((projectDependenciesToAdd[0] as ProjectDependency).projectId).toBe(
+    'org.finos.legend:prod-1',
+  );
+  expect((projectDependenciesToRemove[0] as ProjectDependency).projectId).toBe(
+    'PROD-1',
+  );
 });

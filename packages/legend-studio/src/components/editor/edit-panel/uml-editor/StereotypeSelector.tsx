@@ -55,7 +55,7 @@ export const StereotypeSelector = observer(
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.stereotypes.length) {
         setSelectedProfile(val);
-        stereotype.setValue(val.value.stereotypes[0]);
+        stereotype.setValue(val.value.stereotypes[0] as Stereotype);
       }
     };
     const visitProfile = (): void =>

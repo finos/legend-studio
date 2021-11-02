@@ -139,6 +139,9 @@ import { V1_RelationalInputData } from '../../../model/packageableElements/store
 import { SOURCE_INFORMATION_KEY } from '../../../../../../../MetaModelConst';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import { toJS } from 'mobx';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
+import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
+import type { SubstituteStore } from '../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -306,7 +309,7 @@ const transformMappingTest = (
   return test;
 };
 
-// Include V1_Mapping
+// Include Mapping
 
 const transformMappingInclude = (
   element: MappingInclude,
@@ -314,15 +317,17 @@ const transformMappingInclude = (
   const mappingInclude = new V1_MappingInclude();
   mappingInclude.includedMapping = element.included.valueForSerialization ?? '';
   mappingInclude.sourceDatabasePath = element.storeSubstitutions.length
-    ? element.storeSubstitutions[0].original.valueForSerialization ?? ''
+    ? (element.storeSubstitutions[0] as SubstituteStore).original
+        .valueForSerialization ?? ''
     : undefined;
   mappingInclude.targetDatabasePath = element.storeSubstitutions.length
-    ? element.storeSubstitutions[0].substitute.valueForSerialization ?? ''
+    ? (element.storeSubstitutions[0] as SubstituteStore).substitute
+        .valueForSerialization ?? ''
     : undefined;
   return mappingInclude;
 };
 
-// Class V1_Mapping
+// Class Mapping
 
 const transformOptionalPropertyMappingTransformer = (
   value: EnumerationMapping | undefined,
@@ -1006,6 +1011,27 @@ export class V1_SetImplementationTransformer
 
   constructor(context: V1_GraphTransformerContext) {
     this.context = context;
+  }
+
+  visit_SetImplementation(
+    setImplementation: InstanceSetImplementation,
+  ): V1_ClassMapping | undefined {
+    const extraClassMappingTransformers = this.context.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraClassMappingTransformers?.() ?? [],
+    );
+    for (const transformer of extraClassMappingTransformers) {
+      const classMapping = transformer(setImplementation, this.context);
+      if (classMapping) {
+        return classMapping;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't transform class mapping: no compatible transformer available from plugins`,
+      setImplementation,
+    );
   }
 
   visit_OperationSetImplementation(

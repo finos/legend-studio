@@ -6,6 +6,8 @@
 **/*.js
 **/*.cjs
 **/*.mjs
+**/*.md
+**/*.mdx
 
 # Build
 /build/

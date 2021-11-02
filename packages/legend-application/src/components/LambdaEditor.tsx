@@ -25,6 +25,8 @@ import {
   disposeEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
+  getEditorValue,
+  normalizeLineEnding,
 } from '@finos/legend-art';
 import {
   FaLongArrowAltDown,
@@ -118,7 +120,7 @@ const LambdaEditorInline = observer(
       IDisposable | undefined
     >(undefined);
     const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
-    const value = lambdaEditorState.lambdaString;
+    const value = normalizeLineEnding(lambdaEditorState.lambdaString);
     const parserError = lambdaEditorState.parserError;
     const compilationError = lambdaEditorState.compilationError;
     const selectTypeLabel = (): void => onExpectedTypeLabelSelect?.();
@@ -203,7 +205,7 @@ const LambdaEditorInline = observer(
                 },
           );
           // set the value here so we don't lose the error when toggling between expand/collape modes
-          const currentValue = editor.getValue();
+          const currentValue = getEditorValue(editor);
           editor.setValue(currentValue);
         }
       }
@@ -238,14 +240,14 @@ const LambdaEditorInline = observer(
       onDidChangeModelContentEventDisposer.current?.dispose();
       onDidChangeModelContentEventDisposer.current =
         editor.onDidChangeModelContent(() => {
-          const currentVal = editor.getValue();
+          const currentVal = getEditorValue(editor);
           /**
            * Avoid unecessary setting of lambda string. Also, this prevents clearing the non-parser error on first render.
            * Since this method is guaranteed to be called one time during the first rendering when we first set the
            * value for the lambda editor, we do not want to clear any existing non-parser error in case it is set by methods
            * like reveal error in each editor
            */
-          if (currentVal !== lambdaEditorState.lambdaString) {
+          if (currentVal !== value) {
             lambdaEditorState.setLambdaString(currentVal);
             /**
              * Here we clear the error as user changes the input
@@ -300,7 +302,7 @@ const LambdaEditorInline = observer(
       });
 
       // Set the text value
-      const currentValue = editor.getValue();
+      const currentValue = getEditorValue(editor);
       const editorModel = editor.getModel();
       const currentConfig = editor.getRawOptions();
       if (currentValue !== value) {
@@ -443,10 +445,9 @@ const LambdaEditorPopUp = observer(
     const onDidChangeModelContentEventDisposer = useRef<
       IDisposable | undefined
     >(undefined);
-    const value = lambdaEditorState.lambdaString;
+    const value = normalizeLineEnding(lambdaEditorState.lambdaString);
     const parserError = lambdaEditorState.parserError;
     const compilationError = lambdaEditorState.compilationError;
-    // const selectTypeLabel = (): void => onExpectedTypeLabelSelect?.();
     const [editor, setEditor] = useState<
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
@@ -497,14 +498,14 @@ const LambdaEditorPopUp = observer(
       onDidChangeModelContentEventDisposer.current?.dispose();
       onDidChangeModelContentEventDisposer.current =
         editor.onDidChangeModelContent(() => {
-          const currentVal = editor.getValue();
+          const currentVal = getEditorValue(editor);
           /**
            * Avoid unecessary setting of lambda string. Also, this prevents clearing the non-parser error on first render.
            * Since this method is guaranteed to be called one time during the first rendering when we first set the
            * value for the lambda editor, we do not want to clear any existing non-parser error in case it is set by methods
            * like reveal error in each editor
            */
-          if (currentVal !== lambdaEditorState.lambdaString) {
+          if (currentVal !== value) {
             lambdaEditorState.setLambdaString(currentVal);
             /**
              * Here we clear the error as user changes the input
@@ -559,7 +560,7 @@ const LambdaEditorPopUp = observer(
       });
 
       // Set the text value
-      const currentValue = editor.getValue();
+      const currentValue = getEditorValue(editor);
       const editorModel = editor.getModel();
       const currentConfig = editor.getRawOptions();
       if (currentValue !== value) {

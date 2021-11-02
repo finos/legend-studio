@@ -1,5 +1,29 @@
 # @finos/legend-graph
 
+## 0.2.1
+
+## 0.2.0
+
+### Minor Changes
+
+- [#580](https://github.com/finos/legend-studio/pull/580) [`7318c222`](https://github.com/finos/legend-studio/commit/7318c2223d5653be18f00a489aa00b3143a600fe) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for `class mapping`
+
+* [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Fixed a typo in `GraphPluginManager`, `registerPureGraphPlugins()` is now renamed to `registerPureGraphPlugin()`.
+
+### Patch Changes
+
+- [#580](https://github.com/finos/legend-studio/pull/580) [`7318c222`](https://github.com/finos/legend-studio/commit/7318c2223d5653be18f00a489aa00b3143a600fe) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Pass Plugins as a parameter for `V1_getExtraElementProtocolSerializers` and `V1_getExtraElementProtocolDeserializers`
+
+* [#591](https://github.com/finos/legend-studio/pull/591) [`d20ae51a`](https://github.com/finos/legend-studio/commit/d20ae51afc12dda90217abe38a2fb91e1c499443) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display the full error stack trace for the execution error to improve the debugging experience.
+
+- [#580](https://github.com/finos/legend-studio/pull/580) [`7318c222`](https://github.com/finos/legend-studio/commit/7318c2223d5653be18f00a489aa00b3143a600fe) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Removal of old `Service store` specification
+
+## 0.1.4
+
+### Patch Changes
+
+- [#569](https://github.com/finos/legend-studio/pull/569) [`67a95bd0`](https://github.com/finos/legend-studio/commit/67a95bd0dadd00b486c2f7884e7d9a10cb91b03c) ([@akphi](https://github.com/akphi)) - Improve extension mechanism for connection.
+
 ## 0.1.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@finos/eslint-plugin-legend-studio",
-  "version": "0.0.32",
+  "version": "0.1.1",
   "description": "ESLint rules for Legend Studio",
   "keywords": [
     "legend",
@@ -26,16 +26,17 @@
   "scripts": {
     "clean": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.{mjs,cjs,js}\" \"src/**/*.{mjs,cjs,js}\"",
-    "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/core": "7.15.8",
-    "@babel/eslint-parser": "7.15.8",
-    "@typescript-eslint/eslint-plugin": "5.0.0",
-    "@typescript-eslint/parser": "5.0.0",
-    "eslint": "8.0.0",
+    "@babel/core": "7.16.0",
+    "@babel/eslint-parser": "7.16.0",
+    "@typescript-eslint/eslint-plugin": "5.3.0",
+    "@typescript-eslint/parser": "5.3.0",
+    "eslint": "8.1.0",
     "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-import": "2.25.1",
+    "eslint-plugin-import": "2.25.2",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-react": "7.26.1",
     "eslint-plugin-react-hooks": "4.2.0",

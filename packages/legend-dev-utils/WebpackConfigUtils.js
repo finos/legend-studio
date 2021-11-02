@@ -23,9 +23,6 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
 import CircularDependencyPlugin from 'circular-dependency-plugin';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
-import { resolveFullTsConfig } from './TypescriptConfigUtils.js';
-import ForkTsCheckerWebpackPlugin from './ForkTsCheckerWebpackPlugin.js';
-import ForkTsCheckerWebpackFormatterPlugin from './ForkTsCheckerWebpackFormatterPlugin.js';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -76,14 +73,9 @@ const getBaseWebpackConfig = (
       level: 'info',
     },
     stats: {
-      // Make `webpack-dev-middleware` less verbose, consider `quiet` and `noInfo` options as well
-      // NOTE: Use custom reporter to output errors and warnings from TS fork checker in `stylish` format. It's less verbose and
-      // repetitive. Since we use the custom plugin, we want to mute `errors` and `warnings` from `webpack-dev-middleware`
-      // See https://github.com/webpack-contrib/webpack-stylish
-      // See https://github.com/TypeStrong/fork-ts-checker-webpack-plugin/issues/119
       all: false,
-      errors: isEnvProduction,
-      warnings: isEnvProduction,
+      errors: true,
+      warnings: true,
       logging: 'warn',
       colors: true,
       timings: true,
@@ -192,63 +184,6 @@ const getBaseWebpackConfig = (
           failOnError: true,
           allowAsyncCycles: false, // allow import cycles that include an asynchronous import, e.g. import(/* webpackMode: "weak" */ './file.js')
           cwd: process.cwd(), // set the current working directory for displaying module paths
-        }),
-      isEnvDevelopment_Advanced && new ForkTsCheckerWebpackFormatterPlugin(),
-      isEnvDevelopment_Advanced &&
-        // Webpack plugin that runs TypeScript type checker on a separate process.
-        // NOTE: This makes the initial build process slower but allow faster incremental builds
-        // See https://www.npmjs.com/package/fork-ts-checker-webpack-plugin#motivation
-        // See https://github.com/arcanis/pnp-webpack-plugin#fork-ts-checker-webpack-plugin-integration
-        new ForkTsCheckerWebpackPlugin({
-          typescript: {
-            mode: 'write-references', // recommended mode to improve initial compilation time when using `babel-loader`
-            diagnosticsOptions: {
-              syntactic: true,
-              semantic: true,
-              declaration: true,
-              global: true,
-            },
-            configOverwrite: {
-              // ignore test files for faster check
-              exclude: [
-                'src/**/__tests__/**/*.ts',
-                'src/**/__tests__/**/*.tsx',
-                'src/**/__mocks__/**/*.ts',
-                'src/**/__mocks__/**/*.tsx',
-              ],
-            },
-          },
-          // Allow blocking Webpack `emit` to wait for type checker/linter and to add errors to the Webpack compilation
-          // if we turn `async:true` webpack will compile on one thread and type check on another thread so any type
-          // error will not cause the build to fail, also error/warning from this plugin will not be captured by webpack
-          // so we will have to write our own formatter for the log.
-          async: true,
-          // We will handle the output here using `fork-ts-checker-webpack-formatter-plugin`
-          // since the lint/error/warning output is not grouped by file
-          // See https://github.com/TypeStrong/fork-ts-checker-webpack-plugin/issues/119
-          logger: {
-            infrastructure: 'silent',
-            issues: 'silent',
-            devServer: false,
-          },
-          eslint: {
-            files: 'src/**/*.{ts,tsx}',
-            options: {
-              // ignore test files for faster check
-              ignorePattern: [
-                'src/**/__tests__/*.ts',
-                'src/**/__tests__/*.tsx',
-                'src/**/__mocks__/*.ts',
-                'src/**/__mocks__/*.tsx',
-              ],
-              parserOptions: {
-                // Limit the option like this helps with memory usage
-                // See https://github.com/typescript-eslint/typescript-eslint/issues/1192
-                project: resolve(dirname, './tsconfig.json'),
-              },
-            },
-          },
-          formatter: undefined,
         }),
       // NOTE: need to clean the `lib` directory since during development, we re-build module
       // on code change and save the build artifacts to disk so HMR can litter the `lib` directory
@@ -440,39 +375,4 @@ export const getWebAppBaseWebpackConfig = (
     ].filter(Boolean),
   };
   return config;
-};
-
-export const buildAliasEntriesFromTsConfigPathMapping = ({
-  dirname,
-  tsConfigPath,
-  excludePaths = [],
-}) => {
-  if (!dirname) {
-    throw new Error(`\`dirname\` is required to build Webpack module aliases`);
-  }
-  const tsConfig = resolveFullTsConfig(tsConfigPath);
-  const paths = tsConfig?.compilerOptions?.paths;
-  const baseUrl = tsConfig?.compilerOptions?.baseUrl;
-  const basePath = baseUrl ? resolve(dirname, baseUrl) : dirname;
-  if (paths) {
-    const aliases = {};
-    Object.entries(paths).forEach(([key, value]) => {
-      if (excludePaths.includes(key)) {
-        return;
-      }
-      const alias =
-        key.includes('/*') || key.includes('*')
-          ? key.replace('/*', '').replace('*', '')
-          : // If the path mapping is an exact match, add a trailing `$`
-            // See https://webpack.js.org/configuration/resolve/#resolvealias
-            `${key}$`;
-      const replacement = (Array.isArray(value) ? value : [value]).map((val) =>
-        // webpack does not need do exact replacement so wildcard '*' is not needed
-        val.replace('*', ''),
-      );
-      aliases[alias] = replacement.map((val) => resolve(basePath, val));
-    });
-    return aliases;
-  }
-  return {};
 };

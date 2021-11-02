@@ -33,6 +33,7 @@ import type {
   RootRelationalInstanceSetImplementation,
   AggregationAwareSetImplementation,
   PropertyMapping,
+  InstanceSetImplementation,
 } from '@finos/legend-graph';
 import {
   getAllClassMappings,
@@ -125,7 +126,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
         );
         return existingPropertyMappings.length
-          ? [existingPropertyMappings[0]]
+          ? [existingPropertyMappings[0] as PurePropertyMapping]
           : [
               new PurePropertyMapping(
                 setImplementation,
@@ -142,7 +143,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           'Only one property mapping should exist per enumeration type property',
         );
         const enumerationPropertyMapping = existingPropertyMappings.length
-          ? [existingPropertyMappings[0]]
+          ? [existingPropertyMappings[0] as PurePropertyMapping]
           : [
               new PurePropertyMapping(
                 setImplementation,
@@ -154,9 +155,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation.parent,
-          enumerationPropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
+          (
+            enumerationPropertyMapping[0] as PurePropertyMapping
+          ).property.value.genericType.value.getRawType(Enumeration),
         );
         enumerationPropertyMapping.forEach((epm) => {
           // If there are no enumeration mappings, delete the transformer of the property mapping
@@ -250,7 +251,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
         );
         return existingPropertyMappings.length
-          ? [existingPropertyMappings[0]]
+          ? [existingPropertyMappings[0] as FlatDataPropertyMapping]
           : [
               new FlatDataPropertyMapping(
                 setImplementation,
@@ -267,7 +268,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           'Only one property mapping should exist per enumeration type property',
         );
         const ePropertyMapping = existingPropertyMappings.length
-          ? [existingPropertyMappings[0]]
+          ? [existingPropertyMappings[0] as FlatDataPropertyMapping]
           : [
               new FlatDataPropertyMapping(
                 setImplementation,
@@ -279,9 +280,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation.parent,
-          ePropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
+          (
+            ePropertyMapping[0] as FlatDataPropertyMapping
+          ).property.value.genericType.value.getRawType(Enumeration),
         );
         ePropertyMapping.forEach((epm) => {
           assertType(
@@ -359,7 +360,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         );
         if (existingPropertyMappings.length) {
           // TODO?: do we want to check the type of the property mapping here?
-          return [existingPropertyMappings[0]];
+          return [existingPropertyMappings[0] as PropertyMapping];
         }
         const newPropertyMapping = new RelationalPropertyMapping(
           setImplementation,
@@ -379,7 +380,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         let ePropertyMapping: PropertyMapping[] = [];
         if (existingPropertyMappings.length) {
           // TODO?: do we want to check the type of the property mapping here?
-          ePropertyMapping = [existingPropertyMappings[0]];
+          ePropertyMapping = [existingPropertyMappings[0] as PropertyMapping];
         } else {
           const newPropertyMapping = new RelationalPropertyMapping(
             setImplementation,
@@ -393,9 +394,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation.parent,
-          ePropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
+          (
+            ePropertyMapping[0] as PropertyMapping
+          ).property.value.genericType.value.getRawType(Enumeration),
         );
         ePropertyMapping.forEach((epm) => {
           assertType(
@@ -477,7 +478,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new UnsupportedOperationError();
+    return;
+  }
+
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+    //TODO: Implement this later https://github.com/finos/legend-studio/pull/580
+    return;
   }
 }
 
@@ -566,6 +572,11 @@ export class MappingElementDecorationCleaner
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new UnsupportedOperationError();
+    return;
+  }
+
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+    //TODO: Implement this later https://github.com/finos/legend-studio/pull/580
+    return;
   }
 }

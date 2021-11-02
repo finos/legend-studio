@@ -1,5 +1,29 @@
 # @finos/legend-studio
 
+## 0.4.1
+
+## 0.4.0
+
+### Minor Changes
+
+- [#580](https://github.com/finos/legend-studio/pull/580) [`7318c222`](https://github.com/finos/legend-studio/commit/7318c2223d5653be18f00a489aa00b3143a600fe) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for `class mapping` in form mode
+
+### Patch Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Support word-wraping for text-mode.
+
+## 0.3.4
+
+### Patch Changes
+
+- [#568](https://github.com/finos/legend-studio/pull/568) [`46ccd87d`](https://github.com/finos/legend-studio/commit/46ccd87d3bd7c65ab26cb5b1c58d9ed007e5cc78) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `group` workspaces where multiple users can collaborate.
+
+* [#534](https://github.com/finos/legend-studio/pull/534) [`a116f644`](https://github.com/finos/legend-studio/commit/a116f6449cedf810aa13ec1e45e271b3c38fa69c) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for connection
+
+- [#568](https://github.com/finos/legend-studio/pull/568) [`46ccd87d`](https://github.com/finos/legend-studio/commit/46ccd87d3bd7c65ab26cb5b1c58d9ed007e5cc78) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `Workflow API` instead of the _deprecated_ `Build API`.
+
+* [#543](https://github.com/finos/legend-studio/pull/543) [`68f777ba`](https://github.com/finos/legend-studio/commit/68f777ba740244cb8f88f6455263316548b03cfd) ([@gs-gunjan](https://github.com/gs-gunjan)) - CSV support for input data of relational mapping tests
+
 ## 0.3.3
 
 ### Patch Changes

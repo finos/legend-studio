@@ -30,6 +30,7 @@ import {
 } from '../stores/QueryResultSetModifierState';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import type { QueryBuilderProjectionColumnState } from '../stores/QueryBuilderProjectionState';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const ColumnSortEditor = observer(
   (props: {
@@ -125,7 +126,7 @@ const ColumnsSortEditor = observer(
       if (projectionOptions.length > 0) {
         const sortColumn = new SortColumnState(
           queryBuilderState,
-          projectionOptions[0].value,
+          guaranteeNonNullable(projectionOptions[0]).value,
         );
         resultModifier.addSortColumn(sortColumn);
       }

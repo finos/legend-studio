@@ -1,27 +1,38 @@
 <!--
-Thanks for submitting a pull request! Before making a PR, please read our contributing guidelines
-https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md
+  Thanks for submitting a pull request!
+  We appreciate you spending the time to work on these changes. Please provide enough information so that others can review your pull request.
 
-🎉 Please fill out the summary table and read through the instructions.
+  Before submitting a pull request, please make sure the following is done:
+  1. Fork [the repository](https://github.com/finos/legend-studio) and create your branch from `master`.
+  2. Run `yarn` in the repository root.
+  3. If you've fixed a bug or added code that should be tested, add tests!
+  4. Add a changeset to summarize your change in the changelogs.
+  5. If you haven't already, complete the CLA.
+
+  Learn more about contributing: https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md
 -->
 
-| Q                       | A                                |
-| ----------------------- | -------------------------------- |
-| Fixed issues?           | <!-- e.g. Fixes #1, Fixes #2 --> |
-| Tests added + passed?   | Yes                              |
-| Changeset added?        | Yes                              |
-| Documentation PR link   |                                  |
-| Any dependency changes? | No                               |
+## Summary
 
 <!--
-Summary fill-out guides:
+  Explain the **motivation** for making this change. What existing problem(s) does this PR solve?
+  Also, link the issue(s) to this PR: e.g. Fixes #1, Resolves #2
+  If you also added documentation, link the PR from https://github.com/finos/legend
+-->
 
-- Test: https://github.com/finos/legend-studio/blob/master/docs/technical/test-strategy.md
-- Changeset: https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md#changeset
-- Documentation: Link to a PR from https://github.com/finos/legend repo
-- Dependency: https://github.com/finos/legend-studio/blob/master/docs/workflow/dependencies.md
+## How did you test this change?
 
-NOTE: For component/style changes: Please check out our style guide https://github.com/finos/legend-studio/tree/master/docs/ux. Also, PR involving UX/UI might take more time to discuss and review.
+<!--
+  Demonstrate the code is solid. Screenshots/videos if the pull request changes the user interface.
+  How exactly did you verify that your PR solves the issue you wanted to solve?
+  If you leave this empty, your PR will very likely be closed.
+-->
 
-Last but not least, describe your changes below in as much detail as possible in the space below 🎉
+<!--
+  More in-depth docs below:
+  - Git workflow: https://github.com/finos/legend-studio/blob/master/docs/workflow/working-with-github.md
+  - Test: https://github.com/finos/legend-studio/blob/master/docs/technical/test-strategy.md
+  - Changeset: https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md#changeset
+  - Dependency: https://github.com/finos/legend-studio/blob/master/docs/workflow/dependencies.md
+  - UX/UI: https://github.com/finos/legend-studio/tree/master/docs/ux
 -->

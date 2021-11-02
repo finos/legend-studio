@@ -260,7 +260,7 @@ export const buildNonNumericPreviewDataQuery = (
     [SUPPORTED_FUNCTIONS.TDS_ASC, 'Value'],
   ].map((pair) => {
     const sortColumnFunction = new SimpleFunctionExpression(
-      extractElementNameFromPath(pair[0]),
+      extractElementNameFromPath(pair[0] as string),
       multiplicityOne,
     );
     const sortColumnName = new PrimitiveInstanceValue(

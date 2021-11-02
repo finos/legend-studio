@@ -78,7 +78,6 @@ import {
   Measure,
   Unit,
   Database,
-  ServiceStore,
   SectionIndex,
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
@@ -93,6 +92,7 @@ import {
   ActionAlertType,
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
+import type { DSLMapping_StudioPlugin_Extension } from './DSLMapping_StudioPlugin_Extension';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -217,7 +217,7 @@ export class EditorGraphState {
       this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getConfiguration(
-            this.editorStore.sdlcState.currentProjectId,
+            this.editorStore.sdlcState.activeProject.projectId,
             undefined,
           )) as PlainObject<ProjectConfiguration>,
         ),
@@ -339,8 +339,6 @@ export class EditorGraphState {
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
         this.editorStore.applicationStore.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
-          undefined,
-          null,
         );
         const projectConfigurationEditorState =
           this.editorStore.projectConfigurationEditorState;
@@ -523,7 +521,10 @@ export class EditorGraphState {
         if (errorCoordinates) {
           const element =
             this.editorStore.graphManagerState.graph.getNullableElement(
-              errorCoordinates[0],
+              guaranteeNonNullable(
+                errorCoordinates[0],
+                `Can't reveal compilation error: element path is missing`,
+              ),
               false,
             );
           if (element) {
@@ -799,8 +800,8 @@ export class EditorGraphState {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
           ProjectConfiguration.serialization.fromJson(
             (yield this.editorStore.sdlcServerClient.getConfiguration(
-              this.editorStore.sdlcState.currentProjectId,
-              this.editorStore.sdlcState.currentWorkspaceId,
+              this.editorStore.sdlcState.activeProject.projectId,
+              this.editorStore.sdlcState.activeWorkspace,
             )) as PlainObject<ProjectConfiguration>,
           ),
         );
@@ -1078,7 +1079,7 @@ export class EditorGraphState {
                     .join(', ')}.`,
                 );
               }
-              const projectData = projectsData[0];
+              const projectData = projectsData[0] as ProjectData;
               return new ProjectDependencyCoordinates(
                 projectData.groupId,
                 projectData.artifactId,
@@ -1134,8 +1135,6 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE;
     } else if (element instanceof Database) {
       return PACKAGEABLE_ELEMENT_TYPE.DATABASE;
-    } else if (element instanceof ServiceStore) {
-      return PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE;
     } else if (element instanceof Mapping) {
       return PACKAGEABLE_ELEMENT_TYPE.MAPPING;
     } else if (element instanceof Service) {
@@ -1171,9 +1170,7 @@ export class EditorGraphState {
   }
 
   /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-  getSetImplementationType(
-    setImplementation: SetImplementation,
-  ): SET_IMPLEMENTATION_TYPE {
+  getSetImplementationType(setImplementation: SetImplementation): string {
     if (setImplementation instanceof PureInstanceSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.PUREINSTANCE;
     } else if (setImplementation instanceof OperationSetImplementation) {
@@ -1193,8 +1190,22 @@ export class EditorGraphState {
     } else if (setImplementation instanceof AggregationAwareSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE;
     }
+    const extraSetImplementationClassifiers = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).getExtraSetImplementationClassifiers?.() ?? [],
+      );
+    for (const Classifier of extraSetImplementationClassifiers) {
+      const setImplementationClassifier = Classifier(setImplementation);
+      if (setImplementationClassifier) {
+        return setImplementationClassifier;
+      }
+    }
     throw new UnsupportedOperationError(
-      `Can't classify set implementation`,
+      `Can't classify set implementation: no compatible classifer available from plugins`,
       setImplementation,
     );
   }

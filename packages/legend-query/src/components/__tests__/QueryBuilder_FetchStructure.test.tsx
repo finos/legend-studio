@@ -98,7 +98,7 @@ test(
       queryBuilderState.explorerState.treeData,
     );
     const rootNode = guaranteeType(
-      treeData.nodes.get(treeData.rootIds[0]),
+      treeData.nodes.get(treeData.rootIds[0] as string),
       QueryBuilderExplorerTreeRootNodeData,
     );
 

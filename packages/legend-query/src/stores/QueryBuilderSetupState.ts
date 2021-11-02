@@ -58,18 +58,16 @@ export class QueryBuilderSetupState {
   }
 
   get possibleMappings(): Mapping[] {
-    const mappingsWithClassMapped =
-      this.queryBuilderState.graphManagerState.graph.ownMappings.filter(
-        (mapping) =>
-          mapping.classMappings.some((cm) => cm.class.value === this._class),
-      );
-    const resolvedMappingIncludes =
-      this.queryBuilderState.graphManagerState.graph.ownMappings.filter(
-        (mapping) =>
-          mapping.allIncludedMappings.some((e) =>
-            mappingsWithClassMapped.includes(e),
-          ),
-      );
+    const mappingsWithClassMapped = this.queryBuilderState.mappings.filter(
+      (mapping) =>
+        mapping.classMappings.some((cm) => cm.class.value === this._class),
+    );
+    const resolvedMappingIncludes = this.queryBuilderState.mappings.filter(
+      (mapping) =>
+        mapping.allIncludedMappings.some((e) =>
+          mappingsWithClassMapped.includes(e),
+        ),
+    );
     return this._class
       ? uniq([...mappingsWithClassMapped, ...resolvedMappingIncludes])
       : [];
@@ -77,7 +75,7 @@ export class QueryBuilderSetupState {
 
   get possibleRuntimes(): PackageableRuntime[] {
     return this._class && this.mapping
-      ? this.queryBuilderState.graphManagerState.graph.ownRuntimes
+      ? this.queryBuilderState.runtimes
           .map((packageableRuntime) =>
             packageableRuntime.runtimeValue.mappings.some((mapping) =>
               this.possibleMappings.includes(mapping.value),

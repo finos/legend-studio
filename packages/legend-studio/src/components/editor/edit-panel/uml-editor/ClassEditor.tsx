@@ -81,6 +81,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
+import type { ClassPreviewRenderer } from '../../../../stores/StudioPlugin';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -935,12 +936,13 @@ export const ClassFormEditor = observer(
           selectedTab === UML_EDITOR_TAB.SUPER_TYPES &&
           possibleSupertypes.length
         ) {
+          const possibleSupertype = possibleSupertypes[0] as Class;
           _class.addSuperType(
             GenericTypeExplicitReference.create(
-              new GenericType(possibleSupertypes[0]),
+              new GenericType(possibleSupertype),
             ),
           );
-          possibleSupertypes[0].addSubClass(_class);
+          possibleSupertype.addSubClass(_class);
         } else if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           _class.addTaggedValue(
             TaggedValue.createStub(Tag.createStub(Profile.createStub())),
@@ -1349,7 +1351,8 @@ export const ClassEditor = observer((props: { _class: Class }) => {
   return (
     <ResizablePanelGroup orientation="vertical" className="class-editor">
       <ResizablePanel size={500} minSize={450}>
-        {classPreviewRenderers.length !== 0 && classPreviewRenderers[0](_class)}
+        {classPreviewRenderers.length !== 0 &&
+          (classPreviewRenderers[0] as ClassPreviewRenderer)(_class)}
         {classPreviewRenderers.length === 0 && (
           <BlankPanelContent>No preview</BlankPanelContent>
         )}

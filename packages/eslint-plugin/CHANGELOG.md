@@ -1,5 +1,13 @@
 # @finos/eslint-plugin-legend-studio
 
+## 0.1.1
+
+## 0.1.0
+
+### Minor Changes
+
+- [#569](https://github.com/finos/legend-studio/pull/569) [`67a95bd0`](https://github.com/finos/legend-studio/commit/67a95bd0dadd00b486c2f7884e7d9a10cb91b03c) ([@akphi](https://github.com/akphi)) - Ugrade to `eslint@8` and `typescript-eslint@5` and update rule set to comply with new recommended rule list.
+
 ## 0.0.32
 
 ## 0.0.31

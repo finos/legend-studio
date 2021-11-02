@@ -115,6 +115,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     return [
       (
         elementProtocol: V1_PackageableElement,
+        plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_Text) {
           return serialize(V1_textModelSchema, elementProtocol);
@@ -128,6 +129,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     return [
       (
         json: PlainObject<V1_PackageableElement>,
+        plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_TEXT_ELEMENT_PROTOCOL_TYPE) {
           return deserialize(V1_textModelSchema, json);

@@ -203,7 +203,7 @@ export class V1_ValueSpecificationBuilder
       `Applying function '${appliedFunction.function}'`,
     );
     if (appliedFunction.function === LET_FUNCTION) {
-      const vs = appliedFunction.parameters.map((expression) =>
+      const parameters = appliedFunction.parameters.map((expression) =>
         expression.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationBuilder(
             this.context,
@@ -212,11 +212,16 @@ export class V1_ValueSpecificationBuilder
           ),
         ),
       );
-      const letName = guaranteeType(appliedFunction.parameters[0], V1_CString)
-        .values[0];
-      const ve = new VariableExpression(letName, vs[0].multiplicity);
-      ve.genericType = vs[0].genericType;
-      this.processingContext.addInferredVariables(letName, ve);
+      const letName = guaranteeNonNullable(
+        guaranteeType(appliedFunction.parameters[0], V1_CString).values[0],
+      );
+      const firstParam = guaranteeNonNullable(parameters[0]);
+      const variableExpression = new VariableExpression(
+        letName,
+        firstParam.multiplicity,
+      );
+      variableExpression.genericType = firstParam.genericType;
+      this.processingContext.addInferredVariables(letName, variableExpression);
     }
     const func = V1_buildFunctionExpression(
       appliedFunction.function,
@@ -598,7 +603,7 @@ export function V1_buildLambdaBody(
       ) as VariableExpression,
   );
   const openVariables: string[] = [];
-  const valueSpecifications = expressions.map((e) =>
+  const _expressions = expressions.map((e) =>
     e.accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         context,
@@ -608,15 +613,16 @@ export function V1_buildLambdaBody(
     ),
   );
   // Remove let variables
+  const firstExpression = guaranteeNonNullable(_expressions[0]);
   const functionType = buildFunctionType(
     pureParameters,
-    valueSpecifications[0].genericType?.value.rawType,
-    valueSpecifications[0].multiplicity,
+    firstExpression.genericType?.value.rawType,
+    firstExpression.multiplicity,
   );
   processingContext.pop();
   const _lambda = new LambdaFunction(functionType);
   _lambda.openVariables = [];
-  _lambda.expressionSequence = valueSpecifications;
+  _lambda.expressionSequence = _expressions;
   return _lambda;
 }
 
@@ -836,7 +842,7 @@ export function V1_processProperty(
       ),
     ),
   );
-  let inferredVariable: ValueSpecification;
+  let inferredVariable: ValueSpecification | undefined;
   if (firstParameter instanceof V1_Variable) {
     inferredVariable = guaranteeType(
       processingContext.getInferredVariable(firstParameter.name),
@@ -846,7 +852,7 @@ export function V1_processProperty(
     inferredVariable = processedParameters[0];
   }
   let inferredType: Type | undefined =
-    inferredVariable.genericType?.value.rawType;
+    inferredVariable?.genericType?.value.rawType;
   if (inferredVariable instanceof AbstractPropertyExpression) {
     inferredType = inferredVariable.func.genericType.value.rawType;
   }

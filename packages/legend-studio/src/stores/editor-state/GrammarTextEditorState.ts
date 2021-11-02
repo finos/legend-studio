@@ -41,7 +41,6 @@ import {
   Measure,
   Database,
   RelationalDatabaseConnection,
-  ServiceStore,
 } from '@finos/legend-graph';
 import { GRAMMAR_ELEMENT_TYPE_LABEL } from '@finos/legend-application';
 
@@ -62,6 +61,7 @@ export class GrammarTextEditorState {
   editorStore: EditorStore;
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
+  wrapText = false;
   error?: EngineError | undefined;
 
   constructor(editorStore: EditorStore) {
@@ -69,6 +69,7 @@ export class GrammarTextEditorState {
       editorStore: false,
       setError: action,
       setGraphGrammarText: action,
+      setWrapText: action,
       resetCurrentElementLabelRegexString: action,
       setCurrentElementLabelRegexString: action,
     });
@@ -82,6 +83,10 @@ export class GrammarTextEditorState {
 
   setGraphGrammarText(code: string): void {
     this.graphGrammarText = code;
+  }
+
+  setWrapText(val: boolean): void {
+    this.wrapText = val;
   }
 
   resetCurrentElementLabelRegexString(): void {
@@ -106,8 +111,6 @@ export class GrammarTextEditorState {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA;
     } else if (element instanceof Database) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.DATABASE;
-    } else if (element instanceof ServiceStore) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE_STORE;
     } else if (element instanceof Mapping) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING;
     } else if (element instanceof Service) {

@@ -44,7 +44,6 @@ import {
   V1_buildDatabaseFilter,
 } from './helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 import { V1_buildAssociationMapping } from './helpers/V1_AssociationMappingHelper';
 
 export class V1_ProtocolToMetaModelGraphFourthPassBuilder
@@ -105,12 +104,6 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
     );
     database.filters = element.filters.map((filter) =>
       V1_buildDatabaseFilter(filter, this.context, database),
-    );
-  }
-
-  visit_ServiceStore(element: V1_ServiceStore): void {
-    this.context.graph.getServiceStore(
-      this.context.graph.buildPath(element.package, element.name),
     );
   }
 

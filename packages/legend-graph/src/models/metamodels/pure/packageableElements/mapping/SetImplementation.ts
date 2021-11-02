@@ -33,8 +33,10 @@ import type { RootRelationalInstanceSetImplementation } from '../store/relationa
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
+import type { InstanceSetImplementation } from './InstanceSetImplementation';
 
 export interface SetImplementationVisitor<T> {
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): T;

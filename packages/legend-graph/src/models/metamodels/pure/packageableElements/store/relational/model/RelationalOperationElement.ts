@@ -167,7 +167,9 @@ export class JoinTreeNode {
  */
 export const extractLine = (joinTreeNode: JoinTreeNode): JoinTreeNode[] =>
   [joinTreeNode].concat(
-    joinTreeNode.children.length ? extractLine(joinTreeNode.children[0]) : [],
+    joinTreeNode.children.length
+      ? extractLine(joinTreeNode.children[0] as JoinTreeNode)
+      : [],
   );
 
 export class RelationalOperationElementWithJoin extends RelationalOperationElement {

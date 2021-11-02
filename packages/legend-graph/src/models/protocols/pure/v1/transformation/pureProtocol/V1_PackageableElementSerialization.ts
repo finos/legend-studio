@@ -36,12 +36,9 @@ import type { V1_SectionIndex } from '../../model/packageableElements/section/V1
 import type { V1_Service } from '../../model/packageableElements/service/V1_Service';
 import type { V1_FlatData } from '../../model/packageableElements/store/flatData/model/V1_FlatData';
 import type { V1_Database } from '../../model/packageableElements/store/relational/model/V1_Database';
-import type { V1_ServiceStore } from '../../model/packageableElements/store/relational/V1_ServiceStore';
 import {
   V1_flatDataModelSchema,
   V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE,
-  V1_serviceStoreModelSchema,
-  V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_StoreSerializationHelper';
 import {
   V1_mappingModelSchema,
@@ -111,7 +108,7 @@ export class V1_PackageableElementSerializer
     elementProtocol: V1_PackageableElement,
   ): PlainObject<V1_PackageableElement> {
     for (const serializer of this.extraElementProtocolSerializers) {
-      const elementProtocolJson = serializer(elementProtocol);
+      const elementProtocolJson = serializer(elementProtocol, this.plugins);
       if (elementProtocolJson) {
         return elementProtocolJson;
       }
@@ -159,14 +156,8 @@ export class V1_PackageableElementSerializer
     return serialize(V1_databaseModelSchema, element);
   }
 
-  visit_ServiceStore(
-    element: V1_ServiceStore,
-  ): PlainObject<V1_PackageableElement> {
-    return serialize(V1_serviceStoreModelSchema, element);
-  }
-
   visit_Mapping(element: V1_Mapping): PlainObject<V1_PackageableElement> {
-    return serialize(V1_mappingModelSchema, element);
+    return serialize(V1_mappingModelSchema(this.plugins), element);
   }
 
   visit_Service(element: V1_Service): PlainObject<V1_PackageableElement> {
@@ -231,10 +222,8 @@ export const V1_deserializePackageableElement = (
       return deserialize(V1_flatDataModelSchema, json);
     case V1_DATABASE_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_databaseModelSchema, json);
-    case V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_serviceStoreModelSchema, json);
     case V1_MAPPING_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_mappingModelSchema, json);
+      return deserialize(V1_mappingModelSchema(plugins), json);
     case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
       return deserialize(V1_servicedModelSchema, json);
     case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
@@ -249,7 +238,7 @@ export const V1_deserializePackageableElement = (
       return deserialize(V1_sectionIndexModelSchema, json);
     default: {
       for (const deserializer of extraElementProtocolDeserializers) {
-        const elementProtocol = deserializer(json);
+        const elementProtocol = deserializer(json, plugins);
         if (elementProtocol) {
           return elementProtocol;
         }

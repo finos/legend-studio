@@ -1,5 +1,5 @@
 {
-  "extends": "../../scripts/typescript/tsconfig.base.json",
+  "extends": "@finos/legend-dev-utils/tsconfig.base.json",
   "compilerOptions": {
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
     "noEmit": true,
@@ -23,6 +23,9 @@
     },
     {
       "path": "../legend-extension-dsl-serializer"
+    },
+    {
+      "path": "../legend-extension-external-store-service"
     }
   ]
 }

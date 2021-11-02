@@ -1,5 +1,23 @@
 # @finos/legend-query
 
+## 0.1.1
+
+### Patch Changes
+
+- [#620](https://github.com/finos/legend-studio/pull/620) [`efe01d92`](https://github.com/finos/legend-studio/commit/efe01d9218034dc358420b65f20da9715eb55589) ([@akphi](https://github.com/akphi)) - Add a temporary flag `TEMP__useLegacyDepotServerAPIRoutes` in `depot` server config to allow pointing certain APIs at old endpoint. This is expected to be removed soon but provided as a workaround for older infrastructure.
+
+## 0.1.0
+
+### Minor Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Created an extension mechanism for query setup.
+
+### Patch Changes
+
+- [#588](https://github.com/finos/legend-studio/pull/588) [`83c05ada`](https://github.com/finos/legend-studio/commit/83c05ada3f309766cc7e4ec59f2ef0cba02d9ee6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - List possible `mappings` and `runtimes` from dependency projects in query setup.
+
+## 0.0.15
+
 ## 0.0.14
 
 ## 0.0.13

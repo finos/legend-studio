@@ -106,7 +106,6 @@ export enum CORE_ELEMENT_PATH {
   FUNCTION = 'meta::pure::metamodel::function::ConcreteFunctionDefinition',
   FLAT_DATA = 'meta::flatData::metamodel::FlatData',
   DATABASE = 'meta::relational::metamodel::Database',
-  SERVICE_STORE = 'meta::servicestore::metamodel::ServiceStore',
   MAPPING = 'meta::pure::mapping::Mapping',
   SERVICE = 'meta::legend::service::metamodel::Service',
   CONNECTION = 'meta::pure::runtime::PackageableConnection',
@@ -183,8 +182,6 @@ export enum CORE_HASH_STRUCTURE {
   FLAT_DATA_PROPERTY_MAPPING = 'FLAT_DATA_PROPERTY_MAPPING',
   EMBEDDED_FLAT_DATA_PROPERTY_MAPPING = 'EMBEDDED_FLAT_DATA_PROPERTY_MAPPING',
   FLAT_DATA_SECTION_POINTER = 'FLAT_DATA_SECTION_POINTER',
-  // serviceStore
-  SERVICE_STORE = 'SERVICE_STORE',
   // database
   DATABASE = 'DATABASE',
   DATABASE_SCHEMA = 'DATABASE_SCHEMA',

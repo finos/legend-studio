@@ -104,6 +104,29 @@
       height: 1.8rem;
     }
   }
+
+  &__workspace__label {
+    display: flex;
+
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.7rem;
+      min-width: 1.7rem;
+      margin-right: 1rem;
+    }
+
+    &__name {
+      @include flexVCenter;
+
+      height: 1.8rem;
+    }
+  }
+
+  &__workspace__selector {
+    margin-top: 1rem;
+  }
 }
 
 .setup-selector {

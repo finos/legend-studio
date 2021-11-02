@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-space
 
+## 0.1.1
+
+## 0.1.0
+
+### Minor Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Add extension for `Legend Query` which allows creating query from data space.
+
+## 0.0.6
+
 ## 0.0.5
 
 ## 0.0.4

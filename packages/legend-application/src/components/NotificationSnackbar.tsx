@@ -31,14 +31,16 @@ import {
   FaBug,
 } from 'react-icons/fa';
 import { useApplicationStore } from './ApplicationStoreProvider';
+import { ChevronDownIcon, ChevronUpIcon, clsx } from '@finos/legend-art';
+import { useState } from 'react';
 
 export const NotificationSnackbar = observer(() => {
   const applicationStore = useApplicationStore();
   const notification = applicationStore.notification;
   const isOpen = Boolean(notification);
-  // TODO: have a better way to truncate message in snackbar
   const message = notification?.message ?? '';
   const severity = notification?.severity ?? NOTIFCATION_SEVERITY.INFO;
+  const [isExpanded, setIsExpanded] = useState(false);
   let notificationIcon = (
     <div className="notification__message__content__icon notification__message__content__icon--info">
       <FaInfoCircle />
@@ -76,7 +78,14 @@ export const NotificationSnackbar = observer(() => {
     default:
       break;
   }
-  const handleClose = (): void => applicationStore.setNotification(undefined);
+  const handleClose = (): void => {
+    applicationStore.setNotification(undefined);
+    setIsExpanded(false);
+  };
+  const handleCopy = (): Promise<void> =>
+    applicationStore.copyTextToClipboard(message);
+  const toggleExpansion = (): void => setIsExpanded(!isExpanded);
+
   const onSnackbarAutoHideOrClickAway = (
     event: React.SyntheticEvent<unknown>,
     reason: SnackbarCloseReason,
@@ -125,12 +134,28 @@ export const NotificationSnackbar = observer(() => {
         message={
           <div className="notification__message__content">
             {notificationIcon}
-            <div className="notification__message__content__text">
+            <div
+              className={clsx('notification__message__content__text', {
+                'notification__message__content__text--expanded': isExpanded,
+              })}
+              onClick={handleCopy}
+              title="Click to Copy"
+            >
               {message}
             </div>
           </div>
         }
         action={[
+          <button
+            className="notification__action"
+            id="expand_button"
+            key="expand"
+            onClick={toggleExpansion}
+            tabIndex={-1}
+            title={isExpanded ? 'Collapse' : 'Expand'}
+          >
+            {isExpanded ? <ChevronDownIcon /> : <ChevronUpIcon />}
+          </button>,
           <button
             className="notification__action"
             key="close"

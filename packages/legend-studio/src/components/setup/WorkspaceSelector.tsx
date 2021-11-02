@@ -18,12 +18,26 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WorkspaceOption } from '../../stores/SetupStore';
 import type { SelectComponent } from '@finos/legend-art';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaUserFriends, FaUser } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { StudioConfig } from '../../application/StudioConfig';
+
+const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
+  <div className="setup__workspace__label">
+    <div className="setup__workspace__label-icon">
+      {option.value.workspaceType === WorkspaceType.GROUP ? (
+        <FaUserFriends />
+      ) : (
+        <FaUser />
+      )}
+    </div>
+    <div className="setup__workspace__label__name">{option.label}</div>
+  </div>
+);
 
 export const WorkspaceSelector = observer(
   (
@@ -36,11 +50,15 @@ export const WorkspaceSelector = observer(
     const { onChange, create } = props;
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore<StudioConfig>();
-    const currentWorkspaceId = setupStore.currentWorkspaceId;
+    const currentWorkspaceCompositeId = setupStore.currentWorkspaceCompositeId;
     const options =
       setupStore.currentProjectWorkspaceOptions.sort(compareLabelFn);
     const selectedOption =
-      options.find((option) => option.value === currentWorkspaceId) ?? null;
+      options.find(
+        (option) =>
+          setupStore.buildWorkspaceCompositeId(option.value) ===
+          currentWorkspaceCompositeId,
+      ) ?? null;
     const isLoadingOptions =
       setupStore.loadProjectsState.isInProgress ||
       setupStore.loadWorkspacesState.isInProgress;
@@ -50,26 +68,27 @@ export const WorkspaceSelector = observer(
         (val !== null || selectedOption !== null) &&
         (!val || !selectedOption || val.value !== selectedOption.value)
       ) {
-        setupStore.setCurrentWorkspaceId(val?.value);
+        setupStore.setCurrentWorkspaceIdentifier(val?.value);
         onChange(Boolean(selectedOption));
         applicationStore.navigator.goTo(
           generateSetupRoute(
             applicationStore.config.sdlcServerKey,
             setupStore.currentProjectId ?? '',
-            val?.value,
+            val?.value.workspaceId,
+            val?.value.workspaceType,
           ),
         );
       }
     };
 
     useEffect(() => {
-      if (setupStore.currentProjectWorkspaces && !currentWorkspaceId) {
+      if (setupStore.currentProjectWorkspaces && !currentWorkspaceCompositeId) {
         onChange(false);
       }
     }, [
       setupStore.currentProjectWorkspaces,
       setupStore.currentProjectId,
-      currentWorkspaceId,
+      currentWorkspaceCompositeId,
       onChange,
     ]);
 
@@ -99,6 +118,7 @@ export const WorkspaceSelector = observer(
           disabled={!setupStore.currentProjectId || isLoadingOptions}
           isLoading={isLoadingOptions}
           onChange={onSelectionChange}
+          formatOptionLabel={formatOptionLabel}
           value={selectedOption}
           placeholder={workspaceSelectorPlacerHold}
           isClearable={true}

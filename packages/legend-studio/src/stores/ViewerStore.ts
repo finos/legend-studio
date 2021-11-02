@@ -129,14 +129,14 @@ export class ViewerStore {
       // get current revision so we can show how "outdated" the `current view` of the project is
       this.currentRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(
-          this.editorStore.sdlcState.currentProjectId,
+          this.editorStore.sdlcState.activeProject.projectId,
           undefined,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
       );
       this.latestVersion = Version.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getLatestVersion(
-          this.editorStore.sdlcState.currentProjectId,
+          this.editorStore.sdlcState.activeProject.projectId,
         )) as PlainObject<Version>,
       );
 
@@ -158,14 +158,14 @@ export class ViewerStore {
           versionId !== this.latestVersion.id.id
             ? Version.serialization.fromJson(
                 (yield this.editorStore.sdlcServerClient.getVersion(
-                  this.editorStore.sdlcState.currentProjectId,
+                  this.editorStore.sdlcState.activeProject.projectId,
                   versionId,
                 )) as PlainObject<Version>,
               )
             : this.latestVersion;
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByVersion(
-            this.editorStore.sdlcState.currentProjectId,
+            this.editorStore.sdlcState.activeProject.projectId,
             versionId,
           )) as Entity[];
       }
@@ -176,7 +176,7 @@ export class ViewerStore {
           revisionId !== this.currentRevision.id
             ? Revision.serialization.fromJson(
                 (yield this.editorStore.sdlcServerClient.getRevision(
-                  this.editorStore.sdlcState.currentProjectId,
+                  this.editorStore.sdlcState.activeProject.projectId,
                   undefined,
                   revisionId,
                 )) as PlainObject<Revision>,
@@ -184,7 +184,7 @@ export class ViewerStore {
             : this.currentRevision;
         entities =
           (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-            this.editorStore.sdlcState.currentProjectId,
+            this.editorStore.sdlcState.activeProject.projectId,
             undefined,
             revisionId,
           )) as Entity[];
@@ -196,11 +196,11 @@ export class ViewerStore {
           // fetch workspace entities and config at the same time
           const result = (yield Promise.all([
             this.editorStore.sdlcServerClient.getEntities(
-              this.editorStore.sdlcState.currentProjectId,
+              this.editorStore.sdlcState.activeProject.projectId,
               undefined,
             ),
             this.editorStore.sdlcServerClient.getConfiguration(
-              this.editorStore.sdlcState.currentProjectId,
+              this.editorStore.sdlcState.activeProject.projectId,
               undefined,
             ),
           ])) as [Entity[], PlainObject<ProjectConfiguration>];
@@ -281,7 +281,7 @@ export class ViewerStore {
           const elementPath = this.elementPath;
           this.elementPath = undefined;
           throw new AssertionError(
-            `Can't find element '${elementPath}' in project '${this.editorStore.sdlcState.currentProjectId}'`,
+            `Can't find element '${elementPath}' in project '${this.editorStore.sdlcState.activeProject.projectId}'`,
           );
         }
       }

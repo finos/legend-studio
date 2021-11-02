@@ -52,8 +52,6 @@ import {
   isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,
-  UnsupportedOperationError,
-  prettyCONSTName,
 } from '@finos/legend-shared';
 import { VscError } from 'react-icons/vsc';
 import {
@@ -62,7 +60,10 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
+import {
+  ClassMappingSelectorModal,
+  getRelationalInputTestDataEditorLanguage,
+} from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
@@ -314,21 +315,6 @@ export const MappingTestFlatDataInputDataBuilder = observer(
   },
 );
 
-export const getRelationalInputTestDataEditorLanguage = (
-  type: RelationalInputType,
-): EDITOR_LANGUAGE => {
-  switch (type) {
-    case RelationalInputType.SQL:
-      return EDITOR_LANGUAGE.SQL;
-    case RelationalInputType.CSV:
-      return EDITOR_LANGUAGE.TEXT;
-    default:
-      throw new UnsupportedOperationError(
-        `Can't derive text editor format for text content of type '${type}'`,
-      );
-  }
-};
-
 /**
  * Right now, we always default this to use Local H2 connection.
  */
@@ -358,7 +344,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
   },
 );
 
-export const MappingTestInputDataTypeBuilder = observer(
+const RelationalMappingTestInputDataTypeSelector = observer(
   (props: {
     inputDataState: MappingTestRelationalInputDataState;
     isReadOnly: boolean;
@@ -372,25 +358,28 @@ export const MappingTestInputDataTypeBuilder = observer(
       };
     return (
       <DropdownMenu
-        className="edit-panel__header__tab"
+        className="mapping-test-editor__input-data-panel__type-selector"
         disabled={isReadOnly}
         content={
           <MenuContent>
             {Object.keys(RelationalInputType).map((mode) => (
               <MenuContentItem
                 key={mode}
-                className="edit-panel__header__dropdown__tab__option"
+                className="mapping-test-editor__input-data-panel__type-selector__option"
                 onClick={changeInputType(mode)}
               >
-                {prettyCONSTName(mode)}
+                {mode}
               </MenuContentItem>
             ))}
           </MenuContent>
         }
       >
-        <div className="edit-panel__header__tab__content">
-          <div className="edit-panel__header__tab__label">
-            {prettyCONSTName(inputDataState.inputData.inputType)}
+        <div
+          className="mapping-test-editor__input-data-panel__type-selector__value"
+          title="Choose input data type..."
+        >
+          <div className="mapping-test-editor__input-data-panel__type-selector__value__label">
+            {inputDataState.inputData.inputType}
           </div>
           <CaretDownIcon />
         </div>
@@ -426,7 +415,7 @@ export const MappingTestInputDataBuilder = observer(
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);
 
-    // Input data builder
+    // input data builder
     let inputDataBuilder: React.ReactNode;
     if (inputDataState instanceof MappingTestObjectInputDataState) {
       inputDataBuilder = (
@@ -453,17 +442,17 @@ export const MappingTestInputDataBuilder = observer(
       inputDataBuilder = null;
     }
 
-    //input type builder
-    let inputTypeBuilder: React.ReactNode;
+    // input type
+    let inputTypeSelector: React.ReactNode;
     if (inputDataState instanceof MappingTestRelationalInputDataState) {
-      inputTypeBuilder = (
-        <MappingTestInputDataTypeBuilder
+      inputTypeSelector = (
+        <RelationalMappingTestInputDataTypeSelector
           inputDataState={inputDataState}
           isReadOnly={isReadOnly}
         />
       );
     } else {
-      inputTypeBuilder = null;
+      inputTypeSelector = null;
     }
 
     return (
@@ -473,6 +462,7 @@ export const MappingTestInputDataBuilder = observer(
             <div className="panel__header__title__label">input data</div>
           </div>
           <div className="panel__header__actions">
+            {inputTypeSelector}
             <button
               className="panel__header__action"
               tabIndex={-1}
@@ -482,7 +472,6 @@ export const MappingTestInputDataBuilder = observer(
             >
               <PencilIcon />
             </button>
-            {inputTypeBuilder}
           </div>
         </div>
         {inputDataBuilder}

@@ -208,8 +208,8 @@ export class ConflictResolutionState {
     );
     const projectConfiguration =
       (yield this.editorStore.sdlcServerClient.getConfigurationOfWorkspaceInConflictResolutionMode(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
       )) as PlainObject<ProjectConfiguration>;
     this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
       ProjectConfiguration.serialization.fromJson(projectConfiguration),
@@ -356,21 +356,21 @@ export class ConflictResolutionState {
       // fetch latest revision
       const latestRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
       );
       // make sure there is no good recovery from this, at this point all users work risk conflict
       assertTrue(
-        latestRevision.id === this.sdlcState.currentRevisionId,
+        latestRevision.id === this.sdlcState.activeRevision.id,
         `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
       );
       const entities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
-          this.sdlcState.currentRevisionId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+          this.sdlcState.activeRevision.id,
         )) as Entity[];
       this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.setEntities(
         entities,
@@ -402,8 +402,8 @@ export class ConflictResolutionState {
     try {
       const workspaceBaseEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
           RevisionAlias.BASE,
         )) as Entity[];
       this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.setEntities(
@@ -469,8 +469,8 @@ export class ConflictResolutionState {
       const entityChanges =
         this.editorStore.graphState.computeLocalEntityChanges();
       yield this.editorStore.sdlcServerClient.acceptConflictResolution(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
         {
           message: `resolving update merge conflicts for workspace from ${
             this.editorStore.applicationStore.config.appName
@@ -480,7 +480,7 @@ export class ConflictResolutionState {
               : `${entityChanges.length} entities`
           }]`,
           entityChanges,
-          revisionId: this.sdlcState.currentRevisionId,
+          revisionId: this.sdlcState.activeRevision.id,
         },
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
@@ -536,8 +536,8 @@ export class ConflictResolutionState {
         showLoading: true,
       });
       yield this.editorStore.sdlcServerClient.discardConflictResolutionChanges(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
@@ -592,8 +592,8 @@ export class ConflictResolutionState {
         showLoading: true,
       });
       yield this.editorStore.sdlcServerClient.abortConflictResolution(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();

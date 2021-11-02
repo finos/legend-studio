@@ -109,6 +109,8 @@ import {
   updateRootSetImplementationOnDelete,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
+import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
+import type { StudioPlugin } from '../../../StudioPlugin';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -180,6 +182,7 @@ export const getMappingElementTarget = (
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSource = (
   mappingElement: MappingElement,
+  plugins?: StudioPlugin[],
 ): MappingElementSource | undefined => {
   if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
@@ -199,6 +202,7 @@ export const getMappingElementSource = (
         mappingElement.rootInstanceSetImplementation,
         FlatDataInstanceSetImplementation,
       ),
+      plugins,
     );
   } else if (
     mappingElement instanceof RootRelationalInstanceSetImplementation
@@ -210,10 +214,28 @@ export const getMappingElementSource = (
     return mappingElement.rootInstanceSetImplementation.mainTableAlias?.relation
       .value;
   } else if (mappingElement instanceof AggregationAwareSetImplementation) {
-    return getMappingElementSource(mappingElement.mainSetImplementation);
+    return getMappingElementSource(
+      mappingElement.mainSetImplementation,
+      plugins,
+    );
   }
+  if (plugins !== undefined) {
+    const extraMappingElementSourceGetters = plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_StudioPlugin_Extension
+        ).getExtraMappingElementSourceGetters?.() ?? [],
+    );
+    for (const sourceGetter of extraMappingElementSourceGetters) {
+      const mappingElementSource = sourceGetter(mappingElement);
+      if (mappingElementSource) {
+        return mappingElementSource;
+      }
+    }
+  }
+
   throw new UnsupportedOperationError(
-    `Can't derive source of mapping element`,
+    `Can't derive source of mapping element: no compatible source available from plugins`,
     mappingElement,
   );
 };
@@ -796,7 +818,10 @@ export class MappingEditorState extends ElementEditorState {
     setImplementation: InstanceSetImplementation,
     newSource: MappingElementSource | undefined,
   ): GeneratorFn<void> {
-    const currentSource = getMappingElementSource(setImplementation);
+    const currentSource = getMappingElementSource(
+      setImplementation,
+      this.editorStore.pluginManager.getStudioPlugins(),
+    );
     if (currentSource !== newSource) {
       if (
         setImplementation instanceof PureInstanceSetImplementation &&
@@ -1017,6 +1042,23 @@ export class MappingEditorState extends ElementEditorState {
         mappingElement,
       );
     }
+    const extraMappingElementStateCreators = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_StudioPlugin_Extension
+          ).getExtraMappingElementStateCreators?.() ?? [],
+      );
+    for (const elementStateCreator of extraMappingElementStateCreators) {
+      const mappingElementState = elementStateCreator(
+        mappingElement,
+        this.editorStore,
+      );
+      if (mappingElementState) {
+        return mappingElementState;
+      }
+    }
     return new MappingElementState(this.editorStore, mappingElement);
   }
 
@@ -1095,8 +1137,14 @@ export class MappingEditorState extends ElementEditorState {
             errorCoordinates;
           const newMappingElement = getMappingElementByTypeAndId(
             this.mapping,
-            mappingType,
-            mappingId,
+            guaranteeNonNullable(
+              mappingType,
+              `Can't reveal compilation error: mapping type is missing`,
+            ),
+            guaranteeNonNullable(
+              mappingId,
+              `Can't reveal compilation error: mapping ID is missing`,
+            ),
           );
           // NOTE: Unfortunately this is quite convoluted at the moment that is because we maintain a separate state
           // that wraps around property mapping, this is deliberate as we don't want to mix UI state in metamodel classes
@@ -1107,7 +1155,10 @@ export class MappingEditorState extends ElementEditorState {
             newMappingElement instanceof EmbeddedFlatDataPropertyMapping
           ) {
             const propertyMapping = newMappingElement.findPropertyMapping(
-              propertyName,
+              guaranteeNonNullable(
+                propertyName,
+                `Can't reveal compilation error: mapping property name is missing`,
+              ),
               targetPropertyId,
             );
             if (propertyMapping) {
@@ -1322,7 +1373,10 @@ export class MappingEditorState extends ElementEditorState {
       this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
         setImplementation.class.value,
       );
-    const source = getMappingElementSource(setImplementation);
+    const source = getMappingElementSource(
+      setImplementation,
+      this.editorStore.pluginManager.getStudioPlugins(),
+    );
     if (setImplementation instanceof OperationSetImplementation) {
       this.editorStore.applicationStore.notifyWarning(
         `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,

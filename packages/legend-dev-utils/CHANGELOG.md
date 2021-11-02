@@ -1,5 +1,25 @@
 # @finos/legend-dev-utils
 
+## 0.1.1
+
+## 0.1.0
+
+### Minor Changes
+
+- [#594](https://github.com/finos/legend-studio/pull/594) [`c1249af7`](https://github.com/finos/legend-studio/commit/c1249af76c0d8f8df0978c1a4be5e54685e22982) ([@akphi](https://github.com/akphi)) - Remove usage of `fork-ts-checker-webpack-plugin` and unused utitlities for `Typescript` path mappings.
+
+* [#594](https://github.com/finos/legend-studio/pull/594) [`c1249af7`](https://github.com/finos/legend-studio/commit/c1249af76c0d8f8df0978c1a4be5e54685e22982) ([@akphi](https://github.com/akphi)) - Remove `cosmiconfig` config loader.
+
+### Patch Changes
+
+- [#596](https://github.com/finos/legend-studio/pull/596) [`adaa112a`](https://github.com/finos/legend-studio/commit/adaa112a637e8fcee894a1c5c706181faa349f0e) ([@akphi](https://github.com/akphi)) - Report `webpack` warnings and errors in development mode after we remove usage of `fork-ts-checker-webpack-plugin` in [#594](https://github.com/finos/legend-studio/pull/594).
+
+## 0.0.13
+
+### Patch Changes
+
+- [#569](https://github.com/finos/legend-studio/pull/569) [`67a95bd0`](https://github.com/finos/legend-studio/commit/67a95bd0dadd00b486c2f7884e7d9a10cb91b03c) ([@akphi](https://github.com/akphi)) - Upgrade to `jest-extended@1.0.0` and export the script `jest/setupJestExpectExtension` for the narrowed-down set of extensions for `Jest.expect`.
+
 ## 0.0.12
 
 ## 0.0.11
