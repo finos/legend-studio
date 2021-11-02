@@ -57,14 +57,14 @@ export class MorphirGenerationPlugin
       fileGenerationState: FileGenerationState,
       fileNode: GenerationFile,
     ): (() => void) =>
-    (): void => {
+    async (): Promise<void> => {
       const code =
         fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
           fileGenerationState.editorStore.graphManagerState.graph,
         );
       this.networkClient.post(`http://0.0.0.0:9900/lint`, {
         ir: fileNode.content,
-        src: code,
+        src: await code,
       });
       window.open('http://localhost:3050');
     };
