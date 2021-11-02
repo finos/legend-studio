@@ -128,6 +128,16 @@
     user-select: none;
   }
 
+  &__header__prompt {
+    padding: 2rem 2rem 0;
+    word-break: break-word;
+    font-size: 1.4rem;
+    color: var(--color-light-grey-400);
+    line-height: 2rem;
+    margin-bottom: 0.8rem;
+    cursor: default;
+  }
+
   &__header__title__label {
     height: 1.8rem;
     line-height: 1.8rem;
@@ -334,7 +344,7 @@
 }
 
 .binding-scope-editor {
-  height: 56rem;
+  height: 50rem;
   background: var(--color-dark-grey-50);
 
   &__panel__header {
@@ -352,41 +362,12 @@
     box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
   }
 
-  &__panel__header__title {
-    @include flexVCenter;
-
-    padding-left: 0.5rem;
-    user-select: none;
-  }
-
-  &__panel__header__title__label {
-    height: 1.8rem;
-    line-height: 1.8rem;
-    border-radius: 0.1rem;
-    padding: 0 0.5rem;
-    color: var(--color-light-grey-200);
-    background: var(--color-dark-grey-250);
-    font-size: 1.1rem;
-    cursor: default;
-    margin-right: 0.5rem;
-    white-space: nowrap;
-  }
-
   &__panel__content__form {
-    padding: 2rem;
+    padding: 0 2rem 2rem;
 
     &__section {
       cursor: default;
       margin: 0.5rem 0 3rem;
-    }
-
-    &__section__header__prompt {
-      word-break: break-word;
-      font-size: 1.4rem;
-      color: var(--color-light-grey-400);
-      line-height: 2rem;
-      margin-bottom: 0.8rem;
-      cursor: default;
     }
 
     &__section__list {

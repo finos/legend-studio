@@ -21,10 +21,13 @@ import type {
   OptionalPackageableElementReference,
   PackageableElementVisitor,
 } from '@finos/legend-graph';
-import { Store } from '@finos/legend-graph';
+import {
+  OptionalPackageableElementExplicitReference,
+  Store,
+} from '@finos/legend-graph';
 import type { ModelUnit } from './ModelUnit';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
-import type { SchemaSet } from '../schemaSet/SchemaSet';
+import { SchemaSet } from '../schemaSet/SchemaSet';
 
 export enum BINDING_CONTENT_TYPE {
   FLAT_DATA = 'application/x.flatdata',
@@ -33,7 +36,8 @@ export enum BINDING_CONTENT_TYPE {
 }
 
 export class Binding extends Store implements Hashable {
-  schemaSet?: OptionalPackageableElementReference<SchemaSet>;
+  schemaSet: OptionalPackageableElementReference<SchemaSet> =
+    OptionalPackageableElementExplicitReference.create(new SchemaSet(''));
   schemaId?: string | undefined;
   contentType!: BINDING_CONTENT_TYPE;
   modelUnit!: ModelUnit;
@@ -54,8 +58,8 @@ export class Binding extends Store implements Hashable {
     });
   }
 
-  setSchemaSet(value: OptionalPackageableElementReference<SchemaSet>): void {
-    this.schemaSet = value;
+  setSchemaSet(value: SchemaSet | undefined): void {
+    this.schemaSet.setValue(value);
   }
 
   setSchemaId(value: string | undefined): void {
@@ -74,7 +78,7 @@ export class Binding extends Store implements Hashable {
     return hashArray([
       DSL_SERIALIZER_HASH_STRUCTURE.BINDING,
       this.path,
-      this.schemaSet?.valueForSerialization ?? '',
+      this.schemaSet.valueForSerialization ?? '',
       this.schemaId ?? '',
       this.contentType,
       this.modelUnit,

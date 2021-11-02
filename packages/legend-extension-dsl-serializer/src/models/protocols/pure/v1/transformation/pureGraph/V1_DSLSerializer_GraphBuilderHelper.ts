@@ -20,20 +20,18 @@ import {
 } from '../../../../../../graphManager/DSLSerializer_GraphManagerHelper';
 import type { Binding } from '../../../../../metamodels/pure/model/packageableElements/store/Binding';
 import type { SchemaSet } from '../../../../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import type {
-  PackageableElement,
   PackageableElementImplicitReference,
-  PackageableElementReference,
   V1_GraphBuilderContext,
 } from '@finos/legend-graph';
+import { OptionalPackageableElementExplicitReference } from '@finos/legend-graph';
 
 export const V1_resolveSchemaSet = (
   path: string,
   context: V1_GraphBuilderContext,
-): PackageableElementImplicitReference<SchemaSet> =>
-  context.createImplicitPackageableElementReference(path, (_path: string) =>
-    getSchemaSet(_path, context.graph),
+): OptionalPackageableElementExplicitReference<SchemaSet> =>
+  OptionalPackageableElementExplicitReference.create(
+    getSchemaSet(path, context.graph),
   );
 
 export const V1_resolveBinding = (
@@ -43,13 +41,3 @@ export const V1_resolveBinding = (
   context.createImplicitPackageableElementReference(path, (_path: string) =>
     getBinding(_path, context.graph),
   );
-
-export const V1_buildPackageableElement = (
-  path: string,
-  context: V1_GraphBuilderContext,
-): PackageableElementReference<PackageableElement> => {
-  const _package = context.graph.getNullablePackage(path);
-  return _package
-    ? PackageableElementExplicitReference.create(_package)
-    : context.resolveElement(path, false);
-};

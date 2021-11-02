@@ -42,7 +42,6 @@ import {
 import { FaLock } from 'react-icons/fa';
 import { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import type {
-  OptionalPackageableElementReference,
   PackageableElement,
   PackageableElementReference,
 } from '@finos/legend-graph';
@@ -50,24 +49,16 @@ import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import { useCallback, useRef } from 'react';
 import { BINDING_CONTENT_TYPE } from '../../models/metamodels/pure/model/packageableElements/store/Binding';
 import { useDrop } from 'react-dnd';
-import type { ModelUnit } from '../../models/metamodels/pure/model/packageableElements/store/ModelUnit';
-
-enum BINDING_MODEL_UNIT {
-  ELEMENT_INCLUDE = 'ELEMENT_INCLUDE',
-  ELEMENT_EXCLUDE = 'ELEMENT_EXCLUDE',
-}
 
 const BindingScopeEntryEditor = observer(
   (props: {
     elementRef: PackageableElementReference<PackageableElement>;
     removeElement: (
       val: PackageableElementReference<PackageableElement>,
-      label: BINDING_MODEL_UNIT,
     ) => void;
-    label: BINDING_MODEL_UNIT;
     isReadOnly: boolean;
   }) => {
-    const { elementRef, removeElement, label, isReadOnly } = props;
+    const { elementRef, removeElement, isReadOnly } = props;
     const editorStore = useEditorStore();
     return (
       <div
@@ -89,7 +80,7 @@ const BindingScopeEntryEditor = observer(
             <button
               className="panel__content__form__section__list__item__remove-btn"
               disabled={isReadOnly}
-              onClick={(): void => removeElement(elementRef, label)}
+              onClick={(): void => removeElement(elementRef)}
               tabIndex={-1}
             >
               <TimesIcon />
@@ -103,51 +94,23 @@ const BindingScopeEntryEditor = observer(
 
 const BindingScopeEditor = observer(
   (props: {
-    modelUnitState: ModelUnit;
-    addElement: (label: BINDING_MODEL_UNIT) => void;
+    elements: PackageableElementReference<PackageableElement>[];
+    addElement: () => void;
     removeElement: (
       val: PackageableElementReference<PackageableElement>,
-      label: BINDING_MODEL_UNIT,
     ) => void;
-    label: BINDING_MODEL_UNIT;
     allowAddingElement: boolean;
+    handleDropElement: (item: UMLEditorElementDropTarget) => void;
     isReadOnly: boolean;
   }) => {
     const {
-      modelUnitState,
+      elements,
       addElement,
       removeElement,
-      label,
       allowAddingElement,
+      handleDropElement,
       isReadOnly,
     } = props;
-    const handleDropElement = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        const element = item.data.packageableElement;
-        if (
-          !isReadOnly &&
-          label === BINDING_MODEL_UNIT.ELEMENT_INCLUDE &&
-          !modelUnitState.packageableElementIncludes
-            .map((element) => element.value)
-            .includes(element)
-        ) {
-          modelUnitState.addPackageableElementIncludes(
-            PackageableElementExplicitReference.create(element),
-          );
-        } else if (
-          !isReadOnly &&
-          label === BINDING_MODEL_UNIT.ELEMENT_EXCLUDE &&
-          !modelUnitState.packageableElementExcludes
-            .map((element) => element.value)
-            .includes(element)
-        ) {
-          modelUnitState.addPackageableElementExcludes(
-            PackageableElementExplicitReference.create(element),
-          );
-        }
-      },
-      [isReadOnly, modelUnitState, label],
-    );
     const [{ isElementDragOver }, dropElementRef] = useDrop(
       () => ({
         accept: [
@@ -168,15 +131,6 @@ const BindingScopeEditor = observer(
 
     return (
       <div className="binding-scope-editor">
-        <div className="binding-scope-editor__panel__header">
-          <div className="binding-scope-editor__panel__header__title">
-            <div className="binding-scope-editor__panel__header__title__label">
-              {label === BINDING_MODEL_UNIT.ELEMENT_INCLUDE
-                ? `Model Includes`
-                : `Model Excludes`}
-            </div>
-          </div>
-        </div>
         <div
           ref={dropElementRef}
           className="binding-scope-editor__panel__content dnd__overlay__container"
@@ -186,43 +140,21 @@ const BindingScopeEditor = observer(
           />
           <div className="binding-scope-editor__panel__content__form">
             <div className="binding-scope-editor__panel__content__form__section">
-              <div className="binding-scope-editor__panel__content__form__section__header__prompt">
-                {label === BINDING_MODEL_UNIT.ELEMENT_INCLUDE
-                  ? `Specifies the list of models included`
-                  : `Specifies the list of models excluded`}
-              </div>
               <div className="binding-scope-editor__panel__content__form__section__list">
-                {label === BINDING_MODEL_UNIT.ELEMENT_INCLUDE &&
-                  modelUnitState.packageableElementIncludes.map(
-                    (elementRef) => (
-                      <BindingScopeEntryEditor
-                        key={elementRef.value.uuid}
-                        elementRef={elementRef}
-                        removeElement={removeElement}
-                        label={label}
-                        isReadOnly={isReadOnly}
-                      />
-                    ),
-                  )}
-                {label === BINDING_MODEL_UNIT.ELEMENT_EXCLUDE &&
-                  modelUnitState.packageableElementExcludes.map(
-                    (elementRef) => (
-                      <BindingScopeEntryEditor
-                        key={elementRef.value.uuid}
-                        elementRef={elementRef}
-                        removeElement={removeElement}
-                        label={label}
-                        isReadOnly={isReadOnly}
-                      />
-                    ),
-                  )}
-
+                {elements.map((elementRef) => (
+                  <BindingScopeEntryEditor
+                    key={elementRef.value.uuid}
+                    elementRef={elementRef}
+                    removeElement={removeElement}
+                    isReadOnly={isReadOnly}
+                  />
+                ))}
                 <div className="binding-scope-editor__panel__content__form__section__list__new-item__add">
                   <button
                     className="binding-scope-editor__panel__content__form__section__list__new-item__add-btn btn btn--dark"
                     disabled={!allowAddingElement}
                     tabIndex={-1}
-                    onClick={(): void => addElement(label)}
+                    onClick={(): void => addElement()}
                     title="Add Element"
                   >
                     Add Value
@@ -249,26 +181,24 @@ const BindingGeneralEditor = observer(
         element instanceof SchemaSet,
     );
     const schemaSetOptions = schemaSets.map((e) => ({
-      value: PackageableElementExplicitReference.create(e),
+      value: e,
       label: e.path,
     }));
     const onSchemaSetChange = (val: {
       label: string;
-      value: OptionalPackageableElementReference<SchemaSet>;
+      value: SchemaSet;
     }): void => {
       binding.setSchemaId(undefined);
       return binding.setSchemaSet(val.value);
     };
     const selectedSchemaSet = {
       value: binding.schemaSet,
-      label: binding.schemaSet?.valueForSerialization,
+      label: binding.schemaSet.valueForSerialization,
     };
-    const schemaIdOptions = selectedSchemaSet.value?.value?.schemas.map(
-      (e) => ({
-        value: e.id,
-        label: e.id,
-      }),
-    );
+    const schemaIdOptions = selectedSchemaSet.value.value?.schemas.map((e) => ({
+      value: e.id,
+      label: e.id,
+    }));
     const onSchemaIdChange = (
       val: { label: string; value: string } | null,
     ): void => binding.setSchemaId(val?.value);
@@ -371,32 +301,62 @@ export const BindingEditor = observer(() => {
         .includes(element),
   );
   const allowAddingElement = !isReadOnly && Boolean(elements.length);
-  const addElement = (label: BINDING_MODEL_UNIT): void => {
+  const addInclusion = (): void => {
     if (allowAddingElement) {
-      if (label === BINDING_MODEL_UNIT.ELEMENT_INCLUDE) {
+      modelUnit.addPackageableElementIncludes(
+        PackageableElementExplicitReference.create(
+          guaranteeNonNullable(elements[0]),
+        ),
+      );
+    }
+  };
+  const addExclusion = (): void => {
+    if (allowAddingElement) {
+      modelUnit.addPackageableElementExcludes(
+        PackageableElementExplicitReference.create(
+          guaranteeNonNullable(elements[0]),
+        ),
+      );
+    }
+  };
+  const removeInclusion = (
+    val: PackageableElementReference<PackageableElement>,
+  ): void => modelUnit.deletePackageableElementIncludes(val);
+  const removeExclusion = (
+    val: PackageableElementReference<PackageableElement>,
+  ): void => modelUnit.deletePackageableElementExcludes(val);
+  const handleDropInclusion = useCallback(
+    (item: UMLEditorElementDropTarget): void => {
+      const element = item.data.packageableElement;
+      if (
+        !isReadOnly &&
+        !modelUnit.packageableElementIncludes
+          .map((element) => element.value)
+          .includes(element)
+      ) {
         modelUnit.addPackageableElementIncludes(
-          PackageableElementExplicitReference.create(
-            guaranteeNonNullable(elements[0]),
-          ),
-        );
-      } else {
-        modelUnit.addPackageableElementExcludes(
-          PackageableElementExplicitReference.create(
-            guaranteeNonNullable(elements[0]),
-          ),
+          PackageableElementExplicitReference.create(element),
         );
       }
-    }
-  };
-  const removeElement = (
-    val: PackageableElementReference<PackageableElement>,
-    label: BINDING_MODEL_UNIT,
-  ): void => {
-    if (label === BINDING_MODEL_UNIT.ELEMENT_INCLUDE) {
-      return modelUnit.deletePackageableElementIncludes(val);
-    }
-    return modelUnit.deletePackageableElementExcludes(val);
-  };
+    },
+    [isReadOnly, modelUnit],
+  );
+  const handleDropExclusion = useCallback(
+    (item: UMLEditorElementDropTarget): void => {
+      const element = item.data.packageableElement;
+      if (
+        !isReadOnly &&
+        !modelUnit.packageableElementExcludes
+          .map((element) => element.value)
+          .includes(element)
+      ) {
+        modelUnit.addPackageableElementExcludes(
+          PackageableElementExplicitReference.create(element),
+        );
+      }
+    },
+    [isReadOnly, modelUnit],
+  );
   return (
     <div className="binding-editor">
       <div className="binding-editor__header">
@@ -453,13 +413,23 @@ export const BindingEditor = observer(() => {
         {selectedTab === BINDING_TAB_TYPE.MODELS && (
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel minSize={280} maxSize={550}>
+              <div className="binding-editor__header">
+                <div className="binding-editor__header__title">
+                  <div className="binding-editor__header__title__label">
+                    Model Includes
+                  </div>
+                </div>
+              </div>
+              <div className="binding-editor__header__prompt">
+                Specifies the list of models included
+              </div>
               <BindingScopeEditor
                 key={editorState.uuid}
-                modelUnitState={modelUnit}
-                addElement={addElement}
-                removeElement={removeElement}
-                label={BINDING_MODEL_UNIT.ELEMENT_INCLUDE}
+                elements={modelUnit.packageableElementIncludes}
+                addElement={addInclusion}
+                removeElement={removeInclusion}
                 allowAddingElement={allowAddingElement}
+                handleDropElement={handleDropInclusion}
                 isReadOnly={isReadOnly}
               />
             </ResizablePanel>
@@ -467,13 +437,23 @@ export const BindingEditor = observer(() => {
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel>
+              <div className="binding-editor__header">
+                <div className="binding-editor__header__title">
+                  <div className="binding-editor__header__title__label">
+                    Model Excludes
+                  </div>
+                </div>
+              </div>
+              <div className="binding-editor__header__prompt">
+                Specifies the list of models excluded
+              </div>
               <BindingScopeEditor
                 key={editorState.uuid}
-                modelUnitState={modelUnit}
-                addElement={addElement}
-                removeElement={removeElement}
-                label={BINDING_MODEL_UNIT.ELEMENT_EXCLUDE}
+                elements={modelUnit.packageableElementExcludes}
+                addElement={addExclusion}
+                removeElement={removeExclusion}
                 allowAddingElement={allowAddingElement}
+                handleDropElement={handleDropExclusion}
                 isReadOnly={isReadOnly}
               />
             </ResizablePanel>

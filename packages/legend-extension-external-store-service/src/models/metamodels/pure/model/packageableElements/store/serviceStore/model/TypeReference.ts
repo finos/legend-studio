@@ -57,7 +57,7 @@ export class BooleanTypeReference extends TypeReference implements Hashable {
 }
 
 export class ComplexTypeReference extends TypeReference implements Hashable {
-  type!: Class;
+  type!: PackageableElementReference<Class>;
   binding!: PackageableElementReference<Binding>;
 
   constructor() {
@@ -74,7 +74,7 @@ export class ComplexTypeReference extends TypeReference implements Hashable {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.COMPLEX_TYPE_REFERENCE,
       this.list.toString(),
-      this.type.path,
+      this.type.valueForSerialization ?? '',
       this.binding.valueForSerialization ?? '',
     ]);
   }

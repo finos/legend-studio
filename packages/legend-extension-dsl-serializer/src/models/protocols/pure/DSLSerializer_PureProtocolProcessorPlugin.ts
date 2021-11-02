@@ -41,7 +41,6 @@ import {
 import {
   V1_resolveBinding,
   V1_resolveSchemaSet,
-  V1_buildPackageableElement,
 } from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';
 import {
   Binding,
@@ -161,11 +160,11 @@ export class DSLSerializer_PureProtocolProcessorPlugin
           const modelUnit = new ModelUnit();
           modelUnit.packageableElementIncludes =
             elementProtocol.modelUnit.packageableElementIncludes.map(
-              (element) => V1_buildPackageableElement(element, context),
+              (element) => context.resolveElement(element, true),
             );
           modelUnit.packageableElementExcludes =
             elementProtocol.modelUnit.packageableElementExcludes.map(
-              (element) => V1_buildPackageableElement(element, context),
+              (element) => context.resolveElement(element, true),
             );
           element.modelUnit = modelUnit;
         },
@@ -280,7 +279,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin
           protocol.name = metamodel.name;
           protocol.package = metamodel.package?.fullPath ?? '';
           protocol.schemaId = metamodel.schemaId;
-          protocol.schemaSet = metamodel.schemaSet?.valueForSerialization;
+          protocol.schemaSet = metamodel.schemaSet.valueForSerialization;
           protocol.contentType = metamodel.contentType;
           const modelUnit = new V1_ModelUnit();
           modelUnit.packageableElementExcludes =
