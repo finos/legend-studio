@@ -74,6 +74,11 @@ import type { QueryConfig } from '../application/QueryConfig';
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
 
+interface QueryProjectInfo {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+}
 export abstract class QueryInfoState {
   queryStore: QueryStore;
 
@@ -81,6 +86,7 @@ export abstract class QueryInfoState {
     this.queryStore = queryStore;
   }
 
+  abstract getQueryProjectInfo(): QueryProjectInfo;
   abstract decorateQuery(query: Query): void;
 }
 
@@ -121,6 +127,14 @@ export class CreateQueryInfoState extends QueryInfoState {
     this.runtime = val;
   }
 
+  getQueryProjectInfo(): QueryProjectInfo {
+    return {
+      groupId: this.project.groupId,
+      artifactId: this.project.artifactId,
+      versionId: this.versionId,
+    };
+  }
+
   decorateQuery(query: Query): void {
     query.id = uuid();
     query.groupId = this.project.groupId;
@@ -150,6 +164,14 @@ export class ServiceQueryInfoState extends QueryInfoState {
     this.key = key;
   }
 
+  getQueryProjectInfo(): QueryProjectInfo {
+    return {
+      groupId: this.project.groupId,
+      artifactId: this.project.artifactId,
+      versionId: this.versionId,
+    };
+  }
+
   decorateQuery(query: Query): void {
     query.id = uuid();
     query.groupId = this.project.groupId;
@@ -174,6 +196,14 @@ export class ExistingQueryInfoState extends QueryInfoState {
 
   setQuery(val: LightQuery): void {
     this.query = val;
+  }
+
+  getQueryProjectInfo(): QueryProjectInfo {
+    return {
+      groupId: this.query.groupId,
+      artifactId: this.query.artifactId,
+      versionId: this.query.versionId,
+    };
   }
 
   decorateQuery(query: Query): void {
