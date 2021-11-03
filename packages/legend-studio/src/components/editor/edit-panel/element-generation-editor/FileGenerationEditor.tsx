@@ -218,48 +218,51 @@ export const GenerationResultExplorer = observer(
   },
 );
 
-export const visualizeMorphirButtonGetter = (
+export const visualizeFileContentButtonGetter = (
   fileGenerationState: FileGenerationState,
   fileNode: GenerationFile,
 ): React.ReactNode => {
-  const visualizeMorphirButton = fileGenerationState.editorStore.pluginManager
-    .getStudioPlugins()
-    .flatMap(
-      (plugin) =>
-        (plugin as DSL_StudioPlugin_Extension).getVisualizeMorphirButton?.() ??
-        [],
-    );
-  for (const morphirButtonCreator of visualizeMorphirButton) {
-    const morphirButton = morphirButtonCreator(
+  const visualizeFileContentButton =
+    fileGenerationState.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_StudioPlugin_Extension
+          ).getVisualizeFileContentButtons?.() ?? [],
+      );
+  for (const visualizeFileContentButtonCreator of visualizeFileContentButton) {
+    const visualizeButton = visualizeFileContentButtonCreator(
       fileGenerationState,
       fileNode as GenerationFile,
     );
-    if (morphirButton) {
-      return morphirButton;
+    if (visualizeButton) {
+      return visualizeButton;
     }
   }
   return undefined;
 };
 
-export const viewBosqueFeedbackButtonGetter = (
+export const viewAdvancedFileInfoButtonGetter = (
   fileGenerationState: FileGenerationState,
   fileNode: GenerationFile,
 ): React.ReactNode => {
-  const viewBosqueFeedbackButton = fileGenerationState.editorStore.pluginManager
-    .getStudioPlugins()
-    .flatMap(
-      (plugin) =>
-        (
-          plugin as DSL_StudioPlugin_Extension
-        ).getViewBosqueFeedbackButton?.() ?? [],
-    );
-  for (const bosqueButtonCreator of viewBosqueFeedbackButton) {
-    const bosqueButton = bosqueButtonCreator(
+  const viewAdvancedFileInfoButton =
+    fileGenerationState.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_StudioPlugin_Extension
+          ).getViewAdvancedFileInfoButtons?.() ?? [],
+      );
+  for (const viewAdvancedFileInfoButtonCreator of viewAdvancedFileInfoButton) {
+    const viewInfoButton = viewAdvancedFileInfoButtonCreator(
       fileGenerationState,
       fileNode as GenerationFile,
     );
-    if (bosqueButton) {
-      return bosqueButton;
+    if (viewInfoButton) {
+      return viewInfoButton;
     }
   }
   return undefined;
@@ -274,16 +277,16 @@ export const GenerationResultViewer = observer(
     const regenerate = applicationStore.guaranteeSafeAction(() =>
       flowResult(fileGenerationState.generate()),
     );
-    const visualizeMorphirButton =
+    const visualizeFileContentButton =
       fileNode instanceof GenerationFile
-        ? visualizeMorphirButtonGetter(
+        ? visualizeFileContentButtonGetter(
             fileGenerationState,
             fileNode as GenerationFile,
           )
         : undefined;
-    const viewBosqueFeedbackButton =
+    const viewAdvancedFileInfoButton =
       fileNode instanceof GenerationFile
-        ? viewBosqueFeedbackButtonGetter(
+        ? viewAdvancedFileInfoButtonGetter(
             fileGenerationState,
             fileNode as GenerationFile,
           )
@@ -345,9 +348,10 @@ export const GenerationResultViewer = observer(
                   <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-name">
                     {fileNode.name}
                   </div>
-                  {fileNode instanceof GenerationFile && visualizeMorphirButton}
                   {fileNode instanceof GenerationFile &&
-                    viewBosqueFeedbackButton}
+                    visualizeFileContentButton}
+                  {fileNode instanceof GenerationFile &&
+                    viewAdvancedFileInfoButton}
                 </div>
               )}
             </div>

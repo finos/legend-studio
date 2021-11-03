@@ -21,7 +21,7 @@ import type {
   GenerationFile,
   FileGenerationState,
   StudioPluginManager,
-  MorphirRedirectButton,
+  ExtraFileGenerationtButton,
 } from '@finos/legend-studio';
 
 import { StudioPlugin } from '@finos/legend-studio';
@@ -69,7 +69,7 @@ export class MorphirGenerationPlugin
       window.open('http://localhost:3050');
     };
 
-  getVisualizeMorphirButton(): MorphirRedirectButton[] {
+  getVisualizeFileContentButtons(): ExtraFileGenerationtButton[] {
     return [
       (
         fileGenerationState: FileGenerationState,
@@ -93,7 +93,7 @@ export class MorphirGenerationPlugin
     ];
   }
 
-  getViewBosqueFeedbackButton(): MorphirRedirectButton[] {
+  getViewAdvancedFileInfoButtons(): ExtraFileGenerationtButton[] {
     return [
       (
         fileGenerationState: FileGenerationState,

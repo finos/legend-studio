@@ -143,7 +143,7 @@ export type ElementProjectExplorerDnDTypeGetter = (
   element: PackageableElement,
 ) => string | undefined;
 
-export type MorphirRedirectButton = (
+export type ExtraFileGenerationtButton = (
   FileGenerationState: FileGenerationState,
   generationFile: GenerationFile,
 ) => React.ReactNode | undefined;
@@ -223,12 +223,12 @@ export interface DSL_StudioPlugin_Extension extends StudioPlugin {
   getExtraGrammarTextEditorDnDTypes?(): string[];
 
   /**
-   * Returns the Visualize Morphir IR button if file generation type is Morphir.
+   * Get the list of the supported visualize file content button.
    */
-  getVisualizeMorphirButton?(): MorphirRedirectButton[];
+  getVisualizeFileContentButtons?(): ExtraFileGenerationtButton[];
 
   /**
-   * Returns the View Bosque Feedback button if file generation type is Morphir.
+   * Get the list of the supported view advanced file info button.
    */
-  getViewBosqueFeedbackButton?(): MorphirRedirectButton[];
+  getViewAdvancedFileInfoButtons?(): ExtraFileGenerationtButton[];
 }
