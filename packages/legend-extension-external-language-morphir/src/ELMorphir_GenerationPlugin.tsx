@@ -27,7 +27,7 @@ import type {
 import { StudioPlugin } from '@finos/legend-studio';
 import { NetworkClient } from '@finos/legend-shared';
 
-export class EL_MorphirGenerationPlugin
+export class ELMorphir_GenerationPlugin
   extends StudioPlugin
   implements DSL_StudioPlugin_Extension
 {
@@ -77,7 +77,7 @@ export class EL_MorphirGenerationPlugin
       ): React.ReactNode | undefined => {
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (
-            <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-visualize-button">
+            <div className="panel__header__title__content generation-result-viewer__file__header-button">
               <button
                 className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
                 onClick={this.visualizeMorphir(fileNode)}
@@ -101,7 +101,7 @@ export class EL_MorphirGenerationPlugin
       ): React.ReactNode | undefined => {
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (
-            <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-visualize-button">
+            <div className="panel__header__title__content generation-result-viewer__file__header-button">
               <button
                 className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
                 onClick={this.visualizeBosque(fileGenerationState, fileNode)}

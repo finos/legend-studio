@@ -77,13 +77,6 @@
     @include ellipsisTextOverflow;
   }
 
-  &__header__title__content__with__margin {
-    font-weight: bold;
-    margin-right: 1.0rem;
-
-    @include ellipsisTextOverflow;
-  }
-
   &__header--with-tabs {
     padding-left: 0;
   }

@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-export * from './EL_MorphirGenerationPlugin';
-export * from './EL_MorphirGenerationExtension';
+export * from './ELMorphir_GenerationPlugin';
+export * from './ELMorphir_GenerationExtension';

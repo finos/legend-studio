@@ -25,16 +25,13 @@
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "yarn clean && yarn build:sass && yarn build:tsc",
-    "build:sass": "cross-env INIT_CWD=$INIT_CWD sass ./style/index.scss ./lib/index.css --style=compressed && node ../../scripts/copyright/addBundledCodeCopyrightHeader.js ./lib/index.css",
+    "build": "yarn clean && yarn build:tsc",
     "build:tsc": "tsc --project ./tsconfig.build.json",
     "clean": "rimraf \"lib\" \"build\"",
-    "dev": "npm-run-all --parallel dev:sass dev:tsc",
-    "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
+    "dev": "npm-run-all --parallel dev:tsc",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
-    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },

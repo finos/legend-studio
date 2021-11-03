@@ -234,7 +234,7 @@ export const visualizeFileContentButtonGetter = (
   for (const visualizeFileContentButtonCreator of visualizeFileContentButton) {
     const visualizeButton = visualizeFileContentButtonCreator(
       fileGenerationState,
-      fileNode as GenerationFile,
+      fileNode,
     );
     if (visualizeButton) {
       return visualizeButton;
@@ -259,7 +259,7 @@ export const viewAdvancedFileInfoButtonGetter = (
   for (const viewAdvancedFileInfoButtonCreator of viewAdvancedFileInfoButton) {
     const viewInfoButton = viewAdvancedFileInfoButtonCreator(
       fileGenerationState,
-      fileNode as GenerationFile,
+      fileNode,
     );
     if (viewInfoButton) {
       return viewInfoButton;
@@ -281,14 +281,14 @@ export const GenerationResultViewer = observer(
       fileNode instanceof GenerationFile
         ? visualizeFileContentButtonGetter(
             fileGenerationState,
-            fileNode as GenerationFile,
+            fileNode,
           )
         : undefined;
     const viewAdvancedFileInfoButton =
       fileNode instanceof GenerationFile
         ? viewAdvancedFileInfoButtonGetter(
             fileGenerationState,
-            fileNode as GenerationFile,
+            fileNode,
           )
         : undefined;
     return (
@@ -345,7 +345,7 @@ export const GenerationResultViewer = observer(
               {fileNode && !(fileNode instanceof GenerationDirectory) && (
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">file</div>
-                  <div className="panel__header__title__content__with__margin generation-result-viewer__file__header-name">
+                  <div className="panel__header__title__content generation-result-viewer__file__header-name-with-margin">
                     {fileNode.name}
                   </div>
                   {fileNode instanceof GenerationFile &&
