@@ -36,14 +36,14 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@finos/legend-application": "workspace:*",
+    "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
-    "@finos/legend-application": "workspace:*",
-    "@finos/legend-art": "workspace:*"
+    "@finos/legend-shared": "workspace:*",
+    "@finos/legend-studio": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
