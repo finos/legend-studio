@@ -22,7 +22,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default {
   publish: {
-    tsConfigPath: './tsconfig.build.json',
+    typescript: {
+      main: './tsconfig.build.json',
+      others: ['./tsconfig.package.json'],
+    },
   },
   build: {
     copyrightText: generateBundleCopyrightText(__dirname),

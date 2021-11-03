@@ -42,6 +42,9 @@
     },
     {
       "path": "packages/legend-extension-external-store-service"
+    },
+    {
+      "path": "packages/legend-extension-external-language-morphir"
     }
   ]
 }
