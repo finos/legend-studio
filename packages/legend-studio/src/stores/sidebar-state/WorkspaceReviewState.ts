@@ -16,7 +16,7 @@
 
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import type { EditorSdlcState } from '../EditorSdlcState';
+import type { EditorSDLCState } from '../EditorState_SDLC';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
@@ -41,7 +41,7 @@ import { ActionAlertActionType } from '@finos/legend-application';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   reviewTitle = '';
   isUpdatingWorkspace = false;
   isRefreshingWorkspaceUpdater = false;
@@ -54,7 +54,7 @@ export class WorkspaceReviewState {
   isCommittingWorkspaceReview = false;
   isRecreatingWorkspaceAfterCommittingReview = false;
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
       editorStore: false,
       sdlcState: false,

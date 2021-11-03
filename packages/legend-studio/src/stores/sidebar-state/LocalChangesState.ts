@@ -17,7 +17,7 @@
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
-import type { EditorSdlcState } from '../EditorSdlcState';
+import type { EditorSDLCState } from '../EditorState_SDLC';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -43,11 +43,11 @@ import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
 
 export class LocalChangesState {
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   isSyncingWithWorkspace = false;
   isRefreshingLocalChangesDetector = false;
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
       editorStore: false,
       sdlcState: false,

@@ -53,7 +53,7 @@ import {
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
-import { EditorSdlcState } from './EditorSdlcState';
+import { EditorSDLCState } from './EditorState_SDLC';
 import { ModelLoaderState } from './editor-state/ModelLoaderState';
 import type { EditorState } from './editor-state/EditorState';
 import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/EntityDiffViewState';
@@ -156,7 +156,7 @@ export class EditorStore {
 
   editorExtensionStates: EditorExtensionState[] = [];
   explorerTreeState: ExplorerTreeState;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
   changeDetectionState: ChangeDetectionState;
@@ -260,7 +260,7 @@ export class EditorStore {
     this.depotServerClient = depotServerClient;
     this.pluginManager = pluginManager;
 
-    this.sdlcState = new EditorSdlcState(this);
+    this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
     this.graphManagerState = graphManagerState;
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);

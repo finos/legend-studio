@@ -18,7 +18,7 @@ import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { makeAutoObservable, observable, action, flowResult } from 'mobx';
 import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
-import type { EditorSdlcState } from '../EditorSdlcState';
+import type { EditorSDLCState } from '../EditorState_SDLC';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   uuid,
@@ -90,14 +90,14 @@ const updateWorkflowJobData = (
 
 export class WorkflowLogState {
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   job: WorkflowJob | undefined;
   logs: string;
   fetchJobLogState = ActionState.create();
 
   constructor(
     editorStore: EditorStore,
-    sdlcState: EditorSdlcState,
+    sdlcState: EditorSDLCState,
     job: WorkflowJob | undefined,
     logs: string | undefined,
   ) {
@@ -183,13 +183,13 @@ export class WorkflowLogState {
 export class WorkspaceWorkflowState {
   uuid = uuid();
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   treeData: TreeData<WorkflowExplorerTreeNodeData>;
   isExecutingWorkflowRequest = false;
 
   constructor(
     editorStore: EditorStore,
-    sdlcState: EditorSdlcState,
+    sdlcState: EditorSDLCState,
     workflow: Workflow,
     jobs: WorkflowJob[] | undefined,
   ) {
@@ -339,12 +339,12 @@ export class WorkspaceWorkflowState {
 
 export class WorkspaceWorkflowsState {
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   fetchWorkflowsState = ActionState.create();
   logState: WorkflowLogState;
   workflowStates: WorkspaceWorkflowState[] = [];
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
       editorStore: false,
       sdlcState: false,

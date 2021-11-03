@@ -47,7 +47,7 @@ export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
     extractEntityNameFromPath(b.newPath ?? b.oldPath ?? ''),
   );
 
-export class EditorSdlcState {
+export class EditorSDLCState {
   editorStore: EditorStore;
   currentProject?: Project | undefined;
   currentWorkspace?: Workspace | undefined;

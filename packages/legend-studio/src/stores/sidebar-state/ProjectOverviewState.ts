@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import type { EditorSdlcState } from '../EditorSdlcState';
+import type { EditorSDLCState } from '../EditorState_SDLC';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -46,7 +46,7 @@ export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
 
 export class ProjectOverviewState {
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   activityMode = PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW;
   releaseVersion: CreateVersionCommand;
   committedReviewsBetweenMostRecentVersionAndProjectLatest: Review[] = [];
@@ -60,7 +60,7 @@ export class ProjectOverviewState {
   isFetchingLatestVersion = false;
   isFetchingCurrentProjectRevision = false;
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
       editorStore: false,
       sdlcState: false,

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_PackageableElementPointer } from '../../model/packageableElements/V1_PackageableElement';
+import type { V1_PackageableElementPointer } from '../packageableElements/V1_PackageableElement';
 
-export abstract class V1_Sdlc {
+export abstract class V1_SDLC {
   baseVersion = 'latest';
   version: string;
   packageableElementPointers: V1_PackageableElementPointer[] = [];
@@ -26,7 +26,7 @@ export abstract class V1_Sdlc {
   }
 }
 
-export class V1_AlloySdlc extends V1_Sdlc {
+export class V1_AlloySDLC extends V1_SDLC {
   groupId: string;
   artifactId: string;
 

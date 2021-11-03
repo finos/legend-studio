@@ -39,7 +39,7 @@ import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorState_SDLC';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,

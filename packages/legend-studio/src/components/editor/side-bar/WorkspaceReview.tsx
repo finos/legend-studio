@@ -34,7 +34,7 @@ import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorState_SDLC';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,
