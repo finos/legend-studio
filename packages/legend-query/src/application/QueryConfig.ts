@@ -38,6 +38,7 @@ export interface QueryConfigurationData
     TEMP__useLegacyDepotServerAPIRoutes?: boolean;
   };
   engine: { url: string; queryUrl?: string };
+  studio: { url: string };
   extensions?: Record<PropertyKey, unknown>;
 }
 
@@ -45,6 +46,7 @@ export class QueryConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
+  readonly studioUrl: string;
   readonly TEMP__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
   constructor(
@@ -66,6 +68,10 @@ export class QueryConfig extends LegendApplicationConfig {
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
+    );
+    this.studioUrl = guaranteeNonEmptyString(
+      configData.studio.url,
+      `Can't configure application: 'studio.url' field is missing or empty`,
     );
     this.TEMP__useLegacyDepotServerAPIRoutes =
       configData.depot.TEMP__useLegacyDepotServerAPIRoutes;

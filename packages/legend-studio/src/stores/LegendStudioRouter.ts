@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { generatePath } from 'react-router-dom';
@@ -27,6 +28,7 @@ export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
   VERSION_ID = 'versionId',
   REVIEW_ID = 'reviewId',
   ENTITY_PATH = 'entityPath',
+  GAV = 'gav',
 }
 
 export const URL_PATH_PLACEHOLDER = '-';
@@ -38,6 +40,12 @@ export const generateRoutePatternWithSDLCServerKey = (
 export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   VIEW: generateRoutePatternWithSDLCServerKey(
     `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}`,
+  ),
+  VIEW_BY_GAV: generateRoutePatternWithSDLCServerKey(
+    `/view/gav/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}`,
+  ),
+  VIEW_BY_GAV_ENTITY: generateRoutePatternWithSDLCServerKey(
+    `/view/gav/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   ),
   VIEW_BY_ENTITY: generateRoutePatternWithSDLCServerKey(
     `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
@@ -156,6 +164,16 @@ export const generateViewProjectRoute = (
     sdlcServerKey,
     projectId,
   });
+export const generateViewProjectByGAVRoute = (
+  sdlcServerKey: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+): string =>
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV, {
+    sdlcServerKey,
+    gav: generateGAVCoordinates(groupId, artifactId, versionId),
+  });
 export const generateViewVersionRoute = (
   sdlcServerKey: string,
   projectId: string,
@@ -197,7 +215,8 @@ export interface ReviewPathParams {
 }
 
 export interface ViewerPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.VERSION_ID]?: string;
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.REVISION_ID]?: string;
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH]?: string;

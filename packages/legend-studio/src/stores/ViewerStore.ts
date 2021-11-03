@@ -26,6 +26,7 @@ import {
 } from '@finos/legend-shared';
 import type { ViewerPathParams } from './LegendStudioRouter';
 import {
+  generateViewProjectByGAVRoute,
   generateViewVersionRoute,
   generateVieweRevisionRoute,
   generateViewProjectRoute,
@@ -40,6 +41,12 @@ import {
 } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import { TAB_SIZE } from '@finos/legend-application';
+import {
+  parseGAVCoordinates,
+  ProjectData,
+  ProjectVersionEntities,
+} from '@finos/legend-server-depot';
+import { GRAPH_MANAGER_LOG_EVENT } from '@finos/legend-graph';
 
 export class ViewerStore {
   editorStore: EditorStore;
@@ -80,195 +87,400 @@ export class ViewerStore {
    * in either case, the most suitable behavior at the moment is to internalize/swallow up the entity path param
    */
   internalizeEntityPath(params: ViewerPathParams): void {
-    if (params.entityPath) {
-      this.elementPath = params.entityPath;
-      this.editorStore.applicationStore.navigator.goTo(
-        params.versionId
-          ? generateViewVersionRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-              params.versionId,
-            )
-          : params.revisionId
-          ? generateVieweRevisionRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-              params.revisionId,
-            )
-          : generateViewProjectRoute(
-              this.editorStore.applicationStore.config.sdlcServerKey,
-              params.projectId,
-            ),
+    const { gav, projectId, revisionId, versionId, entityPath } = params;
+    if (entityPath) {
+      this.elementPath = entityPath;
+      if (projectId) {
+        this.editorStore.applicationStore.navigator.goTo(
+          versionId
+            ? generateViewVersionRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                projectId,
+                versionId,
+              )
+            : revisionId
+            ? generateVieweRevisionRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                projectId,
+                revisionId,
+              )
+            : generateViewProjectRoute(
+                this.editorStore.applicationStore.config.sdlcServerKey,
+                projectId,
+              ),
+        );
+      } else if (gav) {
+        const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
+        this.editorStore.applicationStore.navigator.goTo(
+          generateViewProjectByGAVRoute(
+            this.editorStore.applicationStore.config.sdlcServerKey,
+            groupId,
+            artifactId,
+            versionId,
+          ),
+        );
+      }
+    }
+  }
+
+  /**
+   * Create a lean/read-only view of the project:
+   * - No change detection
+   * - No project viewer
+   * - No text mode support
+   */
+  private *buildGraphForSDLCProject(entities: Entity[]): GeneratorFn<void> {
+    try {
+      this.editorStore.graphState.isInitializingGraph = true;
+      const startTime = Date.now();
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+        Date.now() - startTime,
+        'ms',
+      );
+
+      // reset
+      this.editorStore.changeDetectionState.stop();
+      this.editorStore.graphManagerState.resetGraph();
+
+      // build dependencies
+      const dependencyManager =
+        this.editorStore.graphManagerState.createEmptyDependencyManager();
+      yield flowResult(
+        this.editorStore.graphManagerState.graphManager.buildDependencies(
+          this.editorStore.graphManagerState.coreModel,
+          this.editorStore.graphManagerState.systemModel,
+          dependencyManager,
+          (yield flowResult(
+            this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
+          )) as Map<string, Entity[]>,
+        ),
+      );
+      this.editorStore.graphManagerState.graph.setDependencyManager(
+        dependencyManager,
+      );
+
+      // build graph
+      yield flowResult(
+        this.editorStore.graphManagerState.graphManager.buildGraph(
+          this.editorStore.graphManagerState.graph,
+          entities,
+        ),
+      );
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        '[TOTAL]',
+        Date.now() - startTime,
+        'ms',
+      );
+
+      // build explorer tree
+      this.editorStore.explorerTreeState.buildImmutableModelTrees();
+      this.editorStore.explorerTreeState.build();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
+      );
+      this.editorStore.graphManagerState.graph.buildState.fail();
+      this.editorStore.applicationStore.notifyError(
+        `Can't build graph. Error: ${error.message}`,
+      );
+    } finally {
+      this.editorStore.graphState.isInitializingGraph = false;
+    }
+  }
+
+  private *initializeGraphManagerState(): GeneratorFn<void> {
+    // setup engine
+    yield flowResult(
+      this.editorStore.graphManagerState.graphManager.initialize(
+        {
+          env: this.editorStore.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+            queryBaseUrl:
+              this.editorStore.applicationStore.config.engineQueryServerUrl,
+            enableCompression: true,
+          },
+        },
+        {
+          tracerServicePlugins:
+            this.editorStore.pluginManager.getTracerServicePlugins(),
+        },
+      ),
+    );
+
+    // initialize graph manager
+    yield flowResult(this.editorStore.graphManagerState.initializeSystem());
+  }
+
+  /**
+   * Initialize the graph by fetching project information from the SDLC server.
+   */
+  private *initializeForSDLCProject(
+    entities: Entity[],
+    projectConfiguration: ProjectConfiguration,
+  ): GeneratorFn<void> {
+    this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
+      projectConfiguration,
+    );
+
+    // make sure we set the original project configuration to a different object
+    this.editorStore.projectConfigurationEditorState.setOriginalProjectConfiguration(
+      projectConfiguration,
+    );
+    this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
+      entities,
+    );
+
+    yield flowResult(this.initializeGraphManagerState());
+    yield flowResult(this.buildGraphForSDLCProject(entities));
+
+    // fetch available file generation descriptions
+    yield flowResult(
+      this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+    );
+
+    // generate
+    if (
+      this.editorStore.graphManagerState.graph.ownGenerationSpecifications
+        .length
+    ) {
+      yield flowResult(
+        this.editorStore.graphState.graphGenerationState.globalGenerate(),
       );
     }
   }
 
-  *initialize(
-    projectId: string,
-    versionId: string | undefined,
-    revisionId: string | undefined,
+  /**
+   * Initialize the viewer store given GAV coordinate of a project.
+   * This flow is different than the SDLC flow as we need to fetch the project
+   * from Depot server here, where SDLC objects like project configurations
+   * are not available.
+   */
+  private *initializeForGAV(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
   ): GeneratorFn<void> {
+    const project = ProjectData.serialization.fromJson(
+      (yield flowResult(
+        this.editorStore.depotServerClient.getProject(groupId, artifactId),
+      )) as PlainObject<ProjectData>,
+    );
+
+    const LATEST_VERSION_ALIAS = 'latest';
+    const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
+
+    let entities: Entity[] = [];
+    if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+      entities =
+        (yield this.editorStore.depotServerClient.getLatestRevisionEntities(
+          groupId,
+          artifactId,
+        )) as Entity[];
+    } else {
+      entities = (yield this.editorStore.depotServerClient.getVersionEntities(
+        groupId,
+        artifactId,
+        versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+      )) as Entity[];
+    }
+
+    yield flowResult(this.initializeGraphManagerState());
+    this.editorStore.graphManagerState.resetGraph();
+
+    // build dependencies
+    const dependencyEntitiesMap = new Map<string, Entity[]>();
+    (versionId === LATEST_SNAPSHOT_VERSION_ALIAS
+      ? ((yield this.editorStore.depotServerClient.getLatestDependencyEntities(
+          groupId,
+          artifactId,
+          true,
+          false,
+        )) as PlainObject<ProjectVersionEntities>[])
+      : ((yield this.editorStore.depotServerClient.getDependencyEntities(
+          groupId,
+          artifactId,
+          versionId === LATEST_VERSION_ALIAS
+            ? project.latestVersion
+            : versionId,
+          true,
+          false,
+        )) as PlainObject<ProjectVersionEntities>[])
+    )
+      .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+      .forEach((dependencyInfo) => {
+        dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
+      });
+    const dependencyManager =
+      this.editorStore.graphManagerState.createEmptyDependencyManager();
+    yield flowResult(
+      this.editorStore.graphManagerState.graphManager.buildDependencies(
+        this.editorStore.graphManagerState.coreModel,
+        this.editorStore.graphManagerState.systemModel,
+        dependencyManager,
+        dependencyEntitiesMap,
+      ),
+    );
+    this.editorStore.graphManagerState.graph.setDependencyManager(
+      dependencyManager,
+    );
+
+    // build graph
+    yield flowResult(
+      this.editorStore.graphManagerState.graphManager.buildGraph(
+        this.editorStore.graphManagerState.graph,
+        entities,
+      ),
+    );
+
+    // build explorer tree
+    this.editorStore.explorerTreeState.buildImmutableModelTrees();
+    this.editorStore.explorerTreeState.build();
+  }
+
+  *initialize(params: ViewerPathParams): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       return;
     }
+    const { gav, projectId, revisionId, versionId } = params;
+
     this.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
       this.initState.complete(hasBuildSucceeded);
     };
 
     try {
-      // fetch basic SDLC infos
-      yield flowResult(
-        this.editorStore.sdlcState.fetchCurrentProject(projectId),
-      );
-      const stubWorkspace = new Workspace();
-      stubWorkspace.projectId = projectId;
-      stubWorkspace.workspaceId = '';
-      this.editorStore.sdlcState.setCurrentWorkspace(stubWorkspace);
-
-      // get current revision so we can show how "outdated" the `current view` of the project is
-      this.currentRevision = Revision.serialization.fromJson(
-        (yield this.editorStore.sdlcServerClient.getRevision(
-          this.editorStore.sdlcState.activeProject.projectId,
-          undefined,
-          RevisionAlias.CURRENT,
-        )) as PlainObject<Revision>,
-      );
-      this.latestVersion = Version.serialization.fromJson(
-        (yield this.editorStore.sdlcServerClient.getLatestVersion(
-          this.editorStore.sdlcState.activeProject.projectId,
-        )) as PlainObject<Version>,
-      );
-
-      // fetch project versions
-      yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
-
-      // ensure only either version or revision is specified
-      if (versionId && revisionId) {
-        throw new IllegalStateError(
-          `Can't have both version ID and revision ID specified for viewer mode`,
+      if (projectId) {
+        // fetch basic SDLC infos
+        yield flowResult(
+          this.editorStore.sdlcState.fetchCurrentProject(projectId),
         );
-      }
+        const stubWorkspace = new Workspace();
+        stubWorkspace.projectId = projectId;
+        stubWorkspace.workspaceId = '';
+        this.editorStore.sdlcState.setCurrentWorkspace(stubWorkspace);
 
-      let entities: Entity[] = [];
-
-      if (versionId) {
-        // get version info if a version is specified
-        this.version =
-          versionId !== this.latestVersion.id.id
-            ? Version.serialization.fromJson(
-                (yield this.editorStore.sdlcServerClient.getVersion(
-                  this.editorStore.sdlcState.activeProject.projectId,
-                  versionId,
-                )) as PlainObject<Version>,
-              )
-            : this.latestVersion;
-        entities =
-          (yield this.editorStore.sdlcServerClient.getEntitiesByVersion(
-            this.editorStore.sdlcState.activeProject.projectId,
-            versionId,
-          )) as Entity[];
-      }
-
-      if (revisionId) {
-        // get revision info if a revision is specified
-        this.revision =
-          revisionId !== this.currentRevision.id
-            ? Revision.serialization.fromJson(
-                (yield this.editorStore.sdlcServerClient.getRevision(
-                  this.editorStore.sdlcState.activeProject.projectId,
-                  undefined,
-                  revisionId,
-                )) as PlainObject<Revision>,
-              )
-            : this.currentRevision;
-        entities =
-          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+        // get current revision so we can show how "outdated" the `current view` of the project is
+        this.currentRevision = Revision.serialization.fromJson(
+          (yield this.editorStore.sdlcServerClient.getRevision(
             this.editorStore.sdlcState.activeProject.projectId,
             undefined,
-            revisionId,
-          )) as Entity[];
-      }
+            RevisionAlias.CURRENT,
+          )) as PlainObject<Revision>,
+        );
+        this.latestVersion = Version.serialization.fromJson(
+          (yield this.editorStore.sdlcServerClient.getLatestVersion(
+            this.editorStore.sdlcState.activeProject.projectId,
+          )) as PlainObject<Version>,
+        );
 
-      // if no revision ID or version ID is specified, we will just get the project HEAD
-      if (!revisionId && !versionId) {
-        try {
-          // fetch workspace entities and config at the same time
-          const result = (yield Promise.all([
-            this.editorStore.sdlcServerClient.getEntities(
+        // fetch project versions
+        yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
+
+        // ensure only either version or revision is specified
+        if (versionId && revisionId) {
+          throw new IllegalStateError(
+            `Can't have both version ID and revision ID specified for viewer mode`,
+          );
+        }
+
+        let graphBuildingMaterial: [
+          Entity[],
+          PlainObject<ProjectConfiguration>,
+        ];
+
+        if (versionId) {
+          // get version info if a version is specified
+          this.version =
+            versionId !== this.latestVersion.id.id
+              ? Version.serialization.fromJson(
+                  (yield this.editorStore.sdlcServerClient.getVersion(
+                    this.editorStore.sdlcState.activeProject.projectId,
+                    versionId,
+                  )) as PlainObject<Version>,
+                )
+              : this.latestVersion;
+          graphBuildingMaterial = (yield Promise.all([
+            this.editorStore.sdlcServerClient.getEntitiesByVersion(
               this.editorStore.sdlcState.activeProject.projectId,
-              undefined,
+              versionId,
             ),
-            this.editorStore.sdlcServerClient.getConfiguration(
+            this.editorStore.sdlcServerClient.getConfigurationByVersion(
               this.editorStore.sdlcState.activeProject.projectId,
-              undefined,
+              versionId,
             ),
           ])) as [Entity[], PlainObject<ProjectConfiguration>];
-          entities = result[0];
-          const rawProjectConfiguration = result[1];
-          const projectConfiguration =
-            ProjectConfiguration.serialization.fromJson(
-              rawProjectConfiguration,
-            );
-          this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
-            projectConfiguration,
-          );
-          // make sure we set the original project configuration to a different object
-          this.editorStore.projectConfigurationEditorState.setOriginalProjectConfiguration(
-            projectConfiguration,
-          );
-          this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
-            entities,
-          );
-        } catch {
-          return;
+        } else if (revisionId) {
+          // get revision info if a revision is specified
+          this.revision =
+            revisionId !== this.currentRevision.id
+              ? Revision.serialization.fromJson(
+                  (yield this.editorStore.sdlcServerClient.getRevision(
+                    this.editorStore.sdlcState.activeProject.projectId,
+                    undefined,
+                    revisionId,
+                  )) as PlainObject<Revision>,
+                )
+              : this.currentRevision;
+          graphBuildingMaterial = (yield Promise.all([
+            this.editorStore.sdlcServerClient.getEntitiesByRevision(
+              this.editorStore.sdlcState.activeProject.projectId,
+              undefined,
+              revisionId,
+            ),
+            this.editorStore.sdlcServerClient.getConfigurationByVersion(
+              this.editorStore.sdlcState.activeProject.projectId,
+              revisionId,
+            ),
+          ])) as [Entity[], PlainObject<ProjectConfiguration>];
         }
-      }
+        // if no revision ID or version ID is specified, we will just get the project HEAD
+        else if (!revisionId && !versionId) {
+          try {
+            graphBuildingMaterial = (yield Promise.all([
+              this.editorStore.sdlcServerClient.getEntities(
+                this.editorStore.sdlcState.activeProject.projectId,
+                undefined,
+              ),
+              this.editorStore.sdlcServerClient.getConfiguration(
+                this.editorStore.sdlcState.activeProject.projectId,
+                undefined,
+              ),
+            ])) as [Entity[], PlainObject<ProjectConfiguration>];
+          } catch {
+            return;
+          }
+        } else {
+          throw new IllegalStateError(
+            `Can't initialize viewer when both 'verisonId' and 'revisionId' are provided`,
+          );
+        }
 
-      // setup engine
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.initialize(
-          {
-            env: this.editorStore.applicationStore.config.env,
-            tabSize: TAB_SIZE,
-            clientConfig: {
-              baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-              queryBaseUrl:
-                this.editorStore.applicationStore.config.engineQueryServerUrl,
-              enableCompression: true,
-            },
-          },
-          {
-            tracerServicePlugins:
-              this.editorStore.pluginManager.getTracerServicePlugins(),
-          },
-        ),
-      );
-      // initialize graph manager
-      yield flowResult(this.editorStore.graphManagerState.initializeSystem());
-      yield flowResult(
-        this.editorStore.graphState.buildGraphForViewerMode(entities),
-      );
-
-      // fetch available file generation descriptions
-      yield flowResult(
-        this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
-      );
-
-      // generate
-      if (
-        this.editorStore.graphManagerState.graph.ownGenerationSpecifications
-          .length
-      ) {
         yield flowResult(
-          this.editorStore.graphState.graphGenerationState.globalGenerate(),
+          this.initializeForSDLCProject(
+            graphBuildingMaterial[0],
+            ProjectConfiguration.serialization.fromJson(
+              graphBuildingMaterial[1],
+            ),
+          ),
+        );
+      } else if (gav) {
+        const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
+        yield flowResult(this.initializeForGAV(groupId, artifactId, versionId));
+      } else {
+        throw new IllegalStateError(
+          `Can't initialize viewer when neither 'projectId' nor 'gav' is provided`,
         );
       }
 
       // open element if provided an element path
       if (
         this.editorStore.graphManagerState.graph.buildState.hasSucceeded &&
-        this.editorStore.sdlcState.currentProject &&
         this.editorStore.explorerTreeState.buildState.hasCompleted &&
         this.elementPath
       ) {

@@ -27,6 +27,7 @@ import {
   SearchIcon,
 } from '@finos/legend-art';
 import { useQuerySetupStore, useQueryStore } from '@finos/legend-query';
+import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -88,8 +89,11 @@ export const DataspaceQuerySetup = observer(
           {option.label}
         </div>
         <div className="query-setup__data-space__option__gav">
-          {option.value.content.groupId}:{option.value.content.artifactId}:
-          {option.value.content.versionId}
+          {generateGAVCoordinates(
+            option.value.content.groupId,
+            option.value.content.artifactId,
+            option.value.content.versionId,
+          )}
         </div>
       </div>
     );

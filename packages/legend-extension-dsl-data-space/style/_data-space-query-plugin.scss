@@ -101,20 +101,37 @@
   &__path {
     @include flexCenter;
 
-    cursor: default;
-    user-select: none;
     height: 3.4rem;
     background: var(--color-blue-150);
-    font-size: 1.6rem;
-    padding: 0.5rem 1rem;
-    color: var(--color-light-grey-0);
-    font-family: 'Roboto Mono', monospace;
+
+    &__label {
+      @include flexCenter;
+
+      height: 100%;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.6rem;
+      padding: 0 1rem;
+      user-select: none;
+      color: var(--color-light-grey-0);
+    }
+
+    &__link {
+      @include flexCenter;
+
+      height: 3.4rem;
+      width: 3.4rem;
+      border-left: 0.1rem solid var(--color-dark-shade-230);
+
+      svg {
+        font-size: 1.6rem;
+        color: var(--color-light-grey-0);
+      }
+    }
   }
 
   &__gav {
     @include flexCenter;
 
-    cursor: default;
     user-select: none;
     height: 2.8rem;
     font-size: 1.4rem;
@@ -131,6 +148,16 @@
     &__version-id {
       color: var(--color-blue-50);
       font-weight: 700;
+    }
+
+    &__link {
+      @include flexCenter;
+
+      margin-left: 0.5rem;
+
+      svg {
+        color: var(--color-blue-50);
+      }
     }
   }
 
@@ -258,29 +285,6 @@
 
     &__diagram-selector {
       width: 100%;
-    }
-
-    &__toggler {
-      @include flexCenter;
-
-      height: 2.8rem;
-      width: 2.8rem;
-      margin: 0.3rem;
-
-      &__btn {
-        height: 2.4rem;
-        width: 2.4rem;
-        background: var(--color-dark-grey-250);
-        border-radius: 0.2rem;
-
-        svg {
-          color: var(--color-dark-grey-400);
-        }
-
-        &--active svg {
-          color: var(--color-yellow-100);
-        }
-      }
     }
 
     &__content {

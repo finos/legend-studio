@@ -179,7 +179,6 @@ export const getMappingElementTarget = (
   );
 };
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSource = (
   mappingElement: MappingElement,
   plugins?: StudioPlugin[],
@@ -1005,7 +1004,6 @@ export class MappingEditorState extends ElementEditorState {
     }
   }
 
-  /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
   private createMappingElementState(
     mappingElement: MappingElement | undefined,
   ): MappingElementState | undefined {

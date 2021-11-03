@@ -26,6 +26,9 @@ export const TEST_DATA__queryConfig = {
   depot: {
     url: 'https://testMetadataUrl',
   },
+  studio: {
+    url: 'http://testStudioUrl',
+  },
 };
 
 export const TEST__getTestQueryConfig = (extraConfigData = {}): QueryConfig => {

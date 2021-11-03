@@ -56,6 +56,7 @@ import {
   PureClientVersion,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
+import { generateGAVCoordinates } from '@finos/legend-server-depot';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -253,7 +254,13 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
           search: isValidSearchString ? searchText : undefined,
           projectCoordinates: [
             // either get queries for the current project
-            `${this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId}:${this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId}`,
+            generateGAVCoordinates(
+              this.editorStore.projectConfigurationEditorState
+                .currentProjectConfiguration.groupId,
+              this.editorStore.projectConfigurationEditorState
+                .currentProjectConfiguration.artifactId,
+              undefined,
+            ),
             // or any of its dependencies
             ...dependencyProjectCoordinates,
           ],

@@ -22,3 +22,5 @@ export { DepotServerClient } from './DepotServerClient';
 export * from './DepotServerClientProvider';
 
 export * from './DepotServerClientTestUtils';
+
+export * from './DepotUtils';
