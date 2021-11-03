@@ -143,7 +143,7 @@ export type ElementProjectExplorerDnDTypeGetter = (
   element: PackageableElement,
 ) => string | undefined;
 
-export type ExtraFileGenerationtButton = (
+export type FileGenerationResultViewerAction = (
   FileGenerationState: FileGenerationState,
   generationFile: GenerationFile,
 ) => React.ReactNode | undefined;
@@ -225,10 +225,10 @@ export interface DSL_StudioPlugin_Extension extends StudioPlugin {
   /**
    * Get the list of the supported visualize file content button.
    */
-  getVisualizeFileContentButtons?(): ExtraFileGenerationtButton[];
+  getVisualizeFileContentButtons?(): FileGenerationResultViewerAction[];
 
   /**
    * Get the list of the supported view advanced file info button.
    */
-  getViewAdvancedFileInfoButtons?(): ExtraFileGenerationtButton[];
+  getViewAdvancedFileInfoButtons?(): FileGenerationResultViewerAction[];
 }

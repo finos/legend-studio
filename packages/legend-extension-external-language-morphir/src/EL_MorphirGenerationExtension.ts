@@ -17,14 +17,14 @@
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
 import type { StudioPluginManager } from '@finos/legend-studio';
-import { MorphirGenerationPlugin } from './MorphirGenerationPlugin';
+import { EL_MorphirGenerationPlugin } from './EL_MorphirGenerationPlugin';
 
-export class MorphirGenerationPreset extends AbstractPreset {
+export class EL_MorphirGenerationPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.studioPreset, packageJson.version);
   }
 
   install(pluginManager: StudioPluginManager): void {
-    new MorphirGenerationPlugin().install(pluginManager);
+    new EL_MorphirGenerationPlugin().install(pluginManager);
   }
 }

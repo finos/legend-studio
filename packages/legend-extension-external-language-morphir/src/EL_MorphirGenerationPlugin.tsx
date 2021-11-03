@@ -21,13 +21,13 @@ import type {
   GenerationFile,
   FileGenerationState,
   StudioPluginManager,
-  ExtraFileGenerationtButton,
+  FileGenerationResultViewerAction,
 } from '@finos/legend-studio';
 
 import { StudioPlugin } from '@finos/legend-studio';
 import { NetworkClient } from '@finos/legend-shared';
 
-export class MorphirGenerationPlugin
+export class EL_MorphirGenerationPlugin
   extends StudioPlugin
   implements DSL_StudioPlugin_Extension
 {
@@ -69,7 +69,7 @@ export class MorphirGenerationPlugin
       window.open('http://localhost:3050');
     };
 
-  getVisualizeFileContentButtons(): ExtraFileGenerationtButton[] {
+  getVisualizeFileContentButtons(): FileGenerationResultViewerAction[] {
     return [
       (
         fileGenerationState: FileGenerationState,
@@ -93,7 +93,7 @@ export class MorphirGenerationPlugin
     ];
   }
 
-  getViewAdvancedFileInfoButtons(): ExtraFileGenerationtButton[] {
+  getViewAdvancedFileInfoButtons(): FileGenerationResultViewerAction[] {
     return [
       (
         fileGenerationState: FileGenerationState,
