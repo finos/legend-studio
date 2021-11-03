@@ -14,47 +14,24 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaAsterisk, FaLongArrowAltDown, FaEdit } from 'react-icons/fa';
+import { FaAsterisk, FaLongArrowAltDown } from 'react-icons/fa';
 import {
   clsx,
-  BlankPanelPlaceholder,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
 } from '@finos/legend-art';
-import type {
-  ElementDragSource,
-  MappingElementSourceDropTarget,
-} from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
-import {
-  InstanceSetImplementationState,
-  MappingElementState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
+import { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import type { PureInstanceSetImplementationFilterState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 import { guaranteeNonNullable, noop } from '@finos/legend-shared';
-import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import {
-  getMappingElementSource,
-  MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { TypeTree } from '../../../shared/TypeTree';
-import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
+import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { PropertyMappingsEditor } from './PropertyMappingsEditor';
-import { useDrop } from 'react-dnd';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree';
-import {
-  getSourceElementLabel,
-  InstanceSetImplementationSourceSelectorModal,
-} from './InstanceSetImplementationSourceSelectorModal';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
@@ -81,6 +58,8 @@ import {
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import type { EditorStore } from '../../../../stores/EditorStore';
+import { InstanceSetImplementationSourceExplorer } from './InstanceSetImplementationSourceExplorer';
+import { RelationalInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -414,27 +393,20 @@ const requiredStatusSorter = (a: Property, b: Property): number =>
   (a.multiplicity.lowerBound > 0 ? 0 : 1) -
   (b.multiplicity.lowerBound > 0 ? 0 : 1);
 
-export const InstanceSetImplementationEditor = observer(
+const PureInstanceSetImplementationEditor = observer(
   (props: {
-    setImplementation: InstanceSetImplementation;
+    pureInstanceSetImplementationState: PureInstanceSetImplementationState;
     isReadOnly: boolean;
   }) => {
-    const { setImplementation, isReadOnly } = props;
+    const { pureInstanceSetImplementationState, isReadOnly } = props;
+    const pureInstanceeSetImplementation =
+      pureInstanceSetImplementationState.mappingElement;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const mappingEditorState =
-      editorStore.getCurrentEditorState(MappingEditorState);
     const [sortByRequired, setSortByRequired] = useState(true);
-    const instanceSetImplementationState = guaranteeNonNullable(
-      mappingEditorState.currentTabState instanceof
-        InstanceSetImplementationState
-        ? mappingEditorState.currentTabState
-        : undefined,
-      'Mapping element state for instance set implementation must be instance set implementation state',
-    );
     const handleSortChange = (): void => setSortByRequired(!sortByRequired);
     // Get properties of supertypes
-    const sortedProperties = setImplementation.class.value
+    const sortedProperties = pureInstanceeSetImplementation.class.value
       .getAllProperties()
       // LEVEL 1: sort properties by name
       .sort((a, b) => a.name.localeCompare(b.name))
@@ -443,28 +415,15 @@ export const InstanceSetImplementationEditor = observer(
       // LEVEL 3: sort by properties by required/type (primary sort)
       .sort(sortByRequired ? requiredStatusSorter : typeSorter);
 
-    const isUnsupported =
-      instanceSetImplementationState instanceof
-      UnsupportedInstanceSetImplementationState;
-
-    const renderFilterEditor =
-      instanceSetImplementationState instanceof
-        PureInstanceSetImplementationState &&
-      instanceSetImplementationState.mappingElement.filter;
-
     useEffect(() => {
       if (!isReadOnly) {
-        instanceSetImplementationState.decorate();
+        pureInstanceSetImplementationState.decorate();
       }
       flowResult(
-        instanceSetImplementationState.convertPropertyMappingTransformObjects(),
+        pureInstanceSetImplementationState.convertPropertyMappingTransformObjects(),
       ).catch(applicationStore.alertIllegalUnhandledError);
-      if (
-        instanceSetImplementationState instanceof
-          PureInstanceSetImplementationState &&
-        instanceSetImplementationState.mappingElement.filter
-      ) {
-        flowResult(instanceSetImplementationState.convertFilter()).catch(
+      if (pureInstanceeSetImplementation.filter) {
+        flowResult(pureInstanceSetImplementationState.convertFilter()).catch(
           applicationStore.alertIllegalUnhandledError,
         );
       }
@@ -476,106 +435,357 @@ export const InstanceSetImplementationEditor = observer(
             );
     }, [
       applicationStore,
-      setImplementation,
+      pureInstanceeSetImplementation,
       isReadOnly,
       instanceSetImplementationState,
       editorStore,
     ]);
 
     useEffect(() => {
-      instanceSetImplementationState.setSelectedType(undefined);
-    }, [instanceSetImplementationState]);
+      pureInstanceSetImplementationState.setSelectedType(undefined);
+    }, [pureInstanceSetImplementationState]);
+
+    return (
+      <ResizablePanelGroup orientation="horizontal">
+        <ResizablePanel minSize={300}>
+          <div className="panel class-mapping-editor__property-panel">
+            <div className="panel__header">
+              <div className="panel__header__title">
+                <div className="panel__header__title__content">PROPERTIES</div>
+              </div>
+              <div className="panel__header__actions">
+                <div className="panel__header__action">
+                  <div
+                    className={`class-mapping-editor__sort-by-required-btn ${
+                      sortByRequired
+                        ? 'class-mapping-editor__sort-by-required-btn--enabled'
+                        : ''
+                    }`}
+                    onClick={handleSortChange}
+                  >
+                    <FaLongArrowAltDown />
+                    <FaAsterisk />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="panel__content">
+              {isReadOnly &&
+                sortedProperties
+                  // for property without any property mapping in readonly mode, we won't show it
+                  .filter(
+                    (p) =>
+                      pureInstanceSetImplementationState.propertyMappingStates.filter(
+                        (pm) =>
+                          pm.propertyMapping.property.value.name === p.name,
+                      ).length,
+                  )
+                  .map((property) => (
+                    <PropertyMappingsEditor
+                      key={property.name}
+                      property={property}
+                      instanceSetImplementationState={
+                        pureInstanceSetImplementationState
+                      }
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+            </div>
+          </div>
+        </ResizablePanel>
+        <ResizablePanelSplitter />
+        {pureInstanceSetImplementationState.mappingFilterState && (
+          <ResizablePanel size={330} minSize={80}>
+            <PureInstanceSetImplementationFilterEditor
+              editorStore={editorStore}
+              instanceSetImplementationState={
+                pureInstanceSetImplementationState
+              }
+              filterState={
+                pureInstanceSetImplementationState.mappingFilterState
+              }
+              isReadOnly={isReadOnly}
+            />
+          </ResizablePanel>
+        )}
+      </ResizablePanelGroup>
+    );
+  },
+);
+
+const FlatInstanceSetImplementationEditor = observer(
+  (props: {
+    flatDataInstanceSetImplementationState: FlatDataInstanceSetImplementationState;
+    isReadOnly: boolean;
+  }) => {
+    const { flatDataInstanceSetImplementationState, isReadOnly } = props;
+    const applicationStore = useApplicationStore();
+    const [sortByRequired, setSortByRequired] = useState(true);
+    const flatDataInstanceSetImplementation =
+      flatDataInstanceSetImplementationState.mappingElement;
+    const handleSortChange = (): void => setSortByRequired(!sortByRequired);
+    // Get properties of supertypes
+    const sortedProperties = flatDataInstanceSetImplementation.class.value
+      .getAllProperties()
+      // LEVEL 1: sort properties by name
+      .sort((a, b) => a.name.localeCompare(b.name))
+      // LEVEL 2: sort by properties by required/type (which ever is not chosen to be the primary sort)
+      .sort(sortByRequired ? typeSorter : requiredStatusSorter)
+      // LEVEL 3: sort by properties by required/type (primary sort)
+      .sort(sortByRequired ? requiredStatusSorter : typeSorter);
+
+    useEffect(() => {
+      if (!isReadOnly) {
+        flatDataInstanceSetImplementationState.decorate();
+      }
+      flowResult(
+        flatDataInstanceSetImplementationState.convertPropertyMappingTransformObjects(),
+      ).catch(applicationStore.alertIllegalUnhandledError);
+      return isReadOnly
+        ? noop()
+        : (): void =>
+            flatDataInstanceSetImplementation.accept_SetImplementationVisitor(
+              new MappingElementDecorationCleaner(),
+            );
+    }, [
+      applicationStore,
+      flatDataInstanceSetImplementation,
+      isReadOnly,
+      flatDataInstanceSetImplementationState,
+    ]);
+
+    useEffect(() => {
+      flatDataInstanceSetImplementationState.setSelectedType(undefined);
+    }, [flatDataInstanceSetImplementationState]);
+
+    return (
+      <div className="panel class-mapping-editor__property-panel">
+        <div className="panel__header">
+          <div className="panel__header__title">
+            <div className="panel__header__title__content">PROPERTIES</div>
+          </div>
+          <div className="panel__header__actions">
+            <div className="panel__header__action">
+              <div
+                className={`class-mapping-editor__sort-by-required-btn ${
+                  sortByRequired
+                    ? 'class-mapping-editor__sort-by-required-btn--enabled'
+                    : ''
+                }`}
+                onClick={handleSortChange}
+              >
+                <FaLongArrowAltDown />
+                <FaAsterisk />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="panel__content">
+          {!isReadOnly &&
+            sortedProperties.map((property) => (
+              <PropertyMappingsEditor
+                key={property.name}
+                property={property}
+                instanceSetImplementationState={
+                  flatDataInstanceSetImplementationState
+                }
+                isReadOnly={isReadOnly}
+              />
+            ))}
+          {isReadOnly &&
+            sortedProperties
+              // for property without any property mapping in readonly mode, we won't show it
+              .filter(
+                (p) =>
+                  flatDataInstanceSetImplementationState.propertyMappingStates.filter(
+                    (pm) => pm.propertyMapping.property.value.name === p.name,
+                  ).length,
+              )
+              .map((property) => (
+                <PropertyMappingsEditor
+                  key={property.name}
+                  property={property}
+                  instanceSetImplementationState={
+                    flatDataInstanceSetImplementationState
+                  }
+                  isReadOnly={isReadOnly}
+                />
+              ))}
+        </div>
+      </div>
+    );
+  },
+);
+export const RelationalInstanceSetImplementationEditor = observer(
+  (props: {
+    relationalInstanceSetImplementationState: RelationalInstanceSetImplementationState;
+    isReadOnly: boolean;
+  }) => {
+    const { relationalInstanceSetImplementationState, isReadOnly } = props;
+    const applicationStore = useApplicationStore();
+    const relationalSetImplementation =
+      relationalInstanceSetImplementationState.mappingElement;
+    const [sortByRequired, setSortByRequired] = useState(true);
+    const handleSortChange = (): void => setSortByRequired(!sortByRequired);
+    // Get properties of supertypes
+    const sortedProperties = relationalSetImplementation.class.value
+      .getAllProperties()
+      // LEVEL 1: sort properties by name
+      .sort((a, b) => a.name.localeCompare(b.name))
+      // LEVEL 2: sort by properties by required/type (which ever is not chosen to be the primary sort)
+      .sort(sortByRequired ? typeSorter : requiredStatusSorter)
+      // LEVEL 3: sort by properties by required/type (primary sort)
+      .sort(sortByRequired ? requiredStatusSorter : typeSorter);
+
+    useEffect(() => {
+      if (!isReadOnly) {
+        relationalInstanceSetImplementationState.decorate();
+      }
+      flowResult(
+        relationalInstanceSetImplementationState.convertPropertyMappingTransformObjects(),
+      ).catch(applicationStore.alertIllegalUnhandledError);
+      return isReadOnly
+        ? noop()
+        : (): void =>
+            relationalSetImplementation.accept_SetImplementationVisitor(
+              new MappingElementDecorationCleaner(),
+            );
+    }, [
+      applicationStore,
+      relationalSetImplementation,
+      isReadOnly,
+      relationalInstanceSetImplementationState,
+    ]);
+
+    useEffect(() => {
+      relationalInstanceSetImplementationState.setSelectedType(undefined);
+    }, [relationalInstanceSetImplementationState]);
+
+    return (
+      <div className="panel class-mapping-editor__property-panel">
+        <div className="panel__header">
+          <div className="panel__header__title">
+            <div className="panel__header__title__content">PROPERTIES</div>
+          </div>
+          <div className="panel__header__actions">
+            <div className="panel__header__action">
+              <div
+                className={`class-mapping-editor__sort-by-required-btn ${
+                  sortByRequired
+                    ? 'class-mapping-editor__sort-by-required-btn--enabled'
+                    : ''
+                }`}
+                onClick={handleSortChange}
+              >
+                <FaLongArrowAltDown />
+                <FaAsterisk />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="panel__content">
+          {!isReadOnly &&
+            sortedProperties.map((property) => (
+              <PropertyMappingsEditor
+                key={property.name}
+                property={property}
+                instanceSetImplementationState={
+                  relationalInstanceSetImplementationState
+                }
+                isReadOnly={isReadOnly}
+              />
+            ))}
+          {isReadOnly &&
+            sortedProperties
+              // for property without any property mapping in readonly mode, we won't show it
+              .filter(
+                (p) =>
+                  relationalInstanceSetImplementationState.propertyMappingStates.filter(
+                    (pm) => pm.propertyMapping.property.value.name === p.name,
+                  ).length,
+              )
+              .map((property) => (
+                <PropertyMappingsEditor
+                  key={property.name}
+                  property={property}
+                  instanceSetImplementationState={
+                    relationalInstanceSetImplementationState
+                  }
+                  isReadOnly={isReadOnly}
+                />
+              ))}
+        </div>
+      </div>
+    );
+  },
+);
+export const InstanceSetImplementationEditor = observer(
+  (props: {
+    setImplementation: InstanceSetImplementation;
+    isReadOnly: boolean;
+  }) => {
+    const { setImplementation, isReadOnly } = props;
+    const editorStore = useEditorStore();
+    const mappingEditorState =
+      editorStore.getCurrentEditorState(MappingEditorState);
+    const instanceSetImplementationState = guaranteeNonNullable(
+      mappingEditorState.currentTabState instanceof
+        InstanceSetImplementationState
+        ? mappingEditorState.currentTabState
+        : undefined,
+      'Mapping element state for instance set implementation must be instance set implementation state',
+    );
+
+    const renderSetImplementation = (): React.ReactNode => {
+      if (
+        instanceSetImplementationState instanceof
+        PureInstanceSetImplementationState
+      ) {
+        return (
+          <PureInstanceSetImplementationEditor
+            pureInstanceSetImplementationState={instanceSetImplementationState}
+            isReadOnly={isReadOnly}
+          />
+        );
+      } else if (
+        instanceSetImplementationState instanceof
+        FlatDataInstanceSetImplementationState
+      ) {
+        return (
+          <FlatInstanceSetImplementationEditor
+            flatDataInstanceSetImplementationState={
+              instanceSetImplementationState
+            }
+            isReadOnly={isReadOnly}
+          />
+        );
+      } else if (
+        instanceSetImplementationState instanceof
+        RelationalInstanceSetImplementationState
+      ) {
+        return (
+          <RelationalInstanceSetImplementationEditor
+            relationalInstanceSetImplementationState={
+              instanceSetImplementationState
+            }
+            isReadOnly={isReadOnly}
+          />
+        );
+      } else {
+        return (
+          <UnsupportedEditorPanel
+            isReadOnly={isReadOnly}
+            text={`Can't display class mapping in form mode`}
+          ></UnsupportedEditorPanel>
+        );
+      }
+    };
 
     return (
       <div className="mapping-element-editor__content">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel minSize={300}>
-            <ResizablePanelGroup orientation="horizontal">
-              <ResizablePanel minSize={300}>
-                <div className="panel class-mapping-editor__property-panel">
-                  <div className="panel__header">
-                    <div className="panel__header__title">
-                      <div className="panel__header__title__content">
-                        PROPERTIES
-                      </div>
-                    </div>
-                    <div className="panel__header__actions">
-                      <div className="panel__header__action">
-                        <div
-                          className={`class-mapping-editor__sort-by-required-btn ${
-                            sortByRequired
-                              ? 'class-mapping-editor__sort-by-required-btn--enabled'
-                              : ''
-                          }`}
-                          onClick={handleSortChange}
-                        >
-                          <FaLongArrowAltDown />
-                          <FaAsterisk />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="panel__content">
-                    {!isReadOnly &&
-                      !isUnsupported &&
-                      sortedProperties.map((property) => (
-                        <PropertyMappingsEditor
-                          key={property.name}
-                          property={property}
-                          instanceSetImplementationState={
-                            instanceSetImplementationState
-                          }
-                          isReadOnly={isReadOnly}
-                        />
-                      ))}
-                    {isReadOnly &&
-                      !isUnsupported &&
-                      sortedProperties
-                        // for property without any property mapping in readonly mode, we won't show it
-                        .filter(
-                          (p) =>
-                            instanceSetImplementationState.propertyMappingStates.filter(
-                              (pm) =>
-                                pm.propertyMapping.property.value.name ===
-                                p.name,
-                            ).length,
-                        )
-                        .map((property) => (
-                          <PropertyMappingsEditor
-                            key={property.name}
-                            property={property}
-                            instanceSetImplementationState={
-                              instanceSetImplementationState
-                            }
-                            isReadOnly={isReadOnly}
-                          />
-                        ))}
-                    {isUnsupported && (
-                      <UnsupportedEditorPanel
-                        isReadOnly={isReadOnly}
-                        text={`Can't display class mapping in form mode`}
-                      ></UnsupportedEditorPanel>
-                    )}
-                  </div>
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter />
-              {renderFilterEditor &&
-                instanceSetImplementationState.mappingFilterState && (
-                  <ResizablePanel size={330} minSize={80}>
-                    <MappingFilterEditor
-                      editorStore={editorStore}
-                      instanceSetImplementationState={
-                        instanceSetImplementationState
-                      }
-                      filterState={
-                        instanceSetImplementationState.mappingFilterState
-                      }
-                      isReadOnly={isReadOnly}
-                    />
-                  </ResizablePanel>
-                )}
-            </ResizablePanelGroup>
+            {renderSetImplementation()}
           </ResizablePanel>
           <ResizablePanelSplitter />
           <ResizablePanel size={300} minSize={300}>
