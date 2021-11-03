@@ -79,6 +79,7 @@ interface QueryProjectInfo {
   artifactId: string;
   versionId: string;
 }
+
 export abstract class QueryInfoState {
   queryStore: QueryStore;
 

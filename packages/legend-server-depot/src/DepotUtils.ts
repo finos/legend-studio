@@ -37,7 +37,10 @@ export const parseGAVCoordinates = (
   versionId: string;
 } => {
   const parts = gav.split(GAV_DELIMITER);
-  assertTrue(parts.length === 3, `Can't parse GAV coordinate '${gav}'`);
+  assertTrue(
+    parts.length === 3,
+    `Can't parse GAV coordinates '${gav}': expect the coordinates to follow format {groupID}${GAV_DELIMITER}{artifactID}${GAV_DELIMITER}{versionId}`,
+  );
   return {
     groupId: guaranteeNonEmptyString(
       parts[0]?.trim(),
