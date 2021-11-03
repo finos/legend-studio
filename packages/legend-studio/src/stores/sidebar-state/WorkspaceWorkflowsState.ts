@@ -18,7 +18,7 @@ import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { makeAutoObservable, observable, action, flowResult } from 'mobx';
 import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
 import type { EditorStore } from '../EditorStore';
-import type { EditorSDLCState } from '../EditorState_SDLC';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   uuid,

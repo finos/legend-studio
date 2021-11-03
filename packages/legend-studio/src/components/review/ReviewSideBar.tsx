@@ -25,7 +25,7 @@ import { STUDIO_TEST_ID } from '../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { ReviewState } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../stores/EditorState_SDLC';
+import { entityDiffSorter } from '../../stores/EditorSDLCState';
 import { useReviewStore } from './ReviewStoreProvider';
 import { useEditorStore } from '../editor/EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';

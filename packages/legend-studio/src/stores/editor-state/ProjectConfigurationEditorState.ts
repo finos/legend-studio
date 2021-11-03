@@ -30,7 +30,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { EditorSDLCState } from '../EditorState_SDLC';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
   ProjectStructureVersion,

@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import type { EditorSDLCState } from '../EditorState_SDLC';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {

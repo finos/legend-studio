@@ -53,7 +53,7 @@ import {
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
-import { EditorSDLCState } from './EditorState_SDLC';
+import { EditorSDLCState } from './EditorSDLCState';
 import { ModelLoaderState } from './editor-state/ModelLoaderState';
 import type { EditorState } from './editor-state/EditorState';
 import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/EntityDiffViewState';

@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import type { EditorSDLCState } from '../EditorState_SDLC';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
