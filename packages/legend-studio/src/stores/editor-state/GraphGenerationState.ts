@@ -133,6 +133,7 @@ export class GraphGenerationState {
         currentElement instanceof Class ||
         currentElement instanceof Enumeration ||
         currentElement instanceof ConcreteFunctionDefinition
+        // TODO: refactor this as an extension interface
       ) {
         return this.fileGenerationConfigurations
           .slice()
