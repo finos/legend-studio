@@ -450,6 +450,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
             plugin as DSLMapping_StudioPlugin_Extension
           ).getExtraDefaultConnectionValueBuilders?.() ?? [],
       );
+
     for (const builder of extraDefaultConnectionValueBuilders) {
       const defaultConnection = builder(this.store);
       if (defaultConnection) {

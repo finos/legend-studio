@@ -51,6 +51,7 @@
     "mobx-react-lite": "3.2.2",
     "monaco-editor": "0.29.1",
     "react": "17.0.2",
+    "react-dnd": "14.0.4",
     "react-icons": "4.3.1",
     "serializr": "2.0.5"
   },

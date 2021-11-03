@@ -121,7 +121,7 @@ const getConnectionTooltipText = (
         ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
     );
   for (const builder of extraConnectionToolTipTexts) {
-    const tooltipText = builder(connection);
+    const tooltipText = builder(connectionValue);
     if (tooltipText) {
       return tooltipText;
     }
