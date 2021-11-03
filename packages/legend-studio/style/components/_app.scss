@@ -160,15 +160,3 @@
     color: var(--color-blue-50);
   }
 }
-
-.app__configuration-editor {
-  @include flexCenter;
-
-  &__content {
-    width: 60vw;
-  }
-
-  &__action {
-    margin-top: 0.5rem;
-  }
-}

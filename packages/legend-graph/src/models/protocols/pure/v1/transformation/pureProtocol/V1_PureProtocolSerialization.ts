@@ -98,7 +98,7 @@ export const V1_entitiesToPureModelContextData = async (
   }
 };
 
-const alloySdlcSerializationModelSchema = createModelSchema(V1_AlloySDLC, {
+const alloySDLCSerializationModelSchema = createModelSchema(V1_AlloySDLC, {
   _type: usingConstantValueSchema(V1_SDLCType.ALLOY),
   baseVersion: optional(primitive()),
   version: primitive(),
@@ -120,7 +120,7 @@ const V1_pureModelContextPointerModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_PureModelContextType.POINTER),
     serializer: usingModelSchema(V1_Protocol.serialization.schema),
-    sdlcInfo: usingModelSchema(alloySdlcSerializationModelSchema),
+    sdlcInfo: usingModelSchema(alloySDLCSerializationModelSchema),
   },
 );
 

@@ -170,8 +170,6 @@ export class StudioConfig extends LegendApplicationConfig {
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
 
-  isConfigured = false;
-
   constructor(
     configData: StudioConfigurationData,
     versionData: LegendApplicationVersionData,
@@ -181,11 +179,9 @@ export class StudioConfig extends LegendApplicationConfig {
 
     makeObservable(this, {
       currentSDLCServerOption: observable,
-      isConfigured: observable,
       defaultSDLCServerOption: computed,
       sdlcServerUrl: computed,
       setCurrentSDLCServerOption: action,
-      setConfigured: action,
     });
     assertNonNullable(
       configData.sdlc,
@@ -274,9 +270,5 @@ export class StudioConfig extends LegendApplicationConfig {
 
   setCurrentSDLCServerOption(val: SDLCServerOption): void {
     this.currentSDLCServerOption = val;
-  }
-
-  setConfigured(val: boolean): void {
-    this.isConfigured = val;
   }
 }
