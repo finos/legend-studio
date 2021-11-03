@@ -98,7 +98,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         rel="noopener noreferrer"
         target="_blank"
         to={generateEditorRoute(
-          applicationStore.config.sdlcServerKey,
+          applicationStore.config.currentSDLCServerOption,
           workspace.projectId,
           workspace.workspaceId,
           workspace.workspaceType,
@@ -286,7 +286,7 @@ const ReleaseEditor = observer(() => {
                       rel="noopener noreferrer"
                       target="_blank"
                       to={generateViewVersionRoute(
-                        applicationStore.config.sdlcServerKey,
+                        applicationStore.config.currentSDLCServerOption,
                         latestProjectVersion.projectId,
                         latestProjectVersion.id.id,
                       )}
@@ -341,7 +341,7 @@ const ReleaseEditor = observer(() => {
                     rel="noopener noreferrer"
                     target="_blank"
                     to={generateReviewRoute(
-                      applicationStore.config.sdlcServerKey,
+                      applicationStore.config.currentSDLCServerOption,
                       review.projectId,
                       review.id,
                     )}
@@ -404,7 +404,7 @@ const VersionsViewer = observer(() => {
               rel="noopener noreferrer"
               target="_blank"
               to={generateViewVersionRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 version.projectId,
                 version.id.id,
               )}

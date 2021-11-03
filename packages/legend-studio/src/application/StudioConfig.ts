@@ -31,7 +31,6 @@ import {
   SerializationFactory,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import { URL_PATH_PLACEHOLDER } from '../stores/LegendStudioRouter';
 import type {
   LegendApplicationConfigurationData,
   LegendApplicationVersionData,
@@ -135,17 +134,27 @@ class ApplicationCoreOptions {
   }
 }
 
-export interface SDLCServerOption {
-  label: string;
-  key: string;
-  url: string;
+export class SDLCServerOption {
+  label!: string;
+  key!: string;
+  url!: string;
+  default?: boolean;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(SDLCServerOption, {
+      default: optional(primitive()),
+      label: primitive(),
+      key: primitive(),
+      url: primitive(),
+    }),
+  );
 }
 
 export interface StudioConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
-  sdlc: { url: string } | SDLCServerOption[];
+  sdlc: { url: string } | PlainObject<SDLCServerOption>[];
   depot: { url: string };
   engine: { url: string; queryUrl?: string };
   documentation: { url: string };
@@ -155,8 +164,8 @@ export class StudioConfig extends LegendApplicationConfig {
   readonly options = new ApplicationCoreOptions();
 
   readonly documentationUrl: string;
-  _sdlcServerKey: string | undefined;
-  sdlcServerOptions: SDLCServerOption[] = [];
+  currentSDLCServerOption!: SDLCServerOption;
+  SDLCServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
@@ -171,11 +180,11 @@ export class StudioConfig extends LegendApplicationConfig {
     super(configData, versionData, baseUrl);
 
     makeObservable(this, {
-      _sdlcServerKey: observable,
-      sdlcServerKey: computed,
-      sdlcServerUrl: computed,
+      currentSDLCServerOption: observable,
       isConfigured: observable,
-      setSDLCServerKey: action,
+      defaultSDLCServerOption: computed,
+      sdlcServerUrl: computed,
+      setCurrentSDLCServerOption: action,
       setConfigured: action,
     });
     assertNonNullable(
@@ -183,33 +192,48 @@ export class StudioConfig extends LegendApplicationConfig {
       `Can't configure application: 'sdlc' field is missing`,
     );
     if (Array.isArray(configData.sdlc)) {
-      if (configData.sdlc.length === 0) {
+      const options = configData.sdlc.map((optionData) =>
+        SDLCServerOption.serialization.fromJson(optionData),
+      );
+      if (options.length === 0) {
         throw new AssertionError(
           `Can't configure application: 'sdlc' field configured in list form but has no entry`,
         );
       }
       // Make sure the specified instances are unique by key
       if (
-        new Set(configData.sdlc.map((instance) => instance.key)).size !==
-        configData.sdlc.length
+        new Set(options.map((instance) => instance.key)).size !== options.length
       ) {
         throw new AssertionError(
-          `Can't configure application: 'sdlc' is configured with duplicated entries`,
+          `Can't configure application: 'sdlc' field consists of entries with duplicated keys`,
         );
       }
-      this.sdlcServerOptions = configData.sdlc;
+      // Make sure default option is set properly
+      if (options.filter((instance) => instance.default).length === 0) {
+        throw new AssertionError(
+          `Can't configure application: 'sdlc' field consists of no default entry`,
+        );
+      }
+      if (options.filter((instance) => instance.default).length > 1) {
+        throw new AssertionError(
+          `Can't configure application: 'sdlc' field consists of multiple default entries`,
+        );
+      }
+      this.SDLCServerOptions = options;
     } else {
-      this.sdlcServerOptions = [
-        {
-          key: URL_PATH_PLACEHOLDER,
+      this.SDLCServerOptions = [
+        SDLCServerOption.serialization.fromJson({
+          key: 'default',
           url: guaranteeNonEmptyString(
             configData.sdlc.url,
             `Can't configure application: 'sdlc.url' field is missing`,
           ),
           label: '(default)',
-        },
+          default: true,
+        }),
       ];
     }
+    this.currentSDLCServerOption = this.defaultSDLCServerOption;
     assertNonNullable(
       configData.engine,
       `Can't configure application: 'engine' field is missing`,
@@ -237,24 +261,19 @@ export class StudioConfig extends LegendApplicationConfig {
     );
   }
 
-  get sdlcServerKey(): string {
+  get defaultSDLCServerOption(): SDLCServerOption {
     return guaranteeNonNullable(
-      this._sdlcServerKey,
-      'SDLC server is not setup properly',
+      this.SDLCServerOptions.find((option) => option.default),
+      `Can't find a default SDLC server option`,
     );
   }
 
   get sdlcServerUrl(): string {
-    return guaranteeNonNullable(
-      this.sdlcServerOptions.find(
-        (option) => option.key === this.sdlcServerKey,
-      ),
-      'SDLC server is not setup properly',
-    ).url;
+    return this.currentSDLCServerOption.url;
   }
 
-  setSDLCServerKey(val: string): void {
-    this._sdlcServerKey = val;
+  setCurrentSDLCServerOption(val: SDLCServerOption): void {
+    this.currentSDLCServerOption = val;
   }
 
   setConfigured(val: boolean): void {

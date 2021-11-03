@@ -335,7 +335,8 @@ export class WorkspaceReviewState {
             handler: (): void =>
               this.editorStore.applicationStore.navigator.goTo(
                 generateSetupRoute(
-                  this.editorStore.applicationStore.config.sdlcServerKey,
+                  this.editorStore.applicationStore.config
+                    .currentSDLCServerOption,
                   this.editorStore.sdlcState.activeProject.projectId,
                 ),
               ),

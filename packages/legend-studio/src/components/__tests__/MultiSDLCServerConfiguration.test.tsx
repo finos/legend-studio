@@ -20,6 +20,7 @@ import {
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
   Log,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
@@ -29,10 +30,7 @@ import {
   TEST__provideMockedWebApplicationNavigator,
   TEST_DATA__applicationVersion,
 } from '@finos/legend-application';
-import {
-  generateSetupRoute,
-  URL_PATH_PLACEHOLDER,
-} from '../../stores/LegendStudioRouter';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
 import { StudioPluginManager } from '../../application/StudioPluginManager';
 import { TEST_DATA__studioConfig } from '../../stores/EditorStoreTestUtils';
@@ -77,6 +75,7 @@ test(
     setup();
 
     const navigator = TEST__provideMockedWebApplicationNavigator();
+
     MOBX__enableSpyOrMock();
     const goToSpy = jest.spyOn(navigator, 'goTo').mockImplementation();
     MOBX__disableSpyOrMock();
@@ -95,7 +94,7 @@ test(
 
     await waitFor(() =>
       expect(goToSpy).toHaveBeenCalledWith(
-        generateSetupRoute(URL_PATH_PLACEHOLDER, undefined),
+        generateSetupRoute(config.defaultSDLCServerOption, undefined),
       ),
     );
   },
@@ -112,6 +111,7 @@ test(
           label: 'Server1',
           key: 'server1',
           url: 'https://testSdlcUrl1',
+          default: true,
         },
         {
           label: 'Server2',
@@ -148,6 +148,7 @@ test(
           label: 'Server1',
           key: 'server1',
           url: 'https://testSdlcUrl1',
+          default: true,
         },
         {
           label: 'Server2',
@@ -165,7 +166,7 @@ test(
     setup();
 
     const { queryByText } = render(
-      <MemoryRouter initialEntries={['/server1/']}>
+      <MemoryRouter initialEntries={['/sdlc-server1/']}>
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
@@ -191,6 +192,7 @@ test(
           label: 'Server1',
           key: 'server1',
           url: 'https://testSdlcUrl1',
+          default: true,
         },
       ],
     });
@@ -198,7 +200,7 @@ test(
     setup();
 
     const { queryByText } = render(
-      <MemoryRouter initialEntries={['/server1/']}>
+      <MemoryRouter initialEntries={['/sdlc-server1/']}>
         <WebApplicationNavigatorProvider>
           <LegendStudioApplication
             config={config}
@@ -224,6 +226,7 @@ test(
           label: 'Server1',
           key: 'server1',
           url: 'https://testSdlcUrl1',
+          default: true,
         },
       ],
     });
@@ -249,7 +252,12 @@ test(
 
     await waitFor(() =>
       expect(goToSpy).toHaveBeenCalledWith(
-        generateSetupRoute('server1', undefined),
+        generateSetupRoute(
+          guaranteeNonNullable(
+            config.SDLCServerOptions.find((option) => option.key === 'server1'),
+          ),
+          undefined,
+        ),
       ),
     );
   },

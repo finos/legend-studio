@@ -28,6 +28,7 @@ import {
 } from '@finos/legend-art';
 import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
 import {
+  URL_PATH_PLACEHOLDER,
   generateSetupRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
   generateRoutePatternWithSDLCServerKey,
@@ -102,14 +103,14 @@ export const LegendStudioApplicationRoot = observer(() => {
           <Route
             exact={true}
             path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
             ]}
             component={Viewer}
           />
@@ -122,16 +123,16 @@ export const LegendStudioApplicationRoot = observer(() => {
             exact={true}
             strict={true}
             path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
-              LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
             ]}
             component={Editor}
           />
           <Route
             exact={true}
             path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
-              LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
             ]}
             component={Setup}
           />
@@ -145,7 +146,7 @@ export const LegendStudioApplicationRoot = observer(() => {
           ))}
           <Redirect
             to={generateSetupRoute(
-              applicationStore.config.sdlcServerKey,
+              applicationStore.config.defaultSDLCServerOption,
               undefined,
             )}
           />
@@ -159,7 +160,7 @@ const LegendStudioApplicationConfigEditor = observer(
   (props: { config: StudioConfig }) => {
     const { config } = props;
     const navigator = useWebApplicationNavigator();
-    const sdlcServerOptions = config.sdlcServerOptions.map((option) => ({
+    const sdlcServerOptions = config.SDLCServerOptions.map((option) => ({
       label: option.label,
       value: option,
     }));
@@ -167,18 +168,20 @@ const LegendStudioApplicationConfigEditor = observer(
       label: string;
       value: SDLCServerOption;
     }): void => {
-      config.setSDLCServerKey(val.value.key);
+      config.setCurrentSDLCServerOption(val.value);
     };
     const currentSDLCServerOption = guaranteeNonNullable(
       sdlcServerOptions.find(
-        (option) => option.value.key === config.sdlcServerKey,
+        (option) => option.value === config.currentSDLCServerOption,
       ),
     );
 
     const configure = (): void => {
       config.setConfigured(true);
-      // go to the default URL after confiruing SDLC server
-      navigator.goTo(generateSetupRoute(config.sdlcServerKey, undefined));
+      // go to the default URL after configuring SDLC server
+      navigator.goTo(
+        generateSetupRoute(config.currentSDLCServerOption, undefined),
+      );
     };
 
     return (
@@ -223,39 +226,30 @@ export const LegendStudioApplication = observer(
     const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
       generateRoutePatternWithSDLCServerKey('/'),
     );
-    const sdlcServerKey = config.sdlcServerOptions.find(
-      (option) => option.key === routeMatch?.params.sdlcServerKey,
-    )?.key;
+    const sdlcServerKey = routeMatch?.params.sdlcServerKey;
+    const matchingSdlcServerOption = config.SDLCServerOptions.find((option) => {
+      if (sdlcServerKey === URL_PATH_PLACEHOLDER) {
+        return config.defaultSDLCServerOption;
+      }
+      return option.key === sdlcServerKey;
+    });
 
     useEffect(() => {
       if (!config.isConfigured) {
-        if (sdlcServerKey !== undefined) {
-          config.setSDLCServerKey(sdlcServerKey);
+        if (matchingSdlcServerOption !== undefined) {
+          config.setCurrentSDLCServerOption(matchingSdlcServerOption);
           config.setConfigured(true);
-        } else if (config.sdlcServerOptions.length === 1) {
+        } else if (config.SDLCServerOptions.length === 1) {
           // when there is only one SDLC server and the sdlc server key provided is unrecognized,
           // auto-fix the URL
           navigator.goTo(
-            generateSetupRoute(
-              guaranteeNonNullable(config.sdlcServerOptions[0]).key,
-              undefined,
-            ),
-          );
-        } else {
-          // set this by default for the app config editor
-          config.setSDLCServerKey(
-            // NOTE: when parsing the config, we should have already validate
-            // that this list is not empty
-            guaranteeNonNullable(config.sdlcServerOptions[0]).key,
+            generateSetupRoute(config.defaultSDLCServerOption, undefined),
           );
         }
       }
-    }, [config, navigator, sdlcServerKey]);
+    }, [config, navigator, matchingSdlcServerOption]);
 
     if (!config.isConfigured) {
-      if (!config._sdlcServerKey) {
-        return null;
-      }
       return (
         <ThemeProvider theme={LegendMaterialUITheme}>
           <LegendStudioApplicationConfigEditor config={config} />

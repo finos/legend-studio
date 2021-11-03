@@ -106,7 +106,7 @@ const ViewerStatusBar = observer(() => {
             <div className="editor__status-bar__workspace__project">
               <Link
                 to={generateSetupRoute(
-                  applicationStore.config.sdlcServerKey,
+                  applicationStore.config.currentSDLCServerOption,
                   projectId,
                 )}
               >

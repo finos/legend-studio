@@ -18,6 +18,7 @@ import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { generatePath } from 'react-router-dom';
+import type { SDLCServerOption } from '../application/StudioConfig';
 
 export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
   SDLC_SERVER_KEY = 'sdlcServerKey',
@@ -35,7 +36,10 @@ export const URL_PATH_PLACEHOLDER = '-';
 
 export const generateRoutePatternWithSDLCServerKey = (
   pattern: string,
-): string => `/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY}${pattern}`;
+): [string, string] => [
+  `/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY}(-)${pattern}`,
+  `/sdlc-:${LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY}${pattern}`,
+];
 
 export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   VIEW: generateRoutePatternWithSDLCServerKey(
@@ -80,130 +84,204 @@ export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
 });
 
 const generateGroupWorkspaceSetupRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string | undefined,
   groupWorkspaceId: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP, {
-    sdlcServerKey,
-    projectId,
-    groupWorkspaceId,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+      groupWorkspaceId,
+    },
+  );
 
 const generateWorkspaceSetupRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string | undefined,
   workspaceId?: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP, {
-    sdlcServerKey,
-    projectId,
-    workspaceId,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.SETUP[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.SETUP[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+      workspaceId,
+    },
+  );
 
 export const generateSetupRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string | undefined,
   workspaceId?: string | undefined,
   workspaceType?: WorkspaceType | undefined,
 ): string =>
   workspaceType === WorkspaceType.GROUP
     ? generateGroupWorkspaceSetupRoute(
-        sdlcServerKey,
+        sdlcServerOption,
         projectId,
         guaranteeNonNullable(workspaceId),
       )
-    : generateWorkspaceSetupRoute(sdlcServerKey, projectId, workspaceId);
+    : generateWorkspaceSetupRoute(sdlcServerOption, projectId, workspaceId);
 
 const generateGroupWorkspaceEditorRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string,
   groupWorkspaceId: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP, {
-    sdlcServerKey,
-    projectId,
-    groupWorkspaceId,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+      groupWorkspaceId,
+    },
+  );
 
 const generateWorkspaceEditorRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string,
   workspaceId: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT, {
-    sdlcServerKey,
-    projectId,
-    workspaceId,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.EDIT[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.EDIT[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+      workspaceId,
+    },
+  );
 export const generateEditorRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string,
   workspaceId: string,
   workspaceType: WorkspaceType,
 ): string =>
   workspaceType === WorkspaceType.GROUP
-    ? generateGroupWorkspaceEditorRoute(sdlcServerKey, projectId, workspaceId)
-    : generateWorkspaceEditorRoute(sdlcServerKey, projectId, workspaceId);
+    ? generateGroupWorkspaceEditorRoute(
+        sdlcServerOption,
+        projectId,
+        workspaceId,
+      )
+    : generateWorkspaceEditorRoute(sdlcServerOption, projectId, workspaceId);
 
 export const generateReviewRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string,
   reviewId?: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.REVIEW, {
-    sdlcServerKey,
-    projectId,
-    reviewId,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.REVIEW[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.REVIEW[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+      reviewId,
+    },
+  );
 export const generateViewProjectRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW, {
-    sdlcServerKey,
-    projectId,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.VIEW[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+    },
+  );
 export const generateViewProjectByGAVRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   groupId: string,
   artifactId: string,
   versionId: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV, {
-    sdlcServerKey,
-    gav: generateGAVCoordinates(groupId, artifactId, versionId),
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      gav: generateGAVCoordinates(groupId, artifactId, versionId),
+    },
+  );
 export const generateViewVersionRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string,
   versionId: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION, {
-    sdlcServerKey,
-    projectId,
-    versionId,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+      versionId,
+    },
+  );
 export const generateVieweRevisionRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string,
   revisionId: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION, {
-    sdlcServerKey,
-    projectId,
-    revisionId,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+      revisionId,
+    },
+  );
 export const generateViewEntityRoute = (
-  sdlcServerKey: string,
+  sdlcServerOption: SDLCServerOption,
   projectId: string,
   entityPath: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY, {
-    sdlcServerKey,
-    projectId,
-    entityPath,
-  });
+  generatePath(
+    sdlcServerOption.default
+      ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY[0]
+      : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY[1],
+    {
+      sdlcServerKey: sdlcServerOption.default
+        ? URL_PATH_PLACEHOLDER
+        : sdlcServerOption.key,
+      projectId,
+      entityPath,
+    },
+  );
 
 export interface SDLCServerKeyPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY]: string;

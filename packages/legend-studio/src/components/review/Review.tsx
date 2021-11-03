@@ -91,7 +91,7 @@ const ReviewStatusBar = observer(() => {
           <div className="review__status-bar__workspace__project">
             <Link
               to={generateViewProjectRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 reviewStore.projectId,
               )}
             >
@@ -102,7 +102,7 @@ const ReviewStatusBar = observer(() => {
           <div className="review__status-bar__workspace__workspace">
             <Link
               to={generateEditorRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 reviewStore.projectId,
                 review.workspaceId,
                 review.workspaceType,

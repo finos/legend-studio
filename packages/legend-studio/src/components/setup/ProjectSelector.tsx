@@ -71,7 +71,7 @@ export const ProjectSelector = observer(
         }
         applicationStore.navigator.goTo(
           generateSetupRoute(
-            applicationStore.config.sdlcServerKey,
+            applicationStore.config.currentSDLCServerOption,
             val?.value ?? '',
           ),
         );
@@ -84,7 +84,7 @@ export const ProjectSelector = observer(
           // For first load, if the project is not found, reset the URL
           applicationStore.navigator.goTo(
             generateSetupRoute(
-              applicationStore.config.sdlcServerKey,
+              applicationStore.config.currentSDLCServerOption,
               undefined,
             ),
           );

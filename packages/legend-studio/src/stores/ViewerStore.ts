@@ -94,18 +94,21 @@ export class ViewerStore {
         this.editorStore.applicationStore.navigator.goTo(
           versionId
             ? generateViewVersionRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
+                this.editorStore.applicationStore.config
+                  .currentSDLCServerOption,
                 projectId,
                 versionId,
               )
             : revisionId
             ? generateVieweRevisionRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
+                this.editorStore.applicationStore.config
+                  .currentSDLCServerOption,
                 projectId,
                 revisionId,
               )
             : generateViewProjectRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
+                this.editorStore.applicationStore.config
+                  .currentSDLCServerOption,
                 projectId,
               ),
         );
@@ -113,7 +116,7 @@ export class ViewerStore {
         const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
         this.editorStore.applicationStore.navigator.goTo(
           generateViewProjectByGAVRoute(
-            this.editorStore.applicationStore.config.sdlcServerKey,
+            this.editorStore.applicationStore.config.currentSDLCServerOption,
             groupId,
             artifactId,
             versionId,

@@ -222,7 +222,7 @@ const ExplorerContextMenu = observer(
         applicationStore.navigator.openNewWindow(
           applicationStore.navigator.generateLocation(
             generateViewEntityRoute(
-              applicationStore.config.sdlcServerKey,
+              applicationStore.config.currentSDLCServerOption,
               projectId,
               node.packageableElement.path,
             ),
@@ -236,7 +236,7 @@ const ExplorerContextMenu = observer(
           .copyTextToClipboard(
             applicationStore.navigator.generateLocation(
               generateViewEntityRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 projectId,
                 node.packageableElement.path,
               ),

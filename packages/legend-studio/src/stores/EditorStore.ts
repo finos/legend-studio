@@ -586,7 +586,7 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateSetupRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   undefined,
                 ),
               );
@@ -653,7 +653,7 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateViewProjectRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   projectId,
                 ),
               );
@@ -674,7 +674,7 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateSetupRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   projectId,
                   workspaceId,
                   workspaceType,
