@@ -1,0 +1,48 @@
+###Pure
+Class model::MapPerson
+{
+  firstName: String[1];
+}
+
+Class model::MapFirm
+{
+  firstName: String[1];
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+}
+
+Association model::FirmPerson
+{
+  firm: model::Firm[1];
+  employee: model::Person[1];
+}
+
+
+###Mapping
+Mapping model::NewMapping
+(
+  *model::Firm[firm]: Pure
+  {
+    ~src model::MapPerson
+    legalName*: $src.firstName
+  }
+  *model::Person[person]: Pure
+  {
+    ~src model::MapFirm
+    firstName: $src.firstName
+  }
+
+  model::FirmPerson: XStore
+  {
+    firm[person, firm]: $that.legalName == $this.firstName
+  }
+)
