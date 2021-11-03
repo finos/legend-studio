@@ -472,6 +472,7 @@ export class V1_Engine {
     model: V1_PureModelContextData,
   ): Promise<V1_GenerationOutput[]> {
     const grammar = this.pureModelContextDataToPureCode(model);
+    // TODO: change this to send PureModelContextText
     const reparsedPureModelContextData = this.pureCodeToPureModelContextData(
       await grammar,
     );

@@ -25,15 +25,24 @@ import type {
 } from '@finos/legend-studio';
 
 import { StudioPlugin } from '@finos/legend-studio';
-import { NetworkClient } from '@finos/legend-shared';
+import { NetworkClient, assertNonEmptyString } from '@finos/legend-shared';
 
-const LowercasedMorphirTypeName = `morphir`;
+const MORPHIR_TYPE_NAME = `morphir`;
+
+interface ELMorphir_GenerationPluginConfigData {
+  morphirVisualizerUrl: string;
+  linterServerUrl: string;
+  linterAppUrl: string;
+}
 
 export class ELMorphir_GenerationPlugin
   extends StudioPlugin
   implements DSL_StudioPlugin_Extension
 {
   networkClient: NetworkClient;
+  morphirVisualizerUrl = ``;
+  linterServerUrl = ``;
+  linterAppUrl = ``;
 
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
@@ -45,17 +54,35 @@ export class ELMorphir_GenerationPlugin
   }
 
   override configure(_configData: object): ELMorphir_GenerationPlugin {
+    const configData = _configData as ELMorphir_GenerationPluginConfigData;
+    assertNonEmptyString(
+      configData.morphirVisualizerUrl,
+      `Can't configure morphir visualizer url for generation plugin: 'url' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      configData.linterServerUrl,
+      `Can't configure linter server url for generation plugin: 'url' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      configData.linterAppUrl,
+      `Can't configure linter app url for generation plugin: 'url' field is missing or empty`,
+    );
+    this.morphirVisualizerUrl = configData.morphirVisualizerUrl;
+    this.linterServerUrl = configData.linterServerUrl;
+    this.linterAppUrl = configData.linterAppUrl;
+
     return this;
   }
 
   visualizeMorphir =
     (fileNode: GenerationFile): (() => void) =>
     async (): Promise<void> => {
+      assertNonEmptyString(this.morphirVisualizerUrl);
+      window.open(this.morphirVisualizerUrl);
       await this.networkClient.post(
-        `http://0.0.0.0:9901/insight`,
+        this.morphirVisualizerUrl,
         fileNode.content,
       );
-      window.open('http://0.0.0.0:9901/insight');
     };
 
   visualizeBosque =
@@ -64,15 +91,17 @@ export class ELMorphir_GenerationPlugin
       fileNode: GenerationFile,
     ): (() => void) =>
     async (): Promise<void> => {
+      assertNonEmptyString(this.linterServerUrl);
+      assertNonEmptyString(this.linterAppUrl);
       const code =
         fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
           fileGenerationState.editorStore.graphManagerState.graph,
         );
-      await this.networkClient.post(`http://0.0.0.0:9900/lint`, {
+      await this.networkClient.post(this.linterServerUrl, {
         ir: fileNode.content,
         src: await code,
       });
-      window.open('http://localhost:3050');
+      window.open(this.linterAppUrl);
     };
 
   getExtraFileGenerationResultViewerActions(): FileGenerationResultViewerAction[] {
@@ -121,7 +150,7 @@ export class ELMorphir_GenerationPlugin
   isMorphirGenerationType(fileGenerationState: FileGenerationState): boolean {
     return (
       fileGenerationState.fileGeneration.type.toLowerCase() ===
-      LowercasedMorphirTypeName
+      MORPHIR_TYPE_NAME
     );
   }
 }
