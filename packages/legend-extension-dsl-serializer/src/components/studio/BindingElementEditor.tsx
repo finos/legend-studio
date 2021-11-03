@@ -154,7 +154,7 @@ const BindingScopeEditor = observer(
                     className="binding-scope-editor__panel__content__form__section__list__new-item__add-btn btn btn--dark"
                     disabled={!allowAddingElement}
                     tabIndex={-1}
-                    onClick={(): void => addElement()}
+                    onClick={addElement}
                     title="Add Element"
                   >
                     Add Value

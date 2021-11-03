@@ -24,14 +24,13 @@ import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,
 } from '@finos/legend-graph';
-import { OptionalPackageableElementExplicitReference } from '@finos/legend-graph';
 
 export const V1_resolveSchemaSet = (
   path: string,
   context: V1_GraphBuilderContext,
-): OptionalPackageableElementExplicitReference<SchemaSet> =>
-  OptionalPackageableElementExplicitReference.create(
-    getSchemaSet(path, context.graph),
+): PackageableElementImplicitReference<SchemaSet> =>
+  context.createImplicitPackageableElementReference(path, (_path: string) =>
+    getSchemaSet(_path, context.graph),
   );
 
 export const V1_resolveBinding = (

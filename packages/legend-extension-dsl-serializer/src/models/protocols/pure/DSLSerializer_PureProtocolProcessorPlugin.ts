@@ -82,6 +82,7 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
   PackageableElementReference,
+  toOptionalPackageableElementReference,
 } from '@finos/legend-graph';
 import { V1_Schema } from './v1/model/packageableElements/schemaSet/V1_Schema';
 import { ModelUnit } from '../../metamodels/pure/model/packageableElements/store/ModelUnit';
@@ -140,13 +141,12 @@ export class DSLSerializer_PureProtocolProcessorPlugin
             elementProtocol.name,
           );
           const element = getBinding(path, context.graph);
+          const schemaSet = elementProtocol.schemaSet
+            ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
+            : undefined;
           element.schemaId = elementProtocol.schemaId;
-          if (elementProtocol.schemaSet !== undefined) {
-            element.schemaSet = V1_resolveSchemaSet(
-              elementProtocol.schemaSet,
-              context,
-            );
-          }
+          element.schemaSet = toOptionalPackageableElementReference(schemaSet);
+
           element.contentType = guaranteeNonNullable(
             Object.values(BINDING_CONTENT_TYPE).find(
               (type) => type === elementProtocol.contentType,

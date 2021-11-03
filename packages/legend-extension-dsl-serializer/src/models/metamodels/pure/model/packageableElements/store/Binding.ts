@@ -21,13 +21,10 @@ import type {
   OptionalPackageableElementReference,
   PackageableElementVisitor,
 } from '@finos/legend-graph';
-import {
-  OptionalPackageableElementExplicitReference,
-  Store,
-} from '@finos/legend-graph';
+import { Store } from '@finos/legend-graph';
 import type { ModelUnit } from './ModelUnit';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
-import { SchemaSet } from '../schemaSet/SchemaSet';
+import type { SchemaSet } from '../schemaSet/SchemaSet';
 
 export enum BINDING_CONTENT_TYPE {
   FLAT_DATA = 'application/x.flatdata',
@@ -36,8 +33,7 @@ export enum BINDING_CONTENT_TYPE {
 }
 
 export class Binding extends Store implements Hashable {
-  schemaSet: OptionalPackageableElementReference<SchemaSet> =
-    OptionalPackageableElementExplicitReference.create(new SchemaSet(''));
+  schemaSet!: OptionalPackageableElementReference<SchemaSet>;
   schemaId?: string | undefined;
   contentType!: BINDING_CONTENT_TYPE;
   modelUnit!: ModelUnit;

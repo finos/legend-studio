@@ -44,7 +44,10 @@ import type {
   PackageableElement,
   Store,
 } from '@finos/legend-graph';
-import { PackageableElementExplicitReference } from '@finos/legend-graph';
+import {
+  OptionalPackageableElementExplicitReference,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 import {
   FORMAT_TYPE,
   SchemaSet,
@@ -147,6 +150,10 @@ export class DSLSerializer_StudioPlugin
         } else if (type === BINDING_ELEMENT_TYPE) {
           const binding = new Binding(name);
           binding.setContentType(BINDING_CONTENT_TYPE.FLAT_DATA);
+          binding.schemaSet =
+            OptionalPackageableElementExplicitReference.create<SchemaSet>(
+              undefined,
+            );
           const modelUnit = new ModelUnit();
           binding.modelUnit = modelUnit;
           return binding;
