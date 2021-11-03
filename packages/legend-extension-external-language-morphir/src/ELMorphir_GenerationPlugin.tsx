@@ -44,12 +44,16 @@ export class ELMorphir_GenerationPlugin
     pluginManager.registerStudioPlugin(this);
   }
 
+  override configure(_configData: object): ELMorphir_GenerationPlugin {
+    return this;
+  }
+
   visualizeMorphir =
     (fileNode: GenerationFile): (() => void) =>
-    (): void => {
-      this.networkClient.post(
+    async (): Promise<void> => {
+      await this.networkClient.post(
         `http://0.0.0.0:9901/insight`,
-        (fileNode as GenerationFile).content,
+        fileNode.content,
       );
       window.open('http://0.0.0.0:9901/insight');
     };
@@ -64,7 +68,7 @@ export class ELMorphir_GenerationPlugin
         fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
           fileGenerationState.editorStore.graphManagerState.graph,
         );
-      this.networkClient.post(`http://0.0.0.0:9900/lint`, {
+      await this.networkClient.post(`http://0.0.0.0:9900/lint`, {
         ir: fileNode.content,
         src: await code,
       });
