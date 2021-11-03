@@ -26,7 +26,8 @@ export type ApplicationSetup = (
 ) => Promise<void>;
 
 export type ApplicationPageRenderEntry = {
-  urlPattern: string;
+  key: string;
+  urlPatterns: string[];
   component: React.FC | React.ReactElement;
 };
 

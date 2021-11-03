@@ -62,21 +62,7 @@ export const LegendStudioApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore<StudioConfig>();
   const extraApplicationPageRenderEntries = studioStore.pluginManager
     .getStudioPlugins()
-    .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? [])
-    .filter((entry) => {
-      /**
-       * NOTE: Make sure the first path in the url pattern is not a token which could make it the catch-all route.
-       *
-       * TODO: maybe there's a more sophisticated way to manage URL pattern conflicts, but this is sufficient for now.
-       */
-      if (entry.urlPattern.startsWith('/:')) {
-        applicationStore.notifyIllegalState(
-          `Can't render extra application page with URL pattern '${entry.urlPattern}' from plugins due to pattern conflicts`,
-        );
-        return false;
-      }
-      return true;
-    });
+    .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? []);
 
   useEffect(() => {
     flowResult(studioStore.initialize()).catch(
@@ -138,9 +124,9 @@ export const LegendStudioApplicationRoot = observer(() => {
           />
           {extraApplicationPageRenderEntries.map((entry) => (
             <Route
-              key={entry.urlPattern}
+              key={entry.key}
               exact={true}
-              path={generateRoutePatternWithSDLCServerKey(entry.urlPattern)}
+              path={entry.urlPatterns}
               component={entry.component as React.ComponentType<unknown>}
             />
           ))}
