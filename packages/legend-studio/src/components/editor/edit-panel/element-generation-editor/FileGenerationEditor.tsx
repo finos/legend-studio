@@ -218,54 +218,30 @@ export const GenerationResultExplorer = observer(
   },
 );
 
-export const visualizeFileContentButtonGetter = (
+export const extraFileGenerationResultViewerActionsGetter = (
   fileGenerationState: FileGenerationState,
   fileNode: GenerationFile,
 ): React.ReactNode => {
-  const visualizeFileContentButton =
+  const extraFileGenerationResultViewerActions =
     fileGenerationState.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
             plugin as DSL_StudioPlugin_Extension
-          ).getVisualizeFileContentButtons?.() ?? [],
+          ).getExtraFileGenerationResultViewerActions?.() ?? [],
       );
-  for (const visualizeFileContentButtonCreator of visualizeFileContentButton) {
-    const visualizeButton = visualizeFileContentButtonCreator(
+  const result = [];
+  for (const extraFileGenerationResultViewerActionsCreator of extraFileGenerationResultViewerActions) {
+    const extraAction = extraFileGenerationResultViewerActionsCreator(
       fileGenerationState,
       fileNode,
     );
-    if (visualizeButton) {
-      return visualizeButton;
+    if (extraAction) {
+      result.push(extraAction);
     }
   }
-  return undefined;
-};
-
-export const viewAdvancedFileInfoButtonGetter = (
-  fileGenerationState: FileGenerationState,
-  fileNode: GenerationFile,
-): React.ReactNode => {
-  const viewAdvancedFileInfoButton =
-    fileGenerationState.editorStore.pluginManager
-      .getStudioPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_StudioPlugin_Extension
-          ).getViewAdvancedFileInfoButtons?.() ?? [],
-      );
-  for (const viewAdvancedFileInfoButtonCreator of viewAdvancedFileInfoButton) {
-    const viewInfoButton = viewAdvancedFileInfoButtonCreator(
-      fileGenerationState,
-      fileNode,
-    );
-    if (viewInfoButton) {
-      return viewInfoButton;
-    }
-  }
-  return undefined;
+  return result;
 };
 
 export const GenerationResultViewer = observer(
@@ -277,16 +253,9 @@ export const GenerationResultViewer = observer(
     const regenerate = applicationStore.guaranteeSafeAction(() =>
       flowResult(fileGenerationState.generate()),
     );
-    const visualizeFileContentButton =
+    const extraFileGenerationResultViewerActions =
       fileNode instanceof GenerationFile
-        ? visualizeFileContentButtonGetter(
-            fileGenerationState,
-            fileNode,
-          )
-        : undefined;
-    const viewAdvancedFileInfoButton =
-      fileNode instanceof GenerationFile
-        ? viewAdvancedFileInfoButtonGetter(
+        ? extraFileGenerationResultViewerActionsGetter(
             fileGenerationState,
             fileNode,
           )
@@ -349,9 +318,7 @@ export const GenerationResultViewer = observer(
                     {fileNode.name}
                   </div>
                   {fileNode instanceof GenerationFile &&
-                    visualizeFileContentButton}
-                  {fileNode instanceof GenerationFile &&
-                    viewAdvancedFileInfoButton}
+                    extraFileGenerationResultViewerActions}
                 </div>
               )}
             </div>

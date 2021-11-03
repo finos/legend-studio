@@ -223,12 +223,7 @@ export interface DSL_StudioPlugin_Extension extends StudioPlugin {
   getExtraGrammarTextEditorDnDTypes?(): string[];
 
   /**
-   * Get the list of the supported visualize file content button.
+   * Get the list of the supported extra file generation result viewer actions such as buttons.
    */
-  getVisualizeFileContentButtons?(): FileGenerationResultViewerAction[];
-
-  /**
-   * Get the list of the supported view advanced file info button.
-   */
-  getViewAdvancedFileInfoButtons?(): FileGenerationResultViewerAction[];
+  getExtraFileGenerationResultViewerActions?(): FileGenerationResultViewerAction[];
 }

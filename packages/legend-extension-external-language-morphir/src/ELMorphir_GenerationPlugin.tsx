@@ -27,6 +27,8 @@ import type {
 import { StudioPlugin } from '@finos/legend-studio';
 import { NetworkClient } from '@finos/legend-shared';
 
+const LowercasedMorphirTypeName = `morphir`;
+
 export class ELMorphir_GenerationPlugin
   extends StudioPlugin
   implements DSL_StudioPlugin_Extension
@@ -69,7 +71,7 @@ export class ELMorphir_GenerationPlugin
       window.open('http://localhost:3050');
     };
 
-  getVisualizeFileContentButtons(): FileGenerationResultViewerAction[] {
+  getExtraFileGenerationResultViewerActions(): FileGenerationResultViewerAction[] {
     return [
       (
         fileGenerationState: FileGenerationState,
@@ -90,11 +92,6 @@ export class ELMorphir_GenerationPlugin
         }
         return undefined;
       },
-    ];
-  }
-
-  getViewAdvancedFileInfoButtons(): FileGenerationResultViewerAction[] {
-    return [
       (
         fileGenerationState: FileGenerationState,
         fileNode: GenerationFile,
@@ -118,6 +115,9 @@ export class ELMorphir_GenerationPlugin
   }
 
   isMorphirGenerationType(fileGenerationState: FileGenerationState): boolean {
-    return fileGenerationState.fileGeneration.type.toLowerCase() === `morphir`;
+    return (
+      fileGenerationState.fileGeneration.type.toLowerCase() ===
+      LowercasedMorphirTypeName
+    );
   }
 }
