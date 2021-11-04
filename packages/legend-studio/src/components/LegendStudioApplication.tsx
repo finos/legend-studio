@@ -85,8 +85,8 @@ export const LegendStudioApplicationRoot = observer(() => {
             exact={true}
             path={[
               ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
               ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
               ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
               ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,

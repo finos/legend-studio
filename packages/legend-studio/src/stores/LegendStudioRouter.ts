@@ -45,12 +45,8 @@ export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   VIEW: generateRoutePatternWithSDLCServerKey(
     `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}`,
   ),
-  VIEW_BY_GAV: generateRoutePatternWithSDLCServerKey(
-    `/view/gav/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}`,
-  ),
-  VIEW_BY_GAV_ENTITY: generateRoutePatternWithSDLCServerKey(
-    `/view/gav/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
-  ),
+  VIEW_BY_GAV: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}`,
+  VIEW_BY_GAV_ENTITY: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   VIEW_BY_ENTITY: generateRoutePatternWithSDLCServerKey(
     `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   ),
@@ -215,22 +211,13 @@ export const generateViewProjectRoute = (
     },
   );
 export const generateViewProjectByGAVRoute = (
-  sdlcServerOption: SDLCServerOption,
   groupId: string,
   artifactId: string,
   versionId: string,
 ): string =>
-  generatePath(
-    sdlcServerOption.default
-      ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV[0]
-      : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV[1],
-    {
-      sdlcServerKey: sdlcServerOption.default
-        ? URL_PATH_PLACEHOLDER
-        : sdlcServerOption.key,
-      gav: generateGAVCoordinates(groupId, artifactId, versionId),
-    },
-  );
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV, {
+    gav: generateGAVCoordinates(groupId, artifactId, versionId),
+  });
 export const generateViewVersionRoute = (
   sdlcServerOption: SDLCServerOption,
   projectId: string,

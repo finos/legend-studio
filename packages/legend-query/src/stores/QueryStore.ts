@@ -791,11 +791,11 @@ export class QueryStore {
     entityPath: string | undefined,
   ): void {
     this.applicationStore.navigator.openNewWindow(
-      `${
-        this.applicationStore.config.studioUrl
-      }/-/view/gav/${generateGAVCoordinates(groupId, artifactId, versionId)}${
-        entityPath ? `/entity/${entityPath}` : ''
-      }`,
+      `${this.applicationStore.config.studioUrl}/view/${generateGAVCoordinates(
+        groupId,
+        artifactId,
+        versionId,
+      )}${entityPath ? `/entity/${entityPath}` : ''}`,
     );
   }
 }

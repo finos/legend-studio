@@ -115,12 +115,7 @@ export class ViewerStore {
       } else if (gav) {
         const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
         this.editorStore.applicationStore.navigator.goTo(
-          generateViewProjectByGAVRoute(
-            this.editorStore.applicationStore.config.currentSDLCServerOption,
-            groupId,
-            artifactId,
-            versionId,
-          ),
+          generateViewProjectByGAVRoute(groupId, artifactId, versionId),
         );
       }
     }
