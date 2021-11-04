@@ -46,7 +46,7 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.33",
+    "@types/react": "17.0.34",
     "mobx": "6.3.6",
     "mobx-react-lite": "3.2.2",
     "monaco-editor": "0.29.1",

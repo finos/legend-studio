@@ -50,7 +50,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@material-ui/core": "4.12.3",
-    "@types/react": "17.0.33",
+    "@types/react": "17.0.34",
     "mobx": "6.3.6",
     "mobx-react-lite": "3.2.2",
     "react": "17.0.2",
@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.10.1",
+    "@testing-library/dom": "8.11.0",
     "@testing-library/react": "12.1.2",
     "cross-env": "7.0.3",
     "eslint": "8.1.0",
