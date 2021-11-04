@@ -146,7 +146,7 @@ export const LegendStudioApplication = observer(
     const { config, pluginManager, log } = props;
     const navigator = useWebApplicationNavigator();
     const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
-      generateRoutePatternWithSDLCServerKey('/'),
+      generateRoutePatternWithSDLCServerKey('/*'),
     );
     const matchedSDLCServerKey = routeMatch?.params.sdlcServerKey;
     const matchingSDLCServerOption = config.SDLCServerOptions.find((option) => {

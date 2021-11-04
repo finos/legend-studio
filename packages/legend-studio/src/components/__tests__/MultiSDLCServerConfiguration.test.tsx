@@ -21,6 +21,8 @@ import {
   MOBX__disableSpyOrMock,
   Log,
   guaranteeType,
+  unitTest,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
@@ -31,7 +33,10 @@ import {
   WebApplicationNavigator,
   useWebApplicationNavigator,
 } from '@finos/legend-application';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
+import {
+  generateSetupRoute,
+  updateRouteWithNewSDLCServerOption,
+} from '../../stores/LegendStudioRouter';
 import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
 import { StudioPluginManager } from '../../application/StudioPluginManager';
 import { TEST_DATA__studioConfig } from '../../stores/EditorStoreTestUtils';
@@ -191,7 +196,7 @@ test(
     };
 
     const { queryByText } = render(
-      <MemoryRouter initialEntries={['/sdlc-someServer/']}>
+      <MemoryRouter initialEntries={['/sdlc-someServer/somethingElse']}>
         <WebApplicationNavigatorProvider>
           <CaptureNavigator />
           <LegendStudioApplication
@@ -258,3 +263,71 @@ test(
     await waitFor(() => expect(queryByText('Next')).not.toBeNull());
   },
 );
+
+test(unitTest('Route update with SDLC server option changes'), async () => {
+  const config = new StudioConfig(
+    {
+      ...TEST_DATA__studioConfig,
+      ...{
+        sdlc: [
+          {
+            label: 'Server1',
+            key: 'server1',
+            url: 'https://testSdlcUrl1',
+            default: true,
+          },
+          {
+            label: 'Server2',
+            key: 'server2',
+            url: 'https://testSdlcUrl2',
+          },
+          {
+            label: 'Server3',
+            key: 'server3',
+            url: 'https://testSdlcUrl2',
+          },
+        ],
+      },
+    },
+    TEST_DATA__applicationVersion,
+    '/studio/',
+  );
+
+  const server1 = guaranteeNonNullable(
+    config.SDLCServerOptions.find((option) => option.key === 'server1'),
+  );
+  const server2 = guaranteeNonNullable(
+    config.SDLCServerOptions.find((option) => option.key === 'server2'),
+  );
+  const server3 = guaranteeNonNullable(
+    config.SDLCServerOptions.find((option) => option.key === 'server3'),
+  );
+
+  expect(
+    updateRouteWithNewSDLCServerOption('/-/something1/something-2', server1),
+  ).toBe(undefined);
+  expect(
+    updateRouteWithNewSDLCServerOption('/-/something1/something-2', server2),
+  ).toBe('/sdlc-server2/something1/something-2');
+  expect(
+    updateRouteWithNewSDLCServerOption('/-/something1/something-2', server3),
+  ).toBe('/sdlc-server3/something1/something-2');
+  expect(
+    updateRouteWithNewSDLCServerOption(
+      '/sdlc-server2/something1/something-2',
+      server2,
+    ),
+  ).toBe(undefined);
+  expect(
+    updateRouteWithNewSDLCServerOption(
+      '/sdlc-server2/something1/something-2',
+      server3,
+    ),
+  ).toBe('/sdlc-server3/something1/something-2');
+  expect(
+    updateRouteWithNewSDLCServerOption(
+      '/sdlc-server2/something1/something-2',
+      server1,
+    ),
+  ).toBe('/-/something1/something-2');
+});

@@ -17,7 +17,7 @@
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { generatePath } from 'react-router-dom';
+import { generatePath, matchPath } from 'react-router-dom';
 import type { SDLCServerOption } from '../application/StudioConfig';
 
 export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
@@ -78,6 +78,40 @@ export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
     `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
   ),
 });
+
+export interface SDLCServerKeyPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY]: string;
+}
+
+export interface ReviewPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.REVIEW_ID]: string;
+}
+
+export interface ViewerPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.VERSION_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.REVISION_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH]?: string;
+}
+
+export interface CoreEditorPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
+}
+
+export interface EditorPathParams extends CoreEditorPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]: string;
+}
+
+export interface GroupEditorPathParams extends CoreEditorPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: string;
+}
+export interface SetupPathParams {
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]?: string;
+}
 
 const generateGroupWorkspaceSetupRoute = (
   sdlcServerOption: SDLCServerOption,
@@ -270,36 +304,29 @@ export const generateViewEntityRoute = (
     },
   );
 
-export interface SDLCServerKeyPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY]: string;
-}
-
-export interface ReviewPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.REVIEW_ID]: string;
-}
-
-export interface ViewerPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV]?: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.VERSION_ID]?: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.REVISION_ID]?: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH]?: string;
-}
-
-export interface CoreEditorPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
-}
-
-export interface EditorPathParams extends CoreEditorPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]: string;
-}
-
-export interface GroupEditorPathParams extends CoreEditorPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: string;
-}
-export interface SetupPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]?: string;
-}
+export const updateRouteWithNewSDLCServerOption = (
+  currentPath: string,
+  newOption: SDLCServerOption,
+): string | undefined => {
+  const patterns = generateRoutePatternWithSDLCServerKey('/:pattern(.*)');
+  const match = matchPath<SDLCServerKeyPathParams & { pattern: string }>(
+    currentPath,
+    patterns,
+  );
+  if (match) {
+    const matchedSDLCServerKey = match.params.sdlcServerKey;
+    if (
+      matchedSDLCServerKey === newOption.key ||
+      (matchedSDLCServerKey === URL_PATH_PLACEHOLDER && newOption.default)
+    ) {
+      return undefined;
+    }
+    return `${generatePath(newOption.default ? patterns[0] : patterns[1], {
+      pattern: '',
+      [LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY]: newOption.default
+        ? URL_PATH_PLACEHOLDER
+        : newOption.key,
+    })}${match.params.pattern}`;
+  }
+  return undefined;
+};
