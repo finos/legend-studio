@@ -28,7 +28,7 @@ import type { ViewerPathParams } from './LegendStudioRouter';
 import {
   generateViewProjectByGAVRoute,
   generateViewVersionRoute,
-  generateVieweRevisionRoute,
+  generateViewRevisionRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
 import type { Entity } from '@finos/legend-model-storage';
@@ -100,7 +100,7 @@ export class ViewerStore {
                 versionId,
               )
             : revisionId
-            ? generateVieweRevisionRoute(
+            ? generateViewRevisionRoute(
                 this.editorStore.applicationStore.config
                   .currentSDLCServerOption,
                 projectId,

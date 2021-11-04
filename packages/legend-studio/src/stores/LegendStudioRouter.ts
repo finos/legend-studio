@@ -269,7 +269,7 @@ export const generateViewVersionRoute = (
       versionId,
     },
   );
-export const generateVieweRevisionRoute = (
+export const generateViewRevisionRoute = (
   sdlcServerOption: SDLCServerOption,
   projectId: string,
   revisionId: string,
