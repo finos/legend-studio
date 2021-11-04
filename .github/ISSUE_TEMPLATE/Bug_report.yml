@@ -1,7 +1,7 @@
 name: '🐛 Bug report'
 description: "If something isn't working as expected 🤔."
 title: 'Bug: <title>'
-labels: ['Type: Bug', 'Status: Unconfirmed']
+labels: ['Type: Bug']
 body:
   # Context
   - type: markdown
