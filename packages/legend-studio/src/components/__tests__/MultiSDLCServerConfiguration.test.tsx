@@ -304,6 +304,13 @@ test(unitTest('Route update with SDLC server option changes'), async () => {
   );
 
   expect(
+    updateRouteWithNewSDLCServerOption('/something1/something-2', server1),
+  ).toBe(undefined);
+  expect(
+    updateRouteWithNewSDLCServerOption('/something1/something-2', server2),
+  ).toBe(undefined);
+
+  expect(
     updateRouteWithNewSDLCServerOption('/-/something1/something-2', server1),
   ).toBe(undefined);
   expect(

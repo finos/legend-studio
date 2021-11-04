@@ -304,6 +304,14 @@ export const generateViewEntityRoute = (
     },
   );
 
+/**
+ * This will check if the provided path matches the SDLC-instance pattern
+ * then accordingly update the path to use the new SDLC server key
+ *
+ * NOTE: this method returns `undefined` when no update is needed due to various reasons:
+ * 1. The path doesn't match the SDLC-instance pattern
+ * 2. The new SDLC server key matches the current one in the provided path
+ */
 export const updateRouteWithNewSDLCServerOption = (
   currentPath: string,
   newOption: SDLCServerOption,
