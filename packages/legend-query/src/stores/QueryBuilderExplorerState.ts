@@ -300,11 +300,11 @@ export const getQueryBuilderPropertyNodeData = (
     property,
     parentNode.id,
     mappingData.mapped,
+    mappingData.skipMappingCheck,
     property instanceof DerivedProperty ||
       parentNode.isPartOfDerivedPropertyBranch ||
       (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
         parentNode.property instanceof DerivedProperty),
-    mappingData.skipMappingCheck,
     mappingData.setImpl,
   );
   if (propertyNode.type instanceof Class) {
