@@ -1,0 +1,4 @@
+---
+"@finos/legend-query": patch
+---
+
