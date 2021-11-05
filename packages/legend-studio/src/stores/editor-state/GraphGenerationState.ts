@@ -61,9 +61,6 @@ import type {
 } from '@finos/legend-graph';
 import {
   GenerationSpecification,
-  Class,
-  Enumeration,
-  ConcreteFunctionDefinition,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
 import type { DSL_StudioPlugin_Extension } from '../StudioPlugin';
