@@ -196,7 +196,7 @@ const ExplorerContextMenu = observer(
           {config.renderer(editorStore, node?.packageableElement)}
         </Fragment>
       ));
-    const projectId = editorStore.sdlcState.activeProject.projectId;
+    const projectId = editorStore.sdlcState.currentProject?.projectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const _package = node
       ? node.packageableElement instanceof Package
@@ -218,7 +218,7 @@ const ExplorerContextMenu = observer(
       }
     };
     const openElementInViewerMode = (): void => {
-      if (node) {
+      if (node && projectId) {
         applicationStore.navigator.openNewWindow(
           applicationStore.navigator.generateLocation(
             generateViewEntityRoute(
@@ -230,14 +230,12 @@ const ExplorerContextMenu = observer(
         );
       }
     };
-    const getElementLinkInViewerMode = (): void => {
+    const copyLinkToElementInViewerMode = (): void => {
       if (node) {
         applicationStore
           .copyTextToClipboard(
             applicationStore.navigator.generateLocation(
-              generateViewEntityRoute(
-                applicationStore.config.currentSDLCServerOption,
-                projectId,
+              editorStore.editorMode.generateElementLink(
                 node.packageableElement.path,
               ),
             ),
@@ -300,10 +298,12 @@ const ExplorerContextMenu = observer(
         )}
         {node && (
           <>
-            <MenuContentItem onClick={openElementInViewerMode}>
-              View in Project
-            </MenuContentItem>
-            <MenuContentItem onClick={getElementLinkInViewerMode}>
+            {!editorStore.isInViewerMode && (
+              <MenuContentItem onClick={openElementInViewerMode}>
+                View in Project
+              </MenuContentItem>
+            )}
+            <MenuContentItem onClick={copyLinkToElementInViewerMode}>
               Copy Link
             </MenuContentItem>
           </>

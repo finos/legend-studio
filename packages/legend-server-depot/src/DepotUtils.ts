@@ -22,6 +22,12 @@ import {
 
 export const GAV_DELIMITER = ':';
 
+export interface ProjectGAVCoordinates {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+}
+
 export const generateGAVCoordinates = (
   groupId: string,
   artifactId: string,

@@ -20,6 +20,7 @@ import { ViewerStore } from '../../stores/ViewerStore';
 import { EDITOR_MODE } from '../../stores/EditorConfig';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider';
+import { ViewerEditorMode } from '../../stores/viewer/ViewerEditorMode';
 
 const ViewerStoreContext = createContext<ViewerStore | undefined>(undefined);
 
@@ -31,6 +32,7 @@ export const ViewerStoreProvider = ({
   const editorStore = useEditorStore();
   editorStore.setMode(EDITOR_MODE.VIEWER);
   const store = useLocalObservable(() => new ViewerStore(editorStore));
+  editorStore.setEditorMode(new ViewerEditorMode(store));
   return (
     <ViewerStoreContext.Provider value={store}>
       {children}

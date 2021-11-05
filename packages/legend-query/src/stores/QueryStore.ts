@@ -60,7 +60,10 @@ import type {
 import { generateExistingQueryRoute } from './LegendQueryRouter';
 import { QUERY_LOG_EVENT } from '../QueryLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import type {
+  DepotServerClient,
+  ProjectGAVCoordinates,
+} from '@finos/legend-server-depot';
 import {
   generateGAVCoordinates,
   ProjectData,
@@ -74,12 +77,6 @@ import type { QueryConfig } from '../application/QueryConfig';
 export const LATEST_VERSION_ALIAS = 'latest';
 export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
 
-interface QueryProjectInfo {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-}
-
 export abstract class QueryInfoState {
   queryStore: QueryStore;
 
@@ -87,7 +84,7 @@ export abstract class QueryInfoState {
     this.queryStore = queryStore;
   }
 
-  abstract getQueryProjectInfo(): QueryProjectInfo;
+  abstract getQueryProjectInfo(): ProjectGAVCoordinates;
   abstract decorateQuery(query: Query): void;
 }
 
@@ -128,7 +125,7 @@ export class CreateQueryInfoState extends QueryInfoState {
     this.runtime = val;
   }
 
-  getQueryProjectInfo(): QueryProjectInfo {
+  getQueryProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.project.groupId,
       artifactId: this.project.artifactId,
@@ -165,7 +162,7 @@ export class ServiceQueryInfoState extends QueryInfoState {
     this.key = key;
   }
 
-  getQueryProjectInfo(): QueryProjectInfo {
+  getQueryProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.project.groupId,
       artifactId: this.project.artifactId,
@@ -199,7 +196,7 @@ export class ExistingQueryInfoState extends QueryInfoState {
     this.query = val;
   }
 
-  getQueryProjectInfo(): QueryProjectInfo {
+  getQueryProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.query.groupId,
       artifactId: this.query.artifactId,

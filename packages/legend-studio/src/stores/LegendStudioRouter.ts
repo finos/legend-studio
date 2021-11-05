@@ -244,48 +244,6 @@ export const generateViewProjectRoute = (
       projectId,
     },
   );
-export const generateViewProjectByGAVRoute = (
-  groupId: string,
-  artifactId: string,
-  versionId: string,
-): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV, {
-    gav: generateGAVCoordinates(groupId, artifactId, versionId),
-  });
-export const generateViewVersionRoute = (
-  sdlcServerOption: SDLCServerOption,
-  projectId: string,
-  versionId: string,
-): string =>
-  generatePath(
-    sdlcServerOption.default
-      ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION[0]
-      : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION[1],
-    {
-      sdlcServerKey: sdlcServerOption.default
-        ? URL_PATH_PLACEHOLDER
-        : sdlcServerOption.key,
-      projectId,
-      versionId,
-    },
-  );
-export const generateViewRevisionRoute = (
-  sdlcServerOption: SDLCServerOption,
-  projectId: string,
-  revisionId: string,
-): string =>
-  generatePath(
-    sdlcServerOption.default
-      ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION[0]
-      : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION[1],
-    {
-      sdlcServerKey: sdlcServerOption.default
-        ? URL_PATH_PLACEHOLDER
-        : sdlcServerOption.key,
-      projectId,
-      revisionId,
-    },
-  );
 export const generateViewEntityRoute = (
   sdlcServerOption: SDLCServerOption,
   projectId: string,
@@ -303,6 +261,92 @@ export const generateViewEntityRoute = (
       entityPath,
     },
   );
+export const generateViewProjectByGAVRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  entityPath?: string | undefined,
+): string =>
+  !entityPath
+    ? generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV, {
+        gav: generateGAVCoordinates(groupId, artifactId, versionId),
+      })
+    : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY, {
+        gav: generateGAVCoordinates(groupId, artifactId, versionId),
+        entityPath,
+      });
+export const generateViewProjectEntityByGAVRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+): string =>
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV, {
+    gav: generateGAVCoordinates(groupId, artifactId, versionId),
+  });
+export const generateViewVersionRoute = (
+  sdlcServerOption: SDLCServerOption,
+  projectId: string,
+  versionId: string,
+  entityPath?: string | undefined,
+): string =>
+  !entityPath
+    ? generatePath(
+        sdlcServerOption.default
+          ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION[0]
+          : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION[1],
+        {
+          sdlcServerKey: sdlcServerOption.default
+            ? URL_PATH_PLACEHOLDER
+            : sdlcServerOption.key,
+          projectId,
+          versionId,
+        },
+      )
+    : generatePath(
+        sdlcServerOption.default
+          ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY[0]
+          : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY[1],
+        {
+          sdlcServerKey: sdlcServerOption.default
+            ? URL_PATH_PLACEHOLDER
+            : sdlcServerOption.key,
+          projectId,
+          versionId,
+          entityPath,
+        },
+      );
+export const generateViewRevisionRoute = (
+  sdlcServerOption: SDLCServerOption,
+  projectId: string,
+  revisionId: string,
+  entityPath?: string | undefined,
+): string =>
+  !entityPath
+    ? generatePath(
+        sdlcServerOption.default
+          ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION[0]
+          : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION[1],
+        {
+          sdlcServerKey: sdlcServerOption.default
+            ? URL_PATH_PLACEHOLDER
+            : sdlcServerOption.key,
+          projectId,
+          revisionId,
+        },
+      )
+    : generatePath(
+        sdlcServerOption.default
+          ? LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY[0]
+          : LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY[1],
+        {
+          sdlcServerKey: sdlcServerOption.default
+            ? URL_PATH_PLACEHOLDER
+            : sdlcServerOption.key,
+          projectId,
+          revisionId,
+          entityPath,
+        },
+      );
 
 /**
  * This will check if the provided path matches the SDLC-instance pattern
