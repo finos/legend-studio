@@ -236,7 +236,7 @@ const QueryBuilderExplorerContextMenu = observer(
             ): childNode is QueryBuilderExplorerTreePropertyNodeData =>
               childNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
               !(childNode.type instanceof Class) &&
-              childNode.mapped,
+              childNode.mappingData.mapped,
           );
         if (queryBuilderState.fetchStructureState.isGraphFetchMode()) {
           const graphFetchTreeData =
@@ -367,7 +367,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       (node.property.multiplicity.upperBound === undefined ||
         node.property.multiplicity.upperBound > 1);
     const allowPreview =
-      node.mapped &&
+      node.mappingData.mapped &&
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
       node.type instanceof PrimitiveType &&
       !node.isPartOfDerivedPropertyBranch;
@@ -408,7 +408,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
     }, [dragPreviewConnector]);
 
     if (
-      !node.mapped &&
+      !node.mappingData.mapped &&
       !explorerState.showUnmappedProperties &&
       queryBuilderState.querySetupState.isMappingCompatible
     ) {
@@ -439,12 +439,16 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               'query-builder-explorer-tree__node__container--selected-from-context-menu':
                 isSelectedFromContextMenu,
               'query-builder-explorer-tree__node__container--unmapped':
-                !node.mapped,
+                !node.mappingData.mapped,
             },
           )}
-          title={!node.mapped ? 'Property is not mapped' : undefined}
+          title={
+            !node.mappingData.mapped ? 'Property is not mapped' : undefined
+          }
           onClick={selectNode}
-          ref={node.mapped && !isExpandable ? dragConnector : undefined}
+          ref={
+            node.mappingData.mapped && !isExpandable ? dragConnector : undefined
+          }
           style={{
             paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1) + 0.5}rem`,
             display: 'flex',
@@ -522,7 +526,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 <QueryBuilderPropertyInfoTooltip
                   property={node.property}
                   path={node.id}
-                  isMapped={node.mapped}
+                  isMapped={node.mappingData.mapped}
                   placement="bottom"
                 >
                   <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
@@ -558,7 +562,7 @@ const QueryBuilderExplorerTreeNodeView = observer(
     const { queryBuilderState } = innerProps;
 
     if (
-      !node.mapped &&
+      !node.mappingData.mapped &&
       !queryBuilderState.explorerState.showUnmappedProperties &&
       queryBuilderState.querySetupState.isMappingCompatible
     ) {
