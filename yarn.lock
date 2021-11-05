@@ -2181,7 +2181,7 @@ __metadata:
     jest: 27.3.1
     mobx: 6.3.6
     mobx-react-lite: 3.2.2
-    monaco-editor: 0.29.1
+    monaco-editor: 0.30.0
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
@@ -2214,7 +2214,7 @@ __metadata:
     jest: 27.3.1
     mobx: 6.3.6
     mobx-react-lite: 3.2.2
-    monaco-editor: 0.29.1
+    monaco-editor: 0.30.0
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
@@ -2265,8 +2265,8 @@ __metadata:
     jsonc-parser: 3.0.0
     micromatch: 4.0.4
     mini-css-extract-plugin: 2.4.4
-    monaco-editor: 0.29.1
-    monaco-editor-webpack-plugin: 5.0.0
+    monaco-editor: 0.30.0
+    monaco-editor-webpack-plugin: 6.0.0
     postcss: 8.3.11
     postcss-loader: 6.2.0
     react-refresh: 0.10.0
@@ -2275,7 +2275,7 @@ __metadata:
     sass: 1.43.4
     sass-loader: 12.3.0
     typescript: 4.4.4
-    webpack: 5.61.0
+    webpack: 5.62.1
   languageName: unknown
   linkType: soft
 
@@ -2299,7 +2299,7 @@ __metadata:
     jest: 27.3.1
     mobx: 6.3.6
     mobx-react-lite: 3.2.2
-    monaco-editor: 0.29.1
+    monaco-editor: 0.30.0
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
@@ -2365,7 +2365,7 @@ __metadata:
     jest: 27.3.1
     mobx: 6.3.6
     mobx-react-lite: 3.2.2
-    monaco-editor: 0.29.1
+    monaco-editor: 0.30.0
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dnd: 14.0.4
@@ -2396,7 +2396,7 @@ __metadata:
     jest: 27.3.1
     mobx: 6.3.6
     mobx-react-lite: 3.2.2
-    monaco-editor: 0.29.1
+    monaco-editor: 0.30.0
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2441,7 +2441,7 @@ __metadata:
     jest: 27.3.1
     mobx: 6.3.6
     mobx-react-lite: 3.2.2
-    monaco-editor: 0.29.1
+    monaco-editor: 0.30.0
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2549,7 +2549,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.4
-    webpack: 5.61.0
+    webpack: 5.62.1
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
     webpack-dev-server: 4.4.0
@@ -2584,7 +2584,7 @@ __metadata:
     jest: 27.3.1
     mobx: 6.3.6
     mobx-react-lite: 3.2.2
-    monaco-editor: 0.29.1
+    monaco-editor: 0.30.0
     npm-run-all: 4.1.5
     papaparse: 5.3.1
     react: 17.0.2
@@ -2714,7 +2714,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.4
-    webpack: 5.61.0
+    webpack: 5.62.1
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
     webpack-dev-server: 4.4.0
@@ -2810,7 +2810,7 @@ __metadata:
     jest: 27.3.1
     mobx: 6.3.6
     mobx-react-lite: 3.2.2
-    monaco-editor: 0.29.1
+    monaco-editor: 0.30.0
     node-diff3: 3.1.0
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -10343,22 +10343,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor-webpack-plugin@npm:5.0.0":
-  version: 5.0.0
-  resolution: "monaco-editor-webpack-plugin@npm:5.0.0"
+"monaco-editor-webpack-plugin@npm:6.0.0":
+  version: 6.0.0
+  resolution: "monaco-editor-webpack-plugin@npm:6.0.0"
   dependencies:
     loader-utils: ^2.0.0
   peerDependencies:
-    monaco-editor: 0.29.x
+    monaco-editor: 0.30.x
     webpack: ^4.5.0 || 5.x
-  checksum: 0706ef2d2fd68107a66ba2555fc2bbb7d84908a8888e699a90e080400ebb6effa85f8b132ccfae3eae3a64e009f8af9658649a1295fbf0e595c3f0f1dcb8306d
+  checksum: 8f3ac71fe5461af10cd76f45dafb3a70672756b260b1421478cb0e690d719c6394748dabec11ea4e8f0b7db944f00a7f007d55da8e0fd470d19e9a466e789fa4
   languageName: node
   linkType: hard
 
-"monaco-editor@npm:0.29.1":
-  version: 0.29.1
-  resolution: "monaco-editor@npm:0.29.1"
-  checksum: bc1df4f0c026073fdfc5b25487c58eabc82b7341653e75e5a5fa06c7754f823d0751d1eb5f4fb1cc4a0d5d0f1ca801b724b3997e0b5acc942e68358be9d70b71
+"monaco-editor@npm:0.30.0":
+  version: 0.30.0
+  resolution: "monaco-editor@npm:0.30.0"
+  checksum: a05604ad5e27a850c8c56fdceb3acb9a6d6dd37617d84f7568a391df84fbbfee16b68b2ba70528a81b25b3d87f7eff2700c8c3de6586b29b721d82695687ae2d
   languageName: node
   linkType: hard
 
@@ -14479,9 +14479,9 @@ typescript@4.4.4:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.61.0":
-  version: 5.61.0
-  resolution: "webpack@npm:5.61.0"
+"webpack@npm:5.62.1":
+  version: 5.62.1
+  resolution: "webpack@npm:5.62.1"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -14512,7 +14512,7 @@ typescript@4.4.4:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 442958ec48645c9e612a2628a815c411cbc18289b5cc7b3d1b5d0f8e5b41606ed225decf4f3684edc365e6390867bded244d20387c70fbb630c0ac08443c34c8
+  checksum: 85d9bc7e9b4a0d59420831b1cffaed771818a7abbff3e25215246df6c5abe7806eeee8ca28b15f2dd3b34f64b05586dc138a3b181ce99d1887370301c4ce7e2e
   languageName: node
   linkType: hard
 
