@@ -66,6 +66,7 @@ import {
   ConcreteFunctionDefinition,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
+import type { DSL_StudioPlugin_Extension } from '../StudioPlugin';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -129,16 +130,30 @@ export class GraphGenerationState {
   get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
     if (this.editorStore.currentEditorState instanceof ElementEditorState) {
       const currentElement = this.editorStore.currentEditorState.element;
-      if (
-        currentElement instanceof Class ||
-        currentElement instanceof Enumeration ||
-        currentElement instanceof ConcreteFunctionDefinition
-        // TODO: refactor this as an extension interface
-      ) {
-        return this.fileGenerationConfigurations
-          .slice()
-          .sort((a, b): number => a.label.localeCompare(b.label));
-      }
+      const getExtraFileGenerationScopeFilters = this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_StudioPlugin_Extension
+            ).getExtraFileGenerationScopeFilters?.() ?? [],
+        );
+      return this.fileGenerationConfigurations
+        .slice()
+        .sort((a, b): number => a.label.localeCompare(b.label))
+        .filter((generationType) => {
+          for (const extraFileGenerationScopeFiltersCreator of getExtraFileGenerationScopeFilters) {
+            if (
+              !extraFileGenerationScopeFiltersCreator(
+                generationType.label,
+                currentElement,
+              )
+            ) {
+              return false;
+            }
+          }
+          return true;
+        });
     }
     return [];
   }

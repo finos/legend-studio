@@ -22,10 +22,13 @@ import type {
   FileGenerationState,
   StudioPluginManager,
   FileGenerationResultViewerAction,
+  FileGenerationScopeFilter,
 } from '@finos/legend-studio';
 
 import { StudioPlugin } from '@finos/legend-studio';
 import { NetworkClient, assertNonEmptyString } from '@finos/legend-shared';
+import type { PackageableElement } from '@finos/legend-graph';
+import { ConcreteFunctionDefinition } from '@finos/legend-graph';
 
 const MORPHIR_TYPE_NAME = `morphir`;
 
@@ -143,6 +146,20 @@ export class ELMorphir_GenerationPlugin
           );
         }
         return undefined;
+      },
+    ];
+  }
+
+  getExtraFileGenerationScopeFilters(): FileGenerationScopeFilter[] {
+    return [
+      (
+        fileGenerationLabel: string,
+        packageableElement: PackageableElement,
+      ): boolean => {
+        if (fileGenerationLabel.toLowerCase() === MORPHIR_TYPE_NAME) {
+          return packageableElement instanceof ConcreteFunctionDefinition;
+        }
+        return true;
       },
     ];
   }

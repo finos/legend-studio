@@ -148,6 +148,11 @@ export type FileGenerationResultViewerAction = (
   generationFile: GenerationFile,
 ) => React.ReactNode | undefined;
 
+export type FileGenerationScopeFilter = (
+  fileGenerationLable: string,
+  PackageableElement: PackageableElement,
+) => boolean;
+
 /**
  * Studio plugins for new DSL extension.
  */
@@ -226,4 +231,9 @@ export interface DSL_StudioPlugin_Extension extends StudioPlugin {
    * Get the list of the supported extra file generation result viewer actions such as buttons.
    */
   getExtraFileGenerationResultViewerActions?(): FileGenerationResultViewerAction[];
+
+  /**
+   * Get the list of filters that check if object type is in scope for certain file generation.
+   */
+  getExtraFileGenerationScopeFilters?(): FileGenerationScopeFilter[];
 }
