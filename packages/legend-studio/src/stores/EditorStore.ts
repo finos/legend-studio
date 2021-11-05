@@ -53,7 +53,7 @@ import {
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
-import { EditorSdlcState } from './EditorSdlcState';
+import { EditorSDLCState } from './EditorSDLCState';
 import { ModelLoaderState } from './editor-state/ModelLoaderState';
 import type { EditorState } from './editor-state/EditorState';
 import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/EntityDiffViewState';
@@ -127,6 +127,8 @@ import {
 } from '@finos/legend-application';
 import { STUDIO_LOG_EVENT } from './StudioLogEvent';
 import type { StudioConfig } from '../application/StudioConfig';
+import type { EditorMode } from './editor/EditorMode';
+import { StandardEditorMode } from './editor/StandardEditorMode';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -154,9 +156,29 @@ export class EditorStore {
   depotServerClient: DepotServerClient;
   pluginManager: StudioPluginManager;
 
+  editorMode: EditorMode;
+  setEditorMode(val: EditorMode): void {
+    this.editorMode = val;
+  }
+  // NOTE: once we clear up the editor store to make modes more separated
+  // we should remove these sets of functions. They are basically hacks to
+  // ensure hiding parts of the UI based on the editing mode.
+  // Instead, we will gradually move these `boolean` flags into `EditorMode`
+  // See https://github.com/finos/legend-studio/issues/317
+  mode = EDITOR_MODE.STANDARD;
+  setMode(val: EDITOR_MODE): void {
+    this.mode = val;
+  }
+  get isInViewerMode(): boolean {
+    return this.mode === EDITOR_MODE.VIEWER;
+  }
+  get isInConflictResolutionMode(): boolean {
+    return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
+  }
+
   editorExtensionStates: EditorExtensionState[] = [];
   explorerTreeState: ExplorerTreeState;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
   changeDetectionState: ChangeDetectionState;
@@ -173,7 +195,6 @@ export class EditorStore {
 
   private _isDisposed = false;
   initState = ActionState.create();
-  mode = EDITOR_MODE.STANDARD;
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
 
   // Aux Panel
@@ -224,6 +245,7 @@ export class EditorStore {
       depotServerClient: false,
       graphState: false,
       graphManagerState: false,
+      setEditorMode: action,
       setMode: action,
       setDevTool: action,
       setHotkeys: action,
@@ -260,7 +282,9 @@ export class EditorStore {
     this.depotServerClient = depotServerClient;
     this.pluginManager = pluginManager;
 
-    this.sdlcState = new EditorSdlcState(this);
+    this.editorMode = new StandardEditorMode(this);
+
+    this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
     this.graphManagerState = graphManagerState;
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
@@ -395,20 +419,6 @@ export class EditorStore {
     this.hotkeys = this.defaultHotkeys;
   }
 
-  // NOTE: once we clear up the editor store to make modes more separated
-  // we should remove these sets of functions. They are basically hacks to
-  // ensure hiding parts of the UI based on the editing mode.
-  // Instead, perhaps, we should think of separating the modes out and if
-  // it is needed that they share `EditorStore`, we should make them pass in
-  // a set of config for the feature of the store instead of using
-  // flags like this
-  // See https://github.com/finos/legend-studio/issues/317
-  get isInViewerMode(): boolean {
-    return this.mode === EDITOR_MODE.VIEWER;
-  }
-  get isInConflictResolutionMode(): boolean {
-    return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
-  }
   get isInitialized(): boolean {
     return (
       Boolean(
@@ -428,10 +438,6 @@ export class EditorStore {
     return Boolean(
       this.changeDetectionState.workspaceLatestRevisionState.changes.length,
     );
-  }
-
-  setMode(val: EDITOR_MODE): void {
-    this.mode = val;
   }
 
   setDevTool(val: boolean): void {
@@ -586,7 +592,7 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateSetupRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   undefined,
                 ),
               );
@@ -653,7 +659,7 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateViewProjectRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   projectId,
                 ),
               );
@@ -674,7 +680,7 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateSetupRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   projectId,
                   workspaceId,
                   workspaceType,

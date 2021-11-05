@@ -14,29 +14,23 @@
  * limitations under the License.
  */
 
-import type { V1_PackageableElementPointer } from '../../model/packageableElements/V1_PackageableElement';
+import type { EditorStore } from '../EditorStore';
+import { generateViewEntityRoute } from '../LegendStudioRouter';
+import { EditorMode } from './EditorMode';
 
-export abstract class V1_Sdlc {
-  baseVersion = 'latest';
-  version: string;
-  packageableElementPointers: V1_PackageableElementPointer[] = [];
+export class StandardEditorMode extends EditorMode {
+  editorStore: EditorStore;
 
-  constructor(version: string | undefined) {
-    this.version = version ?? 'none';
+  constructor(editorStore: EditorStore) {
+    super();
+    this.editorStore = editorStore;
   }
-}
 
-export class V1_AlloySdlc extends V1_Sdlc {
-  groupId: string;
-  artifactId: string;
-
-  constructor(
-    groupId: string,
-    artifactId: string,
-    version: string | undefined,
-  ) {
-    super(version);
-    this.groupId = groupId;
-    this.artifactId = artifactId;
+  generateElementLink(elementPath: string): string {
+    return generateViewEntityRoute(
+      this.editorStore.applicationStore.config.currentSDLCServerOption,
+      this.editorStore.sdlcState.activeProject.projectId,
+      elementPath,
+    );
   }
 }

@@ -135,7 +135,7 @@ import { V1_GenerationSpecification } from './model/packageableElements/generati
 import { V1_Mapping } from './model/packageableElements/mapping/V1_Mapping';
 import { V1_ConcreteFunctionDefinition } from './model/packageableElements/function/V1_ConcreteFunctionDefinition';
 import { V1_PureModelContextComposite } from './model/context/V1_PureModelContextComposite';
-import { V1_AlloySdlc } from './model/context/V1_AlloySdlc';
+import { V1_AlloySDLC } from './model/context/V1_SDLC';
 import { V1_Protocol } from './model/V1_Protocol';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
@@ -1965,7 +1965,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
-        const sdlcInfo = new V1_AlloySdlc(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySDLC(groupdId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         // data
         const data = new V1_PureModelContextData();
@@ -1991,7 +1991,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.PROD: {
-        const sdlcInfo = new V1_AlloySdlc(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySDLC(groupdId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(

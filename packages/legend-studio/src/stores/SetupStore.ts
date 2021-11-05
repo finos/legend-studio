@@ -246,7 +246,7 @@ export class SetupStore {
       this.projects?.set(createdProject.projectId, createdProject);
       this.applicationStore.navigator.goTo(
         generateSetupRoute(
-          this.applicationStore.config.sdlcServerKey,
+          this.applicationStore.config.currentSDLCServerOption,
           createdProject.projectId,
         ),
       );

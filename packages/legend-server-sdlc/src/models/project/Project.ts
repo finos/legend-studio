@@ -24,7 +24,7 @@ export enum ProjectType {
 }
 
 // TODO: consider removing this when SDLC finally get rid of project type and environment flags
-export enum SdlcMode {
+export enum SDLCMode {
   PROD = 'prod',
   UAT = 'uat',
 }

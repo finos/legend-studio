@@ -148,7 +148,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           <div className="editor__status-bar__workspace__project">
             <Link
               to={generateSetupRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 projectId,
               )}
             >
@@ -159,7 +159,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           <div className="editor__status-bar__workspace__workspace">
             <Link
               to={generateSetupRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 projectId,
                 workspaceId,
                 workspaceType,

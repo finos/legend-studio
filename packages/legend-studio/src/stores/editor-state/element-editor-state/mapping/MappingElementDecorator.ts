@@ -482,7 +482,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   }
 
   visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
-    //TODO: Implement this later https://github.com/finos/legend-studio/pull/580
+    // TODO: Implement this later https://github.com/finos/legend-studio/pull/580
+    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     return;
   }
 }
@@ -576,7 +577,8 @@ export class MappingElementDecorationCleaner
   }
 
   visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
-    //TODO: Implement this later https://github.com/finos/legend-studio/pull/580
+    // TODO: Implement this later https://github.com/finos/legend-studio/pull/580
+    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     return;
   }
 }

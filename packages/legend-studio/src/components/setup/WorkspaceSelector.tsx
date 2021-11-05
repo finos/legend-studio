@@ -72,7 +72,7 @@ export const WorkspaceSelector = observer(
         onChange(Boolean(selectedOption));
         applicationStore.navigator.goTo(
           generateSetupRoute(
-            applicationStore.config.sdlcServerKey,
+            applicationStore.config.currentSDLCServerOption,
             setupStore.currentProjectId ?? '',
             val?.value.workspaceId,
             val?.value.workspaceType,

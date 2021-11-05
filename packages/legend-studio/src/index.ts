@@ -19,7 +19,10 @@ export * from './components/StudioStoreProvider';
 export * from './application/LegendStudio';
 export * from './application/StudioConfig';
 export * from './application/StudioPluginManager';
-export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
+export {
+  LEGEND_STUDIO_PATH_PARAM_TOKEN,
+  generateRoutePatternWithSDLCServerKey,
+} from './stores/LegendStudioRouter';
 export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
 
 // stores
