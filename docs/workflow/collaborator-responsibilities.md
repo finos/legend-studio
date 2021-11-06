@@ -39,7 +39,7 @@ The most important thing to pay attention to as maintainers is when merging PRs,
 
 > If you plan to work on some enhancement, refactoring or plan to make **substantial** code changes with your new feature, instead of filing a new `Feature Request`, file a `Request for Comments (RFC)` instead. Use `RFC` as the place you gather feedback on your idea and implementation plan, to build up good design documentations.
 >
-> _Compared to [others](https://github.com/reactjs/rfcs#what-the-process-is), we have a really simplified process for filing `RFCs`, so please don't misuse them for what in fact should have been a few feature requests._
+> _Compared to [others](https://github.com/reactjs/rfcs#what-the-process-is), we have a really simplified process for filing `RFCs`, so please don't misuse them for what in fact should have been feature requests._
 
 ## Reviewers
 
