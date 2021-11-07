@@ -109,7 +109,6 @@ export class ELMorphir_GenerationPlugin
     const visualizeMorphir =
       (fileNode: GenerationFile): (() => void) =>
       async (): Promise<void> => {
-        assertNonEmptyString(this.morphirVisualizerUrl);
         window.open(this.morphirVisualizerUrl);
         await this.networkClient.post(
           this.morphirVisualizerUrl,
@@ -122,8 +121,6 @@ export class ELMorphir_GenerationPlugin
         fileNode: GenerationFile,
       ): (() => void) =>
       async (): Promise<void> => {
-        assertNonEmptyString(this.linterServerUrl);
-        assertNonEmptyString(this.linterAppUrl);
         const code =
           fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
             fileGenerationState.editorStore.graphManagerState.graph,
