@@ -218,32 +218,6 @@ export const GenerationResultExplorer = observer(
   },
 );
 
-export const extraFileGenerationResultViewerActionsGetter = (
-  fileGenerationState: FileGenerationState,
-  fileNode: GenerationFile,
-): React.ReactNode => {
-  const extraFileGenerationResultViewerActions =
-    fileGenerationState.editorStore.pluginManager
-      .getStudioPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_StudioPlugin_Extension
-          ).getExtraFileGenerationResultViewerActions?.() ?? [],
-      );
-  const result = [];
-  for (const extraFileGenerationResultViewerActionsCreator of extraFileGenerationResultViewerActions) {
-    const extraAction = extraFileGenerationResultViewerActionsCreator(
-      fileGenerationState,
-      fileNode,
-    );
-    if (extraAction) {
-      result.push(extraAction);
-    }
-  }
-  return result;
-};
-
 export const GenerationResultViewer = observer(
   (props: { fileGenerationState: FileGenerationState }) => {
     const { fileGenerationState } = props;
@@ -255,10 +229,19 @@ export const GenerationResultViewer = observer(
     );
     const extraFileGenerationResultViewerActions =
       fileNode instanceof GenerationFile
-        ? extraFileGenerationResultViewerActionsGetter(
-            fileGenerationState,
-            fileNode,
-          )
+        ? fileGenerationState.editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_StudioPlugin_Extension
+                ).getExtraFileGenerationResultViewerActions?.() ?? [],
+            )
+            .map((extraFileGenerationResultViewerActionsCreator) =>
+              extraFileGenerationResultViewerActionsCreator(
+                fileGenerationState,
+              ),
+            )
         : undefined;
     return (
       <ResizablePanelGroup orientation="vertical">
@@ -314,7 +297,7 @@ export const GenerationResultViewer = observer(
               {fileNode && !(fileNode instanceof GenerationDirectory) && (
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">file</div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header-name-with-margin">
+                  <div className="panel__header__title__content generation-result-viewer__file__header-name">
                     {fileNode.name}
                   </div>
                   {fileNode instanceof GenerationFile &&

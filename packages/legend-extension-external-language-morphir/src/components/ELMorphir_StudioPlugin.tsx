@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import packageJson from '../package.json';
+import packageJson from '../../package.json';
 
 import type {
   DSL_StudioPlugin_Extension,
@@ -26,7 +26,11 @@ import type {
 } from '@finos/legend-studio';
 
 import { StudioPlugin } from '@finos/legend-studio';
-import { NetworkClient, assertNonEmptyString } from '@finos/legend-shared';
+import {
+  NetworkClient,
+  assertNonEmptyString,
+  guaranteeNonEmptyString,
+} from '@finos/legend-shared';
 import type { PackageableElement } from '@finos/legend-graph';
 import { ConcreteFunctionDefinition } from '@finos/legend-graph';
 
@@ -43,9 +47,9 @@ export class ELMorphir_GenerationPlugin
   implements DSL_StudioPlugin_Extension
 {
   networkClient: NetworkClient;
-  morphirVisualizerUrl = ``;
-  linterServerUrl = ``;
-  linterAppUrl = ``;
+  private _morphirVisualizerUrl?: string | undefined;
+  private _linterServerUrl?: string | undefined;
+  private _linterAppUrl?: string | undefined;
 
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
@@ -77,48 +81,71 @@ export class ELMorphir_GenerationPlugin
     return this;
   }
 
-  visualizeMorphir =
-    (fileNode: GenerationFile): (() => void) =>
-    async (): Promise<void> => {
-      assertNonEmptyString(this.morphirVisualizerUrl);
-      window.open(this.morphirVisualizerUrl);
-      await this.networkClient.post(
-        this.morphirVisualizerUrl,
-        fileNode.content,
-      );
-    };
+  set morphirVisualizerUrl(url: string) {
+    this._morphirVisualizerUrl = url;
+  }
 
-  visualizeBosque =
-    (
-      fileGenerationState: FileGenerationState,
-      fileNode: GenerationFile,
-    ): (() => void) =>
-    async (): Promise<void> => {
-      assertNonEmptyString(this.linterServerUrl);
-      assertNonEmptyString(this.linterAppUrl);
-      const code =
-        fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
-          fileGenerationState.editorStore.graphManagerState.graph,
-        );
-      await this.networkClient.post(this.linterServerUrl, {
-        ir: fileNode.content,
-        src: await code,
-      });
-      window.open(this.linterAppUrl);
-    };
+  get morphirVisualizerUrl(): string {
+    return guaranteeNonEmptyString(this._morphirVisualizerUrl);
+  }
+
+  set linterServerUrl(url: string) {
+    this._linterServerUrl = url;
+  }
+
+  get linterServerUrl(): string {
+    return guaranteeNonEmptyString(this._linterServerUrl);
+  }
+
+  set linterAppUrl(url: string) {
+    this._linterAppUrl = url;
+  }
+
+  get linterAppUrl(): string {
+    return guaranteeNonEmptyString(this._linterAppUrl);
+  }
 
   getExtraFileGenerationResultViewerActions(): FileGenerationResultViewerAction[] {
-    return [
+    const visualizeMorphir =
+      (fileNode: GenerationFile): (() => void) =>
+      async (): Promise<void> => {
+        assertNonEmptyString(this.morphirVisualizerUrl);
+        window.open(this.morphirVisualizerUrl);
+        await this.networkClient.post(
+          this.morphirVisualizerUrl,
+          fileNode.content,
+        );
+      };
+    const visualizeBosque =
       (
         fileGenerationState: FileGenerationState,
         fileNode: GenerationFile,
+      ): (() => void) =>
+      async (): Promise<void> => {
+        assertNonEmptyString(this.linterServerUrl);
+        assertNonEmptyString(this.linterAppUrl);
+        const code =
+          fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
+            fileGenerationState.editorStore.graphManagerState.graph,
+          );
+        await this.networkClient.post(this.linterServerUrl, {
+          ir: fileNode.content,
+          src: await code,
+        });
+        window.open(this.linterAppUrl);
+      };
+    return [
+      (
+        fileGenerationState: FileGenerationState,
       ): React.ReactNode | undefined => {
+        const fileNode = fileGenerationState.selectedNode
+          ?.fileNode as GenerationFile;
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (
             <div className="panel__header__title__content generation-result-viewer__file__header-button">
               <button
                 className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                onClick={this.visualizeMorphir(fileNode)}
+                onClick={visualizeMorphir(fileNode)}
                 tabIndex={-1}
               >
                 Visualize Generated IR
@@ -130,14 +157,15 @@ export class ELMorphir_GenerationPlugin
       },
       (
         fileGenerationState: FileGenerationState,
-        fileNode: GenerationFile,
       ): React.ReactNode | undefined => {
+        const fileNode = fileGenerationState.selectedNode
+          ?.fileNode as GenerationFile;
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (
             <div className="panel__header__title__content generation-result-viewer__file__header-button">
               <button
                 className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                onClick={this.visualizeBosque(fileGenerationState, fileNode)}
+                onClick={visualizeBosque(fileGenerationState, fileNode)}
                 tabIndex={-1}
               >
                 View Bosque Feedback
@@ -153,10 +181,10 @@ export class ELMorphir_GenerationPlugin
   getExtraFileGenerationScopeFilters(): FileGenerationScopeFilter[] {
     return [
       (
-        fileGenerationLabel: string,
+        fileGenerationType: string,
         packageableElement: PackageableElement,
       ): boolean => {
-        if (fileGenerationLabel.toLowerCase() === MORPHIR_TYPE_NAME) {
+        if (fileGenerationType.toLowerCase() === MORPHIR_TYPE_NAME) {
           return packageableElement instanceof ConcreteFunctionDefinition;
         }
         return true;
@@ -164,7 +192,9 @@ export class ELMorphir_GenerationPlugin
     ];
   }
 
-  isMorphirGenerationType(fileGenerationState: FileGenerationState): boolean {
+  private isMorphirGenerationType(
+    fileGenerationState: FileGenerationState,
+  ): boolean {
     return (
       fileGenerationState.fileGeneration.type.toLowerCase() ===
       MORPHIR_TYPE_NAME

@@ -144,12 +144,11 @@ export type ElementProjectExplorerDnDTypeGetter = (
 ) => string | undefined;
 
 export type FileGenerationResultViewerAction = (
-  FileGenerationState: FileGenerationState,
-  generationFile: GenerationFile,
+  fileGenerationState: FileGenerationState,
 ) => React.ReactNode | undefined;
 
 export type FileGenerationScopeFilter = (
-  fileGenerationLable: string,
+  fileGenerationType: string,
   PackageableElement: PackageableElement,
 ) => boolean;
 

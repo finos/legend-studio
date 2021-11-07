@@ -138,19 +138,11 @@ export class GraphGenerationState {
       return this.fileGenerationConfigurations
         .slice()
         .sort((a, b): number => a.label.localeCompare(b.label))
-        .filter((generationType) => {
-          for (const extraFileGenerationScopeFiltersCreator of getExtraFileGenerationScopeFilters) {
-            if (
-              !extraFileGenerationScopeFiltersCreator(
-                generationType.label,
-                currentElement,
-              )
-            ) {
-              return false;
-            }
-          }
-          return true;
-        });
+        .filter((generationType) =>
+          getExtraFileGenerationScopeFilters.some((scopeFilter) =>
+            scopeFilter(generationType.key, currentElement),
+          ),
+        );
     }
     return [];
   }
