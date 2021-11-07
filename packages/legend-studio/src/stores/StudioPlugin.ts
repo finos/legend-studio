@@ -21,7 +21,6 @@ import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { Class, PackageableElement } from '@finos/legend-graph';
 import type { FileGenerationState } from './editor-state/FileGenerationState';
-import type { GenerationFile } from './shared/FileGenerationTreeUtil';
 
 export type ApplicationSetup = (
   pluginManager: StudioPluginManager,
