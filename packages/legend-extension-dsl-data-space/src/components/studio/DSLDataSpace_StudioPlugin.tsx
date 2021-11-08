@@ -91,7 +91,7 @@ export class DSLDataSpace_StudioPlugin
       (type: string): React.ReactNode | undefined => {
         if (type === DATA_SPACE_ELEMENT_TYPE) {
           return (
-            <div className="icon icon--text-element">
+            <div className="icon icon--data-space">
               <SquareIcon />
             </div>
           );

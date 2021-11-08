@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { Explorer } from './Explorer';
@@ -55,12 +54,7 @@ export const SideBar = observer(() => {
 
   return (
     <div className="side-bar">
-      <div
-        key={editorStore.activeActivity}
-        className={clsx('side-bar__view', 'side-bar__view--active')}
-      >
-        {renderSideBar()}
-      </div>
+      <div className="side-bar__view">{renderSideBar()}</div>
     </div>
   );
 });

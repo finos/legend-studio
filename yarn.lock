@@ -2294,6 +2294,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@types/react": 17.0.34
+    "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
     eslint: 8.1.0
     jest: 27.3.1
@@ -2304,6 +2305,8 @@ __metadata:
     react: 17.0.2
     react-dom: 17.0.2
     react-resize-detector: 6.7.6
+    react-router: 5.2.1
+    react-router-dom: 5.3.0
     rimraf: 3.0.2
     sass: 1.43.4
     serializr: 2.0.5

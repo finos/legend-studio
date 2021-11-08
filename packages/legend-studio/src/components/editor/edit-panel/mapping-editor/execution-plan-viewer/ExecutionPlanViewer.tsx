@@ -353,11 +353,7 @@ export const ExecutionPlanViewer = observer(
           {plan ? (
             <div className="modal__body">
               <ResizablePanelGroup orientation="vertical">
-                <ResizablePanel
-                  size={350}
-                  minSize={350}
-                  className="review-explorer__content"
-                >
+                <ResizablePanel size={350} minSize={350}>
                   <div className="panel explorer">
                     <div className="panel__header side-bar__header">
                       <div className="panel__header__title">
