@@ -9,7 +9,7 @@ body:
       description: |
         A concise description of what this RFC is trying to achieve: the improvements, the problems it tries to solve, etc.
 
-        **⚠️ Note:** Please don't misuse RFCs for requesting new features. RFCs are meant for enhancements/features that require **substantial** changes to the code base, such as refactoring. So use this RFC to communicate your idea, to gather feedback on your plan through discussions, so as to hone the it into a good design documentation.
+        **⚠️ Note:** Please don't abuse RFCs for requesting new features or feature improvements. RFCs are strictly meant for works that require **substantial** changes to the code base, such as refactoring, or introducing new extensions and DSLs, etc. As such, use this RFC to communicate your idea, to gather feedback on your plan through discussions, so as to hone the it into a good design documentation.
     validations:
       required: true
   - type: textarea

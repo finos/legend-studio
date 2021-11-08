@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_SDLC } from './V1_SDLC';
-import type { V1_Protocol } from '../../model/V1_Protocol';
-import { V1_PureModelContext } from './V1_PureModelContext';
-
-export class V1_PureModelContextPointer extends V1_PureModelContext {
-  serializer: V1_Protocol;
-  sdlcInfo?: V1_SDLC | undefined;
-
-  constructor(protocol: V1_Protocol, sdlc?: V1_SDLC) {
-    super();
-    this.serializer = protocol;
-    this.sdlcInfo = sdlc;
-  }
+export abstract class EditorMode {
+  /**
+   * Using information about the current project to generate a sharable link to the element.
+   */
+  abstract generateElementLink(elementPath: string): string;
 }

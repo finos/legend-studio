@@ -40,14 +40,14 @@ import {
 } from '../../transformation/pureProtocol/V1_PackageableElementSerialization';
 import { V1_PureModelContextComposite } from '../../model/context/V1_PureModelContextComposite';
 import { V1_Protocol } from '../../model/V1_Protocol';
-import { V1_AlloySdlc } from '../../model/context/V1_AlloySdlc';
+import { V1_AlloySDLC } from '../../model/context/V1_SDLC';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
 import { V1_packageableElementPointerDeserializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import { GraphDataDeserializationError } from '../../../../../../graphManager/GraphManagerUtils';
 
-enum V1_SdlcType {
+enum V1_SDLCType {
   ALLOY = 'alloy',
 }
 
@@ -98,8 +98,8 @@ export const V1_entitiesToPureModelContextData = async (
   }
 };
 
-const alloySdlcSerializationModelSchema = createModelSchema(V1_AlloySdlc, {
-  _type: usingConstantValueSchema(V1_SdlcType.ALLOY),
+const alloySDLCSerializationModelSchema = createModelSchema(V1_AlloySDLC, {
+  _type: usingConstantValueSchema(V1_SDLCType.ALLOY),
   baseVersion: optional(primitive()),
   version: primitive(),
   groupId: primitive(),
@@ -120,7 +120,7 @@ const V1_pureModelContextPointerModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_PureModelContextType.POINTER),
     serializer: usingModelSchema(V1_Protocol.serialization.schema),
-    sdlcInfo: usingModelSchema(alloySdlcSerializationModelSchema),
+    sdlcInfo: usingModelSchema(alloySDLCSerializationModelSchema),
   },
 );
 

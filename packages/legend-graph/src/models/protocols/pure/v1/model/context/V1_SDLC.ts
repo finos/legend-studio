@@ -14,17 +14,29 @@
  * limitations under the License.
  */
 
-import type { V1_SDLC } from './V1_SDLC';
-import type { V1_Protocol } from '../../model/V1_Protocol';
-import { V1_PureModelContext } from './V1_PureModelContext';
+import type { V1_PackageableElementPointer } from '../packageableElements/V1_PackageableElement';
 
-export class V1_PureModelContextPointer extends V1_PureModelContext {
-  serializer: V1_Protocol;
-  sdlcInfo?: V1_SDLC | undefined;
+export abstract class V1_SDLC {
+  baseVersion = 'latest';
+  version: string;
+  packageableElementPointers: V1_PackageableElementPointer[] = [];
 
-  constructor(protocol: V1_Protocol, sdlc?: V1_SDLC) {
-    super();
-    this.serializer = protocol;
-    this.sdlcInfo = sdlc;
+  constructor(version: string | undefined) {
+    this.version = version ?? 'none';
+  }
+}
+
+export class V1_AlloySDLC extends V1_SDLC {
+  groupId: string;
+  artifactId: string;
+
+  constructor(
+    groupId: string,
+    artifactId: string,
+    version: string | undefined,
+  ) {
+    super(version);
+    this.groupId = groupId;
+    this.artifactId = artifactId;
   }
 }

@@ -676,7 +676,7 @@ const SetupSelection = observer(() => {
     ) {
       applicationStore.navigator.goTo(
         generateEditorRoute(
-          applicationStore.config.sdlcServerKey,
+          applicationStore.config.currentSDLCServerOption,
           setupStore.currentProjectId,
           setupStore.currentWorkspace.workspaceId,
           setupStore.currentWorkspace.workspaceType,
@@ -727,7 +727,7 @@ const SetupSelection = observer(() => {
                   if (setupStore.currentProjectId) {
                     applicationStore.navigator.goTo(
                       generateViewProjectRoute(
-                        applicationStore.config.sdlcServerKey,
+                        applicationStore.config.currentSDLCServerOption,
                         setupStore.currentProjectId,
                       ),
                     );

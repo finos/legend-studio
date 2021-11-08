@@ -39,7 +39,7 @@ import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,
@@ -258,7 +258,7 @@ export const WorkspaceUpdater = observer(() => {
                     rel="noopener noreferrer"
                     target="_blank"
                     to={generateReviewRoute(
-                      applicationStore.config.sdlcServerKey,
+                      applicationStore.config.currentSDLCServerOption,
                       review.projectId,
                       review.id,
                     )}

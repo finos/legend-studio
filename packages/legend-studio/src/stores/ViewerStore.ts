@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import { action, flowResult, makeAutoObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
@@ -28,7 +28,7 @@ import type { ViewerPathParams } from './LegendStudioRouter';
 import {
   generateViewProjectByGAVRoute,
   generateViewVersionRoute,
-  generateVieweRevisionRoute,
+  generateViewRevisionRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
 import type { Entity } from '@finos/legend-model-storage';
@@ -41,6 +41,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import { TAB_SIZE } from '@finos/legend-application';
+import type { ProjectGAVCoordinates } from '@finos/legend-server-depot';
 import {
   parseGAVCoordinates,
   ProjectData,
@@ -56,10 +57,12 @@ export class ViewerStore {
   revision?: Revision | undefined;
   version?: Version | undefined;
   elementPath?: string | undefined;
+  projectGAVCoordinates?: ProjectGAVCoordinates | undefined;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
       editorStore: false,
+      projectGAVCoordinates: observable.ref,
       internalizeEntityPath: action,
     });
 
@@ -94,30 +97,28 @@ export class ViewerStore {
         this.editorStore.applicationStore.navigator.goTo(
           versionId
             ? generateViewVersionRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
+                this.editorStore.applicationStore.config
+                  .currentSDLCServerOption,
                 projectId,
                 versionId,
               )
             : revisionId
-            ? generateVieweRevisionRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
+            ? generateViewRevisionRoute(
+                this.editorStore.applicationStore.config
+                  .currentSDLCServerOption,
                 projectId,
                 revisionId,
               )
             : generateViewProjectRoute(
-                this.editorStore.applicationStore.config.sdlcServerKey,
+                this.editorStore.applicationStore.config
+                  .currentSDLCServerOption,
                 projectId,
               ),
         );
       } else if (gav) {
         const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
         this.editorStore.applicationStore.navigator.goTo(
-          generateViewProjectByGAVRoute(
-            this.editorStore.applicationStore.config.sdlcServerKey,
-            groupId,
-            artifactId,
-            versionId,
-          ),
+          generateViewProjectByGAVRoute(groupId, artifactId, versionId),
         );
       }
     }
@@ -470,7 +471,8 @@ export class ViewerStore {
           ),
         );
       } else if (gav) {
-        const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
+        this.projectGAVCoordinates = parseGAVCoordinates(gav);
+        const { groupId, artifactId, versionId } = this.projectGAVCoordinates;
         yield flowResult(this.initializeForGAV(groupId, artifactId, versionId));
       } else {
         throw new IllegalStateError(

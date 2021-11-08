@@ -43,14 +43,14 @@ const ShareModal = observer(
     const projectLink = selectedVersion
       ? applicationStore.navigator.generateLocation(
           generateViewVersionRoute(
-            applicationStore.config.sdlcServerKey,
+            applicationStore.config.currentSDLCServerOption,
             projectId,
             selectedVersion.id.id,
           ),
         )
       : applicationStore.navigator.generateLocation(
           generateViewProjectRoute(
-            applicationStore.config.sdlcServerKey,
+            applicationStore.config.currentSDLCServerOption,
             projectId,
           ),
         );

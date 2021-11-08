@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Project, SdlcMode, ProjectType } from './models/project/Project';
+import type { Project, SDLCMode, ProjectType } from './models/project/Project';
 import type { ImportReport } from './models/project/ImportReport';
 import type { Workspace } from './models/workspace/Workspace';
 import { WorkspaceType } from './models/workspace/Workspace';
@@ -109,7 +109,7 @@ export class SDLCServerClient extends AbstractServerClient {
   // ------------------------------------------- Authorization -------------------------------------------
 
   private _auth = (): string => `${this.networkClient.baseUrl}/auth`;
-  isAuthorized = (mode: SdlcMode): Promise<boolean> =>
+  isAuthorized = (mode: SDLCMode): Promise<boolean> =>
     this.networkClient.get(`${this._auth()}/authorized?mode=${mode}`);
   hasAcceptedTermsOfService = (): Promise<string[]> =>
     this.networkClient.get(`${this._auth()}/termsOfServiceAcceptance`);

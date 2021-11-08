@@ -2,4 +2,5 @@
 '@finos/legend-query': patch
 ---
 
-Allow viewing the Studio project for the query.
+pr: 639
+Allow viewing the project of a query in Studio.
