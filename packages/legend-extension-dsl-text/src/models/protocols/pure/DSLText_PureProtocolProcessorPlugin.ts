@@ -39,17 +39,15 @@ import type {
   V1_GraphBuilderContext,
   V1_GraphTransformerContext,
   V1_PackageableElement,
+  Mapping,
+  PureModel,
+  Runtime,
+  V1_PureModelContextData,
 } from '@finos/legend-graph';
 import {
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
-} from '@finos/legend-graph';
-import type {
-  Mapping,
-  PureModel,
-  Runtime,
-  V1_PureModelContextData,
 } from '@finos/legend-graph';
 
 const TEXT_ELEMENT_CLASSIFIER_PATH = 'meta::pure::metamodel::text::Text';
