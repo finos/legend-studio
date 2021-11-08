@@ -44,6 +44,8 @@ import {
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
+} from '@finos/legend-graph';
+import type {
   Mapping,
   PureModel,
   Runtime,
@@ -171,11 +173,8 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
         mapping: Mapping,
         runtime: Runtime,
         protocolGraph: V1_PureModelContextData,
-      ): V1_PackageableElement[] => {
-        return protocolGraph.elements
-          .filter((ele) => ele instanceof V1_Text)
-          .flat();
-      },
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter((ele) => ele instanceof V1_Text).flat(),
     ];
   }
 }
