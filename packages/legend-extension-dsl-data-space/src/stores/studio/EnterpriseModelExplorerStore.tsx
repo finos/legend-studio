@@ -421,6 +421,8 @@ export class EnterpriseModelExplorerStore {
               storedEntity.entity.content,
             ),
         )
+        // NOTE: only care about data space tagged with taxonomy information
+        .filter((rawDataSpace) => rawDataSpace.taxonomyNodePaths.length)
         .forEach((rawDataSpace) => {
           this.dataSpaceIndex.set(rawDataSpace.id, rawDataSpace);
         });
