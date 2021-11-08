@@ -30,8 +30,9 @@ import {
   generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { AssertionError, assertNonNullable } from '@finos/legend-shared';
 import {
+  AssertionError,
+  assertNonNullable,
   addUniqueEntry,
   guaranteeNonNullable,
   ActionState,
