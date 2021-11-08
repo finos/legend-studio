@@ -33,7 +33,10 @@ import type { V1_JsonToGrammarInput } from './grammar/V1_JsonToGrammarInput';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
 import type { V1_PureModelContextGenerationInput } from './import/V1_PureModelContextGenerationInput';
 import type { V1_GenerateFileInput } from './generation/V1_FileGenerationInput';
-import type { V1_ExecutionResult } from './execution/V1_ExecutionResult';
+import type {
+  V1_ExecutionResult,
+  V1_MappingTestResult,
+} from './execution/V1_ExecutionResult';
 import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription';
 import type { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription';
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
@@ -290,7 +293,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   doMappingTest = (
     input: PlainObject<V1_ExecuteMappingTestInput>,
     returnResultAsText?: boolean,
-  ): Promise<PlainObject<V1_ExecutionResult> | Response> =>
+  ): Promise<PlainObject<V1_MappingTestResult> | Response> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.EXECUTE),
       `${this._execution()}/doMappingTest`,

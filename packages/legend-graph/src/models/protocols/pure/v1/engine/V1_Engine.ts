@@ -76,18 +76,21 @@ import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
 import { V1_ExecuteInput } from './execution/V1_ExecuteInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
-import type { V1_ExecutionResult } from './execution/V1_ExecutionResult';
-import { V1_serializeExecutionResult } from './execution/V1_ExecutionResult';
+import {
+  V1_serializeMappingTestResult,
+  V1_serializeExecutionResult,
+} from './execution/V1_ExecutionResult';
+import type {
+  V1_ExecutionResult,
+  V1_MappingTestResult,
+} from './execution/V1_ExecutionResult';
 import { V1_ServiceStorage } from './service/V1_ServiceStorage';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
 import { serialize } from 'serializr';
-<<<<<<< HEAD
 import { V1_ExecutionError } from './execution/V1_ExecutionError';
-=======
 import { V1_ExecuteMappingTestInput } from './execution/V1_ExecuteMappingTestInput';
->>>>>>> Support text elements to be used as input data for mapping test
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -431,14 +434,14 @@ export class V1_Engine {
   async executeMappingTest(
     input: V1_ExecuteMappingTestInput,
     useLosslessParse: boolean,
-  ): Promise<V1_ExecutionResult> {
+  ): Promise<V1_MappingTestResult> {
     const executionResultInText = await (
       (await this.engineServerClient.doMappingTest(
         V1_ExecuteMappingTestInput.serialization.toJson(input),
         true,
       )) as Response
     ).text();
-    return V1_serializeExecutionResult(
+    return V1_serializeMappingTestResult(
       useLosslessParse
         ? losslessParse(executionResultInText)
         : JSON.parse(executionResultInText),

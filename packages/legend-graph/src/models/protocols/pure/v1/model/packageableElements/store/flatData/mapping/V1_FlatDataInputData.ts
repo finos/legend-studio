@@ -19,18 +19,17 @@ import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 import { V1_InputData } from '../../../../../model/packageableElements/mapping/V1_InputData';
 import type { V1_PackageableElementPointer } from '../../../../../model/packageableElements/V1_PackageableElement';
+import type { V1_TestDataSource } from '../../modelToModel/mapping/V1_TestDataSource';
 
 export class V1_FlatDataInputData extends V1_InputData implements Hashable {
   sourceFlatData!: V1_PackageableElementPointer;
-  data!: string;
-  textElements: string[] = [];
+  testDataSource!: V1_TestDataSource;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
       this.sourceFlatData,
-      this.data,
-      hashArray(this.textElements),
+      this.testDataSource,
     ]);
   }
 }

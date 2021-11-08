@@ -27,6 +27,18 @@ export class V1_ResultBuilder {
   );
 }
 
+export class V1_MappingTestResult {
+  actual!: object;
+  result!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MappingTestResult, {
+      actual: raw(),
+      result: primitive(),
+    }),
+  );
+}
+
 export abstract class V1_ExecutionResult {
   builder!: V1_ResultBuilder;
   activities: object | undefined;
@@ -121,3 +133,7 @@ export const V1_serializeExecutionResult = (
       return new V1_INTERNAL__UnknownExecutionResult(value);
   }
 };
+
+export const V1_serializeMappingTestResult = (
+  value: PlainObject<V1_MappingTestResult>,
+): V1_MappingTestResult => V1_MappingTestResult.serialization.fromJson(value);

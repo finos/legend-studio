@@ -15677,12 +15677,14 @@ export const TEST_DATA__FlatDataInputDataRoundtrip = [
           inputData: [
             {
               _type: 'flatData',
-              data: '{"oneName":"oneName 2"}',
+              testDataSource: {
+                _type: 'stringData',
+                data: '{"oneName":"oneName 2"}',
+              },
               sourceFlatData: {
                 path: 'tFlatData',
                 type: 'STORE',
               },
-              textElements: [],
             },
           ],
           name: 'defaultTest',

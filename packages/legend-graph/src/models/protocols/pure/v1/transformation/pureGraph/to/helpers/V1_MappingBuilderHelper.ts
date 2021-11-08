@@ -236,20 +236,20 @@ const V1_buildMappingTestInputData = (
       inputData.sourceFlatData,
       `Flat-data input data 'sourceFlatData' field is missing`,
     );
-    if (inputData.textElements.length > 0) {
+    if (inputData.testDataSource instanceof V1_ElementsTestDataSource) {
       return new FlatDataInputData(
         context.resolveFlatDataStore(inputData.sourceFlatData.path),
         '',
-        inputData.textElements,
+        inputData.testDataSource.textElements,
       );
     }
     assertNonNullable(
-      inputData.data,
+      (inputData.testDataSource as V1_StringTestDataSource).data,
       `Flat-data input data 'data' field is missing`,
     );
     return new FlatDataInputData(
       context.resolveFlatDataStore(inputData.sourceFlatData.path),
-      inputData.data,
+      (inputData.testDataSource as V1_StringTestDataSource).data,
       [],
     );
   } else if (inputData instanceof V1_RelationalInputData) {

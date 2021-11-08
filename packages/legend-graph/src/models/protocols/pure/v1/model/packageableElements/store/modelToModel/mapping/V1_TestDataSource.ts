@@ -17,7 +17,7 @@
 import type { Hashable } from '@finos/legend-shared';
 
 export abstract class V1_TestDataSource implements Hashable {
-  private readonly _$nominalTypeBrand!: 'TestDataSource';
+  private readonly _$nominalTypeBrand!: 'V1_TestDataSource';
 
   abstract get hashCode(): string;
 }

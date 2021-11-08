@@ -370,24 +370,30 @@ export const TEST_DATA__MappingRoundtrip = [
           inputData: [
             {
               _type: 'object',
-              data: '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}',
+              testDataSource: {
+                _type: 'stringData',
+                data: '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}',
+              },
               inputType: 'JSON',
               sourceClass: 'tClass',
-              textElements: [],
             },
             {
               _type: 'object',
-              data: '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}',
+              testDataSource: {
+                _type: 'stringData',
+                data: '{"oneName":"oneName 2","anotherName":"anotherName 16","oneDate":"2020-02-05","anotherDate":"2020-04-13","oneNumber":24,"anotherNumber":29}',
+              },
               inputType: 'XML',
               sourceClass: 'tClass',
-              textElements: [],
             },
             {
               _type: 'object',
-              data: '{}',
+              testDataSource: {
+                _type: 'textElements',
+                textElements: ['test::textElement1', 'test:textElement2'],
+              },
               inputType: 'JSON',
               sourceClass: 'tClass',
-              textElements: ['test::textElement1', 'test:textElement2'],
             },
           ],
           name: 'test2',

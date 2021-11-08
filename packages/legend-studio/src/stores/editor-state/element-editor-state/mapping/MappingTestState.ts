@@ -1,3 +1,4 @@
+/* eslint-disable @finos/legend-studio/no-cross-workspace-source-usage */
 /**
  * Copyright (c) 2020-present, Goldman Sachs
  *
@@ -21,7 +22,6 @@ import type {
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   LogEvent,
-  hashObject,
   UnsupportedOperationError,
   guaranteeNonNullable,
   uuid,
@@ -31,7 +31,6 @@ import {
   fromGrammarString,
   toGrammarString,
   createUrlStringFromData,
-  losslessParse,
   losslessStringify,
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
@@ -55,10 +54,8 @@ import type {
   InputData,
   MappingTestAssert,
   Mapping,
-  ExecutionResult,
 } from '@finos/legend-graph';
 import {
-  extractExecutionResultValues,
   GRAPH_MANAGER_LOG_EVENT,
   LAMBDA_PIPE,
   Class,
@@ -84,6 +81,7 @@ import {
   PureClientVersion,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
+import type { MappingTestResult } from '@finos/legend-graph/src/graphManager/action/execution/ExecutionResult';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -575,16 +573,12 @@ export class MappingTestState {
           this.queryState.test.name,
           PureClientVersion.VX_X_X,
           true,
-        )) as ExecutionResult;
+        )) as MappingTestResult;
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
         this.assertionState.setExpectedResult(
-          losslessStringify(
-            extractExecutionResultValues(result),
-            undefined,
-            TAB_SIZE,
-          ),
+          losslessStringify(result.actual, undefined, TAB_SIZE),
         );
         this.updateAssertion();
       } else {
@@ -632,25 +626,14 @@ export class MappingTestState {
           this.queryState.test.name,
           PureClientVersion.VX_X_X,
           true,
-        )) as ExecutionResult;
+        )) as MappingTestResult;
       this.testExecutionResultText = losslessStringify(
-        extractExecutionResultValues(result),
+        result.actual,
         undefined,
         TAB_SIZE,
       );
-      let assertionMatched = false;
-      if (
-        this.assertionState instanceof MappingTestExpectedOutputAssertionState
-      ) {
-        // TODO: this logic should probably be better handled in by engine mapping test runner
-        assertionMatched =
-          hashObject(extractExecutionResultValues(result)) ===
-          hashObject(losslessParse(this.assertionState.expectedResult));
-      } else {
-        throw new UnsupportedOperationError();
-      }
       this.setResult(
-        assertionMatched ? TEST_RESULT.PASSED : TEST_RESULT.FAILED,
+        result.result === 'SUCCESS' ? TEST_RESULT.PASSED : TEST_RESULT.FAILED,
       );
     } catch (error) {
       assertErrorThrown(error);

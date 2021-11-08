@@ -143,7 +143,6 @@ import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 import type { SubstituteStore } from '../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
 import { V1_ElementsTestDataSource } from '../../../model/packageableElements/store/modelToModel/mapping/V1_ElementsTestDataSource';
-import { V1_TestDataSource } from '../../../model/packageableElements/store/modelToModel/mapping/V1_TestDataSource';
 import { V1_StringTestDataSource } from '../../../model/packageableElements/store/modelToModel/mapping/V1_StringTestDataSource';
 
 export const V1_transformPropertyReference = (
@@ -254,12 +253,19 @@ const transformFlatDataInputData = (
   element: FlatDataInputData,
 ): V1_FlatDataInputData => {
   const inputData = new V1_FlatDataInputData();
-  inputData.data = element.data;
+  if (element.textElements.length > 0) {
+    const testDataSource = new V1_ElementsTestDataSource();
+    testDataSource.textElements = element.textElements;
+    inputData.testDataSource = testDataSource;
+  } else {
+    const testDataSource = new V1_StringTestDataSource();
+    testDataSource.data = element.data;
+    inputData.testDataSource = testDataSource;
+  }
   inputData.sourceFlatData = V1_transformElementReferencePointer(
     V1_PackageableElementPointerType.STORE,
     element.sourceFlatData,
   );
-  inputData.textElements = element.textElements;
   return inputData;
 };
 

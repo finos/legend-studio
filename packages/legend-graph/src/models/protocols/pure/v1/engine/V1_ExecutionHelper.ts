@@ -26,10 +26,12 @@ import {
   TdsExecutionResult,
   TdsBuilder,
   TDSColumn,
+  MappingTestResult,
 } from '../../../../../graphManager/action/execution/ExecutionResult';
 import type { ExecutionResult } from '../../../../../graphManager/action/execution/ExecutionResult';
 import type {
   V1_ExecutionResult,
+  V1_MappingTestResult,
   V1_TdsBuilder,
 } from './execution/V1_ExecutionResult';
 import {
@@ -119,4 +121,13 @@ export const V1_buildExecutionResult = (
     return new INTERNAL__UnknownExecutionResult(protocol.content);
   }
   throw new UnsupportedOperationError(`Can't build execution result`, protocol);
+};
+
+export const V1_buildMappingTestResult = (
+  protocol: V1_MappingTestResult,
+): MappingTestResult => {
+  const mappingTestResult = new MappingTestResult();
+  mappingTestResult.actual = JSON.stringify(protocol.actual);
+  mappingTestResult.result = protocol.result;
+  return mappingTestResult;
 };

@@ -68,7 +68,10 @@ import type {
 } from '../../../../graphManager/action/generation/GenerationConfigurationDescription';
 import type { ServiceTestResult } from '../../../../graphManager/action/service/ServiceTestResult';
 import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult';
-import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult';
+import type {
+  ExecutionResult,
+  MappingTestResult,
+} from '../../../../graphManager/action/execution/ExecutionResult';
 import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput';
 import type { ValueSpecification } from '../../../metamodels/pure/valueSpecification/ValueSpecification';
 import { ServiceExecutionMode } from '../../../../graphManager/action/service/ServiceExecutionMode';
@@ -193,7 +196,10 @@ import {
   V1_buildGenerationOutput,
   V1_buildLightQuery,
 } from './engine/V1_EngineHelper';
-import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
+import {
+  V1_buildExecutionResult,
+  V1_buildMappingTestResult,
+} from './engine/V1_ExecutionHelper';
 import type { Entity } from '@finos/legend-model-storage';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
 import {
@@ -1916,8 +1922,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     testId: string,
     clientVersion: string,
     useLosslessParse: boolean,
-  ): Promise<ExecutionResult> {
-    return V1_buildExecutionResult(
+  ): Promise<MappingTestResult> {
+    return V1_buildMappingTestResult(
       await this.engine.executeMappingTest(
         this.createMappingTestExecutionInput(
           graph,

@@ -647,21 +647,27 @@ enum V1_InputDataType {
   RELATIONAL = 'relational',
 }
 
+enum V1_TestDataSourceType {
+  STRING_TEST_DATA_SOURCE = 'stringData',
+  ELEMENTS_TEST_DATA_SOURCE = 'textElements',
+}
+
 const V1_stringTestDataSource = createModelSchema(V1_StringTestDataSource, {
+  _type: usingConstantValueSchema(
+    V1_TestDataSourceType.STRING_TEST_DATA_SOURCE,
+  ),
   data: primitive(),
 });
 
 const V1_elementsTestDataSource = createModelSchema(V1_ElementsTestDataSource, {
+  _type: usingConstantValueSchema(
+    V1_TestDataSourceType.ELEMENTS_TEST_DATA_SOURCE,
+  ),
   textElements: list(primitive()),
 });
 
 enum V1_MappingTestAssertType {
   EXPECTED_OUTPUT_MAPPING_TEST_ASSERT = 'expectedOutputMappingTestAssert',
-}
-
-enum V1_TestDataSourceType {
-  STRING_TEST_DATA_SOURCE = 'stringData',
-  ELEMENTS_TEST_DATA_SOURCE = 'textElements',
 }
 
 const V1_serializeTestDataSource = (
@@ -700,11 +706,13 @@ const V1_objectInputData = createModelSchema(V1_ObjectInputData, {
 
 const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
   _type: usingConstantValueSchema(V1_InputDataType.FLAT_DATA),
-  data: primitive(),
+  testDataSource: custom(
+    (val) => V1_serializeTestDataSource(val),
+    (val) => V1_deserializeTestDataSource(val),
+  ),
   sourceFlatData: usingModelSchema(
     V1_packageableElementPointerDeserializerSchema,
   ),
-  textElements: list(primitive()),
 });
 
 const V1_relationalInputData = createModelSchema(V1_RelationalInputData, {

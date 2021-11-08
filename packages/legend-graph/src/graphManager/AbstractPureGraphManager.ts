@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { ExecutionResult } from './action/execution/ExecutionResult';
+import type {
+  ExecutionResult,
+  MappingTestResult,
+} from './action/execution/ExecutionResult';
 import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult';
 import type { Service } from '../models/metamodels/pure/packageableElements/service/Service';
 import type {
@@ -256,7 +259,7 @@ export abstract class AbstractPureGraphManager {
     testId: string,
     clientVersion: string,
     lossless: boolean,
-  ): Promise<ExecutionResult>;
+  ): Promise<MappingTestResult>;
 
   abstract generateMappingTestData(
     graph: PureModel,

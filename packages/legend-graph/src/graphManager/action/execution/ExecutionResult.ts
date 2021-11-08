@@ -31,6 +31,11 @@ export class ResultBuilder {
   }
 }
 
+export class MappingTestResult {
+  actual!: string;
+  result!: string;
+}
+
 export abstract class ExecutionResult {
   builder!: ResultBuilder;
   activities: object | undefined;
