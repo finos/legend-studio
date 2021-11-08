@@ -14,25 +14,102 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type {
   RawDataSpace,
   TaxonomyViewerState,
 } from '../../stores/studio/EnterpriseModelExplorerStore';
+import { generateDataSpaceRoute } from '../../stores/studio/EnterpriseModelExplorerStore';
 import {
   BlankPanelContent,
   clsx,
   PanelLoadingIndicator,
   SquareIcon,
-} from '@finos/legend-art';
-import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
+  ContextMenu,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import { DataSpaceViewer } from '../DataSpaceViewer';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
+import { generateGAVCoordinates } from '@finos/legend-server-depot';
+
+const TaxonomyDataSpaceItem = observer(
+  (props: {
+    rawDataSpace: RawDataSpace;
+    taxonomyViewerState: TaxonomyViewerState;
+    selectDataSpace: () => void;
+  }) => {
+    const { rawDataSpace, taxonomyViewerState, selectDataSpace } = props;
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
+    const applicationStore = useApplicationStore();
+    const isSelected = rawDataSpace === taxonomyViewerState.currentDataSpace;
+    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
+    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+    const copyLink = (): void => {
+      applicationStore
+        .copyTextToClipboard(
+          applicationStore.navigator.generateLocation(
+            generateDataSpaceRoute(
+              taxonomyViewerState.taxonomyNode.id,
+              generateGAVCoordinates(
+                rawDataSpace.groupId,
+                rawDataSpace.artifactId,
+                rawDataSpace.versionId,
+              ),
+              rawDataSpace.path,
+            ),
+          ),
+        )
+        .then(() =>
+          applicationStore.notifySuccess('Copied data space link to clipboard'),
+        )
+        .catch(applicationStore.alertIllegalUnhandledError);
+    };
+
+    return (
+      <ContextMenu
+        content={
+          <MenuContent>
+            <MenuContentItem onClick={copyLink}>Copy Link</MenuContentItem>
+          </MenuContent>
+        }
+        menuProps={{ elevation: 7 }}
+        onOpen={onContextMenuOpen}
+        onClose={onContextMenuClose}
+        key={rawDataSpace.id}
+      >
+        <button
+          className={clsx(
+            'taxonomy-viewer__explorer__entry',
+            {
+              'menu__trigger--on-menu-open':
+                !isSelected && isSelectedFromContextMenu,
+            },
+            {
+              'taxonomy-viewer__explorer__entry--active': isSelected,
+            },
+          )}
+          tabIndex={-1}
+          onClick={selectDataSpace}
+          title={rawDataSpace.id}
+        >
+          <div className="taxonomy-viewer__explorer__entry__icon">
+            <SquareIcon />
+          </div>
+          <div className="taxonomy-viewer__explorer__entry__path">
+            {rawDataSpace.path}
+          </div>
+        </button>
+      </ContextMenu>
+    );
+  },
+);
 
 const TaxonomyViewerExplorer = observer(
   (props: { taxonomyViewerState: TaxonomyViewerState }) => {
@@ -60,23 +137,12 @@ const TaxonomyViewerExplorer = observer(
           )}
           {taxonomyNode.rawDataSpaces.length !== 0 &&
             taxonomyNode.rawDataSpaces.map((rawDataSpace) => (
-              <button
+              <TaxonomyDataSpaceItem
                 key={rawDataSpace.id}
-                className={clsx('taxonomy-viewer__explorer__entry', {
-                  'taxonomy-viewer__explorer__entry--active':
-                    rawDataSpace === taxonomyViewerState.currentDataSpace,
-                })}
-                tabIndex={-1}
-                onClick={selectDataSpace(rawDataSpace)}
-                title={rawDataSpace.id}
-              >
-                <div className="taxonomy-viewer__explorer__entry__icon">
-                  <SquareIcon />
-                </div>
-                <div className="taxonomy-viewer__explorer__entry__path">
-                  {rawDataSpace.path}
-                </div>
-              </button>
+                rawDataSpace={rawDataSpace}
+                selectDataSpace={selectDataSpace(rawDataSpace)}
+                taxonomyViewerState={taxonomyViewerState}
+              />
             ))}
         </div>
       </div>

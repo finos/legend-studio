@@ -30,6 +30,7 @@ import {
   generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { AssertionError, assertNonNullable } from '@finos/legend-shared';
 import {
   addUniqueEntry,
   guaranteeNonNullable,
@@ -38,6 +39,7 @@ import {
 } from '@finos/legend-shared';
 import type { StudioConfig, StudioPluginManager } from '@finos/legend-studio';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
+import { generatePath } from 'react-router';
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   extractDataSpaceTaxonomyNodePaths,
@@ -62,6 +64,28 @@ export interface EnterpriseModelExplorerPathParams {
   [ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.GAV]?: string;
   [ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.DATA_SPACE_PATH]?: string;
 }
+
+export const generateTaxonomyNodeRoute = (taxonomyNodePath: string): string =>
+  generatePath(
+    ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW_BY_TAXONOMY_NODE,
+    {
+      taxonomyPath: taxonomyNodePath,
+    },
+  );
+
+export const generateDataSpaceRoute = (
+  taxonomyNodePath: string,
+  GAVCoordinates: string,
+  dataSpacePath: string,
+): string =>
+  generatePath(
+    ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW_BY_DATA_SPACE,
+    {
+      taxonomyPath: taxonomyNodePath,
+      gav: GAVCoordinates,
+      dataSpacePath,
+    },
+  );
 
 const DATA_SPACE_ID_DELIMITER = '@';
 const TAXONOMY_NODE_PATH_DELIMITER = '::';
@@ -271,7 +295,7 @@ export class EnterpriseModelExplorerStore {
   dataSpaceIndex = new Map<string, RawDataSpace>();
   treeData?: TreeData<TaxonomyTreeNodeData> | undefined;
 
-  initialDataSpaceId?: string;
+  initialDataSpaceId?: string | undefined;
   currentTaxonomyViewerState?: TaxonomyViewerState | undefined;
 
   constructor(
@@ -425,8 +449,57 @@ export class EnterpriseModelExplorerStore {
       // to incrementally build the tree
       this.initializeTaxonomyTreeData();
 
-      // navigate to the taxonomy tree node
-      // params.taxonomyPath
+      if (this.treeData) {
+        const taxonomyPath = params.taxonomyPath;
+        if (taxonomyPath) {
+          const node = this.treeData.nodes.get(taxonomyPath);
+          if (node) {
+            node.isOpen = true;
+            const taxonomyPathParts = taxonomyPath.split(
+              TAXONOMY_NODE_PATH_DELIMITER,
+            );
+            let currentTaxonomyPath = '';
+            for (let i = 0; i < taxonomyPathParts.length; ++i) {
+              currentTaxonomyPath += `${
+                i !== 0 ? TAXONOMY_NODE_PATH_DELIMITER : ''
+              }${taxonomyPathParts[i]}`;
+              const nodeToOpen = guaranteeNonNullable(
+                this.treeData.nodes.get(currentTaxonomyPath),
+              );
+              nodeToOpen.isOpen = true;
+              this.setTreeData({ ...this.treeData });
+            }
+            this.setCurrentTaxonomyViewerState(
+              new TaxonomyViewerState(this, node),
+            );
+
+            // open data space if specified
+            if (this.initialDataSpaceId) {
+              const dataSpaceToOpen = node.rawDataSpaces.find(
+                (rawDataSpace) => rawDataSpace.id === this.initialDataSpaceId,
+              );
+              const initialDataSpaceId = this.initialDataSpaceId;
+              this.initialDataSpaceId = undefined;
+              if (dataSpaceToOpen) {
+                assertNonNullable(this.currentTaxonomyViewerState);
+                yield flowResult(
+                  this.currentTaxonomyViewerState.initializeDataSpaceViewer(
+                    dataSpaceToOpen,
+                  ),
+                );
+              } else {
+                throw new AssertionError(
+                  `Can't find data space with ID '${initialDataSpaceId}' in taxonomy node with path '${taxonomyPath}'`,
+                );
+              }
+            }
+          } else {
+            throw new AssertionError(
+              `Can't find taxonomy node with path '${taxonomyPath}'`,
+            );
+          }
+        }
+      }
 
       this.initState.pass();
     } catch (error) {

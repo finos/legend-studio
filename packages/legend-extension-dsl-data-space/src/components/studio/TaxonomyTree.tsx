@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { TaxonomyTreeNodeData } from '../../stores/studio/EnterpriseModelExplorerStore';
-import { TaxonomyViewerState } from '../../stores/studio/EnterpriseModelExplorerStore';
+import {
+  generateTaxonomyNodeRoute,
+  TaxonomyViewerState,
+} from '../../stores/studio/EnterpriseModelExplorerStore';
 import type { TreeData, TreeNodeContainerProps } from '@finos/legend-art';
 import {
+  ContextMenu,
+  MenuContent,
+  MenuContentItem,
   CircleIcon,
   EmptyCircleIcon,
   ChevronDownIcon,
@@ -28,6 +35,7 @@ import {
 } from '@finos/legend-art';
 import { useEnterpriseModelExplorerStore } from './EnterpriseModelExplorerStoreProvider';
 import { isNonNullable } from '@finos/legend-shared';
+import { useApplicationStore } from '@finos/legend-application';
 
 const TaxonomyTreeNodeContainer = observer(
   (
@@ -40,9 +48,11 @@ const TaxonomyTreeNodeContainer = observer(
   ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const { treeData } = innerProps;
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
+    const applicationStore = useApplicationStore();
     const enterpriseModelExplorerStore = useEnterpriseModelExplorerStore();
-    const hasChildren = node.childrenIds && Boolean(node.childrenIds.length);
-    const expandIcon = !hasChildren ? (
+    const expandIcon = !node.childrenIds.length ? (
       <div />
     ) : node.isOpen ? (
       <ChevronDownIcon />
@@ -53,50 +63,81 @@ const TaxonomyTreeNodeContainer = observer(
     const toggleExpand = (event: React.MouseEvent): void => {
       event.preventDefault();
       event.stopPropagation();
-      if (node.childrenIds?.length) {
+      if (node.childrenIds.length) {
         node.isOpen = !node.isOpen;
       }
       enterpriseModelExplorerStore.setTreeData({
         ...treeData,
       });
     };
+    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
+    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+    const copyLink = (): void => {
+      applicationStore
+        .copyTextToClipboard(
+          applicationStore.navigator.generateLocation(
+            generateTaxonomyNodeRoute(node.id),
+          ),
+        )
+        .then(() =>
+          applicationStore.notifySuccess(
+            'Copied taxonomy node link to clipboard',
+          ),
+        )
+        .catch(applicationStore.alertIllegalUnhandledError);
+    };
 
     return (
-      <div
-        className={clsx(
-          'tree-view__node__container enterprise-taxonomy-tree__node__container',
-          {
-            'enterprise-taxonomy-tree__node__container--selected':
-              node ===
-              enterpriseModelExplorerStore.currentTaxonomyViewerState
-                ?.taxonomyNode,
-          },
-        )}
-        onClick={selectNode}
-        style={{
-          paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
-          display: 'flex',
-        }}
+      <ContextMenu
+        content={
+          <MenuContent>
+            <MenuContentItem onClick={copyLink}>Copy Link</MenuContentItem>
+          </MenuContent>
+        }
+        menuProps={{ elevation: 7 }}
+        onOpen={onContextMenuOpen}
+        onClose={onContextMenuClose}
       >
-        <div className="tree-view__node__icon enterprise-taxonomy-tree__node__icon">
-          <button
-            className="enterprise-taxonomy-tree__node__icon__expand"
-            tabIndex={-1}
-            onClick={toggleExpand}
-          >
-            {expandIcon}
-          </button>
-          <div className="enterprise-taxonomy-tree__node__icon__type">
-            {hasChildren ? <CircleIcon /> : <EmptyCircleIcon />}
-          </div>
-        </div>
-        <button
-          className="tree-view__node__label enterprise-taxonomy-tree__node__label"
-          tabIndex={-1}
+        <div
+          className={clsx(
+            'tree-view__node__container enterprise-taxonomy-tree__node__container',
+            {
+              'menu__trigger--on-menu-open':
+                !node.isSelected && isSelectedFromContextMenu,
+            },
+            {
+              'enterprise-taxonomy-tree__node__container--selected':
+                node ===
+                enterpriseModelExplorerStore.currentTaxonomyViewerState
+                  ?.taxonomyNode,
+            },
+          )}
+          onClick={selectNode}
+          style={{
+            paddingLeft: `${level * (stepPaddingInRem ?? 1)}rem`,
+            display: 'flex',
+          }}
         >
-          {node.label}
-        </button>
-      </div>
+          <div className="tree-view__node__icon enterprise-taxonomy-tree__node__icon">
+            <button
+              className="enterprise-taxonomy-tree__node__icon__expand"
+              tabIndex={-1}
+              onClick={toggleExpand}
+            >
+              {expandIcon}
+            </button>
+            <div className="enterprise-taxonomy-tree__node__icon__type">
+              {node.childrenIds.length ? <CircleIcon /> : <EmptyCircleIcon />}
+            </div>
+          </div>
+          <button
+            className="tree-view__node__label enterprise-taxonomy-tree__node__label"
+            tabIndex={-1}
+          >
+            {node.label}
+          </button>
+        </div>
+      </ContextMenu>
     );
   },
 );
@@ -117,11 +158,9 @@ export const TaxonomyTree = observer(
       node: TaxonomyTreeNodeData,
     ): TaxonomyTreeNodeData[] =>
       node.childrenIds
-        ? node.childrenIds
-            .map((id) => treeData.nodes.get(id))
-            .filter(isNonNullable)
-            .sort((a, b) => a.label.localeCompare(b.label))
-        : [];
+        .map((id) => treeData.nodes.get(id))
+        .filter(isNonNullable)
+        .sort((a, b) => a.label.localeCompare(b.label));
 
     return (
       <TreeView
