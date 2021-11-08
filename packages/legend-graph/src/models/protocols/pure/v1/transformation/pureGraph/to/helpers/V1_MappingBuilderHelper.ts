@@ -69,6 +69,8 @@ import {
   RelationalInputType,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
 import { getAllClassMappings } from '../../../../../../../../helpers/MappingHelper';
+import { V1_ElementsTestDataSource } from '../../../../model/packageableElements/store/modelToModel/mapping/V1_ElementsTestDataSource';
+import type { V1_StringTestDataSource } from '../../../../model/packageableElements/store/modelToModel/mapping/V1_StringTestDataSource';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -207,12 +209,12 @@ const V1_buildMappingTestInputData = (
       inputData.sourceClass,
       `Object input data 'sourceClass' field is missing`,
     );
-    if (inputData.textElements.length > 0) {
+    if (inputData.testDataSource instanceof V1_ElementsTestDataSource) {
       return new ObjectInputData(
         context.resolveClass(inputData.sourceClass),
         ObjectInputType.JSON,
         '{}',
-        inputData.textElements,
+        inputData.testDataSource.textElements,
       );
     }
     assertNonNullable(
@@ -220,13 +222,13 @@ const V1_buildMappingTestInputData = (
       `Object input data 'inputType' field is missing`,
     );
     assertNonNullable(
-      inputData.data,
+      (inputData.testDataSource as V1_StringTestDataSource).data,
       `Object input data 'data' field is missing`,
     );
     return new ObjectInputData(
       context.resolveClass(inputData.sourceClass),
       getObjectInputType(inputData.inputType),
-      inputData.data,
+      (inputData.testDataSource as V1_StringTestDataSource).data,
       [],
     );
   } else if (inputData instanceof V1_FlatDataInputData) {
@@ -251,12 +253,12 @@ const V1_buildMappingTestInputData = (
       [],
     );
   } else if (inputData instanceof V1_RelationalInputData) {
-    if (inputData.textElements.length > 0) {
+    if (inputData.testDataSource instanceof V1_ElementsTestDataSource) {
       return new RelationalInputData(
         context.resolveDatabase(inputData.database),
         '',
         RelationalInputType.SQL,
-        inputData.textElements,
+        inputData.testDataSource.textElements,
       );
     }
     assertNonNullable(
@@ -268,12 +270,12 @@ const V1_buildMappingTestInputData = (
       `Relational input data 'inputType' field is missing`,
     );
     assertNonNullable(
-      inputData.data,
+      (inputData.testDataSource as V1_StringTestDataSource).data,
       `Relational input data 'data' field is missing`,
     );
     return new RelationalInputData(
       context.resolveDatabase(inputData.database),
-      inputData.data,
+      (inputData.testDataSource as V1_StringTestDataSource).data,
       getRelationalInputType(inputData.inputType),
       [],
     );

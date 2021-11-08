@@ -98,6 +98,9 @@ import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+import { V1_StringTestDataSource } from '../../../model/packageableElements/store/modelToModel/mapping/V1_StringTestDataSource';
+import { V1_ElementsTestDataSource } from '../../../model/packageableElements/store/modelToModel/mapping/V1_ElementsTestDataSource';
+import type { V1_TestDataSource } from '../../../model/packageableElements/store/modelToModel/mapping/V1_TestDataSource';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -644,16 +647,55 @@ enum V1_InputDataType {
   RELATIONAL = 'relational',
 }
 
+const V1_stringTestDataSource = createModelSchema(V1_StringTestDataSource, {
+  data: primitive(),
+});
+
+const V1_elementsTestDataSource = createModelSchema(V1_ElementsTestDataSource, {
+  textElements: list(primitive()),
+});
+
 enum V1_MappingTestAssertType {
   EXPECTED_OUTPUT_MAPPING_TEST_ASSERT = 'expectedOutputMappingTestAssert',
 }
 
+enum V1_TestDataSourceType {
+  STRING_TEST_DATA_SOURCE = 'stringData',
+  ELEMENTS_TEST_DATA_SOURCE = 'textElements',
+}
+
+const V1_serializeTestDataSource = (
+  protocol: V1_TestDataSource,
+): PlainObject<V1_TestDataSource> | typeof SKIP => {
+  if (protocol instanceof V1_StringTestDataSource) {
+    return serialize(V1_stringTestDataSource, protocol);
+  } else if (protocol instanceof V1_ElementsTestDataSource) {
+    return serialize(V1_elementsTestDataSource, protocol);
+  }
+  return SKIP;
+};
+
+const V1_deserializeTestDataSource = (
+  json: PlainObject<V1_TestDataSource>,
+): V1_TestDataSource | typeof SKIP => {
+  switch (json._type) {
+    case V1_TestDataSourceType.STRING_TEST_DATA_SOURCE:
+      return deserialize(V1_stringTestDataSource, json);
+    case V1_TestDataSourceType.ELEMENTS_TEST_DATA_SOURCE:
+      return deserialize(V1_elementsTestDataSource, json);
+    default:
+      return SKIP;
+  }
+};
+
 const V1_objectInputData = createModelSchema(V1_ObjectInputData, {
   _type: usingConstantValueSchema(V1_InputDataType.OBJECT),
-  data: primitive(),
   inputType: primitive(),
   sourceClass: primitive(),
-  textElements: list(primitive()),
+  testDataSource: custom(
+    (val) => V1_serializeTestDataSource(val),
+    (val) => V1_deserializeTestDataSource(val),
+  ),
 });
 
 const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
@@ -667,10 +709,12 @@ const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
 
 const V1_relationalInputData = createModelSchema(V1_RelationalInputData, {
   _type: usingConstantValueSchema(V1_InputDataType.RELATIONAL),
-  data: primitive(),
   database: primitive(),
   inputType: primitive(),
-  textElements: list(primitive()),
+  testDataSource: custom(
+    (val) => V1_serializeTestDataSource(val),
+    (val) => V1_deserializeTestDataSource(val),
+  ),
 });
 
 const V1_expectedOutputMappingTestAssertModelSchema = createModelSchema(

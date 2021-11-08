@@ -18,6 +18,7 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 import { V1_InputData } from '../../../../../model/packageableElements/mapping/V1_InputData';
+import type { V1_TestDataSource } from './V1_TestDataSource';
 
 export enum V1_ObjectInputType {
   JSON = 'JSON',
@@ -27,16 +28,14 @@ export enum V1_ObjectInputType {
 export class V1_ObjectInputData extends V1_InputData implements Hashable {
   inputType = V1_ObjectInputType.JSON; // default value for backward compatibility
   sourceClass!: string;
-  data!: string;
-  textElements: string[] = [];
+  testDataSource!: V1_TestDataSource;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OBJECT_INPUT_DATA,
       this.sourceClass,
       this.inputType,
-      this.data,
-      hashArray(this.textElements),
+      this.testDataSource,
     ]);
   }
 }

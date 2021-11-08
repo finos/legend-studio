@@ -18,20 +18,19 @@ import { hashArray } from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 import { V1_InputData } from '../../../../../model/packageableElements/mapping/V1_InputData';
+import type { V1_TestDataSource } from '../../modelToModel/mapping/V1_TestDataSource';
 
 export class V1_RelationalInputData extends V1_InputData implements Hashable {
   database!: string;
-  data!: string;
   inputType!: string;
-  textElements: string[] = [];
+  testDataSource!: V1_TestDataSource;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_INPUT_DATA,
       this.database,
-      this.data,
       this.inputType,
-      hashArray(this.textElements),
+      this.testDataSource,
     ]);
   }
 }

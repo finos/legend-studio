@@ -567,15 +567,12 @@ export class MappingTestState {
       return;
     }
     try {
-      const query = this.queryState.query;
-      const runtime = this.inputDataState.runtime;
       this.isExecutingTest = true;
       const result =
-        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+        (yield this.editorStore.graphManagerState.graphManager.executeMappingTest(
           this.editorStore.graphManagerState.graph,
           this.mappingEditorState.mapping,
-          query,
-          runtime,
+          this.queryState.test.name,
           PureClientVersion.VX_X_X,
           true,
         )) as ExecutionResult;
