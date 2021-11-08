@@ -58,6 +58,10 @@ export {
   FaExternalLinkAlt as ExternalLinkIcon,
   FaExternalLinkSquareAlt as ExternalLinkSquareIcon,
   FaLightbulb as LightBulbIcon,
+  FaList as ListIcon,
+  FaRegWindowMaximize as WindowMaximizeIcon,
+  FaCircle as CircleIcon,
+  FaRegCircle as EmptyCircleIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

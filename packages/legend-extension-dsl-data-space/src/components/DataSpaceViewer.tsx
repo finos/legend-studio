@@ -28,7 +28,6 @@ import {
   MappingIcon,
   RuntimeIcon,
   CogIcon,
-  LightBulbIcon,
   KeyIcon,
   FlaskIcon,
   ExternalLinkSquareIcon,
@@ -36,13 +35,12 @@ import {
 } from '@finos/legend-art';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram';
-import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../../stores/query/DataSpaceQuerySetupState';
-import type { DataSpaceViewerState } from '../../stores/query/DataSpaceQuerySetupState';
-import { DataSpaceSupportEmail } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import type { DataSpaceSupportInfo } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import type { ResolvedDataSpaceExecutionContext } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+import { DataSpaceSupportEmail } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import type { DataSpaceSupportInfo } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import type { ResolvedDataSpaceExecutionContext } from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
 import type { PackageableRuntime } from '@finos/legend-graph';
-import { useQueryStore } from '@finos/legend-query';
+import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState';
+import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../stores/DataSpaceViewerState';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -129,12 +127,12 @@ const DataSpaceModelsOverview = observer(
     const formatDiagramOptionLabel = (
       option: DiagramOption,
     ): React.ReactNode => (
-      <div className="query-setup__data-space__viewer__diagrams__dropdown__option">
-        <div className="query-setup__data-space__viewer__diagrams__dropdown__option__label">
+      <div className="data-space__viewer__diagrams__dropdown__option">
+        <div className="data-space__viewer__diagrams__dropdown__option__label">
           {option.label}
         </div>
         {dataSpaceViewerState.featuredDiagrams.includes(option.value) && (
-          <div className="query-setup__data-space__viewer__diagrams__dropdown__option__tag">
+          <div className="data-space__viewer__diagrams__dropdown__option__tag">
             featured
           </div>
         )}
@@ -145,10 +143,10 @@ const DataSpaceModelsOverview = observer(
       return <BlankPanelContent>No diagrams available</BlankPanelContent>;
     }
     return (
-      <div className="query-setup__data-space__viewer__main-panel__content query-setup__data-space__viewer__diagrams">
-        <div className="query-setup__data-space__viewer__diagrams__header">
+      <div className="data-space__viewer__main-panel__content data-space__viewer__diagrams">
+        <div className="data-space__viewer__diagrams__header">
           <CustomSelectorInput
-            className="query-setup__data-space__viewer__diagrams__diagram-selector"
+            className="data-space__viewer__diagrams__diagram-selector"
             options={diagramOptions}
             onChange={onDiagramOptionChange}
             value={selectedDiagramOption}
@@ -157,7 +155,7 @@ const DataSpaceModelsOverview = observer(
             formatOptionLabel={formatDiagramOptionLabel}
           />
         </div>
-        <div className="query-setup__data-space__viewer__diagrams__content">
+        <div className="data-space__viewer__diagrams__content">
           {dataSpaceViewerState.currentDiagram && (
             <DataSpaceDiagramCanvas
               dataSpaceViewerState={dataSpaceViewerState}
@@ -166,14 +164,7 @@ const DataSpaceModelsOverview = observer(
             />
           )}
         </div>
-        <div className="query-setup__data-space__viewer__diagrams__footer">
-          <div className="query-setup__data-space__viewer__diagrams__footer__icon">
-            <LightBulbIcon />
-          </div>
-          <div className="query-setup__data-space__viewer__diagrams__footer__text">
-            Double-click a class to start a query for that class
-          </div>
-        </div>
+        <div className="data-space__viewer__diagrams__footer"></div>
       </div>
     );
   },
@@ -221,13 +212,13 @@ const DataSpaceExecutionViewer = observer(
     const formatExecutionContextOptionLabel = (
       option: ExecutionContextOption,
     ): React.ReactNode => (
-      <div className="query-setup__data-space__viewer__execution__entry__content__dropdown__option">
-        <div className="query-setup__data-space__viewer__execution__entry__content__dropdown__option__label">
+      <div className="data-space__viewer__execution__entry__content__dropdown__option">
+        <div className="data-space__viewer__execution__entry__content__dropdown__option__label">
           {option.label}
         </div>
         {option.value ===
           dataSpaceViewerState.dataSpace.defaultExecutionContext && (
-          <div className="query-setup__data-space__viewer__execution__entry__content__dropdown__option__tag">
+          <div className="data-space__viewer__execution__entry__content__dropdown__option__tag">
             default
           </div>
         )}
@@ -248,13 +239,13 @@ const DataSpaceExecutionViewer = observer(
     const formatRuntimeOptionLabel = (
       option: RuntimeOption,
     ): React.ReactNode => (
-      <div className="query-setup__data-space__viewer__execution__entry__content__dropdown__option">
-        <div className="query-setup__data-space__viewer__execution__entry__content__dropdown__option__label">
+      <div className="data-space__viewer__execution__entry__content__dropdown__option">
+        <div className="data-space__viewer__execution__entry__content__dropdown__option__label">
           {option.label}
         </div>
         {option.value ===
           dataSpaceViewerState.currentExecutionContext.defaultRuntime.value && (
-          <div className="query-setup__data-space__viewer__execution__entry__content__dropdown__option__tag">
+          <div className="data-space__viewer__execution__entry__content__dropdown__option__tag">
             default
           </div>
         )}
@@ -262,14 +253,14 @@ const DataSpaceExecutionViewer = observer(
     );
 
     return (
-      <div className="query-setup__data-space__viewer__main-panel__content query-setup__data-space__viewer__execution">
-        <div className="query-setup__data-space__viewer__execution__entry">
-          <div className="query-setup__data-space__viewer__execution__entry__icon">
-            <CogIcon className="query-setup__data-space__viewer__execution__context-icon" />
+      <div className="data-space__viewer__main-panel__content data-space__viewer__execution">
+        <div className="data-space__viewer__execution__entry">
+          <div className="data-space__viewer__execution__entry__icon">
+            <CogIcon className="data-space__viewer__execution__context-icon" />
           </div>
-          <div className="query-setup__data-space__viewer__execution__entry__content query-setup__data-space__viewer__execution__entry__content__dropdown__container">
+          <div className="data-space__viewer__execution__entry__content data-space__viewer__execution__entry__content__dropdown__container">
             <CustomSelectorInput
-              className="query-setup__data-space__viewer__execution__entry__content__dropdown"
+              className="data-space__viewer__execution__entry__content__dropdown"
               options={executionContextOptions}
               onChange={onExecutionContextOptionChange}
               value={selectedExecutionContextOption}
@@ -279,33 +270,30 @@ const DataSpaceExecutionViewer = observer(
           </div>
         </div>
         <div
-          className={clsx(
-            'query-setup__data-space__viewer__execution__description',
-            {
-              'query-setup__data-space__viewer__execution__description--empty':
-                !dataSpaceViewerState.currentExecutionContext.description,
-            },
-          )}
+          className={clsx('data-space__viewer__execution__description', {
+            'data-space__viewer__execution__description--empty':
+              !dataSpaceViewerState.currentExecutionContext.description,
+          })}
         >
           {dataSpaceViewerState.currentExecutionContext.description
             ? dataSpaceViewerState.currentExecutionContext.description
             : 'No description'}
         </div>
-        <div className="query-setup__data-space__viewer__execution__entry query-setup__data-space__viewer__execution__mapping">
-          <div className="query-setup__data-space__viewer__execution__entry__icon">
+        <div className="data-space__viewer__execution__entry data-space__viewer__execution__mapping">
+          <div className="data-space__viewer__execution__entry__icon">
             <MappingIcon />
           </div>
-          <div className="query-setup__data-space__viewer__execution__entry__content query-setup__data-space__viewer__execution__entry__content__text">
+          <div className="data-space__viewer__execution__entry__content data-space__viewer__execution__entry__content__text">
             {dataSpaceViewerState.currentExecutionContext.mapping.value.path}
           </div>
         </div>
-        <div className="query-setup__data-space__viewer__execution__entry">
-          <div className="query-setup__data-space__viewer__execution__entry__icon">
+        <div className="data-space__viewer__execution__entry">
+          <div className="data-space__viewer__execution__entry__icon">
             <RuntimeIcon />
           </div>
-          <div className="query-setup__data-space__viewer__execution__entry__content query-setup__data-space__viewer__execution__entry__content__dropdown__container">
+          <div className="data-space__viewer__execution__entry__content data-space__viewer__execution__entry__content__dropdown__container">
             <CustomSelectorInput
-              className="query-setup__data-space__viewer__execution__entry__content__dropdown"
+              className="data-space__viewer__execution__entry__content__dropdown"
               options={runtimeOptions}
               onChange={onRuntimeOptionChange}
               value={selectedRuntimeOption}
@@ -327,14 +315,14 @@ const DataSpaceSupportEmailViewer = observer(
     const { dataSpaceSupportEmail } = props;
 
     return (
-      <div className="query-setup__data-space__viewer__support-email">
-        <div className="query-setup__data-space__viewer__support-email__entry">
-          <div className="query-setup__data-space__viewer__support-email__entry__icon">
+      <div className="data-space__viewer__support-email">
+        <div className="data-space__viewer__support-email__entry">
+          <div className="data-space__viewer__support-email__entry__icon">
             <EnvelopIcon />
           </div>
           <a
             href={`mailto:${dataSpaceSupportEmail.address}`}
-            className="query-setup__data-space__viewer__support-email__entry__content"
+            className="data-space__viewer__support-email__entry__content"
           >
             {dataSpaceSupportEmail.address}
           </a>
@@ -370,7 +358,6 @@ export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const dataSpace = dataSpaceViewerState.dataSpace;
-    const queryStore = useQueryStore();
     const changeActivity =
       (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
       (): void =>
@@ -405,14 +392,14 @@ export const DataSpaceViewer = observer(
     ];
 
     const viewDataSpaceProject = (): void =>
-      queryStore.viewStudioProject(
-        dataSpaceViewerState.lightDataSpace.groupId,
-        dataSpaceViewerState.lightDataSpace.artifactId,
-        dataSpaceViewerState.lightDataSpace.versionId,
+      dataSpaceViewerState.viewProject?.(
+        dataSpaceViewerState.dataSpaceGroupId,
+        dataSpaceViewerState.dataSpaceArtifactId,
+        dataSpaceViewerState.dataSpaceVersionId,
         dataSpace.path,
       );
     const viewProject = (): void =>
-      queryStore.viewStudioProject(
+      dataSpaceViewerState.viewProject?.(
         dataSpace.groupId,
         dataSpace.artifactId,
         dataSpace.versionId,
@@ -420,70 +407,61 @@ export const DataSpaceViewer = observer(
       );
 
     return (
-      <div className="query-setup__data-space__viewer">
-        <div className="query-setup__data-space__viewer__header">
+      <div className="data-space__viewer">
+        <div className="data-space__viewer__header">
           <button
-            className="query-setup__data-space__viewer__path"
+            className="data-space__viewer__path"
             tabIndex={-1}
             title="View Data Space in Project"
             onClick={viewDataSpaceProject}
           >
-            <div className="query-setup__data-space__viewer__path__label">
+            <div className="data-space__viewer__path__label">
               {dataSpace.path}
             </div>
-            <div className="query-setup__data-space__viewer__path__link">
+            <div className="data-space__viewer__path__link">
               <ExternalLinkSquareIcon />
             </div>
           </button>
           <button
-            className="query-setup__data-space__viewer__gav"
+            className="data-space__viewer__gav"
             tabIndex={-1}
             title="View Project"
             onClick={viewProject}
           >
-            <div className="query-setup__data-space__viewer__gav__group-id">
+            <div className="data-space__viewer__gav__group-id">
               {dataSpace.groupId}
             </div>
-            <div className="query-setup__data-space__viewer__gav__separator">
-              :
-            </div>
-            <div className="query-setup__data-space__viewer__gav__artifact-id">
+            <div className="data-space__viewer__gav__separator">:</div>
+            <div className="data-space__viewer__gav__artifact-id">
               {dataSpace.artifactId}
             </div>
-            <div className="query-setup__data-space__viewer__gav__separator">
-              :
-            </div>
-            <div className="query-setup__data-space__viewer__gav__version-id">
+            <div className="data-space__viewer__gav__separator">:</div>
+            <div className="data-space__viewer__gav__version-id">
               {dataSpace.versionId}
             </div>
-            <div className="query-setup__data-space__viewer__gav__link">
+            <div className="data-space__viewer__gav__link">
               <ExternalLinkIcon />
             </div>
           </button>
           <div
-            className={clsx('query-setup__data-space__viewer__description', {
-              'query-setup__data-space__viewer__description--empty':
-                !dataSpace.description,
+            className={clsx('data-space__viewer__description', {
+              'data-space__viewer__description--empty': !dataSpace.description,
             })}
           >
             {dataSpace.description ? dataSpace.description : 'No description'}
           </div>
         </div>
-        <div className="query-setup__data-space__viewer__content">
-          <div className="query-setup__data-space__viewer__body">
-            <div className="query-setup__data-space__viewer__activity-bar">
-              <div className="query-setup__data-space__viewer__activity-bar__items">
+        <div className="data-space__viewer__content">
+          <div className="data-space__viewer__body">
+            <div className="data-space__viewer__activity-bar">
+              <div className="data-space__viewer__activity-bar__items">
                 {activities.map((activity) => (
                   <button
                     key={activity.mode}
-                    className={clsx(
-                      'query-setup__data-space__viewer__activity-bar__item',
-                      {
-                        'query-setup__data-space__viewer__activity-bar__item--active':
-                          dataSpaceViewerState.currentActivity ===
-                          activity.mode,
-                      },
-                    )}
+                    className={clsx('data-space__viewer__activity-bar__item', {
+                      'data-space__viewer__activity-bar__item--active':
+                        dataSpaceViewerState.currentActivity === activity.mode,
+                    })}
                     onClick={changeActivity(activity.mode)}
                     tabIndex={-1}
                     title={activity.title}
@@ -493,7 +471,7 @@ export const DataSpaceViewer = observer(
                 ))}
               </div>
             </div>
-            <div className="query-setup__data-space__viewer__main-panel">
+            <div className="data-space__viewer__main-panel">
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW && (
                 <DataSpaceModelsOverview
@@ -516,7 +494,7 @@ export const DataSpaceViewer = observer(
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT && (
-                <div className="query-setup__data-space__viewer__main-panel__content query-setup__data-space__viewer__support-info">
+                <div className="data-space__viewer__main-panel__content data-space__viewer__support-info">
                   <DataSpaceSupportInfoViewerInner
                     dataSpaceViewerState={dataSpaceViewerState}
                     dataSpaceSupportInfo={dataSpace.supportInfo}

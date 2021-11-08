@@ -260,10 +260,7 @@ export const ViewerInner = observer(() => {
                     'editor__content--expanded': editorStore.isInExpandedMode,
                   })}
                 >
-                  <ResizablePanelGroup
-                    orientation="vertical"
-                    className="review-explorer__content"
-                  >
+                  <ResizablePanelGroup orientation="vertical">
                     <ResizablePanel
                       {...getControlledResizablePanelProps(
                         editorStore.sideBarDisplayState.size === 0,

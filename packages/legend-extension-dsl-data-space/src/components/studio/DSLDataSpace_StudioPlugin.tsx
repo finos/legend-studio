@@ -26,6 +26,7 @@ import type {
   ElementEditorStateCreator,
   EditorStore,
   ElementEditorState,
+  ApplicationPageRenderEntry,
 } from '@finos/legend-studio';
 import {
   UnsupportedElementEditorState,
@@ -37,6 +38,8 @@ import {
   DataSpace,
   DataSpaceExecutionContext,
 } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import { EnterpriseModelExplorer } from './EnterpriseModelExplorer';
+import { ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN } from '../../stores/studio/EnterpriseModelExplorerStore';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -52,6 +55,20 @@ export class DSLDataSpace_StudioPlugin
 
   install(pluginManager: StudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
+  }
+
+  override getExtraApplicationPageRenderEntries(): ApplicationPageRenderEntry[] {
+    return [
+      {
+        key: 'enterprise-application-page',
+        urlPatterns: [
+          ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW,
+          ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW_BY_DATA_SPACE,
+          ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW_BY_TAXONOMY_NODE,
+        ],
+        component: EnterpriseModelExplorer,
+      },
+    ];
   }
 
   getExtraSupportedElementTypes(): string[] {
@@ -74,7 +91,7 @@ export class DSLDataSpace_StudioPlugin
       (type: string): React.ReactNode | undefined => {
         if (type === DATA_SPACE_ELEMENT_TYPE) {
           return (
-            <div className="icon icon--text-element">
+            <div className="icon icon--data-space">
               <SquareIcon />
             </div>
           );

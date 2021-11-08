@@ -56,8 +56,10 @@ import type {
   V1_GraphTransformerContext,
   V1_PackageableElement,
   V1_PureModelContextData,
+  V1_TaggedValue,
 } from '@finos/legend-graph';
 import {
+  V1_taggedValueSchema,
   PackageableElementExplicitReference,
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
@@ -402,4 +404,37 @@ export const getResolvedDataSpace = (
     return dataSpace;
   }
   throw new UnsupportedOperationError(`Can't resolve data space`, json);
+};
+
+export const extractDataSpaceTaxonomyNodePaths = (
+  json: PlainObject<V1_DataSpace>,
+): string[] => {
+  const ENTERPRISE_PROFILE_PATH = `meta::pure::profiles::enterprise`;
+  const ENTERPRISE_TAXONOMY_NODES_TAG = `taxonomyNodes`;
+  const ENTERPRISE_TAXONOMY_NODES_TAG_VALUE_DELIMITER = `,`;
+
+  const taxonomyNodes = new Set<string>();
+  if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
+    if (Array.isArray(json.taggedValues)) {
+      const taggedValues = (
+        json.taggedValues as PlainObject<V1_TaggedValue>[]
+      ).map((taggedValueJson) =>
+        deserialize(V1_taggedValueSchema, taggedValueJson),
+      );
+      taggedValues
+        .filter(
+          (taggedValue) =>
+            taggedValue.tag.profile === ENTERPRISE_PROFILE_PATH &&
+            taggedValue.tag.value === ENTERPRISE_TAXONOMY_NODES_TAG,
+        )
+        .forEach((taggedValue) => {
+          taggedValue.value
+            .split(ENTERPRISE_TAXONOMY_NODES_TAG_VALUE_DELIMITER)
+            .map((value) => value.trim())
+            .filter((value) => Boolean(value))
+            .forEach((value) => taxonomyNodes.add(value));
+        });
+    }
+  }
+  return Array.from(taxonomyNodes.values());
 };
