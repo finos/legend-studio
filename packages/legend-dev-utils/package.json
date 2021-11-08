@@ -67,7 +67,7 @@
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.5.1",
-    "cssnano": "5.0.9",
+    "cssnano": "5.0.10",
     "html-webpack-plugin": "5.5.0",
     "isbinaryfile": "4.0.8",
     "jest": "27.3.1",
@@ -89,7 +89,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.1.0",
+    "eslint": "8.2.0",
     "rimraf": "3.0.2"
   },
   "publishConfig": {
