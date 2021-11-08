@@ -44,7 +44,7 @@ export const updateRootSetImplementationOnCreate = (
   if (classMappingsWithSimilarTarget.length) {
     setImp.setRoot(false);
     if (classMappingsWithSimilarTarget.length === 1) {
-      classMappingsWithSimilarTarget[0].setRoot(false);
+      (classMappingsWithSimilarTarget[0] as SetImplementation).setRoot(false);
     }
   } else {
     setImp.setRoot(true);
@@ -64,7 +64,7 @@ export const updateRootSetImplementationOnDelete = (
     setImp.class.value,
   ).filter((si) => si !== setImp);
   if (classMappingsWithSimilarTarget.length === 1) {
-    classMappingsWithSimilarTarget[0].setRoot(false);
+    (classMappingsWithSimilarTarget[0] as SetImplementation).setRoot(false);
   }
 };
 
@@ -98,7 +98,7 @@ export const findRootSetImplementation = (
   // if there is not root set, and only one set implementation is found, we assume that is the root
   if (
     classMappingsWithSimilarTarget.length === 1 &&
-    classMappingsWithSimilarTarget[0].root.value === false
+    classMappingsWithSimilarTarget[0]?.root.value === false
   ) {
     classMappingsWithSimilarTarget[0].setRoot(true);
     return classMappingsWithSimilarTarget[0];

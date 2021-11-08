@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-graph",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Legend metamodel graph",
   "keywords": [
     "legend",
@@ -38,8 +38,8 @@
   "dependencies": {
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "mobx": "6.3.5",
-    "mobx-react-lite": "3.2.1",
+    "mobx": "6.3.6",
+    "mobx-react-lite": "3.2.2",
     "react": "17.0.2",
     "serializr": "2.0.5"
   },

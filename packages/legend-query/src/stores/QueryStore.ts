@@ -60,8 +60,12 @@ import type {
 import { generateExistingQueryRoute } from './LegendQueryRouter';
 import { QUERY_LOG_EVENT } from '../QueryLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import type {
+  DepotServerClient,
+  ProjectGAVCoordinates,
+} from '@finos/legend-server-depot';
 import {
+  generateGAVCoordinates,
   ProjectData,
   ProjectVersionEntities,
 } from '@finos/legend-server-depot';
@@ -80,6 +84,7 @@ export abstract class QueryInfoState {
     this.queryStore = queryStore;
   }
 
+  abstract getQueryProjectInfo(): ProjectGAVCoordinates;
   abstract decorateQuery(query: Query): void;
 }
 
@@ -120,6 +125,14 @@ export class CreateQueryInfoState extends QueryInfoState {
     this.runtime = val;
   }
 
+  getQueryProjectInfo(): ProjectGAVCoordinates {
+    return {
+      groupId: this.project.groupId,
+      artifactId: this.project.artifactId,
+      versionId: this.versionId,
+    };
+  }
+
   decorateQuery(query: Query): void {
     query.id = uuid();
     query.groupId = this.project.groupId;
@@ -149,6 +162,14 @@ export class ServiceQueryInfoState extends QueryInfoState {
     this.key = key;
   }
 
+  getQueryProjectInfo(): ProjectGAVCoordinates {
+    return {
+      groupId: this.project.groupId,
+      artifactId: this.project.artifactId,
+      versionId: this.versionId,
+    };
+  }
+
   decorateQuery(query: Query): void {
     query.id = uuid();
     query.groupId = this.project.groupId;
@@ -173,6 +194,14 @@ export class ExistingQueryInfoState extends QueryInfoState {
 
   setQuery(val: LightQuery): void {
     this.query = val;
+  }
+
+  getQueryProjectInfo(): ProjectGAVCoordinates {
+    return {
+      groupId: this.query.groupId,
+      artifactId: this.query.artifactId,
+      versionId: this.query.versionId,
+    };
   }
 
   decorateQuery(query: Query): void {
@@ -669,7 +698,6 @@ export class QueryStore {
         )) as Entity[];
       }
 
-      // build graph
       this.graphManagerState.resetGraph();
       // build dependencies
       const dependencyManager =
@@ -685,7 +713,7 @@ export class QueryStore {
         ),
       );
       this.graphManagerState.graph.setDependencyManager(dependencyManager);
-      // build Graph
+      // build graph
       yield flowResult(
         this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
@@ -751,5 +779,20 @@ export class QueryStore {
       this.buildGraphState.fail();
     }
     return dependencyEntitiesMap;
+  }
+
+  viewStudioProject(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ): void {
+    this.applicationStore.navigator.openNewWindow(
+      `${this.applicationStore.config.studioUrl}/view/${generateGAVCoordinates(
+        groupId,
+        artifactId,
+        versionId,
+      )}${entityPath ? `/entity/${entityPath}` : ''}`,
+    );
   }
 }

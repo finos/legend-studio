@@ -33,6 +33,10 @@ export const LegendMaterialUITheme = createTheme({
       // disable button ripples
       disableRipple: true,
     },
+    MuiDialog: {
+      // disable max-width constraint on all dialogs
+      maxWidth: false,
+    },
   },
   transitions: {
     // So we have `transition: none;` everywhere

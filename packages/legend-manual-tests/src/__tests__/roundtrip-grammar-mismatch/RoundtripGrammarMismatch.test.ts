@@ -220,10 +220,13 @@ const checkGrammarRoundtripMismatch = async (
 const testNameFrom = (filePath: string): string => {
   const isSkipped = isTestSkipped(filePath);
   const isPartial = isPartialTest(filePath);
-  const name = basename(filePath, '.pure').split('-').join(' ');
-  return `${
-    isSkipped ? '(SKIPPED) ' : isPartial ? '(partial) ' : ''
-  }${name[0].toUpperCase()}${name.substring(1, name.length)}`;
+  const name = basename(filePath, '.pure').split('-').join(' ').trim();
+  if (!name) {
+    throw new Error(`Found bad name for test file '${filePath}'`);
+  }
+  return `${isSkipped ? '(SKIPPED) ' : isPartial ? '(partial) ' : ''}${(
+    name[0] as string
+  ).toUpperCase()}${name.substring(1, name.length)}`;
 };
 
 const cases: [string, string, boolean][] = fs

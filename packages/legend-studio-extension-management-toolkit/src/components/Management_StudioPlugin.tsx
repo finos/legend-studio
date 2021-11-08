@@ -19,7 +19,10 @@ import type {
   StudioPluginManager,
   ApplicationPageRenderEntry,
 } from '@finos/legend-studio';
-import { StudioPlugin } from '@finos/legend-studio';
+import {
+  generateRoutePatternWithSDLCServerKey,
+  StudioPlugin,
+} from '@finos/legend-studio';
 import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
 
 export class Management_StudioPlugin extends StudioPlugin {
@@ -35,7 +38,10 @@ export class Management_StudioPlugin extends StudioPlugin {
     return [
       // URL redirector
       {
-        urlPattern: `/redirect/-/:${PATH_PARAM_TOKEN_REDIRECT_URL}+/-/`,
+        key: 'url-redirect-application-page',
+        urlPatterns: generateRoutePatternWithSDLCServerKey(
+          `/redirect/-/:${PATH_PARAM_TOKEN_REDIRECT_URL}+/-/`,
+        ),
         component: URLRedirector,
       },
     ];

@@ -16,6 +16,7 @@
 
 import {
   ArrowLeftIcon,
+  ExternalLinkSquareIcon,
   PanelLoadingIndicator,
   RobotIcon,
 } from '@finos/legend-art';
@@ -141,6 +142,17 @@ const QueryEditorHeader = observer(() => {
   const applicationStore = useApplicationStore();
   const backToMainMenu = (): void =>
     applicationStore.navigator.goTo(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
+  const viewQueryProject = (): void => {
+    if (queryInfoState) {
+      const queryProjectInfo = queryInfoState.getQueryProjectInfo();
+      queryStore.viewStudioProject(
+        queryProjectInfo.groupId,
+        queryProjectInfo.artifactId,
+        queryProjectInfo.versionId,
+        undefined,
+      );
+    }
+  };
 
   return (
     <div className="query-editor__header">
@@ -151,22 +163,42 @@ const QueryEditorHeader = observer(() => {
       >
         <ArrowLeftIcon />
       </button>
-      {queryInfoState instanceof CreateQueryInfoState && (
-        <div className="query-editor__header__tab query-editor__header__tab--create-query">
-          New Query
+      <div className="query-editor__header__content">
+        <div className="query-editor__header__tabs">
+          {queryInfoState instanceof CreateQueryInfoState && (
+            <div className="query-editor__header__tab query-editor__header__tab--create-query">
+              New Query
+            </div>
+          )}
+          {queryInfoState instanceof ServiceQueryInfoState && (
+            <div className="query-editor__header__tab query-editor__header__tab--service-query">
+              <RobotIcon className="query-editor__header__tab--service-query__icon" />
+              {queryInfoState.service.name}
+            </div>
+          )}
+          {queryInfoState instanceof ExistingQueryInfoState && (
+            <div className="query-editor__header__tab query-editor__header__tab--existing-query">
+              {queryInfoState.query.name}
+            </div>
+          )}
         </div>
-      )}
-      {queryInfoState instanceof ServiceQueryInfoState && (
-        <div className="query-editor__header__tab query-editor__header__tab--service-query">
-          <RobotIcon className="query-editor__header__tab--service-query__icon" />
-          {queryInfoState.service.name}
+        <div className="query-editor__header__actions">
+          <button
+            className="query-editor__header__action"
+            tabIndex={-1}
+            title="View Project"
+            onClick={viewQueryProject}
+            disabled={!queryInfoState}
+          >
+            <div className="query-editor__header__action__icon">
+              <ExternalLinkSquareIcon />
+            </div>
+            <div className="query-editor__header__action__label">
+              View Project
+            </div>
+          </button>
         </div>
-      )}
-      {queryInfoState instanceof ExistingQueryInfoState && (
-        <div className="query-editor__header__tab query-editor__header__tab--existing-query">
-          {queryInfoState.query.name}
-        </div>
-      )}
+      </div>
     </div>
   );
 });

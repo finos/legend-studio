@@ -14,7 +14,23 @@
  * limitations under the License.
  */
 
-// increase timeout for some long running tests
-jest.setTimeout(10000);
-// Runs failed tests n-times until they pass or until the max number of retries is exhausted.
-jest.retryTimes(2);
+import type { EditorStore } from '../EditorStore';
+import { generateViewEntityRoute } from '../LegendStudioRouter';
+import { EditorMode } from './EditorMode';
+
+export class StandardEditorMode extends EditorMode {
+  editorStore: EditorStore;
+
+  constructor(editorStore: EditorStore) {
+    super();
+    this.editorStore = editorStore;
+  }
+
+  generateElementLink(elementPath: string): string {
+    return generateViewEntityRoute(
+      this.editorStore.applicationStore.config.currentSDLCServerOption,
+      this.editorStore.sdlcState.activeProject.projectId,
+      elementPath,
+    );
+  }
+}

@@ -23,6 +23,8 @@ import {
   disableEditorHotKeys,
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
+  getEditorValue,
+  normalizeLineEnding,
 } from '@finos/legend-art';
 import type { EDITOR_LANGUAGE } from '../const';
 import { EDITOR_THEME, TAB_SIZE } from '../const';
@@ -63,6 +65,16 @@ export const TextInputEditor: React.FC<{
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
+
+  /**
+   * NOTE: we want to normalize line ending here since if the original
+   * input value includes CR '\r' character, it will get normalized, calling
+   * the updateInput method and cause a rerender. With the way we setup
+   * `onChange` method, React will warn about `setState` being called in
+   * `render` method.
+   * See https://github.com/finos/legend-studio/issues/608
+   */
+  const value = normalizeLineEnding(inputValue);
   const textInputRef = useRef<HTMLDivElement>(null);
 
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
@@ -103,8 +115,8 @@ export const TextInputEditor: React.FC<{
     onDidChangeModelContentEventDisposer.current?.dispose();
     onDidChangeModelContentEventDisposer.current =
       editor.onDidChangeModelContent(() => {
-        const currentVal = editor.getValue();
-        if (currentVal !== inputValue) {
+        const currentVal = getEditorValue(editor);
+        if (currentVal !== value) {
           updateInput?.(currentVal);
         }
       });
@@ -123,9 +135,9 @@ export const TextInputEditor: React.FC<{
     });
 
     // Set the text value and editor options
-    const currentValue = editor.getValue();
-    if (currentValue !== inputValue) {
-      editor.setValue(inputValue);
+    const currentValue = getEditorValue(editor);
+    if (currentValue !== value) {
+      editor.setValue(value);
     }
     editor.updateOptions({
       readOnly: Boolean(isReadOnly),

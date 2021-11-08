@@ -22,22 +22,21 @@ import { Review } from './review/Review';
 import { Viewer } from './viewer/Viewer';
 import { observer } from 'mobx-react-lite';
 import {
-  CustomSelectorInput,
   LegendMaterialUITheme,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
 import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
 import {
+  URL_PATH_PLACEHOLDER,
   generateSetupRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
   generateRoutePatternWithSDLCServerKey,
 } from '../stores/LegendStudioRouter';
-import { AppHeader, BasicAppHeader } from './shared/AppHeader';
+import { AppHeader } from './shared/AppHeader';
 import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
 import { ThemeProvider } from '@material-ui/core/styles';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
 import type { Log } from '@finos/legend-shared';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
@@ -51,31 +50,14 @@ import {
   useApplicationStore,
   useWebApplicationNavigator,
 } from '@finos/legend-application';
-import type {
-  SDLCServerOption,
-  StudioConfig,
-} from '../application/StudioConfig';
+import type { StudioConfig } from '../application/StudioConfig';
 
 export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useStudioStore();
   const applicationStore = useApplicationStore<StudioConfig>();
   const extraApplicationPageRenderEntries = studioStore.pluginManager
     .getStudioPlugins()
-    .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? [])
-    .filter((entry) => {
-      /**
-       * NOTE: Make sure the first path in the url pattern is not a token which could make it the catch-all route.
-       *
-       * TODO: maybe there's a more sophisticated way to manage URL pattern conflicts, but this is sufficient for now.
-       */
-      if (entry.urlPattern.startsWith('/:')) {
-        applicationStore.notifyIllegalState(
-          `Can't render extra application page with URL pattern '${entry.urlPattern}' from plugins due to pattern conflicts`,
-        );
-        return false;
-      }
-      return true;
-    });
+    .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? []);
 
   useEffect(() => {
     flowResult(studioStore.initialize()).catch(
@@ -102,12 +84,14 @@ export const LegendStudioApplicationRoot = observer(() => {
           <Route
             exact={true}
             path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
             ]}
             component={Viewer}
           />
@@ -120,30 +104,30 @@ export const LegendStudioApplicationRoot = observer(() => {
             exact={true}
             strict={true}
             path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
-              LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
             ]}
             component={Editor}
           />
           <Route
             exact={true}
             path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
-              LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
+              ...LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
             ]}
             component={Setup}
           />
           {extraApplicationPageRenderEntries.map((entry) => (
             <Route
-              key={entry.urlPattern}
+              key={entry.key}
               exact={true}
-              path={generateRoutePatternWithSDLCServerKey(entry.urlPattern)}
+              path={entry.urlPatterns}
               component={entry.component as React.ComponentType<unknown>}
             />
           ))}
           <Redirect
             to={generateSetupRoute(
-              applicationStore.config.sdlcServerKey,
+              applicationStore.config.defaultSDLCServerOption,
               undefined,
             )}
           />
@@ -152,63 +136,6 @@ export const LegendStudioApplicationRoot = observer(() => {
     </div>
   );
 });
-
-const LegendStudioApplicationConfigEditor = observer(
-  (props: { config: StudioConfig }) => {
-    const { config } = props;
-    const navigator = useWebApplicationNavigator();
-    const sdlcServerOptions = config.sdlcServerOptions.map((option) => ({
-      label: option.label,
-      value: option,
-    }));
-    const onSDLCServerChange = (val: {
-      label: string;
-      value: SDLCServerOption;
-    }): void => {
-      config.setSDLCServerKey(val.value.key);
-    };
-    const currentSDLCServerOption = guaranteeNonNullable(
-      sdlcServerOptions.find(
-        (option) => option.value.key === config.sdlcServerKey,
-      ),
-    );
-
-    const configure = (): void => {
-      config.setConfigured(true);
-      // go to the default URL after confiruing SDLC server
-      navigator.goTo(generateSetupRoute(config.sdlcServerKey, undefined));
-    };
-
-    return (
-      <div className="app">
-        <div className="app__page">
-          <BasicAppHeader config={config} />
-          <div className="app__content app__configuration-editor">
-            <div className="app__configuration-editor__content">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  SDLC Server
-                </div>
-                <CustomSelectorInput
-                  options={sdlcServerOptions}
-                  onChange={onSDLCServerChange}
-                  value={currentSDLCServerOption}
-                  darkMode={true}
-                />
-                <button
-                  className="btn btn--dark u-pull-right app__configuration-editor__action"
-                  onClick={configure}
-                >
-                  Configure
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
 
 export const LegendStudioApplication = observer(
   (props: {
@@ -219,39 +146,50 @@ export const LegendStudioApplication = observer(
     const { config, pluginManager, log } = props;
     const navigator = useWebApplicationNavigator();
     const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
-      generateRoutePatternWithSDLCServerKey('/'),
+      generateRoutePatternWithSDLCServerKey('/*'),
     );
-    const sdlcServerKey = config.sdlcServerOptions.find(
-      (option) => option.key === routeMatch?.params.sdlcServerKey,
-    )?.key;
+    const matchedSDLCServerKey = routeMatch?.params.sdlcServerKey;
+    const matchingSDLCServerOption = config.SDLCServerOptions.find((option) => {
+      if (matchedSDLCServerKey === URL_PATH_PLACEHOLDER) {
+        return config.defaultSDLCServerOption;
+      }
+      return option.key === matchedSDLCServerKey;
+    });
 
+    /**
+     * NOTE: here we handle 3 cases:
+     * 1. When the URL matches SDLC-instance pattern: and the key is found: if the key doesn't match
+     *    the current SDLC option, update the current SDLC option.
+     * 2. When the URL matches SDLC-instance pattern: and the key is NOT found: auto-fix the URL by
+     *    redirecting users to the setup page with the default SDLC server option.
+     * 3. When the URL DOES NOT match SDLC-instance pattern: do nothing here, let the app flows through
+     *    because this might represent a sub-application that does not need to specify a SDLC instance
+     *    (i.e. use the default SDLC server)
+     */
     useEffect(() => {
-      if (!config.isConfigured) {
-        if (sdlcServerKey !== undefined) {
-          config.setSDLCServerKey(sdlcServerKey);
-          config.setConfigured(true);
-        } else if (config.sdlcServerOptions.length === 1) {
-          // when there is only one SDLC server and the sdlc server key provided is unrecognized,
-          // auto-fix the URL
+      if (matchedSDLCServerKey) {
+        // auto-fix the URL by using the default SDLC server option
+        if (!matchingSDLCServerOption) {
           navigator.goTo(
-            generateSetupRoute(config.sdlcServerOptions[0].key, undefined),
+            generateSetupRoute(config.defaultSDLCServerOption, undefined),
           );
-        } else {
-          // set this by default for the app config editor
-          config.setSDLCServerKey(config.sdlcServerOptions[0].key);
+        } else if (
+          matchingSDLCServerOption !== config.currentSDLCServerOption
+        ) {
+          config.setCurrentSDLCServerOption(matchingSDLCServerOption);
         }
       }
-    }, [config, navigator, sdlcServerKey]);
+    }, [config, navigator, matchedSDLCServerKey, matchingSDLCServerOption]);
 
-    if (!config.isConfigured) {
-      if (!config._sdlcServerKey) {
-        return null;
-      }
-      return (
-        <ThemeProvider theme={LegendMaterialUITheme}>
-          <LegendStudioApplicationConfigEditor config={config} />
-        </ThemeProvider>
-      );
+    if (
+      // See the note above, we will only pass when the either the SDLC server option is properly set
+      // or the URL does not match the SDLC-instance pattern at all (i.e. some sub applications that just
+      // uses the default SDLC server option)
+      matchedSDLCServerKey &&
+      (!matchingSDLCServerOption ||
+        matchingSDLCServerOption !== config.currentSDLCServerOption)
+    ) {
+      return null;
     }
     return (
       <ApplicationStoreProvider config={config} navigator={navigator} log={log}>

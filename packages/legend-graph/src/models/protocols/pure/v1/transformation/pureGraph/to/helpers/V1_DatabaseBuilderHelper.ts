@@ -218,7 +218,10 @@ const buildJoinTreeNode = (
   joins: { joinReference: JoinReference; joinType?: JoinType | undefined }[],
   context: V1_GraphBuilderContext,
 ): JoinTreeNode => {
-  const joinWithJoinType = joins[0];
+  const joinWithJoinType = guaranteeNonNullable(
+    joins[0],
+    `Can't build join tree node: at least one child node is expected`,
+  );
   const res = new JoinTreeNode(
     joinWithJoinType.joinReference,
     joinWithJoinType.joinType,
@@ -599,7 +602,7 @@ export const V1_buildDatabaseJoin = (
       selfJoinTargets.length !== 0,
       `Can't build join of 1 table, unless it is a self-join. Please use the '{target}' notation in order to define a directed self-join`,
     );
-    const existingAlias = aliases[0];
+    const existingAlias = aliases[0] as TableAlias;
     const existingAliasName = existingAlias.name;
     const existingRelationalElement = existingAlias.relation;
     const tableAlias = new TableAlias();
@@ -628,8 +631,14 @@ export const V1_buildDatabaseJoin = (
     });
   }
   join.aliases = [
-    new Pair<TableAlias, TableAlias>(aliases[0], aliases[1]),
-    new Pair<TableAlias, TableAlias>(aliases[1], aliases[0]),
+    new Pair<TableAlias, TableAlias>(
+      aliases[0] as TableAlias,
+      aliases[1] as TableAlias,
+    ),
+    new Pair<TableAlias, TableAlias>(
+      aliases[1] as TableAlias,
+      aliases[0] as TableAlias,
+    ),
   ];
   join.owner = database;
   return join;

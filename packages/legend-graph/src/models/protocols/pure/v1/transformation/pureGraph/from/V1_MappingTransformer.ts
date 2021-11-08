@@ -141,6 +141,7 @@ import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import { toJS } from 'mobx';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
+import type { SubstituteStore } from '../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -308,7 +309,7 @@ const transformMappingTest = (
   return test;
 };
 
-// Include V1_Mapping
+// Include Mapping
 
 const transformMappingInclude = (
   element: MappingInclude,
@@ -316,15 +317,17 @@ const transformMappingInclude = (
   const mappingInclude = new V1_MappingInclude();
   mappingInclude.includedMapping = element.included.valueForSerialization ?? '';
   mappingInclude.sourceDatabasePath = element.storeSubstitutions.length
-    ? element.storeSubstitutions[0].original.valueForSerialization ?? ''
+    ? (element.storeSubstitutions[0] as SubstituteStore).original
+        .valueForSerialization ?? ''
     : undefined;
   mappingInclude.targetDatabasePath = element.storeSubstitutions.length
-    ? element.storeSubstitutions[0].substitute.valueForSerialization ?? ''
+    ? (element.storeSubstitutions[0] as SubstituteStore).substitute
+        .valueForSerialization ?? ''
     : undefined;
   return mappingInclude;
 };
 
-// Class V1_Mapping
+// Class Mapping
 
 const transformOptionalPropertyMappingTransformer = (
   value: EnumerationMapping | undefined,

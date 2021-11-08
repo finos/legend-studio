@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-server-depot",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Legend Depot server client",
   "keywords": [
     "legend",
@@ -37,8 +37,8 @@
   "dependencies": {
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "mobx": "6.3.5",
-    "mobx-react-lite": "3.2.1",
+    "mobx": "6.3.6",
+    "mobx-react-lite": "3.2.2",
     "react": "17.0.2",
     "serializr": "2.0.5"
   },

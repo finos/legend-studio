@@ -364,7 +364,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
     } else if (this.packageableConnections.length) {
       newConnection = new ConnectionPointer(
         PackageableElementExplicitReference.create(
-          this.packageableConnections[0],
+          this.packageableConnections[0] as PackageableConnection,
         ),
       );
     } else {
@@ -423,7 +423,9 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
 
     this.store = store;
     if (this.identifiedConnections.length) {
-      this.openIdentifiedConnection(this.identifiedConnections[0]);
+      this.openIdentifiedConnection(
+        this.identifiedConnections[0] as IdentifiedConnection,
+      );
     }
   }
 
@@ -463,6 +465,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
             plugin as DSLMapping_StudioPlugin_Extension
           ).getExtraDefaultConnectionValueBuilders?.() ?? [],
       );
+
     for (const builder of extraDefaultConnectionValueBuilders) {
       const defaultConnection = builder(this.store);
       if (defaultConnection) {
@@ -522,7 +525,9 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
 
     this.class = _class;
     if (this.identifiedConnections.length) {
-      this.openIdentifiedConnection(this.identifiedConnections[0]);
+      this.openIdentifiedConnection(
+        this.identifiedConnections[0] as IdentifiedConnection,
+      );
     }
   }
 

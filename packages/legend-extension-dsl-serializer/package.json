@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-serializer",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Legend extension for Serializer DSL",
   "keywords": [
     "legend",
@@ -46,11 +46,12 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.33",
-    "mobx": "6.3.5",
-    "mobx-react-lite": "3.2.1",
+    "@types/react": "17.0.34",
+    "mobx": "6.3.6",
+    "mobx-react-lite": "3.2.2",
     "monaco-editor": "0.29.1",
     "react": "17.0.2",
+    "react-dnd": "14.0.4",
     "react-icons": "4.3.1",
     "serializr": "2.0.5"
   },

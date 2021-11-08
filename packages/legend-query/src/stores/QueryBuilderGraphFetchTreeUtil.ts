@@ -188,7 +188,9 @@ export const addQueryBuilderPropertyNode = (
     const propertyGraphFetchTree = new PropertyGraphFetchTree(
       PropertyExplicitReference.create(parentExplorerTreeNode.property),
     );
-    propertyGraphFetchTree.subTrees.push(propertyGraphFetchTrees[0]);
+    propertyGraphFetchTree.subTrees.push(
+      propertyGraphFetchTrees[0] as PropertyGraphFetchTree,
+    );
     propertyGraphFetchTrees.unshift(propertyGraphFetchTree);
     parentExplorerTreeNode = explorerTreeData.nodes.get(
       parentExplorerTreeNode.parentId,

@@ -15,6 +15,15 @@ body:
       options:
         - label: I have searched and found no existing similar requests
           required: true
+  - type: dropdown
+    attributes:
+      label: How are you using Studio?
+      multiple: true
+      options:
+        - Legend Studio
+        - Legend Query
+        - Docker images (e.g. finos/legend-studio)
+        - NPM libraries (e.g. @finos/legend-shared)
 
   # Describe the feature and its implementation plan
   - type: textarea
@@ -36,8 +45,6 @@ body:
       label: Describe alternatives you have considered
       description: |
         What alternatives/workarounds you have used and evaluated?
-    validations:
-      required: true
 
   # Extra context
   - type: textarea

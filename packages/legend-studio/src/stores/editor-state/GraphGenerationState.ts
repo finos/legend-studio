@@ -57,6 +57,7 @@ import type {
   GenerationConfigurationDescription,
   GenerationOutput,
   DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+  GenerationTreeNode,
 } from '@finos/legend-graph';
 import {
   GenerationSpecification,
@@ -214,10 +215,10 @@ export class GraphGenerationState {
         generationSpecs.length === 1,
         `Can't generate models: only one generation specification permitted to generate`,
       );
-      const generationSpec = generationSpecs[0];
+      const generationSpec = generationSpecs[0] as GenerationSpecification;
       const generationNodes = generationSpec.generationNodes;
       for (let i = 0; i < generationNodes.length; i++) {
-        const node = generationNodes[i];
+        const node = generationNodes[i] as GenerationTreeNode;
         let generatedEntities: Entity[] = [];
         try {
           generatedEntities =
@@ -272,7 +273,7 @@ export class GraphGenerationState {
         generationSpecs.length === 1,
         `Can't generate models: only one generation specification permitted to generate`,
       );
-      const generationSpec = generationSpecs[0];
+      const generationSpec = generationSpecs[0] as GenerationSpecification;
       const fileGenerations = generationSpec.fileGenerations;
       // we don't need to keep 'fetching' the main model as it won't grow with each file generation
       for (const fileGeneration of fileGenerations) {
@@ -354,7 +355,7 @@ export class GraphGenerationState {
         // NOTE: add generation specification at the same package as the first generation element found.
         // we might want to revisit this decision?
         const specPackage = guaranteeNonNullable(
-          [...modelGenerationElements, ...fileGenerations][0].package,
+          [...modelGenerationElements, ...fileGenerations][0]?.package,
         );
         specPackage.addElement(generationSpec);
         this.editorStore.graphManagerState.graph.addElement(generationSpec);
@@ -464,7 +465,8 @@ export class GraphGenerationState {
     const selectedFileNodePath =
       this.selectedNode?.fileNode.path ??
       (generationResult.length === 1
-        ? generationResult[0].generationOutput.fileName
+        ? (generationResult[0] as GenerationOutputResult).generationOutput
+            .fileName
         : undefined);
     if (selectedFileNodePath) {
       const file = this.filesIndex.get(selectedFileNodePath);

@@ -179,7 +179,6 @@ export const getMappingElementTarget = (
   );
 };
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSource = (
   mappingElement: MappingElement,
   plugins: StudioPlugin[],
@@ -1003,7 +1002,6 @@ export class MappingEditorState extends ElementEditorState {
     }
   }
 
-  /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
   private createMappingElementState(
     mappingElement: MappingElement | undefined,
   ): MappingElementState | undefined {
@@ -1135,8 +1133,14 @@ export class MappingEditorState extends ElementEditorState {
             errorCoordinates;
           const newMappingElement = getMappingElementByTypeAndId(
             this.mapping,
-            mappingType,
-            mappingId,
+            guaranteeNonNullable(
+              mappingType,
+              `Can't reveal compilation error: mapping type is missing`,
+            ),
+            guaranteeNonNullable(
+              mappingId,
+              `Can't reveal compilation error: mapping ID is missing`,
+            ),
           );
           // NOTE: Unfortunately this is quite convoluted at the moment that is because we maintain a separate state
           // that wraps around property mapping, this is deliberate as we don't want to mix UI state in metamodel classes
@@ -1147,7 +1151,10 @@ export class MappingEditorState extends ElementEditorState {
             newMappingElement instanceof EmbeddedFlatDataPropertyMapping
           ) {
             const propertyMapping = newMappingElement.findPropertyMapping(
-              propertyName,
+              guaranteeNonNullable(
+                propertyName,
+                `Can't reveal compilation error: mapping property name is missing`,
+              ),
               targetPropertyId,
             );
             if (propertyMapping) {

@@ -20,6 +20,7 @@ import {
   uuid,
   addUniqueEntry,
   deleteEntry,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   computed,
@@ -104,7 +105,9 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
   }
 
   moveGenerationNode(dragIndex: number, hoverIndex: number): void {
-    const dragColumn = this.generationTreeNodeStates[dragIndex];
+    const dragColumn = guaranteeNonNullable(
+      this.generationTreeNodeStates[dragIndex],
+    );
     this.generationTreeNodeStates.splice(dragIndex, 1);
     this.generationTreeNodeStates.splice(hoverIndex, 0, dragColumn);
   }

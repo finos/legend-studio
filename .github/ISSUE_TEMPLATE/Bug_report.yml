@@ -1,7 +1,7 @@
 name: '🐛 Bug report'
 description: "If something isn't working as expected 🤔."
 title: 'Bug: <title>'
-labels: ['Type: Bug', 'Status: Unconfirmed']
+labels: ['Type: Bug']
 body:
   # Context
   - type: markdown
@@ -53,12 +53,11 @@ body:
         If a single file is not sufficient, providing a `repository link`, or attaching an `archive` will do just fine.
         **Tip:** To attach files, click on this area to highlight it and then drag them in. See [this guide](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files).
       placeholder: |
-        ```
         ###Pure
         Class model::MyModel {
           property: String[1];
         }
-        ```
+      render: text
 
   # Extra context
   - type: textarea
@@ -67,16 +66,15 @@ body:
       description: |
         **Tip:** you can run `yarn run check:env-info` and paste the result below
       placeholder: |
-        ```
-          System:
-            OS: macOS 11.6
-          Browsers:
-            Chrome: 94.0.0
-          Binaries: (only relevant for developers)
-            Node: 16.8.0
-            Yarn: 3.0.1
-            npm: 7.21.0
-        ```
+        System:
+          OS: macOS 11.6
+        Browsers:
+          Chrome: 94.0.0
+        Binaries: (only relevant for developers)
+          Node: 16.8.0
+          Yarn: 3.0.1
+          npm: 7.21.0
+      render: text
     validations:
       required: true
   - type: textarea

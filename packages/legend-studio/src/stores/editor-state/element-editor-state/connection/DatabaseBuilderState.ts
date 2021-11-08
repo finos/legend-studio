@@ -256,7 +256,7 @@ export class DatabaseBuilderState {
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -302,7 +302,7 @@ export class DatabaseBuilderState {
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -343,7 +343,7 @@ export class DatabaseBuilderState {
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -464,7 +464,7 @@ export class DatabaseBuilderState {
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -500,7 +500,7 @@ export class DatabaseBuilderState {
       dbGraph.ownDatabases.length === 1,
       'Expected one database to be generated from grammar',
     );
-    return dbGraph.ownDatabases[0];
+    return dbGraph.ownDatabases[0] as Database;
   }
 
   private *buildDatabaseFromInput(
@@ -524,7 +524,7 @@ export class DatabaseBuilderState {
       dbGraph.ownDatabases.length === 1,
       'Expected one database to be generated from input',
     );
-    return dbGraph.ownDatabases[0];
+    return dbGraph.ownDatabases[0] as Database;
   }
 
   *createOrUpdateDatabase(): GeneratorFn<void> {
@@ -582,7 +582,7 @@ export class DatabaseBuilderState {
         LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isSavingDatabase = false;
     }

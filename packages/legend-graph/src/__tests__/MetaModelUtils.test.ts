@@ -25,6 +25,7 @@ import {
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
 import {
+  guaranteeType,
   losslessParse,
   losslessStringify,
   unitTest,
@@ -48,10 +49,9 @@ test(unitTest('Create valid and invalid packages on a root package'), () => {
   const rootChildren = _root.children;
   expect(rootChildren.length).toBe(1);
   const modelPackage = rootChildren[0];
-  expect(modelPackage.name).toBe('model');
+  expect(modelPackage?.name).toBe('model');
   expect(modelPackage instanceof Package).toBe(true);
-  const modelPackageChildren = (modelPackage as Package).children;
-  expect(modelPackageChildren.length).toBe(1);
+  expect(guaranteeType(modelPackage, Package).children.length).toBe(1);
   const invalidPackages = [
     '$implicit',
     'model::$implicit::new',

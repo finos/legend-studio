@@ -16,14 +16,14 @@
 
 <!--
   Explain the **motivation** for making this change. What existing problem(s) does this PR solve?
-  Also link the issue(s) to this PR: e.g. Fixes #1, Resolves #2
+  Also, link the issue(s) to this PR: e.g. Fixes #1, Resolves #2
   If you also added documentation, link the PR from https://github.com/finos/legend
 -->
 
 ## How did you test this change?
 
 <!--
-  Demonstrate the code is solid. Screenshots / videos if the pull request changes the user interface.
+  Demonstrate the code is solid. Screenshots/videos if the pull request changes the user interface.
   How exactly did you verify that your PR solves the issue you wanted to solve?
   If you leave this empty, your PR will very likely be closed.
 -->

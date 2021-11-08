@@ -15,7 +15,11 @@
  */
 
 import { TEST_DATA__embeddedRelationalTestData } from './TEST_DATA__RelationalEntities';
-import { guaranteeType, unitTest } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  unitTest,
+} from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
@@ -43,8 +47,7 @@ test(unitTest('Embedded Relational Mapping'), () => {
     'meta::relational::tests::mapping::embedded::model::store::myDB',
   );
   expect(myDB.schemas).toHaveLength(1);
-  const defaultSchema = myDB.schemas[0];
-  expect(defaultSchema.tables).toHaveLength(8);
+  expect(guaranteeNonNullable(myDB.schemas[0]).tables).toHaveLength(8);
   expect(myDB.joins).toHaveLength(7);
 
   // mapping

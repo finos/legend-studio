@@ -303,7 +303,9 @@ export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
   Array.from(classToSetImplMap.entries()).forEach((entries) => {
     const _classMappings = entries[1];
     if (_classMappings.size === 1) {
-      const classMapping = Array.from(_classMappings.values())[0];
+      const classMapping = Array.from(
+        _classMappings.values(),
+      )[0] as SetImplementation;
       // ensure you are only altering current mapping
       if (
         classMapping.root.value === false &&

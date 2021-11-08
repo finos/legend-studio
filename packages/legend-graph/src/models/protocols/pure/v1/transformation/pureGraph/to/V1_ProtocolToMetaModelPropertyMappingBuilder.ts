@@ -40,10 +40,7 @@ import { InferableMappingElementIdExplicitValue } from '../../../../../../metamo
 import type { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { PropertyReference } from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
-import {
-  PropertyImplicitReference,
-  PropertyExplicitReference,
-} from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
+import { PropertyImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
@@ -750,10 +747,13 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     );
     const xStorePropertyMapping = new XStorePropertyMapping(
       xStoreParent,
-      // NOTE: this should be `implicit` because this comes from an association
-      // that we should have inferred. But we need to test the impact of changing it to `implicit`.
-      // This might cause bugs in the future.
-      PropertyExplicitReference.create(property),
+      PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          _association,
+          protocol.property.class,
+        ),
+        property,
+      ),
       guaranteeNonNullable(sourceSetImplementation),
       targetSetImplementation,
     );

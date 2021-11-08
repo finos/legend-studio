@@ -17,6 +17,7 @@
 import { list, createModelSchema, primitive } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
+import { generateGAVCoordinates } from '../DepotUtils';
 
 export class ProjectData {
   id!: string;
@@ -36,7 +37,7 @@ export class ProjectData {
   }
 
   get coordinates(): string {
-    return `${this.groupId}:${this.artifactId}`;
+    return generateGAVCoordinates(this.groupId, this.artifactId, undefined);
   }
 
   setVersions(val: string[]): void {

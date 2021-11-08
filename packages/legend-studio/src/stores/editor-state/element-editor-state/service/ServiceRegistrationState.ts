@@ -234,7 +234,7 @@ export class ServiceRegistrationState {
         LogEvent.create(STUDIO_LOG_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, null);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.registrationState.reset();
     }

@@ -35,7 +35,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
+import { User, SDLCMode, SDLCServerClient } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { StudioPluginManager } from '../application/StudioPluginManager';
@@ -135,9 +135,9 @@ export class StudioStore {
     try {
       this.isSDLCAuthorized = (
         (yield Promise.all(
-          Object.values(SdlcMode).map((mode) =>
+          Object.values(SDLCMode).map((mode) =>
             this.sdlcServerClient.isAuthorized(mode).catch((error) => {
-              if (mode !== SdlcMode.PROD) {
+              if (mode !== SDLCMode.PROD) {
                 // if there is an issue with an endpoint in a non prod env, we return authorized as true
                 // but notify the user of the error
                 this.applicationStore.log.error(

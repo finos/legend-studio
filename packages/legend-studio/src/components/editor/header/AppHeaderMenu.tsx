@@ -16,6 +16,8 @@
 
 import { useState } from 'react';
 import {
+  ChevronDownIcon,
+  ChevronUpIcon,
   clsx,
   DropdownMenu,
   MenuContent,
@@ -24,7 +26,11 @@ import {
 import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
 import Dialog from '@material-ui/core/Dialog';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type {
+  SDLCServerOption,
+  StudioConfig,
+} from '../../../application/StudioConfig';
+import { updateRouteWithNewSDLCServerOption } from '../../../stores/LegendStudioRouter';
 
 const AboutModal: React.FC<{
   open: boolean;
@@ -108,6 +114,7 @@ const AboutModal: React.FC<{
 export const AppHeaderMenu: React.FC = () => {
   const applicationStore = useApplicationStore<StudioConfig>();
   const config = applicationStore.config;
+
   // menu
   const [openMenuDropdown, setOpenMenuDropdown] = useState(false);
   const showMenuDropdown = (): void => setOpenMenuDropdown(true);
@@ -120,8 +127,68 @@ export const AppHeaderMenu: React.FC = () => {
   const goToDocumentation = (): void =>
     applicationStore.navigator.openNewWindow(config.documentationUrl);
 
+  // SDLC server
+  const [openSDLCServerDropdown, setOpenSDLCServerDropdown] = useState(false);
+  const showSDLCServerDropdown = (): void => setOpenSDLCServerDropdown(true);
+  const hideSDLCServerDropdown = (): void => setOpenSDLCServerDropdown(false);
+  const selectSDLCServer =
+    (option: SDLCServerOption): (() => void) =>
+    (): void => {
+      if (option !== applicationStore.config.currentSDLCServerOption) {
+        const updatedURL = updateRouteWithNewSDLCServerOption(
+          applicationStore.navigator.getCurrentLocationPath(),
+          option,
+        );
+        if (updatedURL) {
+          applicationStore.navigator.jumpTo(
+            applicationStore.navigator.generateLocation(updatedURL),
+          );
+        }
+      }
+    };
   return (
     <>
+      {applicationStore.config.SDLCServerOptions.length > 1 && (
+        <DropdownMenu
+          className={clsx('app__header__sdlc-server-dropdown')}
+          onClose={hideSDLCServerDropdown}
+          menuProps={{ elevation: 7 }}
+          content={
+            <MenuContent className="app__header__sdlc-server-dropdown__menu">
+              {applicationStore.config.SDLCServerOptions.map((option) => (
+                <MenuContentItem
+                  key={option.key}
+                  className={clsx(
+                    'app__header__sdlc-server-dropdown__menu__item',
+                    {
+                      'app__header__sdlc-server-dropdown__menu__item--active':
+                        option ===
+                        applicationStore.config.currentSDLCServerOption,
+                    },
+                  )}
+                  onClick={selectSDLCServer(option)}
+                >
+                  {option.label}
+                </MenuContentItem>
+              ))}
+            </MenuContent>
+          }
+        >
+          <button
+            className="app__header__sdlc-server-dropdown__label"
+            tabIndex={-1}
+            onClick={showSDLCServerDropdown}
+            title="Choose an SDLC server..."
+          >
+            <div className="app__header__sdlc-server-dropdown__label__text">
+              {applicationStore.config.currentSDLCServerOption.label}
+            </div>
+            <div className="app__header__sdlc-server-dropdown__label__icon">
+              {openSDLCServerDropdown ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            </div>
+          </button>
+        </DropdownMenu>
+      )}
       <DropdownMenu
         className={clsx('app__header__action', {
           'menu__trigger--on-menu-open': openMenuDropdown,
@@ -148,6 +215,7 @@ export const AppHeaderMenu: React.FC = () => {
         <button
           className="app__header__menu-btn"
           onClick={showMenuDropdown}
+          title="Show more information about the application..."
           tabIndex={-1}
         >
           <FaBars />

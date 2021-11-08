@@ -34,7 +34,7 @@ import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,
@@ -279,7 +279,7 @@ export const WorkspaceReview = observer(() => {
                       rel="noopener noreferrer"
                       target="_blank"
                       to={generateReviewRoute(
-                        applicationStore.config.sdlcServerKey,
+                        applicationStore.config.currentSDLCServerOption,
                         workspaceReview.projectId,
                         workspaceReview.id,
                       )}

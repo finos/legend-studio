@@ -29,8 +29,6 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToFormatJSONString,
-  toGrammarString,
-  fromGrammarString,
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
@@ -136,7 +134,11 @@ export class TestContainerState {
       this.testContainer.assert =
         this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-          toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
+          // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
+          // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
+          // See https://github.com/finos/legend-studio/issues/586
+          // See https://github.com/finos/legend-engine/issues/429
+          tryToMinifyLosslessJSONString(this.assertionData),
         );
     }
   }
@@ -147,10 +149,12 @@ export class TestContainerState {
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
-      ? fromGrammarString(
-          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-          tryToFormatLosslessJSONString(expectedResultAssertionString),
-        )
+      ? /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
+        // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
+        // See https://github.com/finos/legend-studio/issues/586
+        // See https://github.com/finos/legend-engine/issues/429
+        tryToFormatLosslessJSONString(expectedResultAssertionString)
       : undefined;
   }
 
@@ -414,7 +418,7 @@ export class SingleExecutionTestState {
     this.selectedTestContainerState = this.test.asserts.length
       ? new TestContainerState(
           editorStore,
-          this.test.asserts[0],
+          this.test.asserts[0] as TestContainer,
           serviceEditorState,
           this,
         )

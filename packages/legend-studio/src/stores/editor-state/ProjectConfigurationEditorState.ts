@@ -30,7 +30,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { EditorSdlcState } from '../EditorSdlcState';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
   ProjectStructureVersion,
@@ -45,7 +45,7 @@ export enum CONFIGURATION_EDITOR_TAB {
 }
 
 export class ProjectConfigurationEditorState extends EditorState {
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   originalProjectConfiguration?: ProjectConfiguration | undefined; // TODO: we might want to remove this when we do change detection for project configuration
   isUpdatingConfiguration = false;
   projectConfiguration?: ProjectConfiguration | undefined;
@@ -58,7 +58,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   isFetchingAssociatedProjectsAndVersions = false;
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     super(editorStore);
 
     makeObservable(this, {

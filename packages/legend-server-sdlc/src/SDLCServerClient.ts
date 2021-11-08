@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Project, SdlcMode, ProjectType } from './models/project/Project';
+import type { Project, SDLCMode, ProjectType } from './models/project/Project';
 import type { ImportReport } from './models/project/ImportReport';
 import type { Workspace } from './models/workspace/Workspace';
 import { WorkspaceType } from './models/workspace/Workspace';
@@ -28,7 +28,7 @@ import type { CreateVersionCommand } from './models/version/VersionCommands';
 import type { ProjectStructureVersion } from './models/configuration/ProjectStructureVersion';
 import type { User } from './models/User';
 import type { PlainObject, TraceData } from '@finos/legend-shared';
-import { AbstractServerClient } from '@finos/legend-shared';
+import { AbstractServerClient, ContentType } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   CreateProjectCommand,
@@ -44,6 +44,7 @@ import type {
   CommitReviewCommand,
   CreateReviewCommand,
 } from './models/review/ReviewCommands';
+import type { WorkflowJob } from './models/workflow/WorkflowJob';
 
 enum SDLC_TRACER_SPAN {
   IMPORT_PROJECT = 'import project',
@@ -108,7 +109,7 @@ export class SDLCServerClient extends AbstractServerClient {
   // ------------------------------------------- Authorization -------------------------------------------
 
   private _auth = (): string => `${this.networkClient.baseUrl}/auth`;
-  isAuthorized = (mode: SdlcMode): Promise<boolean> =>
+  isAuthorized = (mode: SDLCMode): Promise<boolean> =>
     this.networkClient.get(`${this._auth()}/authorized?mode=${mode}`);
   hasAcceptedTermsOfService = (): Promise<string[]> =>
     this.networkClient.get(`${this._auth()}/termsOfServiceAcceptance`);
@@ -343,7 +344,31 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
   ): string => `${this._adaptiveWorkspace(projectId, workspace)}/workflows`;
+  private _workflow = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowId: string,
+  ): string =>
+    `${this._adaptiveWorkspace(projectId, workspace)}/workflows/${workflowId}`;
+  private _workflowJobs = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowId: string,
+  ): string => `${this._workflow(projectId, workspace, workflowId)}/jobs`;
+  private _workflowJob = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowId: string,
+    workflowJobId: string,
+  ): string =>
+    `${this._workflow(projectId, workspace, workflowId)}/jobs/${workflowJobId}`;
 
+  getWorkflow = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowId: string,
+  ): Promise<PlainObject<Workflow>> =>
+    this.networkClient.get(this._workflow(projectId, workspace, workflowId));
   getWorkflows = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -368,7 +393,87 @@ export class SDLCServerClient extends AbstractServerClient {
       undefined,
       { revisionId },
     );
-
+  getWorkflowJobs = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowId: string,
+    status: WorkflowStatus | undefined,
+    revisionIds: string[] | undefined,
+    limit: number | undefined,
+  ): Promise<PlainObject<WorkflowJob>[]> =>
+    this.networkClient.get(
+      this._workflowJobs(projectId, workspace, workflowId),
+      undefined,
+      undefined,
+      { status, revisionIds, limit },
+    );
+  getWorkflowJob = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowJob: WorkflowJob,
+  ): Promise<PlainObject<WorkflowJob>> =>
+    this.networkClient.get(
+      `${this._workflowJob(
+        projectId,
+        workspace,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}`,
+    );
+  getWorkflowJobLogs = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowJob: WorkflowJob,
+  ): Promise<string> =>
+    this.networkClient.get(
+      `${this._workflowJob(
+        projectId,
+        workspace,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}/logs`,
+      {},
+      { Accept: ContentType.TEXT_PLAIN },
+    );
+  cancelWorkflowJob = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowJob: WorkflowJob,
+  ): Promise<PlainObject<WorkflowJob>> =>
+    this.networkClient.post(
+      `${this._workflowJob(
+        projectId,
+        workspace,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}/cancel`,
+    );
+  retryWorkflowJob = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowJob: WorkflowJob,
+  ): Promise<PlainObject<WorkflowJob>> =>
+    this.networkClient.post(
+      `${this._workflowJob(
+        projectId,
+        workspace,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}/retry`,
+    );
+  runManualWorkflowJob = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    workflowJob: WorkflowJob,
+  ): Promise<PlainObject<WorkflowJob>> =>
+    this.networkClient.post(
+      `${this._workflowJob(
+        projectId,
+        workspace,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}/run`,
+    );
   // ------------------------------------------- Entity -------------------------------------------
 
   private _entities = (

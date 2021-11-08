@@ -32,6 +32,7 @@ import type {
 } from '../stores/QueryBuilderExplorerState';
 import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
+import type { ValueSpecification } from '@finos/legend-graph';
 import { Class, Enumeration, PrimitiveType } from '@finos/legend-graph';
 
 const DerivedPropertyExpressionEditor = observer(
@@ -61,7 +62,7 @@ const DerivedPropertyExpressionEditor = observer(
               variable.multiplicity.lowerBound === 0 ? 'optional' : ''
             }`}</div>
             <QueryBuilderValueSpecificationEditor
-              valueSpecification={parameterValues[idx]}
+              valueSpecification={parameterValues[idx] as ValueSpecification}
               graph={
                 derivedPropertyExpressionState.queryBuilderState
                   .graphManagerState.graph

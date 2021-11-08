@@ -41,7 +41,7 @@ To initiate a `standard release`:
 > Post-release procedure comprises several steps, if for some reasons, parts of the automation fails, please do these manually:
 >
 > - Create a tag for the release (e.g. `v4.0.0`)
-> - CReate a Github release (e.g. `Version v4.0.0`)
+> - Create a Github release (e.g. `Version v4.0.0`)
 > - Create a new release branch off the latest release tag (e.g. `release/4.0.0`)
 > - Move all open issues in the latest release milestone to the next release milestone. (e.g. milestone `5.0.0`)
 
@@ -51,10 +51,10 @@ An `iteration release` follows these specifications:
 
 - Corresponding to a`minor` version bump (e.g. 1.1.0, 1.2.0, 1.3.0)
 - Being cut from the `default branch`
-- **NOT** Following a fixed cycle of development
-- **NOT** Having a corresponding [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
-- **NOT** Having a corresponding tag
-- **NOT** Having a corresponding `release branch`
+- **NOT** following a fixed cycle of development
+- **NOT** having a corresponding [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
+- **NOT** having a corresponding tag
+- **NOT** having a corresponding `release branch`
 
 To initiate a `standard release`:
 
@@ -67,10 +67,10 @@ A `recovery release` is meant to patch an old `standard release` with bug fixes;
 
 - Corresponding to a`patch` version bump (e.g. 1.0.1, 2.0.1, 2.0.2)
 - Being cut from a `release branch` (e.g. `release/1.0.0`)
-- **NOT** Following a fixed cycle of development
-- **NOT** Having a corresponding [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
-- **NOT** Having a corresponding tag
-- **NOT** Having a corresponding `release branch`
+- **NOT** following a fixed cycle of development: often coming right after a `standard release` to path bugs
+- **NOT** having a corresponding [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
+- **NOT** having a corresponding tag
+- **NOT** having a corresponding `release branch`
 
 To initiate a `recovery release`:
 

@@ -46,6 +46,7 @@ import {
   ProjectVersionEntities,
   ProjectData,
   ProjectDependencyCoordinates,
+  generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 import type {
   SetImplementation,
@@ -195,78 +196,6 @@ export class EditorGraphState {
     return false;
   }
 
-  /**
-   * Create a lean/read-only view of the project:
-   * - No change detection
-   * - No project viewer
-   * - No text mode support
-   */
-  *buildGraphForViewerMode(entities: Entity[]): GeneratorFn<void> {
-    try {
-      this.isInitializingGraph = true;
-      const startTime = Date.now();
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
-        Date.now() - startTime,
-        'ms',
-      );
-      // reset
-      this.editorStore.changeDetectionState.stop();
-      this.editorStore.graphManagerState.resetGraph();
-      // build compile context
-      this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
-        ProjectConfiguration.serialization.fromJson(
-          (yield this.editorStore.sdlcServerClient.getConfiguration(
-            this.editorStore.sdlcState.activeProject.projectId,
-            undefined,
-          )) as PlainObject<ProjectConfiguration>,
-        ),
-      );
-      const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          (yield flowResult(
-            this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, Entity[]>,
-        ),
-      );
-      this.editorStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
-      this.editorStore.explorerTreeState.buildImmutableModelTrees();
-      // build graph
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGraph(
-          this.editorStore.graphManagerState.graph,
-          entities,
-        ),
-      );
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
-        '[TOTAL]',
-        Date.now() - startTime,
-        'ms',
-      );
-      this.editorStore.explorerTreeState.build();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
-        error,
-      );
-      this.editorStore.graphManagerState.graph.buildState.fail();
-      this.editorStore.applicationStore.notifyError(
-        `Can't build graph. Error: ${error.message}`,
-      );
-    } finally {
-      this.isInitializingGraph = false;
-    }
-  }
-
   *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderReport> {
     try {
       this.isInitializingGraph = true;
@@ -339,8 +268,6 @@ export class EditorGraphState {
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
         this.editorStore.applicationStore.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
-          undefined,
-          null,
         );
         const projectConfigurationEditorState =
           this.editorStore.projectConfigurationEditorState;
@@ -523,7 +450,10 @@ export class EditorGraphState {
         if (errorCoordinates) {
           const element =
             this.editorStore.graphManagerState.graph.getNullableElement(
-              errorCoordinates[0],
+              guaranteeNonNullable(
+                errorCoordinates[0],
+                `Can't reveal compilation error: element path is missing`,
+              ),
               false,
             );
           if (element) {
@@ -1074,11 +1004,18 @@ export class EditorGraphState {
                   `Expected 1 project for project id '${dep.projectId}'. Got ${
                     projectsData.length
                   } projects with coordinates ${projectsData
-                    .map((i) => `'${i.groupId}:${i.artifactId}'`)
+                    .map(
+                      (i) =>
+                        `'${generateGAVCoordinates(
+                          i.groupId,
+                          i.artifactId,
+                          undefined,
+                        )}'`,
+                    )
                     .join(', ')}.`,
                 );
               }
-              const projectData = projectsData[0];
+              const projectData = projectsData[0] as ProjectData;
               return new ProjectDependencyCoordinates(
                 projectData.groupId,
                 projectData.artifactId,
@@ -1168,7 +1105,6 @@ export class EditorGraphState {
     );
   }
 
-  /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
   getSetImplementationType(setImplementation: SetImplementation): string {
     if (setImplementation instanceof PureInstanceSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.PUREINSTANCE;

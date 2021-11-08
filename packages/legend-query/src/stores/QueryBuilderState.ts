@@ -83,10 +83,10 @@ import {
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 import type {
   ApplicationStore,
+  LegendApplicationConfig,
   PackageableElementOption,
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
-import type { QueryConfig } from '../application/QueryConfig';
 import { QueryParametersState } from './QueryParametersState';
 
 export interface QueryBuilderConfig {
@@ -94,7 +94,7 @@ export interface QueryBuilderConfig {
 }
 
 export class QueryBuilderState {
-  applicationStore: ApplicationStore<QueryConfig>;
+  applicationStore: ApplicationStore<LegendApplicationConfig>;
   graphManagerState: GraphManagerState;
 
   config: QueryBuilderConfig;
@@ -129,7 +129,7 @@ export class QueryBuilderState {
   backdrop = false;
 
   constructor(
-    applicationStore: ApplicationStore<QueryConfig>,
+    applicationStore: ApplicationStore<LegendApplicationConfig>,
     graphManagerState: GraphManagerState,
     queryBuilderConfig: QueryBuilderConfig,
   ) {

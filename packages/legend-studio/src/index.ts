@@ -19,7 +19,10 @@ export * from './components/StudioStoreProvider';
 export * from './application/LegendStudio';
 export * from './application/StudioConfig';
 export * from './application/StudioPluginManager';
-export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
+export {
+  LEGEND_STUDIO_PATH_PARAM_TOKEN,
+  generateRoutePatternWithSDLCServerKey,
+} from './stores/LegendStudioRouter';
 export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
 
 // stores
@@ -70,6 +73,10 @@ export * from './stores/StoreRelational_StudioPlugin_Extension';
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
+export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+export { NewConnectionValueDriver } from './stores/NewElementState';
+export type { UMLEditorElementDropTarget } from './stores/shared/DnDUtil';
 export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
 export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
+export { getElementIcon } from './components/shared/ElementIconUtils';

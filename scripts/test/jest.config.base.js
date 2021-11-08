@@ -27,16 +27,16 @@ const baseConfig = getBaseConfig({
 export default {
   ...baseConfig,
   setupFiles: [
-    '<rootDir>/scripts/jest/setupTests/disallowConsoleError.js',
-    '<rootDir>/scripts/jest/setupTests/blockFetch.js',
-    '<rootDir>/scripts/jest/setupTests/handleUnhandledRejection.js',
+    '@finos/legend-dev-utils/jest/disallowConsoleError',
+    '@finos/legend-dev-utils/jest/blockFetch',
+    '@finos/legend-dev-utils/jest/handleUnhandledRejection',
   ],
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed
   // See https://jestjs.io/docs/en/configuration#setupfilesafterenv-array
   setupFilesAfterEnv: [
     ...baseConfig.setupFilesAfterEnv,
-    '<rootDir>/scripts/jest/setupTestsEnv.js',
+    '@finos/legend-dev-utils/jest/setupTestEnvironment',
     '@finos/legend-dev-utils/jest/setupJestExpectExtension',
   ],
   moduleNameMapper: {

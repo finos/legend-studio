@@ -24,7 +24,6 @@ import {
   TEST__getTestApplicationStore,
 } from '@finos/legend-application';
 import { StudioConfig } from '../application/StudioConfig';
-import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
 
 export const TEST_DATA__studioConfig = {
   appName: 'test-studio-app',
@@ -54,7 +53,6 @@ export const TEST__getTestStudioConfig = (
     TEST_DATA__applicationVersion,
     '/studio/',
   );
-  config.setSDLCServerKey(URL_PATH_PLACEHOLDER);
   return config;
 };
 
