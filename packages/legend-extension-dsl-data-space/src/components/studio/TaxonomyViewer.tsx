@@ -19,29 +19,39 @@ import type {
   RawDataSpace,
   TaxonomyViewerState,
 } from '../../stores/studio/EnterpriseModelExplorerStore';
-import { useEnterpriseModelExplorerStore } from './EnterpriseModelExplorerStoreProvider';
-import { BlankPanelContent, clsx, SquareIcon } from '@finos/legend-art';
+import {
+  BlankPanelContent,
+  clsx,
+  PanelLoadingIndicator,
+  SquareIcon,
+} from '@finos/legend-art';
 import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
 } from '@finos/legend-art';
+import { DataSpaceViewer } from '../DataSpaceViewer';
+import { flowResult } from 'mobx';
+import { useApplicationStore } from '@finos/legend-application';
 
 const TaxonomyViewerExplorer = observer(
   (props: { taxonomyViewerState: TaxonomyViewerState }) => {
     const { taxonomyViewerState } = props;
+    const applicationStore = useApplicationStore();
     const taxonomyNode = taxonomyViewerState.taxonomyNode;
     const selectDataSpace =
       (rawDataSpace: RawDataSpace): (() => void) =>
       (): void => {
-        // do nothing
+        flowResult(
+          taxonomyViewerState.initializeDataSpaceViewer(rawDataSpace),
+        ).catch(applicationStore.alertIllegalUnhandledError);
       };
 
     return (
       <div className="panel taxonomy-viewer__explorer">
         <div className="panel__header taxonomy-viewer__explorer__header">
           <div className="panel__header__title taxonomy-viewer__explorer__header__title">
-            Dataspaces
+            Dataspaces ({taxonomyNode.rawDataSpaces.length})
           </div>
         </div>
         <div className="panel__content taxonomy-viewer__explorer__content">
@@ -52,7 +62,10 @@ const TaxonomyViewerExplorer = observer(
             taxonomyNode.rawDataSpaces.map((rawDataSpace) => (
               <button
                 key={rawDataSpace.id}
-                className={clsx('taxonomy-viewer__explorer__entry')}
+                className={clsx('taxonomy-viewer__explorer__entry', {
+                  'taxonomy-viewer__explorer__entry--active':
+                    rawDataSpace === taxonomyViewerState.currentDataSpace,
+                })}
                 tabIndex={-1}
                 onClick={selectDataSpace(rawDataSpace)}
                 title={rawDataSpace.id}
@@ -74,24 +87,32 @@ const TaxonomyViewerExplorer = observer(
 export const TaxonomyViewer = observer(
   (props: { taxonomyViewerState: TaxonomyViewerState }) => {
     const { taxonomyViewerState } = props;
-    const enterpriseModelExplorerStore = useEnterpriseModelExplorerStore();
 
     return (
       <div className="taxonomy-viewer">
         <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel minSize={300}>
+          <ResizablePanel minSize={300} size={300}>
             <TaxonomyViewerExplorer taxonomyViewerState={taxonomyViewerState} />
           </ResizablePanel>
           <ResizablePanelSplitter />
           <ResizablePanel minSize={300}>
-            <div>TODO</div>
-            {/* {taxonomyViewerState.currentDataSpace ? (
-              <TaxonomyViewer
-                taxonomyNode={taxonomyViewerState.currentDataSpace}
+            {taxonomyViewerState.dataSpaceViewerState && (
+              <DataSpaceViewer
+                dataSpaceViewerState={taxonomyViewerState.dataSpaceViewerState}
               />
-            ) : (
-              <div />
-            )} */}
+            )}
+            {!taxonomyViewerState.dataSpaceViewerState &&
+              taxonomyViewerState.initDataSpaceViewerState.isInProgress && (
+                <div className="taxonomy-viewer__content-placeholder">
+                  <PanelLoadingIndicator isLoading={true} />
+                  <BlankPanelContent>Loading data space...</BlankPanelContent>
+                </div>
+              )}
+            {!taxonomyViewerState.dataSpaceViewerState && (
+              <div className="taxonomy-viewer__content-placeholder">
+                <BlankPanelContent>No data space selected</BlankPanelContent>
+              </div>
+            )}
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

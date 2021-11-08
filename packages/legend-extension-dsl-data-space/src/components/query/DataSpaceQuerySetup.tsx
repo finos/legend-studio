@@ -36,7 +36,7 @@ import type {
   DataSpaceQuerySetupState,
   LightDataSpace,
 } from '../../stores/query/DataSpaceQuerySetupState';
-import { DataSpaceViewer } from './DataSpaceViewer';
+import { DataSpaceViewer } from '../DataSpaceViewer';
 
 type DataSpaceOption = { label: string; value: LightDataSpace };
 const buildDataSpaceOption = (dataSpace: LightDataSpace): DataSpaceOption => ({

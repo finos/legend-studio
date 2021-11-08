@@ -15,15 +15,21 @@
  */
 
 import type { ApplicationStore } from '@finos/legend-application';
+import { TAB_SIZE } from '@finos/legend-application';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import { PanelDisplayState } from '@finos/legend-art';
 import type { GraphManagerState } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-model-storage';
 import type {
   DepotServerClient,
   StoredEntity,
 } from '@finos/legend-server-depot';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
-import type { GeneratorFn } from '@finos/legend-shared';
+import {
+  ProjectVersionEntities,
+  ProjectData,
+  generateGAVCoordinates,
+} from '@finos/legend-server-depot';
+import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   addUniqueEntry,
   guaranteeNonNullable,
@@ -31,11 +37,13 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import type { StudioConfig, StudioPluginManager } from '@finos/legend-studio';
-import { makeObservable, flow, observable, action } from 'mobx';
+import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   extractDataSpaceTaxonomyNodePaths,
+  getResolvedDataSpace,
 } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+import { DataSpaceViewerState } from '../DataSpaceViewerState';
 
 export enum ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN {
   TAXONOMY_PATH = 'taxonomyPath',
@@ -108,22 +116,140 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
 export class TaxonomyViewerState {
   enterpriseModelExplorerStore: EnterpriseModelExplorerStore;
   taxonomyNode: TaxonomyTreeNodeData;
+  dataSpaceViewerState?: DataSpaceViewerState | undefined;
   currentDataSpace?: RawDataSpace | undefined;
+  initDataSpaceViewerState = ActionState.create();
 
   constructor(
     enterpriseModelExplorerStore: EnterpriseModelExplorerStore,
     taxonomyNode: TaxonomyTreeNodeData,
   ) {
     makeObservable(this, {
+      dataSpaceViewerState: observable,
       currentDataSpace: observable,
-      setCurrentDataSpace: action,
+      clearDataSpaceViewerState: action,
+      initializeDataSpaceViewer: flow,
     });
     this.enterpriseModelExplorerStore = enterpriseModelExplorerStore;
     this.taxonomyNode = taxonomyNode;
   }
 
-  setCurrentDataSpace(val: RawDataSpace | undefined): void {
-    this.currentDataSpace = val;
+  clearDataSpaceViewerState(): void {
+    this.dataSpaceViewerState = undefined;
+    this.currentDataSpace = undefined;
+  }
+
+  *initializeDataSpaceViewer(rawDataSpace: RawDataSpace): GeneratorFn<void> {
+    try {
+      this.initDataSpaceViewerState.inProgress();
+      const groupId = guaranteeNonNullable(
+        rawDataSpace.json.groupId,
+        `Data space 'groupId' field is missing`,
+      ) as string;
+      const artifactId = guaranteeNonNullable(
+        rawDataSpace.json.artifactId,
+        `Data space 'artifactId' field is missing`,
+      ) as string;
+      const versionId = guaranteeNonNullable(
+        rawDataSpace.json.versionId,
+        `Data space 'versionId' field is missing`,
+      ) as string;
+
+      // build graph
+      const LATEST_VERSION_ALIAS = 'latest';
+      const projectData = ProjectData.serialization.fromJson(
+        (yield flowResult(
+          this.enterpriseModelExplorerStore.depotServerClient.getProject(
+            groupId,
+            artifactId,
+          ),
+        )) as PlainObject<ProjectData>,
+      );
+      const resolvedVersionId =
+        versionId === LATEST_VERSION_ALIAS
+          ? projectData.latestVersion
+          : versionId;
+      const entities =
+        (yield this.enterpriseModelExplorerStore.depotServerClient.getVersionEntities(
+          groupId,
+          artifactId,
+          resolvedVersionId,
+        )) as Entity[];
+      this.enterpriseModelExplorerStore.graphManagerState.resetGraph();
+      // build dependencies
+      const dependencyManager =
+        this.enterpriseModelExplorerStore.graphManagerState.createEmptyDependencyManager();
+      const dependencyEntitiesMap = new Map<string, Entity[]>();
+      (
+        (yield this.enterpriseModelExplorerStore.depotServerClient.getDependencyEntities(
+          groupId,
+          artifactId,
+          resolvedVersionId,
+          true,
+          false,
+        )) as PlainObject<ProjectVersionEntities>[]
+      )
+        .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+        .forEach((dependencyInfo) => {
+          dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
+        });
+      yield flowResult(
+        this.enterpriseModelExplorerStore.graphManagerState.graphManager.buildDependencies(
+          this.enterpriseModelExplorerStore.graphManagerState.coreModel,
+          this.enterpriseModelExplorerStore.graphManagerState.systemModel,
+          dependencyManager,
+          dependencyEntitiesMap,
+        ),
+      );
+      this.enterpriseModelExplorerStore.graphManagerState.graph.setDependencyManager(
+        dependencyManager,
+      );
+      yield flowResult(
+        this.enterpriseModelExplorerStore.graphManagerState.graphManager.buildGraph(
+          this.enterpriseModelExplorerStore.graphManagerState.graph,
+          entities,
+        ),
+      );
+
+      // resolve data space
+      const resolvedDataSpace = getResolvedDataSpace(
+        rawDataSpace.json,
+        this.enterpriseModelExplorerStore.graphManagerState.graph,
+      );
+      const dataSpaceViewerState = new DataSpaceViewerState(
+        this.enterpriseModelExplorerStore.graphManagerState,
+        rawDataSpace.groupId,
+        rawDataSpace.artifactId,
+        rawDataSpace.versionId,
+        resolvedDataSpace,
+        {
+          viewProject: (
+            groupId: string,
+            artifactId: string,
+            versionId: string,
+            entityPath: string | undefined,
+          ): void => {
+            this.enterpriseModelExplorerStore.applicationStore.navigator.openNewWindow(
+              this.enterpriseModelExplorerStore.applicationStore.navigator.generateLocation(
+                `/view/${generateGAVCoordinates(
+                  groupId,
+                  artifactId,
+                  versionId,
+                )}${entityPath ? `/entity/${entityPath}` : ''}`,
+              ),
+            );
+          },
+        },
+      );
+      this.dataSpaceViewerState = dataSpaceViewerState;
+      this.currentDataSpace = rawDataSpace;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.enterpriseModelExplorerStore.applicationStore.notifyError(error);
+      this.clearDataSpaceViewerState();
+    } finally {
+      this.initDataSpaceViewerState.complete();
+    }
   }
 }
 
@@ -274,6 +400,25 @@ export class EnterpriseModelExplorerStore {
         .forEach((rawDataSpace) => {
           this.dataSpaceIndex.set(rawDataSpace.id, rawDataSpace);
         });
+
+      yield flowResult(
+        this.graphManagerState.graphManager.initialize(
+          {
+            env: this.applicationStore.config.env,
+            tabSize: TAB_SIZE,
+            clientConfig: {
+              baseUrl: this.applicationStore.config.engineServerUrl,
+              queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+              enableCompression: true,
+            },
+          },
+          {
+            tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
+          },
+        ),
+      );
+
+      yield flowResult(this.graphManagerState.initializeSystem());
 
       // NOTE: here we build the full tree, which might be expensive when we have a big
       // tree in the future, we might have to come up with a better algorithm then
