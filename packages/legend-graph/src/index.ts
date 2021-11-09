@@ -174,6 +174,7 @@ export * from './graphManager/DSLMapping_PureGraphManagerPlugin_Extension';
 export * from './graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
 export {
   ExecutionResult,
+  MappingTestResult,
   TdsExecutionResult,
 } from './graphManager/action/execution/ExecutionResult';
 export * from './graphManager/action/execution/ExecutionResultHelper';

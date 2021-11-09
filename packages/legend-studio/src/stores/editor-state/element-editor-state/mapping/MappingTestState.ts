@@ -53,6 +53,7 @@ import type {
   InputData,
   MappingTestAssert,
   Mapping,
+  MappingTestResult,
 } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
@@ -80,7 +81,6 @@ import {
   PureClientVersion,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
-import type { MappingTestResult } from '@finos/legend-graph/src/graphManager/action/execution/ExecutionResult';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

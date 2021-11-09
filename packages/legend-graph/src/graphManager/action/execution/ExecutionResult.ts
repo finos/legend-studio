@@ -23,17 +23,17 @@ export enum BuilderType {
   JSON_BUILDER = 'json',
 }
 
+export class MappingTestResult {
+  actual!: string;
+  result!: string;
+}
+
 export class ResultBuilder {
   _type: BuilderType;
 
   constructor(type: BuilderType) {
     this._type = type;
   }
-}
-
-export class MappingTestResult {
-  actual!: string;
-  result!: string;
 }
 
 export abstract class ExecutionResult {
