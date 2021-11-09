@@ -57,9 +57,8 @@ import {
   FlatData,
   FlatDataConnection,
   PackageableElementExplicitReference,
-  Table,
-  View,
   Database,
+  TableAlias,
   DatabaseType,
   RelationalDatabaseConnection,
   StaticDatasourceSpecification,
@@ -77,8 +76,8 @@ export const getClassMappingStore = (
     return graph.modelStore;
   } else if (sourceElement instanceof RootFlatDataRecordType) {
     return sourceElement.owner.owner;
-  } else if (sourceElement instanceof Table || sourceElement instanceof View) {
-    return sourceElement.schema.owner;
+  } else if (sourceElement instanceof TableAlias) {
+    return sourceElement.relation.ownerReference.value;
   }
   return undefined;
 };

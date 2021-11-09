@@ -65,16 +65,19 @@ import type {
   InstanceSetImplementation,
   Property,
   PackageableElement,
+  View,
 } from '@finos/legend-graph';
 import {
   Class,
   Type,
   FlatData,
   RootFlatDataRecordType,
-  View,
   Table,
   Database,
   PRIMITIVE_TYPE,
+  TableAlias,
+  TableExplicitReference,
+  ViewExplicitReference,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import type { EditorStore } from '../../../../stores/EditorStore';
@@ -183,15 +186,21 @@ export const InstanceSetImplementationSourceExplorer = observer(
             );
             return;
           }
+          const mainTableAlias = new TableAlias();
+          mainTableAlias.relation =
+            relations[0] instanceof Table
+              ? TableExplicitReference.create(relations[0])
+              : ViewExplicitReference.create(relations[0] as View);
+          mainTableAlias.name = mainTableAlias.relation.value.name;
           if (relations.length === 1) {
             flowResult(
               mappingEditorState.changeClassMappingSourceDriver(
                 setImplementation,
-                relations[0],
+                mainTableAlias,
               ),
             ).catch(applicationStore.alertIllegalUnhandledError);
           } else {
-            setSourceElementForSourceSelectorModal(relations[0]);
+            setSourceElementForSourceSelectorModal(mainTableAlias);
           }
         }
       },
@@ -306,9 +315,9 @@ export const InstanceSetImplementationSourceExplorer = observer(
                   selectedType={instanceSetImplementationState.selectedType}
                 />
               )}
-              {(srcElement instanceof Table || srcElement instanceof View) && (
+              {srcElement instanceof TableAlias && (
                 <TableOrViewSourceTree
-                  relation={srcElement}
+                  relation={srcElement.relation.value}
                   selectedType={instanceSetImplementationState.selectedType}
                 />
               )}
