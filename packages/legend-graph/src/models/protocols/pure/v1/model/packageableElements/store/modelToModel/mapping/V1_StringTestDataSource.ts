@@ -16,6 +16,7 @@
 
 import type { Hashable } from '@finos/legend-shared';
 import { hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 import { V1_TestDataSource } from './V1_TestDataSource';
 
 export class V1_StringTestDataSource
@@ -25,6 +26,6 @@ export class V1_StringTestDataSource
   data!: string;
 
   get hashCode(): string {
-    return hashArray([this.data]);
+    return hashArray([CORE_HASH_STRUCTURE.STRING_TEST_DATA_SOURCE, this.data]);
   }
 }
