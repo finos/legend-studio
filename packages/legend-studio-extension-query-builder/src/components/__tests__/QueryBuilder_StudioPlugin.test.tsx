@@ -121,7 +121,10 @@ const entities = [
           inputData: [
             {
               _type: 'object',
-              data: '{"name":"name 81"}',
+              testDataSource: {
+                _type: 'stringData',
+                data: '{"name":"name 81"}',
+              },
               inputType: 'JSON',
               sourceClass: 'model::Person',
             },

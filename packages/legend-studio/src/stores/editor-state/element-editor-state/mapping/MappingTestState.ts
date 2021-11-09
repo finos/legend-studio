@@ -1,4 +1,3 @@
-/* eslint-disable @finos/legend-studio/no-cross-workspace-source-usage */
 /**
  * Copyright (c) 2020-present, Goldman Sachs
  *

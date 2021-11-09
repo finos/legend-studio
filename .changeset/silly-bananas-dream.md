@@ -1,6 +1,5 @@
 ---
-'@finos/legend-studio': major
-'@finos/legend-manual-tests': patch
+'@finos/legend-studio': patch
 ---
 
 Use new model of mapping test input data source

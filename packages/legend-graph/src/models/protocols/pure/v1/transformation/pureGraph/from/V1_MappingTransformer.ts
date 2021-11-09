@@ -253,6 +253,10 @@ const transformFlatDataInputData = (
   element: FlatDataInputData,
 ): V1_FlatDataInputData => {
   const inputData = new V1_FlatDataInputData();
+  inputData.sourceFlatData = V1_transformElementReferencePointer(
+    V1_PackageableElementPointerType.STORE,
+    element.sourceFlatData,
+  );
   if (element.textElements.length > 0) {
     const testDataSource = new V1_ElementsTestDataSource();
     testDataSource.textElements = element.textElements;
@@ -262,10 +266,6 @@ const transformFlatDataInputData = (
     testDataSource.data = element.data;
     inputData.testDataSource = testDataSource;
   }
-  inputData.sourceFlatData = V1_transformElementReferencePointer(
-    V1_PackageableElementPointerType.STORE,
-    element.sourceFlatData,
-  );
   return inputData;
 };
 
