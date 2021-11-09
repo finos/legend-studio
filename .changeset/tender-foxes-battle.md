@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-Replaced Table/View with TableAlias in MappingElementSource to fix the bug with db value for mappingTest when there are nested databases
+Replace `Table|View` with `TableAlias` as the relational mapping source, i.e `MappingElementSource`. Fixes generating mapping test with nested databases (see [#651](https://github.com/finos/legend-studio/issues/651)] for more details).
