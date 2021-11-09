@@ -21,7 +21,7 @@ The most important thing to pay attention to as maintainers is when merging PRs,
 - Communicate about the timeline and progress with `developers` and `reviewers`.
 - Carry out the actual release:
   - Merge the auto-generated release PRs to cut new releases (see [example](https://github.com/finos/legend-studio/pull/576))
-  - Before a `standard release` or an `iteration release`, run the workflow [Prepare New Release (Manual)](https://github.com/finos/legend-studio/actions/workflows/release-prepare-manual.yml) and merge the new release version bump changeset PR.
+  - Before a `standard release` or an `iteration release`, run the workflow [(Manual) Prepare New Release](https://github.com/finos/legend-studio/actions/workflows/manual-release-prepare.yml) and merge the new release version bump changeset PR.
   - After a `standard release`, update the Github release to point at the `release notes` for the new release.
   - After a `recovery release`, `cherry-pick` the changes from the release branch back on to the default branch to keep the development branch up to date.
 

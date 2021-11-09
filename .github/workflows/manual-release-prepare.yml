@@ -1,4 +1,4 @@
-name: Prepare New Release (Manual)
+name: (Manual) Prepare New Release
 
 on:
   workflow_dispatch:
