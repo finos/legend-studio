@@ -66,6 +66,8 @@ jobs:
           mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
           mvn -pl legend-engine-server -am -DskipTests clean install
           java -cp legend-engine-server/target/*-shaded.jar org.finos.legend.engine.server.Server server ../packages/legend-manual-tests/engine-config.json &
+      - name: Install dependencies
+        run: yarn
       - name: Test
         # TODO: we should consider building only relevant workspaces to reduce build time
-        run: yarn && yarn build && yarn workspace @finos/legend-manual-tests test:manual
+        run: yarn build && yarn workspace @finos/legend-manual-tests test:manual

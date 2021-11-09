@@ -1,4 +1,4 @@
-name: Label New Issue
+name: (Bot) Label New Issue
 
 on:
   issues:
