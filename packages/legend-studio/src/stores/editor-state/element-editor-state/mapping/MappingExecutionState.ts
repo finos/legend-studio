@@ -58,6 +58,8 @@ import type {
   Connection,
   ExecutionResult,
   SetImplementation,
+  Table,
+  View,
 } from '@finos/legend-graph';
 import {
   extractExecutionResultValues,
@@ -80,8 +82,6 @@ import {
   PureSingleExecution,
   RootFlatDataRecordType,
   PackageableElementExplicitReference,
-  Table,
-  View,
   DatabaseType,
   RelationalDatabaseConnection,
   LocalH2DatasourceSpecification,
@@ -91,6 +91,7 @@ import {
   OperationSetImplementation,
   buildSourceInformationSourceId,
   PureClientVersion,
+  TableAlias,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -507,11 +508,11 @@ export class MappingExecutionState {
         );
       }
       this.setInputDataState(newRuntimeState);
-    } else if (source instanceof Table || source instanceof View) {
+    } else if (source instanceof TableAlias) {
       const newRuntimeState = new MappingExecutionRelationalInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
-        source,
+        source.relation.value,
       );
       if (populateWithMockData) {
         newRuntimeState.inputData.setData(

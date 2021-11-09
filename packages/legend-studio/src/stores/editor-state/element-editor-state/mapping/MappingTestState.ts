@@ -78,10 +78,9 @@ import {
   RelationalDatabaseConnection,
   LocalH2DatasourceSpecification,
   DefaultH2AuthenticationStrategy,
-  Table,
-  View,
   buildSourceInformationSourceId,
   PureClientVersion,
+  TableAlias,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
@@ -520,13 +519,13 @@ export class MappingTestState {
         );
       }
       this.setInputDataState(newInputDataState);
-    } else if (source instanceof Table || source instanceof View) {
+    } else if (source instanceof TableAlias) {
       const newInputDataState = new MappingTestRelationalInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
         new RelationalInputData(
           PackageableElementExplicitReference.create(
-            guaranteeNonNullable(source.schema.owner),
+            source.relation.ownerReference.value,
           ),
           '',
           RelationalInputType.SQL,
