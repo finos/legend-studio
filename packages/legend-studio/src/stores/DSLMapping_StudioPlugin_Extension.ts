@@ -22,6 +22,7 @@ import type {
   Connection,
   Runtime,
   SetImplementation,
+  InstanceSetImplementation,
 } from '@finos/legend-graph';
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
@@ -32,6 +33,14 @@ import type {
   MappingElementSource,
 } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import type { MappingElementState } from './editor-state/element-editor-state/mapping/MappingElementState';
+
+export type SetImplementationDecorator = (
+  setImplementation: InstanceSetImplementation,
+) => void;
+
+export type SetImplementationDecorationCleaner = (
+  setImplementation: InstanceSetImplementation,
+) => void;
 
 export type MappingElementSourceGetter = (
   mappingElement: MappingElement,
@@ -106,6 +115,16 @@ export type TEMP__ServiceTestRuntimeConnectionBuilder = (
 
 export interface DSLMapping_StudioPlugin_Extension
   extends DSL_StudioPlugin_Extension {
+  /**
+   * Get the list of extra set implementation decorators.
+   */
+  getExtraSetImplementationDecorationCleaners?(): SetImplementationDecorationCleaner[];
+
+  /**
+   * Get the list of extra set implementation decorators.
+   */
+  getExtraSetImplementationDecorators?(): SetImplementationDecorator[];
+
   /**
    * Get the list of extra set implementation classifiers.
    */

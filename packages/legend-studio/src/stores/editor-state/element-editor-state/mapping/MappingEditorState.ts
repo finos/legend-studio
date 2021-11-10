@@ -176,7 +176,7 @@ export const getMappingElementTarget = (
 
 export const getMappingElementSource = (
   mappingElement: MappingElement,
-  plugins?: StudioPlugin[],
+  plugins: StudioPlugin[],
 ): MappingElementSource | undefined => {
   if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
@@ -212,18 +212,16 @@ export const getMappingElementSource = (
       plugins,
     );
   }
-  if (plugins !== undefined) {
-    const extraMappingElementSourceGetters = plugins.flatMap(
-      (plugin) =>
-        (
-          plugin as DSLMapping_StudioPlugin_Extension
-        ).getExtraMappingElementSourceGetters?.() ?? [],
-    );
-    for (const sourceGetter of extraMappingElementSourceGetters) {
-      const mappingElementSource = sourceGetter(mappingElement);
-      if (mappingElementSource) {
-        return mappingElementSource;
-      }
+  const extraMappingElementSourceGetters = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_StudioPlugin_Extension
+      ).getExtraMappingElementSourceGetters?.() ?? [],
+  );
+  for (const sourceGetter of extraMappingElementSourceGetters) {
+    const mappingElementSource = sourceGetter(mappingElement);
+    if (mappingElementSource) {
+      return mappingElementSource;
     }
   }
 

@@ -149,7 +149,10 @@ const MappingTestQueryEditor = observer(
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void =>
                   testState.setInputDataStateBasedOnSource(
-                    getMappingElementSource(setImplementation),
+                    getMappingElementSource(
+                      setImplementation,
+                      editorStore.pluginManager.getStudioPlugins(),
+                    ),
                     true,
                   ),
               },
@@ -392,6 +395,7 @@ export const MappingTestInputDataBuilder = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const inputDataState = testState.inputDataState;
+    const editorStore = useEditorStore();
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -404,13 +408,16 @@ export const MappingTestInputDataBuilder = observer(
       (setImplementation: SetImplementation | undefined): void => {
         testState.setInputDataStateBasedOnSource(
           setImplementation
-            ? getMappingElementSource(setImplementation)
+            ? getMappingElementSource(
+                setImplementation,
+                editorStore.pluginManager.getStudioPlugins(),
+              )
             : undefined,
           true,
         );
         hideClassMappingSelectorModal();
       },
-      [testState],
+      [testState, editorStore],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);

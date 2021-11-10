@@ -472,13 +472,14 @@ export const InstanceSetImplementationEditor = observer(
         ? noop()
         : (): void =>
             setImplementation.accept_SetImplementationVisitor(
-              new MappingElementDecorationCleaner(),
+              new MappingElementDecorationCleaner(editorStore),
             );
     }, [
       applicationStore,
       setImplementation,
       isReadOnly,
       instanceSetImplementationState,
+      editorStore,
     ]);
 
     useEffect(() => {

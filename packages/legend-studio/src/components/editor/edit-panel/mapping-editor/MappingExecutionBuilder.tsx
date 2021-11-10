@@ -229,7 +229,10 @@ const MappingExecutionQueryEditor = observer(
               );
             } else {
               executionState.setInputDataStateBasedOnSource(
-                getMappingElementSource(setImplementation),
+                getMappingElementSource(
+                  setImplementation,
+                  editorStore.pluginManager.getStudioPlugins(),
+                ),
                 true,
               );
             }
@@ -246,7 +249,10 @@ const MappingExecutionQueryEditor = observer(
                   type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                   handler: (): void =>
                     executionState.setInputDataStateBasedOnSource(
-                      getMappingElementSource(setImplementation),
+                      getMappingElementSource(
+                        setImplementation,
+                        editorStore.pluginManager.getStudioPlugins(),
+                      ),
                       true,
                     ),
                 },
@@ -521,6 +527,7 @@ const RelationalMappingExecutionInputDataTypeSelector = observer(
 export const MappingExecutionInputDataBuilder = observer(
   (props: { executionState: MappingExecutionState }) => {
     const { executionState } = props;
+    const editorStore = useEditorStore();
     const mappingEditorState = executionState.mappingEditorState;
     const inputDataState = executionState.inputDataState;
 
@@ -535,14 +542,17 @@ export const MappingExecutionInputDataBuilder = observer(
       (setImplementation: SetImplementation | undefined): void => {
         executionState.setInputDataStateBasedOnSource(
           setImplementation
-            ? getMappingElementSource(setImplementation)
+            ? getMappingElementSource(
+                setImplementation,
+                editorStore.pluginManager.getStudioPlugins(),
+              )
             : undefined,
           true,
         );
         executionState.setExecutionResultText(undefined);
         hideClassMappingSelectorModal();
       },
-      [executionState],
+      [executionState, editorStore],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);
