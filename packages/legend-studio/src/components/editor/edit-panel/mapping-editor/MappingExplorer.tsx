@@ -93,14 +93,16 @@ export const MappingExplorerContextMenu = observer(
         ).catch(applicationStore.alertIllegalUnhandledError);
       }
       if (currentMappingElement instanceof EnumerationMapping) {
-        new MappingElementDecorator().visitEnumerationMapping(
+        new MappingElementDecorator(editorStore).visitEnumerationMapping(
           currentMappingElement,
         );
       } else if (currentMappingElement instanceof SetImplementation) {
-        const mappingElementDecorator = new MappingElementDecorator();
+        const mappingElementDecorator = new MappingElementDecorator(
+          editorStore,
+        );
         mappingElementDecorator.editorStore = editorStore;
         currentMappingElement.accept_SetImplementationVisitor(
-          new MappingElementDecorator(),
+          new MappingElementDecorator(editorStore),
         );
       }
       mappingEditorState.reprocessMappingExplorerTree();

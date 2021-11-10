@@ -169,7 +169,7 @@ export class ESService_StudioPlugin
     return [
       (connection: Connection): string | undefined => {
         if (connection instanceof ServiceStoreConnection) {
-          return `Service store connection \u2020 store ${connection.store.value.path}`;
+          return `Service store connection \u2022 store ${connection.store.value.path}`;
         }
         return undefined;
       },

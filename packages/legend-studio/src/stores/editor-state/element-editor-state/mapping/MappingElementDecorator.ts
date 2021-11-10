@@ -58,7 +58,6 @@ import {
 } from '@finos/legend-graph';
 import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
-import type { StudioPlugin } from '../../../StudioPlugin';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -70,7 +69,10 @@ import type { StudioPlugin } from '../../../StudioPlugin';
  * changes in the graph.
  */
 export class MappingElementDecorator implements SetImplementationVisitor<void> {
-  editorStore?: EditorStore;
+  editorStore: EditorStore;
+  constructor(editorStore: EditorStore) {
+    this.editorStore = editorStore;
+  }
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     const enumValueMappingsToAdd: EnumValueMapping[] = [];
     enumerationMapping.enumeration.value.values.forEach((enumValue) => {
@@ -486,7 +488,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   }
 
   visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
-    const extraSetImplementationDecorators = this.editorStore?.pluginManager
+    const extraSetImplementationDecorators = this.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
@@ -494,10 +496,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
             plugin as DSLMapping_StudioPlugin_Extension
           ).getExtraSetImplementationDecorators?.() ?? [],
       );
-    for (const decorator of extraSetImplementationDecorators ?? []) {
+    for (const decorator of extraSetImplementationDecorators) {
       decorator(setImplementation);
     }
-    return;
   }
 }
 
@@ -508,7 +509,10 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
 export class MappingElementDecorationCleaner
   implements SetImplementationVisitor<void>
 {
-  plugins?: StudioPlugin[];
+  editorStore: EditorStore;
+  constructor(editorStore: EditorStore) {
+    this.editorStore = editorStore;
+  }
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     // Remove the enum value mapping if all of its source values are empty
     const nonEmptyEnumValueMappings =
@@ -591,16 +595,17 @@ export class MappingElementDecorationCleaner
   }
 
   visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
-    const extraSetImplementationDecorationCleaners = this.plugins?.flatMap(
-      (plugin) =>
-        (
-          plugin as DSLMapping_StudioPlugin_Extension
-        ).getExtraSetImplementationDecorationCleaners?.() ?? [],
-    );
-    for (const decorationCleaner of extraSetImplementationDecorationCleaners ??
-      []) {
+    const extraSetImplementationDecorationCleaners =
+      this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_StudioPlugin_Extension
+            ).getExtraSetImplementationDecorationCleaners?.() ?? [],
+        );
+    for (const decorationCleaner of extraSetImplementationDecorationCleaners) {
       decorationCleaner(setImplementation);
     }
-    return;
   }
 }

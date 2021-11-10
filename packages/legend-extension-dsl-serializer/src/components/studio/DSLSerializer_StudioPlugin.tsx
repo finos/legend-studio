@@ -203,7 +203,7 @@ export class DSLSerializer_StudioPlugin
     return [
       (connection: Connection): string | undefined => {
         if (connection instanceof ExternalFormatConnection) {
-          return `External format connection \u2020 store ${connection.store.value.path}`;
+          return `External format connection \u2022 store ${connection.store.value.path}`;
         }
         return undefined;
       },

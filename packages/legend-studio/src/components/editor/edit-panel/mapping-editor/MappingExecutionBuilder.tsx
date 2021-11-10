@@ -538,19 +538,21 @@ export const MappingExecutionInputDataBuilder = observer(
       setOpenClassMappingSelectorModal(true);
     const hideClassMappingSelectorModal = (): void =>
       setOpenClassMappingSelectorModal(false);
-    const plugins = editorStore.pluginManager.getStudioPlugins();
     const changeClassMapping = useCallback(
       (setImplementation: SetImplementation | undefined): void => {
         executionState.setInputDataStateBasedOnSource(
           setImplementation
-            ? getMappingElementSource(setImplementation, plugins)
+            ? getMappingElementSource(
+                setImplementation,
+                editorStore.pluginManager.getStudioPlugins(),
+              )
             : undefined,
           true,
         );
         executionState.setExecutionResultText(undefined);
         hideClassMappingSelectorModal();
       },
-      [executionState, plugins],
+      [executionState, editorStore],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);

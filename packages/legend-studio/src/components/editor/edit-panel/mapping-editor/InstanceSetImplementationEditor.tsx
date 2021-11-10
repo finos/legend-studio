@@ -443,13 +443,10 @@ export const InstanceSetImplementationEditor = observer(
         PureInstanceSetImplementationState &&
       instanceSetImplementationState.mappingElement.filter;
 
-    const plugins = editorStore.pluginManager.getStudioPlugins();
-
     const mappingElementDecorationCleaner = useMemo(() => {
-      const cleaner = new MappingElementDecorationCleaner();
-      cleaner.plugins = plugins;
+      const cleaner = new MappingElementDecorationCleaner(editorStore);
       return cleaner;
-    }, [plugins]);
+    }, [editorStore]);
 
     useEffect(() => {
       if (!isReadOnly) {
