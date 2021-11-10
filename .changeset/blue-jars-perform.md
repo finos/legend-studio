@@ -2,4 +2,4 @@
 "@finos/legend-studio": minor
 ---
 
-Improve extension mechanism for `class mapping` in form mode
+Add extension mechanism for `class mapping` decorators in form mode

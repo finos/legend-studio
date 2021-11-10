@@ -70,6 +70,7 @@ import type { EditorStore } from '../../../EditorStore';
  */
 export class MappingElementDecorator implements SetImplementationVisitor<void> {
   editorStore: EditorStore;
+
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
   }
@@ -510,6 +511,7 @@ export class MappingElementDecorationCleaner
   implements SetImplementationVisitor<void>
 {
   editorStore: EditorStore;
+
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
   }
