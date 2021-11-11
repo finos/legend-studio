@@ -2,4 +2,4 @@
 "@finos/legend-studio": patch
 ---
 
-Add form support for Snowflake proxy
+Add form support for proxy in `Snowflake` connection.
