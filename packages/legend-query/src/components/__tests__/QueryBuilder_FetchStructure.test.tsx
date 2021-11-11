@@ -103,7 +103,7 @@ test(
     );
 
     expect(getRootSetImplementation(mapping, _personClass)).toBe(
-      rootNode.mappingData.setImpl,
+      rootNode.mappingData.targetSetImpl,
     );
     expect(rootNode.mappingData.mapped).toBe(true);
 

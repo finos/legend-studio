@@ -24,9 +24,11 @@ import type {
   Mapping,
 } from '@finos/legend-graph';
 import { Class } from '@finos/legend-graph';
-import type { PropertyMappingData } from '../../stores/QueryBuilderExplorerState';
-import { getPropertyMappingNodeData } from '../../stores/QueryBuilderExplorerState';
-import { getRootMappingData } from '../../stores/QueryBuilderExplorerState';
+import type { QueryBuilderPropertyMappingData } from '../../stores/QueryBuilderExplorerState';
+import {
+  getPropertyNodeMappingData,
+  getRootMappingData,
+} from '../../stores/QueryBuilderExplorerState';
 import { QueryPluginManager } from '../../application/QueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__provideMockedQueryStore } from '../../components/QueryComponentTestUtils';
@@ -34,17 +36,17 @@ import { flowResult } from 'mobx';
 import {
   TEST_DATA__Auto_M2M,
   TEST_DATA__Relational_Inline,
-} from './TEST_DATA_MappingData';
+} from './TEST_DATA__MappingData';
 import {
-  EXPECTED_MappingData_ComplexM2MModel,
-  EXPECTED_MappingData__Auto_M2M,
-  EXPECTED_MappingData__COVIDDataSimpleModel,
-  EXPECTED_MappingData__Relational_Inline,
-} from './TEST_DATA_Expected_MappingData';
+  EXPECTED__MappingData_ComplexM2MModel,
+  EXPECTED__MappingData__Auto_M2M,
+  EXPECTED__MappingData__COVIDDataSimpleModel,
+  EXPECTED__MappingData__Relational_Inline,
+} from './TEST_DATA__Expected_MappingData';
 
 interface NodePropertyMappingData {
   property: AbstractProperty;
-  mappingData: PropertyMappingData;
+  mappingData: QueryBuilderPropertyMappingData;
   childNodes: NodePropertyMappingData[];
 }
 
@@ -73,7 +75,7 @@ const cases: TestCase[] = [
       mapping: 'model::MyMapping',
       rootClass: 'model::target::NFirm',
       expectedMappingData:
-        EXPECTED_MappingData_ComplexM2MModel as TestNodePropertyMappingData[],
+        EXPECTED__MappingData_ComplexM2MModel as TestNodePropertyMappingData[],
       entities: TEST_DATA__ComplexM2MModel,
     },
   ],
@@ -83,7 +85,7 @@ const cases: TestCase[] = [
       mapping: 'mapping::CovidDataMapping',
       rootClass: 'domain::COVIDData',
       expectedMappingData:
-        EXPECTED_MappingData__COVIDDataSimpleModel as TestNodePropertyMappingData[],
+        EXPECTED__MappingData__COVIDDataSimpleModel as TestNodePropertyMappingData[],
       entities: TEST_DATA__COVIDDataSimpleModel,
     },
   ],
@@ -93,7 +95,7 @@ const cases: TestCase[] = [
       mapping: 'test::autoMapping::AutoMapping',
       rootClass: 'test::autoMapping::Firm',
       expectedMappingData:
-        EXPECTED_MappingData__Auto_M2M as TestNodePropertyMappingData[],
+        EXPECTED__MappingData__Auto_M2M as TestNodePropertyMappingData[],
       entities: TEST_DATA__Auto_M2M,
     },
   ],
@@ -103,7 +105,7 @@ const cases: TestCase[] = [
       mapping: 'Oct::mappings::simpleRelationalMapping',
       rootClass: 'Oct::models::Person',
       expectedMappingData:
-        EXPECTED_MappingData__Relational_Inline as TestNodePropertyMappingData[],
+        EXPECTED__MappingData__Relational_Inline as TestNodePropertyMappingData[],
       entities: TEST_DATA__Relational_Inline,
     },
   ],
@@ -112,7 +114,7 @@ const cases: TestCase[] = [
 const buildMappingData = (
   property: AbstractProperty,
   graphManagerState: GraphManagerState,
-  mappingData: PropertyMappingData,
+  mappingData: QueryBuilderPropertyMappingData,
   max_depth: number,
   current_depth?: number | undefined,
 ): NodePropertyMappingData => {
@@ -120,7 +122,7 @@ const buildMappingData = (
   const type = property.genericType.value.rawType;
   const propertyMappingData: NodePropertyMappingData = {
     property,
-    mappingData: getPropertyMappingNodeData(
+    mappingData: getPropertyNodeMappingData(
       graphManagerState,
       property,
       mappingData,
@@ -172,7 +174,7 @@ const transformToTestPropertyMappingData = (
     childNodes: transformToTestPropertyMappingData(node.childNodes),
   }));
 
-describe(integrationTest('Property Mapping Data test'), () => {
+describe(integrationTest('Build property mapping data'), () => {
   test.each(cases)('%s', async (testName, testCase) => {
     const { mapping, rootClass, expectedMappingData, entities } = testCase;
     const pluginManager = QueryPluginManager.create();

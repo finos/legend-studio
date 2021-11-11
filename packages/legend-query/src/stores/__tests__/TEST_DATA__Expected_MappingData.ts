@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const EXPECTED_MappingData_ComplexM2MModel = [
+export const EXPECTED__MappingData_ComplexM2MModel = [
   {
     name: 'nEmployees',
     mappingData: { mapped: true },
@@ -43,7 +43,7 @@ export const EXPECTED_MappingData_ComplexM2MModel = [
   },
 ];
 
-export const EXPECTED_MappingData__COVIDDataSimpleModel = [
+export const EXPECTED__MappingData__COVIDDataSimpleModel = [
   {
     childNodes: [],
     mappingData: { mapped: true },
@@ -92,7 +92,7 @@ export const EXPECTED_MappingData__COVIDDataSimpleModel = [
   },
 ];
 
-export const EXPECTED_MappingData__Auto_M2M = [
+export const EXPECTED__MappingData__Auto_M2M = [
   {
     childNodes: [],
     mappingData: { mapped: true },
@@ -105,7 +105,7 @@ export const EXPECTED_MappingData__Auto_M2M = [
   },
 ];
 
-export const EXPECTED_MappingData__Relational_Inline = [
+export const EXPECTED__MappingData__Relational_Inline = [
   {
     name: 'lName',
     mappingData: { mapped: false },

@@ -47,12 +47,12 @@ import type {
   QueryBuilderExplorerTreeDragSource,
   QueryBuilderExplorerTreeNodeData,
 } from '../stores/QueryBuilderExplorerState';
-import { buildClassPropertyNodes } from '../stores/QueryBuilderExplorerState';
 import {
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
+  getQueryBuilderPropertyNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
@@ -606,11 +606,17 @@ const QueryBuilderExplorerTree = observer(
           node instanceof QueryBuilderExplorerTreePropertyNodeData &&
           node.type instanceof Class
         ) {
-          buildClassPropertyNodes(
-            node,
-            queryBuilderState.graphManagerState,
-            treeData,
-          );
+          node.type
+            .getAllProperties()
+            .concat(node.type.getAllDerivedProperties())
+            .forEach((property) => {
+              const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
+                queryBuilderState.graphManagerState,
+                property,
+                node,
+              );
+              treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+            });
         }
       }
       explorerState.refreshTree();
