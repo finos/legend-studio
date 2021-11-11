@@ -520,6 +520,46 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             sourceSpec.setCloudType(value)
           }
         />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyHost}
+          propertyName="proxy host"
+          update={(value: string | undefined): void =>
+            sourceSpec.setProxyHost(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyPort}
+          propertyName="proxy port"
+          update={(value: string | undefined): void =>
+            sourceSpec.setProxyPort(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.nonProxyHosts}
+          propertyName="non proxy hosts"
+          update={(value: string | undefined): void =>
+            sourceSpec.setNonProxyHosts(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.organization}
+          propertyName="organization"
+          update={(value: string | undefined): void =>
+            sourceSpec.setOrganization(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.accountType}
+          propertyName="account type"
+          update={(value: string | undefined): void =>
+            sourceSpec.setAccountType(value)
+          }
+        />
         {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}
         <ConnectionEditor_BooleanEditor
           isReadOnly={isReadOnly}
