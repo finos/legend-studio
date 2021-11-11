@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.11.0",
+    "@testing-library/dom": "8.11.1",
     "@testing-library/react": "12.1.2",
     "cross-env": "7.0.3",
     "eslint": "8.2.0",
