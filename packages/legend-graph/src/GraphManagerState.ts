@@ -41,6 +41,8 @@ import type { SetImplementation } from './models/metamodels/pure/packageableElem
 import type { PackageableElement } from './models/metamodels/pure/packageableElements/PackageableElement';
 import { EmbeddedFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import { EmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
+import { InlineEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation';
+import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
 import { getGraphManager } from './models/protocols/pure/Pure';
 
 export class GraphManagerState {
@@ -154,6 +156,35 @@ export class GraphManagerState {
     );
   }
 
+  getInstanceSetImplementationPropertyMappings(
+    instanceSetImpl: InstanceSetImplementation,
+  ): PropertyMapping[] {
+    if (
+      instanceSetImpl instanceof
+      InlineEmbeddedRelationalInstanceSetImplementation
+    ) {
+      return this.getMappingElementPropertyMappings(
+        instanceSetImpl.inlineSetImplementation,
+      );
+    } else if (
+      instanceSetImpl instanceof
+      OtherwiseEmbeddedRelationalInstanceSetImplementation
+    ) {
+      // NOTE: for now we will grab all property mappings from the main otherwise embedded mapping and the otherwise property mapping.
+      // In the future we may want to incorporate some smartness as to when the otherwise set implementation isinvoked.
+      const otherwiseSetImpl =
+        instanceSetImpl.otherwisePropertyMapping.targetSetImplementation;
+      const otherwisePropertyMappings = otherwiseSetImpl
+        ? this.getMappingElementPropertyMappings(otherwiseSetImpl)
+        : [];
+      return [
+        ...instanceSetImpl.propertyMappings,
+        ...otherwisePropertyMappings,
+      ];
+    }
+    return instanceSetImpl.propertyMappings;
+  }
+
   getMappingElementPropertyMappings(
     mappingElement:
       | EnumerationMapping
@@ -161,10 +192,10 @@ export class GraphManagerState {
       | AssociationImplementation,
   ): PropertyMapping[] {
     let mappedProperties: PropertyMapping[] = [];
-    if (
-      this.isInstanceSetImplementation(mappingElement) ||
-      mappingElement instanceof AssociationImplementation
-    ) {
+    if (this.isInstanceSetImplementation(mappingElement)) {
+      mappedProperties =
+        this.getInstanceSetImplementationPropertyMappings(mappingElement);
+    } else if (mappingElement instanceof AssociationImplementation) {
       mappedProperties = mappingElement.propertyMappings;
     } else if (mappingElement instanceof OperationSetImplementation) {
       mappedProperties = mappingElement.leafSetImplementations
