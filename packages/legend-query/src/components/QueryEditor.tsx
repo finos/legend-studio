@@ -16,6 +16,7 @@
 
 import {
   ArrowLeftIcon,
+  clsx,
   ExternalLinkSquareIcon,
   PanelLoadingIndicator,
   RobotIcon,
@@ -165,50 +166,47 @@ const QueryEditorHeader = observer(() => {
   return (
     <div className="query-editor__header">
       <button
-        className="query-editor__header__back-btn"
+        className="query-editor__header__back-btn btn--dark"
         onClick={backToMainMenu}
         title="Back to Main Menu"
       >
         <ArrowLeftIcon />
       </button>
       <div className="query-editor__header__content">
-        <div className="query-editor__header__tabs">
-          {queryInfoState instanceof CreateQueryInfoState && (
-            <div className="query-editor__header__tab query-editor__header__tab--create-query">
-              New Query
-            </div>
-          )}
+        <div
+          className={clsx('query-editor__header__label', {
+            'query-editor__header__label--existing-query':
+              queryInfoState instanceof ExistingQueryInfoState,
+            'query-editor__header__label--create-query':
+              queryInfoState instanceof CreateQueryInfoState,
+            'query-editor__header__label--service-query':
+              queryInfoState instanceof ServiceQueryInfoState,
+          })}
+        >
+          {queryInfoState instanceof CreateQueryInfoState && <>New Query</>}
           {queryInfoState instanceof ServiceQueryInfoState && (
-            <div className="query-editor__header__tab query-editor__header__tab--service-query">
-              <RobotIcon className="query-editor__header__tab--service-query__icon" />
+            <>
+              <RobotIcon className="query-editor__header__label__icon" />
               {queryInfoState.service.name}
-            </div>
+            </>
           )}
           {queryInfoState instanceof ExistingQueryInfoState && (
-            <div className="query-editor__header__tab query-editor__header__tab--existing-query">
-              {queryInfoState.query.name}
-            </div>
+            <>{queryInfoState.query.name}</>
           )}
         </div>
         <div className="query-editor__header__actions">
           <button
-            className="query-editor__header__action"
+            className="query-editor__header__action query-editor__header__action--simple btn--dark"
             tabIndex={-1}
             title="View project"
             onClick={viewQueryProject}
             disabled={!queryInfoState}
           >
-            <div className="query-editor__header__action__icon">
-              <ExternalLinkSquareIcon />
-            </div>
-            <div className="query-editor__header__action__label">
-              View Project
-            </div>
+            <ExternalLinkSquareIcon />
           </button>
           <button
-            className="query-editor__header__action"
+            className="query-editor__header__action btn--dark"
             tabIndex={-1}
-            title="Save query"
             onClick={saveQuery}
             disabled={!queryStore.onSaveQuery}
           >

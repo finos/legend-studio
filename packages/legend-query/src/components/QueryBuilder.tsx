@@ -130,33 +130,33 @@ export const QueryBuilder = observer(
           <ApplicationBackdrop open={queryBuilderState.backdrop} />
           <div className="query-builder__content">
             <ResizablePanelGroup orientation="horizontal">
-              <ResizablePanel minSize={132}>
+              <ResizablePanel minSize={120}>
                 {isQuerySupported ? (
                   <ResizablePanelGroup orientation="vertical">
                     <ResizablePanel size={450} minSize={300}>
                       <ResizablePanelGroup orientation="horizontal">
                         {queryBuilderState.querySetupState.showSetupPanel && (
-                          <ResizablePanel minSize={30} direction={1}>
+                          <ResizablePanel minSize={40} direction={1}>
                             <QueryBuilderSetupPanel
                               queryBuilderState={queryBuilderState}
                             />
                           </ResizablePanel>
                         )}
                         {!queryBuilderState.querySetupState.showSetupPanel && (
-                          <ResizablePanel minSize={30} size={30} direction={1}>
+                          <ResizablePanel minSize={40} size={40} direction={1}>
                             <QueryBuilderSetupPanel
                               queryBuilderState={queryBuilderState}
                             />
                           </ResizablePanel>
                         )}
                         <ResizablePanelSplitter />
-                        <ResizablePanel minSize={30} direction={[1, -1]}>
+                        <ResizablePanel minSize={40} direction={[1, -1]}>
                           <QueryBuilderExplorerPanel
                             queryBuilderState={queryBuilderState}
                           />
                         </ResizablePanel>
                         <ResizablePanelSplitter />
-                        <ResizablePanel minSize={30} direction={-1}>
+                        <ResizablePanel minSize={40} direction={-1}>
                           <QueryBuilderParameterPanel
                             queryBuilderState={queryBuilderState}
                           />
@@ -186,7 +186,7 @@ export const QueryBuilder = observer(
                 <ResizablePanelSplitter />
               )}
               {queryBuilderState.mode.isResultPanelHidden ? null : (
-                <ResizablePanel size={300} minSize={28}>
+                <ResizablePanel size={300} minSize={40}>
                   <QueryBuilderResultPanel
                     queryBuilderState={queryBuilderState}
                   />

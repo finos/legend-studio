@@ -72,12 +72,11 @@
     font-weight: 500;
     border: 0.1rem solid var(--color-dark-shade-300);
 
-    &:hover {
+    &:not([disabled]):hover {
       background: var(--color-dark-shade-50);
     }
 
-    &[disabled],
-    &[disabled]:hover {
+    &[disabled] {
       color: var(--color-dark-shade-230);
       border-color: var(--color-dark-shade-100);
       background: transparent;
