@@ -2,4 +2,4 @@
 "@finos/legend-graph": patch
 ---
 
-Resolve property mappings properly for `Inliine` and `Otherwise` SetImplementations.
+Properly resolve property mappings for `Inline` and `Otherwise` set implementations ([#650](https://github.com/finos/legend-studio/issues/650)).
