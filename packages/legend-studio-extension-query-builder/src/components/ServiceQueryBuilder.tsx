@@ -18,9 +18,10 @@ import type { ServicePureExecutionState } from '@finos/legend-studio';
 import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import type { RawLambda } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
 import { useApplicationStore } from '@finos/legend-application';
+import { StandardQueryBuilderMode } from '@finos/legend-query';
+import { assertErrorThrown } from '@finos/legend-shared';
 
 export const ServiceQueryBuilder = observer(
   (props: {
@@ -40,21 +41,60 @@ export const ServiceQueryBuilder = observer(
           executionState.selectedExecutionConfiguration.mapping.value;
         const runtime = executionState.selectedExecutionConfiguration.runtime;
         if (!mapping.isStub) {
+          queryBuilderExtension.reset();
+          queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
+            mapping,
+          );
+          queryBuilderExtension.queryBuilderState.querySetupState.setRuntime(
+            runtime,
+          );
+          queryBuilderExtension.queryBuilderState.querySetupState.setMappingIsReadOnly(
+            true,
+          );
+          queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeIsReadOnly(
+            true,
+          );
+          queryBuilderExtension.queryBuilderState.initialize(
+            executionState.execution.func,
+          );
           await flowResult(
-            queryBuilderExtension.setup(
-              executionState.execution.func,
-              mapping,
-              runtime,
-              async (lambda: RawLambda): Promise<void> =>
-                flowResult(executionState.queryState.updateLamba(lambda))
-                  .then(() =>
-                    editorStore.applicationStore.notifySuccess(
-                      `Service '${executionState.execution.owner.name}' execution query is updated`,
-                    ),
-                  )
-                  .catch(applicationStore.alertIllegalUnhandledError),
-              executionState.queryState.query.isStub,
-            ),
+            queryBuilderExtension.setEmbeddedQueryBuilderMode({
+              actions: [
+                (): React.ReactNode => {
+                  const save = async (): Promise<void> => {
+                    try {
+                      const rawLambda =
+                        queryBuilderExtension.queryBuilderState.getQuery();
+                      await flowResult(
+                        executionState.queryState.updateLamba(rawLambda),
+                      );
+                      editorStore.applicationStore.notifySuccess(
+                        `Service execution query is updated`,
+                      );
+                      queryBuilderExtension.setEmbeddedQueryBuilderMode(
+                        undefined,
+                      );
+                    } catch (error) {
+                      assertErrorThrown(error);
+                      applicationStore.notifyError(
+                        `Unable to save query: ${error.message}`,
+                      );
+                    }
+                  };
+                  return (
+                    <button
+                      className="query-builder__dialog__header__custom-action"
+                      tabIndex={-1}
+                      onClick={save}
+                    >
+                      Save Query
+                    </button>
+                  );
+                },
+              ],
+              disableCompile: executionState.queryState.query.isStub,
+              queryBuilderMode: new StandardQueryBuilderMode(),
+            }),
           );
           executionState.setOpeningQueryEditor(false);
           return;

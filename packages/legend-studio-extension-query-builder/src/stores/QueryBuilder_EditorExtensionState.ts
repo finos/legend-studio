@@ -14,35 +14,42 @@
  * limitations under the License.
  */
 
-import type { Mapping, RawLambda, Runtime } from '@finos/legend-graph';
-import { QueryBuilderState } from '@finos/legend-query';
-import type { QueryBuilderConfig } from '@finos/legend-query';
+import type { QueryBuilderMode } from '@finos/legend-query';
+import {
+  StandardQueryBuilderMode,
+  QueryBuilderState,
+} from '@finos/legend-query';
 import type { GeneratorFn } from '@finos/legend-shared';
 import type { EditorStore } from '@finos/legend-studio';
 import { EditorExtensionState } from '@finos/legend-studio';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 
+interface EmbeddedQueryBuilderMode {
+  queryBuilderMode: QueryBuilderMode;
+  disableCompile?: boolean | undefined;
+  actions: (() => React.ReactNode)[];
+}
+
 export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
   editorStore: EditorStore;
   queryBuilderState: QueryBuilderState;
-  openQueryBuilder = false;
+  mode?: EmbeddedQueryBuilderMode | undefined;
 
   constructor(editorStore: EditorStore) {
     super();
 
     makeObservable(this, {
       queryBuilderState: observable,
-      openQueryBuilder: observable,
+      mode: observable.ref,
       reset: action,
-      setOpenQueryBuilder: flow,
-      setup: flow,
+      setEmbeddedQueryBuilderMode: flow,
     });
 
     this.editorStore = editorStore;
     this.queryBuilderState = new QueryBuilderState(
       editorStore.applicationStore,
       editorStore.graphManagerState,
-      {},
+      new StandardQueryBuilderMode(),
     );
   }
 
@@ -50,25 +57,22 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
     this.queryBuilderState = new QueryBuilderState(
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,
-      this.queryBuilderState.config,
+      this.queryBuilderState.mode,
     );
   }
 
   /**
    * When opening query builder, we ensure the graph compiles successfully
    */
-  *setOpenQueryBuilder(
-    val: boolean,
-    options?: { disableCompile: boolean },
+  *setEmbeddedQueryBuilderMode(
+    mode: EmbeddedQueryBuilderMode | undefined,
   ): GeneratorFn<void> {
     if (!this.editorStore.isInFormMode) {
       return;
     }
-    if (val === this.openQueryBuilder) {
-      return;
-    }
-    if (val) {
-      if (!options?.disableCompile) {
+    if (mode) {
+      this.queryBuilderState.setMode(mode.queryBuilderMode);
+      if (!mode.disableCompile) {
         this.editorStore.setBlockingAlert({
           message: 'Compiling graph before building query...',
           showLoading: true,
@@ -81,40 +85,14 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
         this.editorStore.setBlockingAlert(undefined);
       }
       if (!this.editorStore.graphState.hasCompilationError) {
-        this.openQueryBuilder = val;
+        this.mode = mode;
       }
       this.editorStore.setBlockGlobalHotkeys(true);
       this.editorStore.setHotkeys([]);
     } else {
-      this.openQueryBuilder = val;
+      this.mode = undefined;
       this.editorStore.setBlockGlobalHotkeys(false);
       this.editorStore.resetHotkeys();
     }
-  }
-
-  *setup(
-    func: RawLambda,
-    mapping: Mapping | undefined,
-    runtime: Runtime,
-    onSave: (lambda: RawLambda) => Promise<void>,
-    disableCompile: boolean,
-    queryBuilderConfig?: QueryBuilderConfig | undefined,
-  ): GeneratorFn<void> {
-    this.queryBuilderState = new QueryBuilderState(
-      this.editorStore.applicationStore,
-      this.editorStore.graphManagerState,
-      queryBuilderConfig ?? {},
-    );
-    this.queryBuilderState.querySetupState.setMapping(mapping);
-    this.queryBuilderState.querySetupState.setRuntime(runtime);
-    this.queryBuilderState.initialize(func);
-    this.queryBuilderState.querySetupState.setOnSaveQuery(onSave);
-    yield flowResult(
-      this.setOpenQueryBuilder(true, {
-        disableCompile: disableCompile,
-      }),
-    );
-    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
   }
 }

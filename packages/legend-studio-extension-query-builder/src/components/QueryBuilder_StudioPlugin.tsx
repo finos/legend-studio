@@ -36,17 +36,124 @@ import type {
   MappingTestState,
   ApplicationSetup,
 } from '@finos/legend-studio';
-import { StudioPlugin } from '@finos/legend-studio';
+import {
+  NewServiceModal,
+  useEditorStore,
+  StudioPlugin,
+} from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder';
 import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';
 import { MappingTestQueryBuilder } from './MappingTestQueryBuilder';
 import { flowResult } from 'mobx';
-import { Class } from '@finos/legend-graph';
+import {
+  Class,
+  PackageableElementExplicitReference,
+  PureSingleExecution,
+  Service,
+} from '@finos/legend-graph';
 import type { PackageableElement } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
-import { setupLegendQueryUILibrary } from '@finos/legend-query';
+import {
+  setupLegendQueryUILibrary,
+  StandardQueryBuilderMode,
+} from '@finos/legend-query';
+import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+const promoteQueryToService = async (
+  packageName: string,
+  serviceName: string,
+  queryBuilderExtension: QueryBuilder_EditorExtensionState,
+): Promise<void> => {
+  const editorStore = queryBuilderExtension.editorStore;
+  const queryBuilderState = queryBuilderExtension.queryBuilderState;
+  try {
+    const mapping = guaranteeNonNullable(
+      queryBuilderState.querySetupState.mapping,
+      'Mapping is required to create service execution',
+    );
+    const runtime = guaranteeNonNullable(
+      queryBuilderState.querySetupState.runtime,
+      'Runtime is required to create service execution',
+    );
+    const query = queryBuilderState.getQuery();
+    const service = new Service(serviceName);
+    service.initNewService();
+    service.setExecution(
+      new PureSingleExecution(
+        query,
+        service,
+        PackageableElementExplicitReference.create(mapping),
+        runtime,
+      ),
+    );
+    const servicePackage =
+      editorStore.graphManagerState.graph.getOrCreatePackage(packageName);
+    servicePackage.addElement(service);
+    editorStore.graphManagerState.graph.addElement(service);
+    editorStore.openElement(service);
+    await flowResult(
+      queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined),
+    ).catch(editorStore.applicationStore.alertIllegalUnhandledError);
+    editorStore.applicationStore.notifySuccess(
+      `Service '${service.name}' created`,
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    editorStore.applicationStore.notifyError(error);
+  }
+};
+
+const PromoteToServiceQueryBuilderAction = observer(() => {
+  const editorStore = useEditorStore();
+  const queryBuilderExtension = editorStore.getEditorExtensionState(
+    QueryBuilder_EditorExtensionState,
+  );
+  const [openNewServiceModal, setOpenNewServiceModal] = useState(false);
+  const showNewServiceModal = (): void => setOpenNewServiceModal(true);
+  const closeNewServiceModal = (): void => setOpenNewServiceModal(false);
+  const allowPromoteToService = Boolean(
+    queryBuilderExtension.queryBuilderState.querySetupState.mapping &&
+      queryBuilderExtension.queryBuilderState.querySetupState.runtime,
+  );
+  const promoteToService = async (
+    packagePath: string,
+    serviceName: string,
+  ): Promise<void> => {
+    if (allowPromoteToService) {
+      await promoteQueryToService(
+        packagePath,
+        serviceName,
+        queryBuilderExtension,
+      );
+    }
+  };
+  return (
+    <>
+      <button
+        className="query-builder__dialog__header__custom-action"
+        tabIndex={-1}
+        onClick={showNewServiceModal}
+        disabled={!allowPromoteToService}
+      >
+        Promote to Service
+      </button>
+      {queryBuilderExtension.queryBuilderState.querySetupState.mapping && (
+        <NewServiceModal
+          mapping={
+            queryBuilderExtension.queryBuilderState.querySetupState.mapping
+          }
+          close={closeNewServiceModal}
+          showModal={openNewServiceModal}
+          promoteToService={promoteToService}
+        />
+      )}
+    </>
+  );
+});
 
 export class QueryBuilder_StudioPlugin
   extends StudioPlugin
@@ -101,8 +208,17 @@ export class QueryBuilder_StudioPlugin
               const queryBuilderExtension = editorStore.getEditorExtensionState(
                 QueryBuilder_EditorExtensionState,
               );
-              await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
-              if (queryBuilderExtension.openQueryBuilder) {
+              await flowResult(
+                queryBuilderExtension.setEmbeddedQueryBuilderMode({
+                  actions: [
+                    (): React.ReactNode => (
+                      <PromoteToServiceQueryBuilderAction />
+                    ),
+                  ],
+                  queryBuilderMode: new StandardQueryBuilderMode(),
+                }),
+              );
+              if (queryBuilderExtension.mode) {
                 queryBuilderExtension.queryBuilderState.querySetupState.setClass(
                   element,
                 );
@@ -186,8 +302,17 @@ export class QueryBuilder_StudioPlugin
                 diagramEditorState.editorStore.getEditorExtensionState(
                   QueryBuilder_EditorExtensionState,
                 );
-              await flowResult(queryBuilderExtension.setOpenQueryBuilder(true));
-              if (queryBuilderExtension.openQueryBuilder) {
+              await flowResult(
+                queryBuilderExtension.setEmbeddedQueryBuilderMode({
+                  actions: [
+                    (): React.ReactNode => (
+                      <PromoteToServiceQueryBuilderAction />
+                    ),
+                  ],
+                  queryBuilderMode: new StandardQueryBuilderMode(),
+                }),
+              );
+              if (queryBuilderExtension.mode) {
                 queryBuilderExtension.queryBuilderState.querySetupState.setClass(
                   classView.class.value,
                 );

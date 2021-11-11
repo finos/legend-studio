@@ -126,6 +126,10 @@
         height: 100%;
       }
     }
+
+    &__action + &__action {
+      margin-left: 0.3rem;
+    }
   }
 
   &__content {

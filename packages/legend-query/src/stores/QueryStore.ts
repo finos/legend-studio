@@ -51,7 +51,10 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
-import { QueryBuilderState } from './QueryBuilderState';
+import {
+  QueryBuilderState,
+  StandardQueryBuilderMode,
+} from './QueryBuilderState';
 import type {
   CreateQueryPathParams,
   ExistingQueryPathParams,
@@ -338,6 +341,7 @@ export class QueryStore {
   buildGraphState = ActionState.create();
   initState = ActionState.create();
   editorInitState = ActionState.create();
+  onSaveQuery?: ((lambda: RawLambda) => Promise<void>) | undefined;
 
   constructor(
     applicationStore: ApplicationStore<QueryConfig>,
@@ -361,7 +365,7 @@ export class QueryStore {
     this.queryBuilderState = new QueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
-      {},
+      new StandardQueryBuilderMode(),
     );
   }
 
@@ -370,11 +374,17 @@ export class QueryStore {
     this.queryBuilderState = new QueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
-      this.queryBuilderState.config,
+      this.queryBuilderState.mode,
     );
     this.graphManagerState.resetGraph();
     this.buildGraphState.reset();
     this.editorInitState.reset();
+  }
+
+  setOnSaveQuery(
+    val: ((lambda: RawLambda) => Promise<void>) | undefined,
+  ): void {
+    this.onSaveQuery = val;
   }
 
   setQueryInfoState(val: QueryInfoState | undefined): void {
@@ -432,18 +442,16 @@ export class QueryStore {
           query.content,
         )) as RawLambda,
       );
-      this.queryBuilderState.querySetupState.setOnSaveQuery(
-        async (lambda: RawLambda) => {
-          this.setQueryExportState(
-            new QueryExportState(
-              this,
-              lambda,
-              queryInfoState.query.isCurrentUserQuery,
-              queryInfoState.query.name,
-            ),
-          );
-        },
-      );
+      this.setOnSaveQuery(async (lambda: RawLambda) => {
+        this.setQueryExportState(
+          new QueryExportState(
+            this,
+            lambda,
+            queryInfoState.query.isCurrentUserQuery,
+            queryInfoState.query.name,
+          ),
+        );
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
@@ -532,13 +540,11 @@ export class QueryStore {
       this.queryBuilderState.buildStateFromRawLambda(
         queryInfoState.service.execution.func,
       );
-      this.queryBuilderState.querySetupState.setOnSaveQuery(
-        async (lambda: RawLambda) => {
-          this.setQueryExportState(
-            new QueryExportState(this, lambda, false, undefined),
-          );
-        },
-      );
+      this.setOnSaveQuery(async (lambda: RawLambda) => {
+        this.setQueryExportState(
+          new QueryExportState(this, lambda, false, undefined),
+        );
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
@@ -605,13 +611,11 @@ export class QueryStore {
         }
       }
       this.queryBuilderState.resetData();
-      this.queryBuilderState.querySetupState.setOnSaveQuery(
-        async (lambda: RawLambda) => {
-          this.setQueryExportState(
-            new QueryExportState(this, lambda, false, undefined),
-          );
-        },
-      );
+      this.setOnSaveQuery(async (lambda: RawLambda) => {
+        this.setQueryExportState(
+          new QueryExportState(this, lambda, false, undefined),
+        );
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(

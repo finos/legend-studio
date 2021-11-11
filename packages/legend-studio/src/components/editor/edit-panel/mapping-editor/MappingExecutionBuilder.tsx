@@ -792,10 +792,10 @@ export const MappingExecutionBuilder = observer(
           close={(): void => executionState.setShowServicePathModal(false)}
           showModal={executionState.showServicePathModal}
           promoteToService={(
-            name: string,
             packagePath: string,
+            name: string,
           ): Promise<void> =>
-            flowResult(executionState.promoteToService(name, packagePath))
+            flowResult(executionState.promoteToService(packagePath, name))
           }
           isReadOnly={mappingEditorState.isReadOnly}
         />

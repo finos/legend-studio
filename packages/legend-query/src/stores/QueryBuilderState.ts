@@ -89,15 +89,27 @@ import type {
 import { buildElementOption } from '@finos/legend-application';
 import { QueryParametersState } from './QueryParametersState';
 
-export interface QueryBuilderConfig {
-  parametersDisabled?: boolean;
+export abstract class QueryBuilderMode {
+  abstract get isParametersDisabled(): boolean;
+
+  abstract get isResultPanelHidden(): boolean;
+}
+
+export class StandardQueryBuilderMode extends QueryBuilderMode {
+  get isParametersDisabled(): boolean {
+    return false;
+  }
+
+  get isResultPanelHidden(): boolean {
+    return false;
+  }
 }
 
 export class QueryBuilderState {
   applicationStore: ApplicationStore<LegendApplicationConfig>;
   graphManagerState: GraphManagerState;
 
-  config: QueryBuilderConfig;
+  mode: QueryBuilderMode;
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
   queryParametersState: QueryParametersState;
@@ -131,7 +143,7 @@ export class QueryBuilderState {
   constructor(
     applicationStore: ApplicationStore<LegendApplicationConfig>,
     graphManagerState: GraphManagerState,
-    queryBuilderConfig: QueryBuilderConfig,
+    queryBuilderMode: QueryBuilderMode,
   ) {
     makeObservable(this, {
       querySetupState: observable,
@@ -145,11 +157,12 @@ export class QueryBuilderState {
       queryUnsupportedState: observable,
       isCompiling: observable,
       backdrop: observable,
-      config: observable,
+      mode: observable,
       classOptions: computed,
       mappingOptions: computed,
       runtimeOptions: computed,
       serviceOptions: computed,
+      setMode: action,
       resetData: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
@@ -169,7 +182,11 @@ export class QueryBuilderState {
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
-    this.config = queryBuilderConfig;
+    this.mode = queryBuilderMode;
+  }
+
+  setMode(val: QueryBuilderMode): void {
+    this.mode = val;
   }
 
   setBackdrop(val: boolean): void {
@@ -270,18 +287,17 @@ export class QueryBuilderState {
     );
   }
 
-  async saveQuery(): Promise<void> {
-    const onQuerySave = this.querySetupState.onSave;
-    if (onQuerySave) {
-      try {
-        const rawLambda = this.getQuery();
-        await onQuerySave(rawLambda);
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.notifyError(
-          `Unable to save query: ${error.message}`,
-        );
-      }
+  async saveQuery(
+    onSaveQuery: (lambda: RawLambda) => Promise<void>,
+  ): Promise<void> {
+    try {
+      const rawLambda = this.getQuery();
+      await onSaveQuery(rawLambda);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(
+        `Unable to save query: ${error.message}`,
+      );
     }
   }
 

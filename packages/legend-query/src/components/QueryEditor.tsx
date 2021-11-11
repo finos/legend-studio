@@ -19,6 +19,7 @@ import {
   ExternalLinkSquareIcon,
   PanelLoadingIndicator,
   RobotIcon,
+  SaveIcon,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
@@ -153,6 +154,13 @@ const QueryEditorHeader = observer(() => {
       );
     }
   };
+  const saveQuery = (): void => {
+    if (queryStore.onSaveQuery) {
+      queryStore.queryBuilderState
+        .saveQuery(queryStore.onSaveQuery)
+        .catch(applicationStore.alertIllegalUnhandledError);
+    }
+  };
 
   return (
     <div className="query-editor__header">
@@ -186,7 +194,7 @@ const QueryEditorHeader = observer(() => {
           <button
             className="query-editor__header__action"
             tabIndex={-1}
-            title="View Project"
+            title="View project"
             onClick={viewQueryProject}
             disabled={!queryInfoState}
           >
@@ -196,6 +204,18 @@ const QueryEditorHeader = observer(() => {
             <div className="query-editor__header__action__label">
               View Project
             </div>
+          </button>
+          <button
+            className="query-editor__header__action"
+            tabIndex={-1}
+            title="Save query"
+            onClick={saveQuery}
+            disabled={!queryStore.onSaveQuery}
+          >
+            <div className="query-editor__header__action__icon">
+              <SaveIcon />
+            </div>
+            <div className="query-editor__header__action__label">Save</div>
           </button>
         </div>
       </div>
