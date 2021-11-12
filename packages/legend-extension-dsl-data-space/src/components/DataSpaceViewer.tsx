@@ -32,6 +32,8 @@ import {
   FlaskIcon,
   ExternalLinkSquareIcon,
   ExternalLinkIcon,
+  ShieldIcon,
+  TagsIcon,
 } from '@finos/legend-art';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram';
@@ -307,6 +309,68 @@ const DataSpaceExecutionViewer = observer(
   },
 );
 
+const DataSpaceTags = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+
+    const dataSpace = dataSpaceViewerState.dataSpace;
+
+    return (
+      <div className="data-space__viewer__tags">
+        <div className="data-space__viewer__tags__section">
+          <div className="data-space__viewer__tags__section__title">
+            Tagged Values
+          </div>
+          {dataSpace.taggedValues.length !== 0 &&
+            dataSpace.taggedValues.map((taggedValueData) => (
+              <div
+                key={taggedValueData.uuid}
+                className="data-space__viewer__tags__section__entry"
+              >
+                <div
+                  className="data-space__viewer__tags__tagged-value__tag"
+                  title={`${taggedValueData.profile}.${taggedValueData.tag}`}
+                >
+                  {taggedValueData.tag}
+                </div>
+                <div className="data-space__viewer__tags__tagged-value__value">
+                  {taggedValueData.value}
+                </div>
+              </div>
+            ))}
+          {dataSpace.taggedValues.length === 0 && (
+            <div className="data-space__viewer__tags__section__placeholder">
+              (empty)
+            </div>
+          )}
+        </div>
+        <div className="data-space__viewer__tags__section">
+          <div className="data-space__viewer__tags__section__title">
+            Stereotypes
+          </div>
+          {dataSpace.stereotypes.length !== 0 &&
+            dataSpace.stereotypes.map((stereotypeData) => (
+              <div
+                key={stereotypeData.uuid}
+                className="data-space__viewer__tags__section__entry"
+                title={`${stereotypeData.profile}.${stereotypeData.stereotype}`}
+              >
+                <div className="data-space__viewer__tags__steoreotype">
+                  {stereotypeData.stereotype}
+                </div>
+              </div>
+            ))}
+          {dataSpace.stereotypes.length === 0 && (
+            <div className="data-space__viewer__tags__section__placeholder">
+              (empty)
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
 const DataSpaceSupportEmailViewer = observer(
   (props: {
     dataSpaceViewerState: DataSpaceViewerState;
@@ -383,6 +447,16 @@ export const DataSpaceViewer = observer(
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA,
         title: 'Test Data',
         icon: <FlaskIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE,
+        title: 'Test Coverage',
+        icon: <ShieldIcon />,
+      },
+      {
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TAGS,
+        title: 'Tags',
+        icon: <TagsIcon />,
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT,
@@ -486,11 +560,25 @@ export const DataSpaceViewer = observer(
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.ENTITLEMENT && (
-                <BlankPanelContent>Work in Progress</BlankPanelContent>
+                <BlankPanelContent>
+                  Request entitlement(s) (Work in Progress)
+                </BlankPanelContent>
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_DATA && (
-                <BlankPanelContent>Work in Progress</BlankPanelContent>
+                <BlankPanelContent>
+                  View test data (Work in Progress)
+                </BlankPanelContent>
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.TEST_COVERAGE && (
+                <BlankPanelContent>
+                  View test coverage (Work in Progress)
+                </BlankPanelContent>
+              )}
+              {dataSpaceViewerState.currentActivity ===
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.TAGS && (
+                <DataSpaceTags dataSpaceViewerState={dataSpaceViewerState} />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT && (

@@ -23,6 +23,7 @@ import {
 } from './v1/model/packageableElements/dataSpace/V1_DataSpace';
 import type { PlainObject } from '@finos/legend-shared';
 import {
+  uuid,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   UnsupportedOperationError,
@@ -69,6 +70,7 @@ import {
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
+  V1_StereotypePtr,
 } from '@finos/legend-graph';
 import {
   Diagram,
@@ -319,6 +321,13 @@ export class ResolvedDataSpaceExecutionContext {
  * element pointers to actual reference, hence this model.
  */
 export class ResolvedDataSpace {
+  taggedValues: {
+    uuid: string;
+    profile: string;
+    tag: string;
+    value: string;
+  }[] = [];
+  stereotypes: { uuid: string; profile: string; stereotype: string }[] = [];
   path!: string;
   groupId!: string;
   artifactId!: string;
@@ -338,6 +347,33 @@ export const getResolvedDataSpace = (
   if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
     const protocol = deserialize(V1_dataSpaceModelSchema, json);
     dataSpace.path = protocol.path;
+    if (Array.isArray(json.taggedValues)) {
+      dataSpace.taggedValues = (
+        json.taggedValues as PlainObject<V1_TaggedValue>[]
+      )
+        .map((taggedValueJson) =>
+          deserialize(V1_taggedValueSchema, taggedValueJson),
+        )
+        .map((taggedValue) => ({
+          uuid: uuid(),
+          profile: taggedValue.tag.profile,
+          tag: taggedValue.tag.value,
+          value: taggedValue.value,
+        }));
+    }
+    if (Array.isArray(json.stereotypes)) {
+      dataSpace.stereotypes = (
+        json.stereotypes as PlainObject<V1_StereotypePtr>[]
+      )
+        .map((stereotypePtrJson) =>
+          deserialize(V1_StereotypePtr, stereotypePtrJson),
+        )
+        .map((stereotypePtr) => ({
+          uuid: uuid(),
+          profile: stereotypePtr.profile,
+          stereotype: stereotypePtr.value,
+        }));
+    }
     dataSpace.groupId = guaranteeNonEmptyString(
       protocol.groupId,
       `Data space 'groupId' field is missing or empty`,
