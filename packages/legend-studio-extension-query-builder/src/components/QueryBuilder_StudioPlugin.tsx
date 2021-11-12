@@ -28,11 +28,11 @@ import type {
   StudioPluginManager,
   EditorExtensionComponentRendererConfiguration,
   ExplorerContextMenuItemRendererConfiguration,
-  TEMP__ServiceQueryEditorRendererConfiguration,
+  TEMP__ServiceQueryEditorActionConfiguration,
   ServicePureExecutionState,
-  MappingExecutionQueryEditorRendererConfiguration,
+  MappingExecutionQueryEditorActionConfiguration,
   MappingExecutionState,
-  MappingTestQueryEditorRendererConfiguration,
+  MappingTestQueryEditorActionConfiguration,
   MappingTestState,
   ApplicationSetup,
 } from '@finos/legend-studio';
@@ -210,10 +210,13 @@ export class QueryBuilder_StudioPlugin
               );
               await flowResult(
                 queryBuilderExtension.setEmbeddedQueryBuilderMode({
-                  actions: [
-                    (): React.ReactNode => (
-                      <PromoteToServiceQueryBuilderAction />
-                    ),
+                  actionConfigs: [
+                    {
+                      key: 'promote-to-service-btn',
+                      renderer: (): React.ReactNode => (
+                        <PromoteToServiceQueryBuilderAction />
+                      ),
+                    },
                   ],
                   queryBuilderMode: new StandardQueryBuilderMode(),
                 }),
@@ -235,7 +238,7 @@ export class QueryBuilder_StudioPlugin
     ];
   }
 
-  getExtraMappingExecutionQueryEditorRendererConfigurations(): MappingExecutionQueryEditorRendererConfiguration[] {
+  getExtraMappingExecutionQueryEditorActionConfigurations(): MappingExecutionQueryEditorActionConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
@@ -250,7 +253,7 @@ export class QueryBuilder_StudioPlugin
     ];
   }
 
-  getExtraMappingTestQueryEditorRendererConfigurations(): MappingTestQueryEditorRendererConfiguration[] {
+  getExtraMappingTestQueryEditorActionConfigurations(): MappingTestQueryEditorActionConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
@@ -269,7 +272,7 @@ export class QueryBuilder_StudioPlugin
     ];
   }
 
-  TEMP__getExtraServiceQueryEditorRendererConfigurations(): TEMP__ServiceQueryEditorRendererConfiguration[] {
+  TEMP__getExtraServiceQueryEditorActionConfigurations(): TEMP__ServiceQueryEditorActionConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',
@@ -304,10 +307,13 @@ export class QueryBuilder_StudioPlugin
                 );
               await flowResult(
                 queryBuilderExtension.setEmbeddedQueryBuilderMode({
-                  actions: [
-                    (): React.ReactNode => (
-                      <PromoteToServiceQueryBuilderAction />
-                    ),
+                  actionConfigs: [
+                    {
+                      key: 'promote-to-service-btn',
+                      renderer: (): React.ReactNode => (
+                        <PromoteToServiceQueryBuilderAction />
+                      ),
+                    },
                   ],
                   queryBuilderMode: new StandardQueryBuilderMode(),
                 }),

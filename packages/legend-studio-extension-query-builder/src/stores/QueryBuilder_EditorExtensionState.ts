@@ -27,7 +27,10 @@ import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 interface EmbeddedQueryBuilderMode {
   queryBuilderMode: QueryBuilderMode;
   disableCompile?: boolean | undefined;
-  actions: (() => React.ReactNode)[];
+  actionConfigs: {
+    key: string;
+    renderer: () => React.ReactNode;
+  }[];
 }
 
 export class QueryBuilder_EditorExtensionState extends EditorExtensionState {

@@ -22,6 +22,7 @@ import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_Editor
 import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderMode } from '@finos/legend-query';
 import { assertErrorThrown } from '@finos/legend-shared';
+import { PencilIcon } from '@finos/legend-art';
 
 export class MappingExecutionQueryBuilderMode extends QueryBuilderMode {
   get isParametersDisabled(): boolean {
@@ -61,35 +62,40 @@ export const MappingExecutionQueryBuilder = observer(
       );
       await flowResult(
         queryBuilderExtension.setEmbeddedQueryBuilderMode({
-          actions: [
-            (): React.ReactNode => {
-              const save = async (): Promise<void> => {
-                try {
-                  const rawLambda =
-                    queryBuilderExtension.queryBuilderState.getQuery();
-                  await flowResult(
-                    executionState.queryState.updateLamba(rawLambda),
-                  );
-                  editorStore.applicationStore.notifySuccess(
-                    `Mapping execution query is updated`,
-                  );
-                  queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined);
-                } catch (error) {
-                  assertErrorThrown(error);
-                  applicationStore.notifyError(
-                    `Unable to save query: ${error.message}`,
-                  );
-                }
-              };
-              return (
-                <button
-                  className="query-builder__dialog__header__custom-action"
-                  tabIndex={-1}
-                  onClick={save}
-                >
-                  Save Query
-                </button>
-              );
+          actionConfigs: [
+            {
+              key: 'save-query-btn',
+              renderer: (): React.ReactNode => {
+                const save = async (): Promise<void> => {
+                  try {
+                    const rawLambda =
+                      queryBuilderExtension.queryBuilderState.getQuery();
+                    await flowResult(
+                      executionState.queryState.updateLamba(rawLambda),
+                    );
+                    editorStore.applicationStore.notifySuccess(
+                      `Mapping execution query is updated`,
+                    );
+                    queryBuilderExtension.setEmbeddedQueryBuilderMode(
+                      undefined,
+                    );
+                  } catch (error) {
+                    assertErrorThrown(error);
+                    applicationStore.notifyError(
+                      `Unable to save query: ${error.message}`,
+                    );
+                  }
+                };
+                return (
+                  <button
+                    className="query-builder__dialog__header__custom-action"
+                    tabIndex={-1}
+                    onClick={save}
+                  >
+                    Save Query
+                  </button>
+                );
+              },
             },
           ],
           disableCompile: executionState.queryState.query.isStub,
@@ -99,10 +105,12 @@ export const MappingExecutionQueryBuilder = observer(
     };
     return (
       <button
-        className="btn--dark mapping-execution-query-builder__btn"
+        className="panel__header__action"
+        tabIndex={-1}
         onClick={editWithQueryBuilder}
+        title={'Edit query...'}
       >
-        Edit Query
+        <PencilIcon />
       </button>
     );
   },

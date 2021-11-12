@@ -22,13 +22,14 @@ import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_Editor
 import { useApplicationStore } from '@finos/legend-application';
 import { StandardQueryBuilderMode } from '@finos/legend-query';
 import { assertErrorThrown } from '@finos/legend-shared';
+import { PencilIcon } from '@finos/legend-art';
 
 export const ServiceQueryBuilder = observer(
   (props: {
     executionState: ServicePureExecutionState;
     isReadOnly: boolean;
   }) => {
-    const { executionState } = props;
+    const { executionState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
     const queryBuilderExtension = editorStore.getEditorExtensionState(
@@ -59,37 +60,40 @@ export const ServiceQueryBuilder = observer(
           );
           await flowResult(
             queryBuilderExtension.setEmbeddedQueryBuilderMode({
-              actions: [
-                (): React.ReactNode => {
-                  const save = async (): Promise<void> => {
-                    try {
-                      const rawLambda =
-                        queryBuilderExtension.queryBuilderState.getQuery();
-                      await flowResult(
-                        executionState.queryState.updateLamba(rawLambda),
-                      );
-                      editorStore.applicationStore.notifySuccess(
-                        `Service execution query is updated`,
-                      );
-                      queryBuilderExtension.setEmbeddedQueryBuilderMode(
-                        undefined,
-                      );
-                    } catch (error) {
-                      assertErrorThrown(error);
-                      applicationStore.notifyError(
-                        `Unable to save query: ${error.message}`,
-                      );
-                    }
-                  };
-                  return (
-                    <button
-                      className="query-builder__dialog__header__custom-action"
-                      tabIndex={-1}
-                      onClick={save}
-                    >
-                      Save Query
-                    </button>
-                  );
+              actionConfigs: [
+                {
+                  key: 'save-query-btn',
+                  renderer: (): React.ReactNode => {
+                    const save = async (): Promise<void> => {
+                      try {
+                        const rawLambda =
+                          queryBuilderExtension.queryBuilderState.getQuery();
+                        await flowResult(
+                          executionState.queryState.updateLamba(rawLambda),
+                        );
+                        editorStore.applicationStore.notifySuccess(
+                          `Service execution query is updated`,
+                        );
+                        queryBuilderExtension.setEmbeddedQueryBuilderMode(
+                          undefined,
+                        );
+                      } catch (error) {
+                        assertErrorThrown(error);
+                        applicationStore.notifyError(
+                          `Unable to save query: ${error.message}`,
+                        );
+                      }
+                    };
+                    return (
+                      <button
+                        className="query-builder__dialog__header__custom-action"
+                        tabIndex={-1}
+                        onClick={save}
+                      >
+                        Save Query
+                      </button>
+                    );
+                  },
                 },
               ],
               disableCompile: executionState.queryState.query.isStub,
@@ -107,14 +111,15 @@ export const ServiceQueryBuilder = observer(
     };
 
     return (
-      <div className="service-query-builder">
-        <button
-          className="btn--dark service-query-builder__btn"
-          onClick={editWithQueryBuilder}
-        >
-          Edit Query
-        </button>
-      </div>
+      <button
+        className="panel__header__action"
+        tabIndex={-1}
+        disabled={isReadOnly}
+        onClick={editWithQueryBuilder}
+        title={'Edit query...'}
+      >
+        <PencilIcon />
+      </button>
     );
   },
 );

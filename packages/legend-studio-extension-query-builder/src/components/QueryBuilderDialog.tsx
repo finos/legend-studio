@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
 import {
@@ -68,9 +68,9 @@ export const QueryBuilderDialog = observer(() => {
       >
         <div className="query-builder__dialog__header">
           <div className="query-builder__dialog__header__actions">
-            {queryBuilderExtensionState.mode?.actions.map((actionRenderer) =>
-              actionRenderer(),
-            )}
+            {queryBuilderExtensionState.mode?.actionConfigs.map((config) => (
+              <Fragment key={config.key}>{config.renderer()}</Fragment>
+            ))}
             <button
               className="query-builder__dialog__header__action"
               tabIndex={-1}
