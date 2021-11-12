@@ -1,6 +1,6 @@
 {
   "name": "@finos/babel-preset-legend-studio",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "Legend Studio Babel preset",
   "keywords": [
     "legend",

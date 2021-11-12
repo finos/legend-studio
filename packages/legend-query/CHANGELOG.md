@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 0.1.2
+
+### Patch Changes
+
+- [#646](https://github.com/finos/legend-studio/pull/646) [`51dfc555`](https://github.com/finos/legend-studio/commit/51dfc55599c25650f4d17587cf87b180271be676) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix class explorer not showing properties from a class mapped using an operational set implementation ([#647](https://github.com/finos/legend-studio/issues/647)).
+
+* [#639](https://github.com/finos/legend-studio/pull/639) [`62985e5`](https://github.com/finos/legend-studio/commit/62985e59627b5be2cb75e15f30c13d029014c030) ([@akphi](https://github.com/akphi)) - Allow viewing the project of a query in Studio.
+
 ## 0.1.1
 
 ### Patch Changes
