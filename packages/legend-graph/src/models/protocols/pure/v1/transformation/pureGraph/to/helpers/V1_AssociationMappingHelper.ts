@@ -27,6 +27,7 @@ import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transf
 import type { V1_AssociationMapping } from '../../../../model/packageableElements/mapping/V1_AssociationMapping';
 import { V1_XStoreAssociationMapping } from '../../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
 import { XStoreAssociationImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStoreAssociationImplementation';
+import { getAllEnumerationMappings } from '../../../../../../../../helpers/MappingHelper';
 
 const getInferredAssociationMappingId = (
   _association: Association,
@@ -63,7 +64,7 @@ const buildRelationalAssociationMapping = (
           context,
           relationalAssociationImplementation,
           undefined,
-          parentMapping.enumerationMappings,
+          getAllEnumerationMappings(parentMapping),
           undefined,
           allClassMappings,
         ),
@@ -96,7 +97,7 @@ const buildXStoreAssociationMapping = (
           context,
           xStoreAssociationImplementation,
           undefined,
-          parentMapping.enumerationMappings,
+          getAllEnumerationMappings(parentMapping),
           undefined,
           allClassMappings,
           xStoreAssociationImplementation,

@@ -71,6 +71,7 @@ import {
   PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   extractSourceInformationCoordinates,
+  getAllEnumerationMappings,
   Class,
   Enumeration,
   Mapping,
@@ -363,7 +364,7 @@ const getMappingElementByTypeAndId = (
         (associationMapping) => associationMapping.id.value === id,
       );
     case MAPPING_ELEMENT_TYPE.ENUMERATION:
-      return mapping.enumerationMappings.find(
+      return getAllEnumerationMappings(mapping).find(
         (enumerationMapping) => enumerationMapping.id.value === id,
       );
     default:

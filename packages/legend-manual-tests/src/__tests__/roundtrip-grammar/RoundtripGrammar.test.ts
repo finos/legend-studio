@@ -99,6 +99,9 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
   'xstore-mapping.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'mapping-include-enum-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
 };
 
 type GrammarRoundtripOptions = {
