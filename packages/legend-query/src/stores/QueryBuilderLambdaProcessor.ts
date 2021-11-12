@@ -385,11 +385,16 @@ export class QueryBuilderLambdaProcessor
   ): void {
     const functionName = valueSpecification.functionName;
     if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
+      const _class = valueSpecification.genericType?.value.rawType;
+      let acceptedNoOfParameters = 1;
+      if (_class instanceof Class && _class.stereotypes.length !== 0) {
+        acceptedNoOfParameters = valueSpecification.parametersValues.length;
+        this.queryBuilderState.getAllFunctionState = valueSpecification;
+      }
       assertTrue(
-        valueSpecification.parametersValues.length === 1,
+        valueSpecification.parametersValues.length === acceptedNoOfParameters,
         `Can't process getAll() expression: getAll() expects no argument`,
       );
-      const _class = valueSpecification.genericType?.value.rawType;
       assertType(
         _class,
         Class,
@@ -457,7 +462,6 @@ export class QueryBuilderLambdaProcessor
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
       );
-
       // check caller
       assertTrue(
         [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
@@ -789,6 +793,7 @@ export class QueryBuilderLambdaProcessor
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(
           this.queryBuilderState,
+
           valueSpecification,
         ),
       );

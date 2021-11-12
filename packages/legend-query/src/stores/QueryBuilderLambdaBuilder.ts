@@ -19,7 +19,7 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { Class, ValueSpecification } from '@finos/legend-graph';
+import type { ValueSpecification } from '@finos/legend-graph';
 import {
   Multiplicity,
   INTERNAL__UnknownValueSpecification,
@@ -40,6 +40,7 @@ import {
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  Class,
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -96,9 +97,16 @@ export const buildLambdaFunction = (
   const lambdaFunction = new LambdaFunction(
     new FunctionType(typeAny, multiplicityOne),
   );
-
-  // build getAll()
-  const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
+  let getAllFunction = buildGetAllFunction(_class, multiplicityOne);
+  if (_class instanceof Class && _class.stereotypes.length !== 0) {
+    guaranteeNonNullable(
+      queryBuilderState.getAllFunctionState?.parametersValues[1],
+      'Milestoning class should have a parameter',
+    );
+    getAllFunction = guaranteeNonNullable(
+      queryBuilderState.getAllFunctionState,
+    );
+  }
   lambdaFunction.expressionSequence[0] = getAllFunction;
 
   // build filter()

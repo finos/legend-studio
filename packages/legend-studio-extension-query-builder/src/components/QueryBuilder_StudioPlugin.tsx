@@ -43,10 +43,23 @@ import { ServiceQueryBuilder } from './ServiceQueryBuilder';
 import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';
 import { MappingTestQueryBuilder } from './MappingTestQueryBuilder';
 import { flowResult } from 'mobx';
-import { Class } from '@finos/legend-graph';
+import {
+  Class,
+  GenericType,
+  GenericTypeExplicitReference,
+  Multiplicity,
+  PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
+  VariableExpression,
+} from '@finos/legend-graph';
 import type { PackageableElement } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
-import { setupLegendQueryUILibrary } from '@finos/legend-query';
+import {
+  QueryParameterState,
+  buildGetAllFunction,
+  setupLegendQueryUILibrary,
+} from '@finos/legend-query';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export class QueryBuilder_StudioPlugin
   extends StudioPlugin
@@ -107,6 +120,41 @@ export class QueryBuilder_StudioPlugin
                   element,
                 );
                 queryBuilderExtension.queryBuilderState.resetData();
+                if (element.stereotypes.length !== 0) {
+                  const parmaterState = new QueryParameterState(
+                    queryBuilderExtension.queryBuilderState.queryParametersState,
+                    new VariableExpression(
+                      'businessDate',
+                      new Multiplicity(1, 1),
+                      GenericTypeExplicitReference.create(
+                        new GenericType(
+                          queryBuilderExtension.queryBuilderState.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                            PRIMITIVE_TYPE.STRICTDATE,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                  parmaterState.mockParameterValues();
+                  queryBuilderExtension.queryBuilderState.queryParametersState.addParameter(
+                    parmaterState,
+                  );
+                  const getAllFunction = buildGetAllFunction(
+                    element,
+                    queryBuilderExtension.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+                      TYPICAL_MULTIPLICITY_TYPE.ONE,
+                    ),
+                  );
+                  getAllFunction.parametersValues.push(
+                    guaranteeNonNullable(
+                      queryBuilderExtension.queryBuilderState
+                        .queryParametersState.parameters[0],
+                      'Milestoning class should have a parameter',
+                    ).parameter,
+                  );
+                  queryBuilderExtension.queryBuilderState.getAllFunctionState =
+                    getAllFunction;
+                }
               }
             };
             return (

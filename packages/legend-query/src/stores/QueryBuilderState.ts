@@ -43,6 +43,7 @@ import type {
   Mapping,
   PackageableRuntime,
   Service,
+  SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import {
   GRAPH_MANAGER_LOG_EVENT,
@@ -106,6 +107,7 @@ export class QueryBuilderState {
   resultSetModifierState: QueryResultSetModifierState;
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
+  getAllFunctionState?: SimpleFunctionExpression | undefined;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   filterOperators: QueryBuilderFilterOperator[] = [
     new QueryBuilderFilterOperator_Equal(),
@@ -146,6 +148,7 @@ export class QueryBuilderState {
       isCompiling: observable,
       backdrop: observable,
       config: observable,
+      getAllFunctionState: observable,
       classOptions: computed,
       mappingOptions: computed,
       runtimeOptions: computed,
