@@ -99,7 +99,7 @@ export const MappingTestQueryBuilder = observer(
         tabIndex={-1}
         disabled={isReadOnly}
         onClick={editWithQueryBuilder}
-        title={'Edit query...'}
+        title="Edit query..."
       >
         <PencilIcon />
       </button>

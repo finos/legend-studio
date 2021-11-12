@@ -116,7 +116,7 @@ export const ServiceQueryBuilder = observer(
         tabIndex={-1}
         disabled={isReadOnly}
         onClick={editWithQueryBuilder}
-        title={'Edit query...'}
+        title="Edit query..."
       >
         <PencilIcon />
       </button>

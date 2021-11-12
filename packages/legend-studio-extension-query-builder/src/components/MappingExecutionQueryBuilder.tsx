@@ -108,7 +108,7 @@ export const MappingExecutionQueryBuilder = observer(
         className="panel__header__action"
         tabIndex={-1}
         onClick={editWithQueryBuilder}
-        title={'Edit query...'}
+        title="Edit query..."
       >
         <PencilIcon />
       </button>
