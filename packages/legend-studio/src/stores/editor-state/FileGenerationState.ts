@@ -180,11 +180,10 @@ export class FileGenerationState {
     reprocessOpenNodes(treeData, this.filesIndex, this.root, openedNodeIds);
     // select the current file node if available, else select the first output
     const selectedFileNodePath =
-      this.selectedNode?.fileNode.path ??
-      (generationResult.length === 1
+      generationResult.length === 1 || this.selectedNode === undefined
         ? (generationResult[0] as GenerationOutputResult).generationOutput
             .fileName
-        : undefined);
+        : this.selectedNode.fileNode.path;
     if (selectedFileNodePath) {
       const file = this.filesIndex.get(selectedFileNodePath);
       if (file) {
