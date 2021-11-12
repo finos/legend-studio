@@ -40,6 +40,7 @@ import {
 } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import { EnterpriseModelExplorer } from './EnterpriseModelExplorer';
 import { ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN } from '../../stores/studio/EnterpriseModelExplorerStore';
+import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -114,7 +115,7 @@ export class DSLDataSpace_StudioPlugin
             state.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
           dataSpace.artifactId =
             state.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
-          dataSpace.versionId = 'latest';
+          dataSpace.versionId = LATEST_VERSION_ALIAS;
           const dataSpaceExecutionContext = new DataSpaceExecutionContext();
           dataSpaceExecutionContext.name = 'dummyContext';
           dataSpaceExecutionContext.mapping = 'dummyMapping';

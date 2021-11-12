@@ -25,6 +25,7 @@ import type {
   StoredEntity,
 } from '@finos/legend-server-depot';
 import {
+  LATEST_VERSION_ALIAS,
   ProjectVersionEntities,
   ProjectData,
   generateGAVCoordinates,
@@ -181,7 +182,6 @@ export class TaxonomyViewerState {
       ) as string;
 
       // build graph
-      const LATEST_VERSION_ALIAS = 'latest';
       const projectData = ProjectData.serialization.fromJson(
         (yield flowResult(
           this.enterpriseModelExplorerStore.depotServerClient.getProject(

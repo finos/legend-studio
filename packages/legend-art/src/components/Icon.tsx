@@ -65,6 +65,7 @@ export {
   FaShieldAlt as ShieldIcon,
   FaTag as TagIcon,
   FaTags as TagsIcon,
+  FaBolt as BoltIcon,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

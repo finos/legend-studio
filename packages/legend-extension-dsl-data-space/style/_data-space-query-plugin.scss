@@ -39,6 +39,23 @@
     background: var(--color-dark-grey-200);
   }
 
+  &__use-snapshot-btn {
+    @include flexCenter;
+
+    height: 2.8rem;
+    width: 2.8rem;
+    border-radius: 0 0.2rem 0.2rem 0;
+    background: var(--color-dark-grey-300);
+
+    svg {
+      color: var(--color-light-grey-50);
+    }
+
+    &--active {
+      background: var(--color-blue-100);
+    }
+  }
+
   .query-setup__wizard__selector {
     width: 100%;
   }

@@ -68,6 +68,8 @@ import type {
   ProjectGAVCoordinates,
 } from '@finos/legend-server-depot';
 import {
+  LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
   generateGAVCoordinates,
   ProjectData,
   ProjectVersionEntities,
@@ -76,9 +78,6 @@ import type { ApplicationStore } from '@finos/legend-application';
 import { APPLICATION_LOG_EVENT, TAB_SIZE } from '@finos/legend-application';
 import type { QueryPluginManager } from '../application/QueryPluginManager';
 import type { QueryConfig } from '../application/QueryConfig';
-
-export const LATEST_VERSION_ALIAS = 'latest';
-export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
 
 export abstract class QueryInfoState {
   queryStore: QueryStore;
@@ -687,7 +686,7 @@ export class QueryStore {
       this.buildGraphState.inProgress();
       let entities: Entity[] = [];
 
-      if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
         entities = (yield this.depotServerClient.getLatestRevisionEntities(
           project.groupId,
           project.artifactId,
@@ -745,7 +744,7 @@ export class QueryStore {
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     try {
       let dependencyEntitiesJson: PlainObject<ProjectVersionEntities>[] = [];
-      if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
         dependencyEntitiesJson =
           (yield this.depotServerClient.getLatestDependencyEntities(
             project.groupId,
