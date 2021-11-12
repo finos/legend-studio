@@ -2179,7 +2179,7 @@ __metadata:
     eslint: 8.2.0
     history: 5.1.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     monaco-editor: 0.30.1
     npm-run-all: 4.1.5
@@ -2212,7 +2212,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     monaco-editor: 0.30.1
     npm-run-all: 4.1.5
@@ -2275,7 +2275,7 @@ __metadata:
     sass: 1.43.4
     sass-loader: 12.3.0
     typescript: 4.4.4
-    webpack: 5.63.0
+    webpack: 5.64.0
   languageName: unknown
   linkType: soft
 
@@ -2298,7 +2298,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     monaco-editor: 0.30.1
     npm-run-all: 4.1.5
@@ -2334,7 +2334,7 @@ __metadata:
     eslint: 8.2.0
     jest: 27.3.1
     jest-canvas-mock: 2.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2366,7 +2366,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     monaco-editor: 0.30.1
     npm-run-all: 4.1.5
@@ -2397,7 +2397,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     monaco-editor: 0.30.1
     npm-run-all: 4.1.5
@@ -2442,7 +2442,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     monaco-editor: 0.30.1
     npm-run-all: 4.1.5
@@ -2466,7 +2466,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2546,13 +2546,13 @@ __metadata:
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-query-app": "workspace:*"
-    copy-webpack-plugin: 9.0.1
+    copy-webpack-plugin: 9.1.0
     cross-env: 7.0.3
     eslint: 8.2.0
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.4
-    webpack: 5.63.0
+    webpack: 5.64.0
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
     webpack-dev-server: 4.4.0
@@ -2585,7 +2585,7 @@ __metadata:
     eslint: 8.2.0
     history: 5.1.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     monaco-editor: 0.30.1
     npm-run-all: 4.1.5
@@ -2616,7 +2616,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2636,7 +2636,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2665,7 +2665,7 @@ __metadata:
     lodash: 4.17.21
     lodash-es: 4.17.21
     lossless-json: 1.0.5
-    mobx: 6.3.6
+    mobx: 6.3.7
     object-hash: 2.2.0
     pako: 2.0.4
     pretty-format: 27.3.1
@@ -2711,13 +2711,13 @@ __metadata:
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-studio-app": "workspace:*"
-    copy-webpack-plugin: 9.0.1
+    copy-webpack-plugin: 9.1.0
     cross-env: 7.0.3
     eslint: 8.2.0
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.4.4
-    webpack: 5.63.0
+    webpack: 5.64.0
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
     webpack-dev-server: 4.4.0
@@ -2739,7 +2739,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2774,7 +2774,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.2.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2811,7 +2811,7 @@ __metadata:
     eslint: 8.2.0
     history: 5.1.0
     jest: 27.3.1
-    mobx: 6.3.6
+    mobx: 6.3.7
     mobx-react-lite: 3.2.2
     monaco-editor: 0.30.1
     node-diff3: 3.1.0
@@ -5676,20 +5676,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"copy-webpack-plugin@npm:9.0.1":
-  version: 9.0.1
-  resolution: "copy-webpack-plugin@npm:9.0.1"
+"copy-webpack-plugin@npm:9.1.0":
+  version: 9.1.0
+  resolution: "copy-webpack-plugin@npm:9.1.0"
   dependencies:
-    fast-glob: ^3.2.5
-    glob-parent: ^6.0.0
+    fast-glob: ^3.2.7
+    glob-parent: ^6.0.1
     globby: ^11.0.3
     normalize-path: ^3.0.0
-    p-limit: ^3.1.0
-    schema-utils: ^3.0.0
+    schema-utils: ^3.1.1
     serialize-javascript: ^6.0.0
   peerDependencies:
     webpack: ^5.1.0
-  checksum: f3e69883e173f9a298b63dcf35ba5aafc02e252c67c236029424af19fb2e36fc93de94054bd7a9ada8b4cbcc4e96e9a3a269f972e4a45f4fd1b32a3d199d2cae
+  checksum: 06cb4fb6fc99a95ccfd3169115ee57f64953e5b4075900fc8faab98b7e7d3fcd6915b125fdb98c919cfd55e581a8444f5c6b9dbb342cbd60b154d8fb3f79f2b9
   languageName: node
   linkType: hard
 
@@ -7082,7 +7081,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:^3.0.3, fast-glob@npm:^3.1.1, fast-glob@npm:^3.2.5, fast-glob@npm:^3.2.7":
+"fast-glob@npm:^3.0.3, fast-glob@npm:^3.1.1, fast-glob@npm:^3.2.7":
   version: 3.2.7
   resolution: "fast-glob@npm:3.2.7"
   dependencies:
@@ -7498,7 +7497,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob-parent@npm:^6.0.0, glob-parent@npm:^6.0.1":
+"glob-parent@npm:^6.0.1":
   version: 6.0.2
   resolution: "glob-parent@npm:6.0.2"
   dependencies:
@@ -9634,7 +9633,7 @@ __metadata:
     prettier: 2.4.1
     rimraf: 3.0.2
     semver: 7.3.5
-    sort-package-json: 1.52.0
+    sort-package-json: 1.53.0
     stylelint: 14.0.1
     typescript: 4.4.4
     yargs: 17.2.1
@@ -10346,10 +10345,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx@npm:6.3.6":
-  version: 6.3.6
-  resolution: "mobx@npm:6.3.6"
-  checksum: 49e14a10e8567a67c8d049f535a68f6388007dcd5e0fae1712be34e21f348937139e08772a29b7e5bb1835bca9f9222db5ccfbe9de28c71f690bf000fbf1c9e1
+"mobx@npm:6.3.7":
+  version: 6.3.7
+  resolution: "mobx@npm:6.3.7"
+  checksum: c3ad168d67dcf3c3ddf5f06cf3225fc2b99205cde55a9884ad711a762dc888b81c22d2a97ab987a6bff04f00d3cfb6610af516995ab48221920e9123f3f74836
   languageName: node
   linkType: hard
 
@@ -13058,9 +13057,9 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"sort-package-json@npm:1.52.0":
-  version: 1.52.0
-  resolution: "sort-package-json@npm:1.52.0"
+"sort-package-json@npm:1.53.0":
+  version: 1.53.0
+  resolution: "sort-package-json@npm:1.53.0"
   dependencies:
     detect-indent: ^6.0.0
     detect-newline: 3.1.0
@@ -13070,7 +13069,7 @@ resolve@^2.0.0-next.3:
     sort-object-keys: ^1.1.3
   bin:
     sort-package-json: cli.js
-  checksum: 0ac65776ec96a451e618e00ed87dabe0d9ef872d1f00083efed889841dcf966778c715fc612c1c042ecdebf5b5cbe88b54a04e0e6ebda8f5b9190c393072e991
+  checksum: c46c89214bbbede4ec92c5b7eb6532dadd3f1ed154c5597461d321907eb6983fe830e0d0b0f09d2f232d7cd0e0edaf9956e70f760663d1b8e2edfde08dc15345
   languageName: node
   linkType: hard
 
@@ -14489,9 +14488,9 @@ typescript@4.4.4:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.63.0":
-  version: 5.63.0
-  resolution: "webpack@npm:5.63.0"
+"webpack@npm:5.64.0":
+  version: 5.64.0
+  resolution: "webpack@npm:5.64.0"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -14522,7 +14521,7 @@ typescript@4.4.4:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 8127be3d900d8e57f106f61dc66f8334162d5425d770f46b2110c89057c1607e9be1a20fa37ee53bd6915e3041dc074c5e2aa99665abb18112463b91606946f7
+  checksum: 9d32a61d988b0cd34f7c2b9006ac2eec81c36a72acf3b7f01c6c567c2ebc95bb75d422a53a5bea69c36dbfc50c11ac953ec07742da43c55beb512d0f2d4bb400
   languageName: node
   linkType: hard
 

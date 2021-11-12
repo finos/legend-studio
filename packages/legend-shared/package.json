@@ -47,7 +47,7 @@
     "http-status-codes": "2.1.4",
     "lodash-es": "4.17.21",
     "lossless-json": "1.0.5",
-    "mobx": "6.3.6",
+    "mobx": "6.3.7",
     "object-hash": "2.2.0",
     "pako": "2.0.4",
     "pretty-format": "27.3.1",
