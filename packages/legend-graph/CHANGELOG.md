@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 0.2.2
+
+### Patch Changes
+
+- [#662](https://github.com/finos/legend-studio/pull/662) [`fb8bd11c`](https://github.com/finos/legend-studio/commit/fb8bd11cb958b2d92e6f68e22db974569832bccf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Properly process enumeration mappings in includes mapping ([#658](https://github.com/finos/legend-studio/issues/658)).
+
+* [#652](https://github.com/finos/legend-studio/pull/652) [`4772cab1`](https://github.com/finos/legend-studio/commit/4772cab17dff94c33a8973c6847be2474248e4ff) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Properly resolve property mappings for `Inline` and `Otherwise` set implementations ([#650](https://github.com/finos/legend-studio/issues/650)).
+
+- [#641](https://github.com/finos/legend-studio/pull/641) [`dd778d23`](https://github.com/finos/legend-studio/commit/dd778d23efa056e5034bdb80f89bcd9cb370b3e7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the building of `PropertyReference` in `XStorePropertyMapping` by defining its owner reference to be the association in the `XStore` mapping and the input to be the defined user input ([#524](https://github.com/finos/legend-studio/issues/524)).
+
 ## 0.2.1
 
 ## 0.2.0
