@@ -90,9 +90,9 @@ export const DataspaceQuerySetup = observer(
         </div>
         <div className="query-setup__data-space__option__gav">
           {generateGAVCoordinates(
-            option.value.content.groupId,
-            option.value.content.artifactId,
-            option.value.content.versionId,
+            option.value.groupId,
+            option.value.artifactId,
+            option.value.versionId,
           )}
         </div>
       </div>

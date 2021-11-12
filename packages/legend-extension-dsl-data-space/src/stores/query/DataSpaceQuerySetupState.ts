@@ -162,7 +162,18 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
         dataSpace.versionId,
         resolvedDataSpace,
         {
-          viewProject: this.queryStore.viewStudioProject,
+          viewProject: (
+            groupId: string,
+            artifactId: string,
+            versionId: string,
+            entityPath: string | undefined,
+          ): void =>
+            this.queryStore.viewStudioProject(
+              groupId,
+              artifactId,
+              versionId,
+              entityPath,
+            ),
           onDiagramClassDoubleClick: (classView: ClassView): void => {
             this.proceedToCreateQuery(classView.class.value);
           },
