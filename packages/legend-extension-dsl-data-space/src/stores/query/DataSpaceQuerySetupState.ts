@@ -24,7 +24,11 @@ import {
   generateCreateQueryRoute,
 } from '@finos/legend-query';
 import type { StoredEntity } from '@finos/legend-server-depot';
-import { ProjectData } from '@finos/legend-server-depot';
+import {
+  DepotScope,
+  ProjectData,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   ActionState,
@@ -56,6 +60,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
   setUpDataSpaceState = ActionState.create();
   currentDataSpace?: LightDataSpace | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
+  toGetSnapShot = false;
 
   constructor(setupStore: QuerySetupStore) {
     super(setupStore);
@@ -64,8 +69,10 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       dataSpaces: observable,
       currentDataSpace: observable.ref,
       dataSpaceViewerState: observable,
+      toGetSnapShot: observable,
       setCurrentDataSpace: action,
       setDataSpaceViewerState: action,
+      setToGetSnapShot: action,
       loadDataSpaces: flow,
       setUpDataSpace: flow,
       proceedToCreateQuery: flow,
@@ -78,6 +85,10 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
   setDataSpaceViewerState(val: DataSpaceViewerState | undefined): void {
     this.dataSpaceViewerState = val;
+  }
+
+  setToGetSnapShot(val: boolean): void {
+    this.toGetSnapShot = val;
   }
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
@@ -94,36 +105,39 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
             search: isValidSearchString ? searchText : undefined,
+            scope: this.toGetSnapShot
+              ? DepotScope.SNAPSHOT
+              : DepotScope.RELEASES,
             limit: 10,
           },
         )) as StoredEntity[]
-      )
-        // .map((storedEntity) => storedEntity.entity)
-        .map(
-          (storedEntity) =>
-            ({
-              ...storedEntity.entity,
-              groupId: storedEntity.groupId,
-              artifactId: storedEntity.artifactId,
-              versionId: storedEntity.versionId,
-              path: storedEntity.entity.path,
-              content: {
-                ...storedEntity.entity.content,
-                groupId: guaranteeNonNullable(
-                  storedEntity.entity.content.groupId,
-                  `Data space 'groupId' field is missing`,
-                ),
-                artifactId: guaranteeNonNullable(
-                  storedEntity.entity.content.artifactId,
-                  `Data space 'artifactId' field is missing`,
-                ),
-                versionId: guaranteeNonNullable(
-                  storedEntity.entity.content.versionId,
-                  `Data space 'versionId' field is missing`,
-                ),
-              },
-            } as LightDataSpace),
-        );
+      ).map(
+        (storedEntity) =>
+          ({
+            ...storedEntity.entity,
+            groupId: storedEntity.groupId,
+            artifactId: storedEntity.artifactId,
+            versionId: this.toGetSnapShot
+              ? SNAPSHOT_VERSION_ALIAS
+              : storedEntity.versionId,
+            path: storedEntity.entity.path,
+            content: {
+              ...storedEntity.entity.content,
+              groupId: guaranteeNonNullable(
+                storedEntity.entity.content.groupId,
+                `Data space 'groupId' field is missing`,
+              ),
+              artifactId: guaranteeNonNullable(
+                storedEntity.entity.content.artifactId,
+                `Data space 'artifactId' field is missing`,
+              ),
+              versionId: guaranteeNonNullable(
+                storedEntity.entity.content.versionId,
+                `Data space 'versionId' field is missing`,
+              ),
+            },
+          } as LightDataSpace),
+      );
       this.loadDataSpacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -162,7 +176,18 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
         dataSpace.versionId,
         resolvedDataSpace,
         {
-          viewProject: this.queryStore.viewStudioProject,
+          viewProject: (
+            groupId: string,
+            artifactId: string,
+            versionId: string,
+            entityPath: string | undefined,
+          ): void =>
+            this.queryStore.viewStudioProject(
+              groupId,
+              artifactId,
+              versionId,
+              entityPath,
+            ),
           onDiagramClassDoubleClick: (classView: ClassView): void => {
             this.proceedToCreateQuery(classView.class.value);
           },

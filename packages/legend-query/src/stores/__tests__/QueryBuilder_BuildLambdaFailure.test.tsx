@@ -32,7 +32,10 @@ import {
 import { QueryPluginManager } from '../../application/QueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
-import { QueryBuilderState } from '../QueryBuilderState';
+import {
+  QueryBuilderState,
+  StandardQueryBuilderMode,
+} from '../QueryBuilderState';
 import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
 
 const getRawLambda = (jsonRawLambda: {
@@ -105,7 +108,7 @@ describe(
         const queryBuilderState = new QueryBuilderState(
           applicationStore,
           graphManagerState,
-          {},
+          new StandardQueryBuilderMode(),
         );
         expect(() =>
           queryBuilderState.buildStateFromRawLambda(getRawLambda(lambdaJson)),

@@ -352,7 +352,7 @@ export const buildLambdaFunction = (
   );
   // build parameters
   if (
-    !queryBuilderState.config.parametersDisabled &&
+    !queryBuilderState.mode.isParametersDisabled &&
     queryBuilderState.queryParametersState.parameters.length
   ) {
     // if we are executing:

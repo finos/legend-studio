@@ -78,14 +78,14 @@ export type NewConnectionDriverCreator = (
   store: Store,
 ) => NewConnectionValueDriver<Connection> | undefined;
 
-export type MappingExecutionQueryEditorRendererConfiguration = {
+export type MappingExecutionQueryEditorActionConfiguration = {
   key: string;
   renderer: (
     executionState: MappingExecutionState,
   ) => React.ReactNode | undefined;
 };
 
-export type MappingTestQueryEditorRendererConfiguration = {
+export type MappingTestQueryEditorActionConfiguration = {
   key: string;
   renderer: (
     testState: MappingTestState,
@@ -96,7 +96,7 @@ export type MappingTestQueryEditorRendererConfiguration = {
 /**
  * NOTE: this is temporary since we want to eventually move Service out to its own DSL
  */
-export type TEMP__ServiceQueryEditorRendererConfiguration = {
+export type TEMP__ServiceQueryEditorActionConfiguration = {
   key: string;
   renderer: (
     executionState: ServicePureExecutionState,
@@ -166,22 +166,22 @@ export interface DSLMapping_StudioPlugin_Extension
   getExtraNewConnectionDriverCreators?(): NewConnectionDriverCreator[];
 
   /**
-   * Get the list of configurations for the renderer for mapping execution query builder.
+   * Get the list of actions for mapping execution query editor.
    */
-  getExtraMappingExecutionQueryEditorRendererConfigurations?(): MappingExecutionQueryEditorRendererConfiguration[];
+  getExtraMappingExecutionQueryEditorActionConfigurations?(): MappingExecutionQueryEditorActionConfiguration[];
 
   /**
-   * Get the list of configurations for the renderer for mapping test query builder.
+   * Get the list of actions for mapping test query editor.
    */
-  getExtraMappingTestQueryEditorRendererConfigurations?(): MappingTestQueryEditorRendererConfiguration[];
+  getExtraMappingTestQueryEditorActionConfigurations?(): MappingTestQueryEditorActionConfiguration[];
 
   /**
-   * Get the list of configurations for the renderer for service execution query builder.
+   * Get the list of actions for service execution query editor.
    *
    * NOTE: this is temporary since we want to eventually move Service out to its own DSL
    * preset/plugin so this should also be moved there
    */
-  TEMP__getExtraServiceQueryEditorRendererConfigurations?(): TEMP__ServiceQueryEditorRendererConfiguration[];
+  TEMP__getExtraServiceQueryEditorActionConfigurations?(): TEMP__ServiceQueryEditorActionConfiguration[];
 
   /**
    * Get the list of service test runtime connection builder for a provided connection and test data.

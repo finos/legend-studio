@@ -18,13 +18,11 @@ import type { MappingTestState } from '@finos/legend-studio';
 import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import {
-  EngineRuntime,
-  PackageableElementExplicitReference,
-} from '@finos/legend-graph';
-import type { RawLambda } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
 import { useApplicationStore } from '@finos/legend-application';
+import { MappingExecutionQueryBuilderMode } from './MappingExecutionQueryBuilder';
+import { assertErrorThrown } from '@finos/legend-shared';
+import { PencilIcon } from '@finos/legend-art';
 
 export const MappingTestQueryBuilder = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -36,37 +34,74 @@ export const MappingTestQueryBuilder = observer(
     );
     const editWithQueryBuilder = async (): Promise<void> => {
       const mapping = testState.mappingEditorState.mapping;
-      const customRuntime = new EngineRuntime();
-      customRuntime.addMapping(
-        PackageableElementExplicitReference.create(mapping),
+      queryBuilderExtension.reset();
+      queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
+        mapping,
+      );
+      queryBuilderExtension.queryBuilderState.querySetupState.setRuntime(
+        undefined,
+      );
+      queryBuilderExtension.queryBuilderState.querySetupState.setMappingIsReadOnly(
+        true,
+      );
+      queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeIsReadOnly(
+        true,
+      );
+      queryBuilderExtension.queryBuilderState.initialize(
+        testState.queryState.query,
       );
       await flowResult(
-        queryBuilderExtension.setup(
-          testState.queryState.query,
-          mapping,
-          customRuntime,
-          (lambda: RawLambda): Promise<void> =>
-            flowResult(testState.queryState.updateLamba(lambda))
-              .then(() =>
-                editorStore.applicationStore.notifySuccess(
-                  `Mapping test query is updated`,
-                ),
-              )
-              .catch(applicationStore.alertIllegalUnhandledError),
-          testState.queryState.query.isStub,
-          {
-            parametersDisabled: true,
-          },
-        ),
+        queryBuilderExtension.setEmbeddedQueryBuilderMode({
+          actionConfigs: [
+            {
+              key: 'save-query-btn',
+              renderer: (): React.ReactNode => {
+                const save = async (): Promise<void> => {
+                  try {
+                    const rawLambda =
+                      queryBuilderExtension.queryBuilderState.getQuery();
+                    await flowResult(
+                      testState.queryState.updateLamba(rawLambda),
+                    );
+                    editorStore.applicationStore.notifySuccess(
+                      `Mapping test query is updated`,
+                    );
+                    queryBuilderExtension.setEmbeddedQueryBuilderMode(
+                      undefined,
+                    );
+                  } catch (error) {
+                    assertErrorThrown(error);
+                    applicationStore.notifyError(
+                      `Unable to save query: ${error.message}`,
+                    );
+                  }
+                };
+                return (
+                  <button
+                    className="query-builder__dialog__header__custom-action"
+                    tabIndex={-1}
+                    onClick={save}
+                  >
+                    Save Query
+                  </button>
+                );
+              },
+            },
+          ],
+          disableCompile: testState.queryState.query.isStub,
+          queryBuilderMode: new MappingExecutionQueryBuilderMode(),
+        }),
       );
     };
     return (
       <button
-        className="btn--dark mapping-test-query-builder__btn"
+        className="panel__header__action"
+        tabIndex={-1}
         disabled={isReadOnly}
         onClick={editWithQueryBuilder}
+        title="Edit query..."
       >
-        Edit Query
+        <PencilIcon />
       </button>
     );
   },

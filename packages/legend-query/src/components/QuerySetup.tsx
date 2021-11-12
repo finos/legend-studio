@@ -50,8 +50,6 @@ import {
 import {
   CreateQueryInfoState,
   ExistingQueryInfoState,
-  LATEST_SNAPSHOT_VERSION_ALIAS,
-  LATEST_VERSION_ALIAS,
   ServiceQueryInfoState,
 } from '../stores/QueryStore';
 import {
@@ -60,6 +58,10 @@ import {
 } from './QuerySetupStoreProvider';
 import { useQueryStore } from './QueryStoreProvider';
 import type { ProjectData } from '@finos/legend-server-depot';
+import {
+  LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 import type {
   LightQuery,
   Mapping,
@@ -349,7 +351,7 @@ const ServiceQuerySetup = observer(
     // version
     const versionOptions = [
       LATEST_VERSION_ALIAS,
-      LATEST_SNAPSHOT_VERSION_ALIAS,
+      SNAPSHOT_VERSION_ALIAS,
       ...(querySetupState.currentProject?.versions ?? []),
     ].map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
@@ -593,7 +595,7 @@ const CreateQuerySetup = observer(
     // version
     const versionOptions = [
       LATEST_VERSION_ALIAS,
-      LATEST_SNAPSHOT_VERSION_ALIAS,
+      SNAPSHOT_VERSION_ALIAS,
       ...(querySetupState.currentProject?.versions ?? []),
     ].map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId

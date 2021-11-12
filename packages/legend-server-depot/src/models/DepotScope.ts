@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-.mapping-execution-query-builder {
-  &__btn {
-    height: 2.8rem;
-    width: 100%;
-  }
+export enum DepotScope {
+  RELEASES = 'RELEASES',
+  SNAPSHOT = 'SNAPSHOT',
 }

@@ -51,7 +51,10 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
-import { QueryBuilderState } from './QueryBuilderState';
+import {
+  QueryBuilderState,
+  StandardQueryBuilderMode,
+} from './QueryBuilderState';
 import type {
   CreateQueryPathParams,
   ExistingQueryPathParams,
@@ -65,6 +68,8 @@ import type {
   ProjectGAVCoordinates,
 } from '@finos/legend-server-depot';
 import {
+  LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
   generateGAVCoordinates,
   ProjectData,
   ProjectVersionEntities,
@@ -73,9 +78,6 @@ import type { ApplicationStore } from '@finos/legend-application';
 import { APPLICATION_LOG_EVENT, TAB_SIZE } from '@finos/legend-application';
 import type { QueryPluginManager } from '../application/QueryPluginManager';
 import type { QueryConfig } from '../application/QueryConfig';
-
-export const LATEST_VERSION_ALIAS = 'latest';
-export const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
 
 export abstract class QueryInfoState {
   queryStore: QueryStore;
@@ -338,6 +340,7 @@ export class QueryStore {
   buildGraphState = ActionState.create();
   initState = ActionState.create();
   editorInitState = ActionState.create();
+  onSaveQuery?: ((lambda: RawLambda) => Promise<void>) | undefined;
 
   constructor(
     applicationStore: ApplicationStore<QueryConfig>,
@@ -361,7 +364,7 @@ export class QueryStore {
     this.queryBuilderState = new QueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
-      {},
+      new StandardQueryBuilderMode(),
     );
   }
 
@@ -370,11 +373,17 @@ export class QueryStore {
     this.queryBuilderState = new QueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
-      this.queryBuilderState.config,
+      this.queryBuilderState.mode,
     );
     this.graphManagerState.resetGraph();
     this.buildGraphState.reset();
     this.editorInitState.reset();
+  }
+
+  setOnSaveQuery(
+    val: ((lambda: RawLambda) => Promise<void>) | undefined,
+  ): void {
+    this.onSaveQuery = val;
   }
 
   setQueryInfoState(val: QueryInfoState | undefined): void {
@@ -432,18 +441,16 @@ export class QueryStore {
           query.content,
         )) as RawLambda,
       );
-      this.queryBuilderState.querySetupState.setOnSaveQuery(
-        async (lambda: RawLambda) => {
-          this.setQueryExportState(
-            new QueryExportState(
-              this,
-              lambda,
-              queryInfoState.query.isCurrentUserQuery,
-              queryInfoState.query.name,
-            ),
-          );
-        },
-      );
+      this.setOnSaveQuery(async (lambda: RawLambda) => {
+        this.setQueryExportState(
+          new QueryExportState(
+            this,
+            lambda,
+            queryInfoState.query.isCurrentUserQuery,
+            queryInfoState.query.name,
+          ),
+        );
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
@@ -532,13 +539,11 @@ export class QueryStore {
       this.queryBuilderState.buildStateFromRawLambda(
         queryInfoState.service.execution.func,
       );
-      this.queryBuilderState.querySetupState.setOnSaveQuery(
-        async (lambda: RawLambda) => {
-          this.setQueryExportState(
-            new QueryExportState(this, lambda, false, undefined),
-          );
-        },
-      );
+      this.setOnSaveQuery(async (lambda: RawLambda) => {
+        this.setQueryExportState(
+          new QueryExportState(this, lambda, false, undefined),
+        );
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
@@ -605,13 +610,11 @@ export class QueryStore {
         }
       }
       this.queryBuilderState.resetData();
-      this.queryBuilderState.querySetupState.setOnSaveQuery(
-        async (lambda: RawLambda) => {
-          this.setQueryExportState(
-            new QueryExportState(this, lambda, false, undefined),
-          );
-        },
-      );
+      this.setOnSaveQuery(async (lambda: RawLambda) => {
+        this.setQueryExportState(
+          new QueryExportState(this, lambda, false, undefined),
+        );
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
@@ -683,7 +686,7 @@ export class QueryStore {
       this.buildGraphState.inProgress();
       let entities: Entity[] = [];
 
-      if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
         entities = (yield this.depotServerClient.getLatestRevisionEntities(
           project.groupId,
           project.artifactId,
@@ -741,7 +744,7 @@ export class QueryStore {
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     try {
       let dependencyEntitiesJson: PlainObject<ProjectVersionEntities>[] = [];
-      if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
         dependencyEntitiesJson =
           (yield this.depotServerClient.getLatestDependencyEntities(
             project.groupId,

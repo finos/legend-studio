@@ -17,6 +17,7 @@
 import type { Entity } from '@finos/legend-model-storage';
 import type { PlainObject } from '@finos/legend-shared';
 import { AbstractServerClient } from '@finos/legend-shared';
+import type { DepotScope } from './models/DepotScope';
 import type { ProjectData } from './models/ProjectData';
 import type {
   ProjectDependencyCoordinates,
@@ -92,6 +93,7 @@ export class DepotServerClient extends AbstractServerClient {
     classifierPath: string,
     options?: {
       search?: string | undefined;
+      scope?: DepotScope | undefined;
       limit?: number | undefined;
     },
   ): Promise<PlainObject<StoredEntity>[]> =>
@@ -102,6 +104,9 @@ export class DepotServerClient extends AbstractServerClient {
           )}`,
           undefined,
           undefined,
+          {
+            scope: options?.scope,
+          },
         )
       : this.get(
           `${
@@ -111,6 +116,7 @@ export class DepotServerClient extends AbstractServerClient {
           undefined,
           {
             search: options?.search,
+            scope: options?.scope,
             limit: options?.limit,
           },
         );
