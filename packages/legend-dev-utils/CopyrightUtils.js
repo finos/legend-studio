@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-import { resolve } from 'path';
-import { existsSync, lstatSync, writeFile, writeFileSync } from 'fs';
-import { EOL, platform } from 'os';
+import { existsSync, lstatSync, writeFile } from 'fs';
+import { EOL } from 'os';
 import micromatch from 'micromatch';
 import { execSync } from 'child_process';
 import { isBinaryFileSync } from 'isbinaryfile';
 import chalk from 'chalk';
-import {
-  getFileContent,
-  createRegExp,
-  exitWithError,
-  exitWithSuccess,
-} from './DevUtils.js';
+import { getFileContent, createRegExp, exitWithError } from './DevUtils.js';
 
 const GENERIC_INCLUDE_PATTERNS = [
   /\.[^/]+$/, // files with extension
@@ -227,43 +221,4 @@ export const updateCopyrightHeaders = async ({
   } else {
     console.log('All files look good!');
   }
-};
-
-export const addCopyrightHeaderToBundledOutput = async ({
-  basePath,
-  configPath,
-  file,
-}) => {
-  // NOTE: Windows requires prefix `file://` for absolute path
-  const config = (
-    await import(`${platform() === 'win32' ? 'file://' : ''}${configPath}`)
-  ).default;
-  const copyrightText = config?.build?.copyrightText;
-  if (!copyrightText) {
-    exitWithError(
-      `'build.copyrightText' is not specified in config file: ${configPath}`,
-    );
-  }
-  const bundledOutputFile = resolve(basePath, file);
-  if (!existsSync(bundledOutputFile)) {
-    exitWithError(
-      `Can't find bundled output file '${bundledOutputFile}'. Make sure to build before running this script`,
-    );
-  }
-
-  writeFileSync(
-    bundledOutputFile,
-    `${copyrightText}\n\n${getFileContent(bundledOutputFile)}`,
-    (err) => {
-      exitWithError(
-        `Failed to add copyright header to bundled output file: ${bundledOutputFile}. Error:\n${
-          err.message || err
-        }`,
-      );
-    },
-  );
-
-  exitWithSuccess(
-    `Added copyright header to bundled output file: ${bundledOutputFile}`,
-  );
 };
