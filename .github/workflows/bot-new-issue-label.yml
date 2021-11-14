@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./scripts/github-bot
         # Avoid Yarn failing installation due to modified lock file
-        run: yarn --immutable=false
+        run: yarn install --immutable=false
       - name: Label new issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
