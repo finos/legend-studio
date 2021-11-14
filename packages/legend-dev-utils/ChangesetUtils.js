@@ -16,6 +16,7 @@
 
 import { resolve } from 'path';
 import chalk from 'chalk';
+import micromatch from 'micromatch';
 import { getChangedPackagesSinceRef } from '@changesets/git';
 import readChangesets from '@changesets/read';
 import getReleasePlan from '@changesets/get-release-plan';
@@ -49,6 +50,7 @@ const DEFAULT_SINCE_REF = 'origin/master';
 export async function validateChangesets(cwd, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
+  const ignorePackageNames = config.ignore;
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
   const changesetPackageNames = (
     await getReleasePlan.default(cwd, sinceBranch, config)
@@ -103,7 +105,11 @@ export async function validateChangesets(cwd, sinceRef) {
   // Check for packages that have been modified but does not have a changeset entry
   const packagesWithoutChangeset = new Set();
   changedPackageNames.forEach((pkgName) => {
-    if (!changesetPackageNames.includes(pkgName)) {
+    if (
+      !changesetPackageNames.includes(pkgName) &&
+      // avoid counting ignored packages
+      !micromatch.isMatch(pkgName, ignorePackageNames)
+    ) {
       packagesWithoutChangeset.add(pkgName);
     }
   });
