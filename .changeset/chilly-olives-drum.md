@@ -20,5 +20,4 @@
 '@finos/legend-studio-extension-management-toolkit': patch
 '@finos/legend-studio-extension-query-builder': patch
 ---
-
 pr: 665
