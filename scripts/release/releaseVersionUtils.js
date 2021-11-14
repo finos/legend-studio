@@ -16,10 +16,14 @@
 
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import { resolve, dirname } from 'path';
+import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import micromatch from 'micromatch';
 import chalk from 'chalk';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const ROOT_DIR = resolve(__dirname, '../../');
 
 export const STANDARD_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH =
   '.changeset/new-version.md';
@@ -39,9 +43,9 @@ const ITERATION_RELEASE_VERSION_BUMP_CHANGESET_PATH = resolve(
 
 export const getPackagesToBumpVersion = () => {
   const changesetConfig = loadJSON(CHANGESET_CONFIG_PATH);
-  const packagesToBump = changesetConfig.linked[0];
+  const patterns = changesetConfig.linked[0];
   // NOTE: changeset's config structure could change so we would like to do some validation
-  if (!Array.isArray(packagesToBump) || packagesToBump.length === 0) {
+  if (!Array.isArray(patterns) || patterns.length === 0) {
     console.log(
       chalk.red(
         `Can't find the list of application deployment packages to bump versions for! Make sure to check changeset config file '.changeset/config.json'`,
@@ -49,7 +53,17 @@ export const getPackagesToBumpVersion = () => {
     );
     process.exit(1);
   }
-  return packagesToBump;
+
+  return micromatch(
+    execSync('yarn workspaces list --json', {
+      encoding: 'utf-8',
+      cwd: ROOT_DIR,
+    })
+      .split('\n')
+      .filter(Boolean)
+      .map((text) => JSON.parse(text).name),
+    patterns,
+  );
 };
 
 export const generateVersionBumpChangeset = (packagesToBump, bumpType) => {
