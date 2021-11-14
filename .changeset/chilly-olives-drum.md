@@ -19,5 +19,6 @@
 '@finos/legend-studio-deployment': patch
 '@finos/legend-studio-extension-management-toolkit': patch
 '@finos/legend-studio-extension-query-builder': patch
-'@finos/legend-github-bot': patch
 ---
+
+pr: 665
