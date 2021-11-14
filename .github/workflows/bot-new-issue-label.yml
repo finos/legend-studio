@@ -28,7 +28,8 @@ jobs:
       - name: Install dependencies
         working-directory: ./scripts/github-bot
         # Avoid Yarn failing installation due to modified lock file
-        run: yarn install --immutable=false
+        # See https://github.com/yarnpkg/berry/discussions/3486
+        run: yarn install --no-immutable
       - name: Label new issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
