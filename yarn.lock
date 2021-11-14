@@ -2456,6 +2456,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-github-bot@workspace:scripts/github-bot":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-github-bot@workspace:scripts/github-bot"
+  dependencies:
+    "@actions/core": 1.6.0
+    "@actions/github": 5.0.0
+    chalk: 4.1.2
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-graph@workspace:*, @finos/legend-graph@workspace:packages/legend-graph":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph@workspace:packages/legend-graph"

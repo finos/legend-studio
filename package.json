@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "scripts/github-bot"
   ],
   "scripts": {
     "build": "yarn clean && yarn workspaces foreach --topological-dev --verbose run build",

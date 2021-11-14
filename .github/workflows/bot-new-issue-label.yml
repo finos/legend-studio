@@ -26,7 +26,10 @@ jobs:
         with:
           node-version: 14.x
       - name: Install dependencies
-        run: yarn
+        working-directory: ./scripts/bot
+        # Avoid Yarn failing installation due to modified lock file
+        # See https://github.com/finos/legend-studio/tree/master/scripts/bot
+        run: yarn --immutable=false
       - name: Label new issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,4 +37,5 @@ jobs:
           ORGANIZATION_NAME: finos
           TEAM_NAME: legend-contributors
           TEAM_LABEL: 'Studio Core Team'
-        run: node ./scripts/workflow/labelNewIssue.js
+        working-directory: ./scripts/bot
+        run: node ./labelNewIssue.js
