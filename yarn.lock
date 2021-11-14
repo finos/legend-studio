@@ -2456,16 +2456,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-github-bot@workspace:scripts/github-bot":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-github-bot@workspace:scripts/github-bot"
-  dependencies:
-    "@actions/core": 1.6.0
-    "@actions/github": 5.0.0
-    chalk: 4.1.2
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-graph@workspace:*, @finos/legend-graph@workspace:packages/legend-graph":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph@workspace:packages/legend-graph"
@@ -2483,6 +2473,16 @@ __metadata:
     rimraf: 3.0.2
     serializr: 2.0.5
     typescript: 4.4.4
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-internal-github-bot@workspace:scripts/github-bot":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-internal-github-bot@workspace:scripts/github-bot"
+  dependencies:
+    "@actions/core": 1.6.0
+    "@actions/github": 5.0.0
+    chalk: 4.1.2
   languageName: unknown
   linkType: soft
 

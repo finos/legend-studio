@@ -1,5 +1,5 @@
 {
-  "name": "@finos/legend-github-bot",
+  "name": "@finos/legend-internal-github-bot",
   "private": true,
   "description": "Github bot/automation for finos/legend-studio repository",
   "repository": {
