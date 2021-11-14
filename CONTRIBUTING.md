@@ -124,37 +124,20 @@ Now, you're good to start. After the setup step, you can start the application y
 yarn dev # alias: `yarn start` - this by default will start Studio
 ```
 
-Each workspace in the monorepo should have a `dev` script. Run these (in separate terminal tabs) when you are making changes in these workspaces to rebuild on change. Otherwise, after making change, you have to manually rebuild the workspace using the `build` script. Following are some useful scripts for development.
+Each workspace in the monorepo should have a `dev` script. Run these (in separate terminal tabs) when you are making changes in these workspaces to rebuild on change. However, this requires building packages following the dependency order. As such, we recommend the following workflow using multiple terminal tabs:
 
 ```sh
-# Clean and build all workspaces.
-#
-# NOTE: To save time, keep the build scope as close to your changes as possible.
-#
-# In general, you can call a script from a particular workspace using
-# the following command construct
-#   yarn workspace <workspace-name> <workspace-script>
-# e.g. To call `build` script of workspace `lib1`:
-#   yarn workspace lib1 build
-#
-# There are also other build scripts within each workspace which targets a smaller build scopes.
-yarn build
-
-# Using project reference, build and develop Typescript files in all workspaces.
-# This is usually sufficient if you make code change not related to styling.
-yarn dev:tsc
-```
-
-As such, the recommended workflow is to have multiple terminal tabs opened
-
-```sh
-# one for the application served with Webpack
+# keep one terminal tab for auto-building and serving the web application using Webpack
 yarn dev
 
-# another tab is for Typescript compiler
-# NOTE: this process could take some time in certain cases
-# so if you need to fine tune, you can use `yarn workspace ... dev` instead
+# have other terminal tabs for auto-building code and style
 yarn dev:tsc
+yarn dev:sass
+
+# NOTE: Sometimes, it might be better to call `dev` for each workspace, either `cd`
+# to the workspace and run the script, or using `yarn workspace <workspace-name> <workspace-script>`
+# syntax to call the script from anywhere in the project.
+# e.g. To call `build` script of workspace `lib1`, use the command `yarn workspace lib1 build`
 ```
 
 #### :construction: Testing your code

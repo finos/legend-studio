@@ -31,7 +31,7 @@
     "build:tsc": "tsc --project ./tsconfig.build.json",
     "clean": "rimraf \"lib\" \"build\"",
     "dev": "npm-run-all --parallel dev:sass dev:tsc",
-    "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
+    "dev:sass": "sass style lib --watch",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
