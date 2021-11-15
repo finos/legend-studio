@@ -26,10 +26,7 @@ jobs:
         with:
           node-version: 14.x
       - name: Install dependencies
-        working-directory: ./scripts/github-bot
-        # Avoid Yarn failing installation due to modified lock file
-        # See https://github.com/yarnpkg/berry/discussions/3486
-        run: yarn install --no-immutable
+        run: yarn workspaces focus --production @finos/legend-internal-github-bot
       - name: Label new issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
