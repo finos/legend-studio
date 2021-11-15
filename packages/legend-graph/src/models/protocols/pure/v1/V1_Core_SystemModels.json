@@ -20,21 +20,17 @@
       "tags": ["doc", "todo"]
     },
     {
+      "stereotypes": ["bitemporal", "businesstemporal", "processingtemporal"],
+      "package": "meta::pure::profiles",
+      "_type": "profile",
+      "name": "temporal",
+      "tags": []
+    },
+    {
       "package": "meta::pure::metamodel::type",
       "_type": "class",
       "name": "Any",
       "properties": []
-    },
-    {
-      "_type": "profile",
-      "name": "temporal",
-      "package": "meta::pure::profiles",
-      "stereotypes": [
-        "bitemporal",
-        "businesstemporal",
-        "processingtemporal"
-      ],
-      "tags": []
     }
   ]
 }
