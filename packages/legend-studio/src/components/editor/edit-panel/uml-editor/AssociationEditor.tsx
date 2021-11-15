@@ -76,13 +76,22 @@ const AssociationPropertyBasicEditor = observer(
     association: Association;
     property: Property;
     selectProperty: () => void;
+    checkDuplicateValue: (val: string) => void;
     isReadOnly: boolean;
   }) => {
-    const { association, property, selectProperty, isReadOnly } = props;
+    const {
+      association,
+      property,
+      selectProperty,
+      checkDuplicateValue,
+      isReadOnly,
+    } = props;
     const editorStore = useEditorStore();
     // Name
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      checkDuplicateValue(event.target.value);
       property.setName(event.target.value);
+    };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     // FIXME: make this so that association can only refer to classes from the same space
@@ -342,6 +351,16 @@ export const AssociationEditor = observer(
         association.deleteTaggedValue(val);
     // Property
     const deselectProperty = (): void => setSelectedProperty(undefined);
+    const checkDuplicateValue = (val: string): void => {
+      if (
+        association.properties[0].name === val ||
+        association.properties[1].name === val
+      ) {
+        editorStore.applicationStore.notifyWarning(
+          `Duplicated property '${val}' in association '${association.path}'`,
+        );
+      }
+    };
     // Drag and Drop
     const handleDropTaggedValue = useCallback(
       (item: UMLEditorElementDropTarget): void => {
@@ -451,6 +470,7 @@ export const AssociationEditor = observer(
                       selectProperty={selectProperty(
                         association.getFirstProperty(),
                       )}
+                      checkDuplicateValue={checkDuplicateValue}
                       isReadOnly={isReadOnly}
                     />
                     <AssociationPropertyBasicEditor
@@ -459,6 +479,7 @@ export const AssociationEditor = observer(
                       selectProperty={selectProperty(
                         association.getSecondProperty(),
                       )}
+                      checkDuplicateValue={checkDuplicateValue}
                       isReadOnly={isReadOnly}
                     />
                   </div>

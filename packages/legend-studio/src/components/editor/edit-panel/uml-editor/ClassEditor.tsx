@@ -89,18 +89,27 @@ const PropertyBasicEditor = observer(
     property: Property;
     selectProperty: () => void;
     deleteProperty: () => void;
+    checkDuplicateProperty: (val: string) => void;
     isReadOnly: boolean;
   }) => {
-    const { property, _class, selectProperty, deleteProperty, isReadOnly } =
-      props;
+    const {
+      property,
+      _class,
+      selectProperty,
+      deleteProperty,
+      checkDuplicateProperty,
+      isReadOnly,
+    } = props;
     const editorStore = useEditorStore();
     const isInheritedProperty =
       property.owner instanceof Class && property.owner !== _class;
     const isPropertyFromAssociation = property.owner instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
     // Name
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      checkDuplicateProperty(event.target.value);
       property.setName(event.target.value);
+    };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
@@ -892,6 +901,16 @@ export const ClassFormEditor = observer(
           setSelectedProperty(undefined);
         }
       };
+    const checkDuplicateProperty = (val: string): void => {
+      if (
+        _class.properties.find((property) => property.name === val) !==
+        undefined
+      ) {
+        editorStore.applicationStore.notifyWarning(
+          `Duplicated property '${val}' in class '${_class.path}'`,
+        );
+      }
+    };
     // Add button
     let addButtonTitle = '';
     switch (selectedTab) {
@@ -1201,6 +1220,7 @@ export const ClassFormEditor = observer(
                           _class={_class}
                           deleteProperty={deleteProperty(property)}
                           selectProperty={selectProperty(property)}
+                          checkDuplicateProperty={checkDuplicateProperty}
                           isReadOnly={isReadOnly}
                         />
                       ))}

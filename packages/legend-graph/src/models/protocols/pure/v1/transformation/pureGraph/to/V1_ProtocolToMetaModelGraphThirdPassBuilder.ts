@@ -105,15 +105,25 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
         }
       }
     });
-    element.properties.forEach((property) =>
-      _class.properties.push(V1_buildProperty(property, this.context, _class)),
-    );
+    const uniqueProperties = new Set<string>();
+    element.properties.forEach((property) => {
+      assertTrue(
+        !uniqueProperties.has(property.name),
+        `Duplicated property '${property.name}' in class '${_class.path}'`,
+      );
+      _class.properties.push(V1_buildProperty(property, this.context, _class));
+      uniqueProperties.add(property.name);
+    });
   }
 
   visit_Association(element: V1_Association): void {
     assertTrue(
       element.properties.length === 2,
       'Association must have exactly 2 properties',
+    );
+    assertTrue(
+      element.properties[0]?.name !== element.properties[1]?.name,
+      `Duplicated property '${element.properties[0]?.name}' in association '${element.name}'`,
     );
     const association = this.context.graph.getAssociation(
       this.context.graph.buildPath(element.package, element.name),

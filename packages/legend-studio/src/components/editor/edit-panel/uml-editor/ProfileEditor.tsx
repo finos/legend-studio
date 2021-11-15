@@ -28,10 +28,17 @@ import type { Profile } from '@finos/legend-graph';
 import { Tag, Stereotype } from '@finos/legend-graph';
 
 const TagBasicEditor = observer(
-  (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {
-    const { tag, deleteValue, isReadOnly } = props;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+  (props: {
+    tag: Tag;
+    deleteValue: () => void;
+    checkDuplicateValue: (val: string) => void;
+    isReadOnly: boolean;
+  }) => {
+    const { tag, deleteValue, checkDuplicateValue, isReadOnly } = props;
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      checkDuplicateValue(event.target.value);
       tag.setValue(event.target.value);
+    };
 
     return (
       <div className="tag-basic-editor">
@@ -64,11 +71,19 @@ const StereotypeBasicEditor = observer(
   (props: {
     stereotype: Stereotype;
     deleteStereotype: () => void;
+    checkDuplicateStereotype: (val: string) => void;
     isReadOnly: boolean;
   }) => {
-    const { stereotype, deleteStereotype, isReadOnly } = props;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const {
+      stereotype,
+      deleteStereotype,
+      checkDuplicateStereotype,
+      isReadOnly,
+    } = props;
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      checkDuplicateStereotype(event.target.value);
       stereotype.setValue(event.target.value);
+    };
 
     return (
       <div className="stereotype-basic-editor">
@@ -138,6 +153,23 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
     (val: Tag): (() => void) =>
     (): void =>
       profile.deleteTag(val);
+  const checkDuplicateStereotype = (val: string): void => {
+    if (
+      profile.stereotypes.find((stereotype) => stereotype.value === val) !==
+      undefined
+    ) {
+      editorStore.applicationStore.notifyWarning(
+        `Duplicated stereotype '${val}' in profile '${profile.path}'`,
+      );
+    }
+  };
+  const checkDuplicateTag = (val: string): void => {
+    if (profile.tags.find((tag) => tag.value === val) !== undefined) {
+      editorStore.applicationStore.notifyWarning(
+        `Duplicated tag '${val}' in profile '${profile.path}'`,
+      );
+    }
+  };
   return (
     <div className="uml-element-editor profile-editor">
       <div className="panel">
@@ -189,6 +221,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   key={tag.uuid}
                   tag={tag}
                   deleteValue={deleteTag(tag)}
+                  checkDuplicateValue={checkDuplicateTag}
                   isReadOnly={isReadOnly}
                 />
               ))}
@@ -201,6 +234,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   key={stereotype.uuid}
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
+                  checkDuplicateStereotype={checkDuplicateStereotype}
                   isReadOnly={isReadOnly}
                 />
               ))}
