@@ -3,10 +3,9 @@
   "compilerOptions": {
     "outDir": "lib",
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
-    "rootDir": "src",
-    "jsx": "react-jsxdev"
+    "rootDir": "src"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
+  "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [
     { "path": "../legend-shared" },
     { "path": "../legend-model-storage" }
