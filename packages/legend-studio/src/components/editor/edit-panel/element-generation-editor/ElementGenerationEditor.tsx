@@ -62,8 +62,12 @@ const NewFileGenerationModal = observer(
     const close = (): void =>
       elementGenerationState.setShowNewFileGenerationModal(false);
     const handleEnter = (): void => nameRef.current?.focus();
-    const handleSubmit = (): void => {
-      if (servicePath && !isReadOnly) {
+    const elementAlreadyExists =
+      editorStore.graphManagerState.graph.allOwnElements
+        .map((el) => el.path)
+        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
+    const create = (): void => {
+      if (servicePath && !isReadOnly && !elementAlreadyExists) {
         elementGenerationState.promoteToFileGeneration(
           packagePath,
           serviceName,
@@ -73,14 +77,10 @@ const NewFileGenerationModal = observer(
     };
     const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
       event.preventDefault();
-      handleSubmit();
+      create();
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
-    const elementAlreadyExists =
-      editorStore.graphManagerState.graph.allOwnElements
-        .map((el) => el.path)
-        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
 
     return (
       <Dialog
@@ -99,20 +99,24 @@ const NewFileGenerationModal = observer(
           <div className="modal__title">
             Promote file generation specification
           </div>
-          <input
-            ref={nameRef}
-            className="input mapping-execution-panel__service__modal__service-path"
-            disabled={isReadOnly}
-            value={servicePath}
-            spellCheck={false}
-            onChange={changeValue}
-            placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
-          />
-          {elementAlreadyExists && (
-            <div>Element with same path already exists</div>
-          )}
+          <div className="input-group">
+            <input
+              ref={nameRef}
+              className="modal--simple__input input--dark input-group__input"
+              disabled={isReadOnly}
+              value={servicePath}
+              spellCheck={false}
+              onChange={changeValue}
+              placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
+            />
+            {elementAlreadyExists && (
+              <div className="input-group__error-message">
+                Element with same path already exists
+              </div>
+            )}
+          </div>
           <button
-            className="btn btn--primary u-pull-right"
+            className="modal--simple__btn btn btn--dark btn--primary u-pull-right"
             disabled={isReadOnly || elementAlreadyExists}
             color="primary"
           >

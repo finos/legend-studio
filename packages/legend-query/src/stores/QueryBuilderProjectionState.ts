@@ -594,7 +594,7 @@ export class QueryBuilderProjectionState {
       return;
     }
     if (
-      !node.mapped ||
+      !node.mappingData.mapped ||
       !this.queryBuilderState.querySetupState._class ||
       !this.queryBuilderState.querySetupState.mapping
     ) {

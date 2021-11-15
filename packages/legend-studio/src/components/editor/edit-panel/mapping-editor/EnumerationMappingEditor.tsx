@@ -354,17 +354,17 @@ export const EnumerationMappingEditor = observer(
     );
     useEffect(() => {
       if (!isReadOnly) {
-        new MappingElementDecorator().visitEnumerationMapping(
+        new MappingElementDecorator(editorStore).visitEnumerationMapping(
           enumerationMapping,
         );
       }
       return isReadOnly
         ? noop()
         : (): void =>
-            new MappingElementDecorationCleaner().visitEnumerationMapping(
-              enumerationMapping,
-            );
-    }, [enumerationMapping, isReadOnly]);
+            new MappingElementDecorationCleaner(
+              editorStore,
+            ).visitEnumerationMapping(enumerationMapping);
+    }, [enumerationMapping, isReadOnly, editorStore]);
     return (
       <div data-testid={STUDIO_TEST_ID.MAIN_EDITOR} className="editor__main">
         <div className="mapping-element-editor enumeration-mapping-editor">

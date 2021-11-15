@@ -20,6 +20,11 @@
   justify-content: center;
 }
 
+@mixin flexHCenter {
+  display: flex;
+  justify-content: center;
+}
+
 @mixin flexVCenter {
   display: flex;
   align-items: center;

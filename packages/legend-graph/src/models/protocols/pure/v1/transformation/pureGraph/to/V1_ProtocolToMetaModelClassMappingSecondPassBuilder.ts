@@ -155,7 +155,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
             this.context,
             pureInstanceSetImplementation,
             pureInstanceSetImplementation,
-            this.parent.enumerationMappings,
+            getAllEnumerationMappings(this.parent),
           ),
         ),
       ) as PurePropertyMapping[];
@@ -318,7 +318,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
             this.context,
             aggragetionAwareInstanceSetImplementation,
             aggragetionAwareInstanceSetImplementation,
-            this.parent.enumerationMappings,
+            getAllEnumerationMappings(this.parent),
             new Map<string, TableAlias>(),
             [
               ...getAllClassMappings(mapping),

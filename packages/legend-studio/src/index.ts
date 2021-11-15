@@ -60,6 +60,16 @@ export {
 export { STUDIO_TEST_ID } from './components/StudioTestID';
 export * from './stores/EditorStoreTestUtils';
 
+export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
+export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+export { NewConnectionValueDriver } from './stores/NewElementState';
+export type { UMLEditorElementDropTarget } from './stores/shared/DnDUtil';
+export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
+export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
+export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
+export { getElementIcon } from './components/shared/ElementIconUtils';
+
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
 export {
@@ -70,13 +80,6 @@ export {
 export * from './stores/DSLGenerationSpecification_StudioPlugin_Extension';
 
 export * from './stores/StoreRelational_StudioPlugin_Extension';
+
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
-export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
-export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
-export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-export { NewConnectionValueDriver } from './stores/NewElementState';
-export type { UMLEditorElementDropTarget } from './stores/shared/DnDUtil';
-export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
-export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
-export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
-export { getElementIcon } from './components/shared/ElementIconUtils';
+export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal';

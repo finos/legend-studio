@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { platform } from 'os';
 import { existsSync, readdirSync, copyFileSync, writeFileSync } from 'fs';
 import chalk from 'chalk';
 import { resolve, dirname } from 'path';
@@ -22,7 +21,7 @@ import { execSync } from 'child_process';
 import { resolveFullTsConfig } from '@finos/legend-dev-utils/TypescriptConfigUtils';
 import { mkdirs, copySync } from 'fs-extra';
 import { fileURLToPath } from 'url';
-import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { loadJSModule, loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -32,16 +31,9 @@ const packageJson = loadJSON(resolve(workspaceDir, 'package.json'));
 const workspaceName = packageJson.name;
 
 const preparePublishContent = async () => {
-  const packageConfig = existsSync(resolve(workspaceDir, '_package.config.js'))
-    ? // NOTE: Windows requires prefix `file://` for absolute path
-      (
-        await import(
-          `${platform() === 'win32' ? 'file://' : ''}${resolve(
-            workspaceDir,
-            '_package.config.js',
-          )}`
-        )
-      ).default
+  const packageConfigPath = resolve(workspaceDir, '_package.config.js');
+  const packageConfig = existsSync(packageConfigPath)
+    ? (await loadJSModule(packageConfigPath)).default
     : undefined;
   console.log(`Preparing publish content for workspace ${workspaceName}...`);
 

@@ -185,7 +185,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
    */
   decorate(): void {
     this.mappingElement.accept_SetImplementationVisitor(
-      new MappingElementDecorator(),
+      new MappingElementDecorator(this.editorStore),
     );
     const newPropertyMappingStates: FlatDataPropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(

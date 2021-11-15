@@ -21,6 +21,12 @@ import {
 } from '@finos/legend-shared';
 
 export const GAV_DELIMITER = ':';
+/**
+ * NOTE: `HEAD` alias does not exist in depot server
+ * instead, it uses `master-SNAPSHOT` which to us is not generic enough.
+ */
+export const SNAPSHOT_VERSION_ALIAS = 'HEAD';
+export const LATEST_VERSION_ALIAS = 'latest';
 
 export interface ProjectGAVCoordinates {
   groupId: string;

@@ -1,5 +1,19 @@
 # @finos/legend-extension-dsl-data-space
 
+## 0.2.0
+
+### Minor Changes
+
+- [#653](https://github.com/finos/legend-studio/pull/653) [`397aab2c`](https://github.com/finos/legend-studio/commit/397aab2c4f99e4c92ee60cdd84efa76d3d8126ce) ([@akphi](https://github.com/akphi)) - Create `Enterprise` model explorer view with taxonomy tree to organize data spaces using `meta::pure::profiles::enterprise` tag (see [#617](https://github.com/finos/legend-studio/issues/617)] for more details).
+
+* [#659](https://github.com/finos/legend-studio/pull/659) [`caf3d4aa`](https://github.com/finos/legend-studio/commit/caf3d4aa3a98ca109cabb525eeb7d8615def7343) ([@akphi](https://github.com/akphi)) - Add new panels to data space viewer: a placeholder for test coverage (`WIP`) and a panel to view tagged values and stereotypes.
+
+### Patch Changes
+
+- [#639](https://github.com/finos/legend-studio/pull/639) [`62985e59`](https://github.com/finos/legend-studio/commit/62985e59627b5be2cb75e15f30c13d029014c030) ([@akphi](https://github.com/akphi)) - Allow viewing more informations about a data space when creating a new query in `Legend Query`, such as entitlement, project links (the project that the data space resides as well as the project that the data space refers to), test data, etc.
+
+* [#659](https://github.com/finos/legend-studio/pull/659) [`caf3d4aa`](https://github.com/finos/legend-studio/commit/caf3d4aa3a98ca109cabb525eeb7d8615def7343) ([@akphi](https://github.com/akphi)) - Allow setting query using dataspaces coming from latest `snapshot` releases.
+
 ## 0.1.1
 
 ## 0.1.0

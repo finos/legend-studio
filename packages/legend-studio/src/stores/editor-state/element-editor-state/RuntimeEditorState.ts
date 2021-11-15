@@ -36,7 +36,6 @@ import type {
   Connection,
   PackageableConnection,
   SetImplementation,
-  PureModel,
   PackageableElementReference,
 } from '@finos/legend-graph';
 import {
@@ -57,9 +56,8 @@ import {
   FlatData,
   FlatDataConnection,
   PackageableElementExplicitReference,
-  Table,
-  View,
   Database,
+  TableAlias,
   DatabaseType,
   RelationalDatabaseConnection,
   StaticDatasourceSpecification,
@@ -70,28 +68,31 @@ import type { DSLMapping_StudioPlugin_Extension } from '../../DSLMapping_StudioP
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
   setImplementation: SetImplementation,
-  graph: PureModel,
+  editorStore: EditorStore,
 ): Store | undefined => {
-  const sourceElement = getMappingElementSource(setImplementation);
+  const sourceElement = getMappingElementSource(
+    setImplementation,
+    editorStore.pluginManager.getStudioPlugins(),
+  );
   if (sourceElement instanceof Class) {
-    return graph.modelStore;
+    return editorStore.graphManagerState.graph.modelStore;
   } else if (sourceElement instanceof RootFlatDataRecordType) {
     return sourceElement.owner.owner;
-  } else if (sourceElement instanceof Table || sourceElement instanceof View) {
-    return sourceElement.schema.owner;
+  } else if (sourceElement instanceof TableAlias) {
+    return sourceElement.relation.ownerReference.value;
   }
   return undefined;
 };
 
 const getStoresFromMappings = (
   mappings: Mapping[],
-  graph: PureModel,
+  editorStore: EditorStore,
 ): Store[] =>
   uniq(
     mappings.flatMap((mapping) =>
       getAllClassMappings(mapping)
         .map((setImplementation) =>
-          getClassMappingStore(setImplementation, graph),
+          getClassMappingStore(setImplementation, editorStore),
         )
         .filter(isNonNullable),
     ),
@@ -106,17 +107,22 @@ const getStoresFromMappings = (
 export const decorateRuntimeWithNewMapping = (
   runtime: Runtime,
   mapping: Mapping,
-  graph: PureModel,
+  editorStore: EditorStore,
 ): void => {
   const runtimeValue =
     runtime instanceof RuntimePointer
       ? runtime.packageableRuntime.value.runtimeValue
       : guaranteeType(runtime, EngineRuntime);
-  getStoresFromMappings([mapping], graph).forEach((store) =>
+  getStoresFromMappings([mapping], editorStore).forEach((store) =>
     runtimeValue.addUniqueStoreConnectionsForStore(store),
   );
   const sourceClasses = mapping.classMappings
-    .map((classMapping) => getMappingElementSource(classMapping))
+    .map((classMapping) =>
+      getMappingElementSource(
+        classMapping,
+        editorStore.pluginManager.getStudioPlugins(),
+      ),
+    )
     .filter(
       (sourceElement): sourceElement is Class => sourceElement instanceof Class,
     );
@@ -146,7 +152,9 @@ export const decorateRuntimeWithNewMapping = (
         new IdentifiedConnection(
           runtimeValue.generateIdentifiedConnectionId(),
           new JsonModelConnection(
-            PackageableElementExplicitReference.create(graph.modelStore),
+            PackageableElementExplicitReference.create(
+              editorStore.graphManagerState.graph.modelStore,
+            ),
             PackageableElementExplicitReference.create(_class),
           ),
         ),
@@ -200,6 +208,7 @@ export const getConnectionsForModelStoreWithClass = (
  */
 export const getRuntimeExplorerTreeData = (
   runtime: Runtime,
+  editorStore: EditorStore,
 ): TreeData<RuntimeExplorerTreeNodeData> => {
   const runtimeValue =
     runtime instanceof RuntimePointer
@@ -210,7 +219,12 @@ export const getRuntimeExplorerTreeData = (
   const allSourceClassesFromMappings = uniq(
     runtimeValue.mappings.flatMap((mapping) =>
       getAllClassMappings(mapping.value)
-        .map((setImplementation) => getMappingElementSource(setImplementation))
+        .map((setImplementation) =>
+          getMappingElementSource(
+            setImplementation,
+            editorStore.pluginManager.getStudioPlugins(),
+          ),
+        )
         .filter((source): source is Class => source instanceof Class),
     ),
   );
@@ -480,7 +494,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
         this.runtimeEditorState.runtimeValue.mappings.map(
           (mapping) => mapping.value,
         ),
-        this.editorStore.graphManagerState.graph,
+        this.editorStore,
       );
       if (!stores.includes(this.store)) {
         this.runtimeEditorState.openTabFor(
@@ -616,7 +630,10 @@ export class RuntimeEditorState {
       runtime instanceof RuntimePointer
         ? runtime.packageableRuntime.value.runtimeValue
         : guaranteeType(runtime, EngineRuntime);
-    this.explorerTreeData = getRuntimeExplorerTreeData(this.runtime);
+    this.explorerTreeData = getRuntimeExplorerTreeData(
+      this.runtime,
+      this.editorStore,
+    );
     this.openTabFor(this.runtimeValue); // open runtime tab on init
   }
 
@@ -632,7 +649,7 @@ export class RuntimeEditorState {
       decorateRuntimeWithNewMapping(
         this.runtimeValue,
         mapping,
-        this.editorStore.graphManagerState.graph,
+        this.editorStore,
       );
       this.reprocessRuntimeExplorerTree();
     }
@@ -648,11 +665,7 @@ export class RuntimeEditorState {
     newVal: Mapping,
   ): void {
     mappingRef.setValue(newVal);
-    decorateRuntimeWithNewMapping(
-      this.runtimeValue,
-      newVal,
-      this.editorStore.graphManagerState.graph,
-    );
+    decorateRuntimeWithNewMapping(this.runtimeValue, newVal, this.editorStore);
     this.reprocessRuntimeExplorerTree();
   }
 
@@ -719,7 +732,7 @@ export class RuntimeEditorState {
   decorateRuntimeConnections(): void {
     getStoresFromMappings(
       this.runtimeValue.mappings.map((mapping) => mapping.value),
-      this.editorStore.graphManagerState.graph,
+      this.editorStore,
     ).forEach((store) =>
       this.runtimeValue.addUniqueStoreConnectionsForStore(store),
     );
@@ -780,7 +793,7 @@ export class RuntimeEditorState {
     const openedTreeNodeIds = Array.from(this.explorerTreeData.nodes.values())
       .filter((node) => node.isOpen)
       .map((node) => node.id);
-    const treeData = getRuntimeExplorerTreeData(this.runtime);
+    const treeData = getRuntimeExplorerTreeData(this.runtime, this.editorStore);
     openedTreeNodeIds.forEach((nodeId) => {
       const node = treeData.nodes.get(nodeId);
       if (node && !node.isOpen) {

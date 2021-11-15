@@ -163,16 +163,16 @@ export const OperationSetImplementationEditor = observer(
     useEffect(() => {
       if (!isReadOnly) {
         setImplementation.accept_SetImplementationVisitor(
-          new MappingElementDecorator(),
+          new MappingElementDecorator(editorStore),
         );
       }
       return isReadOnly
         ? noop()
         : (): void =>
             setImplementation.accept_SetImplementationVisitor(
-              new MappingElementDecorationCleaner(),
+              new MappingElementDecorationCleaner(editorStore),
             );
-    }, [setImplementation, isReadOnly]);
+    }, [setImplementation, isReadOnly, editorStore]);
 
     return (
       <div className="mapping-element-editor__content">

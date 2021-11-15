@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
 import {
@@ -43,15 +43,15 @@ export const QueryBuilderDialog = observer(() => {
   const [isMaximized, setIsMaximized] = useState(false);
   const toggleMaximize = (): void => setIsMaximized(!isMaximized);
   const closeQueryBuilder = (): void => {
-    flowResult(queryBuilderExtensionState.setOpenQueryBuilder(false)).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
+    flowResult(
+      queryBuilderExtensionState.setEmbeddedQueryBuilderMode(undefined),
+    ).catch(applicationStore.alertIllegalUnhandledError);
     queryBuilderExtensionState.reset();
   };
 
   return (
     <Dialog
-      open={Boolean(queryBuilderExtensionState.openQueryBuilder)}
+      open={Boolean(queryBuilderExtensionState.mode)}
       onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
       classes={{
         root: 'editor-modal__root-container',
@@ -68,6 +68,9 @@ export const QueryBuilderDialog = observer(() => {
       >
         <div className="query-builder__dialog__header">
           <div className="query-builder__dialog__header__actions">
+            {queryBuilderExtensionState.mode?.actionConfigs.map((config) => (
+              <Fragment key={config.key}>{config.renderer()}</Fragment>
+            ))}
             <button
               className="query-builder__dialog__header__action"
               tabIndex={-1}

@@ -103,9 +103,9 @@ test(
     );
 
     expect(getRootSetImplementation(mapping, _personClass)).toBe(
-      rootNode.setImpl,
+      rootNode.mappingData.targetSetImpl,
     );
-    expect(rootNode.mapped).toBe(true);
+    expect(rootNode.mappingData.mapped).toBe(true);
 
     // simpleProjection
     queryBuilderState.initialize(getRawLambda(TEST_DATA__simpleProjection));

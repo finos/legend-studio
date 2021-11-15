@@ -22,6 +22,10 @@
 
 ## How did you test this change?
 
+- [ ] Test(s) added
+- [ ] Manual testing (please provide screenshots/recordings)
+- [ ] No testing (please provide an explanation)
+
 <!--
   Demonstrate the code is solid. Screenshots/videos if the pull request changes the user interface.
   How exactly did you verify that your PR solves the issue you wanted to solve?

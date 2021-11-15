@@ -61,7 +61,10 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared';
-import { QueryBuilderState } from '../QueryBuilderState';
+import {
+  QueryBuilderState,
+  StandardQueryBuilderMode,
+} from '../QueryBuilderState';
 import { QueryPluginManager } from '../../application/QueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
@@ -237,7 +240,7 @@ describe(
       const queryBuilderState = new QueryBuilderState(
         applicationStore,
         graphManagerState,
-        {},
+        new StandardQueryBuilderMode(),
       );
       // do the check using input and output lambda
       const rawLambda = inputLambda ?? lambda;

@@ -5,17 +5,10 @@
     { "repo": "finos/legend-studio" }
   ],
   "commit": false,
-  "linked": [
-    [
-      "@finos/legend-studio-app",
-      "@finos/legend-studio-deployment",
-      "@finos/legend-query-app",
-      "@finos/legend-query-deployment"
-    ]
-  ],
+  "linked": [["@finos/legend-*-app", "@finos/legend-*-deployment"]],
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "bumpVersionsWithWorkspaceProtocolOnly": true,
-  "ignore": []
+  "ignore": ["@finos/legend-internal-*"]
 }

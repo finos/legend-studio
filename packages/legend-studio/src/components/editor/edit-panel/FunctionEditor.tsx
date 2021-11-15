@@ -567,6 +567,7 @@ export const FunctionMainEditor = observer(
               expectedType={functionElement.returnType.value}
               forceBackdrop={false}
               forceExpansion={true}
+              disablePopUp={true}
             />
           </div>
         </div>

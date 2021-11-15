@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-query-builder",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Legend Studio preset for query builder",
   "keywords": [
     "legend",
@@ -31,7 +31,7 @@
     "build:tsc": "tsc --project ./tsconfig.build.json",
     "clean": "rimraf \"lib\" \"build\"",
     "dev": "npm-run-all --parallel dev:sass dev:tsc",
-    "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
+    "dev:sass": "sass style lib --watch",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
@@ -51,7 +51,7 @@
     "@finos/legend-studio": "workspace:*",
     "@material-ui/core": "4.12.3",
     "@types/react": "17.0.34",
-    "mobx": "6.3.6",
+    "mobx": "6.3.7",
     "mobx-react-lite": "3.2.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -59,10 +59,10 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.11.0",
+    "@testing-library/dom": "8.11.1",
     "@testing-library/react": "12.1.2",
     "cross-env": "7.0.3",
-    "eslint": "8.1.0",
+    "eslint": "8.2.0",
     "jest": "27.3.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",

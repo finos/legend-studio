@@ -394,7 +394,7 @@ export const QueryBuilderParameterPanel = observer(
     const { queryBuilderState } = props;
     const queryParameterState = queryBuilderState.queryParametersState;
     const parametersDisabled = Boolean(
-      queryBuilderState.config.parametersDisabled,
+      queryBuilderState.mode.isParametersDisabled,
     );
     const addParameter = (): void => {
       if (!parametersDisabled) {

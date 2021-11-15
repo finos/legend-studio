@@ -664,7 +664,7 @@ export class NewElementState {
           decorateRuntimeWithNewMapping(
             runtimeValue,
             mapping,
-            this.editorStore.graphManagerState.graph,
+            this.editorStore,
           );
         }
         service.setExecution(

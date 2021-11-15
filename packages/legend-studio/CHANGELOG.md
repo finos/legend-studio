@@ -1,5 +1,39 @@
 # @finos/legend-studio
 
+## 1.0.0
+
+### Major Changes
+
+- [#642](https://github.com/finos/legend-studio/pull/642) [`729e248`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** The handling of multiple SDLC instances has been reworked, to target a specific server option in the config, the URL must now include an additional prefix `sdlc-` to the server key, for example, `/studio/myServer/...` now becomes `/studio/sdlc-myServer/...`. On the config side, when `sdlc` field is configured with a list of option, we expect exactly one option to declare `default: true` and this would be used to the default option - _the old behavior is that the default option is the one with key of value `-`_.
+
+* [#659](https://github.com/finos/legend-studio/pull/659) [`caf3d4aa`](https://github.com/finos/legend-studio/commit/caf3d4aa3a98ca109cabb525eeb7d8615def7343) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Genericize `Studio` plugin methods to generate `Edit Query` buttons to generate any query editor action: i.e. `MappingExecutionQueryEditorRendererConfiguration -> MappingExecutionQueryEditorActionConfiguration`, etc.
+
+- [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update the shape of `ApplicationPageRenderEntry` to take a unique `key` and multiple `urlPatterns`. Also, we nolonger automatically decorate the pattern to pick up the SDLC instance anymore, so plugin authors who need this will need to manually modify their URL patterns with the function `generateRoutePatternWithSDLCServerKey()` that we now expose.
+
+### Minor Changes
+
+- [#654](https://github.com/finos/legend-studio/pull/654) [`c22549e8`](https://github.com/finos/legend-studio/commit/c22549e8a1cfc567669255a862449819f19894dd) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for `class mapping` decorators in form mode
+
+* [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - Allow getting link to element in a particular version, revision, and project (via `SDLC` or via `Depot`) in viewer mode.
+
+- [#639](https://github.com/finos/legend-studio/pull/639) [`62985e59`](https://github.com/finos/legend-studio/commit/62985e59627b5be2cb75e15f30c13d029014c030) ([@akphi](https://github.com/akphi)) - Allow accessing viewer mode using [GAV coordinates] (i.e. `groupId`, `artifactId`, and `versionId`). As this fetches model data from `Depot` server, in this mode, certain `SDLC` [features will not be supported](https://github.com/finos/legend-studio/issues/638). The URL pattern for this is `/view/${groupId}:${artifactId}:${versionId}`, e.g. `/view/legend.org.test:legend-test-project:latest`.
+
+* [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - Introduce `EditorMode` as an extension mechanism for `EditorStore` to accomondate for differentiating behaviors between `viewer`, `review`, `conflict-resolution` modes, etc. (for more details, see [#317](https://github.com/finos/legend-studio/issues/317)).
+
+### Patch Changes
+
+- [#629](https://github.com/finos/legend-studio/pull/629) [`2d855dc`](https://github.com/finos/legend-studio/commit/2d855dc1e74f3d3cbfedbdf9750730ffe52d4cdd) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix a problem with escaping of single quote character which causes service tests created in Studio fail ([#586](https://github.com/finos/legend-studio/issues/586)), this can be considered a workaround until we figure out a strategy for the discrepancies in mapping test and service test runners in `Engine` (see [finos/legend-engine#429](https://github.com/finos/legend-engine/issues/429))
+
+* [#661](https://github.com/finos/legend-studio/pull/661) [`5124f7b6`](https://github.com/finos/legend-studio/commit/5124f7b63ab9a7b7224df28b50c4f0f9fec753cd) ([@gayathrir11](https://github.com/gayathrir11)) - Add form support for proxy in `Snowflake` connection.
+
+- [#662](https://github.com/finos/legend-studio/pull/662) [`fb8bd11c`](https://github.com/finos/legend-studio/commit/fb8bd11cb958b2d92e6f68e22db974569832bccf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Properly process enumeration mappings in includes mapping ([#658](https://github.com/finos/legend-studio/issues/658)).
+
+* [#632](https://github.com/finos/legend-studio/pull/632) [`a7ade917`](https://github.com/finos/legend-studio/commit/a7ade917da293d4efe062a2a8e569c6f8d4c54d7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add workflow jobs viewer with the ability to retry/run/cancel individual jobs.
+
+- [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - Allow user to select the instances of SDLC server via a dropdown menu on the header. Note that this only shows when there are multiple SDLC servers available in the config.
+
+* [#645](https://github.com/finos/legend-studio/pull/645) [`dc50b13a`](https://github.com/finos/legend-studio/commit/dc50b13a845916b21fa3146aff730bfee9f37df1) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Replace `Table|View` with `TableAlias` as the relational mapping source, i.e `MappingElementSource`. Fixes generating mapping test with nested databases (see [#651](https://github.com/finos/legend-studio/issues/651)] for more details).
+
 ## 0.4.1
 
 ## 0.4.0

@@ -77,6 +77,7 @@ import {
 import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
 import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext';
 import {
+  getAllEnumerationMappings,
   getClassMappingById,
   getClassMappingsByClass,
 } from '../../../../../../../helpers/MappingHelper';
@@ -635,7 +636,9 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             this.context,
             embedded,
             this.topParent,
-            this.topParent?.parent.enumerationMappings ?? [],
+            this.topParent?.parent
+              ? getAllEnumerationMappings(this.topParent.parent)
+              : [],
             this.tableAliasMap,
           ),
         ),
@@ -693,7 +696,9 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             this.context,
             otherwiseEmbedded,
             this.topParent,
-            this.topParent?.parent.enumerationMappings ?? [],
+            this.topParent?.parent
+              ? getAllEnumerationMappings(this.topParent.parent)
+              : [],
             this.tableAliasMap,
           ),
         ),
@@ -704,7 +709,9 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           this.context,
           otherwiseEmbedded,
           this.topParent,
-          this.topParent?.parent.enumerationMappings ?? [],
+          this.topParent?.parent
+            ? getAllEnumerationMappings(this.topParent.parent)
+            : [],
           this.tableAliasMap,
         ),
       ),

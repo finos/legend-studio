@@ -1,0 +1,42 @@
+name: (Manual) Prepare New Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version Bump Type (major/minor)'
+        required: true
+        default: 'minor'
+
+jobs:
+  prepare-new-release:
+    # There is currently no way to limit workflow dispatch to only allow default branch
+    # so we need to restrict it here
+    # See https://github.community/t/limit-branch-for-workflow-dispatch/122099
+    if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
+    name: Prepare New Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.4.0
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v2.1.4
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: yarn
+      - name: Create PR for new release version bump
+        env:
+          BUMP_TYPE: ${{ github.event.inputs.bump_type }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node ./scripts/release/createVersionBumpChangesetPR.js

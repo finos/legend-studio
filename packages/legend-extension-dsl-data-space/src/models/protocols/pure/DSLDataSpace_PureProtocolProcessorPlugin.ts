@@ -23,6 +23,7 @@ import {
 } from './v1/model/packageableElements/dataSpace/V1_DataSpace';
 import type { PlainObject } from '@finos/legend-shared';
 import {
+  uuid,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   UnsupportedOperationError,
@@ -56,8 +57,10 @@ import type {
   V1_GraphTransformerContext,
   V1_PackageableElement,
   V1_PureModelContextData,
+  V1_TaggedValue,
 } from '@finos/legend-graph';
 import {
+  V1_taggedValueSchema,
   PackageableElementExplicitReference,
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
@@ -67,6 +70,7 @@ import {
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
+  V1_StereotypePtr,
 } from '@finos/legend-graph';
 import {
   Diagram,
@@ -317,6 +321,13 @@ export class ResolvedDataSpaceExecutionContext {
  * element pointers to actual reference, hence this model.
  */
 export class ResolvedDataSpace {
+  taggedValues: {
+    uuid: string;
+    profile: string;
+    tag: string;
+    value: string;
+  }[] = [];
+  stereotypes: { uuid: string; profile: string; stereotype: string }[] = [];
   path!: string;
   groupId!: string;
   artifactId!: string;
@@ -336,6 +347,33 @@ export const getResolvedDataSpace = (
   if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
     const protocol = deserialize(V1_dataSpaceModelSchema, json);
     dataSpace.path = protocol.path;
+    if (Array.isArray(json.taggedValues)) {
+      dataSpace.taggedValues = (
+        json.taggedValues as PlainObject<V1_TaggedValue>[]
+      )
+        .map((taggedValueJson) =>
+          deserialize(V1_taggedValueSchema, taggedValueJson),
+        )
+        .map((taggedValue) => ({
+          uuid: uuid(),
+          profile: taggedValue.tag.profile,
+          tag: taggedValue.tag.value,
+          value: taggedValue.value,
+        }));
+    }
+    if (Array.isArray(json.stereotypes)) {
+      dataSpace.stereotypes = (
+        json.stereotypes as PlainObject<V1_StereotypePtr>[]
+      )
+        .map((stereotypePtrJson) =>
+          deserialize(V1_StereotypePtr, stereotypePtrJson),
+        )
+        .map((stereotypePtr) => ({
+          uuid: uuid(),
+          profile: stereotypePtr.profile,
+          stereotype: stereotypePtr.value,
+        }));
+    }
     dataSpace.groupId = guaranteeNonEmptyString(
       protocol.groupId,
       `Data space 'groupId' field is missing or empty`,
@@ -402,4 +440,37 @@ export const getResolvedDataSpace = (
     return dataSpace;
   }
   throw new UnsupportedOperationError(`Can't resolve data space`, json);
+};
+
+export const extractDataSpaceTaxonomyNodePaths = (
+  json: PlainObject<V1_DataSpace>,
+): string[] => {
+  const ENTERPRISE_PROFILE_PATH = `meta::pure::profiles::enterprise`;
+  const ENTERPRISE_TAXONOMY_NODES_TAG = `taxonomyNodes`;
+  const ENTERPRISE_TAXONOMY_NODES_TAG_VALUE_DELIMITER = `,`;
+
+  const taxonomyNodes = new Set<string>();
+  if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
+    if (Array.isArray(json.taggedValues)) {
+      const taggedValues = (
+        json.taggedValues as PlainObject<V1_TaggedValue>[]
+      ).map((taggedValueJson) =>
+        deserialize(V1_taggedValueSchema, taggedValueJson),
+      );
+      taggedValues
+        .filter(
+          (taggedValue) =>
+            taggedValue.tag.profile === ENTERPRISE_PROFILE_PATH &&
+            taggedValue.tag.value === ENTERPRISE_TAXONOMY_NODES_TAG,
+        )
+        .forEach((taggedValue) => {
+          taggedValue.value
+            .split(ENTERPRISE_TAXONOMY_NODES_TAG_VALUE_DELIMITER)
+            .map((value) => value.trim())
+            .filter((value) => Boolean(value))
+            .forEach((value) => taxonomyNodes.add(value));
+        });
+    }
+  }
+  return Array.from(taxonomyNodes.values());
 };

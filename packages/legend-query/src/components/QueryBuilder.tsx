@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { FaUserSecret, FaSave } from 'react-icons/fa';
+import { FaUserSecret } from 'react-icons/fa';
 import {
   clsx,
   HammerIcon,
@@ -103,50 +103,6 @@ const QueryBuilderStatusBar = observer(
   },
 );
 
-const QueryBuilderHeader = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const applicationStore = useApplicationStore();
-    // const promoteToService = (): void =>
-    //   queryBuilderState.resultState.setShowServicePathModal(true);
-    const saveQuery = (): Promise<void> =>
-      queryBuilderState
-        .saveQuery()
-        .catch(applicationStore.alertIllegalUnhandledError);
-    // const disablePromoteToService = !queryBuilderState.querySetupState.mapping;
-
-    return (
-      <div className="query-builder__header">
-        <div className="query-builder__header__content">
-          <div className="query-builder__header__title"></div>
-          <div className="query-builder__header__actions">
-            <div className="query-builder__header__action">
-              {/* <button
-                className="panel__header__action"
-                onClick={promoteToService}
-                disabled={disablePromoteToService}
-                tabIndex={-1}
-                title="Promote to Service"
-              >
-                <FaRobot />
-              </button> */}
-              <button
-                className="panel__header__action"
-                onClick={saveQuery}
-                disabled={!queryBuilderState.querySetupState.onSave}
-                tabIndex={-1}
-                title="Save Query"
-              >
-                <FaSave />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
-
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -172,36 +128,35 @@ export const QueryBuilder = observer(
       >
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
           <ApplicationBackdrop open={queryBuilderState.backdrop} />
-          <QueryBuilderHeader queryBuilderState={queryBuilderState} />
           <div className="query-builder__content">
             <ResizablePanelGroup orientation="horizontal">
-              <ResizablePanel minSize={132}>
+              <ResizablePanel minSize={120}>
                 {isQuerySupported ? (
                   <ResizablePanelGroup orientation="vertical">
                     <ResizablePanel size={450} minSize={300}>
                       <ResizablePanelGroup orientation="horizontal">
                         {queryBuilderState.querySetupState.showSetupPanel && (
-                          <ResizablePanel minSize={30} direction={1}>
+                          <ResizablePanel minSize={40} direction={1}>
                             <QueryBuilderSetupPanel
                               queryBuilderState={queryBuilderState}
                             />
                           </ResizablePanel>
                         )}
                         {!queryBuilderState.querySetupState.showSetupPanel && (
-                          <ResizablePanel minSize={30} size={30} direction={1}>
+                          <ResizablePanel minSize={40} size={40} direction={1}>
                             <QueryBuilderSetupPanel
                               queryBuilderState={queryBuilderState}
                             />
                           </ResizablePanel>
                         )}
                         <ResizablePanelSplitter />
-                        <ResizablePanel minSize={30} direction={[1, -1]}>
+                        <ResizablePanel minSize={40} direction={[1, -1]}>
                           <QueryBuilderExplorerPanel
                             queryBuilderState={queryBuilderState}
                           />
                         </ResizablePanel>
                         <ResizablePanelSplitter />
-                        <ResizablePanel minSize={30} direction={-1}>
+                        <ResizablePanel minSize={40} direction={-1}>
                           <QueryBuilderParameterPanel
                             queryBuilderState={queryBuilderState}
                           />
@@ -227,12 +182,16 @@ export const QueryBuilder = observer(
                   />
                 )}
               </ResizablePanel>
-              <ResizablePanelSplitter />
-              <ResizablePanel size={300} minSize={28}>
-                <QueryBuilderResultPanel
-                  queryBuilderState={queryBuilderState}
-                />
-              </ResizablePanel>
+              {queryBuilderState.mode.isResultPanelHidden ? null : (
+                <ResizablePanelSplitter />
+              )}
+              {queryBuilderState.mode.isResultPanelHidden ? null : (
+                <ResizablePanel size={300} minSize={40}>
+                  <QueryBuilderResultPanel
+                    queryBuilderState={queryBuilderState}
+                  />
+                </ResizablePanel>
+              )}
             </ResizablePanelGroup>
           </div>
           <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />

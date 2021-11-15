@@ -1,5 +1,11 @@
 # @finos/legend-query-app
 
+## 1.3.0
+
+### Patch Changes
+
+- [#639](https://github.com/finos/legend-studio/pull/639) [`62985e59`](https://github.com/finos/legend-studio/commit/62985e59627b5be2cb75e15f30c13d029014c030) ([@akphi](https://github.com/akphi)) - Add `studio.url` to application config, as parts of `Legend Query` now need to launch `Legend Studio` to view models data.
+
 ## 1.2.0
 
 ## 1.1.0

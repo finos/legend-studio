@@ -71,6 +71,7 @@ import {
   PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   extractSourceInformationCoordinates,
+  getAllEnumerationMappings,
   Class,
   Enumeration,
   Mapping,
@@ -93,11 +94,7 @@ import {
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
   AggregationAwareSetImplementation,
-  Table,
-  View,
   TableAlias,
-  TableExplicitReference,
-  ViewExplicitReference,
   RelationalInputData,
   RelationalInputType,
   OperationSetImplementation,
@@ -153,8 +150,7 @@ export type MappingElementSource =
   | Type
   | Class
   | RootFlatDataRecordType
-  | View
-  | Table;
+  | TableAlias;
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementTarget = (
@@ -181,7 +177,7 @@ export const getMappingElementTarget = (
 
 export const getMappingElementSource = (
   mappingElement: MappingElement,
-  plugins?: StudioPlugin[],
+  plugins: StudioPlugin[],
 ): MappingElementSource | undefined => {
   if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
@@ -206,30 +202,27 @@ export const getMappingElementSource = (
   } else if (
     mappingElement instanceof RootRelationalInstanceSetImplementation
   ) {
-    return mappingElement.mainTableAlias?.relation.value;
+    return mappingElement.mainTableAlias;
   } else if (
     mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
   ) {
-    return mappingElement.rootInstanceSetImplementation.mainTableAlias?.relation
-      .value;
+    return mappingElement.rootInstanceSetImplementation.mainTableAlias;
   } else if (mappingElement instanceof AggregationAwareSetImplementation) {
     return getMappingElementSource(
       mappingElement.mainSetImplementation,
       plugins,
     );
   }
-  if (plugins !== undefined) {
-    const extraMappingElementSourceGetters = plugins.flatMap(
-      (plugin) =>
-        (
-          plugin as DSLMapping_StudioPlugin_Extension
-        ).getExtraMappingElementSourceGetters?.() ?? [],
-    );
-    for (const sourceGetter of extraMappingElementSourceGetters) {
-      const mappingElementSource = sourceGetter(mappingElement);
-      if (mappingElementSource) {
-        return mappingElementSource;
-      }
+  const extraMappingElementSourceGetters = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_StudioPlugin_Extension
+      ).getExtraMappingElementSourceGetters?.() ?? [],
+  );
+  for (const sourceGetter of extraMappingElementSourceGetters) {
+    const mappingElementSource = sourceGetter(mappingElement);
+    if (mappingElementSource) {
+      return mappingElementSource;
     }
   }
 
@@ -371,7 +364,7 @@ const getMappingElementByTypeAndId = (
         (associationMapping) => associationMapping.id.value === id,
       );
     case MAPPING_ELEMENT_TYPE.ENUMERATION:
-      return mapping.enumerationMappings.find(
+      return getAllEnumerationMappings(mapping).find(
         (enumerationMapping) => enumerationMapping.id.value === id,
       );
     default:
@@ -854,7 +847,7 @@ export class MappingEditorState extends ElementEditorState {
             setImplementation.root,
             OptionalPackageableElementExplicitReference.create(newSource),
           );
-        } else if (newSource instanceof Table || newSource instanceof View) {
+        } else if (newSource instanceof TableAlias) {
           const newRootRelationalInstanceSetImplementation =
             new RootRelationalInstanceSetImplementation(
               setImplementation.id,
@@ -862,14 +855,7 @@ export class MappingEditorState extends ElementEditorState {
               setImplementation.class,
               setImplementation.root,
             );
-          const mainTableAlias = new TableAlias();
-          mainTableAlias.relation =
-            newSource instanceof Table
-              ? TableExplicitReference.create(newSource)
-              : ViewExplicitReference.create(newSource);
-          mainTableAlias.name = mainTableAlias.relation.value.name;
-          newRootRelationalInstanceSetImplementation.mainTableAlias =
-            mainTableAlias;
+          newRootRelationalInstanceSetImplementation.mainTableAlias = newSource;
           newSetImp = newRootRelationalInstanceSetImplementation;
         } else {
           throw new UnsupportedOperationError(
@@ -1396,9 +1382,11 @@ export class MappingEditorState extends ElementEditorState {
         PackageableElementExplicitReference.create(source.owner.owner),
         createMockDataForMappingElementSource(source, this.editorStore),
       );
-    } else if (source instanceof Table || source instanceof View) {
+    } else if (source instanceof TableAlias) {
       inputData = new RelationalInputData(
-        PackageableElementExplicitReference.create(source.schema.owner),
+        PackageableElementExplicitReference.create(
+          source.relation.ownerReference.value,
+        ),
         createMockDataForMappingElementSource(source, this.editorStore),
         RelationalInputType.SQL,
       );

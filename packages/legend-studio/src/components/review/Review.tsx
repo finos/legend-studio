@@ -161,10 +161,7 @@ const ReviewExplorer = observer(() => {
   }, [applicationStore, reviewStore]);
 
   return (
-    <ResizablePanelGroup
-      orientation="vertical"
-      className="review-explorer__content"
-    >
+    <ResizablePanelGroup orientation="vertical">
       <ResizablePanel
         {...getControlledResizablePanelProps(
           editorStore.sideBarDisplayState.size === 0,

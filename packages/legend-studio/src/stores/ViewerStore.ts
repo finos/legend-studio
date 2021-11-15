@@ -43,6 +43,8 @@ import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { ProjectGAVCoordinates } from '@finos/legend-server-depot';
 import {
+  LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
   parseGAVCoordinates,
   ProjectData,
   ProjectVersionEntities,
@@ -273,11 +275,8 @@ export class ViewerStore {
       )) as PlainObject<ProjectData>,
     );
 
-    const LATEST_VERSION_ALIAS = 'latest';
-    const LATEST_SNAPSHOT_VERSION_ALIAS = 'HEAD';
-
     let entities: Entity[] = [];
-    if (versionId === LATEST_SNAPSHOT_VERSION_ALIAS) {
+    if (versionId === SNAPSHOT_VERSION_ALIAS) {
       entities =
         (yield this.editorStore.depotServerClient.getLatestRevisionEntities(
           groupId,
@@ -296,7 +295,7 @@ export class ViewerStore {
 
     // build dependencies
     const dependencyEntitiesMap = new Map<string, Entity[]>();
-    (versionId === LATEST_SNAPSHOT_VERSION_ALIAS
+    (versionId === SNAPSHOT_VERSION_ALIAS
       ? ((yield this.editorStore.depotServerClient.getLatestDependencyEntities(
           groupId,
           artifactId,
