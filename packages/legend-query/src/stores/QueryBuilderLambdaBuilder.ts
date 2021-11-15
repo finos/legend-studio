@@ -97,6 +97,8 @@ export const buildLambdaFunction = (
   const lambdaFunction = new LambdaFunction(
     new FunctionType(typeAny, multiplicityOne),
   );
+
+  // build getAll()
   let getAllFunction = buildGetAllFunction(_class, multiplicityOne);
   if (_class instanceof Class && _class.stereotypes.length !== 0) {
     guaranteeNonNullable(

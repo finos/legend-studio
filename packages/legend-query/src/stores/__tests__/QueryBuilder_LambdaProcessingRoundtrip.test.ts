@@ -21,6 +21,7 @@ import {
   TEST_DATA__complexRelationalModel,
   TEST_DATA__projectWithCols,
   TEST_DATA__simpleAllFunc,
+  TEST_DATA__allFuncWithParameter,
   TEST_DATA__simpleFilterFunc,
   TEST_DATA__simpleProjection,
   TEST_DATA__simpleProjectionWithFilter,
@@ -62,6 +63,11 @@ const m2mCtx = {
 
 const cases: RoundtripTestCase[] = [
   ['Simple all() function', relationalCtx, TEST_DATA__simpleAllFunc],
+  [
+    'Simple all() function with parameter',
+    relationalCtx,
+    TEST_DATA__allFuncWithParameter,
+  ],
   ['Simple filter() function', relationalCtx, TEST_DATA__simpleFilterFunc],
   ['Simple project() function', relationalCtx, TEST_DATA__simpleProjection],
   [

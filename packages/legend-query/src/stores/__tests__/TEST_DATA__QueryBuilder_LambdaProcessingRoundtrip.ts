@@ -31,6 +31,36 @@ export const TEST_DATA__simpleAllFunc = {
   parameters: [],
 };
 
+export const TEST_DATA__allFuncWithParameter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'test::Person',
+        },
+        {
+          _type: 'var',
+          name: 'businessDate',
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'StrictDate',
+      name: 'businessDate',
+      multiplicity: {
+        lowerBound: '0',
+      },
+    },
+  ],
+};
+
 export const TEST_DATA__simpleFilterFunc = {
   _type: 'lambda',
   body: [
