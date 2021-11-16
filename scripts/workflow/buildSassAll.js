@@ -24,6 +24,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ROOT_DIR = resolve(__dirname, '../../');
 
+const enableWatch = process.argv[2] === '--watch';
+
 /**
  * This script makes the assumption about the structure of each package
  *    style/index.scss -> lib/index.css
@@ -31,7 +33,7 @@ const ROOT_DIR = resolve(__dirname, '../../');
  * If a package style code does not follow this structure, one can specify
  * the input and output style sheet in the package config
  */
-const devSassAll = async () => {
+const buildSassAll = async () => {
   const packageInfos = execSync('yarn workspaces list --json', {
     encoding: 'utf-8',
     cwd: ROOT_DIR,
@@ -77,8 +79,8 @@ const devSassAll = async () => {
       // the root directory in this case due to the way we set up this script in Yarn
       // else, `sass` might fail this silently, and we get no feedback about it
       `--load-path=${resolve(ROOT_DIR, 'node_modules/@finos/legend-art/scss')}`,
-      `--watch`,
-    ],
+      enableWatch ? `--watch` : undefined,
+    ].filter(Boolean),
     {
       cwd: ROOT_DIR,
       shell: true,
@@ -87,4 +89,4 @@ const devSassAll = async () => {
   );
 };
 
-devSassAll();
+buildSassAll();

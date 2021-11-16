@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "yarn clean && yarn workspaces foreach --topological-dev --verbose run build",
-    "build:sass": "yarn workspaces foreach --all --topological-dev --parallel --verbose run build:sass",
+    "build:sass": "node ./scripts/workflow/buildSassAll.js",
     "build:tsc": "tsc --build",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
     "changeset:cli": "changeset",
@@ -25,7 +25,7 @@
     "clean": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean",
     "dev": "yarn dev:studio",
     "dev:query": "yarn workspace @finos/legend-query-deployment dev",
-    "dev:sass": "node ./scripts/workflow/devSassAll.js",
+    "dev:sass": "node ./scripts/workflow/buildSassAll.js --watch",
     "dev:studio": "yarn workspace @finos/legend-studio-deployment dev",
     "dev:tsc": "tsc --build --watch",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",

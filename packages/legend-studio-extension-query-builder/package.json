@@ -27,7 +27,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "yarn clean && yarn build:sass && yarn build:tsc",
-    "build:sass": "cross-env INIT_CWD=$INIT_CWD sass ./style/index.scss ./lib/index.css --style=compressed",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
     "build:tsc": "tsc --project ./tsconfig.build.json",
     "clean": "rimraf \"lib\" \"build\"",
     "dev": "npm-run-all --parallel dev:sass dev:tsc",
