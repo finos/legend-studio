@@ -4,6 +4,7 @@
   "type": "module",
   "workspaces": [
     "packages/*",
+    "fixtures/*",
     "scripts/github-bot"
   ],
   "scripts": {
@@ -30,7 +31,7 @@
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
     "fix:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js --update",
     "fix:format": "prettier --write --loglevel=warn \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --exclude \"@finos/legend-internal-*\" --verbose run lint:js --fix",
+    "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --verbose run lint:js --fix",
     "fix:style": "yarn lint:style --fix",
     "git:install-hooks": "husky install",
     "git:pre-commit": "lint-staged",
@@ -39,7 +40,7 @@
     "postinstall": "husky install",
     "lint": "yarn lint:js && yarn lint:style",
     "lint:ci": "yarn lint:js --max-warnings=0 && yarn lint:style --max-warnings=0",
-    "lint:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --exclude \"@finos/legend-internal-*\" --verbose run lint:js",
+    "lint:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --verbose run lint:js",
     "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\"",
     "publish:prepare": "cross-env FORCE_COLOR=1 yarn build && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:prepare",
     "publish:snapshot": "yarn publish:prepare && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:snapshot",

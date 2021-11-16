@@ -10,5 +10,9 @@
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "bumpVersionsWithWorkspaceProtocolOnly": true,
-  "ignore": ["@finos/legend-internal-*"]
+  "ignore": [
+    "@finos/legend-example-*",
+    "@finos/legend-fixture-*",
+    "@finos/legend-internal-*"
+  ]
 }
