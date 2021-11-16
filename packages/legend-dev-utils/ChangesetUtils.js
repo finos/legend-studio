@@ -159,6 +159,7 @@ export async function generateChangeset(cwd, message, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
+  const ignorePackageNames = config.ignore;
   const changedPackages = new Set(
     (
       await getChangedPackagesSinceRef({
@@ -171,10 +172,12 @@ export async function generateChangeset(cwd, message, sinceRef) {
     info(chalk.blue(`No changeset is needed as you haven't made any changes!`));
   }
   const newChangeset = {
-    releases: Array.from(changedPackages.values()).map((pkg) => ({
-      name: pkg,
-      type: 'patch',
-    })),
+    releases: Array.from(changedPackages.values())
+      .filter((pkgName) => !micromatch.isMatch(pkgName, ignorePackageNames))
+      .map((pkgName) => ({
+        name: pkgName,
+        type: 'patch',
+      })),
     summary: message,
   };
   const changesetID = await writeChangeset.default(newChangeset, cwd);
