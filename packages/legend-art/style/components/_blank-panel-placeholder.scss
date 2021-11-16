@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../mixins' as *;
+@use 'mixins' as *;
 
 .blank-panel-placeholder {
   @include flexCenter;
@@ -27,7 +27,7 @@
   transition: opacity 0.1s ease-in-out;
 
   &--invisible {
-    opacity: 0%;
+    opacity: 0;
   }
 
   &--no-click {

@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "yarn clean && yarn workspaces foreach --topological-dev --verbose run build",
-    "build:sass": "yarn workspaces foreach --all --parallel --verbose run build:sass",
+    "build:sass": "yarn workspaces foreach --all --topological-dev --parallel --verbose run build:sass",
     "build:tsc": "tsc --build",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
     "changeset:cli": "changeset",
@@ -41,7 +41,7 @@
     "lint": "yarn lint:js && yarn lint:style",
     "lint:ci": "yarn lint:js --max-warnings=0 && yarn lint:style --max-warnings=0",
     "lint:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --topological-dev --parallel --exclude legend-studio --verbose run lint:js",
-    "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\"",
+    "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\" \"packages/*/scss/**/*.scss\"",
     "publish:prepare": "cross-env FORCE_COLOR=1 yarn build && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:prepare",
     "publish:snapshot": "yarn publish:prepare && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:snapshot",
     "release": "yarn publish:prepare && changeset publish",

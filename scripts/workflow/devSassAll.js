@@ -67,11 +67,24 @@ const devSassAll = async () => {
   // NOTE: we use `spawn` to stream output to `stdout` (with color)
   // Compile many-to-many Sass files
   // See https://sass-lang.com/documentation/cli/dart-sass#many-to-many-mode
-  spawn(`yarn`, ['sass', ...entries, `--watch`], {
-    cwd: ROOT_DIR,
-    shell: true,
-    stdio: 'inherit',
-  });
+  spawn(
+    `yarn`,
+    [
+      'sass',
+      ...entries,
+      // This is where we put all the shared Sass stylesheets
+      // NOTE: `node_modules` path here must be resolvable from `cwd`, which is
+      // the root directory in this case due to the way we set up this script in Yarn
+      // else, `sass` might fail this silently, and we get no feedback about it
+      `--load-path=${resolve(ROOT_DIR, 'node_modules/@finos/legend-art/scss')}`,
+      `--watch`,
+    ],
+    {
+      cwd: ROOT_DIR,
+      shell: true,
+      stdio: 'inherit',
+    },
+  );
 };
 
 devSassAll();

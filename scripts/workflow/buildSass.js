@@ -15,7 +15,7 @@
  */
 
 import { existsSync, readdirSync, writeFileSync } from 'fs';
-import { resolve, extname } from 'path';
+import { resolve, extname, dirname } from 'path';
 import { execSync } from 'child_process';
 import {
   exitWithError,
@@ -23,6 +23,11 @@ import {
   loadJSModule,
 } from '@finos/legend-dev-utils/DevUtils';
 import { generateBundleCopyrightText } from '../copyright/PackageCopyrightHelper.js';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const ROOT_DIR = resolve(__dirname, '../../');
 
 /**
  * This script makes the assumption about the structure of each package
@@ -49,7 +54,12 @@ const buildSass = async () => {
     exitWithError(`Can't find Sass input path (default to './style')`);
   }
 
-  execSync(`yarn sass ${inputPath}:${outputPath} --style=compressed`);
+  execSync(
+    `yarn sass ${inputPath}:${outputPath} --style=compressed --load-path=${resolve(
+      ROOT_DIR,
+      'node_modules/@finos/legend-art/scss',
+    )}`,
+  );
 
   await Promise.all(
     readdirSync(outputPath).map(async (fileOrDir) => {
