@@ -389,6 +389,10 @@ export class QueryBuilderLambdaProcessor
       let acceptedNoOfParameters = 1;
       if (_class instanceof Class && _class.stereotypes.length !== 0) {
         acceptedNoOfParameters = valueSpecification.parametersValues.length;
+        assertTrue(
+          acceptedNoOfParameters === 2,
+          'Milestoning class should have a parameter',
+        );
         this.queryBuilderState.getAllFunctionState = valueSpecification;
       }
       assertTrue(

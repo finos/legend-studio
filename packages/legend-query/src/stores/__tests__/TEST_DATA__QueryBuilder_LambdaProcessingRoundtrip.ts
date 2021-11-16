@@ -55,7 +55,8 @@ export const TEST_DATA__allFuncWithParameter = {
       class: 'StrictDate',
       name: 'businessDate',
       multiplicity: {
-        lowerBound: '0',
+        lowerBound: '1',
+        upperBound: '1',
       },
     },
   ],

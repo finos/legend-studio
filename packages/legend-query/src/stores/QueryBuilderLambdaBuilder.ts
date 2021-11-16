@@ -101,10 +101,6 @@ export const buildLambdaFunction = (
   // build getAll()
   let getAllFunction = buildGetAllFunction(_class, multiplicityOne);
   if (_class instanceof Class && _class.stereotypes.length !== 0) {
-    guaranteeNonNullable(
-      queryBuilderState.getAllFunctionState?.parametersValues[1],
-      'Milestoning class should have a parameter',
-    );
     getAllFunction = guaranteeNonNullable(
       queryBuilderState.getAllFunctionState,
     );
