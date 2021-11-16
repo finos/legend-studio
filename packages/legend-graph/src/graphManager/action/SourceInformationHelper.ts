@@ -17,7 +17,9 @@
 import { assertTrue } from '@finos/legend-shared';
 import type { SourceInformation } from './SourceInformation';
 
-const COORDINATE_DELIMITER = '__';
+// NOTE: @ is chosen because it is not part of identifier token in Pure grammar
+// TODO: handle the case of quote identifier e.g. model::something::'I have an @ in me'
+const COORDINATE_DELIMITER = '@';
 
 export const extractSourceInformationCoordinates = (
   sourceInformation: SourceInformation | undefined,
