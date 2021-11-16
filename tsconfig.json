@@ -42,6 +42,10 @@
     },
     {
       "path": "packages/legend-extension-external-store-service"
+    },
+    // fixtures
+    {
+      "path": "fixtures/legend-mock-server"
     }
   ]
 }

@@ -2148,7 +2148,6 @@ __metadata:
   resolution: "@finos/legend-fixture-mock-server@workspace:fixtures/legend-mock-server"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-query-app": "workspace:*"
     cross-env: 7.0.3
     eslint: 8.2.0
     npm-run-all: 4.1.5
