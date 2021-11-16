@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
+import type { DSL_StudioPlugin_Extension } from './LegendStudioPlugin';
 import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
 import type { EditorStore } from './EditorStore';
 import type {

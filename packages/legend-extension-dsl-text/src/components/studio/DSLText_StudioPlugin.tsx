@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../package.json';
-import { StudioPlugin } from '@finos/legend-studio';
+import { LegendStudioPlugin } from '@finos/legend-studio';
 import type {
   StudioPluginManager,
   NewElementFromStateCreator,
@@ -39,7 +39,7 @@ const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
 
 export class DSLText_StudioPlugin
-  extends StudioPlugin
+  extends LegendStudioPlugin
   implements DSL_StudioPlugin_Extension
 {
   constructor() {

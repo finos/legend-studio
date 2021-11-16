@@ -31,7 +31,7 @@ import type {
   ElementEditorPostRenameAction,
   ClassPreviewRenderer,
 } from '@finos/legend-studio';
-import { StudioPlugin } from '@finos/legend-studio';
+import { LegendStudioPlugin } from '@finos/legend-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
 import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
@@ -43,7 +43,7 @@ const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
 
 export class DSLDiagram_StudioPlugin
-  extends StudioPlugin
+  extends LegendStudioPlugin
   implements DSL_StudioPlugin_Extension
 {
   constructor() {

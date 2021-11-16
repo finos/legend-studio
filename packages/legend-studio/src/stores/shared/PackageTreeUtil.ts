@@ -19,7 +19,7 @@ import type { PackageTreeNodeData } from './TreeUtil';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore';
 import { CORE_DND_TYPE } from './DnDUtil';
-import type { DSL_StudioPlugin_Extension } from '../StudioPlugin';
+import type { DSL_StudioPlugin_Extension } from '../LegendStudioPlugin';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   ROOT_PACKAGE_NAME,

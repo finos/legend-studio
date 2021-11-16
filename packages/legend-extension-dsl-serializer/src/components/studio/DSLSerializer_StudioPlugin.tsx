@@ -35,7 +35,7 @@ import type {
   RuntimeConnectionTooltipTextBuilder,
   StudioPluginManager,
 } from '@finos/legend-studio';
-import { StudioPlugin } from '@finos/legend-studio';
+import { LegendStudioPlugin } from '@finos/legend-studio';
 import { FaBuffer, FaSitemap } from 'react-icons/fa';
 import { SchemaSetEditor } from './SchemaSetElementEditor';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
@@ -74,7 +74,7 @@ const BINDING_ELEMENT_TYPE = 'BINDING';
 const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
 
 export class DSLSerializer_StudioPlugin
-  extends StudioPlugin
+  extends LegendStudioPlugin
   implements DSLMapping_StudioPlugin_Extension
 {
   constructor() {

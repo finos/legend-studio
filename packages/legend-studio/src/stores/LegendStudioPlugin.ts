@@ -52,8 +52,8 @@ export type ClassPreviewRenderer = (
   _class: Class,
 ) => React.ReactNode | undefined;
 
-export abstract class StudioPlugin extends AbstractPlugin {
-  private readonly _$nominalTypeBrand!: 'StudioPlugin';
+export abstract class LegendStudioPlugin extends AbstractPlugin {
+  private readonly _$nominalTypeBrand!: 'LegendStudioPlugin';
 
   /**
    * Get the list of setup procedures to be run when booting up the application.
@@ -145,7 +145,7 @@ export type ElementProjectExplorerDnDTypeGetter = (
 /**
  * Studio plugins for new DSL extension.
  */
-export interface DSL_StudioPlugin_Extension extends StudioPlugin {
+export interface DSL_StudioPlugin_Extension extends LegendStudioPlugin {
   /**
    * Get the list of the supported packageable element type specifiers.
    */

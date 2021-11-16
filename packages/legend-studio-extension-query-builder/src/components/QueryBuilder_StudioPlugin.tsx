@@ -39,7 +39,7 @@ import type {
 import {
   NewServiceModal,
   useEditorStore,
-  StudioPlugin,
+  LegendStudioPlugin,
 } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
@@ -156,7 +156,7 @@ const PromoteToServiceQueryBuilderAction = observer(() => {
 });
 
 export class QueryBuilder_StudioPlugin
-  extends StudioPlugin
+  extends LegendStudioPlugin
   implements DSLDiagram_StudioPlugin_Extension
 {
   constructor() {

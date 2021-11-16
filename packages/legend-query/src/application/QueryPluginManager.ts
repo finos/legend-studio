@@ -27,7 +27,7 @@ import type {
   TracerServicePluginManager,
 } from '@finos/legend-shared';
 import { AbstractPluginManager } from '@finos/legend-shared';
-import type { QueryPlugin } from '../stores/QueryPlugin';
+import type { LegendQueryPlugin } from '../stores/LegendQueryPlugin';
 
 export class QueryPluginManager
   extends AbstractPluginManager
@@ -41,7 +41,7 @@ export class QueryPluginManager
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
-  private queryPlugins: QueryPlugin[] = [];
+  private queryPlugins: LegendQueryPlugin[] = [];
 
   private constructor() {
     super();
@@ -73,7 +73,7 @@ export class QueryPluginManager
     this.pureGraphPlugins.push(plugin);
   }
 
-  registerQueryPlugin(plugin: QueryPlugin): void {
+  registerQueryPlugin(plugin: LegendQueryPlugin): void {
     this.queryPlugins.push(plugin);
   }
 
@@ -97,7 +97,7 @@ export class QueryPluginManager
     return [...this.pureGraphPlugins];
   }
 
-  getQueryPlugins(): QueryPlugin[] {
+  getQueryPlugins(): LegendQueryPlugin[] {
     return [...this.queryPlugins];
   }
 }

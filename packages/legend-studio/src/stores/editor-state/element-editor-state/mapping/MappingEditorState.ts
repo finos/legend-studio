@@ -107,7 +107,7 @@ import {
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
-import type { StudioPlugin } from '../../../StudioPlugin';
+import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -177,7 +177,7 @@ export const getMappingElementTarget = (
 
 export const getMappingElementSource = (
   mappingElement: MappingElement,
-  plugins: StudioPlugin[],
+  plugins: LegendStudioPlugin[],
 ): MappingElementSource | undefined => {
   if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings

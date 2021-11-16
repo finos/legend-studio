@@ -30,7 +30,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
+import type { DSL_StudioPlugin_Extension } from './LegendStudioPlugin';
 import type { FileGenerationTypeOption } from './editor-state/GraphGenerationState';
 import { DEFAULT_GENERATION_SPECIFICATION_NAME } from './editor-state/GraphGenerationState';
 import type {

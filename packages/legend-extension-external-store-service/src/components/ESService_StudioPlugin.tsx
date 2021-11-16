@@ -16,7 +16,7 @@
 
 import packageJson from '../../package.json';
 import {
-  StudioPlugin,
+  LegendStudioPlugin,
   UnsupportedElementEditorState,
   UnsupportedInstanceSetImplementationState,
 } from '@finos/legend-studio';
@@ -53,7 +53,7 @@ const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
 const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
 
 export class ESService_StudioPlugin
-  extends StudioPlugin
+  extends LegendStudioPlugin
   implements DSLMapping_StudioPlugin_Extension
 {
   constructor() {

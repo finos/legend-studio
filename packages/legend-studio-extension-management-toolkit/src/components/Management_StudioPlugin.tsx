@@ -21,11 +21,11 @@ import type {
 } from '@finos/legend-studio';
 import {
   generateRoutePatternWithSDLCServerKey,
-  StudioPlugin,
+  LegendStudioPlugin,
 } from '@finos/legend-studio';
 import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
 
-export class Management_StudioPlugin extends StudioPlugin {
+export class Management_StudioPlugin extends LegendStudioPlugin {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }

@@ -78,7 +78,7 @@ import {
 import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
+import type { DSL_StudioPlugin_Extension } from './LegendStudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   SDLCServerClient,

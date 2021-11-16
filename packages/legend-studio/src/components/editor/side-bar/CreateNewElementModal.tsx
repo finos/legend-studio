@@ -30,7 +30,7 @@ import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
+import type { DSL_StudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';
 import type { Mapping, Store, Class } from '@finos/legend-graph';
 import {

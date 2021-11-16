@@ -30,7 +30,7 @@ import type {
 } from '@finos/legend-studio';
 import {
   UnsupportedElementEditorState,
-  StudioPlugin,
+  LegendStudioPlugin,
 } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
@@ -47,7 +47,7 @@ const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_DATA_SPACE';
 
 export class DSLDataSpace_StudioPlugin
-  extends StudioPlugin
+  extends LegendStudioPlugin
   implements DSL_StudioPlugin_Extension
 {
   constructor() {

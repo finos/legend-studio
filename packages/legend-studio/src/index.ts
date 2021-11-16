@@ -26,7 +26,7 @@ export {
 export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
 
 // stores
-export * from './stores/StudioPlugin';
+export * from './stores/LegendStudioPlugin';
 export * from './stores/EditorStore';
 export * from './stores/EditorConfig';
 export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState';

@@ -26,7 +26,7 @@ export { useQueryStore } from './components/QueryStoreProvider';
 
 export { QueryPluginManager } from './application/QueryPluginManager';
 
-export * from './stores/QueryPlugin';
+export * from './stores/LegendQueryPlugin';
 export * from './stores/LegendQueryRouter';
 export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore';
 export { QueryStore, CreateQueryInfoState } from './stores/QueryStore';

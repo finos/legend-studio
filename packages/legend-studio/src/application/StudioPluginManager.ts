@@ -27,7 +27,7 @@ import type {
   TracerServicePluginManager,
 } from '@finos/legend-shared';
 import { AbstractPluginManager } from '@finos/legend-shared';
-import type { StudioPlugin } from '../stores/StudioPlugin';
+import type { LegendStudioPlugin } from '../stores/LegendStudioPlugin';
 
 export class StudioPluginManager
   extends AbstractPluginManager
@@ -41,7 +41,7 @@ export class StudioPluginManager
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
-  private studioPlugins: StudioPlugin[] = [];
+  private studioPlugins: LegendStudioPlugin[] = [];
 
   private constructor() {
     super();
@@ -73,7 +73,7 @@ export class StudioPluginManager
     this.pureGraphPlugins.push(plugin);
   }
 
-  registerStudioPlugin(plugin: StudioPlugin): void {
+  registerStudioPlugin(plugin: LegendStudioPlugin): void {
     this.studioPlugins.push(plugin);
   }
 
@@ -97,7 +97,7 @@ export class StudioPluginManager
     return [...this.pureGraphPlugins];
   }
 
-  getStudioPlugins(): StudioPlugin[] {
+  getStudioPlugins(): LegendStudioPlugin[] {
     return [...this.studioPlugins];
   }
 }
