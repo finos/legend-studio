@@ -106,5 +106,6 @@
   "engines": {
     "node": ">=14.17.1",
     "yarn": ">=1.22.10"
-  }
+  },
+  "packageManager": "yarn@3.1.0"
 }
