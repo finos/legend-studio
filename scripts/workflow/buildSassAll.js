@@ -24,6 +24,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ROOT_DIR = resolve(__dirname, '../../');
 
+const enableWatch = process.argv[2] === '--watch';
+
 /**
  * This script makes the assumption about the structure of each package
  *    style/index.scss -> lib/index.css
@@ -31,7 +33,7 @@ const ROOT_DIR = resolve(__dirname, '../../');
  * If a package style code does not follow this structure, one can specify
  * the input and output style sheet in the package config
  */
-const devSassAll = async () => {
+const buildSassAll = async () => {
   const packageInfos = execSync('yarn workspaces list --json', {
     encoding: 'utf-8',
     cwd: ROOT_DIR,
@@ -67,11 +69,24 @@ const devSassAll = async () => {
   // NOTE: we use `spawn` to stream output to `stdout` (with color)
   // Compile many-to-many Sass files
   // See https://sass-lang.com/documentation/cli/dart-sass#many-to-many-mode
-  spawn(`yarn`, ['sass', ...entries, `--watch`], {
-    cwd: ROOT_DIR,
-    shell: true,
-    stdio: 'inherit',
-  });
+  spawn(
+    `yarn`,
+    [
+      'sass',
+      ...entries,
+      // This is where we put all the shared Sass stylesheets
+      // NOTE: `node_modules` path here must be resolvable from `cwd`, which is
+      // the root directory in this case due to the way we set up this script in Yarn
+      // else, `sass` might fail this silently, and we get no feedback about it
+      `--load-path=${resolve(ROOT_DIR, 'node_modules/@finos/legend-art/scss')}`,
+      enableWatch ? `--watch` : undefined,
+    ].filter(Boolean),
+    {
+      cwd: ROOT_DIR,
+      shell: true,
+      stdio: 'inherit',
+    },
+  );
 };
 
-devSassAll();
+buildSassAll();

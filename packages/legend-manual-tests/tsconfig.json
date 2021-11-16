@@ -3,8 +3,7 @@
   "compilerOptions": {
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
     "noEmit": true,
-    "jsx": "react-jsxdev",
-    "allowJs": true
+    "jsx": "react-jsxdev"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [

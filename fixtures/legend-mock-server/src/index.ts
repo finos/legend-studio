@@ -14,26 +14,4 @@
  * limitations under the License.
  */
 
-@mixin flexCenter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-@mixin flexHCenter {
-  display: flex;
-  justify-content: center;
-}
-
-@mixin flexVCenter {
-  display: flex;
-  align-items: center;
-}
-
-@mixin ellipsisTextOverflow {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  word-break: break-word;
-  text-align: left; // this will keep the text from juggling left right when we resize the container when text overflow occurs
-}
+export const dummy = 1;
