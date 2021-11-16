@@ -24,6 +24,9 @@ import {
   TEST_DATA__MissingSetImp,
   TEST_DATA__MissingClassMapping,
   TEST_DATA__MissingClassMappingWithTargetId,
+  TEST_DATA__DuplicateEnumerationValues,
+  TEST_DATA__DuplicateProfileTags,
+  TEST_DATA__DuplicateProfileStereotypes,
 } from './TEST_DATA__GraphBuildFailure';
 import { unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -144,5 +147,41 @@ test.skip(unitTest('Missing set implementation'), async () => {
   );
   await expect(buildGraph).rejects.toThrowError(
     `Can't find set implementation 'targetClassAMissing'`,
+  );
+});
+
+test(unitTest('Duplicate enumeration values'), async () => {
+  const buildGraph = flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicateEnumerationValues as Entity[],
+    ),
+  );
+  await expect(buildGraph).rejects.toThrowError(
+    `Duplicated value 'enum_value' in enumeration 'test::enum`,
+  );
+});
+
+test(unitTest('Duplicate profile tags'), async () => {
+  const buildGraph = flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicateProfileTags as Entity[],
+    ),
+  );
+  await expect(buildGraph).rejects.toThrowError(
+    `Duplicated tag 'tag1' in profile 'test::profile1`,
+  );
+});
+
+test(unitTest('Duplicate profile stereotypes'), async () => {
+  const buildGraph = flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicateProfileStereotypes as Entity[],
+    ),
+  );
+  await expect(buildGraph).rejects.toThrowError(
+    `Duplicated stereotype 'stereotype1' in profile 'test::profile2`,
   );
 });
