@@ -74,7 +74,7 @@ import {
   isValidPath,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;
@@ -182,7 +182,7 @@ const ExplorerContextMenu = observer(
   ) => {
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore<StudioConfig>();
+    const applicationStore = useApplicationStore<LegendStudioConfig>();
     const extraExplorerContextMenuItems = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(

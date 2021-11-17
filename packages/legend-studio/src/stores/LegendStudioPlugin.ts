@@ -15,14 +15,14 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
-import type { StudioPluginManager } from '../application/StudioPluginManager';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { Class, PackageableElement } from '@finos/legend-graph';
 
 export type ApplicationSetup = (
-  pluginManager: StudioPluginManager,
+  pluginManager: LegendStudioPluginManager,
 ) => Promise<void>;
 
 export type ApplicationPageRenderEntry = {
@@ -145,7 +145,7 @@ export type ElementProjectExplorerDnDTypeGetter = (
 /**
  * Studio plugins for new DSL extension.
  */
-export interface DSL_StudioPlugin_Extension extends LegendStudioPlugin {
+export interface DSL_LegendStudioPlugin_Extension extends LegendStudioPlugin {
   /**
    * Get the list of the supported packageable element type specifiers.
    */

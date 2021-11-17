@@ -29,7 +29,7 @@ import type {
 import { AbstractPluginManager } from '@finos/legend-shared';
 import type { LegendStudioPlugin } from '../stores/LegendStudioPlugin';
 
-export class StudioPluginManager
+export class LegendStudioPluginManager
   extends AbstractPluginManager
   implements
     GraphPluginManager,
@@ -47,8 +47,8 @@ export class StudioPluginManager
     super();
   }
 
-  static create(): StudioPluginManager {
-    return new StudioPluginManager();
+  static create(): LegendStudioPluginManager {
+    return new LegendStudioPluginManager();
   }
 
   registerTelemetryServicePlugin(plugin: TelemetryServicePlugin): void {

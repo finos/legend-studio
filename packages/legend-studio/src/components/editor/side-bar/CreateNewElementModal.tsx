@@ -30,7 +30,7 @@ import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import type { DSL_StudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';
 import type { Mapping, Store, Class } from '@finos/legend-graph';
 import {
@@ -73,7 +73,7 @@ export const getElementTypeLabel = (
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_StudioPlugin_Extension
+                plugin as DSL_LegendStudioPlugin_Extension
               ).getExtraElementTypeLabelGetters?.() ?? [],
           );
         for (const typeLabelGetter of extraElementTypeLabelGetters) {
@@ -306,7 +306,7 @@ const renderNewElementDriver = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_StudioPlugin_Extension
+              plugin as DSL_LegendStudioPlugin_Extension
             ).getExtraNewElementDriverEditorRenderers?.() ?? [],
         );
       for (const creator of extraNewElementDriverEditorCreators) {

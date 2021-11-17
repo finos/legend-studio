@@ -19,13 +19,13 @@ import type {
   ClassView,
   ClassViewContextMenuItemRendererConfiguration,
   DiagramEditorState,
-  DSLDiagram_StudioPlugin_Extension,
+  DSLDiagram_LegendStudioPlugin_Extension,
 } from '@finos/legend-extension-dsl-diagram';
 import type {
   EditorExtensionState,
   EditorExtensionStateCreator,
   EditorStore,
-  StudioPluginManager,
+  LegendStudioPluginManager,
   EditorExtensionComponentRendererConfiguration,
   ExplorerContextMenuItemRendererConfiguration,
   TEMP__ServiceQueryEditorActionConfiguration,
@@ -155,21 +155,21 @@ const PromoteToServiceQueryBuilderAction = observer(() => {
   );
 });
 
-export class QueryBuilder_StudioPlugin
+export class QueryBuilder_LegendStudioPlugin
   extends LegendStudioPlugin
-  implements DSLDiagram_StudioPlugin_Extension
+  implements DSLDiagram_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
   }
 
   override getExtraApplicationSetups(): ApplicationSetup[] {
     return [
-      async (pluginManager: StudioPluginManager): Promise<void> => {
+      async (pluginManager: LegendStudioPluginManager): Promise<void> => {
         await setupLegendQueryUILibrary();
       },
     ];

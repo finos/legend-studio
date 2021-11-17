@@ -28,8 +28,8 @@ import Dialog from '@material-ui/core/Dialog';
 import { useApplicationStore } from '@finos/legend-application';
 import type {
   SDLCServerOption,
-  StudioConfig,
-} from '../../../application/StudioConfig';
+  LegendStudioConfig,
+} from '../../../application/LegendStudioConfig';
 import { updateRouteWithNewSDLCServerOption } from '../../../stores/LegendStudioRouter';
 
 const AboutModal: React.FC<{
@@ -37,7 +37,7 @@ const AboutModal: React.FC<{
   closeModal: () => void;
 }> = (props) => {
   const { open, closeModal } = props;
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const config = applicationStore.config;
 
   return (
@@ -112,7 +112,7 @@ const AboutModal: React.FC<{
 };
 
 export const AppHeaderMenu: React.FC = () => {
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const config = applicationStore.config;
 
   // menu

@@ -21,9 +21,9 @@ import { useApplicationStore } from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useStudioStore } from '../StudioStoreProvider';
+import { useLegendStudioStore } from '../LegendStudioStoreProvider';
 import { useGraphManagerState } from '@finos/legend-graph';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const EditorStoreContext = createContext<EditorStore | undefined>(undefined);
 
@@ -32,11 +32,11 @@ export const EditorStoreProvider = ({
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();
-  const studioStore = useStudioStore();
+  const studioStore = useLegendStudioStore();
   const store = useLocalObservable(
     () =>
       new EditorStore(

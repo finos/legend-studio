@@ -106,7 +106,7 @@ import {
   updateRootSetImplementationOnDelete,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
@@ -216,7 +216,7 @@ export const getMappingElementSource = (
   const extraMappingElementSourceGetters = plugins.flatMap(
     (plugin) =>
       (
-        plugin as DSLMapping_StudioPlugin_Extension
+        plugin as DSLMapping_LegendStudioPlugin_Extension
       ).getExtraMappingElementSourceGetters?.() ?? [],
   );
   for (const sourceGetter of extraMappingElementSourceGetters) {
@@ -1031,7 +1031,7 @@ export class MappingEditorState extends ElementEditorState {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioPlugin_Extension
           ).getExtraMappingElementStateCreators?.() ?? [],
       );
     for (const elementStateCreator of extraMappingElementStateCreators) {

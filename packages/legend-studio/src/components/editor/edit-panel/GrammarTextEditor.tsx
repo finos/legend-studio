@@ -43,7 +43,7 @@ import type { ElementDragSource } from '../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import type { DSL_StudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -140,7 +140,7 @@ export const GrammarTextEditor = observer(() => {
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_StudioPlugin_Extension
+          plugin as DSL_LegendStudioPlugin_Extension
         ).getExtraGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(

@@ -16,29 +16,31 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { QueryStore } from '../stores/QueryStore';
+import { LegendQueryStore } from '../stores/LegendQueryStore';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useGraphManagerState } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { QueryPluginManager } from '../application/QueryPluginManager';
-import type { QueryConfig } from '../application/QueryConfig';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 
-const QueryStoreContext = createContext<QueryStore | undefined>(undefined);
+const LegendQueryStoreContext = createContext<LegendQueryStore | undefined>(
+  undefined,
+);
 
-export const QueryStoreProvider = ({
+export const LegendQueryStoreProvider = ({
   children,
   pluginManager,
 }: {
   children: React.ReactNode;
-  pluginManager: QueryPluginManager;
+  pluginManager: LegendQueryPluginManager;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore<QueryConfig>();
+  const applicationStore = useApplicationStore<LegendQueryConfig>();
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();
   const store = useLocalObservable(
     () =>
-      new QueryStore(
+      new LegendQueryStore(
         applicationStore,
         depotServerClient,
         graphManagerState,
@@ -46,14 +48,14 @@ export const QueryStoreProvider = ({
       ),
   );
   return (
-    <QueryStoreContext.Provider value={store}>
+    <LegendQueryStoreContext.Provider value={store}>
       {children}
-    </QueryStoreContext.Provider>
+    </LegendQueryStoreContext.Provider>
   );
 };
 
-export const useQueryStore = (): QueryStore =>
+export const useLegendQueryStore = (): LegendQueryStore =>
   guaranteeNonNullable(
-    useContext(QueryStoreContext),
-    `Can't find Query store in context`,
+    useContext(LegendQueryStoreContext),
+    `Can't find Legend Query store in context`,
   );

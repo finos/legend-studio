@@ -16,7 +16,7 @@
 
 import packageJson from '../../../package.json';
 import type {
-  StudioPluginManager,
+  LegendStudioPluginManager,
   NewElementFromStateCreator,
   EditorStore,
   ElementEditorState,
@@ -25,7 +25,7 @@ import type {
   ElementProjectExplorerDnDTypeGetter,
   ElementIconGetter,
   ElementEditorRenderer,
-  DSL_StudioPlugin_Extension,
+  DSL_LegendStudioPlugin_Extension,
   NewElementState,
   ElementEditorPostDeleteAction,
   ElementEditorPostRenameAction,
@@ -42,15 +42,15 @@ import { ClassDiagramPreview } from './ClassDiagramPreview';
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
 
-export class DSLDiagram_StudioPlugin
+export class DSLDiagram_LegendStudioPlugin
   extends LegendStudioPlugin
-  implements DSL_StudioPlugin_Extension
+  implements DSL_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
   }
 

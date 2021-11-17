@@ -38,7 +38,7 @@ import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/servi
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import { validateServicePattern } from '@finos/legend-graph';
-import type { StudioConfig } from '../../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../../application/LegendStudioConfig';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -389,7 +389,7 @@ const ServiceGeneralEditor = observer(() => {
 
 export const ServiceEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
   const isReadOnly = serviceState.isReadOnly;

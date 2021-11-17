@@ -150,7 +150,7 @@ export class SDLCServerOption {
   );
 }
 
-export interface StudioConfigurationData
+export interface LegendStudioConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
@@ -160,7 +160,7 @@ export interface StudioConfigurationData
   documentation: { url: string };
 }
 
-export class StudioConfig extends LegendApplicationConfig {
+export class LegendStudioConfig extends LegendApplicationConfig {
   readonly options = new ApplicationCoreOptions();
 
   readonly documentationUrl: string;
@@ -171,7 +171,7 @@ export class StudioConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
 
   constructor(
-    configData: StudioConfigurationData,
+    configData: LegendStudioConfigurationData,
     versionData: LegendApplicationVersionData,
     baseUrl: string,
   ) {

@@ -22,7 +22,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState';
-import type { StoreRelational_StudioPlugin_Extension } from '../../../StoreRelational_StudioPlugin_Extension';
+import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../StoreRelational_LegendStudioPlugin_Extension';
 import { DatabaseBuilderState } from './DatabaseBuilderState';
 import type {
   PackageableElement,
@@ -49,7 +49,7 @@ import {
   RedshiftDatasourceSpecification,
   createValidationError,
 } from '@finos/legend-graph';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -144,7 +144,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_StudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioPlugin_Extension
             ).getExtraDatasourceSpecificationTypeGetters?.() ?? [],
         );
     for (const typeGetter of extraDatasourceSpecificationTypeGetters) {
@@ -204,7 +204,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_StudioPlugin_Extension
+                  plugin as StoreRelational_LegendStudioPlugin_Extension
                 ).getExtraDatasourceSpecificationCreators?.() ?? [],
             );
         for (const creator of extraDatasourceSpecificationCreators) {
@@ -246,7 +246,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_StudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioPlugin_Extension
             ).getExtraAuthenticationStrategyTypeGetters?.() ?? [],
         );
     for (const typeGetter of extraAuthenticationStrategyTypeGetters) {
@@ -311,7 +311,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_StudioPlugin_Extension
+                  plugin as StoreRelational_LegendStudioPlugin_Extension
                 ).getExtraAuthenticationStrategyCreators?.() ?? [],
             );
         for (const creator of extraAuthenticationStrategyCreators) {
@@ -391,7 +391,7 @@ export class ConnectionEditorState {
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLMapping_StudioPlugin_Extension
+                plugin as DSLMapping_LegendStudioPlugin_Extension
               ).getExtraConnectionValueEditorStateBuilders?.() ?? [],
           );
       for (const stateBuilder of extraConnectionValueEditorStateBuilders) {

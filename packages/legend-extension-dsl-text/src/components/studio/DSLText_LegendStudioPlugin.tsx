@@ -17,7 +17,7 @@
 import packageJson from '../../../package.json';
 import { LegendStudioPlugin } from '@finos/legend-studio';
 import type {
-  StudioPluginManager,
+  LegendStudioPluginManager,
   NewElementFromStateCreator,
   EditorStore,
   ElementEditorState,
@@ -26,7 +26,7 @@ import type {
   ElementProjectExplorerDnDTypeGetter,
   ElementIconGetter,
   ElementEditorRenderer,
-  DSL_StudioPlugin_Extension,
+  DSL_LegendStudioPlugin_Extension,
   NewElementState,
 } from '@finos/legend-studio';
 import { FileIcon } from '@finos/legend-art';
@@ -38,15 +38,15 @@ import { Text } from '../../models/metamodels/pure/model/packageableElements/tex
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
 
-export class DSLText_StudioPlugin
+export class DSLText_LegendStudioPlugin
   extends LegendStudioPlugin
-  implements DSL_StudioPlugin_Extension
+  implements DSL_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
   }
 

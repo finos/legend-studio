@@ -21,8 +21,8 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useGraphManagerState } from '@finos/legend-graph';
 import { EnterpriseModelExplorerStore } from '../../stores/studio/EnterpriseModelExplorerStore';
-import type { StudioConfig } from '@finos/legend-studio';
-import { useStudioStore } from '@finos/legend-studio';
+import type { LegendStudioConfig } from '@finos/legend-studio';
+import { useLegendStudioStore } from '@finos/legend-studio';
 
 const EnterpriseModelExplorerStoreContext = createContext<
   EnterpriseModelExplorerStore | undefined
@@ -33,10 +33,10 @@ export const EnterpriseModelExplorerStoreProvider = ({
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();
-  const studioStore = useStudioStore();
+  const studioStore = useLegendStudioStore();
   const store = useLocalObservable(
     () =>
       new EnterpriseModelExplorerStore(

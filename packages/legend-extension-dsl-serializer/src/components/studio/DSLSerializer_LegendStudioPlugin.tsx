@@ -20,7 +20,7 @@ import type {
   ConnectionValueEditorStateBuilder,
   ConnectionValueState,
   DefaultConnectionValueBuilder,
-  DSLMapping_StudioPlugin_Extension,
+  DSLMapping_LegendStudioPlugin_Extension,
   EditorStore,
   ElementEditorRenderer,
   ElementEditorState,
@@ -33,7 +33,7 @@ import type {
   NewElementFromStateCreator,
   NewElementState,
   RuntimeConnectionTooltipTextBuilder,
-  StudioPluginManager,
+  LegendStudioPluginManager,
 } from '@finos/legend-studio';
 import { LegendStudioPlugin } from '@finos/legend-studio';
 import { FaBuffer, FaSitemap } from 'react-icons/fa';
@@ -73,15 +73,15 @@ const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
 const BINDING_ELEMENT_TYPE = 'BINDING';
 const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
 
-export class DSLSerializer_StudioPlugin
+export class DSLSerializer_LegendStudioPlugin
   extends LegendStudioPlugin
-  implements DSLMapping_StudioPlugin_Extension
+  implements DSLMapping_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
   }
 

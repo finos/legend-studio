@@ -76,13 +76,13 @@ import {
 } from '@finos/legend-server-depot';
 import type { ApplicationStore } from '@finos/legend-application';
 import { APPLICATION_LOG_EVENT, TAB_SIZE } from '@finos/legend-application';
-import type { QueryPluginManager } from '../application/QueryPluginManager';
-import type { QueryConfig } from '../application/QueryConfig';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 
 export abstract class QueryInfoState {
-  queryStore: QueryStore;
+  queryStore: LegendQueryStore;
 
-  constructor(queryStore: QueryStore) {
+  constructor(queryStore: LegendQueryStore) {
     this.queryStore = queryStore;
   }
 
@@ -98,7 +98,7 @@ export class CreateQueryInfoState extends QueryInfoState {
   class?: Class | undefined;
 
   constructor(
-    queryStore: QueryStore,
+    queryStore: LegendQueryStore,
     project: ProjectData,
     versionId: string,
     mapping: Mapping,
@@ -150,7 +150,7 @@ export class ServiceQueryInfoState extends QueryInfoState {
   key?: string | undefined;
 
   constructor(
-    queryStore: QueryStore,
+    queryStore: LegendQueryStore,
     project: ProjectData,
     versionId: string,
     service: Service,
@@ -183,7 +183,7 @@ export class ServiceQueryInfoState extends QueryInfoState {
 export class ExistingQueryInfoState extends QueryInfoState {
   query: LightQuery;
 
-  constructor(queryStore: QueryStore, query: LightQuery) {
+  constructor(queryStore: LegendQueryStore, query: LightQuery) {
     super(queryStore);
 
     makeObservable(this, {
@@ -215,14 +215,14 @@ export class ExistingQueryInfoState extends QueryInfoState {
 }
 
 export class QueryExportState {
-  queryStore: QueryStore;
+  queryStore: LegendQueryStore;
   lambda: RawLambda;
   persistQueryState = ActionState.create();
   queryName = 'My New Query';
   allowUpdate = false;
 
   constructor(
-    queryStore: QueryStore,
+    queryStore: LegendQueryStore,
     lambda: RawLambda,
     allowUpdate: boolean,
     queryName: string | undefined,
@@ -328,11 +328,11 @@ export class QueryExportState {
   }
 }
 
-export class QueryStore {
-  applicationStore: ApplicationStore<QueryConfig>;
+export class LegendQueryStore {
+  applicationStore: ApplicationStore<LegendQueryConfig>;
   depotServerClient: DepotServerClient;
   graphManagerState: GraphManagerState;
-  pluginManager: QueryPluginManager;
+  pluginManager: LegendQueryPluginManager;
 
   queryInfoState?: QueryInfoState | undefined;
   queryBuilderState: QueryBuilderState;
@@ -343,10 +343,10 @@ export class QueryStore {
   onSaveQuery?: ((lambda: RawLambda) => Promise<void>) | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<QueryConfig>,
+    applicationStore: ApplicationStore<LegendQueryConfig>,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
-    pluginManager: QueryPluginManager,
+    pluginManager: LegendQueryPluginManager,
   ) {
     makeAutoObservable(this, {
       applicationStore: false,

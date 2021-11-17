@@ -39,7 +39,10 @@ import {
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
-import type { StudioConfig, StudioPluginManager } from '@finos/legend-studio';
+import type {
+  LegendStudioConfig,
+  LegendStudioPluginManager,
+} from '@finos/legend-studio';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import { generatePath } from 'react-router';
 import {
@@ -279,10 +282,10 @@ export class TaxonomyViewerState {
 }
 
 export class EnterpriseModelExplorerStore {
-  applicationStore: ApplicationStore<StudioConfig>;
+  applicationStore: ApplicationStore<LegendStudioConfig>;
   depotServerClient: DepotServerClient;
   graphManagerState: GraphManagerState;
-  pluginManager: StudioPluginManager;
+  pluginManager: LegendStudioPluginManager;
 
   sideBarDisplayState = new PanelDisplayState({
     initial: 300,
@@ -300,10 +303,10 @@ export class EnterpriseModelExplorerStore {
   currentTaxonomyViewerState?: TaxonomyViewerState | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<StudioConfig>,
+    applicationStore: ApplicationStore<LegendStudioConfig>,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
-    pluginManager: StudioPluginManager,
+    pluginManager: LegendStudioPluginManager,
   ) {
     makeObservable(this, {
       isInExpandedMode: observable,
