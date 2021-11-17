@@ -30,15 +30,12 @@ import type { Class, Mapping, Runtime } from '@finos/legend-graph';
 import {
   GenericType,
   GenericTypeExplicitReference,
-  Multiplicity,
-  VariableExpression,
   isVersionedClass,
   PRIMITIVE_TYPE,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
-import { DEFAULT_VERSION_PARAMETER_NAME } from '../QueryBuilder_Const';
 
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -58,6 +55,7 @@ export const QueryBuilderSetupPanel = observer(
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
       querySetupState.setClass(val.value);
+      queryBuilderState.resetData();
       if (isVersionedClass(val.value)) {
         const genericTypeReference = GenericTypeExplicitReference.create(
           new GenericType(
@@ -70,15 +68,13 @@ export const QueryBuilderSetupPanel = observer(
           queryBuilderState.queryParametersState.parameters.find(
             (parameterState) =>
               parameterState.parameter.genericType === genericTypeReference,
-          )?.parameter ??
-          new VariableExpression(
-            DEFAULT_VERSION_PARAMETER_NAME,
-            new Multiplicity(1, 1),
-            genericTypeReference,
-          );
-        querySetupState.setVersionPropertyParameter(versionPropertyParameter);
+          )?.parameter;
+        if (versionPropertyParameter === undefined) {
+          queryBuilderState.buildVersionedPropertyParameter(val.value);
+        } else {
+          querySetupState.setVersionPropertyParameter(versionPropertyParameter);
+        }
       }
-      queryBuilderState.resetData();
     };
     // mapping
     const mappingOptions = querySetupState.possibleMappings.map((mapping) => ({

@@ -49,12 +49,6 @@ import { MappingTestQueryBuilder } from './MappingTestQueryBuilder';
 import { flowResult } from 'mobx';
 import {
   Class,
-  GenericType,
-  GenericTypeExplicitReference,
-  Multiplicity,
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
-  VariableExpression,
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
@@ -63,11 +57,8 @@ import {
 import type { PackageableElement } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
 import {
-  QueryParameterState,
-  buildGetAllFunction,
   setupLegendQueryUILibrary,
   StandardQueryBuilderMode,
-  DEFAULT_VERSION_PARAMETER_NAME,
 } from '@finos/legend-query';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useState } from 'react';
@@ -237,40 +228,8 @@ export class QueryBuilder_LegendStudioPlugin
                 );
                 queryBuilderExtension.queryBuilderState.resetData();
                 if (isVersionedClass(element)) {
-                  const versionPropertyParameter = new VariableExpression(
-                    DEFAULT_VERSION_PARAMETER_NAME,
-                    new Multiplicity(1, 1),
-                    GenericTypeExplicitReference.create(
-                      new GenericType(
-                        queryBuilderExtension.queryBuilderState.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                          PRIMITIVE_TYPE.DATE,
-                        ),
-                      ),
-                    ),
-                  );
-                  const parameterState = new QueryParameterState(
-                    queryBuilderExtension.queryBuilderState.queryParametersState,
-                    versionPropertyParameter,
-                  );
-                  parameterState.mockParameterValues();
-                  queryBuilderExtension.queryBuilderState.queryParametersState.addParameter(
-                    parameterState,
-                  );
-                  const getAllFunction = buildGetAllFunction(
+                  queryBuilderExtension.queryBuilderState.buildVersionedPropertyParameter(
                     element,
-                    queryBuilderExtension.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-                      TYPICAL_MULTIPLICITY_TYPE.ONE,
-                    ),
-                  );
-                  getAllFunction.parametersValues.push(
-                    guaranteeNonNullable(
-                      queryBuilderExtension.queryBuilderState
-                        .queryParametersState.parameters[0],
-                      `Milestoning class should have a parameter of type 'Date'`,
-                    ).parameter,
-                  );
-                  queryBuilderExtension.queryBuilderState.querySetupState.setVersionPropertyParameter(
-                    versionPropertyParameter,
                   );
                 }
               }

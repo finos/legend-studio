@@ -45,6 +45,11 @@ import type {
   Service,
 } from '@finos/legend-graph';
 import {
+  GenericType,
+  GenericTypeExplicitReference,
+  Multiplicity,
+  PRIMITIVE_TYPE,
+  VariableExpression,
   GRAPH_MANAGER_LOG_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
@@ -80,14 +85,21 @@ import {
   QueryBuilderFilterOperator_In,
   QueryBuilderFilterOperator_NotIn,
 } from './filterOperators/QueryBuilderFilterOperator_In';
-import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
+import {
+  buildGetAllFunction,
+  buildLambdaFunction,
+} from './QueryBuilderLambdaBuilder';
 import type {
   ApplicationStore,
   LegendApplicationConfig,
   PackageableElementOption,
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
-import { QueryParametersState } from './QueryParametersState';
+import {
+  QueryParametersState,
+  QueryParameterState,
+} from './QueryParametersState';
+import { DEFAULT_VERSION_PARAMETER_NAME } from '../QueryBuilder_Const';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -268,6 +280,39 @@ export class QueryBuilderState {
       );
       processQueryBuilderLambdaFunction(this, compiledLambda);
     }
+  }
+
+  buildVersionedPropertyParameter(element: Class): void {
+    const versionPropertyParameter = new VariableExpression(
+      DEFAULT_VERSION_PARAMETER_NAME,
+      new Multiplicity(1, 1),
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.DATE,
+          ),
+        ),
+      ),
+    );
+    const parameterState = new QueryParameterState(
+      this.queryParametersState,
+      versionPropertyParameter,
+    );
+    parameterState.mockParameterValues();
+    this.queryParametersState.addParameter(parameterState);
+    const getAllFunction = buildGetAllFunction(
+      element,
+      this.graphManagerState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      ),
+    );
+    getAllFunction.parametersValues.push(
+      guaranteeNonNullable(
+        parameterState,
+        `Milestoning class should have a parameter of type 'Date'`,
+      ).parameter,
+    );
+    this.querySetupState.setVersionPropertyParameter(versionPropertyParameter);
   }
 
   buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
