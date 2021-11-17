@@ -56,7 +56,7 @@ import {
   EmbeddedRelationalInstanceSetImplementation,
   getEnumerationMappingsByEnumeration,
 } from '@finos/legend-graph';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
 
 /* @MARKER: ACTION ANALYTICS */
@@ -494,7 +494,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioPlugin_Extension
           ).getExtraSetImplementationDecorators?.() ?? [],
       );
     for (const decorator of extraSetImplementationDecorators) {
@@ -603,7 +603,7 @@ export class MappingElementDecorationCleaner
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_StudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioPlugin_Extension
             ).getExtraSetImplementationDecorationCleaners?.() ?? [],
         );
     for (const decorationCleaner of extraSetImplementationDecorationCleaners) {

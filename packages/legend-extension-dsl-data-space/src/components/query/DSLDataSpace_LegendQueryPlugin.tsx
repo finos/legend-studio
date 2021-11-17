@@ -16,23 +16,23 @@
 
 import packageJson from '../../../package.json';
 import type {
-  QueryPluginManager,
+  LegendQueryPluginManager,
   QuerySetupOptionRendererConfiguration,
   QuerySetupRenderer,
   QuerySetupState,
   QuerySetupStore,
 } from '@finos/legend-query';
-import { QueryPlugin } from '@finos/legend-query';
+import { LegendQueryPlugin } from '@finos/legend-query';
 import { SquareIcon } from '@finos/legend-art';
 import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState';
 import { DataspaceQuerySetup } from './DataSpaceQuerySetup';
 
-export class DSLDataSpace_QueryPlugin extends QueryPlugin {
+export class DSLDataSpace_LegendQueryPlugin extends LegendQueryPlugin {
   constructor() {
     super(packageJson.extensions.queryPlugin, packageJson.version);
   }
 
-  install(pluginManager: QueryPluginManager): void {
+  install(pluginManager: LegendQueryPluginManager): void {
     pluginManager.registerQueryPlugin(this);
   }
 

@@ -78,7 +78,7 @@ import {
 import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   SDLCServerClient,
@@ -113,7 +113,7 @@ import {
   Package,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import type { StudioPluginManager } from '../application/StudioPluginManager';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type {
   ActionAlertInfo,
   ApplicationStore,
@@ -126,7 +126,7 @@ import {
   TAB_SIZE,
 } from '@finos/legend-application';
 import { STUDIO_LOG_EVENT } from './StudioLogEvent';
-import type { StudioConfig } from '../application/StudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import type { EditorMode } from './editor/EditorMode';
 import { StandardEditorMode } from './editor/StandardEditorMode';
 
@@ -151,10 +151,10 @@ export class EditorHotkey {
 }
 
 export class EditorStore {
-  applicationStore: ApplicationStore<StudioConfig>;
+  applicationStore: ApplicationStore<LegendStudioConfig>;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
-  pluginManager: StudioPluginManager;
+  pluginManager: LegendStudioPluginManager;
 
   editorMode: EditorMode;
   setEditorMode(val: EditorMode): void {
@@ -233,11 +233,11 @@ export class EditorStore {
   isDevToolEnabled = true;
 
   constructor(
-    applicationStore: ApplicationStore<StudioConfig>,
+    applicationStore: ApplicationStore<LegendStudioConfig>,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
-    pluginManager: StudioPluginManager,
+    pluginManager: LegendStudioPluginManager,
   ) {
     makeAutoObservable(this, {
       applicationStore: false,
@@ -1060,7 +1060,7 @@ export class EditorStore {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorStateCreators?.() ?? [],
       );
     for (const creator of extraElementEditorStateCreators) {
@@ -1128,7 +1128,7 @@ export class EditorStore {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostDeleteActions?.() ?? [],
       );
     for (const action of extraElementEditorPostDeleteActions) {
@@ -1159,7 +1159,7 @@ export class EditorStore {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostRenameActions?.() ?? [],
       );
     for (const action of extraElementEditorPostRenameActions) {
@@ -1412,7 +1412,7 @@ export class EditorStore {
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_StudioPlugin_Extension
+              plugin as DSL_LegendStudioPlugin_Extension
             ).getExtraSupportedElementTypes?.() ?? [],
         ),
     );

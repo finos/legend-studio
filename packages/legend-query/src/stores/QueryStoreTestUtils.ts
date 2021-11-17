@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QueryConfig } from '../application/QueryConfig';
+import { LegendQueryConfig } from '../application/LegendQueryConfig';
 import { TEST_DATA__applicationVersion } from '@finos/legend-application';
 
 export const TEST_DATA__queryConfig = {
@@ -31,8 +31,10 @@ export const TEST_DATA__queryConfig = {
   },
 };
 
-export const TEST__getTestQueryConfig = (extraConfigData = {}): QueryConfig => {
-  const config = new QueryConfig(
+export const TEST__getTestQueryConfig = (
+  extraConfigData = {},
+): LegendQueryConfig => {
+  const config = new LegendQueryConfig(
     {
       ...TEST_DATA__queryConfig,
       ...extraConfigData,

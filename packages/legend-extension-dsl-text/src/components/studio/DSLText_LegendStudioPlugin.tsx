@@ -15,8 +15,9 @@
  */
 
 import packageJson from '../../../package.json';
+import { LegendStudioPlugin } from '@finos/legend-studio';
 import type {
-  StudioPluginManager,
+  LegendStudioPluginManager,
   NewElementFromStateCreator,
   EditorStore,
   ElementEditorState,
@@ -25,52 +26,39 @@ import type {
   ElementProjectExplorerDnDTypeGetter,
   ElementIconGetter,
   ElementEditorRenderer,
-  DSL_StudioPlugin_Extension,
+  DSL_LegendStudioPlugin_Extension,
   NewElementState,
-  ElementEditorPostDeleteAction,
-  ElementEditorPostRenameAction,
-  ClassPreviewRenderer,
 } from '@finos/legend-studio';
-import { StudioPlugin } from '@finos/legend-studio';
-import { ShapesIcon } from '@finos/legend-art';
-import type { Class, PackageableElement } from '@finos/legend-graph';
-import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
-import { DiagramEditorState } from '../../stores/studio/DiagramEditorState';
-import { DiagramEditor } from './DiagramEditor';
-import { ClassDiagramPreview } from './ClassDiagramPreview';
+import { FileIcon } from '@finos/legend-art';
+import { TextEditorState } from '../../stores/studio/TextEditorState';
+import { TextElementEditor } from './TextElementEditor';
+import type { PackageableElement } from '@finos/legend-graph';
+import { Text } from '../../models/metamodels/pure/model/packageableElements/text/Text';
 
-const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
-const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
+const TEXT_ELEMENT_TYPE = 'TEXT';
+const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
 
-export class DSLDiagram_StudioPlugin
-  extends StudioPlugin
-  implements DSL_StudioPlugin_Extension
+export class DSLText_LegendStudioPlugin
+  extends LegendStudioPlugin
+  implements DSL_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
   }
 
-  override getExtraClassPreviewRenderers(): ClassPreviewRenderer[] {
-    return [
-      (_class: Class): React.ReactNode => (
-        <ClassDiagramPreview _class={_class} />
-      ),
-    ];
-  }
-
   getExtraSupportedElementTypes(): string[] {
-    return [DIAGRAM_ELEMENT_TYPE];
+    return [TEXT_ELEMENT_TYPE];
   }
 
   getExtraElementTypeGetters(): ElementTypeGetter[] {
     return [
       (element: PackageableElement): string | undefined => {
-        if (element instanceof Diagram) {
-          return DIAGRAM_ELEMENT_TYPE;
+        if (element instanceof Text) {
+          return TEXT_ELEMENT_TYPE;
         }
         return undefined;
       },
@@ -80,10 +68,10 @@ export class DSLDiagram_StudioPlugin
   getExtraElementIconGetters(): ElementIconGetter[] {
     return [
       (type: string): React.ReactNode | undefined => {
-        if (type === DIAGRAM_ELEMENT_TYPE) {
+        if (type === TEXT_ELEMENT_TYPE) {
           return (
-            <div className="icon color--diagram">
-              <ShapesIcon />
+            <div className="icon icon--text-element">
+              <FileIcon />
             </div>
           );
         }
@@ -95,8 +83,8 @@ export class DSLDiagram_StudioPlugin
   getExtraElementEditorRenderers(): ElementEditorRenderer[] {
     return [
       (elementEditorState: ElementEditorState): React.ReactNode | undefined => {
-        if (elementEditorState instanceof DiagramEditorState) {
-          return <DiagramEditor key={elementEditorState.uuid} />;
+        if (elementEditorState instanceof TextEditorState) {
+          return <TextElementEditor key={elementEditorState.uuid} />;
         }
         return undefined;
       },
@@ -110,8 +98,8 @@ export class DSLDiagram_StudioPlugin
         name: string,
         state: NewElementState,
       ): PackageableElement | undefined => {
-        if (type === DIAGRAM_ELEMENT_TYPE) {
-          return new Diagram(name);
+        if (type === TEXT_ELEMENT_TYPE) {
+          return new Text(name);
         }
         return undefined;
       },
@@ -124,8 +112,8 @@ export class DSLDiagram_StudioPlugin
         editorStore: EditorStore,
         element: PackageableElement,
       ): ElementEditorState | undefined => {
-        if (element instanceof Diagram) {
-          return new DiagramEditorState(editorStore, element);
+        if (element instanceof Text) {
+          return new TextEditorState(editorStore, element);
         }
         return undefined;
       },
@@ -135,8 +123,8 @@ export class DSLDiagram_StudioPlugin
   getExtraElementProjectExplorerDnDTypeGetters(): ElementProjectExplorerDnDTypeGetter[] {
     return [
       (element: PackageableElement): string | undefined => {
-        if (element instanceof Diagram) {
-          return DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE;
+        if (element instanceof Text) {
+          return TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE;
         }
         return undefined;
       },
@@ -144,28 +132,6 @@ export class DSLDiagram_StudioPlugin
   }
 
   getExtraGrammarTextEditorDnDTypes(): string[] {
-    return [DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
-  }
-
-  getExtraElementEditorPostRenameActions(): ElementEditorPostRenameAction[] {
-    return [
-      (editorStore: EditorStore, element: PackageableElement): void => {
-        // rerender currently opened diagram
-        if (editorStore.currentEditorState instanceof DiagramEditorState) {
-          editorStore.currentEditorState.renderer.render();
-        }
-      },
-    ];
-  }
-
-  getExtraElementEditorPostDeleteActions(): ElementEditorPostDeleteAction[] {
-    return [
-      (editorStore: EditorStore, element: PackageableElement): void => {
-        // rerender currently opened diagram
-        if (editorStore.currentEditorState instanceof DiagramEditorState) {
-          editorStore.currentEditorState.renderer.render();
-        }
-      },
-    ];
+    return [TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 }

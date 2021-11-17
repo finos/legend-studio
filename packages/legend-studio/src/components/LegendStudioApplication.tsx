@@ -35,12 +35,15 @@ import {
 import { AppHeader } from './shared/AppHeader';
 import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
 import { ThemeProvider } from '@material-ui/core/styles';
-import type { StudioPluginManager } from '../application/StudioPluginManager';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { Log } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
-import { StudioStoreProvider, useStudioStore } from './StudioStoreProvider';
+import {
+  LegendStudioStoreProvider,
+  useLegendStudioStore,
+} from './LegendStudioStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
@@ -50,11 +53,11 @@ import {
   useApplicationStore,
   useWebApplicationNavigator,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../application/StudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
 export const LegendStudioApplicationRoot = observer(() => {
-  const studioStore = useStudioStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const studioStore = useLegendStudioStore();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const extraApplicationPageRenderEntries = studioStore.pluginManager
     .getStudioPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? []);
@@ -139,8 +142,8 @@ export const LegendStudioApplicationRoot = observer(() => {
 
 export const LegendStudioApplication = observer(
   (props: {
-    config: StudioConfig;
-    pluginManager: StudioPluginManager;
+    config: LegendStudioConfig;
+    pluginManager: LegendStudioPluginManager;
     log: Log;
   }) => {
     const { config, pluginManager, log } = props;
@@ -205,11 +208,11 @@ export const LegendStudioApplication = observer(
             }}
           >
             <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
-              <StudioStoreProvider pluginManager={pluginManager}>
+              <LegendStudioStoreProvider pluginManager={pluginManager}>
                 <ThemeProvider theme={LegendMaterialUITheme}>
                   <LegendStudioApplicationRoot />
                 </ThemeProvider>
-              </StudioStoreProvider>
+              </LegendStudioStoreProvider>
             </GraphManagerStateProvider>
           </DepotServerClientProvider>
         </SDLCServerClientProvider>

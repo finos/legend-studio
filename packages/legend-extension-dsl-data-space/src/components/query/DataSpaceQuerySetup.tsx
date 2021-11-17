@@ -27,7 +27,7 @@ import {
   CustomSelectorInput,
   SearchIcon,
 } from '@finos/legend-art';
-import { useQuerySetupStore, useQueryStore } from '@finos/legend-query';
+import { useQuerySetupStore, useLegendQueryStore } from '@finos/legend-query';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -50,7 +50,7 @@ export const DataspaceQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
 

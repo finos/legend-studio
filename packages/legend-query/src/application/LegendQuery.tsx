@@ -29,12 +29,12 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/LegendQueryApplication';
-import { QueryPluginManager } from './QueryPluginManager';
+import { LegendQueryPluginManager } from './LegendQueryPluginManager';
 import { Query_GraphPreset } from '../models/Query_GraphPreset';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
-import type { QueryConfigurationData } from './QueryConfig';
-import { QueryConfig } from './QueryConfig';
+import type { LegendQueryConfigurationData } from './LegendQueryConfig';
+import { LegendQueryConfig } from './LegendQueryConfig';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   // Register module extensions for `ag-grid`
@@ -49,22 +49,22 @@ export const setupLegendQueryUILibrary = async (): Promise<void> => {
 };
 
 export class LegendQuery extends LegendApplication {
-  declare config: QueryConfig;
-  declare pluginManager: QueryPluginManager;
+  declare config: LegendQueryConfig;
+  declare pluginManager: LegendQueryPluginManager;
 
   static create(): LegendQuery {
-    const application = new LegendQuery(QueryPluginManager.create());
+    const application = new LegendQuery(LegendQueryPluginManager.create());
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
     application.withBasePresets([new Query_GraphPreset()]);
     return application;
   }
 
   async configureApplication(
-    configData: QueryConfigurationData,
+    configData: LegendQueryConfigurationData,
     versionData: LegendApplicationVersionData,
     baseUrl: string,
   ): Promise<LegendApplicationConfig> {
-    return new QueryConfig(configData, versionData, baseUrl);
+    return new LegendQueryConfig(configData, versionData, baseUrl);
   }
 
   async loadApplication(): Promise<void> {

@@ -29,7 +29,7 @@ import {
   getPropertyNodeMappingData,
   getRootMappingData,
 } from '../../stores/QueryBuilderExplorerState';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__provideMockedQueryStore } from '../../components/QueryComponentTestUtils';
 import { flowResult } from 'mobx';
@@ -177,7 +177,7 @@ const transformToTestPropertyMappingData = (
 describe(integrationTest('Build property mapping data'), () => {
   test.each(cases)('%s', async (testName, testCase) => {
     const { mapping, rootClass, expectedMappingData, entities } = testCase;
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
     const mockedQueryStore = TEST__provideMockedQueryStore({
       pluginManager,

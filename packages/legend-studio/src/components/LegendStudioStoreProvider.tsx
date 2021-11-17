@@ -18,27 +18,29 @@ import { createContext, useContext } from 'react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { StudioStore } from '../stores/StudioStore';
-import type { StudioPluginManager } from '../application/StudioPluginManager';
+import { LegendStudioStore } from '../stores/StudioStore';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import { useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../application/StudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
-const StudioStoreContext = createContext<StudioStore | undefined>(undefined);
+const LegendStudioStoreContext = createContext<LegendStudioStore | undefined>(
+  undefined,
+);
 
-export const StudioStoreProvider = ({
+export const LegendStudioStoreProvider = ({
   pluginManager,
   children,
 }: {
-  pluginManager: StudioPluginManager;
+  pluginManager: LegendStudioPluginManager;
   children: React.ReactNode;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
   const studioStore = useLocalObservable(
     () =>
-      new StudioStore(
+      new LegendStudioStore(
         applicationStore,
         sdlcServerClient,
         depotServerClient,
@@ -46,14 +48,14 @@ export const StudioStoreProvider = ({
       ),
   );
   return (
-    <StudioStoreContext.Provider value={studioStore}>
+    <LegendStudioStoreContext.Provider value={studioStore}>
       {children}
-    </StudioStoreContext.Provider>
+    </LegendStudioStoreContext.Provider>
   );
 };
 
-export const useStudioStore = (): StudioStore =>
+export const useLegendStudioStore = (): LegendStudioStore =>
   guaranteeNonNullable(
-    useContext(StudioStoreContext),
-    `Can't find Studio store in context`,
+    useContext(LegendStudioStoreContext),
+    `Can't find Legend Studio store in context`,
   );

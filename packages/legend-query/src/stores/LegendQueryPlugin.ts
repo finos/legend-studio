@@ -26,8 +26,8 @@ export type QuerySetupRenderer = (
   setupState: QuerySetupState,
 ) => React.ReactNode | undefined;
 
-export abstract class QueryPlugin extends AbstractPlugin {
-  private readonly _$nominalTypeBrand!: 'QueryPlugin';
+export abstract class LegendQueryPlugin extends AbstractPlugin {
+  private readonly _$nominalTypeBrand!: 'LegendQueryPlugin';
 
   /**
    * Get the list of renderer configurations for the query setup option.

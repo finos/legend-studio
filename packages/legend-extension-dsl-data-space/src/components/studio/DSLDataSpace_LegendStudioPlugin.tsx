@@ -16,12 +16,12 @@
 
 import packageJson from '../../../package.json';
 import type {
-  StudioPluginManager,
+  LegendStudioPluginManager,
   NewElementFromStateCreator,
   ElementTypeGetter,
   ElementProjectExplorerDnDTypeGetter,
   ElementIconGetter,
-  DSL_StudioPlugin_Extension,
+  DSL_LegendStudioPlugin_Extension,
   NewElementState,
   ElementEditorStateCreator,
   EditorStore,
@@ -30,7 +30,7 @@ import type {
 } from '@finos/legend-studio';
 import {
   UnsupportedElementEditorState,
-  StudioPlugin,
+  LegendStudioPlugin,
 } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
@@ -46,15 +46,15 @@ const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_DATA_SPACE';
 
-export class DSLDataSpace_StudioPlugin
-  extends StudioPlugin
-  implements DSL_StudioPlugin_Extension
+export class DSLDataSpace_LegendStudioPlugin
+  extends LegendStudioPlugin
+  implements DSL_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
   }
 

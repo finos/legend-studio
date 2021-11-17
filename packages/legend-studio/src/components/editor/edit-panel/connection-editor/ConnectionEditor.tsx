@@ -29,7 +29,7 @@ import type { Class } from '@finos/legend-graph';
 import { FaLock } from 'react-icons/fa';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 const ModelConnectionEditor = observer(
   (props: {
@@ -135,7 +135,7 @@ export const ConnectionEditor = observer(
         const extraConnectionEditorRenderers = plugins.flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_StudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioPlugin_Extension
             ).getExtraConnectionEditorRenderers?.() ?? [],
         );
         for (const editorRenderer of extraConnectionEditorRenderers) {

@@ -20,7 +20,7 @@ import { SetupStore } from '../../stores/SetupStore';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const SetupStoreContext = createContext<SetupStore | undefined>(undefined);
 
@@ -29,7 +29,7 @@ export const SetupStoreProvider = ({
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const store = useLocalObservable(
     () => new SetupStore(applicationStore, sdlcServerClient),

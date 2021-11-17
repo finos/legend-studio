@@ -27,9 +27,9 @@ import type {
   TracerServicePluginManager,
 } from '@finos/legend-shared';
 import { AbstractPluginManager } from '@finos/legend-shared';
-import type { StudioPlugin } from '../stores/StudioPlugin';
+import type { LegendQueryPlugin } from '../stores/LegendQueryPlugin';
 
-export class StudioPluginManager
+export class LegendQueryPluginManager
   extends AbstractPluginManager
   implements
     GraphPluginManager,
@@ -41,14 +41,14 @@ export class StudioPluginManager
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
-  private studioPlugins: StudioPlugin[] = [];
+  private queryPlugins: LegendQueryPlugin[] = [];
 
   private constructor() {
     super();
   }
 
-  static create(): StudioPluginManager {
-    return new StudioPluginManager();
+  static create(): LegendQueryPluginManager {
+    return new LegendQueryPluginManager();
   }
 
   registerTelemetryServicePlugin(plugin: TelemetryServicePlugin): void {
@@ -73,8 +73,8 @@ export class StudioPluginManager
     this.pureGraphPlugins.push(plugin);
   }
 
-  registerStudioPlugin(plugin: StudioPlugin): void {
-    this.studioPlugins.push(plugin);
+  registerQueryPlugin(plugin: LegendQueryPlugin): void {
+    this.queryPlugins.push(plugin);
   }
 
   getTelemetryServicePlugins(): TelemetryServicePlugin[] {
@@ -97,7 +97,7 @@ export class StudioPluginManager
     return [...this.pureGraphPlugins];
   }
 
-  getStudioPlugins(): StudioPlugin[] {
-    return [...this.studioPlugins];
+  getQueryPlugins(): LegendQueryPlugin[] {
+    return [...this.queryPlugins];
   }
 }

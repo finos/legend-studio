@@ -15,7 +15,7 @@
  */
 
 export * from './DSLDiagram_Extension';
-export * from './components/studio/DSLDiagram_StudioPlugin_Extension';
+export * from './components/studio/DSLDiagram_LegendStudioPlugin_Extension';
 export { DiagramEditorState } from './stores/studio/DiagramEditorState';
 
 export { DiagramRenderer, DIAGRAM_INTERACTION_MODE } from './DiagramRenderer';

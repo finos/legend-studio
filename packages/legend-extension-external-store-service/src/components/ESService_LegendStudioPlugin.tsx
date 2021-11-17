@@ -16,12 +16,12 @@
 
 import packageJson from '../../package.json';
 import {
-  StudioPlugin,
+  LegendStudioPlugin,
   UnsupportedElementEditorState,
   UnsupportedInstanceSetImplementationState,
 } from '@finos/legend-studio';
 import type {
-  StudioPluginManager,
+  LegendStudioPluginManager,
   NewElementFromStateCreator,
   RuntimeConnectionTooltipTextBuilder,
   EditorStore,
@@ -30,7 +30,7 @@ import type {
   ElementTypeGetter,
   ElementProjectExplorerDnDTypeGetter,
   NewElementState,
-  DSLMapping_StudioPlugin_Extension,
+  DSLMapping_LegendStudioPlugin_Extension,
   SetImplemtationClassifier,
   MappingElementStateCreator,
   MappingElement,
@@ -52,15 +52,15 @@ const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_SERVICE_STORE';
 const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
 
-export class ESService_StudioPlugin
-  extends StudioPlugin
-  implements DSLMapping_StudioPlugin_Extension
+export class ESService_LegendStudioPlugin
+  extends LegendStudioPlugin
+  implements DSLMapping_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
   }
 

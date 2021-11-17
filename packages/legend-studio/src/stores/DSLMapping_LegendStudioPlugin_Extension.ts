@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
 import type { EditorStore } from './EditorStore';
 import type {
@@ -113,8 +113,8 @@ export type TEMP__ServiceTestRuntimeConnectionBuilder = (
   testData: string,
 ) => Connection | undefined;
 
-export interface DSLMapping_StudioPlugin_Extension
-  extends DSL_StudioPlugin_Extension {
+export interface DSLMapping_LegendStudioPlugin_Extension
+  extends DSL_LegendStudioPlugin_Extension {
   /**
    * Get the list of extra set implementation decorators.
    */
