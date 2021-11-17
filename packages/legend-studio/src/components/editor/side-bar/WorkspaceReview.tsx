@@ -41,7 +41,7 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
@@ -95,7 +95,7 @@ export const WorkspaceReviewDiffs = observer(() => {
 
 export const WorkspaceReview = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const workspaceReviewState = editorStore.workspaceReviewState;
   const workspaceReview = workspaceReviewState.workspaceReview;
   // Review Title

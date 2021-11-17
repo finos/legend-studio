@@ -15,27 +15,27 @@
  */
 
 import { LegendStudio } from '@finos/legend-studio';
-import { QueryBuilder_StudioPreset } from '@finos/legend-studio-extension-query-builder';
-import { DSLText_StudioPreset } from '@finos/legend-extension-dsl-text';
+import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
+import { DSLText_LegendStudioPreset } from '@finos/legend-extension-dsl-text';
 import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
 import { BrowserConsole } from '@finos/legend-shared';
-import { DSLDiagram_StudioPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLSerializer_StudioPreset } from '@finos/legend-extension-dsl-serializer';
-import { DSLDataSpace_StudioPreset } from '@finos/legend-extension-dsl-data-space';
-import { ESService_StudioPreset } from '@finos/legend-extension-external-store-service';
+import { DSLDiagram_LegendStudioPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSLSerializer_LegendStudioPreset } from '@finos/legend-extension-dsl-serializer';
+import { DSLDataSpace_LegendStudioPreset } from '@finos/legend-extension-dsl-data-space';
+import { ESService_LegendStudioPreset } from '@finos/legend-extension-external-store-service';
 
 export class LegendStudioApplication {
   static run(baseUrl: string): void {
     LegendStudio.create()
       .setup({ baseUrl })
       .withPresets([
-        new DSLText_StudioPreset(),
-        new DSLDiagram_StudioPreset(),
-        new DSLDataSpace_StudioPreset(),
+        new DSLText_LegendStudioPreset(),
+        new DSLDiagram_LegendStudioPreset(),
+        new DSLDataSpace_LegendStudioPreset(),
         new EFJSONSchema_GraphPreset(),
-        new QueryBuilder_StudioPreset(),
-        new DSLSerializer_StudioPreset(),
-        new ESService_StudioPreset(),
+        new QueryBuilder_LegendStudioPreset(),
+        new DSLSerializer_LegendStudioPreset(),
+        new ESService_LegendStudioPreset(),
       ])
       .withLoggers([new BrowserConsole()])
       .start()

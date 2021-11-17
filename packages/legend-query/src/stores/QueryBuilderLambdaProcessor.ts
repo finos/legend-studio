@@ -70,6 +70,7 @@ import {
   AbstractPropertyExpression,
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
+  isVersionedClass,
 } from '@finos/legend-graph';
 import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 import {
@@ -386,23 +387,25 @@ export class QueryBuilderLambdaProcessor
     const functionName = valueSpecification.functionName;
     if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
       const _class = valueSpecification.genericType?.value.rawType;
-      let acceptedNoOfParameters = 1;
-      if (_class instanceof Class && _class.stereotypes.length !== 0) {
-        acceptedNoOfParameters = valueSpecification.parametersValues.length;
-        assertTrue(
-          acceptedNoOfParameters === 2,
-          'Milestoning class should have a parameter',
-        );
-        this.queryBuilderState.getAllFunctionState = valueSpecification;
-      }
-      assertTrue(
-        valueSpecification.parametersValues.length === acceptedNoOfParameters,
-        `Can't process getAll() expression: getAll() expects no argument`,
-      );
       assertType(
         _class,
         Class,
         `Can't process getAll() expression: getAll() return type is missing`,
+      );
+      let acceptedNoOfParameters = 1;
+      if (_class instanceof Class && isVersionedClass(_class)) {
+        acceptedNoOfParameters = 2;
+        assertTrue(
+          valueSpecification.parametersValues.length === acceptedNoOfParameters,
+          `Milestoning class should have a parameter of type 'Date'`,
+        );
+        this.queryBuilderState.querySetupState.setVersionPropertyParameter(
+          valueSpecification.parametersValues[1],
+        );
+      }
+      assertTrue(
+        valueSpecification.parametersValues.length === acceptedNoOfParameters,
+        `Can't process getAll() expression: getAll() expects no argument`,
       );
       this.queryBuilderState.querySetupState.setClass(_class, true);
       this.queryBuilderState.explorerState.refreshTreeData();

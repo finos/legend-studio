@@ -48,11 +48,11 @@ import {
   useApplicationStore,
   NotificationSnackbar,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const importProjectSuccessReport = setupStore.importProjectSuccessReport;
   const projectNameInputRef = useRef<HTMLInputElement>(null);
   const defaultType = applicationStore.config.options
@@ -642,7 +642,7 @@ const CreateWorkspaceModal = observer(() => {
 
 const SetupSelection = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const config = applicationStore.config;
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);

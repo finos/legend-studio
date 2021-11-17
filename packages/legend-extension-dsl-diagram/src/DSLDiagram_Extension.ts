@@ -19,8 +19,8 @@ import { AbstractPreset } from '@finos/legend-shared';
 import { DSLDiagram_PureGraphManagerPlugin } from './graphManager/DSLDiagram_PureGraphManagerPlugin';
 import { DSLDiagram_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin';
 import type { GraphPluginManager } from '@finos/legend-graph';
-import type { StudioPluginManager } from '@finos/legend-studio';
-import { DSLDiagram_StudioPlugin } from './components/studio/DSLDiagram_StudioPlugin';
+import type { LegendStudioPluginManager } from '@finos/legend-studio';
+import { DSLDiagram_LegendStudioPlugin } from './components/studio/DSLDiagram_LegendStudioPlugin';
 import { DSLDiagram_PureGraphPlugin } from './graph/DSLDiagram_PureGraphPlugin';
 
 export class DSLDiagram_GraphPreset extends AbstractPreset {
@@ -35,13 +35,13 @@ export class DSLDiagram_GraphPreset extends AbstractPreset {
   }
 }
 
-export class DSLDiagram_StudioPreset extends AbstractPreset {
+export class DSLDiagram_LegendStudioPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.studioPreset, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
-    new DSLDiagram_StudioPlugin().install(pluginManager);
+  install(pluginManager: LegendStudioPluginManager): void {
+    new DSLDiagram_LegendStudioPlugin().install(pluginManager);
     new DSLDiagram_PureGraphPlugin().install(pluginManager);
     new DSLDiagram_PureGraphManagerPlugin().install(pluginManager);
     new DSLDiagram_PureProtocolProcessorPlugin().install(pluginManager);

@@ -60,7 +60,7 @@ import {
   PureClientVersion,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -250,7 +250,7 @@ export class TestContainerState {
               .flatMap(
                 (plugin) =>
                   (
-                    plugin as DSLMapping_StudioPlugin_Extension
+                    plugin as DSLMapping_LegendStudioPlugin_Extension
                   ).TEMP__getExtraServiceTestRuntimeConnectionBuilders?.() ??
                   [],
               );

@@ -30,7 +30,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { FileGenerationTypeOption } from './editor-state/GraphGenerationState';
 import { DEFAULT_GENERATION_SPECIFICATION_NAME } from './editor-state/GraphGenerationState';
 import type {
@@ -72,7 +72,7 @@ import {
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
 } from '@finos/legend-graph';
-import type { DSLMapping_StudioPlugin_Extension } from './DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -312,7 +312,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioPlugin_Extension
           ).getExtraNewConnectionDriverCreators?.() ?? [],
       );
     for (const creator of extraNewConnectionDriverCreators) {
@@ -502,7 +502,7 @@ export class NewElementState {
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSL_StudioPlugin_Extension
+                  plugin as DSL_LegendStudioPlugin_Extension
                 ).getExtraNewElementDriverCreators?.() ?? [],
             );
           for (const creator of extraNewElementDriverCreators) {
@@ -597,7 +597,7 @@ export class NewElementState {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostCreateActions?.() ?? [],
       );
     for (const action of extraElementEditorPostCreateActions) {
@@ -703,7 +703,7 @@ export class NewElementState {
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_StudioPlugin_Extension
+                plugin as DSL_LegendStudioPlugin_Extension
               ).getExtraNewElementFromStateCreators?.() ?? [],
           );
         for (const creator of extraNewElementFromStateCreators) {

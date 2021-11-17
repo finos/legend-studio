@@ -31,7 +31,7 @@
     "build:tsc": "tsc --project ./tsconfig.build.json",
     "clean": "rimraf \"lib\" \"build\"",
     "dev": "npm-run-all --parallel dev:sass dev:tsc",
-    "dev:sass": "sass style lib --watch",
+    "dev:sass": "sass style lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
@@ -48,7 +48,7 @@
     "@finos/legend-extension-external-store-service": "workspace:*",
     "@finos/legend-query": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "17.0.34",
+    "@types/react": "17.0.35",
     "react": "17.0.2"
   },
   "devDependencies": {

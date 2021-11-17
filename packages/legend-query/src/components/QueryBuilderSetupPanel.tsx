@@ -28,10 +28,17 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import type { Class, Mapping, Runtime } from '@finos/legend-graph';
 import {
+  GenericType,
+  GenericTypeExplicitReference,
+  Multiplicity,
+  VariableExpression,
+  isVersionedClass,
+  PRIMITIVE_TYPE,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
+import { DEFAULT_VERSION_PARAMETER_NAME } from '../QueryBuilder_Const';
 
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -51,6 +58,26 @@ export const QueryBuilderSetupPanel = observer(
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
       querySetupState.setClass(val.value);
+      if (isVersionedClass(val.value)) {
+        const genericTypeReference = GenericTypeExplicitReference.create(
+          new GenericType(
+            queryBuilderState.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.DATE,
+            ),
+          ),
+        );
+        const versionPropertyParameter =
+          queryBuilderState.queryParametersState.parameters.find(
+            (parameterState) =>
+              parameterState.parameter.genericType === genericTypeReference,
+          )?.parameter ??
+          new VariableExpression(
+            DEFAULT_VERSION_PARAMETER_NAME,
+            new Multiplicity(1, 1),
+            genericTypeReference,
+          );
+        querySetupState.setVersionPropertyParameter(versionPropertyParameter);
+      }
       queryBuilderState.resetData();
     };
     // mapping

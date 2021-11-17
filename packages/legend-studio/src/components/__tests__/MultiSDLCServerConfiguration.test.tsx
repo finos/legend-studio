@@ -38,14 +38,14 @@ import {
   updateRouteWithNewSDLCServerOption,
 } from '../../stores/LegendStudioRouter';
 import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
-import { StudioPluginManager } from '../../application/StudioPluginManager';
+import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager';
 import { TEST_DATA__studioConfig } from '../../stores/EditorStoreTestUtils';
-import { StudioConfig } from '../../application/StudioConfig';
+import { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const getTestStudioConfigWithMultiSDLCServer = (
   extraConfigData = {},
-): StudioConfig =>
-  new StudioConfig(
+): LegendStudioConfig =>
+  new LegendStudioConfig(
     {
       ...TEST_DATA__studioConfig,
       ...extraConfigData,
@@ -104,7 +104,7 @@ test(
           <CaptureNavigator />
           <LegendStudioApplication
             config={config}
-            pluginManager={StudioPluginManager.create()}
+            pluginManager={LegendStudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>
@@ -158,7 +158,7 @@ test(integrationTest('SDLC server can be specified via URL'), async () => {
       <WebApplicationNavigatorProvider>
         <LegendStudioApplication
           config={config}
-          pluginManager={StudioPluginManager.create()}
+          pluginManager={LegendStudioPluginManager.create()}
           log={new Log()}
         />
       </WebApplicationNavigatorProvider>
@@ -201,7 +201,7 @@ test(
           <CaptureNavigator />
           <LegendStudioApplication
             config={config}
-            pluginManager={StudioPluginManager.create()}
+            pluginManager={LegendStudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>
@@ -244,7 +244,7 @@ test(
           <CaptureNavigator />
           <LegendStudioApplication
             config={config}
-            pluginManager={StudioPluginManager.create()}
+            pluginManager={LegendStudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>
@@ -265,7 +265,7 @@ test(
 );
 
 test(unitTest('Route update with SDLC server option changes'), async () => {
-  const config = new StudioConfig(
+  const config = new LegendStudioConfig(
     {
       ...TEST_DATA__studioConfig,
       ...{

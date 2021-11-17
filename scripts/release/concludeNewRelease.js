@@ -201,87 +201,80 @@ const concludeNewRelease = async () => {
         (milestone) => milestone.title === currentReleaseVersion,
       );
       if (latestReleaseMilestone) {
-        // create new release milestone
-        let newReleaseMilestone;
-        try {
+        let newReleaseMilestone = openMilestones.find(
+          (milestone) => milestone.title === nextReleaseVersion,
+        );
+        if (!newReleaseMilestone) {
+          // create new release milestone if not already existed
           newReleaseMilestone = (
             await octokit.rest.issues.createMilestone({
               title: nextReleaseVersion,
               ...github.context.repo,
             })
           ).data;
-        } catch {
-          newReleaseMilestone = undefined;
-        }
-        if (newReleaseMilestone) {
           console.log(
             chalk.green(
               `\u2713 Created milestone for next release version v${nextReleaseVersion}`,
             ),
           );
-
-          // retrieve all open issues from latest release milestone
-          const MILESTONE_ISSUES_PAGE_SIZE = 100;
-          const milestoneOpenIssuesNumber = latestReleaseMilestone.open_issues;
-          const numberOfPages = Math.ceil(
-            milestoneOpenIssuesNumber / MILESTONE_ISSUES_PAGE_SIZE,
-          );
-          const pages = new Array(numberOfPages)
-            .fill(1)
-            .map((num, idx) => num + idx);
-          const openIssues = (
-            await Promise.all(
-              pages.map((page) =>
-                octokit.rest.issues.listForRepo({
-                  state: 'open',
-                  per_page: MILESTONE_ISSUES_PAGE_SIZE,
-                  milestone: latestReleaseMilestone.number,
-                  page: page,
-                  ...github.context.repo,
-                }),
-              ),
-            )
+        }
+        // retrieve all open issues from latest release milestone
+        const MILESTONE_ISSUES_PAGE_SIZE = 100;
+        const milestoneOpenIssuesNumber = latestReleaseMilestone.open_issues;
+        const numberOfPages = Math.ceil(
+          milestoneOpenIssuesNumber / MILESTONE_ISSUES_PAGE_SIZE,
+        );
+        const pages = new Array(numberOfPages)
+          .fill(1)
+          .map((num, idx) => num + idx);
+        const openIssues = (
+          await Promise.all(
+            pages.map((page) =>
+              octokit.rest.issues.listForRepo({
+                state: 'open',
+                per_page: MILESTONE_ISSUES_PAGE_SIZE,
+                milestone: latestReleaseMilestone.number,
+                page: page,
+                ...github.context.repo,
+              }),
+            ),
           )
-            .map((response) => response.data)
-            .flat();
-          console.log(
-            chalk.green(
-              `\u2713 Retrieved open issues in milestone ${currentReleaseVersion}`,
-            ),
-          );
+        )
+          .map((response) => response.data)
+          .flat();
+        console.log(
+          chalk.green(
+            `\u2713 Retrieved open issues in milestone ${currentReleaseVersion}`,
+          ),
+        );
 
-          // move all open issues to new milestone
-          // NOTE: since this is a PATCH end point, we should not
-          // make concurrent calls using `Promise.all` as the milestone can
-          // end up in a strange state, where issues are moved, but the
-          // `open_issues` statistics is inaccurate
-          for (const issue of openIssues) {
-            await octokit.rest.issues.update({
-              issue_number: issue.number,
-              milestone: newReleaseMilestone.number,
-              ...github.context.repo,
-            });
-          }
-          console.log(
-            chalk.green(
-              `\u2713 Moved ${openIssues.length} open issue(s) to milestone ${newReleaseMilestone.title}`,
-            ),
-          );
-
-          // close the latest release milestone
-          await octokit.rest.issues.updateMilestone({
-            milestone_number: latestReleaseMilestone.number,
-            state: 'closed',
+        // move all open issues to new milestone
+        // NOTE: since this is a PATCH end point, we should not
+        // make concurrent calls using `Promise.all` as the milestone can
+        // end up in a strange state, where issues are moved, but the
+        // `open_issues` statistics is inaccurate
+        for (const issue of openIssues) {
+          await octokit.rest.issues.update({
+            issue_number: issue.number,
+            milestone: newReleaseMilestone.number,
             ...github.context.repo,
           });
-          console.log(
-            chalk.green(`\u2713 Closed milestone ${currentReleaseVersion}`),
-          );
-        } else {
-          githubActionCore.warning(
-            `(skipped) New release milestone '${nextReleaseVersion}' already existed`,
-          );
         }
+        console.log(
+          chalk.green(
+            `\u2713 Moved ${openIssues.length} open issue(s) to milestone ${newReleaseMilestone.title}`,
+          ),
+        );
+
+        // close the latest release milestone
+        await octokit.rest.issues.updateMilestone({
+          milestone_number: latestReleaseMilestone.number,
+          state: 'closed',
+          ...github.context.repo,
+        });
+        console.log(
+          chalk.green(`\u2713 Closed milestone ${currentReleaseVersion}`),
+        );
       } else {
         githubActionCore.warning(
           `(skipped) Can't find milestone for the latest release version '${currentReleaseVersion}'`,

@@ -22,6 +22,7 @@ import {
 import type { ValueSpecification } from '@finos/legend-graph';
 import {
   Multiplicity,
+  isVersionedClass,
   INTERNAL__UnknownValueSpecification,
   V1_GraphTransformerContextBuilder,
   V1_serializeRawValueSpecification,
@@ -99,10 +100,12 @@ export const buildLambdaFunction = (
   );
 
   // build getAll()
-  let getAllFunction = buildGetAllFunction(_class, multiplicityOne);
-  if (_class instanceof Class && _class.stereotypes.length !== 0) {
-    getAllFunction = guaranteeNonNullable(
-      queryBuilderState.getAllFunctionState,
+  const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
+  if (_class instanceof Class && isVersionedClass(_class)) {
+    getAllFunction.parametersValues.push(
+      guaranteeNonNullable(
+        queryBuilderState.querySetupState.versionPropertyParameter,
+      ),
     );
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;

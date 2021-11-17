@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use './mixins' as *;
+@use 'mixins' as *;
 
 .query-setup__landing-page__option--data-space:hover {
   background: var(--color-yellow-100);

@@ -26,6 +26,7 @@ import type {
   Mapping,
   PackageableRuntime,
   Runtime,
+  ValueSpecification,
 } from '@finos/legend-graph';
 import {
   PackageableElementExplicitReference,
@@ -35,6 +36,7 @@ import {
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
+  versionPropertyParameter?: ValueSpecification | undefined;
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
@@ -48,6 +50,7 @@ export class QueryBuilderSetupState {
       setClass: action,
       setMapping: action,
       setRuntime: action,
+      setVersionPropertyParameter: action,
       setShowSetupPanel: action,
     });
 
@@ -133,5 +136,9 @@ export class QueryBuilderSetupState {
       // TODO?: we should consider if we allow people to use custom runtime here
       this.setRuntime(undefined);
     }
+  }
+
+  setVersionPropertyParameter(val: ValueSpecification | undefined): void {
+    this.versionPropertyParameter = val;
   }
 }

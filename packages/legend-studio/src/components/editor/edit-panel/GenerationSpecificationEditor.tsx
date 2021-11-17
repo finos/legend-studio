@@ -46,7 +46,7 @@ import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGenerationSpecification_StudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_StudioPlugin_Extension';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import type {
@@ -270,7 +270,7 @@ const ModelGenerationSpecifications = observer(
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGenerationSpecification_StudioPlugin_Extension
+              plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
     const modelGenerationElementOptions =

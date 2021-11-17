@@ -145,6 +145,7 @@ export * from './helpers/MappingHelper';
 export * from './helpers/MappingResolutionHelper';
 export * from './helpers/ValidationHelper';
 export * from './helpers/Stubable'; // TODO: to be removed
+export * from './helpers/DomainHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 

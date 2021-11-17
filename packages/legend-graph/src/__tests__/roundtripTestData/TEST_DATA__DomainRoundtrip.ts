@@ -33,8 +33,14 @@ export const TEST_DATA__ClassRoundtrip = [
       sections: [
         {
           _type: 'importAware',
-          elements: ['test::A', 'test::B', 'test::tEnum', 'test::tProf'],
-          imports: ['test'],
+          elements: [
+            'test::A',
+            'test::B',
+            'test::C',
+            'test::tEnum',
+            'test::tProf',
+          ],
+          imports: ['test', 'meta::pure::profiles'],
           parserName: 'Pure',
         },
       ],
@@ -329,6 +335,31 @@ export const TEST_DATA__ClassRoundtrip = [
           },
           name: 'z',
           type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::C',
+    content: {
+      _type: 'class',
+      name: 'C',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'z',
+          type: 'String',
+        },
+      ],
+      stereotypes: [
+        {
+          profile: 'temporal',
+          value: 'businesstemporal',
         },
       ],
     },

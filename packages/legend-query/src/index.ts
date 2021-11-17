@@ -22,14 +22,17 @@ export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pur
 
 export { QueryBuilder } from './components/QueryBuilder';
 export { useQuerySetupStore } from './components/QuerySetupStoreProvider';
-export { useQueryStore } from './components/QueryStoreProvider';
+export { useLegendQueryStore } from './components/LegendQueryStoreProvider';
 
-export { QueryPluginManager } from './application/QueryPluginManager';
+export { LegendQueryPluginManager } from './application/LegendQueryPluginManager';
 
-export * from './stores/QueryPlugin';
+export * from './stores/LegendQueryPlugin';
 export * from './stores/LegendQueryRouter';
 export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore';
-export { QueryStore, CreateQueryInfoState } from './stores/QueryStore';
+export {
+  LegendQueryStore,
+  CreateQueryInfoState,
+} from './stores/LegendQueryStore';
 export {
   QueryBuilderMode,
   StandardQueryBuilderMode,
@@ -44,3 +47,4 @@ export {
   QueryParametersState,
 } from './stores/QueryParametersState';
 export { buildGetAllFunction } from './stores/QueryBuilderLambdaBuilder';
+export { DEFAULT_VERSION_PARAMETER_NAME } from './QueryBuilder_Const';

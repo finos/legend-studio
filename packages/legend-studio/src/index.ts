@@ -15,10 +15,10 @@
  */
 
 // application
-export * from './components/StudioStoreProvider';
+export * from './components/LegendStudioStoreProvider';
 export * from './application/LegendStudio';
-export * from './application/StudioConfig';
-export * from './application/StudioPluginManager';
+export * from './application/LegendStudioConfig';
+export * from './application/LegendStudioPluginManager';
 export {
   LEGEND_STUDIO_PATH_PARAM_TOKEN,
   generateRoutePatternWithSDLCServerKey,
@@ -26,7 +26,7 @@ export {
 export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
 
 // stores
-export * from './stores/StudioPlugin';
+export * from './stores/LegendStudioPlugin';
 export * from './stores/EditorStore';
 export * from './stores/EditorConfig';
 export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState';
@@ -40,7 +40,7 @@ export {
   TypeDragSource,
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
-export * from './stores/DSLMapping_StudioPlugin_Extension';
+export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 
 // components
 export * from './components/editor/EditorStoreProvider';
@@ -77,9 +77,9 @@ export {
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor';
-export * from './stores/DSLGenerationSpecification_StudioPlugin_Extension';
+export * from './stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
-export * from './stores/StoreRelational_StudioPlugin_Extension';
+export * from './stores/StoreRelational_LegendStudioPlugin_Extension';
 
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal';

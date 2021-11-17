@@ -26,7 +26,7 @@ import {
   TEST__provideMockedApplicationStore,
   TEST__ApplicationStoreProvider,
 } from '@finos/legend-application';
-import { TEST__StudioStoreProvider } from '../EditorComponentTestUtils';
+import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
@@ -57,9 +57,9 @@ test(integrationTest('App header is displayed properly'), async () => {
       <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
-            <TEST__StudioStoreProvider>
+            <TEST__LegendStudioStoreProvider>
               <LegendStudioApplicationRoot />
-            </TEST__StudioStoreProvider>
+            </TEST__LegendStudioStoreProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>
       </TEST__ApplicationStoreProvider>
@@ -96,9 +96,9 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
       <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
-            <TEST__StudioStoreProvider>
+            <TEST__LegendStudioStoreProvider>
               <LegendStudioApplicationRoot />
-            </TEST__StudioStoreProvider>
+            </TEST__LegendStudioStoreProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>
       </TEST__ApplicationStoreProvider>
@@ -136,9 +136,9 @@ test(
         <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
           <TEST__SDLCServerClientProvider>
             <TEST__DepotServerClientProvider>
-              <TEST__StudioStoreProvider>
+              <TEST__LegendStudioStoreProvider>
                 <LegendStudioApplicationRoot />
-              </TEST__StudioStoreProvider>
+              </TEST__LegendStudioStoreProvider>
             </TEST__DepotServerClientProvider>
           </TEST__SDLCServerClientProvider>
         </TEST__ApplicationStoreProvider>
