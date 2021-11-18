@@ -16,7 +16,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import type {
   ElementDragSource,
@@ -89,25 +93,32 @@ const PropertyBasicEditor = observer(
     property: Property;
     selectProperty: () => void;
     deleteProperty: () => void;
-    checkDuplicateProperty: (val: string) => void;
     isReadOnly: boolean;
   }) => {
-    const {
-      property,
-      _class,
-      selectProperty,
-      deleteProperty,
-      checkDuplicateProperty,
-      isReadOnly,
-    } = props;
+    const { property, _class, selectProperty, deleteProperty, isReadOnly } =
+      props;
     const editorStore = useEditorStore();
     const isInheritedProperty =
       property.owner instanceof Class && property.owner !== _class;
     const isPropertyFromAssociation = property.owner instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
+    const checkDuplicateProperty = (val: string, id: string): void => {
+      if (
+        _class.properties.find((property) => property.name === val) !==
+        undefined
+      ) {
+        guaranteeNonNullable(
+          document.getElementById(id),
+        ).style.backgroundColor = 'red';
+      } else {
+        guaranteeNonNullable(
+          document.getElementById(id),
+        ).style.backgroundColor = 'var(--color-dark-grey-300)';
+      }
+    };
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      checkDuplicateProperty(event.target.value);
+      checkDuplicateProperty(event.target.value, event.target.id);
       property.setName(event.target.value);
     };
     // Generic Type
@@ -190,6 +201,7 @@ const PropertyBasicEditor = observer(
         {!isIndirectProperty && (
           <input
             className="property-basic-editor__name"
+            id={property.uuid}
             disabled={isReadOnly}
             value={property.name}
             spellCheck={false}
@@ -901,16 +913,6 @@ export const ClassFormEditor = observer(
           setSelectedProperty(undefined);
         }
       };
-    const checkDuplicateProperty = (val: string): void => {
-      if (
-        _class.properties.find((property) => property.name === val) !==
-        undefined
-      ) {
-        editorStore.applicationStore.notifyWarning(
-          `Duplicated property '${val}' in class '${_class.path}'`,
-        );
-      }
-    };
     // Add button
     let addButtonTitle = '';
     switch (selectedTab) {
@@ -1220,7 +1222,6 @@ export const ClassFormEditor = observer(
                           _class={_class}
                           deleteProperty={deleteProperty(property)}
                           selectProperty={selectProperty(property)}
-                          checkDuplicateProperty={checkDuplicateProperty}
                           isReadOnly={isReadOnly}
                         />
                       ))}

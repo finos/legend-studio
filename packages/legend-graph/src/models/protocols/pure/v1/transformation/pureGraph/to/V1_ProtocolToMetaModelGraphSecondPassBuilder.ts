@@ -22,6 +22,7 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
   assertTrue,
+  LogEvent,
 } from '@finos/legend-shared';
 import { Stereotype } from '../../../../../../metamodels/pure/packageableElements/domain/Stereotype';
 import { Tag } from '../../../../../../metamodels/pure/packageableElements/domain/Tag';
@@ -95,19 +96,27 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     );
     const uniqueStereotypes = new Set<string>();
     profile.stereotypes = element.stereotypes.map((stereotype) => {
-      assertTrue(
-        !uniqueStereotypes.has(stereotype),
-        `Duplicated stereotype '${stereotype}' in profile '${element.path}'`,
-      );
+      if (uniqueStereotypes.has(stereotype)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`,
+          ),
+        );
+      }
       uniqueStereotypes.add(stereotype);
       return new Stereotype(profile, stereotype);
     });
     const uniqueTags = new Set<string>();
     profile.tags = element.tags.map((tag) => {
-      assertTrue(
-        !uniqueTags.has(tag),
-        `Duplicated tag '${tag}' in profile '${element.path}'`,
-      );
+      if (uniqueTags.has(tag)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated tag '${tag}' in profile '${element.path}'`,
+          ),
+        );
+      }
       uniqueTags.add(tag);
       return new Tag(profile, tag);
     });
@@ -128,10 +137,14 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
         enumValue.value,
         `Enum value 'value' field is missing or empty`,
       );
-      assertTrue(
-        !uniqueEnumValues.has(enumValue.value),
-        `Duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`,
-      );
+      if (uniqueEnumValues.has(enumValue.value)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`,
+          ),
+        );
+      }
       const _enum = new Enum(enumValue.value, enumeration);
       _enum.stereotypes = enumValue.stereotypes
         .map((stereotype) => this.context.resolveStereotype(stereotype))

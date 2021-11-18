@@ -1152,3 +1152,63 @@ export const TEST_DATA__DuplicateProfileStereotypes = [
     },
   },
 ];
+
+export const TEST_DATA__DuplicateClassProperties = [
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    path: 'test::class',
+    content: {
+      _type: 'class',
+      name: 'class',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'abc',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'abc',
+          type: 'String',
+        },
+      ],
+    },
+  },
+];
+
+export const TEST_DATA__DuplicateAssociationProperties = [
+  {
+    classifierPath: 'meta::pure::metamodel::relationship::Association',
+    path: 'test::association',
+    content: {
+      _type: 'association',
+      name: 'association',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'abc',
+          type: 'pack::class',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'abc',
+          type: 'pack::c',
+        },
+      ],
+    },
+  },
+];

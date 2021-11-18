@@ -26,7 +26,7 @@ import type {
   UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { prettyCONSTName } from '@finos/legend-shared';
+import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
   clsx,
@@ -63,13 +63,13 @@ const EnumBasicEditor = observer(
     _enum: Enum;
     selectValue: () => void;
     deleteValue: () => void;
-    checkDuplicateValue: (val: string) => void;
+    checkDuplicateValue: (val: string, id: string) => void;
     isReadOnly: boolean;
   }) => {
     const { _enum, selectValue, deleteValue, checkDuplicateValue, isReadOnly } =
       props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      checkDuplicateValue(event.target.value);
+      checkDuplicateValue(event.target.value, event.target.id);
       _enum.setName(event.target.value);
     };
 
@@ -77,6 +77,7 @@ const EnumBasicEditor = observer(
       <div className="enum-basic-editor">
         <input
           className="enum-basic-editor__name"
+          id={_enum.uuid}
           spellCheck={false}
           disabled={isReadOnly}
           value={_enum.name}
@@ -423,13 +424,15 @@ export const EnumerationEditor = observer(
         editorStore.openElement(enumeration.generationParentElement);
       }
     };
-    const checkDuplicateValue = (val: string): void => {
+    const checkDuplicateValue = (val: string, id: string): void => {
       if (
         enumeration.values.find((value) => value.name === val) !== undefined
       ) {
-        editorStore.applicationStore.notifyWarning(
-          `Duplicated value '${val}' in enumeration '${enumeration.path}'`,
-        );
+        guaranteeNonNullable(document.getElementById(id)).style.borderColor =
+          'red';
+      } else {
+        guaranteeNonNullable(document.getElementById(id)).style.borderColor =
+          'var(--color-input-border)';
       }
     };
 

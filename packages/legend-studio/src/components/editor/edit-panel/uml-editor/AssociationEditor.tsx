@@ -44,7 +44,11 @@ import {
   getControlledResizablePanelProps,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
-import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
+import {
+  prettyCONSTName,
+  guaranteeType,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
@@ -76,20 +80,27 @@ const AssociationPropertyBasicEditor = observer(
     association: Association;
     property: Property;
     selectProperty: () => void;
-    checkDuplicateValue: (val: string) => void;
     isReadOnly: boolean;
   }) => {
-    const {
-      association,
-      property,
-      selectProperty,
-      checkDuplicateValue,
-      isReadOnly,
-    } = props;
+    const { association, property, selectProperty, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const checkDuplicateValue = (val: string, id: string): void => {
+      if (
+        association.properties[0].name === val ||
+        association.properties[1].name === val
+      ) {
+        guaranteeNonNullable(
+          document.getElementById(id),
+        ).style.backgroundColor = 'red';
+      } else {
+        guaranteeNonNullable(
+          document.getElementById(id),
+        ).style.backgroundColor = 'var(--color-dark-grey-300)';
+      }
+    };
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      checkDuplicateValue(event.target.value);
+      checkDuplicateValue(event.target.value, event.target.id);
       property.setName(event.target.value);
     };
     // Generic Type
@@ -170,6 +181,7 @@ const AssociationPropertyBasicEditor = observer(
       <div className="property-basic-editor">
         <input
           className="property-basic-editor__name"
+          id={property.uuid}
           disabled={isReadOnly}
           value={property.name}
           spellCheck={false}
@@ -351,16 +363,6 @@ export const AssociationEditor = observer(
         association.deleteTaggedValue(val);
     // Property
     const deselectProperty = (): void => setSelectedProperty(undefined);
-    const checkDuplicateValue = (val: string): void => {
-      if (
-        association.properties[0].name === val ||
-        association.properties[1].name === val
-      ) {
-        editorStore.applicationStore.notifyWarning(
-          `Duplicated property '${val}' in association '${association.path}'`,
-        );
-      }
-    };
     // Drag and Drop
     const handleDropTaggedValue = useCallback(
       (item: UMLEditorElementDropTarget): void => {
@@ -470,7 +472,6 @@ export const AssociationEditor = observer(
                       selectProperty={selectProperty(
                         association.getFirstProperty(),
                       )}
-                      checkDuplicateValue={checkDuplicateValue}
                       isReadOnly={isReadOnly}
                     />
                     <AssociationPropertyBasicEditor
@@ -479,7 +480,6 @@ export const AssociationEditor = observer(
                       selectProperty={selectProperty(
                         association.getSecondProperty(),
                       )}
-                      checkDuplicateValue={checkDuplicateValue}
                       isReadOnly={isReadOnly}
                     />
                   </div>
