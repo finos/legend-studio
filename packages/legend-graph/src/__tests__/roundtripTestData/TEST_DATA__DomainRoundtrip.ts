@@ -33,14 +33,8 @@ export const TEST_DATA__ClassRoundtrip = [
       sections: [
         {
           _type: 'importAware',
-          elements: [
-            'test::A',
-            'test::B',
-            'test::C',
-            'test::tEnum',
-            'test::tProf',
-          ],
-          imports: ['test', 'meta::pure::profiles'],
+          elements: ['test::A', 'test::B', 'test::tEnum', 'test::tProf'],
+          imports: ['test'],
           parserName: 'Pure',
         },
       ],
@@ -335,31 +329,6 @@ export const TEST_DATA__ClassRoundtrip = [
           },
           name: 'z',
           type: 'String',
-        },
-      ],
-    },
-    classifierPath: 'meta::pure::metamodel::type::Class',
-  },
-  {
-    path: 'test::C',
-    content: {
-      _type: 'class',
-      name: 'C',
-      package: 'test',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'z',
-          type: 'String',
-        },
-      ],
-      stereotypes: [
-        {
-          profile: 'temporal',
-          value: 'businesstemporal',
         },
       ],
     },
@@ -976,5 +945,50 @@ export const TEST_DATA__MeasureRoundtrip = [
       package: 'test',
     },
     classifierPath: 'meta::pure::metamodel::type::Measure',
+  },
+];
+
+export const TEST_DATA__VersionedClassRoundtrip = [
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: ['test::C'],
+          imports: ['test'],
+          parserName: 'Pure',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+  {
+    path: 'test::C',
+    content: {
+      _type: 'class',
+      name: 'C',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'z',
+          type: 'String',
+        },
+      ],
+      stereotypes: [
+        {
+          profile: 'temporal',
+          value: 'businesstemporal',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
   },
 ];

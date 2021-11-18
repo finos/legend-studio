@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
+import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 
-export const isVersionedClass = (val: Class): boolean => {
-  for (let i = 0; i < val.stereotypes.length; i++) {
-    const stereotype = val.stereotypes[i]?.value.value;
-    if (
-      stereotype === 'bitemporal' ||
-      stereotype === 'businesstemporal' ||
-      stereotype === 'processingtemporal'
-    ) {
-      return true;
-    }
+export const isVersionedClass = (val: Class, graph: PureModel): boolean => {
+  const versionedProfile = graph.getProfile('meta::pure::profiles::temporal');
+  const isVersioned = val.stereotypes.some(
+    (e) => e.ownerReference.value === versionedProfile,
+  );
+  if (isVersioned) {
+    return true;
   }
-  for (let i = 0; i < val.generalizations.length; i++) {
-    const superType = val.generalizations[i]?.value.rawType;
+  return val.generalizations.some((e) => {
+    const superType = e.value.rawType;
     if (superType instanceof Class) {
-      return isVersionedClass(superType);
+      return isVersionedClass(superType, graph);
     }
-  }
-  return false;
+    return false;
+  });
 };

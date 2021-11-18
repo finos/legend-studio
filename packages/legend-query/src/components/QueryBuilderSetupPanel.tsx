@@ -56,7 +56,11 @@ export const QueryBuilderSetupPanel = observer(
     const changeClass = (val: PackageableElementOption<Class>): void => {
       querySetupState.setClass(val.value);
       queryBuilderState.resetData();
-      if (isVersionedClass(val.value)) {
+
+      //For now the default version value is a parameter. In future we will support functions now(), %latest.
+      if (
+        isVersionedClass(val.value, queryBuilderState.graphManagerState.graph)
+      ) {
         const genericTypeReference = GenericTypeExplicitReference.create(
           new GenericType(
             queryBuilderState.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
@@ -67,12 +71,13 @@ export const QueryBuilderSetupPanel = observer(
         const versionPropertyParameter =
           queryBuilderState.queryParametersState.parameters.find(
             (parameterState) =>
-              parameterState.parameter.genericType === genericTypeReference,
+              parameterState.parameter.genericType?.value.rawType ===
+              genericTypeReference.value.rawType,
           )?.parameter;
         if (versionPropertyParameter === undefined) {
-          queryBuilderState.buildVersionedPropertyParameter(val.value);
+          queryBuilderState.buildClassVersionValue(val.value);
         } else {
-          querySetupState.setVersionPropertyParameter(versionPropertyParameter);
+          querySetupState.setClassVersionValue(versionPropertyParameter);
         }
       }
     };

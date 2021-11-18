@@ -21,7 +21,6 @@ import {
   TEST_DATA__complexRelationalModel,
   TEST_DATA__projectWithCols,
   TEST_DATA__simpleAllFunc,
-  TEST_DATA__allFuncWithParameter,
   TEST_DATA__simpleFilterFunc,
   TEST_DATA__simpleProjection,
   TEST_DATA__simpleProjectionWithFilter,
@@ -29,6 +28,7 @@ import {
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__firmPersonGraphFetch,
   TEST_DATA__personWithParameter,
+  TEST_DATA__allFuncOnVersionedClass,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
 import {
   simpleDerivationProjection,
@@ -64,9 +64,9 @@ const m2mCtx = {
 const cases: RoundtripTestCase[] = [
   ['Simple all() function', relationalCtx, TEST_DATA__simpleAllFunc],
   [
-    'Simple all() function with parameter',
+    'Simple all() function with versioned class',
     relationalCtx,
-    TEST_DATA__allFuncWithParameter,
+    TEST_DATA__allFuncOnVersionedClass,
   ],
   ['Simple filter() function', relationalCtx, TEST_DATA__simpleFilterFunc],
   ['Simple project() function', relationalCtx, TEST_DATA__simpleProjection],

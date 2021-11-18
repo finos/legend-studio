@@ -227,8 +227,14 @@ export class QueryBuilder_LegendStudioPlugin
                   element,
                 );
                 queryBuilderExtension.queryBuilderState.resetData();
-                if (isVersionedClass(element)) {
-                  queryBuilderExtension.queryBuilderState.buildVersionedPropertyParameter(
+                if (
+                  isVersionedClass(
+                    element,
+                    queryBuilderExtension.queryBuilderState.graphManagerState
+                      .graph,
+                  )
+                ) {
+                  queryBuilderExtension.queryBuilderState.buildClassVersionValue(
                     element,
                   );
                 }

@@ -101,10 +101,13 @@ export const buildLambdaFunction = (
 
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
-  if (_class instanceof Class && isVersionedClass(_class)) {
+  if (
+    _class instanceof Class &&
+    isVersionedClass(_class, queryBuilderState.graphManagerState.graph)
+  ) {
     getAllFunction.parametersValues.push(
       guaranteeNonNullable(
-        queryBuilderState.querySetupState.versionPropertyParameter,
+        queryBuilderState.querySetupState._classVersionValue,
       ),
     );
   }

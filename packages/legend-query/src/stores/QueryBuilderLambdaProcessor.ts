@@ -393,13 +393,16 @@ export class QueryBuilderLambdaProcessor
         `Can't process getAll() expression: getAll() return type is missing`,
       );
       let acceptedNoOfParameters = 1;
-      if (_class instanceof Class && isVersionedClass(_class)) {
+      if (
+        _class instanceof Class &&
+        isVersionedClass(_class, this.queryBuilderState.graphManagerState.graph)
+      ) {
         acceptedNoOfParameters = 2;
         assertTrue(
           valueSpecification.parametersValues.length === acceptedNoOfParameters,
           `Milestoning class should have a parameter of type 'Date'`,
         );
-        this.queryBuilderState.querySetupState.setVersionPropertyParameter(
+        this.queryBuilderState.querySetupState.setClassVersionValue(
           valueSpecification.parametersValues[1],
         );
       }

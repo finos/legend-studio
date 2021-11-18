@@ -28,6 +28,7 @@ import {
   TEST_DATA__FunctionRoundtrip,
   TEST_DATA__MeasureRoundtrip,
   TEST_DATA__ClassWithComplexConstraint,
+  TEST_DATA__VersionedClassRoundtrip,
 } from './roundtripTestData/TEST_DATA__DomainRoundtrip';
 import {
   testConnectionRoundtrip,
@@ -62,7 +63,14 @@ import {
   TEST_DATA__LocalPropertyMapping,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip';
-import { TEST__checkBuildingElementsRoundtrip } from '../GraphManagerTestUtils';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__checkBuildingElementsRoundtrip,
+  TEST__getTestGraphManagerState,
+} from '../GraphManagerTestUtils';
+import { isVersionedClass } from '../helpers/DomainHelper';
+import type { Entity } from '@finos/legend-model-storage';
+import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([
@@ -204,4 +212,21 @@ describe(unitTest('Service import resolution roundtrip'), () => {
       await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
+});
+
+test(unitTest('Versioned class'), async () => {
+  const graphManagerState = TEST__getTestGraphManagerState();
+  const data = TEST_DATA__VersionedClassRoundtrip as Entity[];
+  await TEST__buildGraphWithEntities(graphManagerState, data, {
+    TEMPORARY__keepSectionIndex: true,
+  });
+
+  const transformedEntities = graphManagerState.graph.allOwnElements.map(
+    (element) => graphManagerState.graphManager.elementToEntity(element),
+  );
+  transformedEntities.forEach((entity) => {
+    if (entity instanceof Class) {
+      expect(isVersionedClass(entity, graphManagerState.graph)).toBeTrue();
+    }
+  });
 });

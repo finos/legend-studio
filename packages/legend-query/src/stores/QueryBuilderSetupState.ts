@@ -36,7 +36,7 @@ import {
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
-  versionPropertyParameter?: ValueSpecification | undefined;
+  _classVersionValue?: ValueSpecification | undefined;
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
@@ -50,7 +50,7 @@ export class QueryBuilderSetupState {
       setClass: action,
       setMapping: action,
       setRuntime: action,
-      setVersionPropertyParameter: action,
+      setClassVersionValue: action,
       setShowSetupPanel: action,
     });
 
@@ -138,7 +138,7 @@ export class QueryBuilderSetupState {
     }
   }
 
-  setVersionPropertyParameter(val: ValueSpecification | undefined): void {
-    this.versionPropertyParameter = val;
+  setClassVersionValue(val: ValueSpecification | undefined): void {
+    this._classVersionValue = val;
   }
 }

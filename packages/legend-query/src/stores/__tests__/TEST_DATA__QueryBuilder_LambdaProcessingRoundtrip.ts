@@ -31,7 +31,7 @@ export const TEST_DATA__simpleAllFunc = {
   parameters: [],
 };
 
-export const TEST_DATA__allFuncWithParameter = {
+export const TEST_DATA__allFuncOnVersionedClass = {
   _type: 'lambda',
   body: [
     {
