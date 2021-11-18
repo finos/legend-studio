@@ -56,6 +56,8 @@ import {
   EmbeddedRelationalInstanceSetImplementation,
   getEnumerationMappingsByEnumeration,
 } from '@finos/legend-graph';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
+import type { EditorStore } from '../../../EditorStore';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -67,6 +69,11 @@ import {
  * changes in the graph.
  */
 export class MappingElementDecorator implements SetImplementationVisitor<void> {
+  editorStore: EditorStore;
+
+  constructor(editorStore: EditorStore) {
+    this.editorStore = editorStore;
+  }
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     const enumValueMappingsToAdd: EnumValueMapping[] = [];
     enumerationMapping.enumeration.value.values.forEach((enumValue) => {
@@ -482,8 +489,17 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   }
 
   visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
-    //TODO: Implement this later https://github.com/finos/legend-studio/pull/580
-    return;
+    const extraSetImplementationDecorators = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraSetImplementationDecorators?.() ?? [],
+      );
+    for (const decorator of extraSetImplementationDecorators) {
+      decorator(setImplementation);
+    }
   }
 }
 
@@ -494,6 +510,11 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
 export class MappingElementDecorationCleaner
   implements SetImplementationVisitor<void>
 {
+  editorStore: EditorStore;
+
+  constructor(editorStore: EditorStore) {
+    this.editorStore = editorStore;
+  }
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     // Remove the enum value mapping if all of its source values are empty
     const nonEmptyEnumValueMappings =
@@ -576,7 +597,17 @@ export class MappingElementDecorationCleaner
   }
 
   visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
-    //TODO: Implement this later https://github.com/finos/legend-studio/pull/580
-    return;
+    const extraSetImplementationDecorationCleaners =
+      this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraSetImplementationDecorationCleaners?.() ?? [],
+        );
+    for (const decorationCleaner of extraSetImplementationDecorationCleaners) {
+      decorationCleaner(setImplementation);
+    }
   }
 }

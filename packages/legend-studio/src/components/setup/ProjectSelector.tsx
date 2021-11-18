@@ -24,7 +24,7 @@ import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   <div className="setup__project__label">
@@ -50,7 +50,7 @@ export const ProjectSelector = observer(
   ) => {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
-    const applicationStore = useApplicationStore<StudioConfig>();
+    const applicationStore = useApplicationStore<LegendStudioConfig>();
     const currentProjectId = setupStore.currentProjectId;
     const options = setupStore.projectOptions.sort(compareLabelFn);
     const selectedOption =
@@ -71,7 +71,7 @@ export const ProjectSelector = observer(
         }
         applicationStore.navigator.goTo(
           generateSetupRoute(
-            applicationStore.config.sdlcServerKey,
+            applicationStore.config.currentSDLCServerOption,
             val?.value ?? '',
           ),
         );
@@ -84,7 +84,7 @@ export const ProjectSelector = observer(
           // For first load, if the project is not found, reset the URL
           applicationStore.navigator.goTo(
             generateSetupRoute(
-              applicationStore.config.sdlcServerKey,
+              applicationStore.config.currentSDLCServerOption,
               undefined,
             ),
           );

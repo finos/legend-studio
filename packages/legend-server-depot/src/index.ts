@@ -17,8 +17,11 @@
 export { ProjectData } from './models/ProjectData';
 export * from './models/ProjectVersionEntities';
 export { StoredEntity } from './models/StoredEntity';
+export { DepotScope } from './models/DepotScope';
 
 export { DepotServerClient } from './DepotServerClient';
 export * from './DepotServerClientProvider';
 
 export * from './DepotServerClientTestUtils';
+
+export * from './DepotUtils';

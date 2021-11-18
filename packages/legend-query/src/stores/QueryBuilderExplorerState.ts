@@ -63,6 +63,28 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   label: string;
   dndText: string;
   childrenIds: string[] = [];
+  isPartOfDerivedPropertyBranch: boolean;
+  type: Type;
+  mappingData: QueryBuilderPropertyMappingData;
+
+  constructor(
+    id: string,
+    label: string,
+    dndText: string,
+    isPartOfDerivedPropertyBranch: boolean,
+    type: Type,
+    mappingData: QueryBuilderPropertyMappingData,
+  ) {
+    this.id = id;
+    this.label = label;
+    this.dndText = dndText;
+    this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
+    this.type = type;
+    this.mappingData = mappingData;
+  }
+}
+
+export type QueryBuilderPropertyMappingData = {
   mapped: boolean;
   /**
    * This flag is used to skip mappedness checking for the whole branch (i.e. every children of
@@ -71,30 +93,8 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
    * e.g. derived properties, operation class mappings, etc.
    */
   skipMappingCheck: boolean;
-  isPartOfDerivedPropertyBranch: boolean;
-  type: Type;
-  setImpl?: SetImplementation | undefined;
-
-  constructor(
-    id: string,
-    label: string,
-    dndText: string,
-    mapped: boolean,
-    skipMappingCheck: boolean,
-    isPartOfDerivedPropertyBranch: boolean,
-    type: Type,
-    setImpl: SetImplementation | undefined,
-  ) {
-    this.id = id;
-    this.label = label;
-    this.dndText = dndText;
-    this.mapped = mapped;
-    this.skipMappingCheck = skipMappingCheck;
-    this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
-    this.type = type;
-    this.setImpl = setImpl;
-  }
-}
+  targetSetImpl?: SetImplementation | undefined;
+};
 
 export class QueryBuilderExplorerTreeRootNodeData extends QueryBuilderExplorerTreeNodeData {}
 
@@ -108,24 +108,19 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     dndText: string,
     property: AbstractProperty,
     parentId: string,
-    mapped: boolean,
-    skipMappingCheck: boolean,
     isPartOfDerivedPropertyBranch: boolean,
-    setImpl: SetImplementation | undefined,
+    mappingData: QueryBuilderPropertyMappingData,
   ) {
     super(
       id,
       label,
       dndText,
-      mapped,
-      skipMappingCheck,
       isPartOfDerivedPropertyBranch,
       property.genericType.value.rawType,
-      setImpl,
+      mappingData,
     );
     this.property = property;
     this.parentId = parentId;
-    this.mapped = mapped;
   }
 }
 
@@ -162,7 +157,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   return propertyExpression;
 };
 
-const resolveSetImplementationForPropertyMapping = (
+const resolveTargetSetImplementationForPropertyMapping = (
   propertyMapping: PropertyMapping,
 ): SetImplementation | undefined => {
   if (propertyMapping.isEmbedded) {
@@ -213,32 +208,28 @@ const isAutoMappedProperty = (
   return false;
 };
 
-const getPropertyMappedData = (
+export const getPropertyNodeMappingData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
-  parentNode: QueryBuilderExplorerTreeNodeData,
-): {
-  mapped: boolean;
-  skipMappingCheck: boolean;
-  setImpl?: SetImplementation | undefined;
-} => {
-  const parentSetImpl = parentNode.setImpl;
+  parentMappingData: QueryBuilderPropertyMappingData,
+): QueryBuilderPropertyMappingData => {
+  const parentTargetSetImpl = parentMappingData.targetSetImpl;
   // For now, derived properties will be considered mapped if its parent class is mapped.
   // NOTE: we don't want to do complex analytics such as to drill down into the body
   // of the derived properties to see if each properties being used are mapped to determine
   // if the dervied property itself is considered mapped.
   if (property instanceof DerivedProperty) {
     return {
-      mapped: parentNode.mapped,
+      mapped: parentMappingData.mapped,
       skipMappingCheck: true,
     };
   } else if (property instanceof Property) {
-    if (parentNode.skipMappingCheck) {
+    if (parentMappingData.skipMappingCheck) {
       return { mapped: true, skipMappingCheck: true };
-    } else if (parentSetImpl) {
+    } else if (parentTargetSetImpl) {
       const propertyMappings = resolvePropertyMappingsForSetImpl(
         graphManagerState,
-        parentSetImpl,
+        parentTargetSetImpl,
       );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
@@ -251,23 +242,24 @@ const getPropertyMappedData = (
             (p) => p.property.value === property,
           );
           if (propertyMapping) {
-            const setImpl =
-              resolveSetImplementationForPropertyMapping(propertyMapping);
+            const targetSetImpl =
+              resolveTargetSetImplementationForPropertyMapping(propertyMapping);
             return {
               mapped: true,
               // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
               // help identifying the mapped properties. However, we would not do that here
               // as opertion mapping can support more complicated branching logic (right now we just assume
               // it's always simple union), that Studio should not try to analyze.
-              skipMappingCheck: setImpl instanceof OperationSetImplementation,
-              setImpl,
+              skipMappingCheck:
+                targetSetImpl instanceof OperationSetImplementation,
+              targetSetImpl,
             };
           }
         }
         return { mapped: true, skipMappingCheck: false };
       }
       // check if property is auto mapped
-      if (isAutoMappedProperty(property, parentSetImpl)) {
+      if (isAutoMappedProperty(property, parentTargetSetImpl)) {
         return { mapped: true, skipMappingCheck: false };
       }
     }
@@ -275,16 +267,33 @@ const getPropertyMappedData = (
   return { mapped: false, skipMappingCheck: false };
 };
 
+export const getRootMappingData = (
+  mapping: Mapping,
+  _class: Class,
+): QueryBuilderPropertyMappingData => {
+  const rootSetImpl = getRootSetImplementation(mapping, _class);
+  return {
+    mapped: true,
+    skipMappingCheck: rootSetImpl instanceof OperationSetImplementation,
+    targetSetImpl: rootSetImpl,
+  };
+};
+
 export const getQueryBuilderPropertyNodeData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
 ): QueryBuilderExplorerTreePropertyNodeData => {
-  const mappingData = getPropertyMappedData(
+  const mappingNodeData = getPropertyNodeMappingData(
     graphManagerState,
     property,
-    parentNode,
+    parentNode.mappingData,
   );
+  const isPartOfDerivedPropertyBranch =
+    property instanceof DerivedProperty ||
+    parentNode.isPartOfDerivedPropertyBranch ||
+    (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+      parentNode.property instanceof DerivedProperty);
   const propertyNode = new QueryBuilderExplorerTreePropertyNodeData(
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
@@ -299,13 +308,8 @@ export const getQueryBuilderPropertyNodeData = (
     }.${property.name}`,
     property,
     parentNode.id,
-    mappingData.mapped,
-    property instanceof DerivedProperty ||
-      parentNode.isPartOfDerivedPropertyBranch ||
-      (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
-        parentNode.property instanceof DerivedProperty),
-    mappingData.skipMappingCheck,
-    mappingData.setImpl,
+    isPartOfDerivedPropertyBranch,
+    mappingNodeData,
   );
   if (propertyNode.type instanceof Class) {
     propertyNode.childrenIds = propertyNode.type
@@ -323,17 +327,15 @@ const getQueryBuilderTreeData = (
 ): TreeData<QueryBuilderExplorerTreeNodeData> => {
   const rootIds = [];
   const nodes = new Map<string, QueryBuilderExplorerTreeNodeData>();
-  const rootSetImpl = getRootSetImplementation(mapping, rootClass);
+  const mappingData = getRootMappingData(mapping, rootClass);
   const treeRootNode = new QueryBuilderExplorerTreeRootNodeData(
     '@dummy_rootNode',
     rootClass.name,
     rootClass.path,
-    true,
-    // NOTE: we will not try to analyze property mappedness for operation class mapping
-    rootSetImpl instanceof OperationSetImplementation,
+
     false,
     rootClass,
-    rootSetImpl,
+    mappingData,
   );
   treeRootNode.isOpen = true;
   nodes.set(treeRootNode.id, treeRootNode);

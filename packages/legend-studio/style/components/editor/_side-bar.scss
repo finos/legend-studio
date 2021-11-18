@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../mixins' as *;
+@use 'mixins' as *;
 
 @forward 'side-bar/explorer';
 @forward 'side-bar/workspace-review';
@@ -82,11 +82,6 @@
 
   &__view {
     height: 100%;
-    display: none;
-  }
-
-  &__view--active {
-    display: block;
   }
 
   &__panel {

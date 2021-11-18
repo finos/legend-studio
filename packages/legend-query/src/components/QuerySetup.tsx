@@ -50,16 +50,18 @@ import {
 import {
   CreateQueryInfoState,
   ExistingQueryInfoState,
-  LATEST_SNAPSHOT_VERSION_ALIAS,
-  LATEST_VERSION_ALIAS,
   ServiceQueryInfoState,
-} from '../stores/QueryStore';
+} from '../stores/LegendQueryStore';
 import {
   QuerySetupStoreProvider,
   useQuerySetupStore,
 } from './QuerySetupStoreProvider';
-import { useQueryStore } from './QueryStoreProvider';
+import { useLegendQueryStore } from './LegendQueryStoreProvider';
 import type { ProjectData } from '@finos/legend-server-depot';
+import {
+  LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 import type {
   LightQuery,
   Mapping,
@@ -79,7 +81,7 @@ const ExistingQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const querySearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
     const back = (): void => {
@@ -284,7 +286,7 @@ const ServiceQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
@@ -349,7 +351,7 @@ const ServiceQuerySetup = observer(
     // version
     const versionOptions = [
       LATEST_VERSION_ALIAS,
-      LATEST_SNAPSHOT_VERSION_ALIAS,
+      SNAPSHOT_VERSION_ALIAS,
       ...(querySetupState.currentProject?.versions ?? []),
     ].map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
@@ -525,7 +527,7 @@ const CreateQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
@@ -593,7 +595,7 @@ const CreateQuerySetup = observer(
     // version
     const versionOptions = [
       LATEST_VERSION_ALIAS,
-      LATEST_SNAPSHOT_VERSION_ALIAS,
+      SNAPSHOT_VERSION_ALIAS,
       ...(querySetupState.currentProject?.versions ?? []),
     ].map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
@@ -806,7 +808,7 @@ const CreateQuerySetup = observer(
 
 const QuerySetupLandingPage = observer(() => {
   const setupStore = useQuerySetupStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const extraQuerySetupOptions = queryStore.pluginManager
     .getQueryPlugins()
     .flatMap(
@@ -879,7 +881,7 @@ const QuerySetupLandingPage = observer(() => {
 
 const QuerySetupInner = observer(() => {
   const setupStore = useQuerySetupStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const querySetupState = setupStore.querySetupState;
   const renderQuerySetupScreen = (
     setupState: QuerySetupState,

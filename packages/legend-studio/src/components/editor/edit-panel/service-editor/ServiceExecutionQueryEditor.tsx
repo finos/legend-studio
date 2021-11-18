@@ -29,13 +29,8 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
   PlayIcon,
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
   ScrollIcon,
 } from '@finos/legend-art';
-import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
 import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
@@ -46,7 +41,7 @@ import {
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { LightQuery } from '@finos/legend-graph';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -234,14 +229,13 @@ export const ServiceExecutionQueryEditor = observer(
     const queryState = executionState.queryState;
     const editorStore = useEditorStore();
     const applicationStore = editorStore.applicationStore;
-    // query editor extensions
-    const extraServiceQueryEditors = editorStore.pluginManager
+    const extraServiceQueryEditorActions = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
-          ).TEMP__getExtraServiceQueryEditorRendererConfigurations?.() ?? [],
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).TEMP__getExtraServiceQueryEditorActionConfigurations?.() ?? [],
       )
       .filter(isNonNullable)
       .map((config) => (
@@ -249,16 +243,6 @@ export const ServiceExecutionQueryEditor = observer(
           {config.renderer(executionState, isReadOnly)}
         </Fragment>
       ));
-    if (extraServiceQueryEditors.length === 0) {
-      extraServiceQueryEditors.push(
-        <Fragment key={'unsupported-query-editor'}>
-          <UnsupportedEditorPanel
-            text={`Can't edit this query in form-mode`}
-            isReadOnly={isReadOnly}
-          />
-        </Fragment>,
-      );
-    }
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
@@ -285,6 +269,7 @@ export const ServiceExecutionQueryEditor = observer(
             </div>
           </div>
           <div className="panel__header__actions">
+            {extraServiceQueryEditorActions}
             <button
               className="panel__header__action"
               onClick={importQuery}
@@ -322,34 +307,14 @@ export const ServiceExecutionQueryEditor = observer(
               executionState.isGeneratingPlan
             }
           />
-          {queryState.query.isStub ? (
-            <div className="service-execution-query-editor__editor-trigger">
-              {extraServiceQueryEditors}
-            </div>
-          ) : (
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={300}>
-                <div
-                  className={clsx('service-execution-query-editor__content')}
-                >
-                  <StudioTextInputEditor
-                    inputValue={queryState.lambdaString}
-                    isReadOnly={true}
-                    language={EDITOR_LANGUAGE.PURE}
-                    showMiniMap={true}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-              </ResizablePanelSplitter>
-              <ResizablePanel size={300} minSize={200}>
-                <div className="service-execution-query-editor__editor-trigger">
-                  {extraServiceQueryEditors}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          )}
+          <div className="service-execution-query-editor__content">
+            <StudioTextInputEditor
+              inputValue={queryState.lambdaString}
+              isReadOnly={true}
+              language={EDITOR_LANGUAGE.PURE}
+              showMiniMap={true}
+            />
+          </div>
           <ExecutionPlanViewer
             executionPlanState={executionState.executionPlanState}
           />

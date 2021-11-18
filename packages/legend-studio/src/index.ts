@@ -15,15 +15,18 @@
  */
 
 // application
-export * from './components/StudioStoreProvider';
+export * from './components/LegendStudioStoreProvider';
 export * from './application/LegendStudio';
-export * from './application/StudioConfig';
-export * from './application/StudioPluginManager';
-export { LEGEND_STUDIO_PATH_PARAM_TOKEN } from './stores/LegendStudioRouter';
+export * from './application/LegendStudioConfig';
+export * from './application/LegendStudioPluginManager';
+export {
+  LEGEND_STUDIO_PATH_PARAM_TOKEN,
+  generateRoutePatternWithSDLCServerKey,
+} from './stores/LegendStudioRouter';
 export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
 
 // stores
-export * from './stores/StudioPlugin';
+export * from './stores/LegendStudioPlugin';
 export * from './stores/EditorStore';
 export * from './stores/EditorConfig';
 export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState';
@@ -37,7 +40,7 @@ export {
   TypeDragSource,
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
-export * from './stores/DSLMapping_StudioPlugin_Extension';
+export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 export { GenerationFile } from './stores/shared/FileGenerationTreeUtil';
 export { FileGenerationState } from './stores/editor-state/FileGenerationState';
 
@@ -59,6 +62,16 @@ export {
 export { STUDIO_TEST_ID } from './components/StudioTestID';
 export * from './stores/EditorStoreTestUtils';
 
+export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
+export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+export { NewConnectionValueDriver } from './stores/NewElementState';
+export type { UMLEditorElementDropTarget } from './stores/shared/DnDUtil';
+export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
+export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
+export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
+export { getElementIcon } from './components/shared/ElementIconUtils';
+
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
 export {
@@ -66,12 +79,9 @@ export {
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor';
-export * from './stores/DSLGenerationSpecification_StudioPlugin_Extension';
+export * from './stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
-export * from './stores/StoreRelational_StudioPlugin_Extension';
+export * from './stores/StoreRelational_LegendStudioPlugin_Extension';
+
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
-export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
-export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
-export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
-export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
-export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
+export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal';

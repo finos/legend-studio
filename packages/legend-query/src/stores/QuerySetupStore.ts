@@ -36,13 +36,13 @@ import type {
   Service,
 } from '@finos/legend-graph';
 import { PureSingleExecution, PureMultiExecution } from '@finos/legend-graph';
-import type { QueryStore } from './QueryStore';
+import type { LegendQueryStore } from './LegendQueryStore';
 import { ProjectData } from '@finos/legend-server-depot';
 import type { PackageableElementOption } from '@finos/legend-application';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
-  queryStore: QueryStore;
+  queryStore: LegendQueryStore;
 
   constructor(setupStore: QuerySetupStore) {
     this.setupStore = setupStore;
@@ -271,10 +271,10 @@ export class ServiceQuerySetupState extends QuerySetupState {
 }
 
 export class QuerySetupStore {
-  queryStore: QueryStore;
+  queryStore: LegendQueryStore;
   querySetupState?: QuerySetupState | undefined;
 
-  constructor(queryStore: QueryStore) {
+  constructor(queryStore: LegendQueryStore) {
     makeAutoObservable(this, {
       queryStore: false,
       setSetupState: action,

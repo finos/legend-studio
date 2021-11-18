@@ -61,8 +61,11 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared';
-import { QueryBuilderState } from '../QueryBuilderState';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import {
+  QueryBuilderState,
+  StandardQueryBuilderMode,
+} from '../QueryBuilderState';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
 
@@ -227,7 +230,7 @@ describe(
   () => {
     test.each(cases)('%s', async (testName, context, lambda, inputLambda) => {
       const { entities } = context;
-      const pluginManager = QueryPluginManager.create();
+      const pluginManager = LegendQueryPluginManager.create();
       pluginManager.usePresets([new Query_GraphPreset()]).install();
       const applicationStore = TEST__getTestApplicationStore(
         TEST__getTestQueryConfig(),
@@ -237,7 +240,7 @@ describe(
       const queryBuilderState = new QueryBuilderState(
         applicationStore,
         graphManagerState,
-        {},
+        new StandardQueryBuilderMode(),
       );
       // do the check using input and output lambda
       const rawLambda = inputLambda ?? lambda;

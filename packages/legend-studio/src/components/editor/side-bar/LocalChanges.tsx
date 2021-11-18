@@ -24,7 +24,7 @@ import { GoSync } from 'react-icons/go';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 

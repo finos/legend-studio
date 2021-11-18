@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 0.0.9
+
+### Patch Changes
+
+- [#632](https://github.com/finos/legend-studio/pull/632) [`a7ade917`](https://github.com/finos/legend-studio/commit/a7ade917da293d4efe062a2a8e569c6f8d4c54d7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add workflow jobs APIs to retry/cancel/run jobs as well as to view job logs.
+
 ## 0.0.8
 
 ## 0.0.7

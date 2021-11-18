@@ -18,7 +18,7 @@ import { observable, action, makeObservable, computed } from 'mobx';
 import type { Hashable } from '@finos/legend-shared';
 import { hashArray } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import type { Class } from '@finos/legend-graph';
+import type { Class, PackageableElementReference } from '@finos/legend-graph';
 import type { Binding } from '@finos/legend-extension-dsl-serializer';
 
 export abstract class TypeReference implements Hashable {
@@ -57,8 +57,8 @@ export class BooleanTypeReference extends TypeReference implements Hashable {
 }
 
 export class ComplexTypeReference extends TypeReference implements Hashable {
-  type!: Class;
-  binding!: Binding;
+  type!: PackageableElementReference<Class>;
+  binding!: PackageableElementReference<Binding>;
 
   constructor() {
     super();
@@ -74,8 +74,8 @@ export class ComplexTypeReference extends TypeReference implements Hashable {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.COMPLEX_TYPE_REFERENCE,
       this.list.toString(),
-      this.type.path,
-      this.binding.path,
+      this.type.valueForSerialization ?? '',
+      this.binding.valueForSerialization ?? '',
     ]);
   }
 }

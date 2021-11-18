@@ -269,7 +269,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
    */
   decorate(): void {
     this.mappingElement.accept_SetImplementationVisitor(
-      new MappingElementDecorator(),
+      new MappingElementDecorator(this.editorStore),
     );
     const newPropertyMappingStates: PurePropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration =

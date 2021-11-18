@@ -23,7 +23,7 @@ import {
 import { waitFor } from '@testing-library/dom';
 import type { EditorStore } from '@finos/legend-studio';
 import {
-  StudioPluginManager,
+  LegendStudioPluginManager,
   STUDIO_TEST_ID,
   TEST__openElementFromExplorerTree,
   TEST__getTestStudioConfig,
@@ -32,13 +32,13 @@ import {
 } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
-import { QueryBuilder_StudioPreset } from '../../QueryBuilder_StudioPreset';
+import { QueryBuilder_LegendStudioPreset } from '../../QueryBuilder_LegendStudioPreset';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
 
 const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
-  const pluginManager = StudioPluginManager.create();
-  pluginManager.usePresets([new QueryBuilder_StudioPreset()]).install();
+  const pluginManager = LegendStudioPluginManager.create();
+  pluginManager.usePresets([new QueryBuilder_LegendStudioPreset()]).install();
 
   return TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(
@@ -269,8 +269,8 @@ test(
     fireEvent.contextMenu(classMappingInExplorer);
 
     fireEvent.click(renderResult.getByText('Execute'));
-    await waitFor(() => renderResult.getByText('Edit Query'));
-    fireEvent.click(renderResult.getByText('Edit Query'));
+    await waitFor(() => renderResult.getByTitle('Edit query...'));
+    fireEvent.click(renderResult.getByTitle('Edit query...'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
@@ -296,8 +296,8 @@ test(
 
     await TEST__openElementFromExplorerTree('model::MyMapping', renderResult);
     fireEvent.click(renderResult.getByText('test_1'));
-    await waitFor(() => renderResult.getByText('Edit Query'));
-    fireEvent.click(renderResult.getByText('Edit Query'));
+    await waitFor(() => renderResult.getByTitle('Edit query...'));
+    fireEvent.click(renderResult.getByTitle('Edit query...'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
@@ -323,8 +323,8 @@ test(
 
     await TEST__openElementFromExplorerTree('model::MyService', renderResult);
     fireEvent.click(renderResult.getByText('Execution'));
-    await waitFor(() => renderResult.getByText('Edit Query'));
-    fireEvent.click(renderResult.getByText('Edit Query'));
+    await waitFor(() => renderResult.getByTitle('Edit query...'));
+    fireEvent.click(renderResult.getByTitle('Edit query...'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),

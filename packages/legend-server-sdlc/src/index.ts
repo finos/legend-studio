@@ -23,6 +23,7 @@ export * from './models/review/Review';
 export * from './models/review/ReviewCommands';
 
 export * from './models/workflow/Workflow';
+export * from './models/workflow/WorkflowJob';
 
 export * from './models/project/Project';
 export * from './models/project/ImportReport';

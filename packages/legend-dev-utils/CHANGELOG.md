@@ -1,5 +1,13 @@
 # @finos/legend-dev-utils
 
+## 0.2.0
+
+### Minor Changes
+
+- [#636](https://github.com/finos/legend-studio/pull/636) [`65bd91ee`](https://github.com/finos/legend-studio/commit/65bd91ee5840626097948d88179d2aa692be6440) ([@akphi](https://github.com/akphi)) - Export base `Typescript` config file: to use this in other projects, in their respective `tsconfig.json`, use `{ "extends": "@finos/legend-dev-utils/tsconfig.base.json", ... }`.
+
+* [#636](https://github.com/finos/legend-studio/pull/636) [`65bd91ee`](https://github.com/finos/legend-studio/commit/65bd91ee5840626097948d88179d2aa692be6440) ([@akphi](https://github.com/akphi)) - Add test mocks, polyfills and test setup scripts for Jest.
+
 ## 0.1.1
 
 ## 0.1.0

@@ -17,7 +17,7 @@
 import { Link } from 'react-router-dom';
 import { LegendLogo } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 export const AppHeader: React.FC<{
   children?: React.ReactNode;
@@ -48,7 +48,7 @@ export const AppHeader: React.FC<{
 };
 
 export const BasicAppHeader: React.FC<{
-  config: StudioConfig;
+  config: LegendStudioConfig;
 }> = (props) => {
   const { config } = props;
 

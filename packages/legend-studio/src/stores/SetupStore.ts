@@ -30,7 +30,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import type { StudioConfig } from '../application/StudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -69,7 +69,7 @@ export interface WorkspaceIdentifier {
 }
 
 export class SetupStore {
-  applicationStore: ApplicationStore<StudioConfig>;
+  applicationStore: ApplicationStore<LegendStudioConfig>;
   sdlcServerClient: SDLCServerClient;
 
   currentProjectId?: string | undefined;
@@ -85,7 +85,7 @@ export class SetupStore {
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<StudioConfig>,
+    applicationStore: ApplicationStore<LegendStudioConfig>,
     sdlcServerClient: SDLCServerClient,
   ) {
     makeAutoObservable(this, {
@@ -246,7 +246,7 @@ export class SetupStore {
       this.projects?.set(createdProject.projectId, createdProject);
       this.applicationStore.navigator.goTo(
         generateSetupRoute(
-          this.applicationStore.config.sdlcServerKey,
+          this.applicationStore.config.currentSDLCServerOption,
           createdProject.projectId,
         ),
       );

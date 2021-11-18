@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import { generateBundleCopyrightText } from '../../scripts/copyright/PackageCopyrightHelper.js';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 export default {
   publish: {
-    tsConfigPath: './tsconfig.build.json',
-  },
-  build: {
-    copyrightText: generateBundleCopyrightText(__dirname),
+    typescript: {
+      main: './tsconfig.build.json',
+      others: ['./tsconfig.package.json'],
+    },
   },
 };

@@ -79,7 +79,6 @@ enum ROUNTRIP_TEST_PHASES {
 const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
-  'ESService-basic.pure': SKIP, //Needs https://github.com/finos/legend-engine/pull/417 to be merged
   // post processor mismatch between engine (undefined) vs studio ([])
   'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
@@ -97,6 +96,10 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
   'basic-otherwise-embedded-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'xstore-mapping.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'mapping-include-enum-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
 };

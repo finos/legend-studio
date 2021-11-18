@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-serializer
 
+## 0.3.0
+
+### Minor Changes
+
+- [#595](https://github.com/finos/legend-studio/pull/595) [`2850e782`](https://github.com/finos/legend-studio/commit/2850e7824e13e7fc1e27daf16d19b7a7e0f4d1fe) ([@gayathrir11](https://github.com/gayathrir11)) - Add form support for `Binding` store and `ExternalFormat` connection.
+
 ## 0.2.2
 
 ## 0.2.1

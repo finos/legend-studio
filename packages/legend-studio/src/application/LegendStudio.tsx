@@ -18,7 +18,7 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
-import { StudioPluginManager } from './StudioPluginManager';
+import { LegendStudioPluginManager } from './LegendStudioPluginManager';
 import type {
   LegendApplicationConfig,
   LegendApplicationVersionData,
@@ -31,11 +31,11 @@ import {
 import type { Log } from '@finos/legend-shared';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
-import type { StudioConfigurationData } from './StudioConfig';
-import { StudioConfig } from './StudioConfig';
+import type { LegendStudioConfigurationData } from './LegendStudioConfig';
+import { LegendStudioConfig } from './LegendStudioConfig';
 
 const setupLegendStudioUILibrary = async (
-  pluginManager: StudioPluginManager,
+  pluginManager: LegendStudioPluginManager,
   log: Log,
 ): Promise<void> => {
   await setupLegendApplicationUILibrary(pluginManager, log);
@@ -56,21 +56,21 @@ const setupLegendStudioUILibrary = async (
 };
 
 export class LegendStudio extends LegendApplication {
-  declare config: StudioConfig;
-  declare pluginManager: StudioPluginManager;
+  declare config: LegendStudioConfig;
+  declare pluginManager: LegendStudioPluginManager;
 
   static create(): LegendStudio {
-    const application = new LegendStudio(StudioPluginManager.create());
+    const application = new LegendStudio(LegendStudioPluginManager.create());
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
     return application;
   }
 
   async configureApplication(
-    configData: StudioConfigurationData,
+    configData: LegendStudioConfigurationData,
     versionData: LegendApplicationVersionData,
     baseUrl: string,
   ): Promise<LegendApplicationConfig> {
-    return new StudioConfig(configData, versionData, baseUrl);
+    return new LegendStudioConfig(configData, versionData, baseUrl);
   }
 
   async loadApplication(): Promise<void> {

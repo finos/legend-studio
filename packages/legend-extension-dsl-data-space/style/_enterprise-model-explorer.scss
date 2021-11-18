@@ -1,0 +1,149 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.enterprise-taxonomy-tree {
+  &__node__container:hover {
+    background: var(--color-dark-blue-shade-100);
+  }
+
+  &__node__container--selected,
+  &__node__container--selected:hover {
+    background: var(--color-light-blue-450);
+  }
+
+  &__node__icon {
+    @include flexCenter;
+
+    width: 4rem;
+    min-width: 4rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__node__icon__expand,
+  &__node__icon__type {
+    @include flexHCenter;
+
+    color: var(--color-light-grey-400);
+    width: 2rem;
+  }
+
+  &__node__icon__expand svg {
+    font-size: 1rem;
+  }
+
+  &__node__label {
+    color: inherit;
+  }
+}
+
+.enterprise-model-explorer {
+  &__side-bar__header {
+    min-width: 9rem;
+    background: var(--color-dark-grey-200);
+    color: var(--color-light-grey-200);
+    padding-left: 1rem;
+  }
+
+  &__side-bar__header__action {
+    height: 100%;
+    color: var(--color-light-grey-400);
+  }
+
+  &__taxonomy-tree-container {
+    height: 100%;
+    background: var(--color-dark-grey-100);
+    padding: 0.5rem 0;
+  }
+}
+
+.taxonomy-viewer {
+  height: 100%;
+  width: 100%;
+
+  &__explorer {
+    height: 100%;
+  }
+
+  &__explorer__header {
+    background: var(--color-yellow-100);
+    height: 3.4rem !important;
+  }
+
+  &__explorer__header__title {
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--color-dark-grey-200);
+    font-size: 1.2rem;
+  }
+
+  &__explorer__content {
+    height: calc(100% - 3.4rem);
+    background: var(--color-dark-grey-85);
+    padding: 0.5rem 0;
+    border: 0.1rem solid var(--color-dark-grey-50);
+  }
+
+  &__explorer__entry {
+    @include flexVCenter;
+
+    height: 2.8rem;
+    width: 100%;
+    padding: 0 0.5rem;
+
+    &__icon {
+      @include flexCenter;
+
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-blue-180);
+      }
+    }
+
+    &__path {
+      @include ellipsisTextOverflow;
+
+      height: 100%;
+      width: calc(100% - 2.8rem);
+      line-height: 2.8rem;
+      color: var(--color-dark-grey-500);
+    }
+
+    &:hover {
+      background: var(--color-dark-blue-shade-100);
+    }
+
+    &--active {
+      background: var(--color-blue-500);
+
+      .taxonomy-viewer__explorer__entry__path,
+      .taxonomy-viewer__explorer__entry__icon svg {
+        color: var(--color-light-grey-300);
+      }
+    }
+  }
+
+  &__content-placeholder {
+    background: var(--color-dark-grey-80);
+    height: 100%;
+  }
+}

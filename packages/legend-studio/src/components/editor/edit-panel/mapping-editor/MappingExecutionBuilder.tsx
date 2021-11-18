@@ -25,7 +25,6 @@ import {
   CustomSelectorInput,
   BlankPanelPlaceholder,
   PanelLoadingIndicator,
-  PencilIcon,
   TimesIcon,
   PlayIcon,
   FlaskIcon,
@@ -37,6 +36,7 @@ import {
   CaretDownIcon,
 } from '@finos/legend-art';
 import { FaScroll, FaRobot } from 'react-icons/fa';
+import { MdRefresh } from 'react-icons/md';
 import { observer } from 'mobx-react-lite';
 import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
@@ -73,7 +73,7 @@ import {
   RelationalInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -167,25 +167,18 @@ const MappingExecutionQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = editorStore.pluginManager
+    const extraQueryEditorActions = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
-          ).getExtraMappingExecutionQueryEditorRendererConfigurations?.() ?? [],
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraMappingExecutionQueryEditorActionConfigurations?.() ?? [],
       )
       .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>{config.renderer(executionState)}</Fragment>
       ));
-    if (extraQueryEditors.length === 0) {
-      extraQueryEditors.push(
-        <Fragment key={'unsupported-query-editor'}>
-          <div>{`No query editor available`}</div>
-        </Fragment>,
-      );
-    }
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -229,7 +222,10 @@ const MappingExecutionQueryEditor = observer(
               );
             } else {
               executionState.setInputDataStateBasedOnSource(
-                getMappingElementSource(setImplementation),
+                getMappingElementSource(
+                  setImplementation,
+                  editorStore.pluginManager.getStudioPlugins(),
+                ),
                 true,
               );
             }
@@ -246,7 +242,10 @@ const MappingExecutionQueryEditor = observer(
                   type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                   handler: (): void =>
                     executionState.setInputDataStateBasedOnSource(
-                      getMappingElementSource(setImplementation),
+                      getMappingElementSource(
+                        setImplementation,
+                        editorStore.pluginManager.getStudioPlugins(),
+                      ),
                       true,
                     ),
                 },
@@ -296,6 +295,7 @@ const MappingExecutionQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
+            {extraQueryEditorActions}
             <button
               className="panel__header__action"
               tabIndex={-1}
@@ -304,38 +304,18 @@ const MappingExecutionQueryEditor = observer(
             >
               <TimesIcon />
             </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={showClassMappingSelectorModal}
-              title={'Choose target...'}
-            >
-              <PencilIcon />
-            </button>
           </div>
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={250}>
-                <div className="mapping-execution-builder__query-panel__query">
-                  <StudioTextInputEditor
-                    inputValue={queryState.lambdaString}
-                    isReadOnly={true}
-                    language={EDITOR_LANGUAGE.PURE}
-                    showMiniMap={false}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
-              </ResizablePanelSplitter>
-              <ResizablePanel size={250} minSize={250}>
-                <div className="mapping-execution-builder__query-panel__query-editor">
-                  {extraQueryEditors}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+            <div className="mapping-execution-builder__query-panel__query">
+              <StudioTextInputEditor
+                inputValue={queryState.lambdaString}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.PURE}
+                showMiniMap={false}
+              />
+            </div>
           </div>
         )}
         {queryState.query.isStub && (
@@ -521,6 +501,7 @@ const RelationalMappingExecutionInputDataTypeSelector = observer(
 export const MappingExecutionInputDataBuilder = observer(
   (props: { executionState: MappingExecutionState }) => {
     const { executionState } = props;
+    const editorStore = useEditorStore();
     const mappingEditorState = executionState.mappingEditorState;
     const inputDataState = executionState.inputDataState;
 
@@ -535,14 +516,17 @@ export const MappingExecutionInputDataBuilder = observer(
       (setImplementation: SetImplementation | undefined): void => {
         executionState.setInputDataStateBasedOnSource(
           setImplementation
-            ? getMappingElementSource(setImplementation)
+            ? getMappingElementSource(
+                setImplementation,
+                editorStore.pluginManager.getStudioPlugins(),
+              )
             : undefined,
           true,
         );
         executionState.setExecutionResultText(undefined);
         hideClassMappingSelectorModal();
       },
-      [executionState],
+      [executionState, editorStore],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);
@@ -615,18 +599,18 @@ export const MappingExecutionInputDataBuilder = observer(
             <button
               className="panel__header__action"
               tabIndex={-1}
-              onClick={clearInputData}
-              title={'Clear input data'}
+              onClick={showClassMappingSelectorModal}
+              title={'Regenerate...'}
             >
-              <TimesIcon />
+              <MdRefresh className="mapping-execution-builder__icon--refresh" />
             </button>
             <button
               className="panel__header__action"
               tabIndex={-1}
-              onClick={showClassMappingSelectorModal}
-              title={'Choose a class mapping...'}
+              onClick={clearInputData}
+              title={'Clear input data'}
             >
-              <PencilIcon />
+              <TimesIcon />
             </button>
           </div>
         </div>
@@ -782,10 +766,10 @@ export const MappingExecutionBuilder = observer(
           close={(): void => executionState.setShowServicePathModal(false)}
           showModal={executionState.showServicePathModal}
           promoteToService={(
-            name: string,
             packagePath: string,
+            name: string,
           ): Promise<void> =>
-            flowResult(executionState.promoteToService(name, packagePath))
+            flowResult(executionState.promoteToService(packagePath, name))
           }
           isReadOnly={mappingEditorState.isReadOnly}
         />

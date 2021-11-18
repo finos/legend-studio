@@ -32,7 +32,6 @@ import {
   PanelLoadingIndicator,
   BlankPanelPlaceholder,
   TimesIcon,
-  PencilIcon,
   PlayIcon,
   ResizablePanelGroup,
   ResizablePanel,
@@ -80,7 +79,7 @@ import {
   RelationalInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -89,13 +88,13 @@ const MappingTestQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = editorStore.pluginManager
+    const extraQueryEditorActions = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
-          ).getExtraMappingTestQueryEditorRendererConfigurations?.() ?? [],
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraMappingTestQueryEditorActionConfigurations?.() ?? [],
       )
       .filter(isNonNullable)
       .map((config) => (
@@ -103,13 +102,6 @@ const MappingTestQueryEditor = observer(
           {config.renderer(testState, isReadOnly)}
         </Fragment>
       ));
-    if (extraQueryEditors.length === 0) {
-      extraQueryEditors.push(
-        <Fragment key={'unsupported-query-editor'}>
-          <div>{`No query editor available`}</div>
-        </Fragment>,
-      );
-    }
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -149,7 +141,10 @@ const MappingTestQueryEditor = observer(
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void =>
                   testState.setInputDataStateBasedOnSource(
-                    getMappingElementSource(setImplementation),
+                    getMappingElementSource(
+                      setImplementation,
+                      editorStore.pluginManager.getStudioPlugins(),
+                    ),
                     true,
                   ),
               },
@@ -196,6 +191,7 @@ const MappingTestQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
+            {extraQueryEditorActions}
             <button
               className="panel__header__action"
               tabIndex={-1}
@@ -205,39 +201,18 @@ const MappingTestQueryEditor = observer(
             >
               <TimesIcon />
             </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              disabled={isReadOnly}
-              onClick={showClassMappingSelectorModal}
-              title={'Choose target...'}
-            >
-              <PencilIcon />
-            </button>
           </div>
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={250}>
-                <div className="mapping-test-editor__query-panel__query">
-                  <StudioTextInputEditor
-                    inputValue={queryState.lambdaString}
-                    isReadOnly={true}
-                    language={EDITOR_LANGUAGE.PURE}
-                    showMiniMap={false}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
-              </ResizablePanelSplitter>
-              <ResizablePanel size={250} minSize={250}>
-                <div className="mapping-test-editor__query-panel__query-editor">
-                  {extraQueryEditors}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+            <div className="mapping-test-editor__query-panel__query">
+              <StudioTextInputEditor
+                inputValue={queryState.lambdaString}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.PURE}
+                showMiniMap={false}
+              />
+            </div>
           </div>
         )}
         {queryState.query.isStub && (
@@ -392,6 +367,7 @@ export const MappingTestInputDataBuilder = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const inputDataState = testState.inputDataState;
+    const editorStore = useEditorStore();
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -404,13 +380,16 @@ export const MappingTestInputDataBuilder = observer(
       (setImplementation: SetImplementation | undefined): void => {
         testState.setInputDataStateBasedOnSource(
           setImplementation
-            ? getMappingElementSource(setImplementation)
+            ? getMappingElementSource(
+                setImplementation,
+                editorStore.pluginManager.getStudioPlugins(),
+              )
             : undefined,
           true,
         );
         hideClassMappingSelectorModal();
       },
-      [testState],
+      [testState, editorStore],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);
@@ -468,9 +447,9 @@ export const MappingTestInputDataBuilder = observer(
               tabIndex={-1}
               disabled={isReadOnly}
               onClick={showClassMappingSelectorModal}
-              title={'Choose a class mapping...'}
+              title={'Regenerate...'}
             >
-              <PencilIcon />
+              <MdRefresh className="mapping-test-editor__icon--refresh" />
             </button>
           </div>
         </div>

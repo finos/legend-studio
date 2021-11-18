@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-management-toolkit",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Legend Studio extension for management/admin tooling",
   "keywords": [
     "legend",
@@ -27,11 +27,11 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "yarn clean && yarn build:sass && yarn build:tsc",
-    "build:sass": "cross-env INIT_CWD=$INIT_CWD sass ./style/index.scss ./lib/index.css --style=compressed && node ../../scripts/copyright/addBundledCodeCopyrightHeader.js ./lib/index.css",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
     "build:tsc": "tsc --project ./tsconfig.build.json",
     "clean": "rimraf \"lib\" \"build\"",
     "dev": "npm-run-all --parallel dev:sass dev:tsc",
-    "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
+    "dev:sass": "sass style lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
@@ -45,9 +45,9 @@
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.33",
+    "@types/react": "17.0.35",
     "@types/react-router-dom": "5.3.2",
-    "mobx": "6.3.6",
+    "mobx": "6.3.7",
     "mobx-react-lite": "3.2.2",
     "react": "17.0.2",
     "react-icons": "4.3.1",
@@ -56,7 +56,7 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.1.0",
+    "eslint": "8.2.0",
     "jest": "27.3.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",

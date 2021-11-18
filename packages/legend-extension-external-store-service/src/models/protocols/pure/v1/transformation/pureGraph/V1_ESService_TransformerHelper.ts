@@ -90,8 +90,8 @@ export const V1_transformComplexTypeReference = (
 ): V1_ComplexTypeReference => {
   const complexTypeReference = new V1_ComplexTypeReference();
   complexTypeReference.list = metamodel.list;
-  complexTypeReference.type = metamodel.type.path;
-  complexTypeReference.binding = metamodel.binding.path;
+  complexTypeReference.type = metamodel.type.valueForSerialization ?? '';
+  complexTypeReference.binding = metamodel.binding.valueForSerialization ?? '';
   return complexTypeReference;
 };
 

@@ -81,7 +81,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
-import type { ClassPreviewRenderer } from '../../../../stores/StudioPlugin';
+import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin';
 
 const PropertyBasicEditor = observer(
   (props: {

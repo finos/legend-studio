@@ -93,7 +93,7 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../stores/DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 const getConnectionTooltipText = (
   connection: Connection,
@@ -117,11 +117,11 @@ const getConnectionTooltipText = (
     .flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_StudioPlugin_Extension
+          plugin as DSLMapping_LegendStudioPlugin_Extension
         ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
     );
   for (const builder of extraConnectionToolTipTexts) {
-    const tooltipText = builder(connection);
+    const tooltipText = builder(connectionValue);
     if (tooltipText) {
       return tooltipText;
     }

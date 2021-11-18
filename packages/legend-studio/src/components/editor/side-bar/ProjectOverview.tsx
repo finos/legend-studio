@@ -37,7 +37,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const WorkspaceViewerContextMenu = observer<
   {
@@ -70,7 +70,7 @@ const WorkspaceViewerContextMenu = observer<
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const isActive = areWorkspacesEquivalent(
     editorStore.sdlcState.activeWorkspace,
     workspace,
@@ -98,7 +98,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         rel="noopener noreferrer"
         target="_blank"
         to={generateEditorRoute(
-          applicationStore.config.sdlcServerKey,
+          applicationStore.config.currentSDLCServerOption,
           workspace.projectId,
           workspace.workspaceId,
           workspace.workspaceType,
@@ -173,7 +173,7 @@ const WorkspacesViewer = observer(() => {
 
 const ReleaseEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const projectOverviewState = editorStore.projectOverviewState;
   const sdlcState = editorStore.sdlcState;
   const commitedReviews =
@@ -286,7 +286,7 @@ const ReleaseEditor = observer(() => {
                       rel="noopener noreferrer"
                       target="_blank"
                       to={generateViewVersionRoute(
-                        applicationStore.config.sdlcServerKey,
+                        applicationStore.config.currentSDLCServerOption,
                         latestProjectVersion.projectId,
                         latestProjectVersion.id.id,
                       )}
@@ -341,7 +341,7 @@ const ReleaseEditor = observer(() => {
                     rel="noopener noreferrer"
                     target="_blank"
                     to={generateReviewRoute(
-                      applicationStore.config.sdlcServerKey,
+                      applicationStore.config.currentSDLCServerOption,
                       review.projectId,
                       review.id,
                     )}
@@ -368,7 +368,7 @@ const ReleaseEditor = observer(() => {
 
 const VersionsViewer = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const versions = editorStore.sdlcState.projectVersions;
   const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
 
@@ -404,7 +404,7 @@ const VersionsViewer = observer(() => {
               rel="noopener noreferrer"
               target="_blank"
               to={generateViewVersionRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 version.projectId,
                 version.id.id,
               )}

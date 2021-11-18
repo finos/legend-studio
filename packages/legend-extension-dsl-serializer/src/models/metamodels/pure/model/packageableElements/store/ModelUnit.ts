@@ -15,37 +15,86 @@
  */
 
 import { observable, computed, makeObservable, action } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  changeEntry,
+  deleteEntry,
+  hashArray,
+} from '@finos/legend-shared';
 import type { Hashable } from '@finos/legend-shared';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
+import type {
+  PackageableElement,
+  PackageableElementReference,
+} from '@finos/legend-graph';
 
 export class ModelUnit implements Hashable {
-  packageableElementIncludes: string[] = [];
-  packageableElementExcludes: string[] = [];
+  packageableElementIncludes: PackageableElementReference<PackageableElement>[] =
+    [];
+  packageableElementExcludes: PackageableElementReference<PackageableElement>[] =
+    [];
 
   constructor() {
     makeObservable(this, {
       packageableElementIncludes: observable,
       packageableElementExcludes: observable,
       hashCode: computed,
-      setPackageableElementIncludes: action,
-      setPackageableElementExcludes: action,
+      addPackageableElementIncludes: action,
+      deletePackageableElementIncludes: action,
+      updatePackageableElementIncludes: action,
+      addPackageableElementExcludes: action,
+      deletePackageableElementExcludes: action,
+      updatePackageableElementExcludes: action,
     });
   }
 
-  setPackageableElementIncludes(val: string[]): void {
-    this.packageableElementIncludes = val;
+  addPackageableElementIncludes(
+    value: PackageableElementReference<PackageableElement>,
+  ): void {
+    addUniqueEntry(this.packageableElementIncludes, value);
   }
 
-  setPackageableElementExcludes(val: string[]): void {
-    this.packageableElementExcludes = val;
+  deletePackageableElementIncludes(
+    value: PackageableElementReference<PackageableElement>,
+  ): void {
+    deleteEntry(this.packageableElementIncludes, value);
+  }
+
+  updatePackageableElementIncludes(
+    oldValue: PackageableElementReference<PackageableElement>,
+    newValue: PackageableElementReference<PackageableElement>,
+  ): void {
+    changeEntry(this.packageableElementIncludes, oldValue, newValue);
+  }
+
+  addPackageableElementExcludes(
+    value: PackageableElementReference<PackageableElement>,
+  ): void {
+    addUniqueEntry(this.packageableElementExcludes, value);
+  }
+
+  deletePackageableElementExcludes(
+    value: PackageableElementReference<PackageableElement>,
+  ): void {
+    deleteEntry(this.packageableElementExcludes, value);
+  }
+
+  updatePackageableElementExcludes(
+    oldValue: PackageableElementReference<PackageableElement>,
+    newValue: PackageableElementReference<PackageableElement>,
+  ): void {
+    changeEntry(this.packageableElementExcludes, oldValue, newValue);
   }
 
   get hashCode(): string {
     return hashArray([
       DSL_SERIALIZER_HASH_STRUCTURE.MODEL_UNIT,
-      hashArray(this.packageableElementIncludes),
-      hashArray(this.packageableElementExcludes),
+      hashArray(
+        this.packageableElementIncludes.map((element) => element.hashValue),
+      ),
+      hashArray(
+        this.packageableElementExcludes.map((element) => element.hashValue),
+      ),
     ]);
   }
 }

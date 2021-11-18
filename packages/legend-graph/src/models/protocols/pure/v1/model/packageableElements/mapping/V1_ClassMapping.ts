@@ -25,7 +25,6 @@ import type { V1_OperationClassMapping } from './V1_OperationClassMapping';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
 import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface V1_ClassMappingVisitor<T> {
   visit_ClassMapping(classMapping: V1_ClassMapping): T;
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): T;

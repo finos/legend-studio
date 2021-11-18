@@ -39,18 +39,18 @@ import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const sdlcState = editorStore.sdlcState;
   const currentEditorState = editorStore.currentEditorState;
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;
@@ -258,7 +258,7 @@ export const WorkspaceUpdater = observer(() => {
                     rel="noopener noreferrer"
                     target="_blank"
                     to={generateReviewRoute(
-                      applicationStore.config.sdlcServerKey,
+                      applicationStore.config.currentSDLCServerOption,
                       review.projectId,
                       review.id,
                     )}

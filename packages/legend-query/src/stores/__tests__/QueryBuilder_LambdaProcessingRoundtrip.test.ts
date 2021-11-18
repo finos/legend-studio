@@ -39,9 +39,9 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 
-const pluginManager = QueryPluginManager.create();
+const pluginManager = LegendQueryPluginManager.create();
 pluginManager.usePresets([new Query_GraphPreset()]).install();
 
 type RoundtripTestCase = [
@@ -102,7 +102,7 @@ const cases: RoundtripTestCase[] = [
 describe(unitTest('Lambda processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, lambdaJson) => {
     const { entities } = context;
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
     const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
     await TEST__buildGraphWithEntities(graphManagerState, entities);

@@ -1,0 +1,20 @@
+{
+  "name": "@finos/legend-internal-github-bot",
+  "private": true,
+  "description": "Github bot/automation for finos/legend-studio repository",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "scripts/github-bot"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "lint:js": "echo \"Skipped - already done as part of linting ./scripts\""
+  },
+  "dependencies": {
+    "@actions/core": "1.6.0",
+    "@actions/github": "5.0.0",
+    "chalk": "4.1.2"
+  }
+}

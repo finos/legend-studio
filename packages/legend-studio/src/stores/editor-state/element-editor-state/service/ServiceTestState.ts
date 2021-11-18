@@ -29,8 +29,6 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToFormatJSONString,
-  toGrammarString,
-  fromGrammarString,
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
@@ -62,7 +60,7 @@ import {
   PureClientVersion,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -136,7 +134,11 @@ export class TestContainerState {
       this.testContainer.assert =
         this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-          toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
+          // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
+          // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
+          // See https://github.com/finos/legend-studio/issues/586
+          // See https://github.com/finos/legend-engine/issues/429
+          tryToMinifyLosslessJSONString(this.assertionData),
         );
     }
   }
@@ -147,10 +149,12 @@ export class TestContainerState {
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
-      ? fromGrammarString(
-          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-          tryToFormatLosslessJSONString(expectedResultAssertionString),
-        )
+      ? /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
+        // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
+        // See https://github.com/finos/legend-studio/issues/586
+        // See https://github.com/finos/legend-engine/issues/429
+        tryToFormatLosslessJSONString(expectedResultAssertionString)
       : undefined;
   }
 
@@ -246,7 +250,7 @@ export class TestContainerState {
               .flatMap(
                 (plugin) =>
                   (
-                    plugin as DSLMapping_StudioPlugin_Extension
+                    plugin as DSLMapping_LegendStudioPlugin_Extension
                   ).TEMP__getExtraServiceTestRuntimeConnectionBuilders?.() ??
                   [],
               );

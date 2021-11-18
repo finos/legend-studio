@@ -46,7 +46,7 @@ import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID';
 import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
 
@@ -60,7 +60,7 @@ test(
     'Query builder state is properly set after processing a projection lambda',
   ),
   async () => {
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
     const mockedQueryStore = TEST__provideMockedQueryStore({
       pluginManager,
@@ -103,9 +103,9 @@ test(
     );
 
     expect(getRootSetImplementation(mapping, _personClass)).toBe(
-      rootNode.setImpl,
+      rootNode.mappingData.targetSetImpl,
     );
-    expect(rootNode.mapped).toBe(true);
+    expect(rootNode.mappingData.mapped).toBe(true);
 
     // simpleProjection
     queryBuilderState.initialize(getRawLambda(TEST_DATA__simpleProjection));
@@ -348,7 +348,7 @@ test(
     'Query builder state is properly set after processing a graph-fetch lambda',
   ),
   async () => {
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
     const mockedQueryStore = TEST__provideMockedQueryStore({
       pluginManager,

@@ -34,14 +34,14 @@ import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { STUDIO_TEST_ID } from '../../StudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
@@ -95,7 +95,7 @@ export const WorkspaceReviewDiffs = observer(() => {
 
 export const WorkspaceReview = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const workspaceReviewState = editorStore.workspaceReviewState;
   const workspaceReview = workspaceReviewState.workspaceReview;
   // Review Title
@@ -279,7 +279,7 @@ export const WorkspaceReview = observer(() => {
                       rel="noopener noreferrer"
                       target="_blank"
                       to={generateReviewRoute(
-                        applicationStore.config.sdlcServerKey,
+                        applicationStore.config.currentSDLCServerOption,
                         workspaceReview.projectId,
                         workspaceReview.id,
                       )}

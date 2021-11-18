@@ -25,7 +25,6 @@ import type {
   Class,
   Mapping,
   PackageableRuntime,
-  RawLambda,
   Runtime,
 } from '@finos/legend-graph';
 import {
@@ -40,7 +39,6 @@ export class QueryBuilderSetupState {
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
-  onSave?: ((lambda: RawLambda) => Promise<void>) | undefined;
   showSetupPanel = true;
 
   constructor(queryBuilderState: QueryBuilderState) {
@@ -51,7 +49,6 @@ export class QueryBuilderSetupState {
       setMapping: action,
       setRuntime: action,
       setShowSetupPanel: action,
-      setOnSaveQuery: action,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -101,11 +98,6 @@ export class QueryBuilderSetupState {
     if (!this.runtimeIsReadOnly) {
       this.runtime = val;
     }
-  }
-  setOnSaveQuery(
-    val: ((lambda: RawLambda) => Promise<void>) | undefined,
-  ): void {
-    this.onSave = val;
   }
   setShowSetupPanel(val: boolean): void {
     this.showSetupPanel = val;

@@ -60,16 +60,16 @@ import {
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
   const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const latestVersion = viewerStore.onLatestVersion;
   const currentRevision = viewerStore.onCurrentRevision;
-  const statusBarInfo = params.revisionId ?? params.versionId ?? 'HEAD';
+  const extraSDLCInfo = params.revisionId ?? params.versionId ?? 'HEAD';
   const projectId = params.projectId;
   const currentProject = editorStore.sdlcState.currentProject;
   const versionBehindProjectHead =
@@ -98,30 +98,32 @@ const ViewerStatusBar = observer(() => {
       className="editor__status-bar viewer__status-bar"
     >
       <div className="editor__status-bar__left">
-        <div className="editor__status-bar__workspace">
-          <div className="editor__status-bar__workspace__icon">
-            <FaCodeBranch />
-          </div>
-          <div className="editor__status-bar__workspace__project">
-            <Link
-              to={generateSetupRoute(
-                applicationStore.config.sdlcServerKey,
-                projectId,
-              )}
-            >
-              {currentProject?.name ?? 'unknown'}
-            </Link>
-          </div>
-          /
-          <div className="editor__status-bar__workspace__workspace">
-            {statusBarInfo}
-          </div>
-          {description && (
-            <div className="editor__status-bar__workspace__workspace">
-              ({description})
+        {currentProject && (
+          <div className="editor__status-bar__workspace">
+            <div className="editor__status-bar__workspace__icon">
+              <FaCodeBranch />
             </div>
-          )}
-        </div>
+            <div className="editor__status-bar__workspace__project">
+              <Link
+                to={generateSetupRoute(
+                  applicationStore.config.currentSDLCServerOption,
+                  projectId,
+                )}
+              >
+                {currentProject.name}
+              </Link>
+            </div>
+            /
+            <div className="editor__status-bar__workspace__workspace">
+              {extraSDLCInfo}
+            </div>
+            {description && (
+              <div className="editor__status-bar__workspace__workspace">
+                ({description})
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div className="editor__status-bar__right">
         <button
@@ -182,9 +184,6 @@ const ViewerActivityBar = observer(() => {
 
 export const ViewerInner = observer(() => {
   const params = useParams<ViewerPathParams>();
-  const projectId = params.projectId;
-  const versionId = params.versionId;
-  const revisionId = params.revisionId;
   const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
@@ -235,13 +234,14 @@ export const ViewerInner = observer(() => {
   useEffect(() => {
     viewerStore.internalizeEntityPath(params);
   }, [viewerStore, params]);
+
   // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
   // on the second call when we remove entity path from the route
   useEffect(() => {
-    flowResult(viewerStore.initialize(projectId, versionId, revisionId)).catch(
+    flowResult(viewerStore.initialize(params)).catch(
       applicationStore.alertIllegalUnhandledError,
     );
-  }, [applicationStore, viewerStore, projectId, versionId, revisionId]);
+  }, [applicationStore, viewerStore, params]);
 
   return (
     <div className="app__page">
@@ -260,10 +260,7 @@ export const ViewerInner = observer(() => {
                     'editor__content--expanded': editorStore.isInExpandedMode,
                   })}
                 >
-                  <ResizablePanelGroup
-                    orientation="vertical"
-                    className="review-explorer__content"
-                  >
+                  <ResizablePanelGroup orientation="vertical">
                     <ResizablePanel
                       {...getControlledResizablePanelProps(
                         editorStore.sideBarDisplayState.size === 0,

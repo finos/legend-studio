@@ -16,8 +16,11 @@
 
 import {
   ArrowLeftIcon,
+  clsx,
+  ExternalLinkSquareIcon,
   PanelLoadingIndicator,
   RobotIcon,
+  SaveIcon,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
@@ -37,14 +40,14 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN,
   generateCreateQueryRoute,
 } from '../stores/LegendQueryRouter';
-import type { QueryExportState } from '../stores/QueryStore';
+import type { QueryExportState } from '../stores/LegendQueryStore';
 import {
   ExistingQueryInfoState,
   ServiceQueryInfoState,
   CreateQueryInfoState,
-} from '../stores/QueryStore';
+} from '../stores/LegendQueryStore';
 import { QueryBuilder } from './QueryBuilder';
-import { useQueryStore } from './QueryStoreProvider';
+import { useLegendQueryStore } from './LegendQueryStoreProvider';
 import { RuntimePointer } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 
@@ -109,7 +112,7 @@ const QueryExportInner = observer(
 );
 
 const QueryExport = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const queryExportState = queryStore.queryExportState;
   const close = (): void => queryStore.setQueryExportState(undefined);
 
@@ -136,43 +139,90 @@ const QueryExport = observer(() => {
 });
 
 const QueryEditorHeader = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const queryInfoState = queryStore.queryInfoState;
   const applicationStore = useApplicationStore();
   const backToMainMenu = (): void =>
     applicationStore.navigator.goTo(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
+  const viewQueryProject = (): void => {
+    if (queryInfoState) {
+      const queryProjectInfo = queryInfoState.getQueryProjectInfo();
+      queryStore.viewStudioProject(
+        queryProjectInfo.groupId,
+        queryProjectInfo.artifactId,
+        queryProjectInfo.versionId,
+        undefined,
+      );
+    }
+  };
+  const saveQuery = (): void => {
+    if (queryStore.onSaveQuery) {
+      queryStore.queryBuilderState
+        .saveQuery(queryStore.onSaveQuery)
+        .catch(applicationStore.alertIllegalUnhandledError);
+    }
+  };
 
   return (
     <div className="query-editor__header">
       <button
-        className="query-editor__header__back-btn"
+        className="query-editor__header__back-btn btn--dark"
         onClick={backToMainMenu}
         title="Back to Main Menu"
       >
         <ArrowLeftIcon />
       </button>
-      {queryInfoState instanceof CreateQueryInfoState && (
-        <div className="query-editor__header__tab query-editor__header__tab--create-query">
-          New Query
+      <div className="query-editor__header__content">
+        <div
+          className={clsx('query-editor__header__label', {
+            'query-editor__header__label--existing-query':
+              queryInfoState instanceof ExistingQueryInfoState,
+            'query-editor__header__label--create-query':
+              queryInfoState instanceof CreateQueryInfoState,
+            'query-editor__header__label--service-query':
+              queryInfoState instanceof ServiceQueryInfoState,
+          })}
+        >
+          {queryInfoState instanceof CreateQueryInfoState && <>New Query</>}
+          {queryInfoState instanceof ServiceQueryInfoState && (
+            <>
+              <RobotIcon className="query-editor__header__label__icon" />
+              {queryInfoState.service.name}
+            </>
+          )}
+          {queryInfoState instanceof ExistingQueryInfoState && (
+            <>{queryInfoState.query.name}</>
+          )}
         </div>
-      )}
-      {queryInfoState instanceof ServiceQueryInfoState && (
-        <div className="query-editor__header__tab query-editor__header__tab--service-query">
-          <RobotIcon className="query-editor__header__tab--service-query__icon" />
-          {queryInfoState.service.name}
+        <div className="query-editor__header__actions">
+          <button
+            className="query-editor__header__action query-editor__header__action--simple btn--dark"
+            tabIndex={-1}
+            title="View project"
+            onClick={viewQueryProject}
+            disabled={!queryInfoState}
+          >
+            <ExternalLinkSquareIcon />
+          </button>
+          <button
+            className="query-editor__header__action btn--dark"
+            tabIndex={-1}
+            onClick={saveQuery}
+            disabled={!queryStore.onSaveQuery}
+          >
+            <div className="query-editor__header__action__icon">
+              <SaveIcon />
+            </div>
+            <div className="query-editor__header__action__label">Save</div>
+          </button>
         </div>
-      )}
-      {queryInfoState instanceof ExistingQueryInfoState && (
-        <div className="query-editor__header__tab query-editor__header__tab--existing-query">
-          {queryInfoState.query.name}
-        </div>
-      )}
+      </div>
     </div>
   );
 });
 
 const QueryEditorInner = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const isLoadingEditor =
     !queryStore.graphManagerState.graph.buildState.hasCompleted ||
     !queryStore.editorInitState.hasCompleted;
@@ -197,7 +247,7 @@ const QueryEditor: React.FC = () => (
 );
 
 export const ExistingQueryLoader = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const params = useParams<ExistingQueryPathParams>();
 
   useEffect(() => {
@@ -209,7 +259,7 @@ export const ExistingQueryLoader = observer(() => {
 
 export const ServiceQueryLoader = observer(() => {
   const applicationStore = useApplicationStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const params = useParams<ServiceQueryPathParams>();
   const queryParams = getQueryParameters<ServiceQueryQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
@@ -225,7 +275,7 @@ export const ServiceQueryLoader = observer(() => {
 
 export const CreateQueryLoader = observer(() => {
   const applicationStore = useApplicationStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const params = useParams<CreateQueryPathParams>();
   const currentMapping = queryStore.queryBuilderState.querySetupState.mapping;
   const currentRuntime =

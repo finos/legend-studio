@@ -22,16 +22,22 @@ export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pur
 
 export { QueryBuilder } from './components/QueryBuilder';
 export { useQuerySetupStore } from './components/QuerySetupStoreProvider';
-export { useQueryStore } from './components/QueryStoreProvider';
+export { useLegendQueryStore } from './components/LegendQueryStoreProvider';
 
-export { QueryPluginManager } from './application/QueryPluginManager';
+export { LegendQueryPluginManager } from './application/LegendQueryPluginManager';
 
-export * from './stores/QueryPlugin';
+export * from './stores/LegendQueryPlugin';
 export * from './stores/LegendQueryRouter';
 export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore';
-export { QueryStore, CreateQueryInfoState } from './stores/QueryStore';
-export { QueryBuilderState } from './stores/QueryBuilderState';
-export type { QueryBuilderConfig } from './stores/QueryBuilderState';
+export {
+  LegendQueryStore,
+  CreateQueryInfoState,
+} from './stores/LegendQueryStore';
+export {
+  QueryBuilderMode,
+  StandardQueryBuilderMode,
+  QueryBuilderState,
+} from './stores/QueryBuilderState';
 export { QueryBuilderExplorerTreeRootNodeData } from './stores/QueryBuilderExplorerState';
 export { FETCH_STRUCTURE_MODE } from './stores/QueryBuilderFetchStructureState';
 export { COLUMN_SORT_TYPE } from './stores/QueryResultSetModifierState';

@@ -17,6 +17,7 @@
 import { useApplicationStore } from '@finos/legend-application';
 import type { SelectComponent } from '@finos/legend-art';
 import {
+  BoltIcon,
   ArrowRightIcon,
   clsx,
   BlankPanelContent,
@@ -26,7 +27,8 @@ import {
   CustomSelectorInput,
   SearchIcon,
 } from '@finos/legend-art';
-import { useQuerySetupStore, useQueryStore } from '@finos/legend-query';
+import { useQuerySetupStore, useLegendQueryStore } from '@finos/legend-query';
+import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -35,7 +37,7 @@ import type {
   DataSpaceQuerySetupState,
   LightDataSpace,
 } from '../../stores/query/DataSpaceQuerySetupState';
-import { DataSpaceViewer } from './DataSpaceViewer';
+import { DataSpaceViewer } from '../DataSpaceViewer';
 
 type DataSpaceOption = { label: string; value: LightDataSpace };
 const buildDataSpaceOption = (dataSpace: LightDataSpace): DataSpaceOption => ({
@@ -48,9 +50,16 @@ export const DataspaceQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
+
+    const toggleGetSnapshot = (): void => {
+      querySetupState.setToGetSnapShot(!querySetupState.toGetSnapShot);
+      flowResult(querySetupState.loadDataSpaces(searchText)).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    };
 
     const next = (): void => {
       if (querySetupState.dataSpaceViewerState) {
@@ -88,8 +97,11 @@ export const DataspaceQuerySetup = observer(
           {option.label}
         </div>
         <div className="query-setup__data-space__option__gav">
-          {option.value.content.groupId}:{option.value.content.artifactId}:
-          {option.value.content.versionId}
+          {generateGAVCoordinates(
+            option.value.groupId,
+            option.value.artifactId,
+            option.value.versionId,
+          )}
         </div>
       </div>
     );
@@ -174,6 +186,19 @@ export const DataspaceQuerySetup = observer(
               darkMode={true}
               formatOptionLabel={formatQueryOptionLabel}
             />
+            <button
+              className={clsx('query-setup__data-space__use-snapshot-btn', {
+                'query-setup__data-space__use-snapshot-btn--active':
+                  querySetupState.toGetSnapShot,
+              })}
+              tabIndex={-1}
+              title={`[${
+                querySetupState.toGetSnapShot ? 'on' : 'off'
+              }] Toggle show data spaces from snapshot releases instead of latest releases`}
+              onClick={toggleGetSnapshot}
+            >
+              <BoltIcon />
+            </button>
           </div>
           <div className="query-setup__data-space__view">
             <PanelLoadingIndicator

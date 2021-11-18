@@ -34,7 +34,7 @@ A `standard release` follows these specifications:
 
 To initiate a `standard release`:
 
-- Run the workflow [Prepare New Release (Manual)](https://github.com/finos/legend-studio/actions/workflows/release-prepare-manual.yml) with bump type `major`
+- Run the workflow [(Manual) Prepare New Release](https://github.com/finos/legend-studio/actions/workflows/manual-release-prepare.yml) with bump type `major`
 - Merge the `Release x.0.0` PR
 - After publishing, post-release automation will run and do some cleanups as well as prepare for the next development cycle
 
@@ -58,7 +58,7 @@ An `iteration release` follows these specifications:
 
 To initiate a `standard release`:
 
-- Run the workflow [Prepare New Release (Manual)](https://github.com/finos/legend-studio/actions/workflows/release-prepare-manual.yml) with bump type `minor`
+- Run the workflow [(Manual) Prepare New Release](https://github.com/finos/legend-studio/actions/workflows/manual-release-prepare.yml) with bump type `minor`
 - Merge the `Iteration Release x.y.0` PR
 
 ## Recovery releases
@@ -83,9 +83,9 @@ To initiate a `recovery release`:
 
 Snapshot releases, created from snapshots of the `default branch`, include `development` releases which are meant only for libraries, and `snapshot/alpha/beta/rc/...` releases which are meant for applications.
 
-- `development` releases can be triggered manually using the workflow [NPM Snapshot Publish (Manual)](https://github.com/finos/legend-studio/actions/workflows/npm-snapshot-publish-manual.yml). Published packages will be available in `dev` channel with version format `0.0.0-dev-{commitSHA}-{date}-${timestamp}` (e.g. `0.0.0-dev-a1e1e35a-20210916-1634347595932`).
-- `snapshot` releases are **automated** via the workflow [Docker Snapshot Publish](https://github.com/finos/legend-studio/actions/workflows/docker-publish-manual.yml).
-- `alpha/beta/rc/...` releases (or any releases with [semver-compliant](https://semver.org/) image tag - e.g. `1.7.0-rc.1`, `1.9.0-beta`) can be triggered manually using the workflow [Docker Publish (Manual)](https://github.com/finos/legend-studio/actions/workflows/docker-publish-manual.yml)
+- `development` releases can be triggered manually using the workflow [(Manual) NPM Snapshot Publish](https://github.com/finos/legend-studio/actions/workflows/manual-npm-snapshot-publish.yml). Published packages will be available in `dev` channel with version format `0.0.0-dev-{commitSHA}-{date}-${timestamp}` (e.g. `0.0.0-dev-a1e1e35a-20210916-1634347595932`).
+- `snapshot` releases are **automated** via the workflow [Docker Snapshot Publish](https://github.com/finos/legend-studio/actions/workflows/docker-snapshot-publish.yml).
+- `alpha/beta/rc/...` releases (or any releases with [semver-compliant](https://semver.org/) image tag - e.g. `1.7.0-rc.1`, `1.9.0-beta`) can be triggered manually using the workflow [(Manual) Docker Publish](https://github.com/finos/legend-studio/actions/workflows/manual-docker-publish.yml)
 
 ## Manual releases (!)
 

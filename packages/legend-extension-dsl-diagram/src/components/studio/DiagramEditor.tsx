@@ -99,7 +99,7 @@ import {
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
-import type { DSLDiagram_StudioPlugin_Extension } from './DSLDiagram_StudioPlugin_Extension';
+import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
 
 const DiagramEditorContextMenu = observer(
   (
@@ -117,7 +117,7 @@ const DiagramEditorContextMenu = observer(
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLDiagram_StudioPlugin_Extension
+                  plugin as DSLDiagram_LegendStudioPlugin_Extension
                 ).getExtraClassViewContextMenuItemRendererConfigurations?.() ??
                 [],
             )

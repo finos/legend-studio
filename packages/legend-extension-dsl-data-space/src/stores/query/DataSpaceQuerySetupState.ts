@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-import type {
-  ClassView,
-  DiagramRenderer,
-} from '@finos/legend-extension-dsl-diagram';
-import {
-  Diagram,
-  DIAGRAM_INTERACTION_MODE,
-} from '@finos/legend-extension-dsl-diagram';
-import type {
-  Class,
-  PackageableElementReference,
-  PackageableRuntime,
-} from '@finos/legend-graph';
+import type { ClassView } from '@finos/legend-extension-dsl-diagram';
+import type { Class } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import type { QuerySetupStore } from '@finos/legend-query';
 import {
@@ -35,31 +24,28 @@ import {
   generateCreateQueryRoute,
 } from '@finos/legend-query';
 import type { StoredEntity } from '@finos/legend-server-depot';
-import { ProjectData } from '@finos/legend-server-depot';
+import {
+  DepotScope,
+  ProjectData,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import {
-  action,
-  computed,
-  flow,
-  flowResult,
-  makeObservable,
-  observable,
-} from 'mobx';
-import type {
-  ResolvedDataSpace,
-  ResolvedDataSpaceExecutionContext,
-} from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   getResolvedDataSpace,
 } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+import { DataSpaceViewerState } from '../DataSpaceViewerState';
 
 export type LightDataSpace = Entity & {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
   path: string;
   content: {
     groupId: string;
@@ -68,173 +54,13 @@ export type LightDataSpace = Entity & {
   };
 };
 
-export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
-  MODELS = 'MODELS',
-  EXECUTION = 'EXECUTION',
-  ENTITLEMENT = 'ENTITLEMENT',
-  SUPPORT = 'SUPPORT',
-}
-
-export class DataSpaceViewerState {
-  setupState: DataSpaceQuerySetupState;
-  dataSpace: ResolvedDataSpace;
-  _renderer?: DiagramRenderer | undefined;
-  currentDiagram?: Diagram | undefined;
-  currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS;
-  currentExecutionContext: ResolvedDataSpaceExecutionContext;
-  currentRuntime: PackageableRuntime;
-  showOnlyFeaturedDiagrams = true;
-
-  constructor(
-    setupState: DataSpaceQuerySetupState,
-    dataSpace: ResolvedDataSpace,
-  ) {
-    makeObservable(this, {
-      _renderer: observable,
-      currentDiagram: observable,
-      currentActivity: observable,
-      currentExecutionContext: observable,
-      currentRuntime: observable,
-      showOnlyFeaturedDiagrams: observable,
-      renderer: computed,
-      setRenderer: action,
-      setCurrentDiagram: action,
-      setCurrentActivity: action,
-      setCurrentExecutionContext: action,
-      setCurrentRuntime: action,
-      setShowOnlyFeaturedDiagrams: action,
-    });
-
-    this.setupState = setupState;
-    this.dataSpace = dataSpace;
-    this.currentExecutionContext = this.dataSpace.defaultExecutionContext;
-    this.currentRuntime =
-      this.dataSpace.defaultExecutionContext.defaultRuntime.value;
-    this.currentDiagram = this.dataSpace.featuredDiagrams.length
-      ? (
-          this.dataSpace
-            .featuredDiagrams[0] as PackageableElementReference<Diagram>
-        ).value
-      : this.diagrams.length
-      ? this.diagrams[0]
-      : undefined;
-  }
-
-  get renderer(): DiagramRenderer {
-    return guaranteeNonNullable(
-      this._renderer,
-      `Diagram renderer must be initialized (this is likely caused by calling this method at the wrong place)`,
-    );
-  }
-
-  get isDiagramRendererInitialized(): boolean {
-    return Boolean(this._renderer);
-  }
-
-  get featuredDiagrams(): Diagram[] {
-    return this.dataSpace.featuredDiagrams.map((ref) => ref.value);
-  }
-
-  get diagrams(): Diagram[] {
-    return this.setupState.queryStore.graphManagerState.graph
-      .getExtensionElements(Diagram)
-      .concat(
-        this.setupState.queryStore.graphManagerState.graph.dependencyManager.getExtensionElements(
-          Diagram,
-        ),
-      );
-  }
-
-  get runtimes(): PackageableRuntime[] {
-    return this.setupState.queryStore.graphManagerState.graph.ownRuntimes
-      .concat(
-        this.setupState.queryStore.graphManagerState.graph.dependencyManager
-          .runtimes,
-      )
-      .filter((runtime) =>
-        runtime.runtimeValue.mappings
-          .map((mapping) => mapping.value)
-          .includes(this.currentExecutionContext.mapping.value),
-      );
-  }
-
-  // NOTE: we have tried to use React to control the cursor and
-  // could not overcome the jank/lag problem, so we settle with CSS-based approach
-  // See https://css-tricks.com/using-css-cursors/
-  // See https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
-  get diagramCursorClass(): string {
-    if (!this.isDiagramRendererInitialized) {
-      return '';
-    }
-    if (this.renderer.middleClick || this.renderer.rightClick) {
-      return 'diagram-editor__cursor--grabbing';
-    }
-    switch (this.renderer.interactionMode) {
-      case DIAGRAM_INTERACTION_MODE.LAYOUT: {
-        if (this.renderer.mouseOverClassView) {
-          return 'diagram-editor__cursor--pointer';
-        }
-        return '';
-      }
-      default:
-        return '';
-    }
-  }
-
-  setRenderer(val: DiagramRenderer): void {
-    this._renderer = val;
-  }
-
-  setCurrentDiagram(val: Diagram): void {
-    this.currentDiagram = val;
-  }
-
-  setCurrentActivity(val: DATA_SPACE_VIEWER_ACTIVITY_MODE): void {
-    this.currentActivity = val;
-  }
-
-  setCurrentExecutionContext(val: ResolvedDataSpaceExecutionContext): void {
-    this.currentExecutionContext = val;
-    this.currentRuntime = val.defaultRuntime.value;
-  }
-
-  setCurrentRuntime(val: PackageableRuntime): void {
-    this.currentRuntime = val;
-  }
-
-  setShowOnlyFeaturedDiagrams(val: boolean): void {
-    this.showOnlyFeaturedDiagrams = val;
-    // if we only show featured diagrams and the current diagram is not featured
-    // either set it to the first featured diagram we can find or show nothing
-    if (val) {
-      if (
-        this.currentDiagram &&
-        !this.featuredDiagrams.includes(this.currentDiagram)
-      ) {
-        this.currentDiagram = this.dataSpace.featuredDiagrams.length
-          ? (
-              this.dataSpace
-                .featuredDiagrams[0] as PackageableElementReference<Diagram>
-            ).value
-          : undefined;
-      }
-    }
-  }
-
-  setupRenderer(): void {
-    this.renderer.setIsReadOnly(true);
-    this.renderer.onClassViewDoubleClick = (classView: ClassView): void => {
-      this.setupState.proceedToCreateQuery(classView.class.value);
-    };
-  }
-}
-
 export class DataSpaceQuerySetupState extends QuerySetupState {
   dataSpaces: LightDataSpace[] = [];
   loadDataSpacesState = ActionState.create();
   setUpDataSpaceState = ActionState.create();
   currentDataSpace?: LightDataSpace | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
+  toGetSnapShot = false;
 
   constructor(setupStore: QuerySetupStore) {
     super(setupStore);
@@ -243,8 +69,10 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       dataSpaces: observable,
       currentDataSpace: observable.ref,
       dataSpaceViewerState: observable,
+      toGetSnapShot: observable,
       setCurrentDataSpace: action,
       setDataSpaceViewerState: action,
+      setToGetSnapShot: action,
       loadDataSpaces: flow,
       setUpDataSpace: flow,
       proceedToCreateQuery: flow,
@@ -257,6 +85,10 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
   setDataSpaceViewerState(val: DataSpaceViewerState | undefined): void {
     this.dataSpaceViewerState = val;
+  }
+
+  setToGetSnapShot(val: boolean): void {
+    this.toGetSnapShot = val;
   }
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
@@ -273,33 +105,39 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
             search: isValidSearchString ? searchText : undefined,
+            scope: this.toGetSnapShot
+              ? DepotScope.SNAPSHOT
+              : DepotScope.RELEASES,
             limit: 10,
           },
         )) as StoredEntity[]
-      )
-        .map((storedEntity) => storedEntity.entity)
-        .map(
-          (entity) =>
-            ({
-              ...entity,
-              path: entity.path,
-              content: {
-                ...entity.content,
-                groupId: guaranteeNonNullable(
-                  entity.content.groupId,
-                  `Data space 'groupId' field is missing`,
-                ),
-                artifactId: guaranteeNonNullable(
-                  entity.content.artifactId,
-                  `Data space 'artifactId' field is missing`,
-                ),
-                versionId: guaranteeNonNullable(
-                  entity.content.versionId,
-                  `Data space 'versionId' field is missing`,
-                ),
-              },
-            } as LightDataSpace),
-        );
+      ).map(
+        (storedEntity) =>
+          ({
+            ...storedEntity.entity,
+            groupId: storedEntity.groupId,
+            artifactId: storedEntity.artifactId,
+            versionId: this.toGetSnapShot
+              ? SNAPSHOT_VERSION_ALIAS
+              : storedEntity.versionId,
+            path: storedEntity.entity.path,
+            content: {
+              ...storedEntity.entity.content,
+              groupId: guaranteeNonNullable(
+                storedEntity.entity.content.groupId,
+                `Data space 'groupId' field is missing`,
+              ),
+              artifactId: guaranteeNonNullable(
+                storedEntity.entity.content.artifactId,
+                `Data space 'artifactId' field is missing`,
+              ),
+              versionId: guaranteeNonNullable(
+                storedEntity.entity.content.versionId,
+                `Data space 'versionId' field is missing`,
+              ),
+            },
+          } as LightDataSpace),
+      );
       this.loadDataSpacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -332,8 +170,28 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
         this.queryStore.graphManagerState.graph,
       );
       this.dataSpaceViewerState = new DataSpaceViewerState(
-        this,
+        this.queryStore.graphManagerState,
+        dataSpace.groupId,
+        dataSpace.artifactId,
+        dataSpace.versionId,
         resolvedDataSpace,
+        {
+          viewProject: (
+            groupId: string,
+            artifactId: string,
+            versionId: string,
+            entityPath: string | undefined,
+          ): void =>
+            this.queryStore.viewStudioProject(
+              groupId,
+              artifactId,
+              versionId,
+              entityPath,
+            ),
+          onDiagramClassDoubleClick: (classView: ClassView): void => {
+            this.proceedToCreateQuery(classView.class.value);
+          },
+        },
       );
       this.setUpDataSpaceState.pass();
     } catch (error) {

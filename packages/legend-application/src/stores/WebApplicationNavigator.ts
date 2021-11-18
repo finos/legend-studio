@@ -27,6 +27,8 @@ interface ApplicationNavigator<T> {
   jumpTo(location: T): void;
   openNewWindow(location: T): void;
   getCurrentLocation(): T;
+  getCurrentLocationPath(): T;
+  generateLocation(locationPath: T): T;
 }
 
 export class WebApplicationNavigator implements ApplicationNavigator<string> {
@@ -63,10 +65,14 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
     return this.window.location.href;
   }
 
-  generateLocation(location: string): string {
+  getCurrentLocationPath(): string {
+    return this.historyAPI.location.pathname;
+  }
+
+  generateLocation(locationPath: string): string {
     return (
       window.location.origin +
-      this.historyAPI.createHref({ pathname: location })
+      this.historyAPI.createHref({ pathname: locationPath })
     );
   }
 }

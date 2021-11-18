@@ -35,19 +35,19 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { User, SdlcMode, SDLCServerClient } from '@finos/legend-server-sdlc';
+import { User, SDLCMode, SDLCServerClient } from '@finos/legend-server-sdlc';
 import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import type { StudioPluginManager } from '../application/StudioPluginManager';
-import type { StudioConfig } from '../application/StudioConfig';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
 const UNKNOWN_USER_ID = '(unknown)';
 
-export class StudioStore {
-  applicationStore: ApplicationStore<StudioConfig>;
+export class LegendStudioStore {
+  applicationStore: ApplicationStore<LegendStudioConfig>;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
-  pluginManager: StudioPluginManager;
+  pluginManager: LegendStudioPluginManager;
 
   telemetryService = new TelemetryService();
   initState = ActionState.create();
@@ -56,12 +56,12 @@ export class StudioStore {
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
   constructor(
-    applicationStore: ApplicationStore<StudioConfig>,
+    applicationStore: ApplicationStore<LegendStudioConfig>,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
-    pluginManager: StudioPluginManager,
+    pluginManager: LegendStudioPluginManager,
   ) {
-    makeObservable<StudioStore, 'checkSDLCAuthorization'>(this, {
+    makeObservable<LegendStudioStore, 'checkSDLCAuthorization'>(this, {
       isSDLCAuthorized: observable,
       SDLCServerTermsOfServicesUrlsToView: observable,
       needsToAcceptSDLCServerTermsOfServices: computed,
@@ -135,9 +135,9 @@ export class StudioStore {
     try {
       this.isSDLCAuthorized = (
         (yield Promise.all(
-          Object.values(SdlcMode).map((mode) =>
+          Object.values(SDLCMode).map((mode) =>
             this.sdlcServerClient.isAuthorized(mode).catch((error) => {
-              if (mode !== SdlcMode.PROD) {
+              if (mode !== SDLCMode.PROD) {
                 // if there is an issue with an endpoint in a non prod env, we return authorized as true
                 // but notify the user of the error
                 this.applicationStore.log.error(

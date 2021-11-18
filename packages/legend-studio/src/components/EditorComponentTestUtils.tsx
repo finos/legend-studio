@@ -27,7 +27,7 @@ import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import { StudioPluginManager } from '../application/StudioPluginManager';
+import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   Project,
@@ -64,7 +64,7 @@ import {
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
 } from '@finos/legend-server-depot';
-import { StudioStoreProvider } from './StudioStoreProvider';
+import { LegendStudioStoreProvider } from './LegendStudioStoreProvider';
 import type { ApplicationStore } from '@finos/legend-application';
 import {
   TEST__ApplicationStoreProvider,
@@ -72,7 +72,7 @@ import {
   WebApplicationNavigator,
 } from '@finos/legend-application';
 import { TEST__getTestStudioConfig } from '../stores/EditorStoreTestUtils';
-import type { StudioConfig } from '../application/StudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {
@@ -141,23 +141,23 @@ export const TEST_DATA__DefaultSDLCInfo = {
   ],
 };
 
-export const TEST__StudioStoreProvider = ({
+export const TEST__LegendStudioStoreProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }): React.ReactElement => (
-  <StudioStoreProvider pluginManager={StudioPluginManager.create()}>
+  <LegendStudioStoreProvider pluginManager={LegendStudioPluginManager.create()}>
     {children}
-  </StudioStoreProvider>
+  </LegendStudioStoreProvider>
 );
 
 export const TEST__provideMockedEditorStore = (customization?: {
   mock?: EditorStore;
-  applicationStore?: ApplicationStore<StudioConfig>;
+  applicationStore?: ApplicationStore<LegendStudioConfig>;
   sdlcServerClient?: SDLCServerClient;
   depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
-  pluginManager?: StudioPluginManager;
+  pluginManager?: LegendStudioPluginManager;
 }): EditorStore => {
   const value =
     customization?.mock ??
@@ -168,7 +168,7 @@ export const TEST__provideMockedEditorStore = (customization?: {
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
       customization?.graphManagerState ??
         TEST__getTestGraphManagerState(customization?.pluginManager),
-      customization?.pluginManager ?? StudioPluginManager.create(),
+      customization?.pluginManager ?? LegendStudioPluginManager.create(),
     );
   const MockedEditorStoreProvider = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStoreProvider.useEditorStore = jest.fn();
@@ -333,7 +333,7 @@ export const TEST__setUpEditor = async (
   const history = createMemoryHistory({
     initialEntries: [
       generateEditorRoute(
-        mockedEditorStore.applicationStore.config.sdlcServerKey,
+        mockedEditorStore.applicationStore.config.currentSDLCServerOption,
         (workspace as unknown as Workspace).projectId,
         (workspace as unknown as Workspace).workspaceId,
         WorkspaceType.USER,
@@ -350,9 +350,9 @@ export const TEST__setUpEditor = async (
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__GraphManagerStateProvider>
-              <TEST__StudioStoreProvider>
+              <TEST__LegendStudioStoreProvider>
                 <Editor />
-              </TEST__StudioStoreProvider>
+              </TEST__LegendStudioStoreProvider>
             </TEST__GraphManagerStateProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>

@@ -74,7 +74,7 @@ import {
   isValidPath,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;
@@ -182,7 +182,7 @@ const ExplorerContextMenu = observer(
   ) => {
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore<StudioConfig>();
+    const applicationStore = useApplicationStore<LegendStudioConfig>();
     const extraExplorerContextMenuItems = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
@@ -196,7 +196,7 @@ const ExplorerContextMenu = observer(
           {config.renderer(editorStore, node?.packageableElement)}
         </Fragment>
       ));
-    const projectId = editorStore.sdlcState.activeProject.projectId;
+    const projectId = editorStore.sdlcState.currentProject?.projectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const _package = node
       ? node.packageableElement instanceof Package
@@ -218,11 +218,11 @@ const ExplorerContextMenu = observer(
       }
     };
     const openElementInViewerMode = (): void => {
-      if (node) {
+      if (node && projectId) {
         applicationStore.navigator.openNewWindow(
           applicationStore.navigator.generateLocation(
             generateViewEntityRoute(
-              applicationStore.config.sdlcServerKey,
+              applicationStore.config.currentSDLCServerOption,
               projectId,
               node.packageableElement.path,
             ),
@@ -230,14 +230,12 @@ const ExplorerContextMenu = observer(
         );
       }
     };
-    const getElementLinkInViewerMode = (): void => {
+    const copyLinkToElementInViewerMode = (): void => {
       if (node) {
         applicationStore
           .copyTextToClipboard(
             applicationStore.navigator.generateLocation(
-              generateViewEntityRoute(
-                applicationStore.config.sdlcServerKey,
-                projectId,
+              editorStore.editorMode.generateElementLink(
                 node.packageableElement.path,
               ),
             ),
@@ -300,10 +298,12 @@ const ExplorerContextMenu = observer(
         )}
         {node && (
           <>
-            <MenuContentItem onClick={openElementInViewerMode}>
-              View in Project
-            </MenuContentItem>
-            <MenuContentItem onClick={getElementLinkInViewerMode}>
+            {!editorStore.isInViewerMode && (
+              <MenuContentItem onClick={openElementInViewerMode}>
+                View in Project
+              </MenuContentItem>
+            )}
+            <MenuContentItem onClick={copyLinkToElementInViewerMode}>
               Copy Link
             </MenuContentItem>
           </>
@@ -594,7 +594,8 @@ const ExplorerTrees = observer(() => {
                 }}
               />
               <ElementRenamer />
-              <ProjectConfig />
+              {editorStore.projectConfigurationEditorState
+                .projectConfiguration && <ProjectConfig />}
               {/* SYSTEM TREE */}
               {Boolean(
                 editorStore.graphManagerState.systemModel.allOwnElements.length,
@@ -776,8 +777,6 @@ export const Explorer = observer(() => {
       editorStore.graphState.isUpdatingGraph) &&
     !editorStore.graphManagerState.graph.buildState.hasFailed;
   const showExplorerTrees =
-    sdlcState.currentProject &&
-    sdlcState.currentWorkspace &&
     editorStore.graphManagerState.graph.buildState.hasSucceeded &&
     editorStore.explorerTreeState.buildState.hasCompleted;
   // conflict resolution
@@ -812,17 +811,21 @@ export const Explorer = observer(() => {
         <div className="panel explorer">
           <div className="panel__header explorer__header">
             <div className="panel__header__title">
-              <div className="panel__header__title__label">
-                {sdlcState.currentWorkspace && !editorStore.isInViewerMode
-                  ? 'workspace'
-                  : 'project'}
-              </div>
-              <div className="panel__header__title__content">
-                {editorStore.isInViewerMode &&
-                  (sdlcState.currentProject?.name ?? '(unknown) ')}
-                {!editorStore.isInViewerMode &&
-                  (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
-              </div>
+              {sdlcState.currentProject && (
+                <>
+                  <div className="panel__header__title__label">
+                    {sdlcState.currentWorkspace && !editorStore.isInViewerMode
+                      ? 'workspace'
+                      : 'project'}
+                  </div>
+                  <div className="panel__header__title__content">
+                    {editorStore.isInViewerMode &&
+                      sdlcState.currentProject.name}
+                    {!editorStore.isInViewerMode &&
+                      (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
+                  </div>
+                </>
+              )}
             </div>
             <ProjectExplorerActionPanel
               disabled={!editorStore.explorerTreeState.buildState.hasCompleted}

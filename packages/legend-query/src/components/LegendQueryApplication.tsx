@@ -31,7 +31,10 @@ import {
   PanelLoadingIndicator,
 } from '@finos/legend-art';
 import type { Log } from '@finos/legend-shared';
-import { QueryStoreProvider, useQueryStore } from './QueryStoreProvider';
+import {
+  LegendQueryStoreProvider,
+  useLegendQueryStore,
+} from './LegendQueryStoreProvider';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
@@ -42,11 +45,11 @@ import {
   useApplicationStore,
   useWebApplicationNavigator,
 } from '@finos/legend-application';
-import type { QueryPluginManager } from '../application/QueryPluginManager';
-import type { QueryConfig } from '../application/QueryConfig';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 
 const LegendQueryApplicationInner = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const applicationStore = useApplicationStore();
 
   useEffect(() => {
@@ -92,8 +95,8 @@ const LegendQueryApplicationInner = observer(() => {
 
 export const LegendQueryApplication = observer(
   (props: {
-    config: QueryConfig;
-    pluginManager: QueryPluginManager;
+    config: LegendQueryConfig;
+    pluginManager: LegendQueryPluginManager;
     log: Log;
   }) => {
     const { config, pluginManager, log } = props;
@@ -109,11 +112,11 @@ export const LegendQueryApplication = observer(
           }}
         >
           <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
-            <QueryStoreProvider pluginManager={pluginManager}>
+            <LegendQueryStoreProvider pluginManager={pluginManager}>
               <ThemeProvider theme={LegendMaterialUITheme}>
                 <LegendQueryApplicationInner />
               </ThemeProvider>
-            </QueryStoreProvider>
+            </LegendQueryStoreProvider>
           </GraphManagerStateProvider>
         </DepotServerClientProvider>
       </ApplicationStoreProvider>

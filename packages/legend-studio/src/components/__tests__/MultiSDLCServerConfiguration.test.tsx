@@ -20,28 +20,32 @@ import {
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
   Log,
+  guaranteeType,
+  unitTest,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/dom';
 import {
   WebApplicationNavigatorProvider,
-  TEST__provideMockedWebApplicationNavigator,
   TEST_DATA__applicationVersion,
+  WebApplicationNavigator,
+  useWebApplicationNavigator,
 } from '@finos/legend-application';
 import {
   generateSetupRoute,
-  URL_PATH_PLACEHOLDER,
+  updateRouteWithNewSDLCServerOption,
 } from '../../stores/LegendStudioRouter';
 import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
-import { StudioPluginManager } from '../../application/StudioPluginManager';
+import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager';
 import { TEST_DATA__studioConfig } from '../../stores/EditorStoreTestUtils';
-import { StudioConfig } from '../../application/StudioConfig';
+import { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const getTestStudioConfigWithMultiSDLCServer = (
   extraConfigData = {},
-): StudioConfig =>
-  new StudioConfig(
+): LegendStudioConfig =>
+  new LegendStudioConfig(
     {
       ...TEST_DATA__studioConfig,
       ...extraConfigData,
@@ -54,20 +58,172 @@ const setup = (): void => {
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
 
   MOBX__enableSpyOrMock();
-  jest.spyOn(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
+  jest.spyOn(sdlcServerClient, 'isAuthorized').mockResolvedValue(true);
   jest
     .spyOn(sdlcServerClient, 'getCurrentUser')
-    .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
+    .mockResolvedValue({ name: 'testUser', userId: 'testUserId' });
   jest
     .spyOn(sdlcServerClient, 'hasAcceptedTermsOfService')
-    .mockResolvedValueOnce([]);
+    .mockResolvedValue([]);
   jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
   MOBX__disableSpyOrMock();
 };
 
 test(
+  integrationTest('Non SDLC-instance URL is respected and not modified'),
+  async () => {
+    const config = getTestStudioConfigWithMultiSDLCServer({
+      sdlc: [
+        {
+          label: 'Server1',
+          key: 'server1',
+          url: 'https://testSdlcUrl1',
+          default: true,
+        },
+        {
+          label: 'Server2',
+          key: 'server2',
+          url: 'https://testSdlcUrl2',
+        },
+      ],
+    });
+
+    setup();
+
+    let navigator;
+    const CaptureNavigator: React.FC = () => {
+      navigator = useWebApplicationNavigator();
+      return null;
+    };
+
+    const TEST_ROUTE_PATTERN = '/someApplicationRouteThatWeWouldNeverSupport/';
+
+    const { queryByText } = render(
+      <MemoryRouter initialEntries={[TEST_ROUTE_PATTERN]}>
+        <WebApplicationNavigatorProvider>
+          <CaptureNavigator />
+          <LegendStudioApplication
+            config={config}
+            pluginManager={LegendStudioPluginManager.create()}
+            log={new Log()}
+          />
+        </WebApplicationNavigatorProvider>
+      </MemoryRouter>,
+    );
+
+    expect(
+      guaranteeType(
+        navigator,
+        WebApplicationNavigator,
+      ).getCurrentLocationPath(),
+    ).toEqual(TEST_ROUTE_PATTERN);
+    await waitFor(() => expect(queryByText('Next')).not.toBeNull());
+    // now because such route pattern would never be supported, the app would redirect user to the setup page
+    // with the default SDLC instance
+    expect(
+      guaranteeType(
+        navigator,
+        WebApplicationNavigator,
+      ).getCurrentLocationPath(),
+    ).toEqual(generateSetupRoute(config.defaultSDLCServerOption, undefined));
+  },
+);
+
+test(integrationTest('SDLC server can be specified via URL'), async () => {
+  const config = getTestStudioConfigWithMultiSDLCServer({
+    sdlc: [
+      {
+        label: 'Server1',
+        key: 'server1',
+        url: 'https://testSdlcUrl1',
+        default: true,
+      },
+      {
+        label: 'Server2',
+        key: 'server2',
+        url: 'https://testSdlcUrl2',
+      },
+      {
+        label: 'Server3',
+        key: 'server3',
+        url: 'https://testSdlcUrl2',
+      },
+    ],
+  });
+
+  setup();
+
+  const { queryByText } = render(
+    <MemoryRouter initialEntries={['/sdlc-server2/']}>
+      <WebApplicationNavigatorProvider>
+        <LegendStudioApplication
+          config={config}
+          pluginManager={LegendStudioPluginManager.create()}
+          log={new Log()}
+        />
+      </WebApplicationNavigatorProvider>
+    </MemoryRouter>,
+  );
+
+  await waitFor(() =>
+    expect(config.currentSDLCServerOption.key).toEqual('server2'),
+  );
+  await waitFor(() => expect(queryByText('Next')).not.toBeNull());
+});
+
+test(
   integrationTest(
-    'URL is properly reset with configured SDLC when only one server is specified in the config (legacy SDLC config form)',
+    'Default SDLC server option is picked when an unknown SDLC server option key is specified in the URL',
+  ),
+  async () => {
+    const config = getTestStudioConfigWithMultiSDLCServer({
+      sdlc: [
+        {
+          label: 'Server1',
+          key: 'server1',
+          url: 'https://testSdlcUrl1',
+          default: true,
+        },
+      ],
+    });
+
+    setup();
+
+    let navigator;
+    const CaptureNavigator: React.FC = () => {
+      navigator = useWebApplicationNavigator();
+      return null;
+    };
+
+    const { queryByText } = render(
+      <MemoryRouter initialEntries={['/sdlc-someServer/somethingElse']}>
+        <WebApplicationNavigatorProvider>
+          <CaptureNavigator />
+          <LegendStudioApplication
+            config={config}
+            pluginManager={LegendStudioPluginManager.create()}
+            log={new Log()}
+          />
+        </WebApplicationNavigatorProvider>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() =>
+      expect(config.currentSDLCServerOption.key).toEqual('server1'),
+    );
+    expect(
+      guaranteeType(
+        navigator,
+        WebApplicationNavigator,
+      ).getCurrentLocationPath(),
+    ).toEqual(generateSetupRoute(config.defaultSDLCServerOption, undefined));
+    await waitFor(() => expect(queryByText('Next')).not.toBeNull());
+  },
+);
+
+test(
+  integrationTest(
+    'Default SDLC server option is picked when an unknown SDLC server option key is specified in the URL (legacy SDLC config form)',
   ),
   async () => {
     const config = getTestStudioConfigWithMultiSDLCServer({
@@ -76,17 +232,19 @@ test(
 
     setup();
 
-    const navigator = TEST__provideMockedWebApplicationNavigator();
-    MOBX__enableSpyOrMock();
-    const goToSpy = jest.spyOn(navigator, 'goTo').mockImplementation();
-    MOBX__disableSpyOrMock();
+    let navigator;
+    const CaptureNavigator: React.FC = () => {
+      navigator = useWebApplicationNavigator();
+      return null;
+    };
 
-    render(
-      <MemoryRouter initialEntries={['/something/']}>
+    const { queryByText } = render(
+      <MemoryRouter initialEntries={['/sdlc-someServer/']}>
         <WebApplicationNavigatorProvider>
+          <CaptureNavigator />
           <LegendStudioApplication
             config={config}
-            pluginManager={StudioPluginManager.create()}
+            pluginManager={LegendStudioPluginManager.create()}
             log={new Log()}
           />
         </WebApplicationNavigatorProvider>
@@ -94,163 +252,89 @@ test(
     );
 
     await waitFor(() =>
-      expect(goToSpy).toHaveBeenCalledWith(
-        generateSetupRoute(URL_PATH_PLACEHOLDER, undefined),
-      ),
+      expect(config.currentSDLCServerOption.key).toEqual('default'),
     );
-  },
-);
-
-test(
-  integrationTest(
-    'SDLC server configuration is required when the SDLC server key in the URL is not recognised',
-  ),
-  async () => {
-    const config = getTestStudioConfigWithMultiSDLCServer({
-      sdlc: [
-        {
-          label: 'Server1',
-          key: 'server1',
-          url: 'https://testSdlcUrl1',
-        },
-        {
-          label: 'Server2',
-          key: 'server2',
-          url: 'https://testSdlcUrl2',
-        },
-      ],
-    });
-
-    setup();
-
-    const { queryByText } = render(
-      <MemoryRouter initialEntries={['/something/']}>
-        <WebApplicationNavigatorProvider>
-          <LegendStudioApplication
-            config={config}
-            pluginManager={StudioPluginManager.create()}
-            log={new Log()}
-          />
-        </WebApplicationNavigatorProvider>
-      </MemoryRouter>,
-    );
-
-    await waitFor(() => expect(queryByText('SDLC Server')).not.toBeNull());
-  },
-);
-
-test(
-  integrationTest('SDLC server configuration can be done via URL'),
-  async () => {
-    const config = getTestStudioConfigWithMultiSDLCServer({
-      sdlc: [
-        {
-          label: 'Server1',
-          key: 'server1',
-          url: 'https://testSdlcUrl1',
-        },
-        {
-          label: 'Server2',
-          key: 'server2',
-          url: 'https://testSdlcUrl2',
-        },
-        {
-          label: 'Server3',
-          key: 'server3',
-          url: 'https://testSdlcUrl2',
-        },
-      ],
-    });
-
-    setup();
-
-    const { queryByText } = render(
-      <MemoryRouter initialEntries={['/server1/']}>
-        <WebApplicationNavigatorProvider>
-          <LegendStudioApplication
-            config={config}
-            pluginManager={StudioPluginManager.create()}
-            log={new Log()}
-          />
-        </WebApplicationNavigatorProvider>
-      </MemoryRouter>,
-    );
-
+    expect(
+      guaranteeType(
+        navigator,
+        WebApplicationNavigator,
+      ).getCurrentLocationPath(),
+    ).toEqual(generateSetupRoute(config.defaultSDLCServerOption, undefined));
     await waitFor(() => expect(queryByText('Next')).not.toBeNull());
   },
 );
 
-test(
-  integrationTest(
-    'SDLC server configuration is not required when only one server is specified in the config',
-  ),
-  async () => {
-    const config = getTestStudioConfigWithMultiSDLCServer({
-      sdlc: [
-        {
-          label: 'Server1',
-          key: 'server1',
-          url: 'https://testSdlcUrl1',
-        },
-      ],
-    });
+test(unitTest('Route update with SDLC server option changes'), async () => {
+  const config = new LegendStudioConfig(
+    {
+      ...TEST_DATA__studioConfig,
+      ...{
+        sdlc: [
+          {
+            label: 'Server1',
+            key: 'server1',
+            url: 'https://testSdlcUrl1',
+            default: true,
+          },
+          {
+            label: 'Server2',
+            key: 'server2',
+            url: 'https://testSdlcUrl2',
+          },
+          {
+            label: 'Server3',
+            key: 'server3',
+            url: 'https://testSdlcUrl2',
+          },
+        ],
+      },
+    },
+    TEST_DATA__applicationVersion,
+    '/studio/',
+  );
 
-    setup();
+  const server1 = guaranteeNonNullable(
+    config.SDLCServerOptions.find((option) => option.key === 'server1'),
+  );
+  const server2 = guaranteeNonNullable(
+    config.SDLCServerOptions.find((option) => option.key === 'server2'),
+  );
+  const server3 = guaranteeNonNullable(
+    config.SDLCServerOptions.find((option) => option.key === 'server3'),
+  );
 
-    const { queryByText } = render(
-      <MemoryRouter initialEntries={['/server1/']}>
-        <WebApplicationNavigatorProvider>
-          <LegendStudioApplication
-            config={config}
-            pluginManager={StudioPluginManager.create()}
-            log={new Log()}
-          />
-        </WebApplicationNavigatorProvider>
-      </MemoryRouter>,
-    );
+  expect(
+    updateRouteWithNewSDLCServerOption('/something1/something-2', server1),
+  ).toBe(undefined);
+  expect(
+    updateRouteWithNewSDLCServerOption('/something1/something-2', server2),
+  ).toBe(undefined);
 
-    await waitFor(() => expect(queryByText('Next')).not.toBeNull());
-  },
-);
-
-test(
-  integrationTest(
-    'URL is properly reset with configured SDLC when only one server is specified in the config',
-  ),
-  async () => {
-    const config = getTestStudioConfigWithMultiSDLCServer({
-      sdlc: [
-        {
-          label: 'Server1',
-          key: 'server1',
-          url: 'https://testSdlcUrl1',
-        },
-      ],
-    });
-
-    setup();
-
-    const navigator = TEST__provideMockedWebApplicationNavigator();
-    MOBX__enableSpyOrMock();
-    const goToSpy = jest.spyOn(navigator, 'goTo').mockImplementation();
-    MOBX__disableSpyOrMock();
-
-    render(
-      <MemoryRouter initialEntries={['/something/']}>
-        <WebApplicationNavigatorProvider>
-          <LegendStudioApplication
-            config={config}
-            pluginManager={StudioPluginManager.create()}
-            log={new Log()}
-          />
-        </WebApplicationNavigatorProvider>
-      </MemoryRouter>,
-    );
-
-    await waitFor(() =>
-      expect(goToSpy).toHaveBeenCalledWith(
-        generateSetupRoute('server1', undefined),
-      ),
-    );
-  },
-);
+  expect(
+    updateRouteWithNewSDLCServerOption('/-/something1/something-2', server1),
+  ).toBe(undefined);
+  expect(
+    updateRouteWithNewSDLCServerOption('/-/something1/something-2', server2),
+  ).toBe('/sdlc-server2/something1/something-2');
+  expect(
+    updateRouteWithNewSDLCServerOption('/-/something1/something-2', server3),
+  ).toBe('/sdlc-server3/something1/something-2');
+  expect(
+    updateRouteWithNewSDLCServerOption(
+      '/sdlc-server2/something1/something-2',
+      server2,
+    ),
+  ).toBe(undefined);
+  expect(
+    updateRouteWithNewSDLCServerOption(
+      '/sdlc-server2/something1/something-2',
+      server3,
+    ),
+  ).toBe('/sdlc-server3/something1/something-2');
+  expect(
+    updateRouteWithNewSDLCServerOption(
+      '/sdlc-server2/something1/something-2',
+      server1,
+    ),
+  ).toBe('/-/something1/something-2');
+});
