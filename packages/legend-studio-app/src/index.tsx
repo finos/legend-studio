@@ -24,7 +24,7 @@ import { DSLSerializer_LegendStudioPreset } from '@finos/legend-extension-dsl-se
 import { DSLDataSpace_LegendStudioPreset } from '@finos/legend-extension-dsl-data-space';
 import { ESService_LegendStudioPreset } from '@finos/legend-extension-external-store-service';
 
-export class LegendStudioApplication {
+export class LegendStudioWebApplication {
   static run(baseUrl: string): void {
     LegendStudio.create()
       .setup({ baseUrl })

@@ -44,8 +44,7 @@ import type {
   EditorPathParams,
   GroupEditorPathParams,
 } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from './header/LegendStudioAppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { isNonNullable } from '@finos/legend-shared';
@@ -56,6 +55,7 @@ import {
   ActionAlertActionType,
   ApplicationBackdrop,
   useApplicationStore,
+  AppHeader,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 
@@ -247,7 +247,7 @@ export const EditorInner = observer(() => {
     <div className="app__page">
       <AppHeader>
         <ShareProjectHeaderAction />
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="editor">

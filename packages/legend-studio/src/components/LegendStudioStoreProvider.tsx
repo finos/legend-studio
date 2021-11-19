@@ -18,7 +18,7 @@ import { createContext, useContext } from 'react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { LegendStudioStore } from '../stores/StudioStore';
+import { LegendStudioStore } from '../stores/LegendStudioStore';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import { useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';

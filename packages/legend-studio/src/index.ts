@@ -44,9 +44,8 @@ export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 
 // components
 export * from './components/editor/EditorStoreProvider';
-export * from './components/shared/AppHeader';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor';
-export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
+export { LegendStudioAppHeaderMenu } from './components/editor/header/LegendStudioAppHeaderMenu';
 export { TypeTree } from './components/shared/TypeTree';
 export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor';
 

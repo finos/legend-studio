@@ -16,8 +16,7 @@
 
 import { Link } from 'react-router-dom';
 import { LegendLogo } from '@finos/legend-art';
-import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import { useApplicationStore } from './ApplicationStoreProvider';
 
 export const AppHeader: React.FC<{
   children?: React.ReactNode;
@@ -42,31 +41,6 @@ export const AppHeader: React.FC<{
           </div>
         </div>
         <div className="app__header__actions">{children}</div>
-      </div>
-    </div>
-  );
-};
-
-export const BasicAppHeader: React.FC<{
-  config: LegendStudioConfig;
-}> = (props) => {
-  const { config } = props;
-
-  return (
-    <div className="app__header">
-      <div className="app__header__content">
-        <div className="app__header__title">
-          <Link to="/">
-            <LegendLogo className="app__header__logo" />
-          </Link>
-          <div className="app__header__tag app__header__app-name">
-            {config.appName.toUpperCase()}
-          </div>
-          <div className="app__header__tag app__header__tag__name">env</div>
-          <div className="app__header__tag app__header__tag__value app__header__env">
-            {config.env ? config.env.toUpperCase() : 'UNKNOWN'}
-          </div>
-        </div>
       </div>
     </div>
   );

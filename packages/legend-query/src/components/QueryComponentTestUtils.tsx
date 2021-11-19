@@ -53,7 +53,7 @@ import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 import type { Entity } from '@finos/legend-model-storage';
 
-export const TEST__QueryStoreProvider = ({
+export const TEST__LegendQueryStoreProvider = ({
   children,
 }: {
   children: React.ReactNode;
@@ -63,7 +63,7 @@ export const TEST__QueryStoreProvider = ({
   </LegendQueryStoreProvider>
 );
 
-export const TEST__provideMockedQueryStore = (customization?: {
+export const TEST__provideMockedLegendQueryStore = (customization?: {
   mock?: LegendQueryStore;
   applicationStore?: ApplicationStore<LegendQueryConfig>;
   depotServerClient?: DepotServerClient;
@@ -166,9 +166,9 @@ export const TEST__setUpQueryEditor = async (
       <TEST__ApplicationStoreProvider config={TEST__getTestQueryConfig()}>
         <TEST__DepotServerClientProvider>
           <TEST__GraphManagerStateProvider>
-            <TEST__QueryStoreProvider>
+            <TEST__LegendQueryStoreProvider>
               <ExistingQueryLoader />
-            </TEST__QueryStoreProvider>
+            </TEST__LegendQueryStoreProvider>
           </TEST__GraphManagerStateProvider>
         </TEST__DepotServerClientProvider>
       </TEST__ApplicationStoreProvider>

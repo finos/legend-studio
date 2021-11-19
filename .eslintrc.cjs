@@ -44,7 +44,7 @@ module.exports = {
   parserOptions: {
     // `parserOptions.project` is required for generating parser service to run specific rules like
     // `prefer-nullish-coalescing`, and `prefer-optional-chain`
-    project: ['./packages/*/tsconfig.json'],
+    project: ['./packages/*/tsconfig.json', './fixtures/*/tsconfig.json'],
     // Use this experimental flag to improve memory usage while using Typescript project reference
     // See https://github.com/typescript-eslint/typescript-eslint/issues/2094
     EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,

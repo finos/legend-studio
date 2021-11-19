@@ -4,6 +4,10 @@
 /packages/*/dist/
 /packages/*/lib/
 /packages/*/dev/
+/fixtures/*/build/
+/fixtures/*/dist/
+/fixtures/*/lib/
+/fixtures/*/dev/
 
 # Yarn
 .yarn/*

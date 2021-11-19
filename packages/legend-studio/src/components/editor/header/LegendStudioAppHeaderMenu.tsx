@@ -111,7 +111,7 @@ const AboutModal: React.FC<{
   );
 };
 
-export const AppHeaderMenu: React.FC = () => {
+export const LegendStudioAppHeaderMenu: React.FC = () => {
   const applicationStore = useApplicationStore<LegendStudioConfig>();
   const config = applicationStore.config;
 
@@ -150,18 +150,18 @@ export const AppHeaderMenu: React.FC = () => {
     <>
       {applicationStore.config.SDLCServerOptions.length > 1 && (
         <DropdownMenu
-          className={clsx('app__header__sdlc-server-dropdown')}
+          className={clsx('studio-app__header__server-dropdown')}
           onClose={hideSDLCServerDropdown}
           menuProps={{ elevation: 7 }}
           content={
-            <MenuContent className="app__header__sdlc-server-dropdown__menu">
+            <MenuContent className="studio-app__header__server-dropdown__menu">
               {applicationStore.config.SDLCServerOptions.map((option) => (
                 <MenuContentItem
                   key={option.key}
                   className={clsx(
-                    'app__header__sdlc-server-dropdown__menu__item',
+                    'studio-app__header__server-dropdown__menu__item',
                     {
-                      'app__header__sdlc-server-dropdown__menu__item--active':
+                      'studio-app__header__server-dropdown__menu__item--active':
                         option ===
                         applicationStore.config.currentSDLCServerOption,
                     },
@@ -175,15 +175,15 @@ export const AppHeaderMenu: React.FC = () => {
           }
         >
           <button
-            className="app__header__sdlc-server-dropdown__label"
+            className="studio-app__header__server-dropdown__label"
             tabIndex={-1}
             onClick={showSDLCServerDropdown}
             title="Choose an SDLC server..."
           >
-            <div className="app__header__sdlc-server-dropdown__label__text">
+            <div className="studio-app__header__server-dropdown__label__text">
               {applicationStore.config.currentSDLCServerOption.label}
             </div>
-            <div className="app__header__sdlc-server-dropdown__label__icon">
+            <div className="studio-app__header__server-dropdown__label__icon">
               {openSDLCServerDropdown ? <ChevronUpIcon /> : <ChevronDownIcon />}
             </div>
           </button>

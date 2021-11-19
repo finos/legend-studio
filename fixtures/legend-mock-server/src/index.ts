@@ -14,4 +14,23 @@
  * limitations under the License.
  */
 
-export const dummy = 1;
+import Fastify from 'fastify';
+import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json';
+
+const PORT = 60001;
+const BASE_URL = '/api/';
+
+const fastify = Fastify({
+  logger: true,
+});
+
+fastify.get(`${BASE_URL}taxonomy-tree`, (request, reply) => {
+  reply.send(TAXONOMY_TREE_DATA);
+});
+
+fastify.listen(PORT, (error, address) => {
+  if (error) {
+    throw error;
+  }
+  // Server is now listening on ${address}
+});

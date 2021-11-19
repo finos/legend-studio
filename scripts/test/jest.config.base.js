@@ -64,6 +64,7 @@ export default {
     '!**/__tests__/**',
     '!**/vendor/**',
     '!**/scripts/**',
+    '!**/fixtures/**',
     '!<rootDir>/packages/legend-dev-utils/WebpackConfigUtils.js', // TODO: remove this when Jest supports `import.meta.url`
     '!<rootDir>/packages/legend-manual-tests/cypress/**', // TODO: update this when restructure `e2e` test suite
   ],

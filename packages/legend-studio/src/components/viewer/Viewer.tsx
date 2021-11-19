@@ -48,8 +48,7 @@ import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
 import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { flowResult } from 'mobx';
 import {
@@ -57,6 +56,7 @@ import {
   useEditorStore,
 } from '../editor/EditorStoreProvider';
 import {
+  AppHeader,
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -246,7 +246,7 @@ export const ViewerInner = observer(() => {
   return (
     <div className="app__page">
       <AppHeader>
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="editor viewer">

@@ -23,7 +23,7 @@ import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serialize
 import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 import { DSLDataSpace_LegendQueryPreset } from '@finos/legend-extension-dsl-data-space';
 
-export class LegendQueryApplication {
+export class LegendQueryWebApplication {
   static run(baseUrl: string): void {
     LegendQuery.create()
       .setup({ baseUrl })

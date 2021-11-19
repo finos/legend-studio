@@ -36,7 +36,7 @@ import {
   observable,
 } from 'mobx';
 import { User, SDLCMode, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
+import { STUDIO_LOG_EVENT } from './StudioLogEvent';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
