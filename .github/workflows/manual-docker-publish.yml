@@ -24,6 +24,8 @@ jobs:
             package: '@finos/legend-studio-deployment'
           - image: finos/legend-query
             package: '@finos/legend-query-deployment'
+          - image: finos/legend-taxonomy
+            package: '@finos/legend-taxonomy-deployment'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.4.0
