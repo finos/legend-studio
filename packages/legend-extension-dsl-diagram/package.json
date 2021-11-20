@@ -78,7 +78,6 @@
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph-manager",
     "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph",
-    "studioPreset": "@finos/legend-studio-preset-dsl-diagram",
     "studioPlugin": "@finos/legend-studio-plugin-dsl-diagram"
   }
 }

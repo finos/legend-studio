@@ -37,8 +37,8 @@ import {
   generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { TelemetryService } from '@finos/legend-shared';
 import {
+  TelemetryService,
   AssertionError,
   assertNonNullable,
   addUniqueEntry,

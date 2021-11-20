@@ -8,16 +8,12 @@
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [
-    { "path": "../legend-application" },
-    { "path": "../legend-art" },
-    { "path": "../legend-studio" },
     { "path": "../legend-shared" },
-    { "path": "../legend-graph-extension-collection" },
     { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-extension-dsl-serializer" },
     { "path": "../legend-extension-external-store-service" },
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-dsl-data-space" },
-    { "path": "../legend-studio-extension-query-builder" }
+    { "path": "../legend-extension-external-format-json-schema" }
   ]
 }

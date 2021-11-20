@@ -76,7 +76,6 @@
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-serilaizer-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-serializer-pure-graph-manager",
     "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-serializer-pure-graph",
-    "studioPreset": "@finos/legend-studio-preset-dsl-serializer",
     "studioPlugin": "@finos/legend-studio-plugin-dsl-serializer"
   }
 }

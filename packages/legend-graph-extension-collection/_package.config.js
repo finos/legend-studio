@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-import { LegendTaxonomy } from '@finos/legend-taxonomy';
-import { BrowserConsole } from '@finos/legend-shared';
-import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
-
-export class LegendTaxonomyWebApplication {
-  static run(baseUrl: string): void {
-    LegendTaxonomy.create()
-      .setup({ baseUrl })
-      .withPresets(getLegendGraphExtensionCollection())
-      .withLoggers([new BrowserConsole()])
-      .start()
-      .catch((e: unknown) => {
-        throw e;
-      });
-  }
-}
+export default {
+  publish: {
+    typescript: {
+      main: './tsconfig.build.json',
+    },
+  },
+};

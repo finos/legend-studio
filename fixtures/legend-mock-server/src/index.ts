@@ -24,13 +24,10 @@ const fastify = Fastify({
   logger: true,
 });
 
-fastify.get(`${BASE_URL}taxonomy-tree`, (request, reply) => {
-  reply.send(TAXONOMY_TREE_DATA);
+fastify.get(`${BASE_URL}taxonomy-tree`, async (request, reply) => {
+  await reply.send(TAXONOMY_TREE_DATA);
 });
 
 fastify.listen(PORT, (error, address) => {
-  if (error) {
-    throw error;
-  }
-  // Server is now listening on ${address}
+  throw error;
 });

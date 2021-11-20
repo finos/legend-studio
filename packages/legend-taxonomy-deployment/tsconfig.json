@@ -10,7 +10,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.json",
-    "taxonomy.config.jsjs"
+    "taxonomy.config.js"
   ],
   "references": [{ "path": "../legend-taxonomy-app" }]
 }

@@ -80,7 +80,6 @@
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-graph-manager",
     "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-graph",
-    "studioPreset": "@finos/legend-studio-preset-dsl-data-space",
     "studioPlugin": "@finos/legend-studio-plugin-dsl-data-space",
     "queryPlugin": "@finos/legend-query-plugin-dsl-data-space"
   }

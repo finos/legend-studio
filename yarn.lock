@@ -2167,6 +2167,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-graph-extension-collection@workspace:*, @finos/legend-graph-extension-collection@workspace:packages/legend-graph-extension-collection":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-graph-extension-collection@workspace:packages/legend-graph-extension-collection"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-dsl-data-space": "workspace:*"
+    "@finos/legend-extension-dsl-diagram": "workspace:*"
+    "@finos/legend-extension-dsl-serializer": "workspace:*"
+    "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-external-format-json-schema": "workspace:*"
+    "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    cross-env: 7.0.3
+    eslint: 8.2.0
+    jest: 27.3.1
+    rimraf: 3.0.2
+    typescript: 4.5.2
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-graph@workspace:*, @finos/legend-graph@workspace:packages/legend-graph":
   version: 0.0.0-use.local
   resolution: "@finos/legend-graph@workspace:packages/legend-graph"
@@ -2243,11 +2263,7 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
-    "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-serializer": "workspace:*"
-    "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-external-format-json-schema": "workspace:*"
-    "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-graph-extension-collection": "workspace:*"
     "@finos/legend-query": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 17.0.35
@@ -2410,8 +2426,8 @@ __metadata:
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-serializer": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-graph-extension-collection": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@finos/legend-studio-extension-query-builder": "workspace:*"
@@ -2563,12 +2579,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-dsl-data-space": "workspace:*"
-    "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-serializer": "workspace:*"
-    "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-external-format-json-schema": "workspace:*"
-    "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-graph-extension-collection": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-taxonomy": "workspace:*"
     "@types/react": 17.0.35

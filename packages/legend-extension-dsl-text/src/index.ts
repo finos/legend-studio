@@ -15,3 +15,4 @@
  */
 
 export * from './DSLText_Extension';
+export { DSLText_LegendStudioPlugin } from './components/studio/DSLText_LegendStudioPlugin';

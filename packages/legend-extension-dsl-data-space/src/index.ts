@@ -15,6 +15,8 @@
  */
 
 export * from './DSLDataSpace_Extension';
+export { DSLDataSpace_LegendStudioPlugin } from './components/studio/DSLDataSpace_LegendStudioPlugin';
+export { DSLDataSpace_LegendQueryPlugin } from './components/query/DSLDataSpace_LegendQueryPlugin';
 
 export { DataSpaceViewer } from './components/DataSpaceViewer';
 

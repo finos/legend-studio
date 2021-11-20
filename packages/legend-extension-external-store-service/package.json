@@ -71,7 +71,6 @@
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-external-store-service-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-external-store-service-pure-graph-manager",
     "pureGraphPlugin": "@finos/legend-graph-plugin-external-store-service-pure-graph",
-    "studioPreset": "@finos/legend-studio-preset-external-store-service",
     "studioPlugin": "@finos/legend-studio-plugin-external-store-service"
   }
 }

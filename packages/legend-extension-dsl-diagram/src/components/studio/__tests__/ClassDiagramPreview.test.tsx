@@ -22,8 +22,9 @@ import {
   TEST__openElementFromExplorerTree,
   LegendStudioPluginManager,
 } from '@finos/legend-studio';
-import { DSLDiagram_LegendStudioPreset } from '../../../DSLDiagram_Extension';
 import { DSL_DIAGRAM_TEST_ID } from '../DSLDiagram_TestID';
+import { DSLDiagram_GraphPreset } from '../../../DSLDiagram_Extension';
+import { DSLDiagram_LegendStudioPlugin } from '../DSLDiagram_LegendStudioPlugin';
 
 const TEST_DATA__dummyModel = [
   {
@@ -48,7 +49,10 @@ const TEST_DATA__dummyModel = [
 ];
 
 const pluginManager = LegendStudioPluginManager.create();
-pluginManager.usePresets([new DSLDiagram_LegendStudioPreset()]).install();
+pluginManager
+  .usePresets([new DSLDiagram_GraphPreset()])
+  .usePlugins([new DSLDiagram_LegendStudioPlugin()])
+  .install();
 
 test(integrationTest('Class diagram preview shows up properly'), async () => {
   const mockedEditorStore = TEST__provideMockedEditorStore({ pluginManager });

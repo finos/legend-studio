@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-import { LegendTaxonomy } from '@finos/legend-taxonomy';
-import { BrowserConsole } from '@finos/legend-shared';
-import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
+import base from '../../scripts/test/jest.config.base.js';
+import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
-export class LegendTaxonomyWebApplication {
-  static run(baseUrl: string): void {
-    LegendTaxonomy.create()
-      .setup({ baseUrl })
-      .withPresets(getLegendGraphExtensionCollection())
-      .withLoggers([new BrowserConsole()])
-      .start()
-      .catch((e: unknown) => {
-        throw e;
-      });
-  }
-}
+const packageJson = loadJSON('./package.json');
+
+export default {
+  ...base,
+  displayName: packageJson.name,
+  name: packageJson.name,
+  rootDir: '../..',
+  testMatch: [
+    '<rootDir>/packages/legend-graph-extension-collection/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
+  ],
+};
