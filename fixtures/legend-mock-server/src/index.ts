@@ -15,6 +15,7 @@
  */
 
 import Fastify from 'fastify';
+import FastifyCORS from 'fastify-cors';
 import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json';
 
 const PORT = 60001;
@@ -24,10 +25,18 @@ const fastify = Fastify({
   logger: true,
 });
 
+fastify.register(FastifyCORS, {
+  methods: ['OPTIONS'],
+  origin: [/localhost/],
+  credentials: true,
+});
+
 fastify.get(`${BASE_URL}taxonomy-tree`, async (request, reply) => {
   await reply.send(TAXONOMY_TREE_DATA);
 });
 
 fastify.listen(PORT, (error, address) => {
-  throw error;
+  if (error) {
+    throw error;
+  }
 });

@@ -24,6 +24,7 @@
     "check:update": "yarn upgrade-interactive",
     "clean": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean",
     "dev": "yarn dev:studio",
+    "dev:mock-server": "yarn workspace @finos/legend-fixture-mock-server dev",
     "dev:query": "yarn workspace @finos/legend-query-deployment dev",
     "dev:sass": "node ./scripts/workflow/buildSassAll.js --watch",
     "dev:studio": "yarn workspace @finos/legend-studio-deployment dev",
