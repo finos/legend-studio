@@ -16,11 +16,8 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { TaxonomyTreeNodeData } from '../../stores/studio/EnterpriseModelExplorerStore';
-import {
-  generateTaxonomyNodeRoute,
-  TaxonomyViewerState,
-} from '../../stores/studio/EnterpriseModelExplorerStore';
+import type { TaxonomyTreeNodeData } from '../stores/LegendTaxonomyStore';
+import { TaxonomyViewerState } from '../stores/LegendTaxonomyStore';
 import type { TreeData, TreeNodeContainerProps } from '@finos/legend-art';
 import {
   ContextMenu,
@@ -33,9 +30,11 @@ import {
   clsx,
   TreeView,
 } from '@finos/legend-art';
-import { useEnterpriseModelExplorerStore } from './EnterpriseModelExplorerStoreProvider';
+import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
 import { isNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
+import { generateViewTaxonomyNodeRoute } from '../stores/LegendTaxonomyRouter';
+import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 
 const TaxonomyTreeNodeContainer = observer(
   (
@@ -50,8 +49,8 @@ const TaxonomyTreeNodeContainer = observer(
     const { treeData } = innerProps;
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const applicationStore = useApplicationStore();
-    const enterpriseModelExplorerStore = useEnterpriseModelExplorerStore();
+    const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+    const taxonomyStore = useLegendTaxonomyStore();
     const expandIcon = !node.childrenIds.length ? (
       <div />
     ) : node.isOpen ? (
@@ -66,7 +65,7 @@ const TaxonomyTreeNodeContainer = observer(
       if (node.childrenIds.length) {
         node.isOpen = !node.isOpen;
       }
-      enterpriseModelExplorerStore.setTreeData({
+      taxonomyStore.setTreeData({
         ...treeData,
       });
     };
@@ -76,7 +75,10 @@ const TaxonomyTreeNodeContainer = observer(
       applicationStore
         .copyTextToClipboard(
           applicationStore.navigator.generateLocation(
-            generateTaxonomyNodeRoute(node.id),
+            generateViewTaxonomyNodeRoute(
+              applicationStore.config.currentTaxonomyServerOption,
+              node.id,
+            ),
           ),
         )
         .then(() =>
@@ -100,16 +102,14 @@ const TaxonomyTreeNodeContainer = observer(
       >
         <div
           className={clsx(
-            'tree-view__node__container enterprise-taxonomy-tree__node__container',
+            'tree-view__node__container taxonomy-tree__node__container',
             {
               'menu__trigger--on-menu-open':
                 !node.isSelected && isSelectedFromContextMenu,
             },
             {
-              'enterprise-taxonomy-tree__node__container--selected':
-                node ===
-                enterpriseModelExplorerStore.currentTaxonomyViewerState
-                  ?.taxonomyNode,
+              'taxonomy-tree__node__container--selected':
+                node === taxonomyStore.currentTaxonomyViewerState?.taxonomyNode,
             },
           )}
           onClick={selectNode}
@@ -118,20 +118,20 @@ const TaxonomyTreeNodeContainer = observer(
             display: 'flex',
           }}
         >
-          <div className="tree-view__node__icon enterprise-taxonomy-tree__node__icon">
+          <div className="tree-view__node__icon taxonomy-tree__node__icon">
             <button
-              className="enterprise-taxonomy-tree__node__icon__expand"
+              className="taxonomy-tree__node__icon__expand"
               tabIndex={-1}
               onClick={toggleExpand}
             >
               {expandIcon}
             </button>
-            <div className="enterprise-taxonomy-tree__node__icon__type">
+            <div className="taxonomy-tree__node__icon__type">
               {node.childrenIds.length ? <CircleIcon /> : <EmptyCircleIcon />}
             </div>
           </div>
           <button
-            className="tree-view__node__label enterprise-taxonomy-tree__node__label"
+            className="tree-view__node__label taxonomy-tree__node__label"
             tabIndex={-1}
           >
             {node.label}
@@ -145,13 +145,13 @@ const TaxonomyTreeNodeContainer = observer(
 export const TaxonomyTree = observer(
   (props: { treeData: TreeData<TaxonomyTreeNodeData> }) => {
     const { treeData } = props;
-    const enterpriseModelExplorerStore = useEnterpriseModelExplorerStore();
+    const taxonomyStore = useLegendTaxonomyStore();
 
     const onNodeSelect = (node: TaxonomyTreeNodeData): void => {
-      enterpriseModelExplorerStore.setCurrentTaxonomyViewerState(
-        new TaxonomyViewerState(enterpriseModelExplorerStore, node),
+      taxonomyStore.setCurrentTaxonomyViewerState(
+        new TaxonomyViewerState(taxonomyStore, node),
       );
-      enterpriseModelExplorerStore.setTreeData({ ...treeData });
+      taxonomyStore.setTreeData({ ...treeData });
     };
 
     const getChildNodes = (

@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-export * from './DSLDataSpace_Extension';
+import { LegendTaxonomyWebApplication } from '@finos/legend-taxonomy-app';
+import config from '../taxonomy.config';
+import './index.scss';
 
-export { DataSpaceViewer } from './components/DataSpaceViewer';
-
-export {
-  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-  extractDataSpaceTaxonomyNodePaths,
-  getResolvedDataSpace,
-} from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
-
-export { DataSpaceViewerState } from './stores/DataSpaceViewerState';
+LegendTaxonomyWebApplication.run(config.baseUrl);

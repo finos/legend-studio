@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-export * from './DSLDataSpace_Extension';
+import { setup } from '@finos/legend-taxonomy-app/scripts/setup.js';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-export { DataSpaceViewer } from './components/DataSpaceViewer';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export {
-  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-  extractDataSpaceTaxonomyNodePaths,
-  getResolvedDataSpace,
-} from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+const outputDir = process.argv[2];
 
-export { DataSpaceViewerState } from './stores/DataSpaceViewerState';
+setup(resolve(__dirname, `../${outputDir}`));

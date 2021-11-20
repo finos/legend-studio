@@ -18,6 +18,12 @@ import type { ApplicationStore } from '@finos/legend-application';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import { PanelDisplayState } from '@finos/legend-art';
+import {
+  DataSpaceViewerState,
+  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
+  extractDataSpaceTaxonomyNodePaths,
+  getResolvedDataSpace,
+} from '@finos/legend-extension-dsl-data-space';
 import type { GraphManagerState } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
@@ -31,6 +37,7 @@ import {
   generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { TelemetryService } from '@finos/legend-shared';
 import {
   AssertionError,
   assertNonNullable,
@@ -39,58 +46,12 @@ import {
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
-import type {
-  LegendStudioConfig,
-  LegendStudioPluginManager,
-} from '@finos/legend-studio';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
-import { generatePath } from 'react-router';
-import {
-  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-  extractDataSpaceTaxonomyNodePaths,
-  getResolvedDataSpace,
-} from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
-import { DataSpaceViewerState } from '../DataSpaceViewerState';
-
-export enum ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN {
-  TAXONOMY_PATH = 'taxonomyPath',
-  GAV = 'gav',
-  DATA_SPACE_PATH = 'dataSpacePath',
-}
-
-export const ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN = Object.freeze({
-  ENTERPRISE_VIEW: `/enterprise/`,
-  ENTERPRISE_VIEW_BY_TAXONOMY_NODE: `/enterprise/:${ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.TAXONOMY_PATH}`,
-  ENTERPRISE_VIEW_BY_DATA_SPACE: `/enterprise/:${ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.TAXONOMY_PATH}/:${ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.GAV}/:${ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.DATA_SPACE_PATH}`,
-});
-
-export interface EnterpriseModelExplorerPathParams {
-  [ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.TAXONOMY_PATH]?: string;
-  [ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.GAV]?: string;
-  [ENTERPRISE_MODEL_EXPLORER_PARAM_TOKEN.DATA_SPACE_PATH]?: string;
-}
-
-export const generateTaxonomyNodeRoute = (taxonomyNodePath: string): string =>
-  generatePath(
-    ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW_BY_TAXONOMY_NODE,
-    {
-      taxonomyPath: taxonomyNodePath,
-    },
-  );
-
-export const generateDataSpaceRoute = (
-  taxonomyNodePath: string,
-  GAVCoordinates: string,
-  dataSpacePath: string,
-): string =>
-  generatePath(
-    ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW_BY_DATA_SPACE,
-    {
-      taxonomyPath: taxonomyNodePath,
-      gav: GAVCoordinates,
-      dataSpacePath,
-    },
-  );
+import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
+import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
+import type { LegendTaxonomyPathParams } from './LegendTaxonomyRouter';
+import { generateViewTaxonomyRoute } from './LegendTaxonomyRouter';
+import type { TaxonomyServerClient } from './TaxonomyServerClient';
 
 const DATA_SPACE_ID_DELIMITER = '@';
 const TAXONOMY_NODE_PATH_DELIMITER = '::';
@@ -143,14 +104,14 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
 }
 
 export class TaxonomyViewerState {
-  enterpriseModelExplorerStore: EnterpriseModelExplorerStore;
+  taxonomyStore: LegendTaxonomyStore;
   taxonomyNode: TaxonomyTreeNodeData;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   currentDataSpace?: RawDataSpace | undefined;
   initDataSpaceViewerState = ActionState.create();
 
   constructor(
-    enterpriseModelExplorerStore: EnterpriseModelExplorerStore,
+    taxonomyStore: LegendTaxonomyStore,
     taxonomyNode: TaxonomyTreeNodeData,
   ) {
     makeObservable(this, {
@@ -159,7 +120,7 @@ export class TaxonomyViewerState {
       clearDataSpaceViewerState: action,
       initializeDataSpaceViewer: flow,
     });
-    this.enterpriseModelExplorerStore = enterpriseModelExplorerStore;
+    this.taxonomyStore = taxonomyStore;
     this.taxonomyNode = taxonomyNode;
   }
 
@@ -187,10 +148,7 @@ export class TaxonomyViewerState {
       // build graph
       const projectData = ProjectData.serialization.fromJson(
         (yield flowResult(
-          this.enterpriseModelExplorerStore.depotServerClient.getProject(
-            groupId,
-            artifactId,
-          ),
+          this.taxonomyStore.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<ProjectData>,
       );
       const resolvedVersionId =
@@ -198,18 +156,18 @@ export class TaxonomyViewerState {
           ? projectData.latestVersion
           : versionId;
       const entities =
-        (yield this.enterpriseModelExplorerStore.depotServerClient.getVersionEntities(
+        (yield this.taxonomyStore.depotServerClient.getVersionEntities(
           groupId,
           artifactId,
           resolvedVersionId,
         )) as Entity[];
-      this.enterpriseModelExplorerStore.graphManagerState.resetGraph();
+      this.taxonomyStore.graphManagerState.resetGraph();
       // build dependencies
       const dependencyManager =
-        this.enterpriseModelExplorerStore.graphManagerState.createEmptyDependencyManager();
+        this.taxonomyStore.graphManagerState.createEmptyDependencyManager();
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
-        (yield this.enterpriseModelExplorerStore.depotServerClient.getDependencyEntities(
+        (yield this.taxonomyStore.depotServerClient.getDependencyEntities(
           groupId,
           artifactId,
           resolvedVersionId,
@@ -222,19 +180,19 @@ export class TaxonomyViewerState {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
       yield flowResult(
-        this.enterpriseModelExplorerStore.graphManagerState.graphManager.buildDependencies(
-          this.enterpriseModelExplorerStore.graphManagerState.coreModel,
-          this.enterpriseModelExplorerStore.graphManagerState.systemModel,
+        this.taxonomyStore.graphManagerState.graphManager.buildDependencies(
+          this.taxonomyStore.graphManagerState.coreModel,
+          this.taxonomyStore.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
         ),
       );
-      this.enterpriseModelExplorerStore.graphManagerState.graph.setDependencyManager(
+      this.taxonomyStore.graphManagerState.graph.setDependencyManager(
         dependencyManager,
       );
       yield flowResult(
-        this.enterpriseModelExplorerStore.graphManagerState.graphManager.buildGraph(
-          this.enterpriseModelExplorerStore.graphManagerState.graph,
+        this.taxonomyStore.graphManagerState.graphManager.buildGraph(
+          this.taxonomyStore.graphManagerState.graph,
           entities,
         ),
       );
@@ -242,10 +200,10 @@ export class TaxonomyViewerState {
       // resolve data space
       const resolvedDataSpace = getResolvedDataSpace(
         rawDataSpace.json,
-        this.enterpriseModelExplorerStore.graphManagerState.graph,
+        this.taxonomyStore.graphManagerState.graph,
       );
       const dataSpaceViewerState = new DataSpaceViewerState(
-        this.enterpriseModelExplorerStore.graphManagerState,
+        this.taxonomyStore.graphManagerState,
         rawDataSpace.groupId,
         rawDataSpace.artifactId,
         rawDataSpace.versionId,
@@ -257,8 +215,8 @@ export class TaxonomyViewerState {
             versionId: string,
             entityPath: string | undefined,
           ): void => {
-            this.enterpriseModelExplorerStore.applicationStore.navigator.openNewWindow(
-              this.enterpriseModelExplorerStore.applicationStore.navigator.generateLocation(
+            this.taxonomyStore.applicationStore.navigator.openNewWindow(
+              this.taxonomyStore.applicationStore.navigator.generateLocation(
                 `/view/${generateGAVCoordinates(
                   groupId,
                   artifactId,
@@ -273,7 +231,7 @@ export class TaxonomyViewerState {
       this.currentDataSpace = rawDataSpace;
     } catch (error) {
       assertErrorThrown(error);
-      this.enterpriseModelExplorerStore.applicationStore.notifyError(error);
+      this.taxonomyStore.applicationStore.notifyError(error);
       this.clearDataSpaceViewerState();
     } finally {
       this.initDataSpaceViewerState.complete();
@@ -281,11 +239,13 @@ export class TaxonomyViewerState {
   }
 }
 
-export class EnterpriseModelExplorerStore {
-  applicationStore: ApplicationStore<LegendStudioConfig>;
+export class LegendTaxonomyStore {
+  applicationStore: ApplicationStore<LegendTaxonomyConfig>;
   depotServerClient: DepotServerClient;
+  taxonomyServerClient: TaxonomyServerClient;
   graphManagerState: GraphManagerState;
-  pluginManager: LegendStudioPluginManager;
+  pluginManager: LegendTaxonomyPluginManager;
+  telemetryService = new TelemetryService();
 
   sideBarDisplayState = new PanelDisplayState({
     initial: 300,
@@ -303,10 +263,11 @@ export class EnterpriseModelExplorerStore {
   currentTaxonomyViewerState?: TaxonomyViewerState | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendStudioConfig>,
+    applicationStore: ApplicationStore<LegendTaxonomyConfig>,
+    taxonomyServerClient: TaxonomyServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
-    pluginManager: LegendStudioPluginManager,
+    pluginManager: LegendTaxonomyPluginManager,
   ) {
     makeObservable(this, {
       isInExpandedMode: observable,
@@ -318,9 +279,21 @@ export class EnterpriseModelExplorerStore {
       setCurrentTaxonomyViewerState: action,
     });
     this.applicationStore = applicationStore;
+    this.taxonomyServerClient = taxonomyServerClient;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = graphManagerState;
     this.pluginManager = pluginManager;
+
+    // Register plugins
+    this.taxonomyServerClient.registerTracerServicePlugins(
+      this.pluginManager.getTracerServicePlugins(),
+    );
+    this.depotServerClient.registerTracerServicePlugins(
+      this.pluginManager.getTracerServicePlugins(),
+    );
+    this.telemetryService.registerPlugins(
+      this.pluginManager.getTelemetryServicePlugins(),
+    );
   }
 
   setExpandedMode(val: boolean): void {
@@ -335,12 +308,14 @@ export class EnterpriseModelExplorerStore {
     this.currentTaxonomyViewerState = val;
   }
 
-  internalizeDataSpacePath(params: EnterpriseModelExplorerPathParams): void {
+  internalizeDataSpacePath(params: LegendTaxonomyPathParams): void {
     const { gav, dataSpacePath } = params;
     if (gav && dataSpacePath) {
       this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
       this.applicationStore.navigator.goTo(
-        ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW,
+        generateViewTaxonomyRoute(
+          this.applicationStore.config.currentTaxonomyServerOption,
+        ),
       );
     }
   }
@@ -404,7 +379,7 @@ export class EnterpriseModelExplorerStore {
     this.setTreeData({ rootIds, nodes });
   }
 
-  *initialize(params: EnterpriseModelExplorerPathParams): GeneratorFn<void> {
+  *initialize(params: LegendTaxonomyPathParams): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       return;
     }

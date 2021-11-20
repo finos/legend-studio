@@ -16,7 +16,62 @@
 
 @use 'mixins' as *;
 
-.enterprise-taxonomy-tree {
+.taxonomy-app__header__server-dropdown {
+  &__menu {
+    width: 15rem;
+    max-width: 15rem;
+  }
+
+  &__menu__item {
+    @include ellipsisTextOverflow;
+
+    display: block;
+    text-align: right;
+    max-width: 15rem;
+    height: 2.8rem;
+    line-height: 2.8rem;
+    justify-content: flex-end;
+    padding-right: 3.8rem;
+    padding-left: 1rem;
+
+    &--active {
+      background: var(--color-dark-grey-250);
+    }
+  }
+
+  &__label {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    background: var(--color-dark-grey-280);
+    width: 15rem;
+    height: 2.8rem;
+    font-weight: 500;
+  }
+
+  &__label__text {
+    @include ellipsisTextOverflow;
+
+    color: var(--color-light-grey-300);
+    font-weight: 500;
+    padding: 0 1rem;
+  }
+
+  &__label__icon {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    height: 100%;
+    width: 2.8rem;
+    border-left: 0.1rem solid var(--color-dark-grey-100);
+
+    svg {
+      color: var(--color-light-grey-300);
+    }
+  }
+}
+
+.taxonomy-tree {
   &__node__container:hover {
     background: var(--color-dark-blue-shade-100);
   }
@@ -54,7 +109,10 @@
   }
 }
 
-.enterprise-model-explorer {
+.taxonomy-node-viewer {
+  height: 100%;
+  width: 100%;
+
   &__side-bar__header {
     min-width: 9rem;
     background: var(--color-dark-grey-200);
@@ -66,17 +124,6 @@
     height: 100%;
     color: var(--color-light-grey-400);
   }
-
-  &__taxonomy-tree-container {
-    height: 100%;
-    background: var(--color-dark-grey-100);
-    padding: 0.5rem 0;
-  }
-}
-
-.taxonomy-viewer {
-  height: 100%;
-  width: 100%;
 
   &__explorer {
     height: 100%;
@@ -135,11 +182,17 @@
     &--active {
       background: var(--color-blue-500);
 
-      .taxonomy-viewer__explorer__entry__path,
-      .taxonomy-viewer__explorer__entry__icon svg {
+      .taxonomy-node-viewer__explorer__entry__path,
+      .taxonomy-node-viewer__explorer__entry__icon svg {
         color: var(--color-light-grey-300);
       }
     }
+  }
+
+  &__explorer-tree-container {
+    height: 100%;
+    background: var(--color-dark-grey-100);
+    padding: 0.5rem 0;
   }
 
   &__content-placeholder {

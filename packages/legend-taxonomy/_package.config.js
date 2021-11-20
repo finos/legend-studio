@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-export * from './DSLDataSpace_Extension';
-
-export { DataSpaceViewer } from './components/DataSpaceViewer';
-
-export {
-  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-  extractDataSpaceTaxonomyNodePaths,
-  getResolvedDataSpace,
-} from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
-
-export { DataSpaceViewerState } from './stores/DataSpaceViewerState';
+export default {
+  publish: {
+    typescript: {
+      main: './tsconfig.build.json',
+    },
+  },
+};

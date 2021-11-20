@@ -20,42 +20,47 @@ import { useApplicationStore } from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useGraphManagerState } from '@finos/legend-graph';
-import { EnterpriseModelExplorerStore } from '../../stores/studio/EnterpriseModelExplorerStore';
-import type { LegendStudioConfig } from '@finos/legend-studio';
-import { useLegendStudioStore } from '@finos/legend-studio';
+import { LegendTaxonomyStore } from '../stores/LegendTaxonomyStore';
+import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
+import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
+import { TaxonomyServerClient } from '../stores/TaxonomyServerClient';
 
-const EnterpriseModelExplorerStoreContext = createContext<
-  EnterpriseModelExplorerStore | undefined
+const LegendTaxonomyStoreContext = createContext<
+  LegendTaxonomyStore | undefined
 >(undefined);
 
-export const EnterpriseModelExplorerStoreProvider = ({
+export const LegendTaxonomyStoreProvider = ({
   children,
+  pluginManager,
 }: {
   children: React.ReactNode;
+  pluginManager: LegendTaxonomyPluginManager;
 }): React.ReactElement => {
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const taxonomyServerClient = new TaxonomyServerClient(
+    applicationStore.config.currentTaxonomyServerOption.url,
+  );
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();
-  const studioStore = useLegendStudioStore();
   const store = useLocalObservable(
     () =>
-      new EnterpriseModelExplorerStore(
+      new LegendTaxonomyStore(
         applicationStore,
+        taxonomyServerClient,
         depotServerClient,
         graphManagerState,
-        studioStore.pluginManager,
+        pluginManager,
       ),
   );
   return (
-    <EnterpriseModelExplorerStoreContext.Provider value={store}>
+    <LegendTaxonomyStoreContext.Provider value={store}>
       {children}
-    </EnterpriseModelExplorerStoreContext.Provider>
+    </LegendTaxonomyStoreContext.Provider>
   );
 };
 
-export const useEnterpriseModelExplorerStore =
-  (): EnterpriseModelExplorerStore =>
-    guaranteeNonNullable(
-      useContext(EnterpriseModelExplorerStoreContext),
-      `Can't find enterprise model explorer store in context`,
-    );
+export const useLegendTaxonomyStore = (): LegendTaxonomyStore =>
+  guaranteeNonNullable(
+    useContext(LegendTaxonomyStoreContext),
+    `Can't find Legend Taxonomy store in context`,
+  );
