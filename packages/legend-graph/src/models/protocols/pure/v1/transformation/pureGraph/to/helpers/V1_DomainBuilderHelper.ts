@@ -248,9 +248,7 @@ const isCompatibleDerivedProperty = (
 ): boolean =>
   o.name === name &&
   Array.isArray(o.parameters) &&
-  // Note: In Engine this check is done by comparing the size of the derived property's `classifierGenericType` 's type arguments.
-  // These type arugments are the derived property's parameters in addition to the `this` parameter pointing to the derived property's owner.
-  // Since we don't process the derived property's classiferGenericType we have mirrored the logic by adding 1 for the `this` parameter to the number of derived property's parameters.
+  // We add 1 to account for the `this` parameter in the derived property
   o.parameters.length + 1 === params.length;
 
 export const V1_getAppliedProperty = (
