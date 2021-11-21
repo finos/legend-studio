@@ -18,7 +18,7 @@
 // Because according to our testing philosophy, fixing the DOM structure makes us testing more implementation details
 // than actual app behavior, user won't care about the id of an element or such!
 // See https://testing-library.com/docs/dom-testing-library/api-queries#bytestid
-export enum STUDIO_TEST_ID {
+export enum LEGEND_STUDIO_TEST_ID {
   PANEL = 'panel', // TODO: revise
   PANEL_CONTENT_LIST = 'panel__content__list', // TODO: revise
   PANEL_CONTENT_FORM_SECTION_LIST_ITEMS = 'panel__content__form__section__list__items', // TODO: revise

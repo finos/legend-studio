@@ -29,7 +29,7 @@ import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
-import { STUDIO_TEST_ID } from '../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import {
   ACTIVITY_MODE,
   LEGEND_STUDIO_HOTKEY,
@@ -94,7 +94,7 @@ const ViewerStatusBar = observer(() => {
 
   return (
     <div
-      data-testid={STUDIO_TEST_ID.STATUS_BAR}
+      data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
       className="editor__status-bar viewer__status-bar"
     >
       <div className="editor__status-bar__left">

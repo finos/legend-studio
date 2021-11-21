@@ -31,7 +31,7 @@ import {
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
-import { STUDIO_TEST_ID } from '../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import Dialog from '@material-ui/core/Dialog';
 import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
@@ -333,7 +333,7 @@ const CreateProjectModal = observer(() => {
                 <div
                   className="panel__content__form__section__list__items"
                   data-testid={
-                    STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+                    LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
                   }
                 >
                   {tagsArray.map((value, idx) => (
@@ -700,7 +700,7 @@ const SetupSelection = observer(() => {
         <div className="setup">
           <div
             className="setup__content"
-            data-testid={STUDIO_TEST_ID.SETUP__CONTENT}
+            data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
           >
             <div>
               <ProjectSelector

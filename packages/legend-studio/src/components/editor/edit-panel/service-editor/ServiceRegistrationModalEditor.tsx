@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-art';
 import { Dialog } from '@material-ui/core';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceExecutionMode } from '@finos/legend-graph';
 import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
@@ -123,7 +123,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <div
-        data-testid={STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL}
+        data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL}
         className="modal modal--dark service-registration-modal"
       >
         <div className="service-registration-modal__heading">

@@ -30,7 +30,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../EditorComponentTestUtils';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 
 let renderResult: RenderResult;
 
@@ -45,7 +45,7 @@ test(integrationTest('Test navigation between element states'), async () => {
   // Test opening multiple elements
   await TEST__openElementFromExplorerTree('ui::test1::Animal', renderResult);
   const packageExplorer = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_TREES,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
   fireEvent.click(getByText(packageExplorer, 'TestClass'));
   fireEvent.click(getByText(packageExplorer, 'TestEnumeration'));
@@ -54,7 +54,7 @@ test(integrationTest('Test navigation between element states'), async () => {
   fireEvent.click(getByText(packageExplorer, 'Something'));
   fireEvent.click(getByText(packageExplorer, 'ProfileTest'));
   const editPanelHeader = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   await waitFor(() => getByText(editPanelHeader, 'ProfileTest'));
 
@@ -73,13 +73,13 @@ test(integrationTest('Test navigation between element states'), async () => {
   await waitFor(() => renderResult.getByText('founder'));
   const navigateToClass = async (className: string): Promise<void> => {
     const classForm = renderResult.getByTestId(
-      STUDIO_TEST_ID.CLASS_FORM_EDITOR,
+      LEGEND_STUDIO_TEST_ID.CLASS_FORM_EDITOR,
     );
     const property = await waitFor(() => getByText(classForm, className));
     const propertyBasicEditor = property.parentElement as HTMLElement;
     const navigateButton = getByTestId(
       propertyBasicEditor,
-      STUDIO_TEST_ID.TYPE_VISIT,
+      LEGEND_STUDIO_TEST_ID.TYPE_VISIT,
     );
     fireEvent.click(navigateButton);
     await waitFor(() => getByText(editPanelHeader, className));

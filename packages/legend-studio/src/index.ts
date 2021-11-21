@@ -56,7 +56,7 @@ export {
   TEST__setUpEditorWithDefaultSDLCData,
   TEST__openElementFromExplorerTree,
 } from './components/EditorComponentTestUtils';
-export { STUDIO_TEST_ID } from './components/StudioTestID';
+export * from './components/LegendStudioTestID';
 export * from './stores/EditorStoreTestUtils';
 
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';

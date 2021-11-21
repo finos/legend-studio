@@ -29,7 +29,7 @@ import { UMLEditor } from './uml-editor/UMLEditor';
 import { MappingEditorState } from '../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { UMLEditorState } from '../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { ElementEditorState } from '../../../stores/editor-state/element-editor-state/ElementEditorState';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/EditorConfig';
 import { useResizeDetector } from 'react-resize-detector';
 import type { EditorState } from '../../../stores/editor-state/EditorState';
@@ -372,10 +372,13 @@ export const EditPanel = observer(() => {
     );
   }
   return (
-    <div data-testid={STUDIO_TEST_ID.EDIT_PANEL} className="panel edit-panel">
+    <div
+      data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL}
+      className="panel edit-panel"
+    >
       <ContextMenu disabled={true} className="panel__header edit-panel__header">
         <div
-          data-testid={STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS}
+          data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS}
           className="edit-panel__header__tabs"
         >
           {openedEditorStates.map((editorState) => (
@@ -425,7 +428,9 @@ export const EditPanel = observer(() => {
               className="edit-panel__element-view"
               content={
                 <MenuContent
-                  data-testid={STUDIO_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS}
+                  data-testid={
+                    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS
+                  }
                   className="edit-panel__element-view__options edit-panel__element-view__options--with-group"
                 >
                   <div className="edit-panel__element-view__option__group edit-panel__element-view__option__group--native">
@@ -497,7 +502,9 @@ export const EditPanel = observer(() => {
               className="edit-panel__element-view"
               content={
                 <MenuContent
-                  data-testid={STUDIO_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS}
+                  data-testid={
+                    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS
+                  }
                   className="edit-panel__element-view__options"
                 >
                   <MenuContentItem
@@ -542,7 +549,7 @@ export const EditPanel = observer(() => {
         // See https://github.com/bvaughn/react-error-boundary/issues/23#issuecomment-425470511
         key={currentEditorState.uuid}
         className="panel__content edit-panel__content"
-        data-testid={STUDIO_TEST_ID.EDIT_PANEL_CONTENT}
+        data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT}
       >
         {renderActiveElementTab()}
       </div>
