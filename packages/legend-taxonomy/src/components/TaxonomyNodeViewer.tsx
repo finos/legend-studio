@@ -42,14 +42,15 @@ import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {
     rawDataSpace: RawDataSpace;
-    taxonomyViewerState: TaxonomyNodeViewerState;
+    taxonomyNodeViewerState: TaxonomyNodeViewerState;
     selectDataSpace: () => void;
   }) => {
-    const { rawDataSpace, taxonomyViewerState, selectDataSpace } = props;
+    const { rawDataSpace, taxonomyNodeViewerState, selectDataSpace } = props;
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
-    const isSelected = rawDataSpace === taxonomyViewerState.currentDataSpace;
+    const isSelected =
+      rawDataSpace === taxonomyNodeViewerState.currentDataSpace;
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const copyLink = (): void => {
@@ -58,7 +59,7 @@ const TaxonomyNodeDataSpaceItem = observer(
           applicationStore.navigator.generateLocation(
             generateViewTaxonomyByDataSpaceRoute(
               applicationStore.config.currentTaxonomyServerOption,
-              taxonomyViewerState.taxonomyNode.id,
+              taxonomyNodeViewerState.taxonomyNode.id,
               generateGAVCoordinates(
                 rawDataSpace.groupId,
                 rawDataSpace.artifactId,
@@ -114,15 +115,20 @@ const TaxonomyNodeDataSpaceItem = observer(
 );
 
 const TaxonomyNodeViewerExplorer = observer(
-  (props: { taxonomyViewerState: TaxonomyNodeViewerState }) => {
-    const { taxonomyViewerState } = props;
+  (props: { taxonomyNodeViewerState: TaxonomyNodeViewerState }) => {
+    const { taxonomyNodeViewerState } = props;
     const applicationStore = useApplicationStore();
-    const taxonomyNode = taxonomyViewerState.taxonomyNode;
+    const taxonomyNode = taxonomyNodeViewerState.taxonomyNode;
+    const dataSpaceOptions = taxonomyNodeViewerState.dataSpaceOptions;
+    const updateSearchText: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ): void =>
+      taxonomyNodeViewerState.setDataSpaceSearchText(event.target.value);
     const selectDataSpace =
       (rawDataSpace: RawDataSpace): (() => void) =>
       (): void => {
         flowResult(
-          taxonomyViewerState.initializeDataSpaceViewer(rawDataSpace),
+          taxonomyNodeViewerState.initializeDataSpaceViewer(rawDataSpace),
         ).catch(applicationStore.alertIllegalUnhandledError);
       };
 
@@ -130,20 +136,29 @@ const TaxonomyNodeViewerExplorer = observer(
       <div className="panel taxonomy-node-viewer__explorer">
         <div className="panel__header taxonomy-node-viewer__explorer__header">
           <div className="panel__header__title taxonomy-node-viewer__explorer__header__title">
-            Dataspaces ({taxonomyNode.rawDataSpaces.length})
+            Dataspaces ({dataSpaceOptions.length}/
+            {taxonomyNode.rawDataSpaces.length})
           </div>
         </div>
+        <div className="panel__header taxonomy-node-viewer__explorer__search">
+          <input
+            className="input--dark taxonomy-node-viewer__explorer__search__input"
+            value={taxonomyNodeViewerState.dataSpaceSearchText}
+            onChange={updateSearchText}
+            placeholder="Search for dataspace..."
+          />
+        </div>
         <div className="panel__content taxonomy-node-viewer__explorer__content">
-          {taxonomyNode.rawDataSpaces.length === 0 && (
+          {dataSpaceOptions.length === 0 && (
             <BlankPanelContent>No data space available</BlankPanelContent>
           )}
           {taxonomyNode.rawDataSpaces.length !== 0 &&
-            taxonomyNode.rawDataSpaces.map((rawDataSpace) => (
+            dataSpaceOptions.map((dataSpaceOption) => (
               <TaxonomyNodeDataSpaceItem
-                key={rawDataSpace.id}
-                rawDataSpace={rawDataSpace}
-                selectDataSpace={selectDataSpace(rawDataSpace)}
-                taxonomyViewerState={taxonomyViewerState}
+                key={dataSpaceOption.value.id}
+                rawDataSpace={dataSpaceOption.value}
+                selectDataSpace={selectDataSpace(dataSpaceOption.value)}
+                taxonomyNodeViewerState={taxonomyNodeViewerState}
               />
             ))}
         </div>
@@ -153,32 +168,34 @@ const TaxonomyNodeViewerExplorer = observer(
 );
 
 export const TaxonomyNodeViewer = observer(
-  (props: { taxonomyViewerState: TaxonomyNodeViewerState }) => {
-    const { taxonomyViewerState } = props;
+  (props: { taxonomyNodeViewerState: TaxonomyNodeViewerState }) => {
+    const { taxonomyNodeViewerState } = props;
 
     return (
       <div className="taxonomy-node-viewer">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel minSize={300} size={300}>
             <TaxonomyNodeViewerExplorer
-              taxonomyViewerState={taxonomyViewerState}
+              taxonomyNodeViewerState={taxonomyNodeViewerState}
             />
           </ResizablePanel>
           <ResizablePanelSplitter />
           <ResizablePanel minSize={300}>
-            {taxonomyViewerState.dataSpaceViewerState && (
+            {taxonomyNodeViewerState.dataSpaceViewerState && (
               <DataSpaceViewer
-                dataSpaceViewerState={taxonomyViewerState.dataSpaceViewerState}
+                dataSpaceViewerState={
+                  taxonomyNodeViewerState.dataSpaceViewerState
+                }
               />
             )}
-            {!taxonomyViewerState.dataSpaceViewerState &&
-              taxonomyViewerState.initDataSpaceViewerState.isInProgress && (
+            {!taxonomyNodeViewerState.dataSpaceViewerState &&
+              taxonomyNodeViewerState.initDataSpaceViewerState.isInProgress && (
                 <div className="taxonomy-node-viewer__content-placeholder">
                   <PanelLoadingIndicator isLoading={true} />
                   <BlankPanelContent>Loading data space...</BlankPanelContent>
                 </div>
               )}
-            {!taxonomyViewerState.dataSpaceViewerState && (
+            {!taxonomyNodeViewerState.dataSpaceViewerState && (
               <div className="taxonomy-node-viewer__content-placeholder">
                 <BlankPanelContent>No data space selected</BlankPanelContent>
               </div>

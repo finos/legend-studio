@@ -269,7 +269,7 @@ const TaxonomyViewerMainPanel = observer(
           </div>
         </div>
         <div className="panel__content taxonomy-viewer__main-panel__content">
-          <TaxonomyNodeViewer taxonomyViewerState={taxonomyViewerState} />
+          <TaxonomyNodeViewer taxonomyNodeViewerState={taxonomyViewerState} />
         </div>
       </div>
     );

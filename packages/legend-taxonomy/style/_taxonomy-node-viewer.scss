@@ -36,8 +36,22 @@
     font-size: 1.2rem;
   }
 
+  &__explorer__search {
+    @include flexCenter;
+
+    height: 3.4rem;
+    padding: 0.3rem;
+    background: var(--color-dark-grey-100);
+
+    &__input {
+      border: 0.1rem solid var(--color-dark-grey-280);
+      height: 2.8rem;
+      width: 100%;
+    }
+  }
+
   &__explorer__content {
-    height: calc(100% - 3.4rem);
+    height: calc(100% - 6.8rem);
     background: var(--color-dark-grey-85);
     padding: 0.5rem 0;
     border: 0.1rem solid var(--color-dark-grey-50);
@@ -68,6 +82,8 @@
       width: calc(100% - 2.8rem);
       line-height: 2.8rem;
       color: var(--color-dark-grey-500);
+      font-size: 1.3rem;
+      font-family: 'Roboto Mono', monospace;
     }
 
     &:hover {

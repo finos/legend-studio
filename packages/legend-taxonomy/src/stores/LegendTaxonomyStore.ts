@@ -51,7 +51,14 @@ import {
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
-import { makeObservable, flow, observable, action, flowResult } from 'mobx';
+import {
+  makeObservable,
+  flow,
+  observable,
+  action,
+  flowResult,
+  computed,
+} from 'mobx';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import { LEGEND_TAXONOMY_LOG_EVENT } from './LegendTaxonomyLogEvent';
@@ -114,12 +121,25 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
   }
 }
 
+interface TaxonomyNodeDataSpaceOption {
+  label: string;
+  value: RawDataSpace;
+}
+
+export const buildTaxonomyNodeDataSpaceOption = (
+  value: RawDataSpace,
+): TaxonomyNodeDataSpaceOption => ({
+  label: value.path,
+  value,
+});
+
 export class TaxonomyNodeViewerState {
   taxonomyStore: LegendTaxonomyStore;
   taxonomyNode: TaxonomyTreeNodeData;
+  initDataSpaceViewerState = ActionState.create();
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   currentDataSpace?: RawDataSpace | undefined;
-  initDataSpaceViewerState = ActionState.create();
+  dataSpaceSearchText = '';
 
   constructor(
     taxonomyStore: LegendTaxonomyStore,
@@ -128,11 +148,30 @@ export class TaxonomyNodeViewerState {
     makeObservable(this, {
       dataSpaceViewerState: observable,
       currentDataSpace: observable,
+      dataSpaceSearchText: observable,
+      dataSpaceOptions: computed,
       clearDataSpaceViewerState: action,
+      setDataSpaceSearchText: action,
       initializeDataSpaceViewer: flow,
     });
     this.taxonomyStore = taxonomyStore;
     this.taxonomyNode = taxonomyNode;
+  }
+
+  get dataSpaceOptions(): TaxonomyNodeDataSpaceOption[] {
+    return this.taxonomyNode.rawDataSpaces
+      .map(buildTaxonomyNodeDataSpaceOption)
+      .filter(
+        (option) =>
+          !this.dataSpaceSearchText ||
+          option.value.path
+            .toLowerCase()
+            .includes(this.dataSpaceSearchText.trim().toLowerCase()),
+      );
+  }
+
+  setDataSpaceSearchText(val: string): void {
+    this.dataSpaceSearchText = val;
   }
 
   clearDataSpaceViewerState(): void {
