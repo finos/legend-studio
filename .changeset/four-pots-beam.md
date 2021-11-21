@@ -1,5 +1,4 @@
 ---
-"@finos/legend-studio": minor
 "@finos/legend-studio-app": minor
 ---
 
