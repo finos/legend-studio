@@ -17,10 +17,7 @@
 import { useEffect } from 'react';
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import {
-  LegendMaterialUITheme,
-  PanelLoadingIndicator,
-} from '@finos/legend-art';
+import { LegendMaterialUITheme } from '@finos/legend-art';
 import type { LegendTaxonomyPathParams } from '../stores/LegendTaxonomyRouter';
 import {
   URL_PATH_PLACEHOLDER,
@@ -32,10 +29,7 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import type { Log } from '@finos/legend-shared';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
-import {
-  LegendTaxonomyStoreProvider,
-  useLegendTaxonomyStore,
-} from './LegendTaxonomyStoreProvider';
+import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
@@ -47,16 +41,10 @@ import {
 } from '@finos/legend-application';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import { TaxonomyViewer } from './TaxonomyViewer';
+import { flowResult } from 'mobx';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
-  const taxonomyStore = useLegendTaxonomyStore();
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
-
-  // useEffect(() => {
-  //   flowResult(taxonomyStore.initialize()).catch(
-  //     applicationStore.alertIllegalUnhandledError,
-  //   );
-  // }, [applicationStore, taxonomyStore]);
 
   return (
     <div className="app">

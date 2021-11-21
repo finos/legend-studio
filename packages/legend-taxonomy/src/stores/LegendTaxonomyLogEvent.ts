@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-export * from './DSLDataSpace_Extension';
-export { DSLDataSpace_LegendStudioPlugin } from './components/studio/DSLDataSpace_LegendStudioPlugin';
-export { DSLDataSpace_LegendQueryPlugin } from './components/query/DSLDataSpace_LegendQueryPlugin';
-
-export { DataSpaceViewer } from './components/DataSpaceViewer';
-
-export {
-  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-  extractDataSpaceTaxonomyNodes,
-  getResolvedDataSpace,
-} from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
-
-export { DataSpaceViewerState } from './stores/DataSpaceViewerState';
+export enum LEGEND_TAXONOMY_LOG_EVENT {
+  TAXONOMY_DATA_CHECK_FAILURE = 'TAXONOMY_DATA_CHECK_FAILURE',
+}

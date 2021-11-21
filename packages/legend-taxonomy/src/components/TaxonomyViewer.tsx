@@ -246,6 +246,9 @@ export const TaxonomyViewer = observer(() => {
         <LegendTaxonomyAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
+        <PanelLoadingIndicator
+          isLoading={taxonomyStore.initState.isInProgress}
+        />
         <div className="editor">
           <div className="editor__body">
             <TaxonomyViewerActivityBar />

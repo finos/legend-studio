@@ -54,9 +54,14 @@ export const generateViewTaxonomyRoute = (
 ): string =>
   generatePath(
     taxonomyServerOption.default
-      ? LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_BY_TAXONOMY_NODE[0]
-      : LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_BY_TAXONOMY_NODE[1],
-    {},
+      ? LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW[0]
+      : LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW[1],
+    {
+      [LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_SERVER_KEY]:
+        taxonomyServerOption.default
+          ? URL_PATH_PLACEHOLDER
+          : taxonomyServerOption.key,
+    },
   );
 
 export const generateViewTaxonomyNodeRoute = (

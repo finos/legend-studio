@@ -21,13 +21,13 @@ import {
 } from '@finos/legend-shared';
 import { createModelSchema, optional, primitive } from 'serializr';
 
-export class TaxonomyDataEntry {
+export class TaxonomyNodeData {
   package!: string;
   guid!: string;
   description?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(TaxonomyDataEntry, {
+    createModelSchema(TaxonomyNodeData, {
       description: optional(primitive()),
       guid: primitive(),
       package: primitive(),
@@ -42,6 +42,6 @@ export class TaxonomyServerClient extends AbstractServerClient {
     });
   }
 
-  getTaxonomyData = (): Promise<PlainObject<TaxonomyDataEntry>[]> =>
-    this.networkClient.get(`${this.networkClient.baseUrl}/`);
+  getTaxonomyData = (): Promise<PlainObject<TaxonomyNodeData>[]> =>
+    this.networkClient.get(`${this.networkClient.baseUrl}`);
 }

@@ -43,13 +43,7 @@ export const setup = (outputDir) => {
         env: 'local',
         taxonomy: [
           {
-            label: 'Example',
-            key: 'example',
-            url: 'http://localhost:60001/api/taxonomy-tree',
-            default: true,
-          },
-          {
-            label: 'Example 2',
+            label: 'Enterprise',
             key: 'example',
             url: 'http://localhost:60001/api/taxonomy-tree',
             default: true,
@@ -61,8 +55,8 @@ export const setup = (outputDir) => {
         depot: {
           url: 'http://localhost:9090/depot/api',
         },
-        documentation: {
-          url: 'https://legend.finos.org',
+        studio: {
+          url: 'http://localhost:8080/studio',
         },
       },
       undefined,

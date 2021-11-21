@@ -21,7 +21,7 @@ import { PanelDisplayState } from '@finos/legend-art';
 import {
   DataSpaceViewerState,
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-  extractDataSpaceTaxonomyNodePaths,
+  extractDataSpaceTaxonomyNodes,
   getResolvedDataSpace,
 } from '@finos/legend-extension-dsl-data-space';
 import type { GraphManagerState } from '@finos/legend-graph';
@@ -38,6 +38,7 @@ import {
 } from '@finos/legend-server-depot';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  LogEvent,
   TelemetryService,
   AssertionError,
   assertNonNullable,
@@ -49,9 +50,11 @@ import {
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
+import { LEGEND_TAXONOMY_LOG_EVENT } from './LegendTaxonomyLogEvent';
 import type { LegendTaxonomyPathParams } from './LegendTaxonomyRouter';
 import { generateViewTaxonomyRoute } from './LegendTaxonomyRouter';
 import type { TaxonomyServerClient } from './TaxonomyServerClient';
+import { TaxonomyNodeData } from './TaxonomyServerClient';
 
 const DATA_SPACE_ID_DELIMITER = '@';
 const TAXONOMY_NODE_PATH_DELIMITER = '::';
@@ -62,8 +65,7 @@ export class RawDataSpace {
   versionId: string;
   path: string;
   json: Record<PropertyKey, unknown>;
-  taxonomyNodePaths: string[] = [];
-  taxonomyNodes: TaxonomyTreeNodeData[] = [];
+  taxonomyNodes: string[] = [];
 
   constructor(
     groupId: string,
@@ -77,7 +79,7 @@ export class RawDataSpace {
     this.versionId = versionId;
     this.path = path;
     this.json = json;
-    this.taxonomyNodePaths = extractDataSpaceTaxonomyNodePaths(this.json);
+    this.taxonomyNodes = extractDataSpaceTaxonomyNodes(this.json);
   }
 
   get id(): string {
@@ -94,6 +96,7 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;
   id: string;
   label: string;
+  taxonomyData?: TaxonomyNodeData | undefined;
   childrenIds: string[] = [];
   rawDataSpaces: RawDataSpace[] = [];
 
@@ -322,18 +325,18 @@ export class LegendTaxonomyStore {
 
   private processTaxonomyTreeNodeData(
     treeData: TreeData<TaxonomyTreeNodeData>,
-    rawDataSpace: RawDataSpace,
-    taxonomyPath: string,
+    taxonomyNodeData: TaxonomyNodeData,
+    taxonomyNodePath: string,
     parentNode: TaxonomyTreeNodeData | undefined,
   ): TaxonomyTreeNodeData {
-    const idx = taxonomyPath.indexOf(TAXONOMY_NODE_PATH_DELIMITER);
+    const idx = taxonomyNodePath.indexOf(TAXONOMY_NODE_PATH_DELIMITER);
     let taxonomy: string;
     let remainingTaxonomyNodePath: string | undefined = undefined;
     if (idx === -1) {
-      taxonomy = taxonomyPath;
+      taxonomy = taxonomyNodePath;
     } else {
-      taxonomy = taxonomyPath.substring(0, idx);
-      remainingTaxonomyNodePath = taxonomyPath.substring(
+      taxonomy = taxonomyNodePath.substring(0, idx);
+      remainingTaxonomyNodePath = taxonomyNodePath.substring(
         idx + TAXONOMY_NODE_PATH_DELIMITER.length,
       );
     }
@@ -345,37 +348,90 @@ export class LegendTaxonomyStore {
       treeData.nodes.set(nodeId, newNode);
     }
     const node = guaranteeNonNullable(treeData.nodes.get(nodeId));
-    addUniqueEntry(node.rawDataSpaces, rawDataSpace);
-    addUniqueEntry(rawDataSpace.taxonomyNodes, node);
     if (remainingTaxonomyNodePath) {
       const childNode = this.processTaxonomyTreeNodeData(
         treeData,
-        rawDataSpace,
+        taxonomyNodeData,
         remainingTaxonomyNodePath,
         node,
       );
       addUniqueEntry(node.childrenIds, childNode.id);
+    } else {
+      node.taxonomyData = taxonomyNodeData;
     }
-
     return node;
   }
 
-  private initializeTaxonomyTreeData(): void {
+  private initializeTaxonomyTreeData(taxonomyData: TaxonomyNodeData[]): void {
     const rootIds: string[] = [];
     const nodes = new Map<string, TaxonomyTreeNodeData>();
     const treeData = { rootIds, nodes };
-    Array.from(this.dataSpaceIndex.values()).forEach((rawDataSpace) => {
-      const taxonomyNodes = rawDataSpace.taxonomyNodePaths;
-      taxonomyNodes.forEach((taxonomyPath) => {
-        const rootNode = this.processTaxonomyTreeNodeData(
-          treeData,
-          rawDataSpace,
-          taxonomyPath,
-          undefined,
+
+    // validate taxonomy data
+    const uniqueNodeIds = new Set<string>();
+    const uniquePackages = new Set<string>();
+    let isTaxonomyTreeDataValid = true;
+    taxonomyData.forEach((taxonomyNodeData) => {
+      if (uniqueNodeIds.has(taxonomyNodeData.guid)) {
+        isTaxonomyTreeDataValid = false;
+        this.applicationStore.log.warn(
+          LogEvent.create(
+            LEGEND_TAXONOMY_LOG_EVENT.TAXONOMY_DATA_CHECK_FAILURE,
+          ),
+          `Found duplicated taxonomy node with ID '${taxonomyNodeData.guid}'`,
         );
-        addUniqueEntry(rootIds, rootNode.id);
+      }
+      uniqueNodeIds.add(taxonomyNodeData.guid);
+      if (uniquePackages.has(taxonomyNodeData.package)) {
+        isTaxonomyTreeDataValid = false;
+        this.applicationStore.log.warn(
+          LogEvent.create(
+            LEGEND_TAXONOMY_LOG_EVENT.TAXONOMY_DATA_CHECK_FAILURE,
+          ),
+          `Found duplicated taxonomy node with package '${taxonomyNodeData.package}'`,
+        );
+      }
+      uniquePackages.add(taxonomyNodeData.package);
+    });
+    if (!isTaxonomyTreeDataValid) {
+      this.applicationStore.notifyWarning(
+        `Found duplication in taxonomy data: taxonomy accuracy might be affected`,
+      );
+    }
+
+    // build tree
+    taxonomyData.forEach((taxonomyNodeData) => {
+      const rootNode = this.processTaxonomyTreeNodeData(
+        treeData,
+        taxonomyNodeData,
+        taxonomyNodeData.package,
+        undefined,
+      );
+      addUniqueEntry(rootIds, rootNode.id);
+    });
+
+    // Add dataspaces to tree nodes
+    // NOTE: If we add a dataspace to a node, we will also add it to all of its ancestor nodes
+    Array.from(this.dataSpaceIndex.values()).forEach((rawDataSpace) => {
+      const taxonomyNodeIds = rawDataSpace.taxonomyNodes;
+      taxonomyNodeIds.forEach((nodeId) => {
+        const taxonomyNodeData = taxonomyData.find(
+          (nodeData) => nodeData.guid === nodeId,
+        );
+        if (taxonomyNodeData) {
+          let currentPath = taxonomyNodeData.package;
+          while (currentPath) {
+            const treeNode = treeData.nodes.get(currentPath);
+            if (treeNode) {
+              addUniqueEntry(treeNode.rawDataSpaces, rawDataSpace);
+            }
+            const idx = currentPath.lastIndexOf(TAXONOMY_NODE_PATH_DELIMITER);
+            currentPath = idx === -1 ? '' : currentPath.substring(0, idx);
+          }
+        }
       });
     });
+
     this.setTreeData({ rootIds, nodes });
   }
 
@@ -385,6 +441,14 @@ export class LegendTaxonomyStore {
     }
     this.initState.inProgress();
     try {
+      // Get taxonomy tree data
+      const taxonomyData = (
+        (yield this.taxonomyServerClient.getTaxonomyData()) as PlainObject<TaxonomyNodeData>[]
+      ).map((nodeDataJson) =>
+        TaxonomyNodeData.serialization.fromJson(nodeDataJson),
+      );
+
+      // Get all dataspaces
       (
         (yield this.depotServerClient.getEntitiesByClassifierPath(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
@@ -401,7 +465,7 @@ export class LegendTaxonomyStore {
             ),
         )
         // NOTE: only care about data space tagged with taxonomy information
-        .filter((rawDataSpace) => rawDataSpace.taxonomyNodePaths.length)
+        .filter((rawDataSpace) => rawDataSpace.taxonomyNodes.length)
         .forEach((rawDataSpace) => {
           this.dataSpaceIndex.set(rawDataSpace.id, rawDataSpace);
         });
@@ -428,7 +492,7 @@ export class LegendTaxonomyStore {
       // NOTE: here we build the full tree, which might be expensive when we have a big
       // tree in the future, we might have to come up with a better algorithm then
       // to incrementally build the tree
-      this.initializeTaxonomyTreeData();
+      this.initializeTaxonomyTreeData(taxonomyData);
 
       if (this.treeData) {
         const taxonomyPath = params.taxonomyPath;

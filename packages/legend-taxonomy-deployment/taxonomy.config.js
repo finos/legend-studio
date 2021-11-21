@@ -34,6 +34,7 @@ export default {
    * See https://webpack.js.org/configuration/dev-server/
    */
   devServerOptions: {
+    port: 8082,
     host: 'localhost',
   },
 };
