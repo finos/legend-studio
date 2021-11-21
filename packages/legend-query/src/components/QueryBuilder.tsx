@@ -41,12 +41,12 @@ import {
 } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
 
-enum QUERY_HOTKEY {
+enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',
 }
 
-const QUERY_HOTKEY_MAP = Object.freeze({
-  [QUERY_HOTKEY.COMPILE]: 'f9',
+const QUERY_BUILDER_HOTKEY_MAP = Object.freeze({
+  [QUERY_BUILDER_HOTKEY.COMPILE]: 'f9',
 });
 
 const QueryBuilderStatusBar = observer(
@@ -111,10 +111,12 @@ export const QueryBuilder = observer(
 
     // Hotkeys
     const keyMap = {
-      [QUERY_HOTKEY.COMPILE]: [QUERY_HOTKEY_MAP.COMPILE],
+      [QUERY_BUILDER_HOTKEY.COMPILE]: [QUERY_BUILDER_HOTKEY_MAP.COMPILE],
     };
     const handlers = {
-      [QUERY_HOTKEY.COMPILE]: (event: KeyboardEvent | undefined): void => {
+      [QUERY_BUILDER_HOTKEY.COMPILE]: (
+        event: KeyboardEvent | undefined,
+      ): void => {
         event?.preventDefault();
         flowResult(queryBuilderState.compileQuery()).catch(
           applicationStore.alertIllegalUnhandledError,

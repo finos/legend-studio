@@ -32,8 +32,8 @@ import { useParams, Link } from 'react-router-dom';
 import { STUDIO_TEST_ID } from '../StudioTestID';
 import {
   ACTIVITY_MODE,
-  STUDIO_HOTKEY,
-  STUDIO_HOTKEY_MAP,
+  LEGEND_STUDIO_HOTKEY,
+  LEGEND_STUDIO_HOTKEY_MAP,
 } from '../../stores/EditorConfig';
 import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
@@ -209,20 +209,23 @@ export const ViewerInner = observer(() => {
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys
   const keyMap = {
-    [STUDIO_HOTKEY.OPEN_ELEMENT]: [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
-    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
+    [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: [
+      LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT,
+    ],
+    [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [
+      LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE,
+    ],
   };
   const handlers = {
-    [STUDIO_HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
-      editorStore.searchElementCommandState.open(),
+    [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(
+      () => editorStore.searchElementCommandState.open(),
     ),
-    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(
-      () => {
+    [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]:
+      editorStore.createGlobalHotKeyAction(() => {
         flowResult(editorStore.toggleTextMode()).catch(
           applicationStore.alertIllegalUnhandledError,
         );
-      },
-    ),
+      }),
   };
 
   useEffect(() => {
