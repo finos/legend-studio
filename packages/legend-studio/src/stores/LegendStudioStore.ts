@@ -36,7 +36,7 @@ import {
   observable,
 } from 'mobx';
 import { User, SDLCMode, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from './StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
@@ -110,7 +110,7 @@ export class LegendStudioStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.applicationStore.notifyWarning(error.message);
@@ -141,7 +141,9 @@ export class LegendStudioStore {
                 // if there is an issue with an endpoint in a non prod env, we return authorized as true
                 // but notify the user of the error
                 this.applicationStore.log.error(
-                  LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+                  LogEvent.create(
+                    LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE,
+                  ),
                   error,
                 );
                 this.applicationStore.notifyError(error);
@@ -194,7 +196,7 @@ export class LegendStudioStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);

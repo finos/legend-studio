@@ -39,7 +39,7 @@ import {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { ProjectGAVCoordinates } from '@finos/legend-server-depot';
 import {
@@ -502,7 +502,7 @@ export class ViewerStore {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

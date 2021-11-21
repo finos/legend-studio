@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export enum QUERY_LOG_EVENT {
+export enum LEGEND_QUERY_LOG_EVENT_TYPE {
   QUERY_PROBLEM = 'QUERY_PROBLEM',
 }

@@ -125,7 +125,7 @@ import {
   APPLICATION_LOG_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { STUDIO_LOG_EVENT } from './StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import type { EditorMode } from './editor/EditorMode';
 import { StandardEditorMode } from './editor/StandardEditorMode';
@@ -639,7 +639,9 @@ export class EditorStore {
         } catch (error) {
           assertErrorThrown(error);
           this.applicationStore.log.error(
-            LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+            LogEvent.create(
+              LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE,
+            ),
             error,
           );
           this.applicationStore.notifyError(error);

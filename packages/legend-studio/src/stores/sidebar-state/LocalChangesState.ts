@@ -39,7 +39,7 @@ import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/En
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { Entity } from '@finos/legend-model-storage';
 import { EntityDiff, Revision } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 
 export class LocalChangesState {
   editorStore: EditorStore;
@@ -135,7 +135,7 @@ export class LocalChangesState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -221,7 +221,7 @@ export class LocalChangesState {
       const syncFinishedTime = Date.now();
 
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SYNCED),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SYNCED),
         syncFinishedTime - startTime,
         'ms',
       );
@@ -263,7 +263,9 @@ export class LocalChangesState {
         if (error instanceof NetworkClientError) {
           if (error.response.status === HttpStatus.NOT_FOUND) {
             this.editorStore.applicationStore.log.error(
-              LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+              LogEvent.create(
+                LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE,
+              ),
               `Can't fetch entities for the latest workspace revision immediately after syncing`,
               error,
             );
@@ -318,7 +320,7 @@ export class LocalChangesState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       if (
