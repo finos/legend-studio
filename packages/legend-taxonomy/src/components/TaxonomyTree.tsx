@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { TaxonomyTreeNodeData } from '../stores/LegendTaxonomyStore';
-import { TaxonomyViewerState } from '../stores/LegendTaxonomyStore';
+import { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
 import type { TreeData, TreeNodeContainerProps } from '@finos/legend-art';
 import {
   ContextMenu,
@@ -109,7 +109,8 @@ const TaxonomyTreeNodeContainer = observer(
             },
             {
               'taxonomy-tree__node__container--selected':
-                node === taxonomyStore.currentTaxonomyViewerState?.taxonomyNode,
+                node ===
+                taxonomyStore.currentTaxonomyNodeViewerState?.taxonomyNode,
             },
           )}
           onClick={selectNode}
@@ -148,8 +149,8 @@ export const TaxonomyTree = observer(
     const taxonomyStore = useLegendTaxonomyStore();
 
     const onNodeSelect = (node: TaxonomyTreeNodeData): void => {
-      taxonomyStore.setCurrentTaxonomyViewerState(
-        new TaxonomyViewerState(taxonomyStore, node),
+      taxonomyStore.setCurrentTaxonomyNodeViewerState(
+        new TaxonomyNodeViewerState(taxonomyStore, node),
       );
       taxonomyStore.setTreeData({ ...treeData });
     };

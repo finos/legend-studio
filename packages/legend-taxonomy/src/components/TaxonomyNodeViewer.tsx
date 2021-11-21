@@ -33,7 +33,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import type {
   RawDataSpace,
-  TaxonomyViewerState,
+  TaxonomyNodeViewerState,
 } from '../stores/LegendTaxonomyStore';
 import { generateViewTaxonomyByDataSpaceRoute } from '../stores/LegendTaxonomyRouter';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
@@ -42,7 +42,7 @@ import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {
     rawDataSpace: RawDataSpace;
-    taxonomyViewerState: TaxonomyViewerState;
+    taxonomyViewerState: TaxonomyNodeViewerState;
     selectDataSpace: () => void;
   }) => {
     const { rawDataSpace, taxonomyViewerState, selectDataSpace } = props;
@@ -114,7 +114,7 @@ const TaxonomyNodeDataSpaceItem = observer(
 );
 
 const TaxonomyNodeViewerExplorer = observer(
-  (props: { taxonomyViewerState: TaxonomyViewerState }) => {
+  (props: { taxonomyViewerState: TaxonomyNodeViewerState }) => {
     const { taxonomyViewerState } = props;
     const applicationStore = useApplicationStore();
     const taxonomyNode = taxonomyViewerState.taxonomyNode;
@@ -153,7 +153,7 @@ const TaxonomyNodeViewerExplorer = observer(
 );
 
 export const TaxonomyNodeViewer = observer(
-  (props: { taxonomyViewerState: TaxonomyViewerState }) => {
+  (props: { taxonomyViewerState: TaxonomyNodeViewerState }) => {
     const { taxonomyViewerState } = props;
 
     return (

@@ -28,6 +28,8 @@ import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
 import { flowResult } from 'mobx';
 import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  PlusIcon,
+  TimesIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   DropdownMenu,
@@ -49,20 +51,22 @@ import type {
   LegendTaxonomyConfig,
   TaxonomyServerOption,
 } from '../application/LegendTaxonomyConfig';
+import { useResizeDetector } from 'react-resize-detector';
+import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
 
 const TaxonomyViewerStatusBar = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
   const toggleExpandMode = (): void =>
     taxonomyStore.setExpandedMode(!taxonomyStore.isInExpandedMode);
   return (
-    <div className="editor__status-bar ">
-      <div className="editor__status-bar__left"></div>
-      <div className="editor__status-bar__right">
+    <div className="taxonomy-viewer__status-bar ">
+      <div className="taxonomy-viewer__status-bar__left"></div>
+      <div className="taxonomy-viewer__status-bar__right">
         <button
           className={clsx(
-            'editor__status-bar__action editor__status-bar__action__toggler',
+            'taxonomy-viewer__status-bar__action taxonomy-viewer__status-bar__action__toggler',
             {
-              'editor__status-bar__action__toggler--active':
+              'taxonomy-viewer__status-bar__action__toggler--active':
                 taxonomyStore.isInExpandedMode,
             },
           )}
@@ -78,10 +82,13 @@ const TaxonomyViewerStatusBar = observer(() => {
 });
 
 const TaxonomyViewerActivityBar = observer(() => (
-  <div className="activity-bar">
-    <div className="activity-bar__items">
+  <div className="taxonomy-viewer__activity-bar">
+    <div className="taxonomy-viewer__activity-bar__items">
       <button
-        className={clsx('activity-bar__item', 'activity-bar__item--active')}
+        className={clsx(
+          'taxonomy-viewer__activity-bar__item',
+          'taxonomy-viewer__activity-bar__item--active',
+        )}
         tabIndex={-1}
         title="Explorer"
       >
@@ -104,25 +111,25 @@ const TaxonomyViewerSideBar = observer(() => {
     }
   };
   return (
-    <div className="side-bar">
-      <div className="side-bar__view">
+    <div className="taxonomy-viewer__side-bar">
+      <div className="taxonomy-viewer__side-bar__view">
         <div className="panel">
-          <div className="panel__header side-bar__header">
+          <div className="panel__header taxonomy-viewer__side-bar__header">
             <div className="panel__header__title">
-              <div className="panel__header__title__content side-bar__header__title__content">
+              <div className="panel__header__title__content taxonomy-viewer__side-bar__header__title__content">
                 EXPLORER
               </div>
             </div>
           </div>
-          <div className="panel__content side-bar__content">
+          <div className="panel__content taxonomy-viewer__side-bar__content">
             <div className="panel">
-              <div className="panel__header taxonomy-node-viewer__side-bar__header">
+              <div className="panel__header taxonomy-viewer__explorer__header">
                 <div className="panel__header__title">
                   <div className="panel__header__title__content">Taxonomy</div>
                 </div>
                 <div className="panel__header__actions">
                   <button
-                    className="panel__header__action taxonomy-node-viewer__side-bar__header__action"
+                    className="panel__header__action taxonomy-viewer__explorer__header__action"
                     onClick={collapseTree}
                     tabIndex={-1}
                     title="Collapse All"
@@ -146,6 +153,88 @@ const TaxonomyViewerSideBar = observer(() => {
     </div>
   );
 });
+
+const TaxonomyViewerSplashScreen: React.FC = () => {
+  const commandListWidth = 300;
+  const commandListHeight = 80;
+  const [showCommandList, setShowCommandList] = useState(false);
+  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
+
+  useEffect(() => {
+    setShowCommandList(
+      (width ?? 0) > commandListWidth && (height ?? 0) > commandListHeight,
+    );
+  }, [width, height]);
+
+  return (
+    <div ref={ref} className="taxonomy-viewer__main-panel__splash-screen">
+      <div
+        className={clsx('taxonomy-viewer__main-panel__splash-screen__content', {
+          'taxonomy-viewer__main-panel__splash-screen__content--hidden':
+            !showCommandList,
+        })}
+      >
+        <div className="taxonomy-viewer__main-panel__splash-screen__content__item">
+          <div className="taxonomy-viewer__main-panel__splash-screen__content__item__label">
+            Open or Search for a Taxonomy
+          </div>
+          <div className="taxonomy-viewer__main-panel__splash-screen__content__item__hot-keys">
+            <div className="hotkey__key">Ctrl</div>
+            <div className="hotkey__plus">
+              <PlusIcon />
+            </div>
+            <div className="hotkey__key">P</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TaxonomyViewerMainPanel = observer(
+  (props: { taxonomyViewerState: TaxonomyNodeViewerState }) => {
+    const { taxonomyViewerState } = props;
+    const taxonomyStore = useLegendTaxonomyStore();
+
+    const closeTab = (): void =>
+      taxonomyStore.setCurrentTaxonomyNodeViewerState(undefined);
+    const closeTabOnMiddleClick = (): void =>
+      taxonomyStore.setCurrentTaxonomyNodeViewerState(undefined);
+
+    return (
+      <div className="panel taxonomy-viewer__main-panel">
+        <div className="panel__header taxonomy-viewer__main-panel__header">
+          <div className="taxonomy-viewer__main-panel__header__tabs">
+            <div
+              className="taxonomy-viewer__main-panel__header__tab taxonomy-viewer__main-panel__header__tab--active"
+              onMouseUp={closeTabOnMiddleClick}
+            >
+              <div className="taxonomy-viewer__main-panel__header__tab__content">
+                <button
+                  className="taxonomy-viewer__main-panel__header__tab__label"
+                  tabIndex={-1}
+                >
+                  {taxonomyViewerState.taxonomyNode.label}
+                </button>
+                <button
+                  className="taxonomy-viewer__main-panel__header__tab__close-btn"
+                  onClick={closeTab}
+                  tabIndex={-1}
+                  title="Close"
+                >
+                  <TimesIcon />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="panel__content taxonomy-viewer__main-panel__content">
+          <TaxonomyNodeViewer taxonomyViewerState={taxonomyViewerState} />
+        </div>
+      </div>
+    );
+  },
+);
 
 const LegendTaxonomyAppHeaderMenu: React.FC = () => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
@@ -249,14 +338,15 @@ export const TaxonomyViewer = observer(() => {
         <PanelLoadingIndicator
           isLoading={taxonomyStore.initState.isInProgress}
         />
-        <div className="editor">
-          <div className="editor__body">
+        <div className="taxonomy-viewer">
+          <div className="taxonomy-viewer__body">
             <TaxonomyViewerActivityBar />
             <NotificationSnackbar />
-            <div className="editor__content-container">
+            <div className="taxonomy-viewer__content-container">
               <div
-                className={clsx('editor__content', {
-                  'editor__content--expanded': taxonomyStore.isInExpandedMode,
+                className={clsx('taxonomy-viewer__content', {
+                  'taxonomy-viewer__content--expanded':
+                    taxonomyStore.isInExpandedMode,
                 })}
               >
                 <ResizablePanelGroup orientation="vertical">
@@ -274,14 +364,14 @@ export const TaxonomyViewer = observer(() => {
                   </ResizablePanel>
                   <ResizablePanelSplitter />
                   <ResizablePanel minSize={300}>
-                    {taxonomyStore.currentTaxonomyViewerState ? (
-                      <TaxonomyNodeViewer
+                    {taxonomyStore.currentTaxonomyNodeViewerState ? (
+                      <TaxonomyViewerMainPanel
                         taxonomyViewerState={
-                          taxonomyStore.currentTaxonomyViewerState
+                          taxonomyStore.currentTaxonomyNodeViewerState
                         }
                       />
                     ) : (
-                      <div />
+                      <TaxonomyViewerSplashScreen />
                     )}
                   </ResizablePanel>
                 </ResizablePanelGroup>

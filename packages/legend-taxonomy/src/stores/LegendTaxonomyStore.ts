@@ -106,7 +106,7 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
   }
 }
 
-export class TaxonomyViewerState {
+export class TaxonomyNodeViewerState {
   taxonomyStore: LegendTaxonomyStore;
   taxonomyNode: TaxonomyTreeNodeData;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
@@ -263,7 +263,7 @@ export class LegendTaxonomyStore {
   treeData?: TreeData<TaxonomyTreeNodeData> | undefined;
 
   initialDataSpaceId?: string | undefined;
-  currentTaxonomyViewerState?: TaxonomyViewerState | undefined;
+  currentTaxonomyNodeViewerState?: TaxonomyNodeViewerState | undefined;
 
   constructor(
     applicationStore: ApplicationStore<LegendTaxonomyConfig>,
@@ -275,11 +275,11 @@ export class LegendTaxonomyStore {
     makeObservable(this, {
       isInExpandedMode: observable,
       treeData: observable.ref,
-      currentTaxonomyViewerState: observable,
+      currentTaxonomyNodeViewerState: observable,
       initialize: flow,
       setExpandedMode: action,
       setTreeData: action,
-      setCurrentTaxonomyViewerState: action,
+      setCurrentTaxonomyNodeViewerState: action,
     });
     this.applicationStore = applicationStore;
     this.taxonomyServerClient = taxonomyServerClient;
@@ -307,8 +307,10 @@ export class LegendTaxonomyStore {
     this.treeData = val;
   }
 
-  setCurrentTaxonomyViewerState(val: TaxonomyViewerState | undefined): void {
-    this.currentTaxonomyViewerState = val;
+  setCurrentTaxonomyNodeViewerState(
+    val: TaxonomyNodeViewerState | undefined,
+  ): void {
+    this.currentTaxonomyNodeViewerState = val;
   }
 
   internalizeDataSpacePath(params: LegendTaxonomyPathParams): void {
@@ -514,8 +516,8 @@ export class LegendTaxonomyStore {
               nodeToOpen.isOpen = true;
               this.setTreeData({ ...this.treeData });
             }
-            this.setCurrentTaxonomyViewerState(
-              new TaxonomyViewerState(this, node),
+            this.setCurrentTaxonomyNodeViewerState(
+              new TaxonomyNodeViewerState(this, node),
             );
 
             // open data space if specified
@@ -526,9 +528,9 @@ export class LegendTaxonomyStore {
               const initialDataSpaceId = this.initialDataSpaceId;
               this.initialDataSpaceId = undefined;
               if (dataSpaceToOpen) {
-                assertNonNullable(this.currentTaxonomyViewerState);
+                assertNonNullable(this.currentTaxonomyNodeViewerState);
                 yield flowResult(
-                  this.currentTaxonomyViewerState.initializeDataSpaceViewer(
+                  this.currentTaxonomyNodeViewerState.initializeDataSpaceViewer(
                     dataSpaceToOpen,
                   ),
                 );
