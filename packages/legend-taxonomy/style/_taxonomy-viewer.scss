@@ -222,38 +222,30 @@
   }
 
   &__header__tab__label {
+    @include flexVCenter;
+
     color: inherit;
     padding: 0 0.5rem;
     white-space: nowrap;
-  }
 
-  &__header__tab__label__diff {
-    @include flexVCenter;
-
-    &__element-name {
+    &__path {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      color: var(--color-dark-grey-300);
       margin-right: 0.5rem;
     }
 
-    &__text {
-      font-size: 1.2rem;
-    }
-
-    &__icon {
-      @include flexVCenter;
-
-      height: 100%;
-      margin: 0 0.5rem;
-
-      svg {
-        font-size: 1.2rem;
-      }
+    &__name {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
     }
   }
 
   &__header__tab__close-btn {
-    visibility: hidden;
-
     @include flexVCenter;
+
+    visibility: hidden;
+    margin-left: 0.5rem;
 
     svg {
       color: var(--color-light-grey-200);

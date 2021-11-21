@@ -17,7 +17,11 @@
 import type { ApplicationStore } from '@finos/legend-application';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
-import { PanelDisplayState } from '@finos/legend-art';
+import {
+  HotkeyConfiguration,
+  NonBlockingDialogState,
+  PanelDisplayState,
+} from '@finos/legend-art';
 import {
   DataSpaceViewerState,
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
@@ -94,8 +98,8 @@ export class RawDataSpace {
 export class TaxonomyTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;
   isOpen?: boolean | undefined;
-  id: string;
-  label: string;
+  readonly label: string;
+  readonly id: string;
   taxonomyData?: TaxonomyNodeData | undefined;
   childrenIds: string[] = [];
   rawDataSpaces: RawDataSpace[] = [];
@@ -103,6 +107,10 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
   constructor(id: string, label: string) {
     this.id = id;
     this.label = label;
+  }
+
+  get taxonomyPath(): string {
+    return this.id;
   }
 }
 
@@ -242,6 +250,14 @@ export class TaxonomyNodeViewerState {
   }
 }
 
+enum LEGEND_TAXONOMY_HOTKEY {
+  SEARCH_TAXONOMY = 'SEARCH_TAXONOMY',
+}
+
+const LEGEND_TAXONOMY_HOTKEY_MAP = Object.freeze({
+  [LEGEND_TAXONOMY_HOTKEY.SEARCH_TAXONOMY]: 'ctrl+p',
+});
+
 export class LegendTaxonomyStore {
   applicationStore: ApplicationStore<LegendTaxonomyConfig>;
   depotServerClient: DepotServerClient;
@@ -256,6 +272,8 @@ export class LegendTaxonomyStore {
     snap: 150,
   });
   isInExpandedMode = true;
+  hotkeys: HotkeyConfiguration[] = [];
+  searchTaxonomyNodeCommandState = new NonBlockingDialogState();
 
   initState = ActionState.create();
 
@@ -297,6 +315,18 @@ export class LegendTaxonomyStore {
     this.telemetryService.registerPlugins(
       this.pluginManager.getTelemetryServicePlugins(),
     );
+
+    // Hotkeys
+    this.hotkeys = [
+      new HotkeyConfiguration(
+        LEGEND_TAXONOMY_HOTKEY.SEARCH_TAXONOMY,
+        [LEGEND_TAXONOMY_HOTKEY_MAP.SEARCH_TAXONOMY],
+        (event?: KeyboardEvent): void => {
+          event?.preventDefault();
+          this.searchTaxonomyNodeCommandState.open();
+        },
+      ),
+    ];
   }
 
   setExpandedMode(val: boolean): void {

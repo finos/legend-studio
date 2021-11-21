@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AppHeader,
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
+import { GlobalHotKeys } from 'react-hotkeys';
 import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
 import type { LegendTaxonomyPathParams } from '../stores/LegendTaxonomyRouter';
 import { updateRouteWithNewTaxonomyServerOption } from '../stores/LegendTaxonomyRouter';
 import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
 import { flowResult } from 'mobx';
-import type { ResizablePanelHandlerProps } from '@finos/legend-art';
+import type {
+  ResizablePanelHandlerProps,
+  SelectComponent,
+  SelectOption,
+} from '@finos/legend-art';
 import {
+  SearchIcon,
   PlusIcon,
   TimesIcon,
   ChevronDownIcon,
@@ -44,6 +50,10 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
+  buildReactHotkeysConfiguration,
+  compareLabelFn,
+  CustomSelectorInput,
+  NonBlockingDialog,
 } from '@finos/legend-art';
 import { TaxonomyTree } from './TaxonomyTree';
 import { TaxonomyNodeViewer } from './TaxonomyNodeViewer';
@@ -52,7 +62,8 @@ import type {
   TaxonomyServerOption,
 } from '../application/LegendTaxonomyConfig';
 import { useResizeDetector } from 'react-resize-detector';
-import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
+import { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const TaxonomyViewerStatusBar = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
@@ -100,6 +111,8 @@ const TaxonomyViewerActivityBar = observer(() => (
 
 const TaxonomyViewerSideBar = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
+  const showSearchModal = (): void =>
+    taxonomyStore.searchTaxonomyNodeCommandState.open();
   const collapseTree = (): void => {
     if (taxonomyStore.treeData) {
       taxonomyStore.treeData.nodes.forEach((node) => {
@@ -132,9 +145,18 @@ const TaxonomyViewerSideBar = observer(() => {
                     className="panel__header__action taxonomy-viewer__explorer__header__action"
                     onClick={collapseTree}
                     tabIndex={-1}
-                    title="Collapse All"
+                    title="Collapse all"
                   >
                     <CompressIcon />
+                  </button>
+                  <button
+                    className="panel__header__action taxonomy-viewer__explorer__header__action"
+                    disabled={!taxonomyStore.treeData}
+                    tabIndex={-1}
+                    onClick={showSearchModal}
+                    title="Search taxnomy node... (Ctrl + P)"
+                  >
+                    <SearchIcon />
                   </button>
                 </div>
               </div>
@@ -196,10 +218,20 @@ const TaxonomyViewerMainPanel = observer(
     const { taxonomyViewerState } = props;
     const taxonomyStore = useLegendTaxonomyStore();
 
+    const leadingPath = taxonomyViewerState.taxonomyNode.taxonomyPath.substring(
+      0,
+      taxonomyViewerState.taxonomyNode.taxonomyPath.lastIndexOf(
+        taxonomyViewerState.taxonomyNode.label,
+      ),
+    );
+
     const closeTab = (): void =>
       taxonomyStore.setCurrentTaxonomyNodeViewerState(undefined);
-    const closeTabOnMiddleClick = (): void =>
-      taxonomyStore.setCurrentTaxonomyNodeViewerState(undefined);
+    const closeTabOnMiddleClick: React.MouseEventHandler = (event): void => {
+      if (event.nativeEvent.button === 1) {
+        taxonomyStore.setCurrentTaxonomyNodeViewerState(undefined);
+      }
+    };
 
     return (
       <div className="panel taxonomy-viewer__main-panel">
@@ -209,12 +241,20 @@ const TaxonomyViewerMainPanel = observer(
               className="taxonomy-viewer__main-panel__header__tab taxonomy-viewer__main-panel__header__tab--active"
               onMouseUp={closeTabOnMiddleClick}
             >
-              <div className="taxonomy-viewer__main-panel__header__tab__content">
+              <div
+                className="taxonomy-viewer__main-panel__header__tab__content"
+                title={`Taxonomy node ${taxonomyViewerState.taxonomyNode.taxonomyPath}`}
+              >
                 <button
                   className="taxonomy-viewer__main-panel__header__tab__label"
                   tabIndex={-1}
                 >
-                  {taxonomyViewerState.taxonomyNode.label}
+                  <div className="taxonomy-viewer__main-panel__header__tab__label__path">
+                    {leadingPath}
+                  </div>
+                  <div className="taxonomy-viewer__main-panel__header__tab__label__name">
+                    {taxonomyViewerState.taxonomyNode.label}
+                  </div>
                 </button>
                 <button
                   className="taxonomy-viewer__main-panel__header__tab__close-btn"
@@ -307,10 +347,74 @@ const LegendTaxonomyAppHeaderMenu: React.FC = () => {
   );
 };
 
+export const TaxonomySearchCommand = observer(() => {
+  const taxonomyStore = useLegendTaxonomyStore();
+  const selectorRef = useRef<SelectComponent>(null);
+  const closeModal = (): void =>
+    taxonomyStore.searchTaxonomyNodeCommandState.close();
+  const options = Array.from(taxonomyStore.treeData?.nodes.values() ?? [])
+    .map((node) => ({
+      label: node.taxonomyPath,
+      value: node.taxonomyPath,
+    }))
+    .sort(compareLabelFn);
+  const openTaxonomyNode = (val: SelectOption | null): void => {
+    if (taxonomyStore.treeData) {
+      if (val?.value) {
+        const nodeToOpen = guaranteeNonNullable(
+          taxonomyStore.treeData.nodes.get(val.value),
+        );
+        closeModal();
+        // NOTE: since it takes time to close the modal, this will prevent any auto-focus effort when we open a new node
+        // to fail as the focus is still trapped in this modal, we need to use `setTimeout` here
+        setTimeout(
+          () =>
+            taxonomyStore.setCurrentTaxonomyNodeViewerState(
+              new TaxonomyNodeViewerState(taxonomyStore, nodeToOpen),
+            ),
+          0,
+        );
+      }
+    }
+  };
+  const handleEnter = (): void => {
+    selectorRef.current?.focus();
+  };
+
+  return (
+    <NonBlockingDialog
+      nonModalDialogState={taxonomyStore.searchTaxonomyNodeCommandState}
+      onClose={closeModal}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
+      onClickAway={closeModal}
+      classes={{ container: 'search-modal__container' }}
+      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+    >
+      <div className="modal modal--dark search-modal">
+        <CustomSelectorInput
+          ref={selectorRef}
+          options={options}
+          onChange={openTaxonomyNode}
+          placeholder="Search taxonomy node by path..."
+          escapeClearsValue={true}
+          darkMode={true}
+        />
+      </div>
+    </NonBlockingDialog>
+  );
+});
+
 export const TaxonomyViewer = observer(() => {
   const params = useParams<LegendTaxonomyPathParams>();
   const applicationStore = useApplicationStore();
   const taxonomyStore = useLegendTaxonomyStore();
+
+  // Hotkeys
+  const [hotkeyMapping, hotkeyHandlers] = buildReactHotkeysConfiguration(
+    taxonomyStore.hotkeys,
+  );
 
   const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
     taxonomyStore.sideBarDisplayState.setSize(
@@ -339,46 +443,53 @@ export const TaxonomyViewer = observer(() => {
           isLoading={taxonomyStore.initState.isInProgress}
         />
         <div className="taxonomy-viewer">
-          <div className="taxonomy-viewer__body">
-            <TaxonomyViewerActivityBar />
-            <NotificationSnackbar />
-            <div className="taxonomy-viewer__content-container">
-              <div
-                className={clsx('taxonomy-viewer__content', {
-                  'taxonomy-viewer__content--expanded':
-                    taxonomyStore.isInExpandedMode,
-                })}
-              >
-                <ResizablePanelGroup orientation="vertical">
-                  <ResizablePanel
-                    {...getControlledResizablePanelProps(
-                      taxonomyStore.sideBarDisplayState.size === 0,
-                      {
-                        onStopResize: resizeSideBar,
-                      },
-                    )}
-                    direction={1}
-                    size={taxonomyStore.sideBarDisplayState.size}
-                  >
-                    <TaxonomyViewerSideBar />
-                  </ResizablePanel>
-                  <ResizablePanelSplitter />
-                  <ResizablePanel minSize={300}>
-                    {taxonomyStore.currentTaxonomyNodeViewerState ? (
-                      <TaxonomyViewerMainPanel
-                        taxonomyViewerState={
-                          taxonomyStore.currentTaxonomyNodeViewerState
-                        }
-                      />
-                    ) : (
-                      <TaxonomyViewerSplashScreen />
-                    )}
-                  </ResizablePanel>
-                </ResizablePanelGroup>
+          <GlobalHotKeys
+            keyMap={hotkeyMapping}
+            handlers={hotkeyHandlers}
+            allowChanges={true}
+          >
+            <div className="taxonomy-viewer__body">
+              <TaxonomyViewerActivityBar />
+              <NotificationSnackbar />
+              <div className="taxonomy-viewer__content-container">
+                <div
+                  className={clsx('taxonomy-viewer__content', {
+                    'taxonomy-viewer__content--expanded':
+                      taxonomyStore.isInExpandedMode,
+                  })}
+                >
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel
+                      {...getControlledResizablePanelProps(
+                        taxonomyStore.sideBarDisplayState.size === 0,
+                        {
+                          onStopResize: resizeSideBar,
+                        },
+                      )}
+                      direction={1}
+                      size={taxonomyStore.sideBarDisplayState.size}
+                    >
+                      <TaxonomyViewerSideBar />
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel minSize={300}>
+                      {taxonomyStore.currentTaxonomyNodeViewerState ? (
+                        <TaxonomyViewerMainPanel
+                          taxonomyViewerState={
+                            taxonomyStore.currentTaxonomyNodeViewerState
+                          }
+                        />
+                      ) : (
+                        <TaxonomyViewerSplashScreen />
+                      )}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                </div>
               </div>
             </div>
-          </div>
-          <TaxonomyViewerStatusBar />
+            <TaxonomyViewerStatusBar />
+            <TaxonomySearchCommand />
+          </GlobalHotKeys>
         </div>
       </div>
     </div>
