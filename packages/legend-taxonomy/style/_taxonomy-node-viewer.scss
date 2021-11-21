@@ -76,17 +76,30 @@
     }
 
     &__path {
-      @include ellipsisTextOverflow;
-
+      display: flex;
       height: 100%;
       width: calc(100% - 2.8rem);
       line-height: 2.8rem;
       color: var(--color-dark-grey-500);
       font-size: 1.3rem;
       font-family: 'Roboto Mono', monospace;
+
+      &--simple {
+        @include ellipsisTextOverflow;
+      }
+
+      &__package {
+        @include ellipsisTextOverflow;
+
+        color: var(--color-dark-grey-350);
+      }
+
+      &__name {
+        @include ellipsisTextOverflow;
+      }
     }
 
-    &:hover {
+    &__path &:hover {
       background: var(--color-dark-blue-shade-100);
     }
 
@@ -94,6 +107,8 @@
       background: var(--color-blue-500);
 
       .taxonomy-node-viewer__explorer__entry__path,
+      .taxonomy-node-viewer__explorer__entry__path__package,
+      .taxonomy-node-viewer__explorer__entry__path__name,
       .taxonomy-node-viewer__explorer__entry__icon svg {
         color: var(--color-light-grey-300);
       }

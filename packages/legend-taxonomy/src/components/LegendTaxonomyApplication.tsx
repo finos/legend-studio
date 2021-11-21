@@ -41,7 +41,6 @@ import {
 } from '@finos/legend-application';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import { TaxonomyViewer } from './TaxonomyViewer';
-import { flowResult } from 'mobx';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();

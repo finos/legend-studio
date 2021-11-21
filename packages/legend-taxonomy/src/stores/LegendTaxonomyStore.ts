@@ -442,7 +442,7 @@ export class LegendTaxonomyStore {
     const uniqueNodeIds = new Set<string>();
     const uniquePackages = new Set<string>();
     let isTaxonomyTreeDataValid = true;
-    taxonomyData.forEach((taxonomyNodeData) => {
+    for (const taxonomyNodeData of taxonomyData) {
       if (uniqueNodeIds.has(taxonomyNodeData.guid)) {
         isTaxonomyTreeDataValid = false;
         this.applicationStore.log.warn(
@@ -463,7 +463,7 @@ export class LegendTaxonomyStore {
         );
       }
       uniquePackages.add(taxonomyNodeData.package);
-    });
+    }
     if (!isTaxonomyTreeDataValid) {
       this.applicationStore.notifyWarning(
         `Found duplication in taxonomy data: taxonomy accuracy might be affected`,

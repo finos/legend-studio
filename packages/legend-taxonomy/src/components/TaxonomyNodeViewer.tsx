@@ -38,6 +38,7 @@ import type {
 import { generateViewTaxonomyByDataSpaceRoute } from '../stores/LegendTaxonomyRouter';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
+import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {
@@ -51,6 +52,25 @@ const TaxonomyNodeDataSpaceItem = observer(
     const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
     const isSelected =
       rawDataSpace === taxonomyNodeViewerState.currentDataSpace;
+    const idx = rawDataSpace.path.lastIndexOf(ELEMENT_PATH_DELIMITER);
+    const dataSpaceLabel =
+      idx === -1 ? (
+        <div className="taxonomy-node-viewer__explorer__entry__path taxonomy-node-viewer__explorer__entry__path--simple">
+          {rawDataSpace.path}
+        </div>
+      ) : (
+        <div className="taxonomy-node-viewer__explorer__entry__path">
+          <div className="taxonomy-node-viewer__explorer__entry__path__package">
+            {rawDataSpace.path.substring(
+              0,
+              idx + ELEMENT_PATH_DELIMITER.length,
+            )}
+          </div>
+          <div className="taxonomy-node-viewer__explorer__entry__path__name">
+            {rawDataSpace.path.substring(idx + ELEMENT_PATH_DELIMITER.length)}
+          </div>
+        </div>
+      );
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const copyLink = (): void => {
@@ -105,9 +125,7 @@ const TaxonomyNodeDataSpaceItem = observer(
           <div className="taxonomy-node-viewer__explorer__entry__icon">
             <SquareIcon />
           </div>
-          <div className="taxonomy-node-viewer__explorer__entry__path">
-            {rawDataSpace.path}
-          </div>
+          {dataSpaceLabel}
         </button>
       </ContextMenu>
     );
