@@ -19,6 +19,7 @@ import { EditorState } from './EditorState';
 import { observable, makeObservable, computed } from 'mobx';
 import type { GenerationFile } from '../shared/FileGenerationTreeUtil';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
+import { returnUndefOnError } from '@finos/legend-shared';
 
 export const getTextContent = (
   content: string,
@@ -26,9 +27,11 @@ export const getTextContent = (
 ): string => {
   switch (format?.toLowerCase()) {
     case EDITOR_LANGUAGE.JSON:
-      return content.length
-        ? JSON.stringify(JSON.parse(content), undefined, TAB_SIZE)
-        : content;
+      return (
+        returnUndefOnError(() =>
+          JSON.stringify(JSON.parse(content), undefined, TAB_SIZE),
+        ) ?? content
+      );
     default:
       return content;
   }
