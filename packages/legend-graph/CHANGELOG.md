@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 0.2.3
+
+### Patch Changes
+
+- [#681](https://github.com/finos/legend-studio/pull/681) [`c2de2c30`](https://github.com/finos/legend-studio/commit/c2de2c309fa2f10fb32e59516d68e98e50aa7290) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Change the separator of source ID from `_` to `@` to fix problems with error revealing in the form mode ([#510](https://github.com/finos/legend-studio/issues/510)).
+
 ## 0.2.2
 
 ### Patch Changes

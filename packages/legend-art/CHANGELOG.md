@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 0.1.2
+
+### Patch Changes
+
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - Add `HotkeyConfiguration` utilities and builders to setup `react-hotkeys` in Legend applications.
+
 ## 0.1.1
 
 ## 0.1.0
