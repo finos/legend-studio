@@ -28,6 +28,8 @@ import {
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__firmPersonGraphFetch,
   TEST_DATA__personWithParameter,
+  TEST_DATA__graphFetchWithDerivedProperty,
+  TEST_DATA__graphFetchWithDerivedPropertyWithParameter,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
 import {
   simpleDerivationProjection,
@@ -92,6 +94,16 @@ const cases: RoundtripTestCase[] = [
   ],
   ['Simple graph fetch', m2mCtx, TEST_DATA__simpleGraphFetch],
   ['Complex graph fetch', m2mCtx, TEST_DATA__firmPersonGraphFetch],
+  [
+    'Graph fetch with derived property',
+    m2mCtx,
+    TEST_DATA__graphFetchWithDerivedProperty,
+  ],
+  [
+    'Graph fetch with derived property with parameter',
+    m2mCtx,
+    TEST_DATA__graphFetchWithDerivedPropertyWithParameter,
+  ],
   [
     'Simple project() and filter() with parameter',
     relationalCtx,
