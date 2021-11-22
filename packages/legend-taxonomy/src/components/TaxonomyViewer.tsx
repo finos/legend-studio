@@ -243,7 +243,7 @@ const TaxonomyViewerMainPanel = observer(
             >
               <div
                 className="taxonomy-viewer__main-panel__header__tab__content"
-                title={`Taxonomy node ${taxonomyViewerState.taxonomyNode.taxonomyPath}`}
+                title={`Taxonomy Node ${taxonomyViewerState.taxonomyNode.taxonomyPath}`}
               >
                 <button
                   className="taxonomy-viewer__main-panel__header__tab__label"
@@ -428,10 +428,10 @@ export const TaxonomyViewer = observer(() => {
   // NOTE: since we internalize the data space path in the route, we should not re-initialize the graph
   // on the second call when we remove path from the route
   useEffect(() => {
-    flowResult(taxonomyStore.initialize(params)).catch(
+    flowResult(taxonomyStore.initialize()).catch(
       applicationStore.alertIllegalUnhandledError,
     );
-  }, [applicationStore, taxonomyStore, params]);
+  }, [applicationStore, taxonomyStore]);
 
   return (
     <div className="app__page">

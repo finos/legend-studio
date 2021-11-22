@@ -56,7 +56,7 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
           path={[
             ...LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW,
             ...LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_BY_TAXONOMY_NODE,
-            ...LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_BY_TAXONOMY_NODE,
+            ...LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_BY_DATA_SPACE,
           ]}
           component={TaxonomyViewer}
         />

@@ -266,13 +266,11 @@ export class TaxonomyNodeViewerState {
             entityPath: string | undefined,
           ): void => {
             this.taxonomyStore.applicationStore.navigator.openNewWindow(
-              this.taxonomyStore.applicationStore.navigator.generateLocation(
-                `/view/${generateGAVCoordinates(
-                  groupId,
-                  artifactId,
-                  versionId,
-                )}${entityPath ? `/entity/${entityPath}` : ''}`,
-              ),
+              `${
+                this.taxonomyStore.applicationStore.config.studioUrl
+              }/view/${generateGAVCoordinates(groupId, artifactId, versionId)}${
+                entityPath ? `/entity/${entityPath}` : ''
+              }`,
             );
           },
         },
@@ -319,6 +317,7 @@ export class LegendTaxonomyStore {
   dataSpaceIndex = new Map<string, RawDataSpace>();
   treeData?: TreeData<TaxonomyTreeNodeData> | undefined;
 
+  initialTaxonomyPath?: string | undefined;
   initialDataSpaceId?: string | undefined;
   currentTaxonomyNodeViewerState?: TaxonomyNodeViewerState | undefined;
 
@@ -383,9 +382,12 @@ export class LegendTaxonomyStore {
   }
 
   internalizeDataSpacePath(params: LegendTaxonomyPathParams): void {
-    const { gav, dataSpacePath } = params;
-    if (gav && dataSpacePath) {
-      this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
+    const { taxonomyPath, gav, dataSpacePath } = params;
+    if (taxonomyPath) {
+      this.initialTaxonomyPath = taxonomyPath;
+      if (gav && dataSpacePath) {
+        this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
+      }
       this.applicationStore.navigator.goTo(
         generateViewTaxonomyRoute(
           this.applicationStore.config.currentTaxonomyServerOption,
@@ -506,7 +508,7 @@ export class LegendTaxonomyStore {
     this.setTreeData({ rootIds, nodes });
   }
 
-  *initialize(params: LegendTaxonomyPathParams): GeneratorFn<void> {
+  *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       return;
     }
@@ -566,7 +568,7 @@ export class LegendTaxonomyStore {
       this.initializeTaxonomyTreeData(taxonomyData);
 
       if (this.treeData) {
-        const taxonomyPath = params.taxonomyPath;
+        const taxonomyPath = this.initialTaxonomyPath;
         if (taxonomyPath) {
           const node = this.treeData.nodes.get(taxonomyPath);
           if (node) {
