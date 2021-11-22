@@ -28,10 +28,7 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import type { Class, Mapping, Runtime } from '@finos/legend-graph';
 import {
-  GenericType,
-  GenericTypeExplicitReference,
-  isVersionedClass,
-  PRIMITIVE_TYPE,
+  isMilestonedClass,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
@@ -59,26 +56,9 @@ export const QueryBuilderSetupPanel = observer(
 
       //For now the default version value is a parameter. In future we will support functions now(), %latest.
       if (
-        isVersionedClass(val.value, queryBuilderState.graphManagerState.graph)
+        isMilestonedClass(val.value, queryBuilderState.graphManagerState.graph)
       ) {
-        const genericTypeReference = GenericTypeExplicitReference.create(
-          new GenericType(
-            queryBuilderState.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.DATE,
-            ),
-          ),
-        );
-        const versionPropertyParameter =
-          queryBuilderState.queryParametersState.parameters.find(
-            (parameterState) =>
-              parameterState.parameter.genericType?.value.rawType ===
-              genericTypeReference.value.rawType,
-          )?.parameter;
-        if (versionPropertyParameter === undefined) {
-          queryBuilderState.buildClassVersionValue(val.value);
-        } else {
-          querySetupState.setClassVersionValue(versionPropertyParameter);
-        }
+        queryBuilderState.buildClassMilestoningValue(val.value);
       }
     };
     // mapping

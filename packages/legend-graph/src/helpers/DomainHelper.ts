@@ -16,19 +16,22 @@
 
 import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
+import { CORE_ELEMENT_PATH } from '../MetaModelConst';
 
-export const isVersionedClass = (val: Class, graph: PureModel): boolean => {
-  const versionedProfile = graph.getProfile('meta::pure::profiles::temporal');
-  const isVersioned = val.stereotypes.some(
-    (e) => e.ownerReference.value === versionedProfile,
+export const isMilestonedClass = (val: Class, graph: PureModel): boolean => {
+  const milestonedProfile = graph.getProfile(
+    CORE_ELEMENT_PATH.PROFILE_TEMPORAL,
   );
-  if (isVersioned) {
+  const isMilestoned = val.stereotypes.some(
+    (e) => e.ownerReference.value === milestonedProfile,
+  );
+  if (isMilestoned) {
     return true;
   }
   return val.generalizations.some((e) => {
     const superType = e.value.rawType;
     if (superType instanceof Class) {
-      return isVersionedClass(superType, graph);
+      return isMilestonedClass(superType, graph);
     }
     return false;
   });

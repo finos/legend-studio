@@ -113,6 +113,7 @@ export enum CORE_ELEMENT_PATH {
   FILE_GENERATION = 'meta::pure::generation::metamodel::GenerationConfiguration',
   GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
+  PROFILE_TEMPORAL = 'meta::pure::profiles::temporal',
 }
 
 /**

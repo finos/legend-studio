@@ -948,7 +948,7 @@ export const TEST_DATA__MeasureRoundtrip = [
   },
 ];
 
-export const TEST_DATA__VersionedClassRoundtrip = [
+export const TEST_DATA__MilestonedClassRoundtrip = [
   {
     path: '__internal__::SectionIndex',
     content: {
@@ -958,7 +958,7 @@ export const TEST_DATA__VersionedClassRoundtrip = [
       sections: [
         {
           _type: 'importAware',
-          elements: ['test::C'],
+          elements: ['test::C', 'test::D'],
           imports: ['test'],
           parserName: 'Pure',
         },
@@ -988,6 +988,26 @@ export const TEST_DATA__VersionedClassRoundtrip = [
           value: 'businesstemporal',
         },
       ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::D',
+    content: {
+      _type: 'class',
+      name: 'D',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'z',
+          type: 'String',
+        },
+      ],
+      superTypes: ['C'],
     },
     classifierPath: 'meta::pure::metamodel::type::Class',
   },

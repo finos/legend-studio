@@ -42,9 +42,3 @@ export { QueryBuilderExplorerTreeRootNodeData } from './stores/QueryBuilderExplo
 export { FETCH_STRUCTURE_MODE } from './stores/QueryBuilderFetchStructureState';
 export { COLUMN_SORT_TYPE } from './stores/QueryResultSetModifierState';
 export { QueryBuilderSimpleProjectionColumnState } from './stores/QueryBuilderProjectionState';
-export {
-  QueryParameterState,
-  QueryParametersState,
-} from './stores/QueryParametersState';
-export { buildGetAllFunction } from './stores/QueryBuilderLambdaBuilder';
-export { DEFAULT_VERSION_PARAMETER_NAME } from './QueryBuilder_Const';

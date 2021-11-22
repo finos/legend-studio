@@ -3,4 +3,4 @@
 "@finos/legend-query": minor
 ---
 
-Add form support for querying a versioned class in query builder.
+Support for querying a versioned/milestoned class

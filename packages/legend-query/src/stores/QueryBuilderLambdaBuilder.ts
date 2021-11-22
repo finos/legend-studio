@@ -19,10 +19,10 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { ValueSpecification } from '@finos/legend-graph';
+import type { ValueSpecification, Class } from '@finos/legend-graph';
 import {
   Multiplicity,
-  isVersionedClass,
+  isMilestonedClass,
   INTERNAL__UnknownValueSpecification,
   V1_GraphTransformerContextBuilder,
   V1_serializeRawValueSpecification,
@@ -41,7 +41,6 @@ import {
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-  Class,
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -101,10 +100,7 @@ export const buildLambdaFunction = (
 
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
-  if (
-    _class instanceof Class &&
-    isVersionedClass(_class, queryBuilderState.graphManagerState.graph)
-  ) {
+  if (isMilestonedClass(_class, queryBuilderState.graphManagerState.graph)) {
     getAllFunction.parametersValues.push(
       guaranteeNonNullable(
         queryBuilderState.querySetupState._classVersionValue,

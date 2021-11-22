@@ -29,6 +29,7 @@ import type {
   ValueSpecification,
 } from '@finos/legend-graph';
 import {
+  isMilestonedClass,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
@@ -36,7 +37,7 @@ import {
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
-  _classVersionValue?: ValueSpecification | undefined;
+  classMilestoningValue?: ValueSpecification | undefined;
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
@@ -50,7 +51,7 @@ export class QueryBuilderSetupState {
       setClass: action,
       setMapping: action,
       setRuntime: action,
-      setClassVersionValue: action,
+      setClassMilestoningValue: action,
       setShowSetupPanel: action,
     });
 
@@ -121,6 +122,12 @@ export class QueryBuilderSetupState {
         this.setMapping(possibleMapping);
       }
     }
+    if (
+      val !== undefined &&
+      isMilestonedClass(val, this.queryBuilderState.graphManagerState.graph)
+    ) {
+      this.queryBuilderState.buildClassMilestoningValue(val);
+    }
   }
 
   setMapping(val: Mapping | undefined): void {
@@ -138,7 +145,7 @@ export class QueryBuilderSetupState {
     }
   }
 
-  setClassVersionValue(val: ValueSpecification | undefined): void {
-    this._classVersionValue = val;
+  setClassMilestoningValue(val: ValueSpecification | undefined): void {
+    this.classMilestoningValue = val;
   }
 }

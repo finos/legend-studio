@@ -52,7 +52,7 @@ import {
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
-  isVersionedClass,
+  isMilestonedClass,
 } from '@finos/legend-graph';
 import type { PackageableElement } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
@@ -228,13 +228,13 @@ export class QueryBuilder_LegendStudioPlugin
                 );
                 queryBuilderExtension.queryBuilderState.resetData();
                 if (
-                  isVersionedClass(
+                  isMilestonedClass(
                     element,
                     queryBuilderExtension.queryBuilderState.graphManagerState
                       .graph,
                   )
                 ) {
-                  queryBuilderExtension.queryBuilderState.buildClassVersionValue(
+                  queryBuilderExtension.queryBuilderState.buildClassMilestoningValue(
                     element,
                   );
                 }

@@ -282,8 +282,8 @@ export class QueryBuilderState {
     }
   }
 
-  buildClassVersionValue(element: Class): void {
-    const versionPropertyParameter = new VariableExpression(
+  buildClassMilestoningValue(element: Class): void {
+    const milestoningPropertyParameter = new VariableExpression(
       DEFAULT_VERSION_PARAMETER_NAME,
       new Multiplicity(1, 1),
       GenericTypeExplicitReference.create(
@@ -296,7 +296,7 @@ export class QueryBuilderState {
     );
     const parameterState = new QueryParameterState(
       this.queryParametersState,
-      versionPropertyParameter,
+      milestoningPropertyParameter,
     );
     parameterState.mockParameterValues();
     this.queryParametersState.addParameter(parameterState);
@@ -312,7 +312,7 @@ export class QueryBuilderState {
         `Milestoning class should have a parameter of type 'Date'`,
       ).parameter,
     );
-    this.querySetupState.setClassVersionValue(versionPropertyParameter);
+    this.querySetupState.setClassMilestoningValue(milestoningPropertyParameter);
   }
 
   buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {

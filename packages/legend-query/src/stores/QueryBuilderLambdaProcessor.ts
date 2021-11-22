@@ -70,7 +70,7 @@ import {
   AbstractPropertyExpression,
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
-  isVersionedClass,
+  isMilestonedClass,
 } from '@finos/legend-graph';
 import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 import {
@@ -394,21 +394,25 @@ export class QueryBuilderLambdaProcessor
       );
       let acceptedNoOfParameters = 1;
       if (
-        _class instanceof Class &&
-        isVersionedClass(_class, this.queryBuilderState.graphManagerState.graph)
+        isMilestonedClass(
+          _class,
+          this.queryBuilderState.graphManagerState.graph,
+        )
       ) {
         acceptedNoOfParameters = 2;
         assertTrue(
           valueSpecification.parametersValues.length === acceptedNoOfParameters,
           `Milestoning class should have a parameter of type 'Date'`,
         );
-        this.queryBuilderState.querySetupState.setClassVersionValue(
+        this.queryBuilderState.querySetupState.setClassMilestoningValue(
           valueSpecification.parametersValues[1],
         );
       }
       assertTrue(
         valueSpecification.parametersValues.length === acceptedNoOfParameters,
-        `Can't process getAll() expression: getAll() expects no argument`,
+        `Can't process getAll() expression: getAll() expects ${
+          acceptedNoOfParameters - 1
+        } arguments`,
       );
       this.queryBuilderState.querySetupState.setClass(_class, true);
       this.queryBuilderState.explorerState.refreshTreeData();
