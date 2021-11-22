@@ -188,38 +188,55 @@ const TaxonomyNodeViewerExplorer = observer(
 export const TaxonomyNodeViewer = observer(
   (props: { taxonomyNodeViewerState: TaxonomyNodeViewerState }) => {
     const { taxonomyNodeViewerState } = props;
+    const description =
+      taxonomyNodeViewerState.taxonomyNode.taxonomyData?.description;
 
     return (
       <div className="taxonomy-node-viewer">
-        <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel minSize={300} size={300}>
-            <TaxonomyNodeViewerExplorer
-              taxonomyNodeViewerState={taxonomyNodeViewerState}
-            />
-          </ResizablePanel>
-          <ResizablePanelSplitter />
-          <ResizablePanel minSize={300}>
-            {taxonomyNodeViewerState.dataSpaceViewerState && (
-              <DataSpaceViewer
-                dataSpaceViewerState={
-                  taxonomyNodeViewerState.dataSpaceViewerState
-                }
+        <div className="taxonomy-node-viewer__description">
+          {description && (
+            <div className="taxonomy-node-viewer__description__content">
+              {description}
+            </div>
+          )}
+          {!description && (
+            <div className="taxonomy-node-viewer__description__content taxonomy-node-viewer__description__content--empty">
+              No description
+            </div>
+          )}
+        </div>
+        <div className="taxonomy-node-viewer__explorer__panel">
+          <ResizablePanelGroup orientation="vertical">
+            <ResizablePanel minSize={300} size={300}>
+              <TaxonomyNodeViewerExplorer
+                taxonomyNodeViewerState={taxonomyNodeViewerState}
               />
-            )}
-            {!taxonomyNodeViewerState.dataSpaceViewerState &&
-              taxonomyNodeViewerState.initDataSpaceViewerState.isInProgress && (
+            </ResizablePanel>
+            <ResizablePanelSplitter />
+            <ResizablePanel minSize={300}>
+              {taxonomyNodeViewerState.dataSpaceViewerState && (
+                <DataSpaceViewer
+                  dataSpaceViewerState={
+                    taxonomyNodeViewerState.dataSpaceViewerState
+                  }
+                />
+              )}
+              {!taxonomyNodeViewerState.dataSpaceViewerState &&
+                taxonomyNodeViewerState.initDataSpaceViewerState
+                  .isInProgress && (
+                  <div className="taxonomy-node-viewer__content-placeholder">
+                    <PanelLoadingIndicator isLoading={true} />
+                    <BlankPanelContent>Loading data space...</BlankPanelContent>
+                  </div>
+                )}
+              {!taxonomyNodeViewerState.dataSpaceViewerState && (
                 <div className="taxonomy-node-viewer__content-placeholder">
-                  <PanelLoadingIndicator isLoading={true} />
-                  <BlankPanelContent>Loading data space...</BlankPanelContent>
+                  <BlankPanelContent>No data space selected</BlankPanelContent>
                 </div>
               )}
-            {!taxonomyNodeViewerState.dataSpaceViewerState && (
-              <div className="taxonomy-node-viewer__content-placeholder">
-                <BlankPanelContent>No data space selected</BlankPanelContent>
-              </div>
-            )}
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
       </div>
     );
   },
