@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-Fix rendering generated code with no content in File Generation Editor.
+Fix rendering generated file with no content in file generation editor.
