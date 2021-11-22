@@ -297,7 +297,7 @@ export const GenerationResultViewer = observer(
               {fileNode && !(fileNode instanceof GenerationDirectory) && (
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">file</div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header-name">
+                  <div className="panel__header__title__content generation-result-viewer__file__header__name">
                     {fileNode.name}
                   </div>
                   {extraFileGenerationResultViewerActions}

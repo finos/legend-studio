@@ -33,6 +33,7 @@ import {
 } from '@finos/legend-shared';
 import type { PackageableElement } from '@finos/legend-graph';
 import { ConcreteFunctionDefinition } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 
 const MORPHIR_TYPE_NAME = `morphir`;
 
@@ -106,10 +107,11 @@ export class ELMorphir_LegendStudioPlugin
   }
 
   getExtraFileGenerationResultViewerActions(): FileGenerationResultViewerAction[] {
+    const applicationStore = useApplicationStore();
     const visualizeMorphir =
       (fileNode: GenerationFile): (() => void) =>
       async (): Promise<void> => {
-        window.open(this.morphirVisualizerUrl);
+        applicationStore.navigator.openNewWindow(this.morphirVisualizerUrl)
         await this.networkClient.post(
           this.morphirVisualizerUrl,
           fileNode.content,
@@ -129,7 +131,7 @@ export class ELMorphir_LegendStudioPlugin
           ir: fileNode.content,
           src: await code,
         });
-        window.open(this.linterAppUrl);
+        applicationStore.navigator.openNewWindow(this.linterAppUrl);
       };
     return [
       (
@@ -139,7 +141,7 @@ export class ELMorphir_LegendStudioPlugin
           ?.fileNode as GenerationFile;
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (
-            <div className="panel__header__title__content generation-result-viewer__file__header-button">
+            <div className="panel__header__title__content generation-result-viewer__file__header__button">
               <button
                 className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
                 onClick={visualizeMorphir(fileNode)}
@@ -159,7 +161,7 @@ export class ELMorphir_LegendStudioPlugin
           ?.fileNode as GenerationFile;
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (
-            <div className="panel__header__title__content generation-result-viewer__file__header-button">
+            <div className="panel__header__title__content generation-result-viewer__file__header__button">
               <button
                 className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
                 onClick={visualizeBosque(fileGenerationState, fileNode)}
