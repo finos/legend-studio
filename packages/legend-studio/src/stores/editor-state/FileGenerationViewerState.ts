@@ -26,7 +26,9 @@ export const getTextContent = (
 ): string => {
   switch (format?.toLowerCase()) {
     case EDITOR_LANGUAGE.JSON:
-      return JSON.stringify(JSON.parse(content), undefined, TAB_SIZE);
+      return content.length
+        ? JSON.stringify(JSON.parse(content), undefined, TAB_SIZE)
+        : content;
     default:
       return content;
   }
