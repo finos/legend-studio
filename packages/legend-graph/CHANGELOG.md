@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 0.2.4
+
+### Patch Changes
+
+- [#696](https://github.com/finos/legend-studio/pull/696) [`eb58ca71`](https://github.com/finos/legend-studio/commit/eb58ca71eaf8f72a116f6f6fb9060741788d9428) ([@gayathrir11](https://github.com/gayathrir11)) - Fix transformer for `LatestDate`
+
 ## 0.2.3
 
 ### Patch Changes
