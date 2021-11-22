@@ -16,7 +16,7 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import type { StudioPluginManager } from '@finos/legend-studio';
+import type { LegendStudioPluginManager } from '@finos/legend-studio';
 import { ELMorphir_GenerationPlugin } from './components/ELMorphir_StudioPlugin';
 
 export class ELMorphir_GenerationPreset extends AbstractPreset {
@@ -24,7 +24,7 @@ export class ELMorphir_GenerationPreset extends AbstractPreset {
     super(packageJson.extensions.studioPreset, packageJson.version);
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     new ELMorphir_GenerationPlugin().install(pluginManager);
   }
 }

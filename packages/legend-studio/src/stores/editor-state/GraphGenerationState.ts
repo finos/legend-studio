@@ -63,7 +63,7 @@ import {
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DSL_StudioPlugin_Extension } from '../StudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from '../LegendStudioPlugin';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -132,7 +132,7 @@ export class GraphGenerationState {
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_StudioPlugin_Extension
+              plugin as DSL_LegendStudioPlugin_Extension
             ).getExtraFileGenerationScopeFilters?.() ?? [],
         );
       return this.fileGenerationConfigurations

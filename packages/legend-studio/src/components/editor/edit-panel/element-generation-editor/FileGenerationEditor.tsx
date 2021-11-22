@@ -85,7 +85,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSL_StudioPlugin_Extension } from '../../../../stores/StudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from '../../../../stores/LegendStudioPlugin';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -234,7 +234,7 @@ export const GenerationResultViewer = observer(
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSL_StudioPlugin_Extension
+                  plugin as DSL_LegendStudioPlugin_Extension
                 ).getExtraFileGenerationResultViewerActions?.() ?? [],
             )
             .map((extraFileGenerationResultViewerActionsCreator) =>

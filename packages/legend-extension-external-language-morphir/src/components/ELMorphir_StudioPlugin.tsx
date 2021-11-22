@@ -17,15 +17,15 @@
 import packageJson from '../../package.json';
 
 import type {
-  DSL_StudioPlugin_Extension,
+  DSL_LegendStudioPlugin_Extension,
   GenerationFile,
   FileGenerationState,
-  StudioPluginManager,
+  LegendStudioPluginManager,
   FileGenerationResultViewerAction,
   FileGenerationScopeFilter,
 } from '@finos/legend-studio';
 
-import { StudioPlugin } from '@finos/legend-studio';
+import { LegendStudioPlugin } from '@finos/legend-studio';
 import {
   NetworkClient,
   assertNonEmptyString,
@@ -43,8 +43,8 @@ interface ELMorphir_GenerationPluginConfigData {
 }
 
 export class ELMorphir_GenerationPlugin
-  extends StudioPlugin
-  implements DSL_StudioPlugin_Extension
+  extends LegendStudioPlugin
+  implements DSL_LegendStudioPlugin_Extension
 {
   networkClient: NetworkClient;
   private _morphirVisualizerUrl?: string | undefined;
@@ -56,7 +56,7 @@ export class ELMorphir_GenerationPlugin
     this.networkClient = new NetworkClient();
   }
 
-  install(pluginManager: StudioPluginManager): void {
+  install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
   }
 
