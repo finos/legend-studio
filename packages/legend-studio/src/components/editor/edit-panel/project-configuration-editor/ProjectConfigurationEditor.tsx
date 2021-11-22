@@ -42,7 +42,7 @@ import {
   ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
-import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../../stores/LegendStudioLogEvent';
 import type { ProjectData } from '@finos/legend-server-depot';
 
 interface VersionOption {
@@ -246,7 +246,7 @@ const ProjectDependencyEditor = observer(
         } catch (error) {
           assertErrorThrown(error);
           logger.error(
-            LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+            LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
             error,
           );
         }

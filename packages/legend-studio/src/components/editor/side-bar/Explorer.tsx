@@ -53,7 +53,7 @@ import {
 } from './CreateNewElementModal';
 import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtil';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
@@ -263,7 +263,7 @@ const ExplorerContextMenu = observer(
 
     if (_package && !isReadOnly) {
       return (
-        <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+        <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
           {elementTypes.map((type) => (
             <MenuContentItem key={type} onClick={createNewElement(type)}>
               <MenuContentItemIcon>
@@ -288,7 +288,7 @@ const ExplorerContextMenu = observer(
       );
     }
     return (
-      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {extraExplorerContextMenuItems}
         {!isReadOnly && node && (
           <>
@@ -473,7 +473,7 @@ const ExplorerDropdownMenu = observer(
       );
 
     return (
-      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {elementTypes.map((type) => (
           <MenuContentItem key={type} onClick={createNewElement(type)}>
             <MenuContentItemIcon>
@@ -577,7 +577,7 @@ const ExplorerTrees = observer(() => {
       content={<ExplorerContextMenu />}
       menuProps={{ elevation: 7 }}
     >
-      <div data-testid={STUDIO_TEST_ID.EXPLORER_TREES}>
+      <div data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_TREES}>
         {editorStore.explorerTreeState.buildState.hasCompleted &&
           showPackageTrees && (
             <>

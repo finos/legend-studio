@@ -43,14 +43,14 @@ import {
   generateViewProjectRoute,
   generateEditorRoute,
 } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
 import {
+  AppHeader,
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -210,7 +210,7 @@ const ReviewInner = observer(() => {
   return (
     <div className="app__page">
       <AppHeader>
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="review">

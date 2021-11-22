@@ -26,7 +26,6 @@ import type {
   ElementEditorStateCreator,
   EditorStore,
   ElementEditorState,
-  ApplicationPageRenderEntry,
 } from '@finos/legend-studio';
 import {
   UnsupportedElementEditorState,
@@ -38,8 +37,6 @@ import {
   DataSpace,
   DataSpaceExecutionContext,
 } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import { EnterpriseModelExplorer } from './EnterpriseModelExplorer';
-import { ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN } from '../../stores/studio/EnterpriseModelExplorerStore';
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
@@ -56,20 +53,6 @@ export class DSLDataSpace_LegendStudioPlugin
 
   install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerStudioPlugin(this);
-  }
-
-  override getExtraApplicationPageRenderEntries(): ApplicationPageRenderEntry[] {
-    return [
-      {
-        key: 'enterprise-application-page',
-        urlPatterns: [
-          ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW,
-          ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW_BY_DATA_SPACE,
-          ENTERPRISE_MODEL_EXPLORER_ROUTE_PATTERN.ENTERPRISE_VIEW_BY_TAXONOMY_NODE,
-        ],
-        component: EnterpriseModelExplorer,
-      },
-    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

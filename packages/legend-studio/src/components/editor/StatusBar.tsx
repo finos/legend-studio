@@ -26,7 +26,7 @@ import {
 import { Link, useParams } from 'react-router-dom';
 import { clsx, HammerIcon } from '@finos/legend-art';
 import { GoSync } from 'react-icons/go';
-import { STUDIO_TEST_ID } from '../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import type {
   EditorPathParams,
@@ -135,7 +135,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
 
   return (
     <div
-      data-testid={STUDIO_TEST_ID.STATUS_BAR}
+      data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
       className={clsx('editor__status-bar', {
         'editor__status-bar--conflict-resolution': isInConflictResolutionMode,
       })}
@@ -183,7 +183,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         </div>
       </div>
       <div
-        data-testid={STUDIO_TEST_ID.EDITOR__STATUS_BAR__RIGHT}
+        data-testid={LEGEND_STUDIO_TEST_ID.EDITOR__STATUS_BAR__RIGHT}
         className="editor__status-bar__right"
       >
         {isInConflictResolutionMode && (

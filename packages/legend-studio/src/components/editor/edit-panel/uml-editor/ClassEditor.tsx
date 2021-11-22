@@ -43,7 +43,7 @@ import {
   BlankPanelContent,
   getControlledResizablePanelProps,
 } from '@finos/legend-art';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { PropertyEditor } from './PropertyEditor';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
@@ -221,7 +221,7 @@ const PropertyBasicEditor = observer(
             </div>
             <div
               data-testid={
-                STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                LEGEND_STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
               }
               className="property-basic-editor__type__label property-basic-editor__type__label--hover"
               onClick={(): void => setIsEditingType(true)}
@@ -230,7 +230,7 @@ const PropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -262,7 +262,7 @@ const PropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -491,7 +491,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               <div
                 data-testid={
-                  STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                  LEGEND_STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
                 }
                 className="property-basic-editor__type__label property-basic-editor__type__label--hover"
                 onClick={(): void => setIsEditingType(true)}
@@ -500,7 +500,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <button
-                  data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                  data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
@@ -532,7 +532,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <button
-                  data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                  data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
@@ -1109,7 +1109,7 @@ export const ClassFormEditor = observer(
 
     return (
       <div
-        data-testid={STUDIO_TEST_ID.CLASS_FORM_EDITOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.CLASS_FORM_EDITOR}
         className="uml-element-editor class-form-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
@@ -1149,7 +1149,9 @@ export const ClassFormEditor = observer(
                 </div>
               </div>
               <div
-                data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER
+                }
                 className="panel__header uml-element-editor__tabs__header"
               >
                 <div className="uml-element-editor__tabs">

@@ -69,7 +69,7 @@ import {
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type {
   GenerationProperty,
@@ -429,7 +429,9 @@ const FileGenerationScopeEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {scopeElements.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -826,7 +828,9 @@ const GenerationArrayPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {arrayValues.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -1034,7 +1038,9 @@ const GenerationMapPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {Array.from(Object.entries(mapValues)).map(([key, value], idx) => (
               // NOTE: since the key must be unique, we will use it to generate the key

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { LegendQueryApplication } from '@finos/legend-query-app';
+import { LegendQueryWebApplication } from '@finos/legend-query-app';
 import config from '../query.config';
 import './index.scss';
 
-LegendQueryApplication.run(config.baseUrl);
+LegendQueryWebApplication.run(config.baseUrl);

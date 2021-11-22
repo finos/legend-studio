@@ -36,7 +36,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../EditorComponentTestUtils';
-import { STUDIO_TEST_ID } from '../../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID';
 
 let renderResult: RenderResult;
 
@@ -53,11 +53,11 @@ test(integrationTest('Profile editor renders properly'), async () => {
     renderResult,
   );
   const editPanelHeader = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'ProfileTest')).not.toBeNull();
   const editPanelContent = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
   );
   expect(getByText(editPanelContent, 'ProfileTest')).not.toBeNull();
   const taggedValues = ['tag1', 'tag2', 'tag3'];
@@ -76,11 +76,11 @@ test(
   async () => {
     await TEST__openElementFromExplorerTree('ui::TestClass', renderResult);
     const editPanelHeader = renderResult.getByTestId(
-      STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+      LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
     );
     expect(getByText(editPanelHeader, 'TestClass')).not.toBeNull();
     const classForm = renderResult.getByTestId(
-      STUDIO_TEST_ID.CLASS_FORM_EDITOR,
+      LEGEND_STUDIO_TEST_ID.CLASS_FORM_EDITOR,
     );
     // Normal properties
     const classProperties = ['a', 'b', 'name', 'person'];
@@ -140,7 +140,10 @@ test(
     const navigateToPropertyButton = guaranteeNonNullable(buttons[0]);
     fireEvent.click(navigateToPropertyButton);
     await waitFor(() => getByText(classForm, 'property'));
-    const subPropertyPanel = getByTestId(classForm, STUDIO_TEST_ID.PANEL);
+    const subPropertyPanel = getByTestId(
+      classForm,
+      LEGEND_STUDIO_TEST_ID.PANEL,
+    );
     expect(
       getByDisplayValue(subPropertyPanel, 'lets write a tag'),
     ).not.toBeNull();
@@ -158,11 +161,11 @@ test(
 test(integrationTest('Enumeration editor'), async () => {
   await TEST__openElementFromExplorerTree('ui::TestEnumeration', renderResult);
   const editPanelHeader = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'TestEnumeration')).not.toBeNull();
   const enumerationEditor = renderResult.getByTestId(
-    STUDIO_TEST_ID.ENUMERATION_EDITOR,
+    LEGEND_STUDIO_TEST_ID.ENUMERATION_EDITOR,
   );
   const enums = ['enumA', 'enumB', 'enumC'];
   enums.forEach((e) => getByDisplayValue(enumerationEditor, e));
@@ -179,7 +182,10 @@ test(integrationTest('Enumeration editor'), async () => {
   expect(buttons).toHaveLength(2);
   fireEvent.click(guaranteeNonNullable(buttons[0])); // navigate
   await waitFor(() => getByText(enumerationEditor, 'enum'));
-  const subPropertyPanel = getByTestId(enumerationEditor, STUDIO_TEST_ID.PANEL);
+  const subPropertyPanel = getByTestId(
+    enumerationEditor,
+    LEGEND_STUDIO_TEST_ID.PANEL,
+  );
   getByDisplayValue(subPropertyPanel, 'enumATag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
@@ -193,11 +199,11 @@ test(integrationTest('Enumeration editor'), async () => {
 test(integrationTest('Association editor'), async () => {
   await TEST__openElementFromExplorerTree('ui::TestAssociation', renderResult);
   const editPanelHeader = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'TestAssociation')).not.toBeNull();
   const associationEditor = renderResult.getByTestId(
-    STUDIO_TEST_ID.ASSOCIATION_EDITOR,
+    LEGEND_STUDIO_TEST_ID.ASSOCIATION_EDITOR,
   );
   const properties = ['testClassProp', 'testClassSibling'];
   // input fields for association property name are present
@@ -228,7 +234,10 @@ test(integrationTest('Association editor'), async () => {
   expect(buttons).toHaveLength(2);
   expect(queryByDisplayValue(associationEditor, 'ProfileTest')).toBeNull();
   fireEvent.click(guaranteeNonNullable(buttons[1])); // navigate
-  const subPropertyPanel = getByTestId(associationEditor, STUDIO_TEST_ID.PANEL);
+  const subPropertyPanel = getByTestId(
+    associationEditor,
+    LEGEND_STUDIO_TEST_ID.PANEL,
+  );
   getByDisplayValue(subPropertyPanel, 'association tag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));

@@ -15,29 +15,31 @@
  */
 
 import { LegendStudio } from '@finos/legend-studio';
-import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
-import { DSLText_LegendStudioPreset } from '@finos/legend-extension-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
 import { BrowserConsole } from '@finos/legend-shared';
-import { DSLDiagram_LegendStudioPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLSerializer_LegendStudioPreset } from '@finos/legend-extension-dsl-serializer';
-import { DSLDataSpace_LegendStudioPreset } from '@finos/legend-extension-dsl-data-space';
-import { ESService_LegendStudioPreset } from '@finos/legend-extension-external-store-service';
+import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
+import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
+import { DSLText_LegendStudioPlugin } from '@finos/legend-extension-dsl-text';
+import { DSLDiagram_LegendStudioPlugin } from '@finos/legend-extension-dsl-diagram';
+import { DSLSerializer_LegendStudioPlugin } from '@finos/legend-extension-dsl-serializer';
+import { DSLDataSpace_LegendStudioPlugin } from '@finos/legend-extension-dsl-data-space';
+import { ESService_LegendStudioPlugin } from '@finos/legend-extension-external-store-service';
 import { ELMorphir_LegendStudioPreset } from '@finos/legend-extension-external-language-morphir';
 
-export class LegendStudioApplication {
+export class LegendStudioWebApplication {
   static run(baseUrl: string): void {
     LegendStudio.create()
       .setup({ baseUrl })
       .withPresets([
-        new DSLText_LegendStudioPreset(),
-        new DSLDiagram_LegendStudioPreset(),
-        new DSLDataSpace_LegendStudioPreset(),
-        new EFJSONSchema_GraphPreset(),
+        ...getLegendGraphExtensionCollection(),
         new QueryBuilder_LegendStudioPreset(),
-        new DSLSerializer_LegendStudioPreset(),
-        new ESService_LegendStudioPreset(),
         new ELMorphir_LegendStudioPreset(),
+      ])
+      .withPlugins([
+        new DSLText_LegendStudioPlugin(),
+        new DSLDiagram_LegendStudioPlugin(),
+        new DSLDataSpace_LegendStudioPlugin(),
+        new DSLSerializer_LegendStudioPlugin(),
+        new ESService_LegendStudioPlugin(),
       ])
       .withLoggers([new BrowserConsole()])
       .start()

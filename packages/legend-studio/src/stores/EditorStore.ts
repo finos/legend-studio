@@ -22,8 +22,8 @@ import {
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
-  STUDIO_HOTKEY,
-  STUDIO_HOTKEY_MAP,
+  LEGEND_STUDIO_HOTKEY,
+  LEGEND_STUDIO_HOTKEY_MAP,
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
@@ -75,7 +75,11 @@ import {
   generateSetupRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
-import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
+import {
+  HotkeyConfiguration,
+  NonBlockingDialogState,
+  PanelDisplayState,
+} from '@finos/legend-art';
 import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
 import { buildElementOption } from './shared/PackageableElementOptionUtil';
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
@@ -125,29 +129,13 @@ import {
   APPLICATION_LOG_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { STUDIO_LOG_EVENT } from './StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import type { EditorMode } from './editor/EditorMode';
 import { StandardEditorMode } from './editor/StandardEditorMode';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
-}
-
-export class EditorHotkey {
-  name: string;
-  keyBinds: string[];
-  handler: (event?: KeyboardEvent) => void;
-
-  constructor(
-    name: string,
-    keyBinds: string[],
-    handler: (event?: KeyboardEvent) => void,
-  ) {
-    this.name = name;
-    this.keyBinds = keyBinds;
-    this.handler = handler;
-  }
 }
 
 export class EditorStore {
@@ -214,8 +202,8 @@ export class EditorStore {
 
   // Hot keys
   blockGlobalHotkeys = false;
-  defaultHotkeys: EditorHotkey[] = [];
-  hotkeys: EditorHotkey[] = [];
+  defaultHotkeys: HotkeyConfiguration[] = [];
+  hotkeys: HotkeyConfiguration[] = [];
 
   // Tabs
   currentEditorState?: EditorState | undefined;
@@ -326,55 +314,55 @@ export class EditorStore {
     // hotkeys
     this.defaultHotkeys = [
       // actions that need blocking
-      new EditorHotkey(
-        STUDIO_HOTKEY.COMPILE,
-        [STUDIO_HOTKEY_MAP.COMPILE],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.COMPILE,
+        [LEGEND_STUDIO_HOTKEY_MAP.COMPILE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.graphState.globalCompileInFormMode()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
         }),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.GENERATE,
-        [STUDIO_HOTKEY_MAP.GENERATE],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.GENERATE,
+        [LEGEND_STUDIO_HOTKEY_MAP.GENERATE],
         this.createGlobalHotKeyAction(() => {
           flowResult(
             this.graphState.graphGenerationState.globalGenerate(),
           ).catch(applicationStore.alertIllegalUnhandledError);
         }),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.CREATE_ELEMENT,
-        [STUDIO_HOTKEY_MAP.CREATE_ELEMENT],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.CREATE_ELEMENT,
+        [LEGEND_STUDIO_HOTKEY_MAP.CREATE_ELEMENT],
         this.createGlobalHotKeyAction(() => this.newElementState.openModal()),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.OPEN_ELEMENT,
-        [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT,
+        [LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
         this.createGlobalHotKeyAction(() =>
           this.searchElementCommandState.open(),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_TEXT_MODE,
-        [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.toggleTextMode()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
         }),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
-        [STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
         this.createGlobalHotKeyAction(() =>
           this.openState(this.modelLoaderState),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
-        [STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
+        [LEGEND_STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.localChangesState.syncWithWorkspace()).catch(
             applicationStore.alertIllegalUnhandledError,
@@ -382,35 +370,35 @@ export class EditorStore {
         }),
       ),
       // simple actions (no blocking is needed)
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_AUX_PANEL,
-        [STUDIO_HOTKEY_MAP.TOGGLE_AUX_PANEL],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_AUX_PANEL,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_AUX_PANEL],
         this.createGlobalHotKeyAction(() => this.auxPanelDisplayState.toggle()),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
-        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
-        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.CHANGES),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
-        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
-        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
         ),
@@ -444,11 +432,11 @@ export class EditorStore {
     this.isDevToolEnabled = val;
   }
 
-  setHotkeys(val: EditorHotkey[]): void {
+  setHotkeys(val: HotkeyConfiguration[]): void {
     this.hotkeys = val;
   }
 
-  addHotKey(val: EditorHotkey): void {
+  addHotKey(val: HotkeyConfiguration): void {
     addUniqueEntry(this.hotkeys, val);
   }
 
@@ -639,7 +627,9 @@ export class EditorStore {
         } catch (error) {
           assertErrorThrown(error);
           this.applicationStore.log.error(
-            LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+            LogEvent.create(
+              LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE,
+            ),
             error,
           );
           this.applicationStore.notifyError(error);

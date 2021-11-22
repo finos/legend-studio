@@ -32,8 +32,7 @@ import {
   LEGEND_STUDIO_ROUTE_PATTERN,
   generateRoutePatternWithSDLCServerKey,
 } from '../stores/LegendStudioRouter';
-import { AppHeader } from './shared/AppHeader';
-import { AppHeaderMenu } from './editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from './editor/header/LegendStudioAppHeaderMenu';
 import { ThemeProvider } from '@material-ui/core/styles';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { Log } from '@finos/legend-shared';
@@ -47,6 +46,7 @@ import {
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
+  AppHeader,
   ApplicationStoreProvider,
   BlockingAlert,
   NotificationSnackbar,
@@ -76,7 +76,7 @@ export const LegendStudioApplicationRoot = observer(() => {
       {!studioStore.isSDLCAuthorized && (
         <div className="app__page">
           <AppHeader>
-            <AppHeaderMenu />
+            <LegendStudioAppHeaderMenu />
           </AppHeader>
           <PanelLoadingIndicator isLoading={true} />
           <div className="app__content" />
@@ -161,17 +161,17 @@ export const LegendStudioApplication = observer(
 
     /**
      * NOTE: here we handle 3 cases:
-     * 1. When the URL matches SDLC-instance pattern: and the key is found: if the key doesn't match
-     *    the current SDLC option, update the current SDLC option.
-     * 2. When the URL matches SDLC-instance pattern: and the key is NOT found: auto-fix the URL by
-     *    redirecting users to the setup page with the default SDLC server option.
-     * 3. When the URL DOES NOT match SDLC-instance pattern: do nothing here, let the app flows through
-     *    because this might represent a sub-application that does not need to specify a SDLC instance
-     *    (i.e. use the default SDLC server)
+     * 1. When the URL matches specific server pattern, and the key is found: if the key doesn't match
+     *    the current server option, update the current server option.
+     * 2. When the URL matches specific server pattern, and the key is NOT found: auto-fix the URL by
+     *    redirecting users to the setup page with the default server option.
+     * 3. When the URL DOES NOT match specific server pattern: do nothing here, let the app flows through
+     *    because this might represent a sub-application that does not need to specify a server option
+     *    (i.e. use the default server option)
      */
     useEffect(() => {
       if (matchedSDLCServerKey) {
-        // auto-fix the URL by using the default SDLC server option
+        // auto-fix the URL by using the default server option
         if (!matchingSDLCServerOption) {
           navigator.goTo(
             generateSetupRoute(config.defaultSDLCServerOption, undefined),
@@ -185,9 +185,9 @@ export const LegendStudioApplication = observer(
     }, [config, navigator, matchedSDLCServerKey, matchingSDLCServerOption]);
 
     if (
-      // See the note above, we will only pass when the either the SDLC server option is properly set
-      // or the URL does not match the SDLC-instance pattern at all (i.e. some sub applications that just
-      // uses the default SDLC server option)
+      // See the note above, we will only pass when the either the server option is properly set
+      // or the URL does not match the specific server pattern at all (i.e. some sub applications that just
+      // uses the default server option)
       matchedSDLCServerKey &&
       (!matchingSDLCServerOption ||
         matchingSDLCServerOption !== config.currentSDLCServerOption)

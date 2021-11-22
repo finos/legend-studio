@@ -21,6 +21,7 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
+  background: var(--color-dark-grey-80);
 
   &__header {
     @include flexCenter;

@@ -18,6 +18,7 @@
 @forward 'extensions';
 
 // Components
+@forward 'components/app';
 @forward 'components/blocking-alert';
 @forward 'components/backdrop';
 @forward 'components/lambda-editor';

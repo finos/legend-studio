@@ -37,7 +37,7 @@ import {
   FaTimesCircle,
   FaCheckCircle,
 } from 'react-icons/fa';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
@@ -292,7 +292,7 @@ const WorkflowExplorerContextMenu = observer(
     };
 
     return (
-      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {node instanceof WorkflowJobTreeNodeData && (
           <>
             <MenuContentItem onClick={viewLogs}>View Logs</MenuContentItem>
@@ -474,7 +474,9 @@ export const WorkspaceWorkflows = observer(() => {
             </div>
             <div
               className="side-bar__panel__header__changes-count"
-              data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+              data-testid={
+                LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+              }
             >
               {workflowsState.workflowStates.length}
             </div>

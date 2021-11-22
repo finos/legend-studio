@@ -22,7 +22,7 @@ import {
 } from '@finos/legend-shared';
 import type { DiagramRenderer } from '../../DiagramRenderer';
 import { DIAGRAM_INTERACTION_MODE } from '../../DiagramRenderer';
-import { PanelDisplayState } from '@finos/legend-art';
+import { HotkeyConfiguration, PanelDisplayState } from '@finos/legend-art';
 import type {
   PackageableElement,
   AbstractProperty,
@@ -37,11 +37,7 @@ import {
   PropertyExplicitReference,
 } from '@finos/legend-graph';
 import type { EditorStore } from '@finos/legend-studio';
-import {
-  ClassEditorState,
-  EditorHotkey,
-  ElementEditorState,
-} from '@finos/legend-studio';
+import { ClassEditorState, ElementEditorState } from '@finos/legend-studio';
 import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/ClassView';
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
 import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
@@ -441,7 +437,7 @@ export class DiagramEditorState extends ElementEditorState {
       DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY,
     ].forEach((key) => {
       this.editorStore.addHotKey(
-        new EditorHotkey(
+        new HotkeyConfiguration(
           key,
           [DIAGRAM_EDITOR_HOTKEY_MAP[key]],
           this.createDiagramHotKeyAction((event?: KeyboardEvent) => {
