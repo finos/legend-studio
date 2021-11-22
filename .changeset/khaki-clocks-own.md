@@ -1,0 +1,5 @@
+---
+'@finos/legend-studio': major
+---
+
+**BREAKING CHANGE:** Rename the enum `STUDIO_LOG_EVENT` to `LEGEND_STUDIO_LOG_EVENT_TYPE`, `STUDIO_HOTKEY` to `LEGEND_STUDIO_HOTKEY`, and `STUDIO_TEST_ID` to `LEGEND_STUDIO_TEST_ID`.

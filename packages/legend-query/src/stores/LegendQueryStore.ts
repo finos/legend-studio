@@ -61,7 +61,7 @@ import type {
   ServiceQueryPathParams,
 } from './LegendQueryRouter';
 import { generateExistingQueryRoute } from './LegendQueryRouter';
-import { QUERY_LOG_EVENT } from '../QueryLogEvent';
+import { LEGEND_QUERY_LOG_EVENT_TYPE } from '../LegendQueryLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   DepotServerClient,
@@ -281,7 +281,7 @@ export class QueryExportState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryStore.applicationStore.log.error(
-        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
         error,
       );
       this.queryStore.applicationStore.notifyError(error);
@@ -317,7 +317,7 @@ export class QueryExportState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryStore.applicationStore.log.error(
-        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
         error,
       );
       this.queryStore.applicationStore.notifyError(error);
@@ -454,7 +454,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -547,7 +547,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -618,7 +618,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -671,7 +671,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.setBlockingAlert({
@@ -728,7 +728,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -775,7 +775,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(QUERY_LOG_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);

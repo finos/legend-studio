@@ -19,8 +19,6 @@ import type { GraphPluginManager } from '@finos/legend-graph';
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSLSerializer_PureGraphManagerPlugin } from './graphManager/DSLSerializer_PureGraphManagerPlugin';
 import { DSLSerializer_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLSerializer_PureProtocolProcessorPlugin';
-import type { LegendStudioPluginManager } from '@finos/legend-studio';
-import { DSLSerializer_LegendStudioPlugin } from './components/studio/DSLSerializer_LegendStudioPlugin';
 import { DSLSerializer_PureGraphPlugin } from './graph/DSLSerializer_PureGraphPlugin';
 
 export class DSLSerializer_GraphPreset extends AbstractPreset {
@@ -29,19 +27,6 @@ export class DSLSerializer_GraphPreset extends AbstractPreset {
   }
 
   install(pluginManager: GraphPluginManager): void {
-    new DSLSerializer_PureGraphPlugin().install(pluginManager);
-    new DSLSerializer_PureGraphManagerPlugin().install(pluginManager);
-    new DSLSerializer_PureProtocolProcessorPlugin().install(pluginManager);
-  }
-}
-
-export class DSLSerializer_LegendStudioPreset extends AbstractPreset {
-  constructor() {
-    super(packageJson.extensions.studioPreset, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    new DSLSerializer_LegendStudioPlugin().install(pluginManager);
     new DSLSerializer_PureGraphPlugin().install(pluginManager);
     new DSLSerializer_PureGraphManagerPlugin().install(pluginManager);
     new DSLSerializer_PureProtocolProcessorPlugin().install(pluginManager);

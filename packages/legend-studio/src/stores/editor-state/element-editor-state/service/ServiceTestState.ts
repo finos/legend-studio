@@ -17,7 +17,7 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   assertErrorThrown,
@@ -320,7 +320,9 @@ export class TestContainerState {
       assertErrorThrown(error);
       this.setAssertionData(tryToFormatJSONString('{}'));
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -366,7 +368,9 @@ export class TestContainerState {
       assertErrorThrown(error);
       this.setTestExecutionResultText(undefined);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -535,7 +539,9 @@ export class SingleExecutionTestState {
         })),
       );
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
     } finally {

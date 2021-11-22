@@ -22,6 +22,7 @@ body:
       options:
         - Legend Studio
         - Legend Query
+        - Legend Taxonomy
         - Docker images (e.g. finos/legend-studio)
         - NPM libraries (e.g. @finos/legend-shared)
 

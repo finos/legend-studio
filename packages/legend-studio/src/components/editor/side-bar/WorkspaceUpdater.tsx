@@ -33,7 +33,7 @@ import { Link } from 'react-router-dom';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import type {
   EntityChangeConflict,
@@ -188,7 +188,7 @@ export const WorkspaceUpdater = observer(() => {
                 <div
                   className="side-bar__panel__header__changes-count"
                   data-testid={
-                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                    LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
                   }
                 >
                   {changes.length}
@@ -244,7 +244,7 @@ export const WorkspaceUpdater = observer(() => {
                 <div
                   className="side-bar__panel__header__changes-count"
                   data-testid={
-                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                    LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
                   }
                 >
                   {commitedReviews.length}

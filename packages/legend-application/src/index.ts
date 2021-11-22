@@ -23,6 +23,7 @@ export * from './components/WebApplicationNavigatorProvider';
 
 export * from './components/ApplicationStoreProviderTestUtils';
 export * from './components/WebApplicationNavigatorProviderTestUtils';
+export { AppHeader } from './components/AppHeader';
 export { BlockingAlert } from './components/BlockingAlert';
 export { ActionAlert } from './components/ActionAlert';
 export { NotificationSnackbar } from './components/NotificationSnackbar';

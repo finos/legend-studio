@@ -18,7 +18,7 @@ import type { RenderResult } from '@testing-library/react';
 import { render, fireEvent, waitFor, getByText } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
-import { STUDIO_TEST_ID } from './StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID';
 import { EditorStore } from '../stores/EditorStore';
 import { Editor } from './editor/Editor';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
@@ -182,7 +182,7 @@ export const TEST__openAndAssertPathWithElement = async (
   closePackage = true,
 ): Promise<void> => {
   const packageExplorer = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_TREES,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
   const packages = path.split(ELEMENT_PATH_DELIMITER);
   const rootPackage = packages.shift() as string;
@@ -204,7 +204,7 @@ export const TEST__openElementFromExplorerTree = async (
   renderResult: RenderResult,
 ): Promise<void> => {
   const packageExplorer = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_TREES,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
   await TEST__openAndAssertPathWithElement(path, renderResult, false);
   const elementName = path.split(ELEMENT_PATH_DELIMITER).pop() as string;
@@ -390,7 +390,9 @@ export const TEST__setUpEditor = async (
       true,
     ),
   );
-  await waitFor(() => renderResult.getByTestId(STUDIO_TEST_ID.EXPLORER_TREES));
+  await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EXPLORER_TREES),
+  );
   return renderResult;
 };
 

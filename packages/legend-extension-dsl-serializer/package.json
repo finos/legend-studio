@@ -46,7 +46,7 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.35",
+    "@types/react": "17.0.36",
     "mobx": "6.3.7",
     "mobx-react-lite": "3.2.2",
     "monaco-editor": "0.30.1",
@@ -58,12 +58,12 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.2.0",
+    "eslint": "8.3.0",
     "jest": "27.3.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.43.4",
-    "typescript": "4.4.4"
+    "typescript": "4.5.2"
   },
   "peerDependencies": {
     "react": "^17.0.0"
@@ -76,7 +76,6 @@
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-serilaizer-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-serializer-pure-graph-manager",
     "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-serializer-pure-graph",
-    "studioPreset": "@finos/legend-studio-preset-dsl-serializer",
     "studioPlugin": "@finos/legend-studio-plugin-dsl-serializer"
   }
 }

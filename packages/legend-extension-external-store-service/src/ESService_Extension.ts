@@ -19,9 +19,7 @@ import type { GraphPluginManager } from '@finos/legend-graph';
 import { AbstractPreset } from '@finos/legend-shared';
 import { ESService_PureGraphManagerPlugin } from './graphManager/ESService_PureGraphManagerPlugin';
 import { ESService_PureProtocolProcessorPlugin } from './models/protocols/pure/ESService_PureProtocolProcessorPlugin';
-import type { LegendStudioPluginManager } from '@finos/legend-studio';
 import { ESService_PureGraphPlugin } from './graph/ESService_PureGraphPlugin';
-import { ESService_LegendStudioPlugin } from './components/ESService_LegendStudioPlugin';
 
 export class ESService_GraphPreset extends AbstractPreset {
   constructor() {
@@ -29,19 +27,6 @@ export class ESService_GraphPreset extends AbstractPreset {
   }
 
   install(pluginManager: GraphPluginManager): void {
-    new ESService_PureGraphPlugin().install(pluginManager);
-    new ESService_PureGraphManagerPlugin().install(pluginManager);
-    new ESService_PureProtocolProcessorPlugin().install(pluginManager);
-  }
-}
-
-export class ESService_LegendStudioPreset extends AbstractPreset {
-  constructor() {
-    super(packageJson.extensions.studioPreset, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    new ESService_LegendStudioPlugin().install(pluginManager);
     new ESService_PureGraphPlugin().install(pluginManager);
     new ESService_PureGraphManagerPlugin().install(pluginManager);
     new ESService_PureProtocolProcessorPlugin().install(pluginManager);

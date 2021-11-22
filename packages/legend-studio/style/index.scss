@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-// Components
 @forward 'components/shared/multiplicity-badge';
-@forward 'components/app';
+@forward 'components/studio-app-header';
 @forward 'components/setup';
 @forward 'components/editor';
 @forward 'components/viewer';
