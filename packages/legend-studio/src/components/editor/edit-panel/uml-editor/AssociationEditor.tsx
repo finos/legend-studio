@@ -44,11 +44,7 @@ import {
   getControlledResizablePanelProps,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
-import {
-  prettyCONSTName,
-  guaranteeType,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
@@ -84,23 +80,17 @@ const AssociationPropertyBasicEditor = observer(
   }) => {
     const { association, property, selectProperty, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const checkDuplicateValue = (val: string, id: string): void => {
+    const checkDuplicateValue = (val: string): boolean => {
       if (
-        association.properties[0].name === val ||
+        association.properties[0].name === val &&
         association.properties[1].name === val
       ) {
-        guaranteeNonNullable(
-          document.getElementById(id),
-        ).style.backgroundColor = 'red';
-      } else {
-        guaranteeNonNullable(
-          document.getElementById(id),
-        ).style.backgroundColor = 'var(--color-dark-grey-300)';
+        return true;
       }
+      return false;
     };
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      checkDuplicateValue(event.target.value, event.target.id);
       property.setName(event.target.value);
     };
     // Generic Type
@@ -180,8 +170,11 @@ const AssociationPropertyBasicEditor = observer(
     return (
       <div className="property-basic-editor">
         <input
-          className="property-basic-editor__name"
-          id={property.uuid}
+          className={
+            checkDuplicateValue(property.name)
+              ? 'property-basic-editor__name property-basic-editor__name__duplicate'
+              : 'property-basic-editor__name'
+          }
           disabled={isReadOnly}
           value={property.name}
           spellCheck={false}

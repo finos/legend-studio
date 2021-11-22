@@ -26,6 +26,12 @@
     border-radius: 0.2rem;
     padding: 0 0.5rem;
     height: 2.8rem;
+
+    &__duplicate {
+      color: var(--color-red-100);
+      border: 0.2rem solid var(--color-red-100);
+      background: var(--color-dark-red-shade-100);
+    }
   }
 
   &__value:hover {

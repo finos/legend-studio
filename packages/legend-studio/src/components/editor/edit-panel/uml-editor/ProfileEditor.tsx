@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
@@ -31,20 +31,22 @@ const TagBasicEditor = observer(
   (props: {
     tag: Tag;
     deleteValue: () => void;
-    checkDuplicateValue: (val: string, id: string) => void;
+    checkDuplicateValue: (val: string) => boolean;
     isReadOnly: boolean;
   }) => {
     const { tag, deleteValue, checkDuplicateValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      checkDuplicateValue(event.target.value, event.target.id);
       tag.setValue(event.target.value);
     };
 
     return (
       <div className="tag-basic-editor">
         <input
-          className="tag-basic-editor__value"
-          id={tag.uuid}
+          className={
+            checkDuplicateValue(tag.value)
+              ? 'tag-basic-editor__value tag-basic-editor__value__duplicate'
+              : 'tag-basic-editor__value'
+          }
           spellCheck={false}
           disabled={isReadOnly}
           value={tag.value}
@@ -72,7 +74,7 @@ const StereotypeBasicEditor = observer(
   (props: {
     stereotype: Stereotype;
     deleteStereotype: () => void;
-    checkDuplicateStereotype: (val: string, id: string) => void;
+    checkDuplicateStereotype: (val: string) => boolean;
     isReadOnly: boolean;
   }) => {
     const {
@@ -82,15 +84,17 @@ const StereotypeBasicEditor = observer(
       isReadOnly,
     } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      checkDuplicateStereotype(event.target.value, event.target.id);
       stereotype.setValue(event.target.value);
     };
 
     return (
       <div className="stereotype-basic-editor">
         <input
-          className="stereotype-basic-editor__value"
-          id={stereotype.uuid}
+          className={
+            checkDuplicateStereotype(stereotype.value)
+              ? 'stereotype-basic-editor__value stereotype-basic-editor__value__duplicate'
+              : 'stereotype-basic-editor__value'
+          }
           spellCheck={false}
           disabled={isReadOnly}
           value={stereotype.value}
@@ -155,26 +159,23 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
     (val: Tag): (() => void) =>
     (): void =>
       profile.deleteTag(val);
-  const checkDuplicateStereotype = (val: string, id: string): void => {
-    if (
-      profile.stereotypes.find((stereotype) => stereotype.value === val) !==
-      undefined
-    ) {
-      guaranteeNonNullable(document.getElementById(id)).style.borderColor =
-        'red';
-    } else {
-      guaranteeNonNullable(document.getElementById(id)).style.borderColor =
-        'var(--color-input-border)';
+  const checkDuplicateStereotype = (val: string): boolean => {
+    let count = 0;
+    profile.stereotypes.forEach(
+      (stereotype) => stereotype.value === val && count++,
+    );
+    if (count >= 2) {
+      return true;
     }
+    return false;
   };
-  const checkDuplicateTag = (val: string, id: string): void => {
-    if (profile.tags.find((tag) => tag.value === val) !== undefined) {
-      guaranteeNonNullable(document.getElementById(id)).style.borderColor =
-        'red';
-    } else {
-      guaranteeNonNullable(document.getElementById(id)).style.borderColor =
-        'var(--color-input-border)';
+  const checkDuplicateTag = (val: string): boolean => {
+    let count = 0;
+    profile.tags.forEach((tag) => tag.value === val && count++);
+    if (count >= 2) {
+      return true;
     }
+    return false;
   };
   return (
     <div className="uml-element-editor profile-editor">

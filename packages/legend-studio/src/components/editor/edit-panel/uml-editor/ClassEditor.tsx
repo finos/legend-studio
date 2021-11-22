@@ -16,11 +16,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  guaranteeNonNullable,
-  isNonNullable,
-  prettyCONSTName,
-} from '@finos/legend-shared';
+import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import type {
   ElementDragSource,
@@ -102,23 +98,16 @@ const PropertyBasicEditor = observer(
       property.owner instanceof Class && property.owner !== _class;
     const isPropertyFromAssociation = property.owner instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
-    const checkDuplicateProperty = (val: string, id: string): void => {
-      if (
-        _class.properties.find((property) => property.name === val) !==
-        undefined
-      ) {
-        guaranteeNonNullable(
-          document.getElementById(id),
-        ).style.backgroundColor = 'red';
-      } else {
-        guaranteeNonNullable(
-          document.getElementById(id),
-        ).style.backgroundColor = 'var(--color-dark-grey-300)';
+    const checkDuplicateProperty = (val: string): boolean => {
+      let count = 0;
+      _class.properties.forEach((property) => property.name === val && count++);
+      if (count >= 2) {
+        return true;
       }
+      return false;
     };
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      checkDuplicateProperty(event.target.value, event.target.id);
       property.setName(event.target.value);
     };
     // Generic Type
@@ -200,8 +189,11 @@ const PropertyBasicEditor = observer(
         )}
         {!isIndirectProperty && (
           <input
-            className="property-basic-editor__name"
-            id={property.uuid}
+            className={
+              checkDuplicateProperty(property.name)
+                ? 'property-basic-editor__name property-basic-editor__name__duplicate'
+                : 'property-basic-editor__name'
+            }
             disabled={isReadOnly}
             value={property.name}
             spellCheck={false}

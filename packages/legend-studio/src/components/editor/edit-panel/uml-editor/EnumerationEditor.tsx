@@ -26,7 +26,7 @@ import type {
   UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
   clsx,
@@ -63,21 +63,23 @@ const EnumBasicEditor = observer(
     _enum: Enum;
     selectValue: () => void;
     deleteValue: () => void;
-    checkDuplicateValue: (val: string, id: string) => void;
+    checkDuplicateValue: (val: string) => boolean;
     isReadOnly: boolean;
   }) => {
     const { _enum, selectValue, deleteValue, checkDuplicateValue, isReadOnly } =
       props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      checkDuplicateValue(event.target.value, event.target.id);
       _enum.setName(event.target.value);
     };
 
     return (
       <div className="enum-basic-editor">
         <input
-          className="enum-basic-editor__name"
-          id={_enum.uuid}
+          className={
+            checkDuplicateValue(_enum.name)
+              ? 'enum-basic-editor__name enum-basic-editor__name__duplicate'
+              : 'enum-basic-editor__name'
+          }
           spellCheck={false}
           disabled={isReadOnly}
           value={_enum.name}
@@ -424,16 +426,13 @@ export const EnumerationEditor = observer(
         editorStore.openElement(enumeration.generationParentElement);
       }
     };
-    const checkDuplicateValue = (val: string, id: string): void => {
-      if (
-        enumeration.values.find((value) => value.name === val) !== undefined
-      ) {
-        guaranteeNonNullable(document.getElementById(id)).style.borderColor =
-          'red';
-      } else {
-        guaranteeNonNullable(document.getElementById(id)).style.borderColor =
-          'var(--color-input-border)';
+    const checkDuplicateValue = (val: string): boolean => {
+      let count = 0;
+      enumeration.values.forEach((value) => value.name === val && count++);
+      if (count >= 2) {
+        return true;
       }
+      return false;
     };
 
     return (
