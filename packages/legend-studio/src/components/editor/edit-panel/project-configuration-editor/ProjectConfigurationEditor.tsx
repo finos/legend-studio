@@ -387,17 +387,17 @@ export const ProjectConfigurationEditor = observer(() => {
       );
     }
   };
-
   useEffect(() => {
     if (
       configState.projectConfiguration &&
+      selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES &&
       !configState.associatedProjectsAndVersionsFetched
     ) {
       flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
         applicationStore.alertIllegalUnhandledError,
       );
     }
-  }, [applicationStore, configState]);
+  }, [applicationStore, configState, selectedTab]);
 
   if (!configState.projectConfiguration) {
     return null;
