@@ -41,8 +41,6 @@ export {
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
-export { GenerationFile } from './stores/shared/FileGenerationTreeUtil';
-export { FileGenerationState } from './stores/editor-state/FileGenerationState';
 
 // components
 export * from './components/editor/EditorStoreProvider';
@@ -85,3 +83,5 @@ export * from './stores/StoreRelational_LegendStudioPlugin_Extension';
 
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal';
+export { GenerationFile } from './stores/shared/FileGenerationTreeUtil';
+export { FileGenerationState } from './stores/editor-state/FileGenerationState';

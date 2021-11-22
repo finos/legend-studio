@@ -36,13 +36,13 @@ import { ConcreteFunctionDefinition } from '@finos/legend-graph';
 
 const MORPHIR_TYPE_NAME = `morphir`;
 
-interface ELMorphir_GenerationPluginConfigData {
+interface ELMorphir_LegendStudioPluginConfigData {
   morphirVisualizerUrl: string;
   linterServerUrl: string;
   linterAppUrl: string;
 }
 
-export class ELMorphir_GenerationPlugin
+export class ELMorphir_LegendStudioPlugin
   extends LegendStudioPlugin
   implements DSL_LegendStudioPlugin_Extension
 {
@@ -60,8 +60,8 @@ export class ELMorphir_GenerationPlugin
     pluginManager.registerStudioPlugin(this);
   }
 
-  override configure(_configData: object): ELMorphir_GenerationPlugin {
-    const configData = _configData as ELMorphir_GenerationPluginConfigData;
+  override configure(_configData: object): ELMorphir_LegendStudioPlugin {
+    const configData = _configData as ELMorphir_LegendStudioPluginConfigData;
     assertNonEmptyString(
       configData.morphirVisualizerUrl,
       `Can't configure morphir visualizer url for generation plugin: 'url' field is missing or empty`,

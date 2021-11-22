@@ -149,7 +149,7 @@ export type FileGenerationResultViewerAction = (
 
 export type FileGenerationScopeFilter = (
   fileGenerationType: string,
-  PackageableElement: PackageableElement,
+  packageableElement: PackageableElement,
 ) => boolean;
 
 /**

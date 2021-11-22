@@ -242,7 +242,7 @@ export const GenerationResultViewer = observer(
                 fileGenerationState,
               ),
             )
-        : undefined;
+        : null;
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={250} minSize={250}>
@@ -300,8 +300,7 @@ export const GenerationResultViewer = observer(
                   <div className="panel__header__title__content generation-result-viewer__file__header-name">
                     {fileNode.name}
                   </div>
-                  {fileNode instanceof GenerationFile &&
-                    extraFileGenerationResultViewerActions}
+                  {extraFileGenerationResultViewerActions}
                 </div>
               )}
             </div>
