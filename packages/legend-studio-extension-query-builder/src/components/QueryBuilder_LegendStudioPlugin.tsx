@@ -222,10 +222,11 @@ export class QueryBuilder_LegendStudioPlugin
                 }),
               );
               if (queryBuilderExtension.mode) {
+                queryBuilderExtension.queryBuilderState.resetApp();
+                queryBuilderExtension.queryBuilderState.resetSetup();
                 queryBuilderExtension.queryBuilderState.querySetupState.setClass(
                   element,
                 );
-                queryBuilderExtension.queryBuilderState.resetData();
               }
             };
             return (
@@ -319,10 +320,11 @@ export class QueryBuilder_LegendStudioPlugin
                 }),
               );
               if (queryBuilderExtension.mode) {
+                queryBuilderExtension.queryBuilderState.resetApp();
+                queryBuilderExtension.queryBuilderState.resetSetup();
                 queryBuilderExtension.queryBuilderState.querySetupState.setClass(
                   classView.class.value,
                 );
-                queryBuilderExtension.queryBuilderState.resetData();
               }
             };
             return (

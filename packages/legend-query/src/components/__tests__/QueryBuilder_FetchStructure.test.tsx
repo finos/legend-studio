@@ -85,7 +85,8 @@ test(
     );
 
     queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetData();
+    queryBuilderState.resetApp();
+    queryBuilderState.resetSetup();
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -281,7 +282,8 @@ test(
     ).toBe(0);
 
     // filter with group condition
-    queryBuilderState.resetData();
+    queryBuilderState.resetApp();
+    queryBuilderState.resetSetup();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__getAllWithGroupedFilter),
@@ -313,7 +315,8 @@ test(
     ).toBe(0);
 
     // projection column with derived property
-    queryBuilderState.resetData();
+    queryBuilderState.resetApp();
+    queryBuilderState.resetSetup();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__projectWithDerivedProperty),
@@ -370,7 +373,8 @@ test(
     );
 
     queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetData();
+    queryBuilderState.resetApp();
+    queryBuilderState.resetSetup();
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );

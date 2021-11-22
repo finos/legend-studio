@@ -163,7 +163,8 @@ export class QueryBuilderState {
       runtimeOptions: computed,
       serviceOptions: computed,
       setMode: action,
-      resetData: action,
+      resetApp: action,
+      resetSetup: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
@@ -203,8 +204,17 @@ export class QueryBuilderState {
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
-  resetData(): void {
+  resetApp(): void {
+    const resultState = new QueryBuilderResultState(this);
+    resultState.setPreviewLimit(this.resultState.previewLimit);
+    this.queryTextEditorState = new QueryTextEditorState(this);
+    this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
+    this.resultState = resultState;
+  }
+
+  resetSetup(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
+    this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
@@ -213,12 +223,6 @@ export class QueryBuilderState {
     this.fetchStructureState = fetchStructureState;
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultSetModifierState = new QueryResultSetModifierState(this);
-    const resultState = new QueryBuilderResultState(this);
-    resultState.setPreviewLimit(this.resultState.previewLimit);
-    this.resultState = resultState;
-    this.queryTextEditorState = new QueryTextEditorState(this);
-    this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
-    this.explorerState.refreshTreeData();
     this.fetchStructureState.graphFetchTreeState.initialize();
   }
 
@@ -232,7 +236,8 @@ export class QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.querySetupState.setClass(undefined, true);
-      this.resetData();
+      this.resetApp();
+      this.resetSetup();
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Unable to initialize query builder: ${error.message}`,
@@ -250,7 +255,8 @@ export class QueryBuilderState {
    * consumers of function should handle the errors.
    */
   buildStateFromRawLambda(rawLambda: RawLambda): void {
-    this.resetData();
+    this.resetApp();
+    this.resetSetup();
     if (!rawLambda.isStub) {
       const valueSpec =
         this.graphManagerState.graphManager.buildValueSpecification(
