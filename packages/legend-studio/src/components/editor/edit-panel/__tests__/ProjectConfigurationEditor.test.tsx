@@ -153,7 +153,6 @@ test(integrationTest('Test Project Dependency'), async () => {
     LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
   );
   const updateButton = getByText(editPanel, 'Update');
-  expect(updateButton.getAttribute('disabled')).toBeNull();
   fireEvent.click(getByText(editPanel, 'Project Dependencies'));
 
   // dependency 1
@@ -181,6 +180,7 @@ test(integrationTest('Test Project Dependency'), async () => {
           (dep) => dep.hashCode === originalProjDep.hashCode,
         ),
     );
+  expect(updateButton.getAttribute('disabled')).toBeNull();
   expect(projectDependenciesToAdd).toHaveLength(1);
   expect(projectDependenciesToRemove).toHaveLength(1);
   expect((projectDependenciesToAdd[0] as ProjectDependency).projectId).toBe(

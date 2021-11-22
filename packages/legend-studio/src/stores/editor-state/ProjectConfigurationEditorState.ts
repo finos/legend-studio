@@ -154,7 +154,9 @@ export class ProjectConfigurationEditorState extends EditorState {
         LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notifyError(
+        `Can't get project dependencies data. Error:\n${error.message}`,
+      );
     } finally {
       this.isFetchingAssociatedProjectsAndVersions = false;
     }
