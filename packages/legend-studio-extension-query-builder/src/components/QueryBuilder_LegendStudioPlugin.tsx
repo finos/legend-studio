@@ -222,10 +222,7 @@ export class QueryBuilder_LegendStudioPlugin
                 }),
               );
               if (queryBuilderExtension.mode) {
-                queryBuilderExtension.queryBuilderState.querySetupState.setClass(
-                  element,
-                );
-                queryBuilderExtension.queryBuilderState.resetData();
+                queryBuilderExtension.queryBuilderState.changeClass(element);
               }
             };
             return (
@@ -319,10 +316,9 @@ export class QueryBuilder_LegendStudioPlugin
                 }),
               );
               if (queryBuilderExtension.mode) {
-                queryBuilderExtension.queryBuilderState.querySetupState.setClass(
+                queryBuilderExtension.queryBuilderState.changeClass(
                   classView.class.value,
                 );
-                queryBuilderExtension.queryBuilderState.resetData();
               }
             };
             return (
