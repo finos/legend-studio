@@ -19,6 +19,8 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
+  isNonNullable,
+  uniq,
 } from '@finos/legend-shared';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
@@ -265,6 +267,33 @@ export class V1_ValueSpecificationBuilder
       ),
     );
     instance.values = transformed;
+    const typeValues = instance.values
+      .map((v) => v.genericType?.value.rawType)
+      .filter(isNonNullable);
+    if (typeValues.length) {
+      const typeCount = new Map<string, number>();
+      typeValues.forEach((type) => {
+        if (typeCount.has(type.path)) {
+          typeCount.set(
+            type.path,
+            guaranteeNonNullable(typeCount.get(type.path)) + 1,
+          );
+        } else {
+          typeCount.set(type.path, 1);
+        }
+      });
+      let mostCommonType = guaranteeNonNullable(typeValues[0]);
+      uniq(typeValues).forEach((v) => {
+        mostCommonType =
+          guaranteeNonNullable(typeCount.get(v.path)) >
+          guaranteeNonNullable(typeCount.get(mostCommonType.path))
+            ? v
+            : mostCommonType;
+      });
+      instance.genericType = GenericTypeExplicitReference.create(
+        new GenericType(mostCommonType),
+      );
+    }
     return instance;
   }
 

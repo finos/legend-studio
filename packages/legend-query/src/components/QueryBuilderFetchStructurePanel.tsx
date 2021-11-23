@@ -79,7 +79,7 @@ export const QueryBuilderFetchStructurePanel = observer(
         if (fetchStructureState.fetchStructureMode !== fetchMode) {
           fetchStructureState.setFetchStructureMode(fetchMode);
           // TODO: might want to add alert modal to alert user changing fetch structure resets state
-          queryBuilderState.resetData();
+          queryBuilderState.changeFetchStructure();
         }
       };
 
