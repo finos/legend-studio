@@ -22,7 +22,6 @@ import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
 import { CgOptions } from 'react-icons/cg';
 import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel';
 import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState';
-import { QueryResultSetModifierState } from '../stores/QueryResultSetModifierState';
 
 const QueryBuilderUnsupportedFetchStructure = observer(
   (props: { mode: FETCH_STRUCTURE_MODE }) => {
@@ -80,8 +79,7 @@ export const QueryBuilderFetchStructurePanel = observer(
         if (fetchStructureState.fetchStructureMode !== fetchMode) {
           fetchStructureState.setFetchStructureMode(fetchMode);
           // TODO: might want to add alert modal to alert user changing fetch structure resets state
-          queryBuilderState.resultSetModifierState =
-            new QueryResultSetModifierState(queryBuilderState);
+          queryBuilderState.changeFetchStructure();
         }
       };
 

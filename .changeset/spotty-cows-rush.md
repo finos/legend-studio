@@ -2,4 +2,4 @@
 "@finos/legend-query": patch
 ---
 
-Refactor reset states of QueryBuilder
+Make resetting behaviour in query builder more consistent and systematic.

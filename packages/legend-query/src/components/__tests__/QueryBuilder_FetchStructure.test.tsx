@@ -84,9 +84,7 @@ test(
       'model::relational::tests::simpleRelationalMapping',
     );
 
-    queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetApp();
-    queryBuilderState.resetSetup();
+    queryBuilderState.changeClass(_personClass);
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -282,8 +280,8 @@ test(
     ).toBe(0);
 
     // filter with group condition
-    queryBuilderState.resetApp();
-    queryBuilderState.resetSetup();
+    queryBuilderState.resetQueryBuilder();
+    queryBuilderState.resetQuerySetup();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__getAllWithGroupedFilter),
@@ -315,8 +313,8 @@ test(
     ).toBe(0);
 
     // projection column with derived property
-    queryBuilderState.resetApp();
-    queryBuilderState.resetSetup();
+    queryBuilderState.resetQueryBuilder();
+    queryBuilderState.resetQuerySetup();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__projectWithDerivedProperty),
@@ -372,9 +370,7 @@ test(
       'model::target::NFirm',
     );
 
-    queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetApp();
-    queryBuilderState.resetSetup();
+    queryBuilderState.changeClass(_personClass);
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );

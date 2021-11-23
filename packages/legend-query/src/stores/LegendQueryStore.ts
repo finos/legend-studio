@@ -609,8 +609,8 @@ export class LegendQueryStore {
           this.queryBuilderState.querySetupState._class = possibleTargets[0];
         }
       }
-      this.queryBuilderState.resetApp();
-      this.queryBuilderState.resetSetup();
+      this.queryBuilderState.resetQueryBuilder();
+      this.queryBuilderState.resetQuerySetup();
       this.setOnSaveQuery(async (lambda: RawLambda) => {
         this.setQueryExportState(
           new QueryExportState(this, lambda, false, undefined),

@@ -50,9 +50,7 @@ export const QueryBuilderSetupPanel = observer(
       ? { value: querySetupState._class, label: querySetupState._class.name }
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
-      queryBuilderState.resetApp();
-      queryBuilderState.resetSetup();
-      querySetupState.setClass(val.value);
+      queryBuilderState.changeClass(val.value);
     };
     // mapping
     const mappingOptions = querySetupState.possibleMappings.map((mapping) => ({
@@ -82,8 +80,8 @@ export const QueryBuilderSetupPanel = observer(
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
       if (querySetupState._class && !querySetupState.mappingIsReadOnly) {
         querySetupState.setMapping(val.value);
-        queryBuilderState.resetApp();
-        queryBuilderState.resetSetup();
+        queryBuilderState.resetQueryBuilder();
+        queryBuilderState.resetQuerySetup();
       }
     };
     // runtime
