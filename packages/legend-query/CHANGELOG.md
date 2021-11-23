@@ -1,5 +1,15 @@
 # @finos/legend-query
 
+## 0.1.5
+
+## 0.1.4
+
+## 0.1.3
+
+### Patch Changes
+
+- [#685](https://github.com/finos/legend-studio/pull/685) [`1ae0553b`](https://github.com/finos/legend-studio/commit/1ae0553b7af88217a8642492cab2252a589ab091) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `QueryPlugin` to `LegendQueryPlugin`. This change applies for other extension-related classes as well, e.g. `LegendQueryPluginManager`, `*_LegendQueryPreset`, `*_LegendQueryPlugin`, etc.
+
 ## 0.1.2
 
 ### Patch Changes

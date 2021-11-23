@@ -19,11 +19,7 @@ import { AbstractPreset } from '@finos/legend-shared';
 import { DSLDataSpace_PureGraphManagerPlugin } from './graphManager/DSLDataSpace_PureGraphManagerPlugin';
 import { DSLDataSpace_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
 import type { GraphPluginManager } from '@finos/legend-graph';
-import type { LegendStudioPluginManager } from '@finos/legend-studio';
-import { DSLDataSpace_LegendStudioPlugin } from './components/studio/DSLDataSpace_LegendStudioPlugin';
 import { DSLDataSpace_PureGraphPlugin } from './graph/DSLDataSpace_PureGraphPlugin';
-import type { LegendQueryPluginManager } from '@finos/legend-query';
-import { DSLDataSpace_LegendQueryPlugin } from './components/query/DSLDataSpace_LegendQueryPlugin';
 
 export class DSLDataSpace_GraphPreset extends AbstractPreset {
   constructor() {
@@ -31,32 +27,6 @@ export class DSLDataSpace_GraphPreset extends AbstractPreset {
   }
 
   install(pluginManager: GraphPluginManager): void {
-    new DSLDataSpace_PureGraphPlugin().install(pluginManager);
-    new DSLDataSpace_PureGraphManagerPlugin().install(pluginManager);
-    new DSLDataSpace_PureProtocolProcessorPlugin().install(pluginManager);
-  }
-}
-
-export class DSLDataSpace_LegendStudioPreset extends AbstractPreset {
-  constructor() {
-    super(packageJson.extensions.studioPreset, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    new DSLDataSpace_LegendStudioPlugin().install(pluginManager);
-    new DSLDataSpace_PureGraphPlugin().install(pluginManager);
-    new DSLDataSpace_PureGraphManagerPlugin().install(pluginManager);
-    new DSLDataSpace_PureProtocolProcessorPlugin().install(pluginManager);
-  }
-}
-
-export class DSLDataSpace_LegendQueryPreset extends AbstractPreset {
-  constructor() {
-    super(packageJson.extensions.studioPreset, packageJson.version);
-  }
-
-  install(pluginManager: LegendQueryPluginManager): void {
-    new DSLDataSpace_LegendQueryPlugin().install(pluginManager);
     new DSLDataSpace_PureGraphPlugin().install(pluginManager);
     new DSLDataSpace_PureGraphManagerPlugin().install(pluginManager);
     new DSLDataSpace_PureProtocolProcessorPlugin().install(pluginManager);

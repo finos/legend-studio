@@ -123,6 +123,8 @@ jobs:
             os: windows-latest
           - application: '@finos/legend-query-deployment'
             os: ubuntu-latest
+          - application: '@finos/legend-taxonomy-deployment'
+            os: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.4.0

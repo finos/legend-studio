@@ -20,11 +20,10 @@ import { PanelLoadingIndicator } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { useParams } from 'react-router-dom';
 import {
+  LegendStudioAppHeaderMenu,
   useLegendStudioStore,
-  AppHeader,
-  AppHeaderMenu,
 } from '@finos/legend-studio';
-import { useApplicationStore } from '@finos/legend-application';
+import { AppHeader, useApplicationStore } from '@finos/legend-application';
 
 const EVENT_MARKETING_LINK_ACCESS = 'Marketing link accessed';
 export const PATH_PARAM_TOKEN_REDIRECT_URL = 'redirectUrl';
@@ -81,7 +80,7 @@ export const URLRedirector = observer(() => {
   return (
     <div className="app__page">
       <AppHeader>
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <PanelLoadingIndicator isLoading={true} />

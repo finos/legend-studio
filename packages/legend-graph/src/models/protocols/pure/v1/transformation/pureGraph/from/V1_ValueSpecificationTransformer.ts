@@ -200,6 +200,7 @@ class V1_ValueSpecificationTransformer
       }
       case PRIMITIVE_TYPE.LATESTDATE: {
         const cPrimitiveType = new V1_CLatestDate();
+        cPrimitiveType.multiplicity = multiplicity;
         return cPrimitiveType;
       }
       default:

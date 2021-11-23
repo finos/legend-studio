@@ -12,12 +12,12 @@
     { "path": "../legend-art" },
     { "path": "../legend-studio" },
     { "path": "../legend-shared" },
+    { "path": "../legend-graph-extension-collection" },
     { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-extension-dsl-serializer" },
     { "path": "../legend-extension-external-store-service" },
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-dsl-data-space" },
-    { "path": "../legend-extension-external-format-json-schema" },
     { "path": "../legend-studio-extension-query-builder" }
   ]
 }

@@ -39,7 +39,7 @@ import {
   RawLambda,
 } from '@finos/legend-graph';
 import {
-  TEST__provideMockedQueryStore,
+  TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
 } from '../QueryComponentTestUtils';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID';
@@ -62,7 +62,7 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedQueryStore({
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
@@ -350,7 +350,7 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedQueryStore({
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(

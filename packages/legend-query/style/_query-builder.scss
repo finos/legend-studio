@@ -103,9 +103,9 @@
   }
 
   &__status-bar {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
     height: 2.2rem;
     background: var(--color-blue-100);
     color: var(--color-light-grey-0);
@@ -124,9 +124,8 @@
     }
 
     &__action {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      @include flexCenter;
+
       cursor: pointer;
       background: none;
       height: 100%;

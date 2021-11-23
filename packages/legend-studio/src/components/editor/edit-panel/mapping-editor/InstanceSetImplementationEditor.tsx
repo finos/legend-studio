@@ -29,7 +29,7 @@ import type {
   MappingElementSourceDropTarget,
 } from '../../../../stores/shared/DnDUtil';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import {
   InstanceSetImplementationState,
   MappingElementState,
@@ -264,7 +264,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     }
     return (
       <div
-        data-testid={STUDIO_TEST_ID.SOURCE_PANEL}
+        data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
         className={clsx('panel source-panel', {
           /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
           backdrop__element:

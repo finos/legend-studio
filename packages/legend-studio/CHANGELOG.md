@@ -1,5 +1,29 @@
 # @finos/legend-studio
 
+## 2.0.2
+
+### Patch Changes
+
+- [#700](https://github.com/finos/legend-studio/pull/700) [`2063cc76`](https://github.com/finos/legend-studio/commit/2063cc76fb27d65f4e287041014ab347a80b4663) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering generated file with no content in file generation editor.
+
+* [#701](https://github.com/finos/legend-studio/pull/701) [`c4039cfc`](https://github.com/finos/legend-studio/commit/c4039cfc3efe33d720da040d96dbf4564b8c5a26) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fetch depot projects for dependencies only in dependency tab in the config editor.
+
+## 2.0.1
+
+## 2.0.0
+
+### Major Changes
+
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - Moved `AppHeader` component to `@finos/legend-application`, renamed `AppHeaderMenu` to `LegendStudioAppHeaderMenu`.
+
+* [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename the enum `STUDIO_LOG_EVENT` to `LEGEND_STUDIO_LOG_EVENT_TYPE`, `STUDIO_HOTKEY` to `LEGEND_STUDIO_HOTKEY`, and `STUDIO_TEST_ID` to `LEGEND_STUDIO_TEST_ID`.
+
+### Patch Changes
+
+- [#663](https://github.com/finos/legend-studio/pull/663) [`44115178`](https://github.com/finos/legend-studio/commit/44115178fa3bad5d3f2225aa8b1330e89f721993) ([@gayathrir11](https://github.com/gayathrir11)) - Fix bug in `FileGenerationEditor` not resetting while changing elements ([#142](https://github.com/finos/legend-studio/issues/142)]).
+
+* [#685](https://github.com/finos/legend-studio/pull/685) [`1ae0553b`](https://github.com/finos/legend-studio/commit/1ae0553b7af88217a8642492cab2252a589ab091) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `StudioPlugin` to `LegendStudioPlugin`. This change applies for other extension-related classes as well, e.g. `LegendStudioPluginManager`, `*_LegendStudioPreset`, `*_LegendStudioPlugin`, etc.
+
 ## 1.0.0
 
 ### Major Changes

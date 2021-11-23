@@ -103,7 +103,7 @@ export const buildLambdaFunction = (
   if (isMilestonedClass(_class, queryBuilderState.graphManagerState.graph)) {
     getAllFunction.parametersValues.push(
       guaranteeNonNullable(
-        queryBuilderState.querySetupState._classVersionValue,
+        queryBuilderState.querySetupState.classMilestoningValue,
       ),
     );
   }

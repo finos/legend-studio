@@ -6,6 +6,9 @@
 /packages/*/build/
 /packages/*/dist/
 /packages/*/lib/
+/fixtures/*/build/
+/fixtures/*/dist/
+/fixtures/*/lib/
 
 # Yarn
 .yarn/*

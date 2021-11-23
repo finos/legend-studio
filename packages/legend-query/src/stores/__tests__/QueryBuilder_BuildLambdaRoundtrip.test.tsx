@@ -25,6 +25,8 @@ import {
   TEST_DATA__fullComplexProjectionQuery,
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
+  TEST_DATA__graphFetchWithDerivedProperty,
+  TEST_DATA__graphFetchWithDerivedPropertyAndParameter,
 } from './TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
@@ -140,6 +142,18 @@ const cases: RoundtripTestCase[] = [
     graphFetchCtx,
     TEST_DATA__lambda_output_graphFetchWithFullPathFunctions,
     TEST_DATA__lambda_input_graphFetchWithFullPathFunctions,
+  ],
+  [
+    'Graph-fetch with derived property',
+    graphFetchCtx,
+    TEST_DATA__graphFetchWithDerivedProperty,
+    undefined,
+  ],
+  [
+    'Graph-fetch with derived property with parameters',
+    graphFetchCtx,
+    TEST_DATA__graphFetchWithDerivedPropertyAndParameter,
+    undefined,
   ],
   // filter
   [

@@ -24,7 +24,10 @@ import {
 } from '../../../../../../../../graph/PureModel';
 import { TEST__GraphPluginManager } from '../../../../../../../../GraphManagerTestUtils';
 import { getGraphManager } from '../../../../../Pure';
-import { V1_TEST_DATA__unsupportedFunctionExpression } from './V1_TEST_DATA__ValueSpecificationBuilder';
+import {
+  V1_TEST_DATA__unsupportedFunctionExpression,
+  V1_TEST_DATA__valueSpecificationWithLatestDate,
+} from './V1_TEST_DATA__ValueSpecificationBuilder';
 
 type RoundtripTestCase = [
   string,
@@ -45,6 +48,12 @@ const cases: RoundtripTestCase[] = [
     {
       errorMessage: `Can't find expression builder for function 'getAll': no compatible function expression builder available from plugins`,
     },
+  ],
+  [
+    'ValueSpecification with LatestDate',
+    { entities: [] },
+    V1_TEST_DATA__valueSpecificationWithLatestDate,
+    {},
   ],
 ];
 

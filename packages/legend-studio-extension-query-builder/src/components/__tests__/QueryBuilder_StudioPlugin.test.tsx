@@ -24,7 +24,7 @@ import { waitFor } from '@testing-library/dom';
 import type { EditorStore } from '@finos/legend-studio';
 import {
   LegendStudioPluginManager,
-  STUDIO_TEST_ID,
+  LEGEND_STUDIO_TEST_ID,
   TEST__openElementFromExplorerTree,
   TEST__getTestStudioConfig,
   TEST__provideMockedEditorStore,
@@ -229,13 +229,13 @@ test(integrationTest('Open query builder by executing a class'), async () => {
   await TEST__openElementFromExplorerTree('model::Person', renderResult);
 
   const projectExplorer = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_TREES,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
   const elementInExplorer = getByText(projectExplorer, 'Person');
   fireEvent.contextMenu(elementInExplorer);
 
   const explorerContextMenu = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
   );
 
   fireEvent.click(getByText(explorerContextMenu, 'Execute...'));
@@ -263,7 +263,7 @@ test(
     await TEST__openElementFromExplorerTree('model::MyMapping', renderResult);
 
     const mappingExplorer = renderResult.getByTestId(
-      STUDIO_TEST_ID.MAPPING_EXPLORER,
+      LEGEND_STUDIO_TEST_ID.MAPPING_EXPLORER,
     );
     const classMappingInExplorer = getByText(mappingExplorer, 'Person');
     fireEvent.contextMenu(classMappingInExplorer);

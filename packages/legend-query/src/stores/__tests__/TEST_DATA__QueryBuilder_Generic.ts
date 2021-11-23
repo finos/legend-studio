@@ -1031,3 +1031,169 @@ export const TEST_DATA__complexGraphFetch = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__graphFetchWithDerivedProperty = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'serialize',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'graphFetchChecked',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::target::NFirm',
+                },
+              ],
+            },
+            {
+              _type: 'rootGraphFetchTree',
+              class: 'model::target::NFirm',
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [],
+                  property: 'firstEmployee',
+                  subTrees: [
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      parameters: [],
+                      property: 'age',
+                      subTrees: [],
+                    },
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      parameters: [],
+                      property: 'fullName',
+                      subTrees: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'rootGraphFetchTree',
+          class: 'model::target::NFirm',
+          subTrees: [
+            {
+              _type: 'propertyGraphFetchTree',
+              parameters: [],
+              property: 'firstEmployee',
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [],
+                  property: 'age',
+                  subTrees: [],
+                },
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [],
+                  property: 'fullName',
+                  subTrees: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__graphFetchWithDerivedPropertyAndParameter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'serialize',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'graphFetchChecked',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::target::NFirm',
+                },
+              ],
+            },
+            {
+              _type: 'rootGraphFetchTree',
+              class: 'model::target::NFirm',
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [
+                    {
+                      _type: 'string',
+                      values: ['My name is'],
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                    },
+                    {
+                      _type: 'string',
+                      values: ['.'],
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                    },
+                  ],
+                  property: 'myName',
+                  subTrees: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'rootGraphFetchTree',
+          class: 'model::target::NFirm',
+          subTrees: [
+            {
+              _type: 'propertyGraphFetchTree',
+              parameters: [
+                {
+                  _type: 'string',
+                  values: ['My name is'],
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                },
+                {
+                  _type: 'string',
+                  values: ['.'],
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                },
+              ],
+              property: 'myName',
+              subTrees: [],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

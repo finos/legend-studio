@@ -442,12 +442,12 @@ export const getResolvedDataSpace = (
   throw new UnsupportedOperationError(`Can't resolve data space`, json);
 };
 
-export const extractDataSpaceTaxonomyNodePaths = (
+export const extractDataSpaceTaxonomyNodes = (
   json: PlainObject<V1_DataSpace>,
 ): string[] => {
   const ENTERPRISE_PROFILE_PATH = `meta::pure::profiles::enterprise`;
-  const ENTERPRISE_TAXONOMY_NODES_TAG = `taxonomyNodes`;
-  const ENTERPRISE_TAXONOMY_NODES_TAG_VALUE_DELIMITER = `,`;
+  const TAXONOMY_NODES_TAG = `taxonomyNodes`;
+  const TAXONOMY_NODES_TAG_VALUE_DELIMITER = `,`;
 
   const taxonomyNodes = new Set<string>();
   if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
@@ -461,11 +461,11 @@ export const extractDataSpaceTaxonomyNodePaths = (
         .filter(
           (taggedValue) =>
             taggedValue.tag.profile === ENTERPRISE_PROFILE_PATH &&
-            taggedValue.tag.value === ENTERPRISE_TAXONOMY_NODES_TAG,
+            taggedValue.tag.value === TAXONOMY_NODES_TAG,
         )
         .forEach((taggedValue) => {
           taggedValue.value
-            .split(ENTERPRISE_TAXONOMY_NODES_TAG_VALUE_DELIMITER)
+            .split(TAXONOMY_NODES_TAG_VALUE_DELIMITER)
             .map((value) => value.trim())
             .filter((value) => Boolean(value))
             .forEach((value) => taxonomyNodes.add(value));

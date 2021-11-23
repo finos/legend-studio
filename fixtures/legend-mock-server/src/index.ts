@@ -14,4 +14,31 @@
  * limitations under the License.
  */
 
-export const dummy = 1;
+import Fastify from 'fastify';
+import FastifyCORS from 'fastify-cors';
+import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json';
+
+const PORT = 60001;
+const BASE_URL = '/api/';
+
+const fastify = Fastify({
+  logger: true,
+});
+
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+fastify.register(FastifyCORS, {
+  methods: ['OPTIONS'],
+  origin: [/localhost/],
+  credentials: true,
+});
+
+fastify.get(`${BASE_URL}taxonomy-tree`, async (request, reply) => {
+  await reply.send(TAXONOMY_TREE_DATA);
+});
+
+fastify.listen(PORT, (error, address) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (error) {
+    throw error;
+  }
+});

@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-diagram
 
+## 1.0.2
+
+## 1.0.1
+
+## 1.0.0
+
+### Major Changes
+
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `LegendStudioPreset` and `LegendQueryPreset` and expose `LegendStudioPlugin` and `LegendQueryPlugin` respectively as we now prefer the usage of `@finos/legend-graph-extension-collection` to better manage graph presets.
+
 ## 0.1.2
 
 ## 0.1.1

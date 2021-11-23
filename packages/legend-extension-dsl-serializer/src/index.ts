@@ -15,5 +15,7 @@
  */
 
 export * from './DSLSerializer_Extension';
+export { DSLSerializer_LegendStudioPlugin } from './components/studio/DSLSerializer_LegendStudioPlugin';
+
 export * from './models/metamodels/pure/model/packageableElements/store/Binding';
 export { V1_resolveBinding } from './models/protocols/pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';

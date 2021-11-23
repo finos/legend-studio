@@ -1,5 +1,15 @@
 # @finos/legend-application
 
+## 0.2.2
+
+## 0.2.1
+
+## 0.2.0
+
+### Minor Changes
+
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - Add `AppHeader` component.
+
 ## 0.1.2
 
 ## 0.1.1

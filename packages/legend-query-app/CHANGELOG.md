@@ -1,5 +1,15 @@
 # @finos/legend-query-app
 
+## 1.6.0
+
+## 1.5.0
+
+## 1.4.0
+
+### Patch Changes
+
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - Use `@finos/legend-graph-extension-collection` to manage of graph presets.
+
 ## 1.3.0
 
 ### Patch Changes

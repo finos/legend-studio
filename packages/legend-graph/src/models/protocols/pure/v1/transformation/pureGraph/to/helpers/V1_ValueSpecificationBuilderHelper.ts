@@ -690,7 +690,7 @@ function buildPropertyGraphFetchTree(
 ): PropertyGraphFetchTree {
   let property: AbstractProperty;
   let pureParameters: ValueSpecification[] = [];
-  if (!propertyGraphFetchTree.parameters.length) {
+  if (propertyGraphFetchTree.parameters.length) {
     const thisVariable = new V1_Variable();
     thisVariable.name = 'this';
     thisVariable.class = parentClass.path;

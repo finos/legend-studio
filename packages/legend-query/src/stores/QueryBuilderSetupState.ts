@@ -122,12 +122,12 @@ export class QueryBuilderSetupState {
         this.setMapping(possibleMapping);
       }
     }
-    if (
+    /*if (
       val !== undefined &&
       isMilestonedClass(val, this.queryBuilderState.graphManagerState.graph)
     ) {
       this.queryBuilderState.buildClassMilestoningValue(val);
-    }
+    }*/
   }
 
   setMapping(val: Mapping | undefined): void {

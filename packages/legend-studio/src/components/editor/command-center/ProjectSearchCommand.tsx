@@ -34,7 +34,7 @@ import { useEditorStore } from '../EditorStoreProvider';
 
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();
-  const sourceSelectorRef = useRef<SelectComponent>(null);
+  const selectorRef = useRef<SelectComponent>(null);
   const closeModal = (): void => editorStore.searchElementCommandState.close();
   const types = editorStore.getSupportedElementTypes();
   const [elementType, setElementType] = useState<string | undefined>();
@@ -69,10 +69,10 @@ export const ProjectSearchCommand = observer(() => {
   };
   const handleEnter = (): void => {
     setElementType(undefined);
-    sourceSelectorRef.current?.focus();
+    selectorRef.current?.focus();
   };
   useEffect(() => {
-    sourceSelectorRef.current?.focus();
+    selectorRef.current?.focus();
   }, [elementType]);
 
   return (
@@ -127,7 +127,7 @@ export const ProjectSearchCommand = observer(() => {
             </button>
           </DropdownMenu>
           <CustomSelectorInput
-            ref={sourceSelectorRef}
+            ref={selectorRef}
             className="project-search-command__input"
             options={options}
             onChange={openElement}

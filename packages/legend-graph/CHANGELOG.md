@@ -1,5 +1,23 @@
 # @finos/legend-graph
 
+## 0.2.5
+
+### Patch Changes
+
+- [#693](https://github.com/finos/legend-studio/pull/693) [`3ac22989`](https://github.com/finos/legend-studio/commit/3ac22989fa0ddabac9c9178b5370ea271f7ea844) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix processing of `GraphFetchTree` with derived properties ([#428](https://github.com/finos/legend-studio/issues/428),[#689](https://github.com/finos/legend-studio/issues/689)).
+
+## 0.2.4
+
+### Patch Changes
+
+- [#696](https://github.com/finos/legend-studio/pull/696) [`eb58ca71`](https://github.com/finos/legend-studio/commit/eb58ca71eaf8f72a116f6f6fb9060741788d9428) ([@gayathrir11](https://github.com/gayathrir11)) - Fix transformer for `LatestDate`
+
+## 0.2.3
+
+### Patch Changes
+
+- [#681](https://github.com/finos/legend-studio/pull/681) [`c2de2c30`](https://github.com/finos/legend-studio/commit/c2de2c309fa2f10fb32e59516d68e98e50aa7290) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Change the separator of source ID from `_` to `@` to fix problems with error revealing in the form mode ([#510](https://github.com/finos/legend-studio/issues/510)).
+
 ## 0.2.2
 
 ### Patch Changes

@@ -23,7 +23,7 @@ export {
   LEGEND_STUDIO_PATH_PARAM_TOKEN,
   generateRoutePatternWithSDLCServerKey,
 } from './stores/LegendStudioRouter';
-export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
+export { LEGEND_STUDIO_LOG_EVENT_TYPE } from './stores/LegendStudioLogEvent';
 
 // stores
 export * from './stores/LegendStudioPlugin';
@@ -44,9 +44,8 @@ export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 
 // components
 export * from './components/editor/EditorStoreProvider';
-export * from './components/shared/AppHeader';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor';
-export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
+export { LegendStudioAppHeaderMenu } from './components/editor/header/LegendStudioAppHeaderMenu';
 export { TypeTree } from './components/shared/TypeTree';
 export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor';
 
@@ -57,7 +56,7 @@ export {
   TEST__setUpEditorWithDefaultSDLCData,
   TEST__openElementFromExplorerTree,
 } from './components/EditorComponentTestUtils';
-export { STUDIO_TEST_ID } from './components/StudioTestID';
+export * from './components/LegendStudioTestID';
 export * from './stores/EditorStoreTestUtils';
 
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';

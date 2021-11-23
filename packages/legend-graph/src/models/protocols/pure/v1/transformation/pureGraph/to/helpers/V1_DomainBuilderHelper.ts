@@ -248,7 +248,8 @@ const isCompatibleDerivedProperty = (
 ): boolean =>
   o.name === name &&
   Array.isArray(o.parameters) &&
-  o.parameters.length === params.length;
+  // We add 1 to account for the `this` parameter in the derived property
+  o.parameters.length + 1 === params.length;
 
 export const V1_getAppliedProperty = (
   parentClass: Class,

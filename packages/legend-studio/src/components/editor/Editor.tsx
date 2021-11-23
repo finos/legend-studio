@@ -22,6 +22,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
 import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  buildReactHotkeysConfiguration,
   getControlledResizablePanelProps,
   clsx,
   ResizablePanel,
@@ -33,19 +34,16 @@ import {
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel';
 import { SideBar } from './side-bar/SideBar';
 import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel';
-import type { KeyMap } from 'react-hotkeys';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { GrammarTextEditor } from './edit-panel/GrammarTextEditor';
 import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
-import type { EditorHotkey } from '../../stores/EditorStore';
 import type {
   EditorPathParams,
   GroupEditorPathParams,
 } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from './header/LegendStudioAppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { isNonNullable } from '@finos/legend-shared';
@@ -56,22 +54,9 @@ import {
   ActionAlertActionType,
   ApplicationBackdrop,
   useApplicationStore,
+  AppHeader,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
-
-const buildHotkeySupport = (
-  hotkeys: EditorHotkey[],
-): [KeyMap, { [key: string]: (keyEvent?: KeyboardEvent) => void }] => {
-  const keyMap: Record<PropertyKey, string[]> = {};
-  hotkeys.forEach((hotkey) => {
-    keyMap[hotkey.name] = hotkey.keyBinds;
-  });
-  const handlers: Record<PropertyKey, (keyEvent?: KeyboardEvent) => void> = {};
-  hotkeys.forEach((hotkey) => {
-    handlers[hotkey.name] = hotkey.handler;
-  });
-  return [keyMap, handlers];
-};
 
 export const EditorInner = observer(() => {
   const params = useParams<EditorPathParams | GroupEditorPathParams>();
@@ -119,7 +104,7 @@ export const EditorInner = observer(() => {
   }, [editorStore, ref, height, width]);
 
   // Hotkeys
-  const [hotkeyMapping, hotkeyHandlers] = buildHotkeySupport(
+  const [hotkeyMapping, hotkeyHandlers] = buildReactHotkeysConfiguration(
     editorStore.hotkeys,
   );
 
@@ -247,7 +232,7 @@ export const EditorInner = observer(() => {
     <div className="app__page">
       <AppHeader>
         <ShareProjectHeaderAction />
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="editor">

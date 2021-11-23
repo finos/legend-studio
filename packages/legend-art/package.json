@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-art",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Legend shared visual components and component utilities",
   "keywords": [
     "legend",
@@ -42,7 +42,7 @@
   "dependencies": {
     "@finos/legend-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
-    "@types/react": "17.0.35",
+    "@types/react": "17.0.36",
     "@types/react-select": "4.0.18",
     "@types/react-window": "1.8.5",
     "clsx": "1.1.1",
@@ -51,6 +51,7 @@
     "monaco-editor": "0.30.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
+    "react-hotkeys": "2.0.0",
     "react-icons": "4.3.1",
     "react-reflex": "4.0.3",
     "react-resize-detector": "6.7.6",
@@ -60,12 +61,12 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.2.0",
+    "eslint": "8.3.0",
     "jest": "27.3.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.43.4",
-    "typescript": "4.4.4"
+    "typescript": "4.5.2"
   },
   "peerDependencies": {
     "react": "^17.0.0"
