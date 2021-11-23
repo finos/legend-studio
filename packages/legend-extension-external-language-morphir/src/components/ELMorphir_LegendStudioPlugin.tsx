@@ -107,38 +107,22 @@ export class ELMorphir_LegendStudioPlugin
   }
 
   getExtraFileGenerationResultViewerActions(): FileGenerationResultViewerAction[] {
-    const applicationStore = useApplicationStore();
-    const visualizeMorphir =
-      (fileNode: GenerationFile): (() => void) =>
-      async (): Promise<void> => {
-        applicationStore.navigator.openNewWindow(this.morphirVisualizerUrl)
-        await this.networkClient.post(
-          this.morphirVisualizerUrl,
-          fileNode.content,
-        );
-      };
-    const visualizeBosque =
-      (
-        fileGenerationState: FileGenerationState,
-        fileNode: GenerationFile,
-      ): (() => void) =>
-      async (): Promise<void> => {
-        const code =
-          fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
-            fileGenerationState.editorStore.graphManagerState.graph,
-          );
-        await this.networkClient.post(this.linterServerUrl, {
-          ir: fileNode.content,
-          src: await code,
-        });
-        applicationStore.navigator.openNewWindow(this.linterAppUrl);
-      };
     return [
       (
         fileGenerationState: FileGenerationState,
       ): React.ReactNode | undefined => {
         const fileNode = fileGenerationState.selectedNode
           ?.fileNode as GenerationFile;
+        const applicationStore = useApplicationStore();
+        const visualizeMorphir =
+          (fileNode: GenerationFile): (() => void) =>
+          async (): Promise<void> => {
+            applicationStore.navigator.openNewWindow(this.morphirVisualizerUrl);
+            await this.networkClient.post(
+              this.morphirVisualizerUrl,
+              fileNode.content,
+            );
+          };
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (
             <div className="panel__header__title__content generation-result-viewer__file__header__button">
@@ -159,6 +143,23 @@ export class ELMorphir_LegendStudioPlugin
       ): React.ReactNode | undefined => {
         const fileNode = fileGenerationState.selectedNode
           ?.fileNode as GenerationFile;
+        const applicationStore = useApplicationStore();
+        const visualizeBosque =
+          (
+            fileGenerationState: FileGenerationState,
+            fileNode: GenerationFile,
+          ): (() => void) =>
+          async (): Promise<void> => {
+            const code =
+              fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
+                fileGenerationState.editorStore.graphManagerState.graph,
+              );
+            await this.networkClient.post(this.linterServerUrl, {
+              ir: fileNode.content,
+              src: await code,
+            });
+            applicationStore.navigator.openNewWindow(this.linterAppUrl);
+          };
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (
             <div className="panel__header__title__content generation-result-viewer__file__header__button">

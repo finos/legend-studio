@@ -300,9 +300,9 @@ export const GenerationResultViewer = observer(
                   <div className="panel__header__title__content generation-result-viewer__file__header__name">
                     {fileNode.name}
                   </div>
-                  {extraFileGenerationResultViewerActions}
                 </div>
               )}
+              {extraFileGenerationResultViewerActions}
             </div>
             <div className="panel__content">
               {fileNode instanceof GenerationFile && (
