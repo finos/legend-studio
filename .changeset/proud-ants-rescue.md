@@ -1,0 +1,3 @@
+---
+'@finos/legend-taxonomy': patch
+---
