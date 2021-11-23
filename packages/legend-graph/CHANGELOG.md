@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 0.2.5
+
+### Patch Changes
+
+- [#693](https://github.com/finos/legend-studio/pull/693) [`3ac22989`](https://github.com/finos/legend-studio/commit/3ac22989fa0ddabac9c9178b5370ea271f7ea844) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix processing of `GraphFetchTree` with derived properties ([#428](https://github.com/finos/legend-studio/issues/428),[#689](https://github.com/finos/legend-studio/issues/689)).
+
 ## 0.2.4
 
 ### Patch Changes

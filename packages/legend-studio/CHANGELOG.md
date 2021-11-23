@@ -1,5 +1,13 @@
 # @finos/legend-studio
 
+## 2.0.2
+
+### Patch Changes
+
+- [#700](https://github.com/finos/legend-studio/pull/700) [`2063cc76`](https://github.com/finos/legend-studio/commit/2063cc76fb27d65f4e287041014ab347a80b4663) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering generated file with no content in file generation editor.
+
+* [#701](https://github.com/finos/legend-studio/pull/701) [`c4039cfc`](https://github.com/finos/legend-studio/commit/c4039cfc3efe33d720da040d96dbf4564b8c5a26) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fetch depot projects for dependencies only in dependency tab in the config editor.
+
 ## 2.0.1
 
 ## 2.0.0
