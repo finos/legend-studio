@@ -403,7 +403,6 @@ export class QueryBuilderState {
     this.resetQueryBuilder();
     this.resetQuerySetup();
     this.querySetupState.setClass(val, isRebuildingState);
-    this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
   }
 
