@@ -1964,7 +1964,7 @@ __metadata:
     mini-css-extract-plugin: 2.4.5
     monaco-editor: 0.30.1
     monaco-editor-webpack-plugin: 6.0.0
-    postcss: 8.3.11
+    postcss: 8.4.0
     postcss-loader: 6.2.0
     react-refresh: 0.11.0
     resolve: 1.20.0
@@ -1972,7 +1972,7 @@ __metadata:
     sass: 1.43.4
     sass-loader: 12.3.0
     typescript: 4.5.2
-    webpack: 5.64.2
+    webpack: 5.64.3
   languageName: unknown
   linkType: soft
 
@@ -2314,7 +2314,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.5.2
-    webpack: 5.64.2
+    webpack: 5.64.3
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
     webpack-dev-server: 4.5.0
@@ -2480,7 +2480,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.5.2
-    webpack: 5.64.2
+    webpack: 5.64.3
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
     webpack-dev-server: 4.5.0
@@ -2631,7 +2631,7 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.5.2
-    webpack: 5.64.2
+    webpack: 5.64.3
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
     webpack-dev-server: 4.5.0
@@ -2703,7 +2703,7 @@ __metadata:
   dependencies:
     cross-env: 7.0.3
     eslint: 8.3.0
-    postcss: 8.3.11
+    postcss: 8.4.0
     postcss-scss: 4.0.2
     rimraf: 3.0.2
     stylelint: 14.1.0
@@ -3630,10 +3630,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:16.11.9":
+"@types/node@npm:*":
   version: 16.11.9
   resolution: "@types/node@npm:16.11.9"
   checksum: baec2e6471ee58fd1e9874e6f47ab95a918a0f46b42424392e4c13e3e07f078f8b72b6b48073b0b14f710ed66c5f1b2e497df43f28151000f11f5f299382cfe2
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:16.11.10":
+  version: 16.11.10
+  resolution: "@types/node@npm:16.11.10"
+  checksum: 9c79419c5c3d92d5825bffa30f3668533f598d8b63a73ea7fc24e47f162bdbed92b0f8e4f4261cc3314b39cee050e303366d2aa154abc95c63a572a110b8c160
   languageName: node
   linkType: hard
 
@@ -9885,7 +9892,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@types/jest": 27.0.3
-    "@types/node": 16.11.9
+    "@types/node": 16.11.10
     chalk: 4.1.2
     cross-env: 7.0.3
     envinfo: 7.8.1
@@ -9894,7 +9901,7 @@ __metadata:
     husky: 7.0.4
     inquirer: 8.2.0
     jest: 27.3.1
-    lint-staged: 12.1.1
+    lint-staged: 12.1.2
     micromatch: 4.0.4
     prettier: 2.4.1
     rimraf: 3.0.2
@@ -9960,9 +9967,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:12.1.1":
-  version: 12.1.1
-  resolution: "lint-staged@npm:12.1.1"
+"lint-staged@npm:12.1.2":
+  version: 12.1.2
+  resolution: "lint-staged@npm:12.1.2"
   dependencies:
     cli-truncate: ^3.1.0
     colorette: ^2.0.16
@@ -9980,7 +9987,7 @@ __metadata:
     yaml: ^1.10.2
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: 1c4ec4cbccac7040b7d676f0e4f99d9e8d69360ec99d69cbfb12b6c27708ba8a076741712f1b45e67099fc640b1049a27cba8866a85a299a6048ab39d8e4faa7
+  checksum: ec84ce4f74d0d8fe314bd0b62fb5e0be64af692d1876f68c457116faef61b4b3b79d72df7819c248bfbb20c46e88fbe994128e7351e84bec7048263e00199925
   languageName: node
   linkType: hard
 
@@ -12092,7 +12099,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.3.11, postcss@npm:^8.2.15, postcss@npm:^8.3.11":
+"postcss@npm:8.4.0":
+  version: 8.4.0
+  resolution: "postcss@npm:8.4.0"
+  dependencies:
+    nanoid: ^3.1.30
+    picocolors: ^1.0.0
+    source-map-js: ^1.0.1
+  checksum: 5139eb1b8708a98cbc5240d1540b9333de5a6bde2737e946ec3d680968df42937ef43c54ed6eb50f1077b4de0394031bbecec290ebf8b4f5650cd4657e63b5d6
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.2.15, postcss@npm:^8.3.11":
   version: 8.3.11
   resolution: "postcss@npm:8.3.11"
   dependencies:
@@ -13595,6 +13613,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"source-map-js@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "source-map-js@npm:1.0.1"
+  checksum: 22606113d62bbd468712b0cb0c46e9a8629de7eb081049c62a04d977a211abafd7d61455617f8b78daba0b6c0c7e7c88f8c6b5aaeacffac0a6676ecf5caac5ce
+  languageName: node
+  linkType: hard
+
 "source-map-support@npm:^0.5.6, source-map-support@npm:~0.5.20":
   version: 0.5.21
   resolution: "source-map-support@npm:0.5.21"
@@ -15085,9 +15110,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.64.2":
-  version: 5.64.2
-  resolution: "webpack@npm:5.64.2"
+"webpack@npm:5.64.3":
+  version: 5.64.3
+  resolution: "webpack@npm:5.64.3"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -15118,7 +15143,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: e02fcd3bfdc7e3322291b476af60f46dc4a31ec4349af4d1d47018b8e449820968d4ab8f1e8b313dd5cfcf1b47c7f976fe39fde73411d03c173a692c3dae428e
+  checksum: dc773c260b5db95d7c0e9aec079e9ed30a154420e3fc7fb46bd4f9b98714f322d8effe6534d5a3a17157f2c514a6edb26494585de4f1c92329980e04de235dd3
   languageName: node
   linkType: hard
 
