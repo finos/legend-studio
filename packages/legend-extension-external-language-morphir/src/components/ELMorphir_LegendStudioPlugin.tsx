@@ -48,9 +48,9 @@ export class ELMorphir_LegendStudioPlugin
   implements DSL_LegendStudioPlugin_Extension
 {
   networkClient: NetworkClient;
-  private _morphirVisualizerUrl?: string | undefined;
-  private _linterServerUrl?: string | undefined;
-  private _linterAppUrl?: string | undefined;
+  private _morphirVisualizerUrl = 'http://0.0.0.0:8092/insight'; // ?: string | undefined;
+  private _linterServerUrl? = 'http://0.0.0.0:8091/lint'; //: string | undefined;
+  private _linterAppUrl? = 'http://localhost:8090'; //: string | undefined;
 
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
@@ -117,7 +117,7 @@ export class ELMorphir_LegendStudioPlugin
         const visualizeMorphir =
           (fileNode: GenerationFile): (() => void) =>
           async (): Promise<void> => {
-            this.networkClient.post(
+            await this.networkClient.post(
               this.morphirVisualizerUrl,
               fileNode.content,
             );
