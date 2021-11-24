@@ -30,15 +30,31 @@ import {
   QueryParameterState,
 } from '../stores/QueryParametersState';
 import { Dialog } from '@material-ui/core';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Type } from '@finos/legend-graph';
-import { MULTIPLICITY_INFINITE, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import {
+  VariableExpression,
+  GenericTypeExplicitReference,
+  TYPICAL_MULTIPLICITY_TYPE,
+  GenericType,
+  PrimitiveInstanceValue,
+  MULTIPLICITY_INFINITE,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
-import { useDrag, useDragLayer } from 'react-dnd';
+import type { DropTargetMonitor } from 'react-dnd';
+import { useDrag, useDragLayer, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
+import {
+  MilestoningPrimitiveInstanceValueEditor,
+  QueryBuilderValueSpecificationEditor,
+  VariableExpressionParameterEditor,
+} from './QueryBuilderValueSpecificationEditor';
 import { flowResult } from 'mobx';
+import { MILESTONING_STEROTYPES } from '../QueryBuilder_Const';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { MdRefresh } from 'react-icons/md';
 
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -385,6 +401,175 @@ const VariableExpressionViewer = observer(
           </button>
         </div>
       </div>
+    );
+  },
+);
+
+const EditMilestoningParemter = observer(
+  (props: { queryBuilderState: QueryBuilderState; index: number }) => {
+    const { queryBuilderState, index } = props;
+    const handleDrop = useCallback(
+      (item: QueryBuilderParameterDragSource): void => {
+        queryBuilderState.querySetupState.classMilestoningValue[index] =
+          item.variable.parameter;
+      },
+      [queryBuilderState, index],
+    );
+    const [{ isFilterValueDragOver }, dropConnector] = useDrop(
+      () => ({
+        accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
+        drop: (
+          item: QueryBuilderParameterDragSource,
+          monitor: DropTargetMonitor,
+        ): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item);
+          }
+        },
+        collect: (monitor): { isFilterValueDragOver: boolean } => ({
+          isFilterValueDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDrop],
+    );
+    const resetMilestoningParameter = (): void => {
+      queryBuilderState.querySetupState.classMilestoningValue[index] =
+        new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.LATESTDATE,
+              ),
+            ),
+          ),
+          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
+        );
+    };
+    return (
+      <div
+        ref={dropConnector}
+        className="query-builder-filter-tree__condition-node__value dnd__overlay__container"
+      >
+        {isFilterValueDragOver && (
+          <div className="query-builder-filter-tree__node__dnd__overlay">
+            Change Milestoning Parameter Value
+          </div>
+        )}
+        {queryBuilderState.querySetupState.classMilestoningValue[
+          index
+        ] instanceof PrimitiveInstanceValue && (
+          <MilestoningPrimitiveInstanceValueEditor
+            valueSpecification={guaranteeType(
+              guaranteeNonNullable(
+                queryBuilderState.querySetupState.classMilestoningValue[index],
+              ),
+              PrimitiveInstanceValue,
+            )}
+          />
+        )}
+        {queryBuilderState.querySetupState.classMilestoningValue[
+          index
+        ] instanceof VariableExpression && (
+          <VariableExpressionParameterEditor
+            valueSpecification={guaranteeType(
+              guaranteeNonNullable(
+                queryBuilderState.querySetupState.classMilestoningValue[index],
+              ),
+              VariableExpression,
+            )}
+          />
+        )}
+        <button
+          className="query-builder-filter-tree__node__action"
+          tabIndex={-1}
+          title="Reset Milestoning Parameter Value"
+          onClick={resetMilestoningParameter}
+        >
+          <MdRefresh />
+        </button>
+      </div>
+    );
+  },
+);
+
+export const MilestoningParameterEditor = observer(
+  (props: {
+    queryBuilderState: QueryBuilderState;
+    close: () => void;
+    stereotype: string;
+  }) => {
+    const { queryBuilderState, close, stereotype } = props;
+
+    return (
+      <Dialog
+        open={true}
+        onClose={close}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <div className="modal modal--dark editor-modal query-builder__parameters__modal">
+          <div className="modal__header">
+            <div className="modal__title">Milestoning Parameters</div>
+          </div>
+          <div className="modal__body query-builder__parameters__modal__body">
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                {stereotype === MILESTONING_STEROTYPES.BUSINESS_TEMPORAL ||
+                stereotype === MILESTONING_STEROTYPES.BITEMPORAL
+                  ? 'Business Date'
+                  : 'Processing Date'}
+              </div>
+              <EditMilestoningParemter
+                key="BusinessDate"
+                queryBuilderState={queryBuilderState}
+                index={0}
+              />
+              {stereotype === MILESTONING_STEROTYPES.BITEMPORAL && (
+                <>
+                  <div className="panel__content__form__section__header__label">
+                    Processing Date
+                  </div>
+                  <EditMilestoningParemter
+                    key="ProcessingDate"
+                    queryBuilderState={queryBuilderState}
+                    index={1}
+                  />
+                </>
+              )}
+            </div>
+            <div className="panel__content__form__section__header__label">
+              List of comaptible milestoning parameters
+            </div>
+            <div className="panel__content__form__section__list__items">
+              {queryBuilderState.queryParametersState.parameters
+                .filter(
+                  (parameter) =>
+                    parameter.parameter.genericType?.value.rawType.name ===
+                      PRIMITIVE_TYPE.STRICTDATE ||
+                    parameter.parameter.genericType?.value.rawType.name ===
+                      PRIMITIVE_TYPE.LATESTDATE,
+                )
+                .map((parameter) => (
+                  <VariableExpressionViewer
+                    key={parameter.uuid}
+                    queryBuilderState={queryBuilderState}
+                    variableExpressionState={parameter}
+                  />
+                ))}
+            </div>
+          </div>
+          <div className="modal__footer">
+            <button className="btn modal__footer__close-btn" onClick={close}>
+              Close
+            </button>
+          </div>
+        </div>
+      </Dialog>
     );
   },
 );

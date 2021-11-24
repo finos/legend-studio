@@ -75,4 +75,8 @@ export enum SUPPORTED_FUNCTIONS {
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
 
-export const DEFAULT_VERSION_PARAMETER_NAME = 'businessDate';
+export enum MILESTONING_STEROTYPES {
+  BUSINESS_TEMPORAL = 'businesstemporal',
+  PROCESSING_TEMPORAL = 'processingtemporal',
+  BITEMPORAL = 'bitemporal',
+}

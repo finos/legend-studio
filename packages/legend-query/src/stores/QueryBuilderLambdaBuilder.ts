@@ -101,10 +101,9 @@ export const buildLambdaFunction = (
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
   if (isMilestonedClass(_class, queryBuilderState.graphManagerState.graph)) {
-    getAllFunction.parametersValues.push(
-      guaranteeNonNullable(
-        queryBuilderState.querySetupState.classMilestoningValue,
-      ),
+    queryBuilderState.querySetupState.classMilestoningValue.forEach(
+      (parameter) =>
+        getAllFunction.parametersValues.push(guaranteeNonNullable(parameter)),
     );
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;

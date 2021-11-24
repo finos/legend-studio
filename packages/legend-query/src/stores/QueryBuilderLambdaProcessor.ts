@@ -77,7 +77,10 @@ import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import {
+  MILESTONING_STEROTYPES,
+  SUPPORTED_FUNCTIONS,
+} from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
 
@@ -392,21 +395,43 @@ export class QueryBuilderLambdaProcessor
         Class,
         `Can't process getAll() expression: getAll() return type is missing`,
       );
+      this.queryBuilderState.querySetupState.setClass(_class, true);
+      this.queryBuilderState.explorerState.refreshTreeData();
       let acceptedNoOfParameters = 1;
-      if (
-        isMilestonedClass(
-          _class,
-          this.queryBuilderState.graphManagerState.graph,
-        )
-      ) {
-        acceptedNoOfParameters = 2;
-        assertTrue(
-          valueSpecification.parametersValues.length === acceptedNoOfParameters,
-          `Milestoning class should have a parameter of type 'Date'`,
-        );
-        this.queryBuilderState.querySetupState.setClassMilestoningValue(
-          valueSpecification.parametersValues[1],
-        );
+      const stereotype = isMilestonedClass(
+        _class,
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      if (stereotype) {
+        let milestoningParameters;
+        if (stereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+          acceptedNoOfParameters = 3;
+          assertTrue(
+            valueSpecification.parametersValues.length ===
+              acceptedNoOfParameters,
+            `Milestoning class should have a parameter of type 'Date'`,
+          );
+          milestoningParameters = [
+            guaranteeNonNullable(valueSpecification.parametersValues[1]),
+            guaranteeNonNullable(valueSpecification.parametersValues[2]),
+          ];
+          this.queryBuilderState.querySetupState.setClassMilestoningValue(
+            milestoningParameters,
+          );
+        } else {
+          acceptedNoOfParameters = 2;
+          assertTrue(
+            valueSpecification.parametersValues.length ===
+              acceptedNoOfParameters,
+            `Milestoning class should have a parameter of type 'Date'`,
+          );
+          milestoningParameters = [
+            guaranteeNonNullable(valueSpecification.parametersValues[1]),
+          ];
+          this.queryBuilderState.querySetupState.setClassMilestoningValue(
+            milestoningParameters,
+          );
+        }
       }
       assertTrue(
         valueSpecification.parametersValues.length === acceptedNoOfParameters,
@@ -414,8 +439,6 @@ export class QueryBuilderLambdaProcessor
           acceptedNoOfParameters - 1
         } arguments`,
       );
-      this.queryBuilderState.querySetupState.setClass(_class, true);
-      this.queryBuilderState.explorerState.refreshTreeData();
 
       return;
     } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)) {

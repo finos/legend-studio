@@ -16,6 +16,7 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import {
+  addUniqueEntry,
   getNullableFirstElement,
   isNonNullable,
   uniq,
@@ -37,7 +38,7 @@ import {
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
-  classMilestoningValue?: ValueSpecification | undefined;
+  classMilestoningValue: ValueSpecification[] = [];
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
@@ -47,6 +48,7 @@ export class QueryBuilderSetupState {
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
+      addClassMilestoningValue: action,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
@@ -95,6 +97,10 @@ export class QueryBuilderSetupState {
     return false;
   }
 
+  addClassMilestoningValue(val: ValueSpecification): void {
+    addUniqueEntry(this.classMilestoningValue, val);
+  }
+
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
     this.queryBuilderState = queryBuilderState;
   }
@@ -122,12 +128,17 @@ export class QueryBuilderSetupState {
         this.setMapping(possibleMapping);
       }
     }
-    /*if (
-      val !== undefined &&
-      isMilestonedClass(val, this.queryBuilderState.graphManagerState.graph)
-    ) {
-      this.queryBuilderState.buildClassMilestoningValue(val);
-    }*/
+    if (val !== undefined) {
+      const stereotype = isMilestonedClass(
+        val,
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      if (stereotype) {
+        this.queryBuilderState.buildClassMilestoningValue(val, stereotype);
+      } else if (!stereotype) {
+        this.setClassMilestoningValue([]);
+      }
+    }
   }
 
   setMapping(val: Mapping | undefined): void {
@@ -145,7 +156,7 @@ export class QueryBuilderSetupState {
     }
   }
 
-  setClassMilestoningValue(val: ValueSpecification | undefined): void {
+  setClassMilestoningValue(val: ValueSpecification[]): void {
     this.classMilestoningValue = val;
   }
 }

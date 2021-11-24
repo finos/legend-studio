@@ -52,7 +52,6 @@ import {
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
-  isMilestonedClass,
 } from '@finos/legend-graph';
 import type { PackageableElement } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
@@ -224,17 +223,6 @@ export class QueryBuilder_LegendStudioPlugin
               );
               if (queryBuilderExtension.mode) {
                 queryBuilderExtension.queryBuilderState.changeClass(element);
-                if (
-                  isMilestonedClass(
-                    element,
-                    queryBuilderExtension.queryBuilderState.graphManagerState
-                      .graph,
-                  )
-                ) {
-                  queryBuilderExtension.queryBuilderState.buildClassMilestoningValue(
-                    element,
-                  );
-                }
               }
             };
             return (

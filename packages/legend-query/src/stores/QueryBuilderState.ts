@@ -43,14 +43,13 @@ import type {
   Mapping,
   PackageableRuntime,
   Service,
-  ValueSpecification,
 } from '@finos/legend-graph';
 import {
-  GenericType,
+  PrimitiveInstanceValue,
   GenericTypeExplicitReference,
+  GenericType,
   Multiplicity,
   PRIMITIVE_TYPE,
-  VariableExpression,
   GRAPH_MANAGER_LOG_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
@@ -96,11 +95,8 @@ import type {
   PackageableElementOption,
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
-import {
-  QueryParametersState,
-  QueryParameterState,
-} from './QueryParametersState';
-import { DEFAULT_MILESTONING_PARAMETER_NAME } from '../QueryBuilder_Const';
+import { QueryParametersState } from './QueryParametersState';
+import { MILESTONING_STEROTYPES } from '../QueryBuilder_Const';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -176,10 +172,13 @@ export class QueryBuilderState {
       runtimeOptions: computed,
       serviceOptions: computed,
       setMode: action,
-      resetData: action,
+      resetQueryBuilder: action,
+      resetQuerySetup: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
+      changeClass: action,
+      changeFetchStructure: action,
       compileQuery: flow,
     });
 
@@ -216,8 +215,17 @@ export class QueryBuilderState {
       : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
-  resetData(): void {
+  resetQueryBuilder(): void {
+    const resultState = new QueryBuilderResultState(this);
+    resultState.setPreviewLimit(this.resultState.previewLimit);
+    this.resultState = resultState;
+    this.queryTextEditorState = new QueryTextEditorState(this);
+    this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
+  }
+
+  resetQuerySetup(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
+    this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
@@ -226,12 +234,6 @@ export class QueryBuilderState {
     this.fetchStructureState = fetchStructureState;
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultSetModifierState = new QueryResultSetModifierState(this);
-    const resultState = new QueryBuilderResultState(this);
-    resultState.setPreviewLimit(this.resultState.previewLimit);
-    this.resultState = resultState;
-    this.queryTextEditorState = new QueryTextEditorState(this);
-    this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
-    this.explorerState.refreshTreeData();
     this.fetchStructureState.graphFetchTreeState.initialize();
   }
 
@@ -244,8 +246,7 @@ export class QueryBuilderState {
       this.buildStateFromRawLambda(rawLambda);
     } catch (error) {
       assertErrorThrown(error);
-      this.querySetupState.setClass(undefined, true);
-      this.resetData();
+      this.changeClass(undefined, true);
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Unable to initialize query builder: ${error.message}`,
@@ -263,7 +264,8 @@ export class QueryBuilderState {
    * consumers of function should handle the errors.
    */
   buildStateFromRawLambda(rawLambda: RawLambda): void {
-    this.resetData();
+    this.resetQueryBuilder();
+    this.resetQuerySetup();
     if (!rawLambda.isStub) {
       const valueSpec =
         this.graphManagerState.graphManager.buildValueSpecification(
@@ -283,96 +285,6 @@ export class QueryBuilderState {
     }
   }
 
-  buildClassMilestoningValue(element: Class, stereotype: string): void {
-    let milestoningParameters: VariableExpression[];
-    switch (stereotype) {
-      case 'businesstemporal': {
-        const milestoningBusinessDateParameter = new VariableExpression(
-          DEFAULT_MILESTONING_PARAMETER_NAME.BUSINESS_TEMPORAL,
-          new Multiplicity(1, 1),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.DATE,
-              ),
-            ),
-          ),
-        );
-        milestoningParameters = [milestoningBusinessDateParameter];
-        break;
-      }
-      case 'processingtemporal': {
-        const milestoningProcessingDateParameter = new VariableExpression(
-          DEFAULT_MILESTONING_PARAMETER_NAME.PROCESSING_TEMPORAL,
-          new Multiplicity(1, 1),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.DATE,
-              ),
-            ),
-          ),
-        );
-        milestoningParameters = [milestoningProcessingDateParameter];
-        break;
-      }
-      case 'bitemporal': {
-        const milestoningBusinessDateParameter = new VariableExpression(
-          DEFAULT_MILESTONING_PARAMETER_NAME.BUSINESS_TEMPORAL,
-          new Multiplicity(1, 1),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.DATE,
-              ),
-            ),
-          ),
-        );
-        const milestoningProcessingDateParameter = new VariableExpression(
-          DEFAULT_MILESTONING_PARAMETER_NAME.PROCESSING_TEMPORAL,
-          new Multiplicity(1, 1),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.DATE,
-              ),
-            ),
-          ),
-        );
-        milestoningParameters = [
-          milestoningBusinessDateParameter,
-          milestoningProcessingDateParameter,
-        ];
-        break;
-      }
-      default:
-        milestoningParameters = [];
-    }
-    const getAllFunction = buildGetAllFunction(
-      element,
-      this.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      ),
-    );
-    milestoningParameters.forEach((parameter) => {
-      if (parameter instanceof VariableExpression) {
-        const parameterState = new QueryParameterState(
-          this.queryParametersState,
-          parameter,
-        );
-        parameterState.mockParameterValues();
-        this.queryParametersState.addParameter(parameterState);
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            parameterState,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ).parameter,
-        );
-      }
-    });
-    this.querySetupState.setClassMilestoningValue(milestoningParameters);
-  }
-
   buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
     const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
       this.graphManagerState.graph.getTypicalMultiplicity(
@@ -388,6 +300,62 @@ export class QueryBuilderState {
       ),
       RawLambda,
     );
+  }
+
+  buildClassMilestoningValue(element: Class, stereotype: string): void {
+    const milestoningParameter = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.LATESTDATE,
+          ),
+        ),
+      ),
+      new Multiplicity(1, 1),
+    );
+    switch (stereotype) {
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+        this.querySetupState.addClassMilestoningValue(milestoningParameter);
+        break;
+      }
+      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+        this.querySetupState.addClassMilestoningValue(milestoningParameter);
+        break;
+      }
+      case MILESTONING_STEROTYPES.BITEMPORAL: {
+        const bitemporalMilestoningParameter = new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              this.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.LATESTDATE,
+              ),
+            ),
+          ),
+          new Multiplicity(1, 1),
+        );
+        this.querySetupState.addClassMilestoningValue(milestoningParameter);
+        this.querySetupState.addClassMilestoningValue(
+          bitemporalMilestoningParameter,
+        );
+        break;
+      }
+      default:
+        this.querySetupState.setClassMilestoningValue([]);
+    }
+    const getAllFunction = buildGetAllFunction(
+      element,
+      this.graphManagerState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      ),
+    );
+    this.querySetupState.classMilestoningValue.forEach((parameter) => {
+      getAllFunction.parametersValues.push(
+        guaranteeNonNullable(
+          parameter,
+          `Milestoning class should have a parameter of type 'Date'`,
+        ),
+      );
+    });
   }
 
   async saveQuery(
@@ -493,6 +461,21 @@ export class QueryBuilderState {
       } finally {
         this.isCompiling = false;
       }
+    }
+  }
+
+  changeClass(val: Class | undefined, isRebuildingState?: boolean): void {
+    this.resetQueryBuilder();
+    this.resetQuerySetup();
+    this.querySetupState.setClass(val, isRebuildingState);
+    this.explorerState.refreshTreeData();
+  }
+
+  changeFetchStructure(): void {
+    this.resultSetModifierState = new QueryResultSetModifierState(this);
+    const treeData = this.fetchStructureState.graphFetchTreeState.treeData;
+    if (!treeData) {
+      this.fetchStructureState.graphFetchTreeState.initialize();
     }
   }
 

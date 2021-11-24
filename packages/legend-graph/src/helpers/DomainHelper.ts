@@ -18,21 +18,28 @@ import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { CORE_ELEMENT_PATH } from '../MetaModelConst';
 
-export const isMilestonedClass = (val: Class, graph: PureModel): boolean => {
+export const isMilestonedClass = (
+  val: Class,
+  graph: PureModel,
+): string | undefined => {
   const milestonedProfile = graph.getProfile(
     CORE_ELEMENT_PATH.PROFILE_TEMPORAL,
   );
-  const isMilestoned = val.stereotypes.some(
+  let stereotype;
+  stereotype = val.stereotypes.find(
     (e) => e.ownerReference.value === milestonedProfile,
-  );
-  if (isMilestoned) {
-    return true;
+  )?.value.value;
+  if (stereotype !== undefined) {
+    return stereotype;
   }
-  return val.generalizations.some((e) => {
+  val.generalizations.forEach((e) => {
     const superType = e.value.rawType;
     if (superType instanceof Class) {
-      return isMilestonedClass(superType, graph);
+      const milestonedStereotype = isMilestonedClass(superType, graph);
+      if (milestonedStereotype !== undefined) {
+        stereotype = milestonedStereotype;
+      }
     }
-    return false;
   });
+  return stereotype;
 };

@@ -102,7 +102,7 @@ const QueryBuilderParameterInfoTooltip: React.FC<{
   );
 };
 
-const VariableExpressionEditor = observer(
+export const VariableExpressionParameterEditor = observer(
   (props: {
     valueSpecification: VariableExpression;
     className?: string | undefined;
@@ -222,14 +222,53 @@ const DatePrimitiveInstanceValueEditor = observer(
   }) => {
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       valueSpecification.changeValue(event.target.value, 0);
+    };
 
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
         <input
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
           type="date"
+          spellCheck={false}
+          value={value}
+          onChange={changeValue}
+        />
+      </div>
+    );
+  },
+);
+
+export const MilestoningPrimitiveInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, className } = props;
+    const value =
+      valueSpecification.genericType.value.rawType.name ===
+      PRIMITIVE_TYPE.STRICTDATE
+        ? (valueSpecification.values[0] as string)
+        : '%latest';
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      valueSpecification.genericType.value.setRawType(
+        new PrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
+      );
+      valueSpecification.changeValue(event.target.value, 0);
+      if (event.target.value === '%latest') {
+        valueSpecification.genericType.value.setRawType(
+          new PrimitiveType(PRIMITIVE_TYPE.LATESTDATE),
+        );
+        valueSpecification.changeValues([]);
+      }
+    };
+
+    return (
+      <div className={clsx('query-builder-value-spec-editor', className)}>
+        <input
+          className="panel__content__form__section__input query-builder-value-spec-editor__input"
+          //type="date"
           spellCheck={false}
           value={value}
           onChange={changeValue}
@@ -520,6 +559,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
+      case PRIMITIVE_TYPE.LATESTDATE:
         return (
           <DatePrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
@@ -555,7 +595,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   // property expression
   else if (valueSpecification instanceof VariableExpression) {
     return (
-      <VariableExpressionEditor
+      <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}
         className={className}
       />

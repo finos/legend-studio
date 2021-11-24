@@ -22,17 +22,25 @@ import {
   ClassIcon,
   MappingIcon,
   RuntimeIcon,
+  EyeIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import type { Class, Mapping, Runtime } from '@finos/legend-graph';
 import {
+  PRIMITIVE_TYPE,
+  PrimitiveInstanceValue,
+  VariableExpression,
   isMilestonedClass,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
+import { MilestoningParameterEditor } from './QueryBuilderParameterPanel';
+import { useState } from 'react';
+import { FaClock } from 'react-icons/fa';
+import { MILESTONING_STEROTYPES } from '../QueryBuilder_Const';
 
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -45,20 +53,71 @@ export const QueryBuilderSetupPanel = observer(
         option.value.path,
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
+    const getParameterValue = (index: number): string | undefined => {
+      const parameter = querySetupState.classMilestoningValue[index];
+      if (parameter instanceof VariableExpression) {
+        return `$${parameter.name}`;
+      } else {
+        if (
+          parameter instanceof PrimitiveInstanceValue &&
+          parameter.genericType.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE
+        ) {
+          return parameter.values[0] as string;
+        }
+        return '%latest';
+      }
+    };
+    const classLabel = (val: Class): string | JSX.Element => {
+      const stereotype = isMilestonedClass(
+        val,
+        queryBuilderState.graphManagerState.graph,
+      );
+      if (stereotype) {
+        let milestoningParameterValues;
+        switch (stereotype) {
+          case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+            milestoningParameterValues = `BusinessDate: ${getParameterValue(
+              0,
+            )}`;
+            break;
+          case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+            milestoningParameterValues = `ProcessingDate: ${getParameterValue(
+              0,
+            )}`;
+            break;
+          case MILESTONING_STEROTYPES.BITEMPORAL:
+            milestoningParameterValues = `BusinessDate: ${getParameterValue(
+              0,
+            )}, ProcessingDate: ${getParameterValue(1)}`;
+            break;
+          default:
+            milestoningParameterValues = '';
+        }
+
+        return (
+          <div className="query-builder__setup__config__item__class-label">
+            <div className="query-builder__setup__config__item__class-label-content">
+              {val.name}
+            </div>
+            <EyeIcon
+              className="query-builder__setup__config__item__class-label-button"
+              title={milestoningParameterValues}
+            />
+          </div>
+        );
+      }
+      return val.name;
+    };
     // class
     const classOptions = queryBuilderState.classOptions;
     const selectedClassOption = querySetupState._class
-      ? { value: querySetupState._class, label: querySetupState._class.name }
+      ? {
+          value: querySetupState._class,
+          label: classLabel(querySetupState._class),
+        }
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
       queryBuilderState.changeClass(val.value);
-
-      //For now the default version value is a parameter. In future we will support functions now(), %latest.
-      if (
-        isMilestonedClass(val.value, queryBuilderState.graphManagerState.graph)
-      ) {
-        queryBuilderState.buildClassMilestoningValue(val.value);
-      }
     };
     // mapping
     const mappingOptions = querySetupState.possibleMappings.map((mapping) => ({
@@ -141,6 +200,16 @@ export const QueryBuilderSetupPanel = observer(
           ? option.value.packageableRuntime.value.path
           : '(custom)',
     });
+    const [isMilestoned, setIsMilestoned] = useState<boolean>(false);
+    const close = (): void => {
+      setIsMilestoned(false);
+    };
+    const isEnabled = queryBuilderState.querySetupState._class
+      ? isMilestonedClass(
+          queryBuilderState.querySetupState._class,
+          queryBuilderState.graphManagerState.graph,
+        )
+      : undefined;
 
     return (
       <div
@@ -158,7 +227,7 @@ export const QueryBuilderSetupPanel = observer(
               <ClassIcon />
             </div>
             <CustomSelectorInput
-              className="panel__content__form__section__dropdown query-builder__setup__config__item__selector"
+              className="panel__content__form__section__dropdown query-builder__setup__config__item__selector query-builder__setup__config__item__selector__milestoned"
               placeholder="Choose a class..."
               options={classOptions}
               onChange={changeClass}
@@ -167,6 +236,15 @@ export const QueryBuilderSetupPanel = observer(
               disabled={!isQuerySupported}
               filterOption={elementFilterOption}
             />
+            <button
+              className="btn--dark btn__icon--dark"
+              tabIndex={-1}
+              onClick={(): void => setIsMilestoned(true)}
+              disabled={!isEnabled}
+              title="Edit Milestoning Parameters"
+            >
+              <FaClock />
+            </button>
           </div>
           <div className="query-builder__setup__config__item">
             <div className="btn--sm query-builder__setup__config__item__label">
@@ -196,6 +274,13 @@ export const QueryBuilderSetupPanel = observer(
               }
             />
           </div>
+          {isMilestoned && isEnabled && (
+            <MilestoningParameterEditor
+              queryBuilderState={queryBuilderState}
+              close={close}
+              stereotype={isEnabled}
+            />
+          )}
           <div className="query-builder__setup__config__item">
             <div className="btn--sm query-builder__setup__config__item__label">
               <RuntimeIcon />
