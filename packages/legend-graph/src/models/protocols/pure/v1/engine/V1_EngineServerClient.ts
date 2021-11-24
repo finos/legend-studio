@@ -45,6 +45,7 @@ import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
 import type { V1_LightQuery, V1_Query } from './query/V1_Query';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage';
 import type { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
+import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -393,21 +394,15 @@ export class V1_EngineServerClient extends AbstractServerClient {
     `${this.queryBaseUrl ?? this.networkClient.baseUrl}/pure/v1/query${
       queryId ? `/${encodeURIComponent(queryId)}` : ''
     }`;
-  getQueries = (options?: {
-    search?: string | undefined;
-    projectCoordinates?: string[] | undefined;
-    showCurrentUserQueriesOnly?: boolean | undefined;
-    limit?: number | undefined;
-  }): Promise<PlainObject<V1_LightQuery>[]> =>
-    this.get(this._query(), undefined, undefined, {
-      search: options?.search,
-      projectCoordinates: options?.projectCoordinates,
-      showCurrentUserQueriesOnly: options?.showCurrentUserQueriesOnly,
-      limit: options?.limit,
-    });
+  searchQueries = (
+    searchSpecification: PlainObject<V1_QuerySearchSpecification>,
+  ): Promise<PlainObject<V1_LightQuery>[]> =>
+    this.post(this._query(), searchSpecification, undefined);
   getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
     this.get(this._query(queryId));
-  createQuery = (query: V1_Query): Promise<PlainObject<V1_Query>> =>
+  createQuery = (
+    query: PlainObject<V1_Query>,
+  ): Promise<PlainObject<V1_Query>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.CREATE_QUERY),
       this._query(),
@@ -415,7 +410,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
   updateQuery = (
     queryId: string,
-    query: V1_Query,
+    query: PlainObject<V1_Query>,
   ): Promise<PlainObject<V1_Query>> =>
     this.putWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.UPDATE_QUERY),

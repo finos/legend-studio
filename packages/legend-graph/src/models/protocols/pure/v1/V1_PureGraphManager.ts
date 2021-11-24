@@ -192,6 +192,7 @@ import {
   V1_transformQuery,
   V1_buildGenerationOutput,
   V1_buildLightQuery,
+  V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper';
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
 import type { Entity } from '@finos/legend-model-storage';
@@ -203,6 +204,7 @@ import {
 } from '../../../../graphManager/GraphManagerUtils';
 import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { GraphPluginManager } from '../../../../GraphPluginManager';
+import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -2039,13 +2041,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Query ---------------------------------------------
 
-  async getQueries(options?: {
-    search?: string | undefined;
-    projectCoordinates?: string[] | undefined;
-    showCurrentUserQueriesOnly?: boolean | undefined;
-    limit?: number | undefined;
-  }): Promise<LightQuery[]> {
-    return (await this.engine.getQueries(options)).map((protocol) =>
+  async searchQueries(
+    searchSpecification: QuerySearchSpecification,
+  ): Promise<LightQuery[]> {
+    return (
+      await this.engine.searchQueries(
+        V1_transformQuerySearchSpecification(searchSpecification),
+      )
+    ).map((protocol) =>
       V1_buildLightQuery(
         protocol,
         this.engine.getEngineServerClient().currentUserId,

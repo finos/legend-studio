@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonEmptyString,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import {
   LightQuery,
   Query,
+  QueryStereotype,
+  QueryTaggedValue,
 } from '../../../../../graphManager/action/query/Query';
 import type { V1_LightQuery } from './query/V1_Query';
 import { V1_Query } from './query/V1_Query';
@@ -52,6 +57,14 @@ import type { V1_SourceInformation } from '../model/V1_SourceInformation';
 import { SourceInformation } from '../../../../../graphManager/action/SourceInformation';
 import { ExecutionError } from '../../../../../graphManager/action/ExecutionError';
 import type { V1_ExecutionError } from './execution/V1_ExecutionError';
+import type { QuerySearchSpecification } from '../../../../../graphManager/action/query/QuerySearchSpecification';
+import {
+  V1_QueryProjectCoordinates,
+  V1_QuerySearchSpecification,
+} from './query/V1_QuerySearchSpecification';
+import { V1_TaggedValue } from '../model/packageableElements/domain/V1_TaggedValue';
+import { V1_TagPtr } from '../model/packageableElements/domain/V1_TagPtr';
+import { V1_StereotypePtr } from '../model/packageableElements/domain/V1_StereotypePtr';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -133,6 +146,38 @@ export const V1_buildQuery = (
   metamodel.owner = protocol.owner;
   metamodel.isCurrentUserQuery =
     currentUserId !== undefined && protocol.owner === currentUserId;
+
+  // NOTE: we don't properly process tagged values and stereotypes for query
+  // because these profiles/tags/stereotypes can come from external systems.
+  metamodel.taggedValues = protocol.taggedValues?.map((taggedValueProtocol) => {
+    const taggedValue = new QueryTaggedValue();
+    taggedValue.profile = guaranteeNonEmptyString(
+      taggedValueProtocol.tag.profile,
+      `Tagged value 'tag.profile' field is missing or empty`,
+    );
+    taggedValue.tag = guaranteeNonEmptyString(
+      taggedValueProtocol.tag.value,
+      `Tagged value 'tag.value' field is missing or empty`,
+    );
+    taggedValue.value = guaranteeNonEmptyString(
+      taggedValueProtocol.value,
+      `Tagged value 'value' field is missing or empty`,
+    );
+    return taggedValue;
+  });
+  metamodel.stereotypes = protocol.stereotypes?.map((stereotypeProtocol) => {
+    const stereotype = new QueryStereotype();
+    stereotype.profile = guaranteeNonEmptyString(
+      stereotypeProtocol.profile,
+      `Stereotype pointer 'profile' field is missing or empty`,
+    );
+    stereotype.stereotype = guaranteeNonEmptyString(
+      stereotypeProtocol.value,
+      `Stereotype pointer 'value' field is missing or empty`,
+    );
+    return stereotype;
+  });
+
   return metamodel;
 };
 
@@ -148,6 +193,52 @@ export const V1_transformQuery = (metamodel: Query): V1_Query => {
   protocol.runtime = metamodel.runtime.valueForSerialization ?? '';
   protocol.content = metamodel.content;
   protocol.owner = metamodel.owner;
+  protocol.taggedValues = metamodel.taggedValues?.map((_taggedValue) => {
+    const taggedValue = new V1_TaggedValue();
+    taggedValue.tag = new V1_TagPtr();
+    taggedValue.tag.profile = _taggedValue.profile;
+    taggedValue.tag.value = _taggedValue.tag;
+    taggedValue.value = _taggedValue.value;
+    return taggedValue;
+  });
+  protocol.stereotypes = metamodel.stereotypes?.map((_stereotype) => {
+    const stereotype = new V1_StereotypePtr();
+    stereotype.profile = _stereotype.profile;
+    stereotype.value = _stereotype.stereotype;
+    return stereotype;
+  });
+  return protocol;
+};
+
+export const V1_transformQuerySearchSpecification = (
+  metamodel: QuerySearchSpecification,
+): V1_QuerySearchSpecification => {
+  const protocol = new V1_QuerySearchSpecification();
+  protocol.searchTerm = metamodel.searchTerm;
+  protocol.limit = metamodel.limit;
+  protocol.showCurrentUserQueriesOnly = metamodel.showCurrentUserQueriesOnly;
+  protocol.projectCoordinates = metamodel.projectCoordinates?.map(
+    (_projectCoordinate) => {
+      const projectCoordinate = new V1_QueryProjectCoordinates();
+      projectCoordinate.groupId = _projectCoordinate.groupId;
+      projectCoordinate.artifactId = _projectCoordinate.artifactId;
+      return projectCoordinate;
+    },
+  );
+  protocol.taggedValues = metamodel.taggedValues?.map((_taggedValue) => {
+    const taggedValue = new V1_TaggedValue();
+    taggedValue.tag = new V1_TagPtr();
+    taggedValue.tag.profile = _taggedValue.profile;
+    taggedValue.tag.value = _taggedValue.tag;
+    taggedValue.value = _taggedValue.value;
+    return taggedValue;
+  });
+  protocol.stereotypes = metamodel.stereotypes?.map((_stereotype) => {
+    const stereotype = new V1_StereotypePtr();
+    stereotype.profile = _stereotype.profile;
+    stereotype.value = _stereotype.stereotype;
+    return stereotype;
+  });
   return protocol;
 };
 

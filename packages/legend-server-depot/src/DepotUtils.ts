@@ -41,6 +41,29 @@ export const generateGAVCoordinates = (
 ): string =>
   [groupId, artifactId, versionId].filter(isNonNullable).join(GAV_DELIMITER);
 
+export const parseGACoordinates = (
+  ga: string,
+): {
+  groupId: string;
+  artifactId: string;
+} => {
+  const parts = ga.split(GAV_DELIMITER);
+  assertTrue(
+    parts.length === 3,
+    `Can't parse GA coordinates '${ga}': expect the coordinates to follow format {groupID}${GAV_DELIMITER}{artifactID}`,
+  );
+  return {
+    groupId: guaranteeNonEmptyString(
+      parts[0]?.trim(),
+      `GAV coordinate group ID is missing or empty`,
+    ),
+    artifactId: guaranteeNonEmptyString(
+      parts[1]?.trim(),
+      `GAV coordinate artifact ID is missing or empty`,
+    ),
+  };
+};
+
 export const parseGAVCoordinates = (
   gav: string,
 ): {

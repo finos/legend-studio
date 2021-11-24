@@ -40,6 +40,7 @@ import type {
   Service,
   GraphManagerState,
   Class,
+  QueryTaggedValue,
 } from '@finos/legend-graph';
 import {
   getAllClassMappings,
@@ -96,6 +97,7 @@ export class CreateQueryInfoState extends QueryInfoState {
   mapping: Mapping;
   runtime: PackageableRuntime;
   class?: Class | undefined;
+  taggedValues?: QueryTaggedValue[] | undefined;
 
   constructor(
     queryStore: LegendQueryStore,
@@ -140,6 +142,7 @@ export class CreateQueryInfoState extends QueryInfoState {
     query.groupId = this.project.groupId;
     query.artifactId = this.project.artifactId;
     query.versionId = this.versionId;
+    query.taggedValues = this.taggedValues;
   }
 }
 

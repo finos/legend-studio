@@ -54,9 +54,11 @@ import {
   PackageableElementExplicitReference,
   buildSourceInformationSourceId,
   PureClientVersion,
+  QueryProjectCoordinates,
+  QuerySearchSpecification,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { parseGACoordinates } from '@finos/legend-server-depot';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -241,31 +243,39 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   *loadQueries(searchText: string): GeneratorFn<void> {
     const isValidSearchString = searchText.length >= 3;
     this.loadQueriesState.inProgress();
-    const dependencyProjectCoordinates = Array.from(
-      (
-        (yield flowResult(
-          this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
-        )) as Map<string, Entity[]>
-      ).keys(),
-    );
     try {
+      const searchSpecification = new QuerySearchSpecification();
+      const currentProjectCoordinates = new QueryProjectCoordinates();
+      currentProjectCoordinates.groupId =
+        this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
+      currentProjectCoordinates.artifactId =
+        this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
+      searchSpecification.searchTerm = isValidSearchString
+        ? searchText
+        : undefined;
+      searchSpecification.limit = 10;
+      searchSpecification.projectCoordinates = [
+        // either get queries for the current project
+        currentProjectCoordinates,
+        // or any of its dependencies
+        ...Array.from(
+          (
+            (yield flowResult(
+              this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
+            )) as Map<string, Entity[]>
+          ).keys(),
+        ).map((coordinatesInText) => {
+          const { groupId, artifactId } = parseGACoordinates(coordinatesInText);
+          const coordinates = new QueryProjectCoordinates();
+          coordinates.groupId = groupId;
+          coordinates.artifactId = artifactId;
+          return coordinates;
+        }),
+      ];
       this.queries =
-        (yield this.editorStore.graphManagerState.graphManager.getQueries({
-          search: isValidSearchString ? searchText : undefined,
-          projectCoordinates: [
-            // either get queries for the current project
-            generateGAVCoordinates(
-              this.editorStore.projectConfigurationEditorState
-                .currentProjectConfiguration.groupId,
-              this.editorStore.projectConfigurationEditorState
-                .currentProjectConfiguration.artifactId,
-              undefined,
-            ),
-            // or any of its dependencies
-            ...dependencyProjectCoordinates,
-          ],
-          limit: 10,
-        })) as LightQuery[];
+        (yield this.editorStore.graphManagerState.graphManager.searchQueries(
+          searchSpecification,
+        )) as LightQuery[];
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);

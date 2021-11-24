@@ -55,6 +55,7 @@ import type {
 import type { LightQuery, Query } from './action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphPluginManager } from '../GraphPluginManager';
+import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification';
 
 export interface TEMP__EngineSetupConfig {
   env: string;
@@ -299,12 +300,9 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Query -------------------------------------------
 
-  abstract getQueries(options?: {
-    search?: string | undefined;
-    projectCoordinates?: string[] | undefined;
-    showCurrentUserQueriesOnly?: boolean | undefined;
-    limit?: number | undefined;
-  }): Promise<LightQuery[]>;
+  abstract searchQueries(
+    searchSpecification: QuerySearchSpecification,
+  ): Promise<LightQuery[]>;
   abstract getLightQuery(queryId: string): Promise<LightQuery>;
   abstract getQuery(queryId: string, graph: PureModel): Promise<Query>;
   abstract getQueryContent(queryId: string): Promise<string>;

@@ -23,52 +23,36 @@ import {
   V1_taggedValueSchema,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
 
-export class V1_Query {
-  name!: string;
-  id!: string;
+export class V1_QueryProjectCoordinates {
   groupId!: string;
   artifactId!: string;
-  versionId!: string;
-  mapping!: string;
-  runtime!: string;
-  content!: string;
-  owner?: string | undefined;
-  taggedValues?: V1_TaggedValue[] | undefined;
-  stereotypes?: V1_StereotypePtr[] | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_Query, {
+    createModelSchema(V1_QueryProjectCoordinates, {
       artifactId: primitive(),
-      content: primitive(),
-      id: primitive(),
       groupId: primitive(),
-      mapping: primitive(),
-      name: primitive(),
-      owner: optional(primitive()),
-      runtime: primitive(),
-      stereotypes: optional(list(usingModelSchema(V1_stereotypePtrSchema))),
-      taggedValues: optional(list(usingModelSchema(V1_taggedValueSchema))),
-      versionId: primitive(),
     }),
   );
 }
 
-export class V1_LightQuery {
-  name!: string;
-  id!: string;
-  groupId!: string;
-  owner?: string | undefined;
-  artifactId!: string;
-  versionId!: string;
+export class V1_QuerySearchSpecification {
+  searchTerm?: string | undefined;
+  projectCoordinates?: V1_QueryProjectCoordinates[] | undefined;
+  taggedValues?: V1_TaggedValue[] | undefined;
+  stereotypes?: V1_StereotypePtr[] | undefined;
+  limit?: number | undefined;
+  showCurrentUserQueriesOnly?: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_Query, {
-      artifactId: primitive(),
-      id: primitive(),
-      groupId: primitive(),
-      name: primitive(),
-      owner: optional(primitive()),
-      versionId: primitive(),
+    createModelSchema(V1_QuerySearchSpecification, {
+      limit: optional(primitive()),
+      projectCoordinates: optional(
+        list(usingModelSchema(V1_QueryProjectCoordinates.serialization.schema)),
+      ),
+      searchTerm: optional(primitive()),
+      showCurrentUserQueriesOnly: optional(primitive()),
+      stereotypes: optional(list(usingModelSchema(V1_stereotypePtrSchema))),
+      taggedValues: optional(list(usingModelSchema(V1_taggedValueSchema))),
     }),
   );
 }

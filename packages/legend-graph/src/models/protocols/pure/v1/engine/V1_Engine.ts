@@ -85,6 +85,7 @@ import { ServiceExecutionMode } from '../../../../../graphManager/action/service
 import { serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText';
+import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -583,15 +584,14 @@ export class V1_Engine {
 
   // ------------------------------------------- Query -------------------------------------------
 
-  async getQueries(options?: {
-    search?: string | undefined;
-    projectCoordinates?: string[] | undefined;
-    showCurrentUserQueriesOnly?: boolean | undefined;
-    limit?: number | undefined;
-  }): Promise<V1_LightQuery[]> {
-    return (await this.engineServerClient.getQueries(options)).map((query) =>
-      V1_LightQuery.serialization.fromJson(query),
-    );
+  async searchQueries(
+    searchSpecification: V1_QuerySearchSpecification,
+  ): Promise<V1_LightQuery[]> {
+    return (
+      await this.engineServerClient.searchQueries(
+        V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
+      )
+    ).map((query) => V1_LightQuery.serialization.fromJson(query));
   }
 
   async getQuery(queryId: string): Promise<V1_Query> {
@@ -602,13 +602,18 @@ export class V1_Engine {
 
   async createQuery(query: V1_Query): Promise<V1_Query> {
     return V1_Query.serialization.fromJson(
-      await this.engineServerClient.createQuery(query),
+      await this.engineServerClient.createQuery(
+        V1_Query.serialization.toJson(query),
+      ),
     );
   }
 
   async updateQuery(query: V1_Query): Promise<V1_Query> {
     return V1_Query.serialization.fromJson(
-      await this.engineServerClient.updateQuery(query.id, query),
+      await this.engineServerClient.updateQuery(
+        query.id,
+        V1_Query.serialization.toJson(query),
+      ),
     );
   }
 
