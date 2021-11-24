@@ -51,8 +51,7 @@ export const QueryBuilderSetupPanel = observer(
       ? { value: querySetupState._class, label: querySetupState._class.name }
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
-      querySetupState.setClass(val.value);
-      queryBuilderState.resetData();
+      queryBuilderState.changeClass(val.value);
 
       //For now the default version value is a parameter. In future we will support functions now(), %latest.
       if (
@@ -89,7 +88,8 @@ export const QueryBuilderSetupPanel = observer(
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
       if (querySetupState._class && !querySetupState.mappingIsReadOnly) {
         querySetupState.setMapping(val.value);
-        queryBuilderState.resetData();
+        queryBuilderState.resetQueryBuilder();
+        queryBuilderState.resetQuerySetup();
       }
     };
     // runtime

@@ -43,6 +43,7 @@ import type {
   Mapping,
   PackageableRuntime,
   Service,
+  ValueSpecification,
 } from '@finos/legend-graph';
 import {
   GenericType,
@@ -99,7 +100,7 @@ import {
   QueryParametersState,
   QueryParameterState,
 } from './QueryParametersState';
-import { DEFAULT_VERSION_PARAMETER_NAME } from '../QueryBuilder_Const';
+import { DEFAULT_MILESTONING_PARAMETER_NAME } from '../QueryBuilder_Const';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -282,37 +283,94 @@ export class QueryBuilderState {
     }
   }
 
-  buildClassMilestoningValue(element: Class): void {
-    const milestoningPropertyParameter = new VariableExpression(
-      DEFAULT_VERSION_PARAMETER_NAME,
-      new Multiplicity(1, 1),
-      GenericTypeExplicitReference.create(
-        new GenericType(
-          this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-            PRIMITIVE_TYPE.DATE,
+  buildClassMilestoningValue(element: Class, stereotype: string): void {
+    let milestoningParameters: VariableExpression[];
+    switch (stereotype) {
+      case 'businesstemporal': {
+        const milestoningBusinessDateParameter = new VariableExpression(
+          DEFAULT_MILESTONING_PARAMETER_NAME.BUSINESS_TEMPORAL,
+          new Multiplicity(1, 1),
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.DATE,
+              ),
+            ),
           ),
-        ),
-      ),
-    );
-    const parameterState = new QueryParameterState(
-      this.queryParametersState,
-      milestoningPropertyParameter,
-    );
-    parameterState.mockParameterValues();
-    this.queryParametersState.addParameter(parameterState);
+        );
+        milestoningParameters = [milestoningBusinessDateParameter];
+        break;
+      }
+      case 'processingtemporal': {
+        const milestoningProcessingDateParameter = new VariableExpression(
+          DEFAULT_MILESTONING_PARAMETER_NAME.PROCESSING_TEMPORAL,
+          new Multiplicity(1, 1),
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.DATE,
+              ),
+            ),
+          ),
+        );
+        milestoningParameters = [milestoningProcessingDateParameter];
+        break;
+      }
+      case 'bitemporal': {
+        const milestoningBusinessDateParameter = new VariableExpression(
+          DEFAULT_MILESTONING_PARAMETER_NAME.BUSINESS_TEMPORAL,
+          new Multiplicity(1, 1),
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.DATE,
+              ),
+            ),
+          ),
+        );
+        const milestoningProcessingDateParameter = new VariableExpression(
+          DEFAULT_MILESTONING_PARAMETER_NAME.PROCESSING_TEMPORAL,
+          new Multiplicity(1, 1),
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.DATE,
+              ),
+            ),
+          ),
+        );
+        milestoningParameters = [
+          milestoningBusinessDateParameter,
+          milestoningProcessingDateParameter,
+        ];
+        break;
+      }
+      default:
+        milestoningParameters = [];
+    }
     const getAllFunction = buildGetAllFunction(
       element,
       this.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       ),
     );
-    getAllFunction.parametersValues.push(
-      guaranteeNonNullable(
-        parameterState,
-        `Milestoning class should have a parameter of type 'Date'`,
-      ).parameter,
-    );
-    this.querySetupState.setClassMilestoningValue(milestoningPropertyParameter);
+    milestoningParameters.forEach((parameter) => {
+      if (parameter instanceof VariableExpression) {
+        const parameterState = new QueryParameterState(
+          this.queryParametersState,
+          parameter,
+        );
+        parameterState.mockParameterValues();
+        this.queryParametersState.addParameter(parameterState);
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            parameterState,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ).parameter,
+        );
+      }
+    });
+    this.querySetupState.setClassMilestoningValue(milestoningParameters);
   }
 
   buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
