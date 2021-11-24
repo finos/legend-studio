@@ -117,11 +117,11 @@ export class ELMorphir_LegendStudioPlugin
         const visualizeMorphir =
           (fileNode: GenerationFile): (() => void) =>
           async (): Promise<void> => {
-            applicationStore.navigator.openNewWindow(this.morphirVisualizerUrl);
-            await this.networkClient.post(
+            this.networkClient.post(
               this.morphirVisualizerUrl,
               fileNode.content,
             );
+            applicationStore.navigator.openNewWindow(this.morphirVisualizerUrl);
           };
         if (this.isMorphirGenerationType(fileGenerationState)) {
           return (

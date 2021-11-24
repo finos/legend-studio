@@ -84,6 +84,7 @@ import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
 import { serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError';
+import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText';
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -472,16 +473,15 @@ export class V1_Engine {
     model: V1_PureModelContextData,
   ): Promise<V1_GenerationOutput[]> {
     const grammar = this.pureModelContextDataToPureCode(model);
-    // TODO: change this to send PureModelContextText
-    const reparsedPureModelContextData = this.pureCodeToPureModelContextData(
-      await grammar,
-    );
+    const pureModelContextText = new V1_PureModelContextText();
+    pureModelContextText.serializer = model.serializer;
+    pureModelContextText.code = await grammar;
     return (
       await this.engineServerClient.generateFile(
         generationMode,
         type,
         V1_GenerateFileInput.serialization.toJson(
-          new V1_GenerateFileInput(await reparsedPureModelContextData, configs),
+          new V1_GenerateFileInput(pureModelContextText, configs),
         ),
       )
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
