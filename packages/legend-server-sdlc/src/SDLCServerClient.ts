@@ -349,7 +349,10 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     workflowId: string,
   ): string =>
-    `${this._adaptiveWorkspace(projectId, workspace)}/workflows/${workflowId}`;
+    `${this._adaptiveWorkspace(
+      projectId,
+      workspace,
+    )}/workflows/${encodeURIComponent(workflowId)}`;
   private _workflowJobs = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -361,7 +364,11 @@ export class SDLCServerClient extends AbstractServerClient {
     workflowId: string,
     workflowJobId: string,
   ): string =>
-    `${this._workflow(projectId, workspace, workflowId)}/jobs/${workflowJobId}`;
+    `${this._workflow(
+      projectId,
+      workspace,
+      workflowId,
+    )}/jobs/${encodeURIComponent(workflowJobId)}`;
 
   getWorkflow = (
     projectId: string,
