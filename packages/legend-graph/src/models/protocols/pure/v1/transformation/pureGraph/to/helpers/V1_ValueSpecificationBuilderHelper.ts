@@ -267,7 +267,7 @@ export class V1_ValueSpecificationBuilder
       ),
     );
     instance.values = transformed;
-    // Note: Engine applies a more complex `mostCommon` algorithm to find the collection's generic type. Here we assume the collection has one type.
+    // NOTE: Engine applies a more sophisticated `findMostCommon()` algorithm to find the collection's generic type. Here we only handle the case where the collection has one type.
     const typeValues = uniq(
       instance.values
         .map((v) => v.genericType?.value.rawType)
