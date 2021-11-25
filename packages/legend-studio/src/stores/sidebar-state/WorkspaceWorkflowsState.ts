@@ -240,7 +240,9 @@ export class WorkspaceWorkflowState {
           undefined,
           undefined,
         )) as PlainObject<WorkflowJob>[]
-      ).map((job) => WorkflowJob.serialization.fromJson(job));
+      )
+        .map((job) => WorkflowJob.serialization.fromJson(job))
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
       updateWorkflowJobData(workflowJobs, workflowId, treeData);
       this.setWorkflowTreeData({ ...treeData });
     } catch (error) {
@@ -404,7 +406,11 @@ export class WorkspaceWorkflowsState {
               .then((jobs: PlainObject<WorkflowJob>[]) =>
                 workflowToJobsMap.set(
                   workflow.id,
-                  jobs.map((x) => WorkflowJob.serialization.fromJson(x)),
+                  jobs
+                    .map((x) => WorkflowJob.serialization.fromJson(x))
+                    .sort(
+                      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+                    ),
                 ),
               ),
           ),
