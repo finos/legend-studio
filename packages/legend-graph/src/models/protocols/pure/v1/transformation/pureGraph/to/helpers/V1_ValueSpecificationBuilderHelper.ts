@@ -19,6 +19,8 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
+  isNonNullable,
+  uniq,
 } from '@finos/legend-shared';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
@@ -265,6 +267,17 @@ export class V1_ValueSpecificationBuilder
       ),
     );
     instance.values = transformed;
+    // NOTE: Engine applies a more sophisticated `findMostCommon()` algorithm to find the collection's generic type. Here we only handle the case where the collection has one type.
+    const typeValues = uniq(
+      instance.values
+        .map((v) => v.genericType?.value.rawType)
+        .filter(isNonNullable),
+    );
+    if (typeValues.length === 1) {
+      instance.genericType = GenericTypeExplicitReference.create(
+        new GenericType(guaranteeNonNullable(typeValues[0])),
+      );
+    }
     return instance;
   }
 
