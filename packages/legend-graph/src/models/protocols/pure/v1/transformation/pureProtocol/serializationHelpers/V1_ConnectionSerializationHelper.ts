@@ -175,6 +175,7 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
     proxyPort: optional(primitive()),
     quotedIdentifiersIgnoreCase: optional(primitive()),
     region: primitive(),
+    role: optional(primitive()),
     warehouseName: primitive(),
   },
 );

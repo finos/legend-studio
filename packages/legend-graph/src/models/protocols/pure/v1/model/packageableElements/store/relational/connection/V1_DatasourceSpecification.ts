@@ -84,6 +84,7 @@ export class V1_SnowflakeDatasourceSpecification
   nonProxyHosts?: string | undefined;
   organization?: string | undefined;
   accountType?: string | undefined;
+  role?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -98,6 +99,7 @@ export class V1_SnowflakeDatasourceSpecification
       this.nonProxyHosts ?? '',
       this.organization ?? '',
       this.accountType ?? '',
+      this.role ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }

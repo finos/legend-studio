@@ -134,6 +134,7 @@ export const V1_buildDatasourceSpecification = (
     snowflakeSpec.nonProxyHosts = protocol.nonProxyHosts;
     snowflakeSpec.organization = protocol.organization;
     snowflakeSpec.accountType = protocol.accountType;
+    snowflakeSpec.role = protocol.role;
     return snowflakeSpec;
   } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
     assertNonEmptyString(

@@ -120,6 +120,7 @@ const transformSnowflakeDatasourceSpecification = (
   source.nonProxyHosts = metamodel.nonProxyHosts;
   source.organization = metamodel.organization;
   source.accountType = metamodel.accountType;
+  source.role = metamodel.role;
   return source;
 };
 

@@ -560,6 +560,14 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             sourceSpec.setAccountType(value)
           }
         />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.role}
+          propertyName="role"
+          update={(value: string | undefined): void =>
+            sourceSpec.setRole(value)
+          }
+        />
         {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}
         <ConnectionEditor_BooleanEditor
           isReadOnly={isReadOnly}

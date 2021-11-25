@@ -174,6 +174,7 @@ export class SnowflakeDatasourceSpecification
   nonProxyHosts?: string | undefined;
   organization?: string | undefined;
   accountType?: string | undefined;
+  role?: string | undefined;
 
   constructor(
     accountName: string,
@@ -195,6 +196,7 @@ export class SnowflakeDatasourceSpecification
       nonProxyHosts: observable,
       organization: observable,
       accountType: observable,
+      role: observable,
       hashCode: computed,
       setAccountName: action,
       setRegion: action,
@@ -206,6 +208,7 @@ export class SnowflakeDatasourceSpecification
       setNonProxyHosts: action,
       setOrganization: action,
       setAccountType: action,
+      setRole: action,
       setQuotedIdentifiersIgnoreCase: action,
     });
 
@@ -259,6 +262,10 @@ export class SnowflakeDatasourceSpecification
     this.accountType = val;
   }
 
+  setRole(val: string | undefined): void {
+    this.role = val;
+  }
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SNOWFLAKE_DATASOURCE_SPECIFICATION,
@@ -272,6 +279,7 @@ export class SnowflakeDatasourceSpecification
       this.nonProxyHosts ?? '',
       this.organization ?? '',
       this.accountType ?? '',
+      this.role ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }
