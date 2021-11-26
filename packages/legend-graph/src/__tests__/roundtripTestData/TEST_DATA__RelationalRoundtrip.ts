@@ -3857,6 +3857,33 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
   {
+    path: 'apps::mySnowFlakeWithRole',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'oauth',
+          oauthKey: 'dummy',
+          scopeName: 'UserPass',
+        },
+        datasourceSpecification: {
+          _type: 'snowflake',
+          accountName: 'dummy',
+          databaseName: 'test',
+          region: 'EMEA',
+          role: 'test',
+          warehouseName: 'test',
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'H2',
+      },
+      name: 'mySnowFlakeWithRole',
+      package: 'apps',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: 'apps::mySnowFlakeWithQuotedIdentifiersIgnoreCaseFlag',
     content: {
       _type: 'connection',
