@@ -42,7 +42,7 @@
   "dependencies": {
     "@finos/legend-shared": "workspace:*",
     "@material-ui/core": "4.12.3",
-    "@types/react": "17.0.36",
+    "@types/react": "17.0.37",
     "@types/react-select": "4.0.18",
     "@types/react-window": "1.8.5",
     "clsx": "1.1.1",
@@ -65,7 +65,7 @@
     "jest": "27.3.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.43.4",
+    "sass": "1.43.5",
     "typescript": "4.5.2"
   },
   "peerDependencies": {

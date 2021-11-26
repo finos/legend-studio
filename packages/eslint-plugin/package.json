@@ -41,7 +41,7 @@
     "eslint-plugin-react": "7.27.1",
     "eslint-plugin-react-hooks": "4.3.0",
     "micromatch": "4.0.4",
-    "prettier": "2.4.1"
+    "prettier": "2.5.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
