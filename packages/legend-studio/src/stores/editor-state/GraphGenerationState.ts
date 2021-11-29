@@ -64,8 +64,6 @@ import {
   Enumeration,
   Class,
   ConcreteFunctionDefinition,
-} from '@finos/legend-graph';
-import {
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
@@ -133,6 +131,7 @@ export class GraphGenerationState {
   get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
     if (this.editorStore.currentEditorState instanceof ElementEditorState) {
       const currentElement = this.editorStore.currentEditorState.element;
+      // Note: For now we only allow classes and enumerations for all types of generations.
       const getExtraFileGenerationScopeFilters = this.editorStore.pluginManager
         .getStudioPlugins()
         .flatMap(
@@ -147,16 +146,17 @@ export class GraphGenerationState {
             packageableElement: PackageableElement,
           ): boolean =>
             packageableElement instanceof Class ||
-            packageableElement instanceof Enumeration ||
-            packageableElement instanceof ConcreteFunctionDefinition,
+            packageableElement instanceof Enumeration,
         ]);
       return this.fileGenerationConfigurations
         .slice()
         .sort((a, b): number => a.label.localeCompare(b.label))
-        .filter((generationType) =>
-          getExtraFileGenerationScopeFilters.some((scopeFilter) =>
-            scopeFilter(generationType.key, currentElement),
-          ),
+        .filter(
+          (generationType) =>
+            !getExtraFileGenerationScopeFilters.length ||
+            getExtraFileGenerationScopeFilters.some((scopeFilter) =>
+              scopeFilter(generationType.key, currentElement),
+            ),
         );
     }
     return [];

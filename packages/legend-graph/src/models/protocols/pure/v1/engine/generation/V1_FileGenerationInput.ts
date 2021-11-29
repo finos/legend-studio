@@ -16,17 +16,17 @@
 
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import { V1_pureModelContextTextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization';
+import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization';
 import { PureClientVersion } from '../../../../../../graphManager/GraphManagerUtils';
-import type { V1_PureModelContextText } from '../../model/context/V1_PureModelContextText';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
 
 export class V1_GenerateFileInput {
   clientVersion?: string | undefined;
-  model: V1_PureModelContextText;
+  model: V1_PureModelContext;
   config?: Record<PropertyKey, unknown> | undefined;
 
   constructor(
-    model: V1_PureModelContextText,
+    model: V1_PureModelContext,
     config?: Record<PropertyKey, unknown>,
   ) {
     this.clientVersion = PureClientVersion.V1_0_0;
@@ -37,7 +37,7 @@ export class V1_GenerateFileInput {
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_GenerateFileInput, {
       clientVersion: optional(primitive()),
-      model: V1_pureModelContextTextPropSchema,
+      model: V1_pureModelContextPropSchema,
       config: raw(),
     }),
   );

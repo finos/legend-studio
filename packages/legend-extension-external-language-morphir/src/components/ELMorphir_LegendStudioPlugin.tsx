@@ -187,7 +187,7 @@ export class ELMorphir_LegendStudioPlugin
         if (fileGenerationType.toLowerCase() === MORPHIR_TYPE_NAME) {
           return packageableElement instanceof ConcreteFunctionDefinition;
         }
-        return true;
+        return false;
       },
     ];
   }

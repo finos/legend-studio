@@ -199,3 +199,8 @@ export const V1_serializePureModelContext = (
     pureModelContext,
   );
 };
+
+export const V1_pureModelContextPropSchema = custom(
+  (val: V1_PureModelContext) => V1_serializePureModelContext(val),
+  (val) => SKIP,
+);
