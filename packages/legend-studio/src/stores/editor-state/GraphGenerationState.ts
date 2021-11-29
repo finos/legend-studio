@@ -61,9 +61,8 @@ import type {
   PackageableElement,
 } from '@finos/legend-graph';
 import {
-  Enumeration,
   Class,
-  ConcreteFunctionDefinition,
+  Enumeration,
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
