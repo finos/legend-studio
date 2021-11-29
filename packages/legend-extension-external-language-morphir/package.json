@@ -59,7 +59,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "studioPreset": "@finos/legend-graph-preset-external-language-morphir",
     "studioPlugin": "@finos/legend-studio-plugin-external-language-morphir"
   }
 }

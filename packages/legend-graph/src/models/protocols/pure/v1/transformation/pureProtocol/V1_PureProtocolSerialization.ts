@@ -191,6 +191,8 @@ export const V1_serializePureModelContext = (
     return V1_serializePureModelContextData(pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextComposite) {
     return serialize(V1_pureModelContextCompositeModelSchema, pureModelContext);
+  } else if (pureModelContext instanceof V1_PureModelContextText) {
+    return serialize(V1_pureModelContextTextSchema, pureModelContext);
   }
   throw new UnsupportedOperationError(
     `Can't serialize Pure model context`,

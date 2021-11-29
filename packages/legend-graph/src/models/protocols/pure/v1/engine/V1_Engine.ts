@@ -472,10 +472,15 @@ export class V1_Engine {
     generationMode: GenerationMode,
     model: V1_PureModelContextData,
   ): Promise<V1_GenerationOutput[]> {
-    const grammar = this.pureModelContextDataToPureCode(model);
+    // NOTE: here instead of sending PureModelContextData, we send PureModelContextText so
+    // engine can convert that back to PureModelContextData to obtain source information
+    // as some generator uses that info. Sending PureModelContextData with source information
+    // from the front end to engine would take up a lot of bandwidth.
     const pureModelContextText = new V1_PureModelContextText();
     pureModelContextText.serializer = model.serializer;
-    pureModelContextText.code = await grammar;
+    pureModelContextText.code = await this.pureModelContextDataToPureCode(
+      model,
+    );
     return (
       await this.engineServerClient.generateFile(
         generationMode,

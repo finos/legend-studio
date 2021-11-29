@@ -15,4 +15,3 @@
  */
 
 export * from './components/ELMorphir_LegendStudioPlugin';
-export * from './ELMorphir_Extension';

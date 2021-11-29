@@ -23,7 +23,7 @@ import { DSLDiagram_LegendStudioPlugin } from '@finos/legend-extension-dsl-diagr
 import { DSLSerializer_LegendStudioPlugin } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_LegendStudioPlugin } from '@finos/legend-extension-dsl-data-space';
 import { ESService_LegendStudioPlugin } from '@finos/legend-extension-external-store-service';
-import { ELMorphir_LegendStudioPreset } from '@finos/legend-extension-external-language-morphir';
+import { ELMorphir_LegendStudioPlugin } from '@finos/legend-extension-external-language-morphir';
 
 export class LegendStudioWebApplication {
   static run(baseUrl: string): void {
@@ -32,7 +32,6 @@ export class LegendStudioWebApplication {
       .withPresets([
         ...getLegendGraphExtensionCollection(),
         new QueryBuilder_LegendStudioPreset(),
-        new ELMorphir_LegendStudioPreset(),
       ])
       .withPlugins([
         new DSLText_LegendStudioPlugin(),
@@ -40,6 +39,7 @@ export class LegendStudioWebApplication {
         new DSLDataSpace_LegendStudioPlugin(),
         new DSLSerializer_LegendStudioPlugin(),
         new ESService_LegendStudioPlugin(),
+        new ELMorphir_LegendStudioPlugin(),
       ])
       .withLoggers([new BrowserConsole()])
       .start()

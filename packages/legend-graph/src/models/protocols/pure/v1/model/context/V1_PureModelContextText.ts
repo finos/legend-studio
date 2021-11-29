@@ -19,5 +19,5 @@ import type { V1_Protocol } from '../../model/V1_Protocol';
 
 export class V1_PureModelContextText extends V1_PureModelContext {
   serializer?: V1_Protocol | undefined;
-  code?: string = undefined;
+  code?: string | undefined;
 }

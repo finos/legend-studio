@@ -52,6 +52,12 @@ import { FileGenerationViewerState } from './FileGenerationViewerState';
 import type { EditorState } from './EditorState';
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
+import type { PackageableElement } from '@finos/legend-graph';
+import {
+  Class,
+  Enumeration,
+  ConcreteFunctionDefinition,
+} from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   GenerationConfigurationDescription,
@@ -134,7 +140,16 @@ export class GraphGenerationState {
             (
               plugin as DSL_LegendStudioPlugin_Extension
             ).getExtraFileGenerationScopeFilters?.() ?? [],
-        );
+        )
+        .concat([
+          (
+            fileGenerationType: string,
+            packageableElement: PackageableElement,
+          ): boolean =>
+            packageableElement instanceof Class ||
+            packageableElement instanceof Enumeration ||
+            packageableElement instanceof ConcreteFunctionDefinition,
+        ]);
       return this.fileGenerationConfigurations
         .slice()
         .sort((a, b): number => a.label.localeCompare(b.label))
