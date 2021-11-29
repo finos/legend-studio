@@ -42,6 +42,7 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
+  TimesCircleIcon,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
@@ -80,10 +81,10 @@ const AssociationPropertyBasicEditor = observer(
   }) => {
     const { association, property, selectProperty, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const checkDuplicateValue = (val: string): boolean => {
+    const isPropertyDuplicated = (val: Property): boolean => {
       if (
-        association.properties[0].name === val &&
-        association.properties[1].name === val
+        association.properties[0].name === val.name &&
+        association.properties[1].name === val.name
       ) {
         return true;
       }
@@ -171,8 +172,8 @@ const AssociationPropertyBasicEditor = observer(
       <div className="property-basic-editor">
         <input
           className={
-            checkDuplicateValue(property.name)
-              ? 'property-basic-editor__name property-basic-editor__name__duplicate'
+            isPropertyDuplicated(property)
+              ? 'property-basic-editor__name property-basic-editor__name__duplicated'
               : 'property-basic-editor__name'
           }
           disabled={isReadOnly}
@@ -181,6 +182,12 @@ const AssociationPropertyBasicEditor = observer(
           onChange={changeValue}
           placeholder={`Property name`}
         />
+        {isPropertyDuplicated(property) && <TimesCircleIcon />}
+        {isPropertyDuplicated(property) && (
+          <div className="input-group__error-message">
+            Found duplicated property
+          </div>
+        )}
         {!isReadOnly && isEditingType && (
           <CustomSelectorInput
             className="property-basic-editor__type"

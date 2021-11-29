@@ -35,6 +35,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  TimesCircleIcon,
 } from '@finos/legend-art';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
@@ -63,21 +64,32 @@ const EnumBasicEditor = observer(
     _enum: Enum;
     selectValue: () => void;
     deleteValue: () => void;
-    checkDuplicateValue: (val: string) => boolean;
+    isEnumValueDuplicated: (val: Enum) => boolean;
     isReadOnly: boolean;
   }) => {
-    const { _enum, selectValue, deleteValue, checkDuplicateValue, isReadOnly } =
-      props;
+    const {
+      _enum,
+      selectValue,
+      deleteValue,
+      isEnumValueDuplicated,
+      isReadOnly,
+    } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       _enum.setName(event.target.value);
     };
 
     return (
-      <div className="enum-basic-editor">
+      <div
+        className={
+          isEnumValueDuplicated(_enum)
+            ? 'input-group enum-basic-editor enum-basic-editor__error'
+            : 'enum-basic-editor'
+        }
+      >
         <input
           className={
-            checkDuplicateValue(_enum.name)
-              ? 'enum-basic-editor__name enum-basic-editor__name__duplicate'
+            isEnumValueDuplicated(_enum)
+              ? 'enum-basic-editor__name enum-basic-editor__name__duplicated'
               : 'enum-basic-editor__name'
           }
           spellCheck={false}
@@ -87,6 +99,13 @@ const EnumBasicEditor = observer(
           placeholder={`Enum name`}
           name={`Type enum name`}
         />
+        {isEnumValueDuplicated(_enum) && <TimesCircleIcon />}
+        {isEnumValueDuplicated(_enum) && (
+          <div className="input-group__error-message enum-basic-editor__error-message">
+            Found duplicated Enum
+          </div>
+        )}
+
         <button
           className="uml-element-editor__basic__detail-btn"
           onClick={selectValue}
@@ -426,14 +445,8 @@ export const EnumerationEditor = observer(
         editorStore.openElement(enumeration.generationParentElement);
       }
     };
-    const checkDuplicateValue = (val: string): boolean => {
-      let count = 0;
-      enumeration.values.forEach((value) => value.name === val && count++);
-      if (count >= 2) {
-        return true;
-      }
-      return false;
-    };
+    const isEnumValueDuplicated = (val: Enum): boolean =>
+      enumeration.values.filter((value) => value.name === val.name).length >= 2;
 
     return (
       <div
@@ -508,7 +521,7 @@ export const EnumerationEditor = observer(
                         _enum={enumValue}
                         deleteValue={deleteValue(enumValue)}
                         selectValue={selectValue(enumValue)}
-                        checkDuplicateValue={checkDuplicateValue}
+                        isEnumValueDuplicated={isEnumValueDuplicated}
                         isReadOnly={isReadOnly}
                       />
                     ))}

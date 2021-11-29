@@ -42,6 +42,7 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
+  TimesCircleIcon,
 } from '@finos/legend-art';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { PropertyEditor } from './PropertyEditor';
@@ -98,14 +99,9 @@ const PropertyBasicEditor = observer(
       property.owner instanceof Class && property.owner !== _class;
     const isPropertyFromAssociation = property.owner instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
-    const checkDuplicateProperty = (val: string): boolean => {
-      let count = 0;
-      _class.properties.forEach((property) => property.name === val && count++);
-      if (count >= 2) {
-        return true;
-      }
-      return false;
-    };
+    const isPropertyDuplicated = (val: Property): boolean =>
+      _class.properties.filter((property) => property.name === val.name)
+        .length >= 2;
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property.setName(event.target.value);
@@ -190,8 +186,8 @@ const PropertyBasicEditor = observer(
         {!isIndirectProperty && (
           <input
             className={
-              checkDuplicateProperty(property.name)
-                ? 'property-basic-editor__name property-basic-editor__name__duplicate'
+              isPropertyDuplicated(property)
+                ? 'property-basic-editor__name property-basic-editor__name__duplicated'
                 : 'property-basic-editor__name'
             }
             disabled={isReadOnly}
@@ -201,6 +197,12 @@ const PropertyBasicEditor = observer(
             placeholder={`Property name`}
             name={`Property name`}
           />
+        )}
+        {isPropertyDuplicated(property) && <TimesCircleIcon />}
+        {isPropertyDuplicated(property) && (
+          <div className="input-group__error-message">
+            Found duplicated property
+          </div>
         )}
         {!isIndirectProperty && !isReadOnly && isEditingType && (
           <CustomSelectorInput

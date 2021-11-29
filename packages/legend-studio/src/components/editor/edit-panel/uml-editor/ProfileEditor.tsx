@@ -21,7 +21,7 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { observer } from 'mobx-react-lite';
 import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
-import { clsx } from '@finos/legend-art';
+import { clsx, TimesCircleIcon } from '@finos/legend-art';
 import { STUDIO_TEST_ID } from '../../../StudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { Profile } from '@finos/legend-graph';
@@ -31,10 +31,10 @@ const TagBasicEditor = observer(
   (props: {
     tag: Tag;
     deleteValue: () => void;
-    checkDuplicateValue: (val: string) => boolean;
+    isTagDuplicated: (val: Tag) => boolean;
     isReadOnly: boolean;
   }) => {
-    const { tag, deleteValue, checkDuplicateValue, isReadOnly } = props;
+    const { tag, deleteValue, isTagDuplicated, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tag.setValue(event.target.value);
     };
@@ -43,8 +43,8 @@ const TagBasicEditor = observer(
       <div className="tag-basic-editor">
         <input
           className={
-            checkDuplicateValue(tag.value)
-              ? 'tag-basic-editor__value tag-basic-editor__value__duplicate'
+            isTagDuplicated(tag)
+              ? 'tag-basic-editor__value tag-basic-editor__value__duplicated'
               : 'tag-basic-editor__value'
           }
           spellCheck={false}
@@ -54,6 +54,10 @@ const TagBasicEditor = observer(
           placeholder={`Tag value`}
           name={`Tag value`}
         />
+        {isTagDuplicated(tag) && <TimesCircleIcon />}
+        {isTagDuplicated(tag) && (
+          <div className="input-group__error-message">Found duplicated tag</div>
+        )}
         {!isReadOnly && (
           <button
             className="uml-element-editor__remove-btn"
@@ -74,15 +78,11 @@ const StereotypeBasicEditor = observer(
   (props: {
     stereotype: Stereotype;
     deleteStereotype: () => void;
-    checkDuplicateStereotype: (val: string) => boolean;
+    isStereotypeDuplicated: (val: Stereotype) => boolean;
     isReadOnly: boolean;
   }) => {
-    const {
-      stereotype,
-      deleteStereotype,
-      checkDuplicateStereotype,
-      isReadOnly,
-    } = props;
+    const { stereotype, deleteStereotype, isStereotypeDuplicated, isReadOnly } =
+      props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       stereotype.setValue(event.target.value);
     };
@@ -91,8 +91,8 @@ const StereotypeBasicEditor = observer(
       <div className="stereotype-basic-editor">
         <input
           className={
-            checkDuplicateStereotype(stereotype.value)
-              ? 'stereotype-basic-editor__value stereotype-basic-editor__value__duplicate'
+            isStereotypeDuplicated(stereotype)
+              ? 'stereotype-basic-editor__value stereotype-basic-editor__value__duplicated'
               : 'stereotype-basic-editor__value'
           }
           spellCheck={false}
@@ -102,6 +102,12 @@ const StereotypeBasicEditor = observer(
           placeholder={`Stereotype value`}
           name={`Stereotype value`}
         />
+        {isStereotypeDuplicated(stereotype) && <TimesCircleIcon />}
+        {isStereotypeDuplicated(stereotype) && (
+          <div className="input-group__error-message">
+            Found duplicated stereotype
+          </div>
+        )}
         {!isReadOnly && (
           <button
             className="uml-element-editor__remove-btn"
@@ -159,24 +165,11 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
     (val: Tag): (() => void) =>
     (): void =>
       profile.deleteTag(val);
-  const checkDuplicateStereotype = (val: string): boolean => {
-    let count = 0;
-    profile.stereotypes.forEach(
-      (stereotype) => stereotype.value === val && count++,
-    );
-    if (count >= 2) {
-      return true;
-    }
-    return false;
-  };
-  const checkDuplicateTag = (val: string): boolean => {
-    let count = 0;
-    profile.tags.forEach((tag) => tag.value === val && count++);
-    if (count >= 2) {
-      return true;
-    }
-    return false;
-  };
+  const isStereotypeDuplicated = (val: Stereotype): boolean =>
+    profile.stereotypes.filter((stereotype) => stereotype.value === val.value)
+      .length >= 2;
+  const isTagDuplicated = (val: Tag): boolean =>
+    profile.tags.filter((tag) => tag.value === val.value).length >= 2;
   return (
     <div className="uml-element-editor profile-editor">
       <div className="panel">
@@ -228,7 +221,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   key={tag.uuid}
                   tag={tag}
                   deleteValue={deleteTag(tag)}
-                  checkDuplicateValue={checkDuplicateTag}
+                  isTagDuplicated={isTagDuplicated}
                   isReadOnly={isReadOnly}
                 />
               ))}
@@ -241,7 +234,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   key={stereotype.uuid}
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
-                  checkDuplicateStereotype={checkDuplicateStereotype}
+                  isStereotypeDuplicated={isStereotypeDuplicated}
                   isReadOnly={isReadOnly}
                 />
               ))}
