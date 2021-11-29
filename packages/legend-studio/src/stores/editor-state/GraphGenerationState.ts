@@ -52,18 +52,18 @@ import { FileGenerationViewerState } from './FileGenerationViewerState';
 import type { EditorState } from './EditorState';
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
-import type { PackageableElement } from '@finos/legend-graph';
-import {
-  Class,
-  Enumeration,
-  ConcreteFunctionDefinition,
-} from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   GenerationConfigurationDescription,
   GenerationOutput,
   DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
   GenerationTreeNode,
+  PackageableElement,
+} from '@finos/legend-graph';
+import {
+  Enumeration,
+  Class,
+  ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import {
   GenerationSpecification,
