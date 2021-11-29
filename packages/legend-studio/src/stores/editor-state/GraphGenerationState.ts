@@ -58,13 +58,15 @@ import type {
   GenerationOutput,
   DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
   GenerationTreeNode,
+  PackageableElement,
 } from '@finos/legend-graph';
 import {
-  GenerationSpecification,
   Class,
   Enumeration,
+  GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
+import type { DSL_LegendStudioPlugin_Extension } from '../LegendStudioPlugin';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -128,14 +130,33 @@ export class GraphGenerationState {
   get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
     if (this.editorStore.currentEditorState instanceof ElementEditorState) {
       const currentElement = this.editorStore.currentEditorState.element;
-      if (
-        currentElement instanceof Class ||
-        currentElement instanceof Enumeration
-      ) {
-        return this.fileGenerationConfigurations
-          .slice()
-          .sort((a, b): number => a.label.localeCompare(b.label));
-      }
+      // Note: For now we only allow classes and enumerations for all types of generations.
+      const getExtraFileGenerationScopeFilters = this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioPlugin_Extension
+            ).getExtraFileGenerationScopeFilters?.() ?? [],
+        )
+        .concat([
+          (
+            fileGenerationType: string,
+            packageableElement: PackageableElement,
+          ): boolean =>
+            packageableElement instanceof Class ||
+            packageableElement instanceof Enumeration,
+        ]);
+      return this.fileGenerationConfigurations
+        .slice()
+        .sort((a, b): number => a.label.localeCompare(b.label))
+        .filter(
+          (generationType) =>
+            !getExtraFileGenerationScopeFilters.length ||
+            getExtraFileGenerationScopeFilters.some((scopeFilter) =>
+              scopeFilter(generationType.key, currentElement),
+            ),
+        );
     }
     return [];
   }

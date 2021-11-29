@@ -84,6 +84,7 @@ import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
 import { serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError';
+import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText';
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -471,12 +472,21 @@ export class V1_Engine {
     generationMode: GenerationMode,
     model: V1_PureModelContextData,
   ): Promise<V1_GenerationOutput[]> {
+    // NOTE: here instead of sending PureModelContextData, we send PureModelContextText so
+    // engine can convert that back to PureModelContextData to obtain source information
+    // as some generator uses that info. Sending PureModelContextData with source information
+    // from the front end to engine would take up a lot of bandwidth.
+    const pureModelContextText = new V1_PureModelContextText();
+    pureModelContextText.serializer = model.serializer;
+    pureModelContextText.code = await this.pureModelContextDataToPureCode(
+      model,
+    );
     return (
       await this.engineServerClient.generateFile(
         generationMode,
         type,
         V1_GenerateFileInput.serialization.toJson(
-          new V1_GenerateFileInput(model, configs),
+          new V1_GenerateFileInput(pureModelContextText, configs),
         ),
       )
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));

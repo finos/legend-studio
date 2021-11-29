@@ -50,6 +50,9 @@
     {
       "path": "packages/legend-extension-external-store-service"
     },
+    {
+      "path": "packages/legend-extension-external-language-morphir"
+    },
     // fixtures
     {
       "path": "fixtures/legend-mock-server"

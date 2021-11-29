@@ -85,6 +85,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import type { DSL_LegendStudioPlugin_Extension } from '../../../../stores/LegendStudioPlugin';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -226,7 +227,22 @@ export const GenerationResultViewer = observer(
     const regenerate = applicationStore.guaranteeSafeAction(() =>
       flowResult(fileGenerationState.generate()),
     );
-
+    const extraFileGenerationResultViewerActions =
+      fileNode instanceof GenerationFile
+        ? fileGenerationState.editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_LegendStudioPlugin_Extension
+                ).getExtraFileGenerationResultViewerActions?.() ?? [],
+            )
+            .map((extraFileGenerationResultViewerActionsCreator) =>
+              extraFileGenerationResultViewerActionsCreator(
+                fileGenerationState,
+              ),
+            )
+        : null;
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={250} minSize={250}>
@@ -281,11 +297,14 @@ export const GenerationResultViewer = observer(
               {fileNode && !(fileNode instanceof GenerationDirectory) && (
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">file</div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header-name">
+                  <div className="panel__header__title__content generation-result-viewer__file__header__name">
                     {fileNode.name}
                   </div>
                 </div>
               )}
+              <div className="panel__header__actions">
+                {extraFileGenerationResultViewerActions}
+              </div>
             </div>
             <div className="panel__content">
               {fileNode instanceof GenerationFile && (

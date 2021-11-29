@@ -46,6 +46,7 @@ import { V1_packageableElementPointerDeserializerSchema } from '../../transforma
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import { GraphDataDeserializationError } from '../../../../../../graphManager/GraphManagerUtils';
+import { V1_PureModelContextText } from '../../model/context/V1_PureModelContextText';
 
 enum V1_SDLCType {
   ALLOY = 'alloy',
@@ -55,6 +56,7 @@ export enum V1_PureModelContextType {
   DATA = 'data',
   POINTER = 'pointer',
   COMPOSITE = 'composite',
+  TEXT = 'text',
 }
 
 export const V1_entitiesToPureModelContextData = async (
@@ -115,6 +117,23 @@ export const V1_pureModelContextDataPropSchema = custom(
   (value) => deserialize(V1_PureModelContextData, value),
 );
 
+const V1_pureModelContextTextSchema = createModelSchema(
+  V1_PureModelContextText,
+  {
+    _type: usingConstantValueSchema(V1_PureModelContextType.TEXT),
+    serializer: usingModelSchema(V1_Protocol.serialization.schema),
+    code: optional(primitive()),
+  },
+);
+
+export const V1_pureModelContextTextPropSchema = custom(
+  (value) =>
+    value === undefined
+      ? SKIP
+      : serialize(V1_pureModelContextTextSchema, value),
+  (value) => deserialize(V1_pureModelContextTextSchema, value),
+);
+
 const V1_pureModelContextPointerModelSchema = createModelSchema(
   V1_PureModelContextPointer,
   {
@@ -172,9 +191,16 @@ export const V1_serializePureModelContext = (
     return V1_serializePureModelContextData(pureModelContext);
   } else if (pureModelContext instanceof V1_PureModelContextComposite) {
     return serialize(V1_pureModelContextCompositeModelSchema, pureModelContext);
+  } else if (pureModelContext instanceof V1_PureModelContextText) {
+    return serialize(V1_pureModelContextTextSchema, pureModelContext);
   }
   throw new UnsupportedOperationError(
     `Can't serialize Pure model context`,
     pureModelContext,
   );
 };
+
+export const V1_pureModelContextPropSchema = custom(
+  (val: V1_PureModelContext) => V1_serializePureModelContext(val),
+  (val) => SKIP,
+);
