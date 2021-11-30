@@ -61,7 +61,7 @@ import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerati
 import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerationTreeUtil';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
-import { isNonNullable, toTitleCase } from '@finos/legend-shared';
+import { toTitleCase } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
@@ -190,7 +190,6 @@ const ExplorerContextMenu = observer(
           plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
           [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>
           {config.renderer(editorStore, node?.packageableElement)}

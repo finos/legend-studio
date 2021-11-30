@@ -48,7 +48,7 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { NewServiceModal } from '../service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import { guaranteeType, uniq, isNonNullable } from '@finos/legend-shared';
+import { guaranteeType, uniq } from '@finos/legend-shared';
 import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,
@@ -175,7 +175,6 @@ const MappingExecutionQueryEditor = observer(
             plugin as DSLMapping_LegendStudioPlugin_Extension
           ).getExtraMappingExecutionQueryEditorActionConfigurations?.() ?? [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>{config.renderer(executionState)}</Fragment>
       ));

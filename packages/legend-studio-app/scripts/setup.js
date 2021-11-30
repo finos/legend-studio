@@ -53,6 +53,13 @@ export const setup = (outputDir) => {
         documentation: {
           url: 'https://legend.finos.org',
         },
+        extensions: {
+          '@finos/legend-studio-plugin-external-language-morphir': {
+            visualizer: { url: 'http://localhost:8092' },
+            linterServer: { url: 'http://localhost:8091' },
+            linterApp: { url: 'http://localhost:8090' },
+          },
+        },
       },
       undefined,
       2,

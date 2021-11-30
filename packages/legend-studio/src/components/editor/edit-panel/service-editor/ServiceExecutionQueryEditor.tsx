@@ -31,7 +31,7 @@ import {
   PlayIcon,
   ScrollIcon,
 } from '@finos/legend-art';
-import { debounce, isNonNullable } from '@finos/legend-shared';
+import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
@@ -41,7 +41,7 @@ import {
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { LightQuery } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+import type { DSLService_LegendStudioPlugin_Extension } from '../../../../stores/DSLService_LegendStudioPlugin_Extension';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -234,10 +234,9 @@ export const ServiceExecutionQueryEditor = observer(
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
-          ).TEMP__getExtraServiceQueryEditorActionConfigurations?.() ?? [],
+            plugin as DSLService_LegendStudioPlugin_Extension
+          ).getExtraServiceQueryEditorActionConfigurations?.() ?? [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>
           {config.renderer(executionState, isReadOnly)}

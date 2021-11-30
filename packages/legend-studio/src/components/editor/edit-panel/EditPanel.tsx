@@ -218,9 +218,9 @@ export const EditPanel = observer(() => {
       : [];
   const generationViewModes =
     currentEditorState instanceof ElementEditorState
-      ? editorStore.graphState.graphGenerationState.supportedFileGenerationConfigurationsForCurrentElement.map(
-          (config) => ({ type: config.key, label: config.label }),
-        )
+      ? editorStore.graphState.graphGenerationState.fileGenerationConfigurations
+          .slice()
+          .sort((a, b): number => a.label.localeCompare(b.label))
       : [];
 
   const renderActiveElementTab = (): React.ReactNode => {
@@ -461,11 +461,16 @@ export const EditPanel = observer(() => {
                         <div className="edit-panel__element-view__option__group__options">
                           {generationViewModes.map((mode) => (
                             <MenuContentItem
-                              key={mode.type}
+                              key={mode.key}
                               className="edit-panel__element-view__option"
+                              disabled={
+                                !editorStore.graphState.graphGenerationState.supportedFileGenerationConfigurationsForCurrentElement.includes(
+                                  mode,
+                                )
+                              }
                               onClick={(): void =>
                                 currentEditorState.setGenerationViewMode(
-                                  mode.type,
+                                  mode.key,
                                 )
                               }
                             >

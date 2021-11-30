@@ -58,7 +58,6 @@ import type {
   GenerationOutput,
   DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
   GenerationTreeNode,
-  PackageableElement,
 } from '@finos/legend-graph';
 import {
   Class,
@@ -66,7 +65,7 @@ import {
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DSL_LegendStudioPlugin_Extension } from '../LegendStudioPlugin';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -131,32 +130,31 @@ export class GraphGenerationState {
     if (this.editorStore.currentEditorState instanceof ElementEditorState) {
       const currentElement = this.editorStore.currentEditorState.element;
       // Note: For now we only allow classes and enumerations for all types of generations.
-      const getExtraFileGenerationScopeFilters = this.editorStore.pluginManager
-        .getStudioPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_LegendStudioPlugin_Extension
-            ).getExtraFileGenerationScopeFilters?.() ?? [],
-        )
-        .concat([
-          (
-            fileGenerationType: string,
-            packageableElement: PackageableElement,
-          ): boolean =>
-            packageableElement instanceof Class ||
-            packageableElement instanceof Enumeration,
-        ]);
-      return this.fileGenerationConfigurations
-        .slice()
-        .sort((a, b): number => a.label.localeCompare(b.label))
-        .filter(
-          (generationType) =>
-            !getExtraFileGenerationScopeFilters.length ||
-            getExtraFileGenerationScopeFilters.some((scopeFilter) =>
-              scopeFilter(generationType.key, currentElement),
-            ),
+      const extraFileGenerationScopeFilterConfigurations =
+        this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+              ).getExtraFileGenerationScopeFilterConfigurations?.() ?? [],
+          );
+      return this.fileGenerationConfigurations.filter((generationType) => {
+        const scopeFilters =
+          extraFileGenerationScopeFilterConfigurations.filter(
+            (configuration) =>
+              configuration.type.toLowerCase() === generationType.key,
+          );
+        if (scopeFilters.length) {
+          return scopeFilters.some((scopeFilter) =>
+            scopeFilter.filter(currentElement),
+          );
+        }
+        return (
+          currentElement instanceof Class ||
+          currentElement instanceof Enumeration
         );
+      });
     }
     return [];
   }

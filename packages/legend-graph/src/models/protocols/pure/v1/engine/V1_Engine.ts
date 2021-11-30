@@ -477,17 +477,15 @@ export class V1_Engine {
     // engine can convert that back to PureModelContextData to obtain source information
     // as some generator uses that info. Sending PureModelContextData with source information
     // from the front end to engine would take up a lot of bandwidth.
-    const pureModelContextText = new V1_PureModelContextText();
-    pureModelContextText.serializer = model.serializer;
-    pureModelContextText.code = await this.pureModelContextDataToPureCode(
-      model,
-    );
+    const textModel = new V1_PureModelContextText();
+    textModel.serializer = model.serializer;
+    textModel.code = await this.pureModelContextDataToPureCode(model);
     return (
       await this.engineServerClient.generateFile(
         generationMode,
         type,
         V1_GenerateFileInput.serialization.toJson(
-          new V1_GenerateFileInput(pureModelContextText, configs),
+          new V1_GenerateFileInput(textModel, configs),
         ),
       )
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));

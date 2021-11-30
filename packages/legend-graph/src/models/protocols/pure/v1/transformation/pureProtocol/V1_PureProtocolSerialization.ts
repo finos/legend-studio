@@ -202,5 +202,6 @@ export const V1_serializePureModelContext = (
 
 export const V1_pureModelContextPropSchema = custom(
   (val: V1_PureModelContext) => V1_serializePureModelContext(val),
+  // TODO: we will populate this when we need to `deserialize`
   (val) => SKIP,
 );

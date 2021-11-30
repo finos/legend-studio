@@ -15,32 +15,29 @@
  */
 
 import packageJson from '../../package.json';
-
 import type {
   DSL_LegendStudioPlugin_Extension,
   GenerationFile,
   FileGenerationState,
   LegendStudioPluginManager,
-  FileGenerationResultViewerAction,
-  FileGenerationScopeFilter,
+  FileGenerationResultViewerActionConfiguration,
+  FileGenerationScopeFilterConfiguration,
 } from '@finos/legend-studio';
-
 import { LegendStudioPlugin } from '@finos/legend-studio';
 import {
   NetworkClient,
-  assertNonEmptyString,
   guaranteeNonEmptyString,
+  assertErrorThrown,
 } from '@finos/legend-shared';
 import type { PackageableElement } from '@finos/legend-graph';
 import { ConcreteFunctionDefinition } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
 
 const MORPHIR_TYPE_NAME = `morphir`;
 
 interface ELMorphir_LegendStudioPluginConfigData {
-  morphirVisualizerUrl: string;
-  linterServerUrl: string;
-  linterAppUrl: string;
+  visualizer: { url: string };
+  linterServer: { url: string };
+  linterApp: { url: string };
 }
 
 export class ELMorphir_LegendStudioPlugin
@@ -63,141 +60,148 @@ export class ELMorphir_LegendStudioPlugin
 
   override configure(_configData: object): ELMorphir_LegendStudioPlugin {
     const configData = _configData as ELMorphir_LegendStudioPluginConfigData;
-    assertNonEmptyString(
-      configData.morphirVisualizerUrl,
-      `Can't configure morphir visualizer url for generation plugin: 'url' field is missing or empty`,
+    this._morphirVisualizerUrl = guaranteeNonEmptyString(
+      configData.visualizer.url,
+      `Can't configure Morphir generator: 'visualizer.url' field is missing or empty`,
     );
-    assertNonEmptyString(
-      configData.linterServerUrl,
-      `Can't configure linter server url for generation plugin: 'url' field is missing or empty`,
+    this._linterServerUrl = guaranteeNonEmptyString(
+      configData.linterServer.url,
+      `Can't configure Morphir generator: 'linterServer.url' field is missing or empty`,
     );
-    assertNonEmptyString(
-      configData.linterAppUrl,
-      `Can't configure linter app url for generation plugin: 'url' field is missing or empty`,
+    this._linterAppUrl = guaranteeNonEmptyString(
+      configData.linterApp.url,
+      `Can't configure Morphir generator: 'linterApp.url' field is missing or empty`,
     );
-    this.morphirVisualizerUrl = configData.morphirVisualizerUrl;
-    this.linterServerUrl = configData.linterServerUrl;
-    this.linterAppUrl = configData.linterAppUrl;
 
     return this;
   }
 
-  set morphirVisualizerUrl(url: string) {
-    this._morphirVisualizerUrl = url;
-  }
-
   get morphirVisualizerUrl(): string {
-    return guaranteeNonEmptyString(this._morphirVisualizerUrl);
-  }
-
-  set linterServerUrl(url: string) {
-    this._linterServerUrl = url;
+    return guaranteeNonEmptyString(
+      this._morphirVisualizerUrl,
+      `Morphir visualizer URL has not been configured`,
+    );
   }
 
   get linterServerUrl(): string {
-    return guaranteeNonEmptyString(this._linterServerUrl);
-  }
-
-  set linterAppUrl(url: string) {
-    this._linterAppUrl = url;
+    return guaranteeNonEmptyString(
+      this._linterServerUrl,
+      `Morphir linter server URL has not been configured`,
+    );
   }
 
   get linterAppUrl(): string {
-    return guaranteeNonEmptyString(this._linterAppUrl);
-  }
-
-  getExtraFileGenerationResultViewerActions(): FileGenerationResultViewerAction[] {
-    return [
-      (
-        fileGenerationState: FileGenerationState,
-      ): React.ReactNode | undefined => {
-        const fileNode = fileGenerationState.selectedNode
-          ?.fileNode as GenerationFile;
-        const applicationStore = useApplicationStore();
-        const visualizeMorphir =
-          (fileNode: GenerationFile): (() => void) =>
-          async (): Promise<void> => {
-            await this.networkClient.post(
-              this.morphirVisualizerUrl,
-              fileNode.content,
-            );
-            applicationStore.navigator.openNewWindow(this.morphirVisualizerUrl);
-          };
-        if (this.isMorphirGenerationType(fileGenerationState)) {
-          return (
-            <div className="panel__header__title__content generation-result-viewer__file__header__button">
-              <button
-                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                onClick={visualizeMorphir(fileNode)}
-                tabIndex={-1}
-              >
-                Visualize Generated IR
-              </button>
-            </div>
-          );
-        }
-        return undefined;
-      },
-      (
-        fileGenerationState: FileGenerationState,
-      ): React.ReactNode | undefined => {
-        const fileNode = fileGenerationState.selectedNode
-          ?.fileNode as GenerationFile;
-        const applicationStore = useApplicationStore();
-        const visualizeBosque =
-          (
-            fileGenerationState: FileGenerationState,
-            fileNode: GenerationFile,
-          ): (() => void) =>
-          async (): Promise<void> => {
-            const code =
-              fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
-                fileGenerationState.editorStore.graphManagerState.graph,
-              );
-            await this.networkClient.post(this.linterServerUrl, {
-              ir: fileNode.content,
-              src: await code,
-            });
-            applicationStore.navigator.openNewWindow(this.linterAppUrl);
-          };
-        if (this.isMorphirGenerationType(fileGenerationState)) {
-          return (
-            <div className="panel__header__title__content generation-result-viewer__file__header__button">
-              <button
-                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                onClick={visualizeBosque(fileGenerationState, fileNode)}
-                tabIndex={-1}
-              >
-                View Bosque Feedback
-              </button>
-            </div>
-          );
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  getExtraFileGenerationScopeFilters(): FileGenerationScopeFilter[] {
-    return [
-      (
-        fileGenerationType: string,
-        packageableElement: PackageableElement,
-      ): boolean => {
-        if (fileGenerationType.toLowerCase() === MORPHIR_TYPE_NAME) {
-          return packageableElement instanceof ConcreteFunctionDefinition;
-        }
-        return false;
-      },
-    ];
-  }
-
-  private isMorphirGenerationType(
-    fileGenerationState: FileGenerationState,
-  ): boolean {
-    return (
-      fileGenerationState.fileGeneration.type.toLowerCase() ===
-      MORPHIR_TYPE_NAME
+    return guaranteeNonEmptyString(
+      this._linterAppUrl,
+      `Morphir linter application URL has not been configured`,
     );
+  }
+
+  getExtraFileGenerationResultViewerActionConfigurations(): FileGenerationResultViewerActionConfiguration[] {
+    return [
+      {
+        key: 'visualize-morphir-IR-action',
+        renderer: (
+          fileGenerationState: FileGenerationState,
+        ): React.ReactNode | undefined => {
+          const fileNode = fileGenerationState.selectedNode
+            ?.fileNode as GenerationFile;
+          const applicationStore =
+            fileGenerationState.editorStore.applicationStore;
+          const visualizeMorphir =
+            (fileNode: GenerationFile): (() => void) =>
+            async (): Promise<void> => {
+              try {
+                await this.networkClient.post(
+                  this.morphirVisualizerUrl,
+                  fileNode.content,
+                );
+                applicationStore.navigator.openNewWindow(
+                  this.morphirVisualizerUrl,
+                );
+              } catch (error) {
+                assertErrorThrown(error);
+                applicationStore.notifyError(error);
+              }
+            };
+          if (
+            fileGenerationState.fileGeneration.type.toLowerCase() ===
+            MORPHIR_TYPE_NAME
+          ) {
+            return (
+              <div className="panel__header__title__content generation-result-viewer__file__header__action">
+                <button
+                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                  onClick={visualizeMorphir(fileNode)}
+                  tabIndex={-1}
+                >
+                  Visualize Generated IR
+                </button>
+              </div>
+            );
+          }
+          return undefined;
+        },
+      },
+      {
+        key: 'view-bosque-feedback-action',
+        renderer: (
+          fileGenerationState: FileGenerationState,
+        ): React.ReactNode | undefined => {
+          const fileNode = fileGenerationState.selectedNode
+            ?.fileNode as GenerationFile;
+          const applicationStore =
+            fileGenerationState.editorStore.applicationStore;
+          const visualizeBosque =
+            (
+              fileGenerationState: FileGenerationState,
+              fileNode: GenerationFile,
+            ): (() => void) =>
+            async (): Promise<void> => {
+              try {
+                const code =
+                  fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
+                    fileGenerationState.editorStore.graphManagerState.graph,
+                  );
+                await this.networkClient.post(this.linterServerUrl, {
+                  ir: fileNode.content,
+                  src: await code,
+                });
+                applicationStore.navigator.openNewWindow(this.linterAppUrl);
+              } catch (error) {
+                assertErrorThrown(error);
+                applicationStore.notifyError(error);
+              }
+            };
+          if (
+            fileGenerationState.fileGeneration.type.toLowerCase() ===
+            MORPHIR_TYPE_NAME
+          ) {
+            return (
+              <div className="panel__header__title__content generation-result-viewer__file__header__action">
+                <button
+                  className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                  onClick={visualizeBosque(fileGenerationState, fileNode)}
+                  tabIndex={-1}
+                >
+                  View Bosque Feedback
+                </button>
+              </div>
+            );
+          }
+          return undefined;
+        },
+      },
+    ];
+  }
+
+  getExtraFileGenerationScopeFilterConfigurations(): FileGenerationScopeFilterConfiguration[] {
+    return [
+      {
+        type: MORPHIR_TYPE_NAME,
+        filter: (packageableElement: PackageableElement): boolean =>
+          packageableElement instanceof ConcreteFunctionDefinition,
+      },
+    ];
   }
 }

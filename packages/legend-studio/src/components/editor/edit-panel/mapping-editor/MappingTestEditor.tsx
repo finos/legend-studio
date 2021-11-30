@@ -48,7 +48,6 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import {
   IllegalStateError,
-  isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
@@ -96,7 +95,6 @@ const MappingTestQueryEditor = observer(
             plugin as DSLMapping_LegendStudioPlugin_Extension
           ).getExtraMappingTestQueryEditorActionConfigurations?.() ?? [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>
           {config.renderer(testState, isReadOnly)}

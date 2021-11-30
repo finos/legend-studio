@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
+import type { PackageableElement } from '@finos/legend-graph';
+import type { FileGenerationState } from './editor-state/FileGenerationState';
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+
+export type FileGenerationResultViewerActionConfiguration = {
+  key: string;
+  renderer: (
+    fileGenerationState: FileGenerationState,
+  ) => React.ReactNode | undefined;
+};
+
+export type FileGenerationScopeFilterConfiguration = {
+  type: string;
+  filter: (element: PackageableElement) => boolean;
+};
 
 export interface DSLGenerationSpecification_LegendStudioPlugin_Extension
   extends DSL_LegendStudioPlugin_Extension {
@@ -22,4 +36,14 @@ export interface DSLGenerationSpecification_LegendStudioPlugin_Extension
    * Get drag-and-drop type specifier for model generation specification elements.
    */
   getExtraModelGenerationSpecificationElementDnDTypes?(): string[];
+
+  /**
+   * Get the list of the file generation result viewer actions to be rendered.
+   */
+  getExtraFileGenerationResultViewerActionConfigurations?(): FileGenerationResultViewerActionConfiguration[];
+
+  /**
+   * Get the list of filters that check if an element is in scope for certain file generation.
+   */
+  getExtraFileGenerationScopeFilterConfigurations?(): FileGenerationScopeFilterConfiguration[];
 }
