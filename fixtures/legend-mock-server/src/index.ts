@@ -37,7 +37,6 @@ fastify.get(`${BASE_URL}taxonomy-tree`, async (request, reply) => {
 });
 
 fastify.listen(PORT, (error, address) => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (error) {
     throw error;
   }
