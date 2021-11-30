@@ -25,11 +25,12 @@ export const DevTool = observer(() => {
   // Engine
   const engineConfig =
     editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
-  const changeEngineClientBaseUrl: React.ChangeEventHandler<HTMLInputElement> =
-    (event) =>
-      engineConfig.setBaseUrl(
-        event.target.value === '' ? undefined : event.target.value,
-      );
+  const changeEngineClientBaseUrl: React.ChangeEventHandler<
+    HTMLInputElement
+  > = (event) =>
+    engineConfig.setBaseUrl(
+      event.target.value === '' ? undefined : event.target.value,
+    );
   const toggleEngineClientRequestPayloadCompression = (): void =>
     engineConfig.setUseClientRequestPayloadCompression(
       !engineConfig.useClientRequestPayloadCompression,
