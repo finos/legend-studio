@@ -30,8 +30,8 @@ const QueryBuilderUnsupportedFetchStructure = observer(
     return (
       <div className="panel__content">
         <BlankPanelContent>
-          <div className="unsupported-element-editor__main">
-            <div className="unsupported-element-editor__summary">{`Unsupported fetch structure mode ${prettyCONSTName(
+          <div className="query-builder__unsupported-view__main">
+            <div className="query-builder__unsupported-view__summary">{`Unsupported fetch structure mode ${prettyCONSTName(
               mode,
             )}`}</div>
           </div>
