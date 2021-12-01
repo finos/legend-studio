@@ -93,7 +93,7 @@
     "fs-extra": "10.0.0",
     "husky": "7.0.4",
     "inquirer": "8.2.0",
-    "jest": "27.4.0",
+    "jest": "27.4.2",
     "lint-staged": "12.1.2",
     "micromatch": "4.0.4",
     "prettier": "2.5.0",
@@ -103,7 +103,7 @@
     "sort-package-json": "1.53.1",
     "stylelint": "14.1.0",
     "typescript": "4.5.2",
-    "yargs": "17.2.1"
+    "yargs": "17.3.0"
   },
   "engines": {
     "node": ">=14.17.1",
