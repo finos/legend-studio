@@ -28,9 +28,12 @@ import {
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__firmPersonGraphFetch,
   TEST_DATA__personWithParameter,
-  TEST_DATA__allFuncOnMilestonedClass,
+  TEST_DATA__allFuncOnBusinessTemporalMilestonedClass,
+  TEST_DATA__allFuncOnProcessingTemporalMilestonedClass,
+  TEST_DATA__allFuncOnBiTemporalMilestonedClass,
   TEST_DATA__graphFetchWithDerivedProperty,
   TEST_DATA__graphFetchWithDerivedPropertyWithParameter,
+  TEST_DATA__temporalModel,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
 import {
   simpleDerivationProjection,
@@ -59,6 +62,10 @@ const relationalCtx = {
   entities: TEST_DATA__complexRelationalModel,
 };
 
+const temporalCtx = {
+  entities: TEST_DATA__temporalModel,
+};
+
 const m2mCtx = {
   entities: TEST_DATA__M2MModel,
 };
@@ -66,9 +73,19 @@ const m2mCtx = {
 const cases: RoundtripTestCase[] = [
   ['Simple all() function', relationalCtx, TEST_DATA__simpleAllFunc],
   [
-    'Simple all() function with milestoned class',
-    relationalCtx,
-    TEST_DATA__allFuncOnMilestonedClass,
+    'Simple all() function with businesstemporal milestoned class',
+    temporalCtx,
+    TEST_DATA__allFuncOnBusinessTemporalMilestonedClass,
+  ],
+  [
+    'Simple all() function with processisngtemporal milestoned class',
+    temporalCtx,
+    TEST_DATA__allFuncOnProcessingTemporalMilestonedClass,
+  ],
+  [
+    'Simple all() function with bitemporal milestoned class',
+    temporalCtx,
+    TEST_DATA__allFuncOnBiTemporalMilestonedClass,
   ],
   ['Simple filter() function', relationalCtx, TEST_DATA__simpleFilterFunc],
   ['Simple project() function', relationalCtx, TEST_DATA__simpleProjection],

@@ -27,25 +27,102 @@ import {
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import type { Class, Mapping, Runtime } from '@finos/legend-graph';
+import type {
+  Class,
+  Mapping,
+  Runtime,
+  ValueSpecification,
+} from '@finos/legend-graph';
 import {
   PRIMITIVE_TYPE,
+  LATEST_DATE,
+  MILESTONING_STEROTYPES,
   PrimitiveInstanceValue,
   VariableExpression,
-  isMilestonedClass,
+  getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
-import { MilestoningParameterEditor } from './QueryBuilderParameterPanel';
+import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor';
 import { useState } from 'react';
 import { FaClock } from 'react-icons/fa';
-import { MILESTONING_STEROTYPES } from '../QueryBuilder_Const';
+import { DOLLAR_SIGN } from '../QueryBuilder_Const';
+
+const getParameterValue = (
+  parameter: ValueSpecification | undefined,
+): string | undefined => {
+  if (parameter instanceof VariableExpression) {
+    return `${DOLLAR_SIGN}${parameter.name}`;
+  } else {
+    if (
+      parameter instanceof PrimitiveInstanceValue &&
+      parameter.genericType.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE
+    ) {
+      return parameter.values[0] as string;
+    } else if (
+      parameter instanceof PrimitiveInstanceValue &&
+      parameter.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE
+    ) {
+      return LATEST_DATE;
+    }
+    return undefined;
+  }
+};
+
+const generateClassLabel = (
+  val: Class,
+  queryBuilderState: QueryBuilderState,
+): string | JSX.Element => {
+  const milestoneStereotype = getMilestoneTemporalStereotype(
+    val,
+    queryBuilderState.graphManagerState.graph,
+  );
+  if (milestoneStereotype) {
+    let milestoningParameterValues;
+    switch (milestoneStereotype) {
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+        milestoningParameterValues = `Business Date: ${getParameterValue(
+          queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+        )}`;
+        break;
+      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+        milestoningParameterValues = `Processing Date: ${getParameterValue(
+          queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+        )}`;
+        break;
+      case MILESTONING_STEROTYPES.BITEMPORAL:
+        milestoningParameterValues = `Business Date: ${getParameterValue(
+          queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+        )}, Processing Date: ${getParameterValue(
+          queryBuilderState.querySetupState.classMilestoningTemporalValues[1],
+        )}`;
+        break;
+      default:
+        milestoningParameterValues = '';
+    }
+
+    return (
+      <div className="query-builder__setup__config__item__class-label">
+        <div className="query-builder__setup__config__item__class-label__content">
+          {val.name}
+        </div>
+        <EyeIcon
+          className="query-builder__setup__config__item__class-label__btn"
+          title={milestoningParameterValues}
+        />
+      </div>
+    );
+  }
+  return val.name;
+};
 
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const querySetupState = queryBuilderState.querySetupState;
+    const [isMilestoneEditorOpened, setIsMilestoneEditorOpened] =
+      useState<boolean>(false);
     const elementFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -53,67 +130,12 @@ export const QueryBuilderSetupPanel = observer(
         option.value.path,
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
-    const getParameterValue = (index: number): string | undefined => {
-      const parameter = querySetupState.classMilestoningValue[index];
-      if (parameter instanceof VariableExpression) {
-        return `$${parameter.name}`;
-      } else {
-        if (
-          parameter instanceof PrimitiveInstanceValue &&
-          parameter.genericType.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE
-        ) {
-          return parameter.values[0] as string;
-        }
-        return '%latest';
-      }
-    };
-    const classLabel = (val: Class): string | JSX.Element => {
-      const stereotype = isMilestonedClass(
-        val,
-        queryBuilderState.graphManagerState.graph,
-      );
-      if (stereotype) {
-        let milestoningParameterValues;
-        switch (stereotype) {
-          case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-            milestoningParameterValues = `BusinessDate: ${getParameterValue(
-              0,
-            )}`;
-            break;
-          case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-            milestoningParameterValues = `ProcessingDate: ${getParameterValue(
-              0,
-            )}`;
-            break;
-          case MILESTONING_STEROTYPES.BITEMPORAL:
-            milestoningParameterValues = `BusinessDate: ${getParameterValue(
-              0,
-            )}, ProcessingDate: ${getParameterValue(1)}`;
-            break;
-          default:
-            milestoningParameterValues = '';
-        }
-
-        return (
-          <div className="query-builder__setup__config__item__class-label">
-            <div className="query-builder__setup__config__item__class-label-content">
-              {val.name}
-            </div>
-            <EyeIcon
-              className="query-builder__setup__config__item__class-label-button"
-              title={milestoningParameterValues}
-            />
-          </div>
-        );
-      }
-      return val.name;
-    };
     // class
     const classOptions = queryBuilderState.classOptions;
     const selectedClassOption = querySetupState._class
       ? {
           value: querySetupState._class,
-          label: classLabel(querySetupState._class),
+          label: generateClassLabel(querySetupState._class, queryBuilderState),
         }
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
@@ -200,12 +222,11 @@ export const QueryBuilderSetupPanel = observer(
           ? option.value.packageableRuntime.value.path
           : '(custom)',
     });
-    const [isMilestoned, setIsMilestoned] = useState<boolean>(false);
     const close = (): void => {
-      setIsMilestoned(false);
+      setIsMilestoneEditorOpened(false);
     };
-    const isEnabled = queryBuilderState.querySetupState._class
-      ? isMilestonedClass(
+    const isMilestonedClass = queryBuilderState.querySetupState._class
+      ? getMilestoneTemporalStereotype(
           queryBuilderState.querySetupState._class,
           queryBuilderState.graphManagerState.graph,
         )
@@ -239,8 +260,8 @@ export const QueryBuilderSetupPanel = observer(
             <button
               className="btn--dark btn__icon--dark"
               tabIndex={-1}
-              onClick={(): void => setIsMilestoned(true)}
-              disabled={!isEnabled}
+              onClick={(): void => setIsMilestoneEditorOpened(true)}
+              disabled={!isMilestonedClass}
               title="Edit Milestoning Parameters"
             >
               <FaClock />
@@ -274,11 +295,11 @@ export const QueryBuilderSetupPanel = observer(
               }
             />
           </div>
-          {isMilestoned && isEnabled && (
-            <MilestoningParameterEditor
+          {isMilestoneEditorOpened && isMilestonedClass && (
+            <MilestoningParametersEditor
               queryBuilderState={queryBuilderState}
               close={close}
-              stereotype={isEnabled}
+              stereotype={isMilestonedClass}
             />
           )}
           <div className="query-builder__setup__config__item">

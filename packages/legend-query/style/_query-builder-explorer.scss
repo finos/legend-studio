@@ -44,14 +44,14 @@
     height: 2.8rem;
   }
 
-  &__config__item__class-label-content {
+  &__config__item__class-label__content {
     @include flexVCenter;
 
     height: 100%;
     width: 100%;
   }
 
-  &__config__item__class-label-button {
+  &__config__item__class-label__btn {
     @include flexCenter;
 
     svg {

@@ -30,7 +30,7 @@ import type {
   ValueSpecification,
 } from '@finos/legend-graph';
 import {
-  isMilestonedClass,
+  getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
@@ -38,7 +38,7 @@ import {
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
-  classMilestoningValue: ValueSpecification[] = [];
+  classMilestoningTemporalValues: ValueSpecification[] = [];
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
@@ -48,12 +48,12 @@ export class QueryBuilderSetupState {
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
-      addClassMilestoningValue: action,
+      addClassMilestoningTemporalValues: action,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
       setRuntime: action,
-      setClassMilestoningValue: action,
+      setClassMilestoningTemporalValues: action,
       setShowSetupPanel: action,
     });
 
@@ -97,8 +97,8 @@ export class QueryBuilderSetupState {
     return false;
   }
 
-  addClassMilestoningValue(val: ValueSpecification): void {
-    addUniqueEntry(this.classMilestoningValue, val);
+  addClassMilestoningTemporalValues(val: ValueSpecification): void {
+    addUniqueEntry(this.classMilestoningTemporalValues, val);
   }
 
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
@@ -129,14 +129,16 @@ export class QueryBuilderSetupState {
       }
     }
     if (val !== undefined) {
-      const stereotype = isMilestonedClass(
+      const stereotype = getMilestoneTemporalStereotype(
         val,
         this.queryBuilderState.graphManagerState.graph,
       );
+      this.setClassMilestoningTemporalValues([]);
       if (stereotype) {
-        this.queryBuilderState.buildClassMilestoningValue(val, stereotype);
-      } else if (!stereotype) {
-        this.setClassMilestoningValue([]);
+        this.queryBuilderState.buildClassMilestoningTemporalValue(
+          val,
+          stereotype,
+        );
       }
     }
   }
@@ -156,7 +158,7 @@ export class QueryBuilderSetupState {
     }
   }
 
-  setClassMilestoningValue(val: ValueSpecification[]): void {
-    this.classMilestoningValue = val;
+  setClassMilestoningTemporalValues(val: ValueSpecification[]): void {
+    this.classMilestoningTemporalValues = val;
   }
 }

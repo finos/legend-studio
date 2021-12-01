@@ -3,4 +3,4 @@
 "@finos/legend-query": minor
 ---
 
-Support for querying a versioned/milestoned class
+Support milestoned class in `.all()` ([#679](https://github.com/finos/legend-studio/issues/679)).

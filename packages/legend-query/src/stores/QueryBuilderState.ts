@@ -48,7 +48,6 @@ import {
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
-  Multiplicity,
   PRIMITIVE_TYPE,
   GRAPH_MANAGER_LOG_EVENT,
   CompilationError,
@@ -56,6 +55,7 @@ import {
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
+  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -85,10 +85,7 @@ import {
   QueryBuilderFilterOperator_In,
   QueryBuilderFilterOperator_NotIn,
 } from './filterOperators/QueryBuilderFilterOperator_In';
-import {
-  buildGetAllFunction,
-  buildLambdaFunction,
-} from './QueryBuilderLambdaBuilder';
+import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
 import type {
   ApplicationStore,
   LegendApplicationConfig,
@@ -96,7 +93,6 @@ import type {
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
 import { QueryParametersState } from './QueryParametersState';
-import { MILESTONING_STEROTYPES } from '../QueryBuilder_Const';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -302,7 +298,7 @@ export class QueryBuilderState {
     );
   }
 
-  buildClassMilestoningValue(element: Class, stereotype: string): void {
+  buildClassMilestoningTemporalValue(element: Class, stereotype: string): void {
     const milestoningParameter = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
         new GenericType(
@@ -311,15 +307,21 @@ export class QueryBuilderState {
           ),
         ),
       ),
-      new Multiplicity(1, 1),
+      this.graphManagerState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      ),
     );
     switch (stereotype) {
       case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-        this.querySetupState.addClassMilestoningValue(milestoningParameter);
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
+        );
         break;
       }
       case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
-        this.querySetupState.addClassMilestoningValue(milestoningParameter);
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
+        );
         break;
       }
       case MILESTONING_STEROTYPES.BITEMPORAL: {
@@ -331,31 +333,21 @@ export class QueryBuilderState {
               ),
             ),
           ),
-          new Multiplicity(1, 1),
+          this.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
         );
-        this.querySetupState.addClassMilestoningValue(milestoningParameter);
-        this.querySetupState.addClassMilestoningValue(
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
+        );
+        this.querySetupState.addClassMilestoningTemporalValues(
           bitemporalMilestoningParameter,
         );
         break;
       }
       default:
-        this.querySetupState.setClassMilestoningValue([]);
+        this.querySetupState.setClassMilestoningTemporalValues([]);
     }
-    const getAllFunction = buildGetAllFunction(
-      element,
-      this.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      ),
-    );
-    this.querySetupState.classMilestoningValue.forEach((parameter) => {
-      getAllFunction.parametersValues.push(
-        guaranteeNonNullable(
-          parameter,
-          `Milestoning class should have a parameter of type 'Date'`,
-        ),
-      );
-    });
   }
 
   async saveQuery(

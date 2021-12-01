@@ -75,8 +75,4 @@ export enum SUPPORTED_FUNCTIONS {
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
 
-export enum MILESTONING_STEROTYPES {
-  BUSINESS_TEMPORAL = 'businesstemporal',
-  PROCESSING_TEMPORAL = 'processingtemporal',
-  BITEMPORAL = 'bitemporal',
-}
+export const DOLLAR_SIGN = '$';

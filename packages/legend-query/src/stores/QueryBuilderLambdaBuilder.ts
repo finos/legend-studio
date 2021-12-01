@@ -22,7 +22,7 @@ import {
 import type { ValueSpecification, Class } from '@finos/legend-graph';
 import {
   Multiplicity,
-  isMilestonedClass,
+  getMilestoneTemporalStereotype,
   INTERNAL__UnknownValueSpecification,
   V1_GraphTransformerContextBuilder,
   V1_serializeRawValueSpecification,
@@ -100,10 +100,20 @@ export const buildLambdaFunction = (
 
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
-  if (isMilestonedClass(_class, queryBuilderState.graphManagerState.graph)) {
-    queryBuilderState.querySetupState.classMilestoningValue.forEach(
+  if (
+    getMilestoneTemporalStereotype(
+      _class,
+      queryBuilderState.graphManagerState.graph,
+    )
+  ) {
+    queryBuilderState.querySetupState.classMilestoningTemporalValues.forEach(
       (parameter) =>
-        getAllFunction.parametersValues.push(guaranteeNonNullable(parameter)),
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            parameter,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
+        ),
     );
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;

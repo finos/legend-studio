@@ -40,6 +40,7 @@ import type {
 } from '@finos/legend-graph';
 import {
   Enumeration,
+  LATEST_DATE,
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveType,
@@ -250,13 +251,13 @@ export const MilestoningPrimitiveInstanceValueEditor = observer(
       valueSpecification.genericType.value.rawType.name ===
       PRIMITIVE_TYPE.STRICTDATE
         ? (valueSpecification.values[0] as string)
-        : '%latest';
+        : LATEST_DATE;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       valueSpecification.genericType.value.setRawType(
         new PrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
       );
       valueSpecification.changeValue(event.target.value, 0);
-      if (event.target.value === '%latest') {
+      if (event.target.value === LATEST_DATE) {
         valueSpecification.genericType.value.setRawType(
           new PrimitiveType(PRIMITIVE_TYPE.LATESTDATE),
         );
@@ -268,7 +269,6 @@ export const MilestoningPrimitiveInstanceValueEditor = observer(
       <div className={clsx('query-builder-value-spec-editor', className)}>
         <input
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
-          //type="date"
           spellCheck={false}
           value={value}
           onChange={changeValue}
