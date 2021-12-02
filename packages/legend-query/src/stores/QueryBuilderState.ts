@@ -45,12 +45,17 @@ import type {
   Service,
 } from '@finos/legend-graph';
 import {
+  PrimitiveInstanceValue,
+  GenericTypeExplicitReference,
+  GenericType,
+  PRIMITIVE_TYPE,
   GRAPH_MANAGER_LOG_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
+  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -293,6 +298,58 @@ export class QueryBuilderState {
     );
   }
 
+  buildClassMilestoningTemporalValue(element: Class, stereotype: string): void {
+    const milestoningParameter = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.LATESTDATE,
+          ),
+        ),
+      ),
+      this.graphManagerState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      ),
+    );
+    switch (stereotype) {
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
+        );
+        break;
+      }
+      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
+        );
+        break;
+      }
+      case MILESTONING_STEROTYPES.BITEMPORAL: {
+        const bitemporalMilestoningParameter = new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              this.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.LATESTDATE,
+              ),
+            ),
+          ),
+          this.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
+        );
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
+        );
+        this.querySetupState.addClassMilestoningTemporalValues(
+          bitemporalMilestoningParameter,
+        );
+        break;
+      }
+      default:
+        this.querySetupState.setClassMilestoningTemporalValues([]);
+    }
+  }
+
   async saveQuery(
     onSaveQuery: (lambda: RawLambda) => Promise<void>,
   ): Promise<void> {
@@ -408,7 +465,10 @@ export class QueryBuilderState {
 
   changeFetchStructure(): void {
     this.resultSetModifierState = new QueryResultSetModifierState(this);
-    this.fetchStructureState.graphFetchTreeState.initialize();
+    const treeData = this.fetchStructureState.graphFetchTreeState.treeData;
+    if (!treeData) {
+      this.fetchStructureState.graphFetchTreeState.initialize();
+    }
   }
 
   get classOptions(): PackageableElementOption<Class>[] {

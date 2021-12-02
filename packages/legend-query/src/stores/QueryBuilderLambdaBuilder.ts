@@ -19,9 +19,10 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { Class, ValueSpecification } from '@finos/legend-graph';
+import type { ValueSpecification, Class } from '@finos/legend-graph';
 import {
   Multiplicity,
+  getMilestoneTemporalStereotype,
   INTERNAL__UnknownValueSpecification,
   V1_GraphTransformerContextBuilder,
   V1_serializeRawValueSpecification,
@@ -99,6 +100,22 @@ export const buildLambdaFunction = (
 
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
+  if (
+    getMilestoneTemporalStereotype(
+      _class,
+      queryBuilderState.graphManagerState.graph,
+    )
+  ) {
+    queryBuilderState.querySetupState.classMilestoningTemporalValues.forEach(
+      (parameter) =>
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            parameter,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
+        ),
+    );
+  }
   lambdaFunction.expressionSequence[0] = getAllFunction;
 
   // build filter()

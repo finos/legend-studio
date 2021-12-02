@@ -16,6 +16,7 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import {
+  addUniqueEntry,
   getNullableFirstElement,
   isNonNullable,
   uniq,
@@ -26,8 +27,10 @@ import type {
   Mapping,
   PackageableRuntime,
   Runtime,
+  ValueSpecification,
 } from '@finos/legend-graph';
 import {
+  getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
@@ -35,6 +38,7 @@ import {
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
+  classMilestoningTemporalValues: ValueSpecification[] = [];
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
@@ -44,10 +48,12 @@ export class QueryBuilderSetupState {
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
+      addClassMilestoningTemporalValues: action,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
       setRuntime: action,
+      setClassMilestoningTemporalValues: action,
       setShowSetupPanel: action,
     });
 
@@ -91,6 +97,10 @@ export class QueryBuilderSetupState {
     return false;
   }
 
+  addClassMilestoningTemporalValues(val: ValueSpecification): void {
+    addUniqueEntry(this.classMilestoningTemporalValues, val);
+  }
+
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
     this.queryBuilderState = queryBuilderState;
   }
@@ -118,6 +128,19 @@ export class QueryBuilderSetupState {
         this.setMapping(possibleMapping);
       }
     }
+    if (val !== undefined) {
+      const stereotype = getMilestoneTemporalStereotype(
+        val,
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      this.setClassMilestoningTemporalValues([]);
+      if (stereotype) {
+        this.queryBuilderState.buildClassMilestoningTemporalValue(
+          val,
+          stereotype,
+        );
+      }
+    }
   }
 
   setMapping(val: Mapping | undefined): void {
@@ -133,5 +156,9 @@ export class QueryBuilderSetupState {
       // TODO?: we should consider if we allow people to use custom runtime here
       this.setRuntime(undefined);
     }
+  }
+
+  setClassMilestoningTemporalValues(val: ValueSpecification[]): void {
+    this.classMilestoningTemporalValues = val;
   }
 }

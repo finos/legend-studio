@@ -31,6 +31,112 @@ export const TEST_DATA__simpleAllFunc = {
   parameters: [],
 };
 
+export const TEST_DATA__allFuncOnBusinessTemporalMilestonedClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'test::Person',
+        },
+        {
+          _type: 'var',
+          name: 'businessDate',
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'StrictDate',
+      name: 'businessDate',
+      multiplicity: {
+        lowerBound: '1',
+        upperBound: '1',
+      },
+    },
+  ],
+};
+
+export const TEST_DATA__allFuncOnProcessingTemporalMilestonedClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'test::Person',
+        },
+        {
+          _type: 'var',
+          name: 'processingDate',
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'StrictDate',
+      name: 'processingDate',
+      multiplicity: {
+        lowerBound: '1',
+        upperBound: '1',
+      },
+    },
+  ],
+};
+
+export const TEST_DATA__allFuncOnBiTemporalMilestonedClass = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'test::Person',
+        },
+        {
+          _type: 'var',
+          name: 'businessDate',
+        },
+        {
+          _type: 'var',
+          name: 'processingDate',
+        },
+      ],
+    },
+  ],
+  parameters: [
+    {
+      _type: 'var',
+      class: 'StrictDate',
+      name: 'processingDate',
+      multiplicity: {
+        lowerBound: '1',
+        upperBound: '1',
+      },
+    },
+    {
+      _type: 'var',
+      class: 'StrictDate',
+      name: 'businessDate',
+      multiplicity: {
+        lowerBound: '1',
+        upperBound: '1',
+      },
+    },
+  ],
+};
+
 export const TEST_DATA__simpleFilterFunc = {
   _type: 'lambda',
   body: [
@@ -550,6 +656,233 @@ export const TEST_DATA__complexRelationalModel = [
       package: 'simple',
     },
     classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+];
+
+export const TEST_DATA__temporalModel = [
+  {
+    path: 'test::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firmID',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'date',
+          type: 'StrictDate',
+        },
+      ],
+      stereotypes: [
+        {
+          profile: 'temporal',
+          value: 'businesstemporal',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::Person1',
+    content: {
+      _type: 'class',
+      name: 'Person1',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firmID',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'date',
+          type: 'StrictDate',
+        },
+      ],
+      stereotypes: [
+        {
+          profile: 'temporal',
+          value: 'processingtemporal',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::Person2',
+    content: {
+      _type: 'class',
+      name: 'Person2',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'firmID',
+          type: 'Integer',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'date',
+          type: 'StrictDate',
+        },
+      ],
+      stereotypes: [
+        {
+          profile: 'temporal',
+          value: 'bitemporal',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'my::map',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'pureInstance',
+          class: 'test::Person',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              property: {
+                class: 'test::Person',
+                property: 'name',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'string',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    values: ['name'],
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: true,
+        },
+        {
+          _type: 'pureInstance',
+          class: 'test::Person1',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              property: {
+                class: 'test::Person1',
+                property: 'name',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'string',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    values: ['name'],
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: true,
+        },
+        {
+          _type: 'pureInstance',
+          class: 'test::Person2',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              property: {
+                class: 'test::Person2',
+                property: 'name',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'string',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    values: ['name'],
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'map',
+      package: 'my',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
 
