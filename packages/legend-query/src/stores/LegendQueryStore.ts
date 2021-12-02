@@ -295,6 +295,7 @@ export class QueryExportState {
 
     try {
       if (createNew) {
+        query.id = uuid();
         const newQuery =
           await this.queryStore.graphManagerState.graphManager.createQuery(
             query,
@@ -303,8 +304,10 @@ export class QueryExportState {
         this.queryStore.applicationStore.notifySuccess(
           `Successfully created query!`,
         );
-        this.queryStore.applicationStore.navigator.goTo(
-          generateExistingQueryRoute(newQuery.id),
+        this.queryStore.applicationStore.navigator.jumpTo(
+          this.queryStore.applicationStore.navigator.generateLocation(
+            generateExistingQueryRoute(newQuery.id),
+          ),
         );
         LegendQueryEventNotifierService.create(
           this.queryStore.applicationStore.eventNotifierService,
