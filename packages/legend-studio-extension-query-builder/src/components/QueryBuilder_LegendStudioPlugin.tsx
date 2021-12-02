@@ -166,10 +166,6 @@ export class QueryBuilder_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
-  }
-
   override getExtraApplicationSetups(): ApplicationSetup[] {
     return [
       async (pluginManager: LegendStudioPluginManager): Promise<void> => {

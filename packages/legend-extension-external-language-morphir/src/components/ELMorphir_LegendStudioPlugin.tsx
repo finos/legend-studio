@@ -19,7 +19,6 @@ import type {
   DSL_LegendStudioPlugin_Extension,
   GenerationFile,
   FileGenerationState,
-  LegendStudioPluginManager,
   FileGenerationResultViewerActionConfiguration,
   FileGenerationScopeFilterConfiguration,
 } from '@finos/legend-studio';
@@ -52,10 +51,6 @@ export class ELMorphir_LegendStudioPlugin
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
     this.networkClient = new NetworkClient();
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
   }
 
   override configure(_configData: object): ELMorphir_LegendStudioPlugin {

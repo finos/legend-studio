@@ -15,6 +15,7 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
 import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore';
 
 export type QuerySetupOptionRendererConfiguration = {
@@ -28,6 +29,10 @@ export type QuerySetupRenderer = (
 
 export abstract class LegendQueryPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'LegendQueryPlugin';
+
+  install(pluginManager: LegendQueryPluginManager): void {
+    pluginManager.registerQueryPlugin(this);
+  }
 
   /**
    * Get the list of renderer configurations for the query setup option.

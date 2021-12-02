@@ -15,7 +15,7 @@
  */
 
 import { LegendStudio } from '@finos/legend-studio';
-import { BrowserConsole } from '@finos/legend-shared';
+import { WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
 import { DSLText_LegendStudioPlugin } from '@finos/legend-extension-dsl-text';
@@ -40,8 +40,9 @@ export class LegendStudioWebApplication {
         new DSLSerializer_LegendStudioPlugin(),
         new ESService_LegendStudioPlugin(),
         new ELMorphir_LegendStudioPlugin(),
+        // loggers
+        new WebConsole(),
       ])
-      .withLoggers([new BrowserConsole()])
       .start()
       .catch((e: unknown) => {
         throw e;

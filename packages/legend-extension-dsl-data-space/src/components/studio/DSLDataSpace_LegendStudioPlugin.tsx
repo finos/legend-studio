@@ -16,7 +16,6 @@
 
 import packageJson from '../../../package.json';
 import type {
-  LegendStudioPluginManager,
   NewElementFromStateCreator,
   ElementTypeGetter,
   ElementProjectExplorerDnDTypeGetter,
@@ -49,10 +48,6 @@ export class DSLDataSpace_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
   }
 
   getExtraSupportedElementTypes(): string[] {

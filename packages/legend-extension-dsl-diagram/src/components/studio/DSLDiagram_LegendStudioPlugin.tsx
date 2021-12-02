@@ -16,7 +16,6 @@
 
 import packageJson from '../../../package.json';
 import type {
-  LegendStudioPluginManager,
   NewElementFromStateCreator,
   EditorStore,
   ElementEditorState,
@@ -48,10 +47,6 @@ export class DSLDiagram_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
   }
 
   override getExtraClassPreviewRenderers(): ClassPreviewRenderer[] {

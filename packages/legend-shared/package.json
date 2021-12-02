@@ -67,5 +67,8 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
+  },
+  "extensions": {
+    "loggerPlugin": "@finos/legend-logger-plugin-browser-console"
   }
 }

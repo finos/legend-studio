@@ -700,7 +700,7 @@ export class EditorStore {
           },
         },
         {
-          tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
+          tracerService: this.applicationStore.tracerService,
         },
       ),
     ]);

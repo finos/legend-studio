@@ -50,7 +50,7 @@ import type {
   GeneratorFn,
   Log,
   ServerClientConfig,
-  TracerServicePlugin,
+  TracerService,
 } from '@finos/legend-shared';
 import type { LightQuery, Query } from './action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
@@ -94,8 +94,8 @@ export abstract class AbstractPureGraphManager {
 
   abstract initialize(
     config: TEMP__EngineSetupConfig,
-    options: {
-      tracerServicePlugins?: TracerServicePlugin<unknown>[];
+    options?: {
+      tracerService?: TracerService | undefined;
     },
   ): GeneratorFn<void>;
 

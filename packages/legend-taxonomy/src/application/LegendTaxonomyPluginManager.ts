@@ -14,29 +14,18 @@
  * limitations under the License.
  */
 
+import { LegendApplicationPluginManager } from '@finos/legend-application';
 import type {
   GraphPluginManager,
   PureGraphManagerPlugin,
   PureGraphPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
-import type {
-  TelemetryServicePlugin,
-  TelemetryServicePluginManager,
-  TracerServicePlugin,
-  TracerServicePluginManager,
-} from '@finos/legend-shared';
-import { AbstractPluginManager } from '@finos/legend-shared';
 
 export class LegendTaxonomyPluginManager
-  extends AbstractPluginManager
-  implements
-    GraphPluginManager,
-    TracerServicePluginManager,
-    TelemetryServicePluginManager
+  extends LegendApplicationPluginManager
+  implements GraphPluginManager
 {
-  private telemetryServicePlugins: TelemetryServicePlugin[] = [];
-  private tracerServicePlugins: TracerServicePlugin<unknown>[] = [];
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
@@ -47,14 +36,6 @@ export class LegendTaxonomyPluginManager
 
   static create(): LegendTaxonomyPluginManager {
     return new LegendTaxonomyPluginManager();
-  }
-
-  registerTelemetryServicePlugin(plugin: TelemetryServicePlugin): void {
-    this.telemetryServicePlugins.push(plugin);
-  }
-
-  registerTracerServicePlugin(plugin: TracerServicePlugin<unknown>): void {
-    this.tracerServicePlugins.push(plugin);
   }
 
   registerPureProtocolProcessorPlugin(
@@ -69,14 +50,6 @@ export class LegendTaxonomyPluginManager
 
   registerPureGraphPlugin(plugin: PureGraphPlugin): void {
     this.pureGraphPlugins.push(plugin);
-  }
-
-  getTelemetryServicePlugins(): TelemetryServicePlugin[] {
-    return [...this.telemetryServicePlugins];
-  }
-
-  getTracerServicePlugins(): TracerServicePlugin<unknown>[] {
-    return [...this.tracerServicePlugins];
   }
 
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {

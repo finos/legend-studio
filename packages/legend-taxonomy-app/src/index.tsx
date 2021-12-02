@@ -15,7 +15,7 @@
  */
 
 import { LegendTaxonomy } from '@finos/legend-taxonomy';
-import { BrowserConsole } from '@finos/legend-shared';
+import { WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 
 export class LegendTaxonomyWebApplication {
@@ -23,7 +23,10 @@ export class LegendTaxonomyWebApplication {
     LegendTaxonomy.create()
       .setup({ baseUrl })
       .withPresets(getLegendGraphExtensionCollection())
-      .withLoggers([new BrowserConsole()])
+      .withPlugins([
+        // loggers
+        new WebConsole(),
+      ])
       .start()
       .catch((e: unknown) => {
         throw e;

@@ -20,6 +20,7 @@ import type {
 } from '@finos/legend-application';
 import {
   LegendApplication,
+  ApplicationStoreProvider,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
 } from '@finos/legend-application';
@@ -64,18 +65,22 @@ export class LegendTaxonomy extends LegendApplication {
 
   async loadApplication(): Promise<void> {
     // Setup React application libraries
-    await setupLegendApplicationUILibrary(this.pluginManager, this.log);
+    await setupLegendApplicationUILibrary(this.pluginManager, this.logger);
     await setupLegendQueryUILibrary();
 
     // Render React application
     ReactDOM.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
-          <LegendTaxonomyApplication
+          <ApplicationStoreProvider
             config={this.config}
             pluginManager={this.pluginManager}
-            log={this.log}
-          />
+          >
+            <LegendTaxonomyApplication
+              config={this.config}
+              pluginManager={this.pluginManager}
+            />
+          </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
       getRootElement(),

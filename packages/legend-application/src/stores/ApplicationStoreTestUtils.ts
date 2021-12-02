@@ -17,8 +17,8 @@
 import { ApplicationStore } from './ApplicationStore';
 import { createBrowserHistory } from 'history';
 import { WebApplicationNavigator } from './WebApplicationNavigator';
-import { Log } from '@finos/legend-shared';
 import type { LegendApplicationConfig } from './ApplicationConfig';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 
 export const TEST_DATA__applicationVersion = {
   buildTime: '2001-01-01T00:00:00-0000',
@@ -30,9 +30,10 @@ export const TEST__getTestApplicationStore = <
   T extends LegendApplicationConfig,
 >(
   config: T,
+  pluginManager: LegendApplicationPluginManager,
 ): ApplicationStore<T> =>
   new ApplicationStore(
     config,
     new WebApplicationNavigator(createBrowserHistory()),
-    new Log(),
+    pluginManager,
   );

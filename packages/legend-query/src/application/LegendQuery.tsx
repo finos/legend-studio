@@ -19,6 +19,7 @@ import type {
   LegendApplicationVersionData,
 } from '@finos/legend-application';
 import {
+  ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
@@ -69,18 +70,22 @@ export class LegendQuery extends LegendApplication {
 
   async loadApplication(): Promise<void> {
     // Setup React application libraries
-    await setupLegendApplicationUILibrary(this.pluginManager, this.log);
+    await setupLegendApplicationUILibrary(this.pluginManager, this.logger);
     await setupLegendQueryUILibrary();
 
     // Render React application
     ReactDOM.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
-          <LegendQueryApplication
+          <ApplicationStoreProvider
             config={this.config}
             pluginManager={this.pluginManager}
-            log={this.log}
-          />
+          >
+            <LegendQueryApplication
+              config={this.config}
+              pluginManager={this.pluginManager}
+            />
+          </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
       getRootElement(),

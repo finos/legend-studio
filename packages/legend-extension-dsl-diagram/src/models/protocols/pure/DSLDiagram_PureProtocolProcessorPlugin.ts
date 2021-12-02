@@ -24,7 +24,6 @@ import {
   V1_DIAGRAM_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLDiagram_ProtocolHelper';
 import type {
-  GraphPluginManager,
   PackageableElement,
   V1_ElementProtocolClassifierPathGetter,
   V1_ElementProtocolDeserializer,
@@ -58,10 +57,6 @@ export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcesso
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {

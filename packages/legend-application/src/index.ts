@@ -16,6 +16,7 @@
 
 export * from './const';
 
+export * from './application/LegendApplicationPluginManager';
 export * from './application/LegendApplication';
 
 export * from './components/ApplicationStoreProvider';

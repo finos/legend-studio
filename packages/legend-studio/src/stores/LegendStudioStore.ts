@@ -15,12 +15,7 @@
  */
 
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import {
-  ActionState,
-  LogEvent,
-  assertErrorThrown,
-  TelemetryService,
-} from '@finos/legend-shared';
+import { ActionState, LogEvent, assertErrorThrown } from '@finos/legend-shared';
 import type { ApplicationStore } from '@finos/legend-application';
 import {
   CORE_TELEMETRY_EVENT,
@@ -49,7 +44,6 @@ export class LegendStudioStore {
   depotServerClient: DepotServerClient;
   pluginManager: LegendStudioPluginManager;
 
-  telemetryService = new TelemetryService();
   initState = ActionState.create();
 
   isSDLCAuthorized = false;
@@ -77,14 +71,9 @@ export class LegendStudioStore {
     this.pluginManager = pluginManager;
 
     // Register plugins
-    this.sdlcServerClient.registerTracerServicePlugins(
-      this.pluginManager.getTracerServicePlugins(),
-    );
-    this.depotServerClient.registerTracerServicePlugins(
-      this.pluginManager.getTracerServicePlugins(),
-    );
-    this.telemetryService.registerPlugins(
-      this.pluginManager.getTelemetryServicePlugins(),
+    this.sdlcServerClient.setTracerService(this.applicationStore.tracerService);
+    this.depotServerClient.setTracerService(
+      this.applicationStore.tracerService,
     );
   }
 
@@ -117,16 +106,19 @@ export class LegendStudioStore {
     }
 
     // setup telemetry service
-    this.telemetryService.setUserId(currentUserID);
-    this.telemetryService.logEvent(CORE_TELEMETRY_EVENT.APPLICATION_LOADED, {
-      browser: {
-        userAgent: navigator.userAgent,
+    this.applicationStore.telemetryService.setUserId(currentUserID);
+    this.applicationStore.telemetryService.logEvent(
+      CORE_TELEMETRY_EVENT.APPLICATION_LOADED,
+      {
+        browser: {
+          userAgent: navigator.userAgent,
+        },
+        screen: {
+          height: window.screen.height,
+          width: window.screen.width,
+        },
       },
-      screen: {
-        height: window.screen.height,
-        width: window.screen.width,
-      },
-    });
+    );
 
     this.initState.complete();
   }

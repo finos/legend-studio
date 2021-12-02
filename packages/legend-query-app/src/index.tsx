@@ -15,7 +15,7 @@
  */
 
 import { LegendQuery } from '@finos/legend-query';
-import { BrowserConsole } from '@finos/legend-shared';
+import { WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 import { DSLDataSpace_LegendQueryPlugin } from '@finos/legend-extension-dsl-data-space';
 
@@ -24,8 +24,11 @@ export class LegendQueryWebApplication {
     LegendQuery.create()
       .setup({ baseUrl })
       .withPresets(getLegendGraphExtensionCollection())
-      .withPlugins([new DSLDataSpace_LegendQueryPlugin()])
-      .withLoggers([new BrowserConsole()])
+      .withPlugins([
+        new DSLDataSpace_LegendQueryPlugin(),
+        // loggers
+        new WebConsole(),
+      ])
       .start()
       .catch((e: unknown) => {
         throw e;

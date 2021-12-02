@@ -25,6 +25,7 @@ import {
   WebApplicationNavigator,
   TEST__provideMockedApplicationStore,
   TEST__ApplicationStoreProvider,
+  TEST__provideMockedWebApplicationNavigator,
 } from '@finos/legend-application';
 import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils';
 import { render } from '@testing-library/react';
@@ -37,6 +38,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { TEST__DepotServerClientProvider } from '@finos/legend-server-depot';
 import { TEST__getTestStudioConfig } from '../../stores/EditorStoreTestUtils';
+import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager';
 
 test(integrationTest('App header is displayed properly'), async () => {
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
@@ -51,10 +53,14 @@ test(integrationTest('App header is displayed properly'), async () => {
     .mockResolvedValueOnce([]);
   jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
   MOBX__disableSpyOrMock();
+  TEST__provideMockedWebApplicationNavigator();
 
   const { queryByText } = render(
     <MemoryRouter>
-      <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+      <TEST__ApplicationStoreProvider
+        config={TEST__getTestStudioConfig()}
+        pluginManager={LegendStudioPluginManager.create()}
+      >
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__LegendStudioStoreProvider>
@@ -74,6 +80,7 @@ test(integrationTest('App header is displayed properly'), async () => {
 test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   const applicationStore = TEST__provideMockedApplicationStore(
     TEST__getTestStudioConfig(),
+    LegendStudioPluginManager.create(),
   );
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
   const stubURL = 'stubUrl';
@@ -90,10 +97,14 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
     .spyOn(navigator, 'getCurrentLocation')
     .mockImplementationOnce(() => stubURL);
   MOBX__disableSpyOrMock();
+  TEST__provideMockedWebApplicationNavigator();
 
   render(
     <MemoryRouter>
-      <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+      <TEST__ApplicationStoreProvider
+        config={TEST__getTestStudioConfig()}
+        pluginManager={LegendStudioPluginManager.create()}
+      >
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__LegendStudioStoreProvider>
@@ -130,10 +141,14 @@ test(
       .mockResolvedValueOnce(['stubUrl']);
     jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
     MOBX__disableSpyOrMock();
+    TEST__provideMockedWebApplicationNavigator();
 
     const { queryByText } = render(
       <MemoryRouter>
-        <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+        <TEST__ApplicationStoreProvider
+          config={TEST__getTestStudioConfig()}
+          pluginManager={LegendStudioPluginManager.create()}
+        >
           <TEST__SDLCServerClientProvider>
             <TEST__DepotServerClientProvider>
               <TEST__LegendStudioStoreProvider>

@@ -16,7 +16,6 @@
 
 import packageJson from '../../package.json';
 import type {
-  GraphPluginManager,
   PackageableElement,
   PureGrammarElementLabeler,
 } from '@finos/legend-graph';
@@ -29,10 +28,6 @@ const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
 export class DSLDiagram_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
   }
 
   override getExtraPureGrammarParserNames(): string[] {

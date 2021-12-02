@@ -51,6 +51,7 @@ import {
   ServiceRegistrationResult,
 } from '@finos/legend-graph';
 import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils';
+import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager';
 
 let renderResult: RenderResult;
 
@@ -92,6 +93,7 @@ const setup = async (
           },
         },
       }),
+      LegendStudioPluginManager.create(),
     ),
   });
   renderResult = await TEST__setUpEditor(mockedEditorStore, {

@@ -15,6 +15,7 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
+import type { GraphPluginManager } from '../GraphPluginManager';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 
 /**
@@ -28,6 +29,10 @@ export type PureGrammarElementLabeler = (
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
+
+  install(pluginManager: GraphPluginManager): void {
+    pluginManager.registerPureGraphManagerPlugin(this);
+  }
 
   /**
    * Get the list of supported Pure grammar parsers.

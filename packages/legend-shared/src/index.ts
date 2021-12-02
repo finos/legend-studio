@@ -38,4 +38,4 @@ export * from './data-structure/Pair';
 export * from './data-structure/Stack';
 
 export * from './log/Logger';
-export * from './log/BrowserConsole';
+export * from './log/WebConsole';

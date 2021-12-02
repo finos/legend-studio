@@ -67,6 +67,7 @@ import {
 import { LegendStudioStoreProvider } from './LegendStudioStoreProvider';
 import type { ApplicationStore } from '@finos/legend-application';
 import {
+  TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,
   WebApplicationNavigator,
@@ -159,16 +160,21 @@ export const TEST__provideMockedEditorStore = (customization?: {
   graphManagerState?: GraphManagerState;
   pluginManager?: LegendStudioPluginManager;
 }): EditorStore => {
+  const pluginManager =
+    customization?.pluginManager ?? LegendStudioPluginManager.create();
   const value =
     customization?.mock ??
     new EditorStore(
       customization?.applicationStore ??
-        TEST__getTestApplicationStore(TEST__getTestStudioConfig()),
+        TEST__getTestApplicationStore(
+          TEST__getTestStudioConfig(),
+          pluginManager,
+        ),
       customization?.sdlcServerClient ?? TEST__getTestSDLCServerClient(),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
       customization?.graphManagerState ??
         TEST__getTestGraphManagerState(customization?.pluginManager),
-      customization?.pluginManager ?? LegendStudioPluginManager.create(),
+      pluginManager,
     );
   const MockedEditorStoreProvider = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStoreProvider.useEditorStore = jest.fn();
@@ -340,13 +346,16 @@ export const TEST__setUpEditor = async (
       ),
     ],
   });
-  mockedEditorStore.applicationStore.navigator = new WebApplicationNavigator(
-    history,
-  );
+  const navigator = new WebApplicationNavigator(history);
+  mockedEditorStore.applicationStore.navigator = navigator;
+  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
 
   const renderResult = render(
     <Router history={history}>
-      <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+      <TEST__ApplicationStoreProvider
+        config={TEST__getTestStudioConfig()}
+        pluginManager={LegendStudioPluginManager.create()}
+      >
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__GraphManagerStateProvider>

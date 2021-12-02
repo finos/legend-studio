@@ -53,7 +53,6 @@ import {
 import { Schema } from '../../metamodels/pure/model/packageableElements/schemaSet/Schema';
 import { ExternalFormatConnection } from '../../metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
 import type {
-  GraphPluginManager,
   PackageableElement,
   Connection,
   V1_ElementProtocolClassifierPathGetter,
@@ -104,10 +103,6 @@ export class DSLSerializer_PureProtocolProcessorPlugin
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {

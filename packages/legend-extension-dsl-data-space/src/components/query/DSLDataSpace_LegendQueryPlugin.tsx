@@ -16,7 +16,6 @@
 
 import packageJson from '../../../package.json';
 import type {
-  LegendQueryPluginManager,
   QuerySetupOptionRendererConfiguration,
   QuerySetupRenderer,
   QuerySetupState,
@@ -30,10 +29,6 @@ import { DataspaceQuerySetup } from './DataSpaceQuerySetup';
 export class DSLDataSpace_LegendQueryPlugin extends LegendQueryPlugin {
   constructor() {
     super(packageJson.extensions.queryPlugin, packageJson.version);
-  }
-
-  install(pluginManager: LegendQueryPluginManager): void {
-    pluginManager.registerQueryPlugin(this);
   }
 
   override getExtraQuerySetupOptionRendererConfigurations(): QuerySetupOptionRendererConfiguration[] {

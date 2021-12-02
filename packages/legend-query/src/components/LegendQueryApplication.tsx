@@ -30,7 +30,6 @@ import {
   LegendMaterialUITheme,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import type { Log } from '@finos/legend-shared';
 import {
   LegendQueryStoreProvider,
   useLegendQueryStore,
@@ -39,11 +38,9 @@ import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
-  ApplicationStoreProvider,
   BlockingAlert,
   NotificationSnackbar,
   useApplicationStore,
-  useWebApplicationNavigator,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig';
@@ -97,29 +94,29 @@ export const LegendQueryApplication = observer(
   (props: {
     config: LegendQueryConfig;
     pluginManager: LegendQueryPluginManager;
-    log: Log;
   }) => {
-    const { config, pluginManager, log } = props;
-    const navigator = useWebApplicationNavigator();
+    const { config, pluginManager } = props;
+    const applicationStore = useApplicationStore();
 
     return (
-      <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
-        <DepotServerClientProvider
-          config={{
-            serverUrl: config.depotServerUrl,
-            TEMP__useLegacyDepotServerAPIRoutes:
-              config.TEMP__useLegacyDepotServerAPIRoutes,
-          }}
+      <DepotServerClientProvider
+        config={{
+          serverUrl: config.depotServerUrl,
+          TEMP__useLegacyDepotServerAPIRoutes:
+            config.TEMP__useLegacyDepotServerAPIRoutes,
+        }}
+      >
+        <GraphManagerStateProvider
+          pluginManager={pluginManager}
+          log={applicationStore.log}
         >
-          <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
-            <LegendQueryStoreProvider pluginManager={pluginManager}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendQueryApplicationInner />
-              </ThemeProvider>
-            </LegendQueryStoreProvider>
-          </GraphManagerStateProvider>
-        </DepotServerClientProvider>
-      </ApplicationStoreProvider>
+          <LegendQueryStoreProvider pluginManager={pluginManager}>
+            <ThemeProvider theme={LegendMaterialUITheme}>
+              <LegendQueryApplicationInner />
+            </ThemeProvider>
+          </LegendQueryStoreProvider>
+        </GraphManagerStateProvider>
+      </DepotServerClientProvider>
     );
   },
 );

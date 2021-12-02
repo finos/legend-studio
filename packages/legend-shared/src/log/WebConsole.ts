@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
+import packageJson from '../../package.json';
 import type { LogEvent } from './Logger';
-import { Logger } from './Logger';
+import { LoggerPlugin } from './Logger';
 
 const { debug, info, warn, error } = console;
 
-export class BrowserConsole extends Logger {
+export class WebConsole extends LoggerPlugin {
+  constructor() {
+    super(packageJson.extensions.loggerPlugin, packageJson.version);
+  }
+
   _debug(event: LogEvent, ...data: unknown[]): void {
     debug(
       `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,

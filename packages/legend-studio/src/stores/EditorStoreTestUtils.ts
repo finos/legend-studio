@@ -61,6 +61,7 @@ export const TEST__getTestEditorStore = (
 ): EditorStore => {
   const applicationStore = TEST__getTestApplicationStore(
     TEST__getTestStudioConfig(),
+    pluginManager,
   );
   return new EditorStore(
     applicationStore,

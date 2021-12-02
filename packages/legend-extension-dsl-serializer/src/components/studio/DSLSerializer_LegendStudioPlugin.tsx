@@ -33,7 +33,6 @@ import type {
   NewElementFromStateCreator,
   NewElementState,
   RuntimeConnectionTooltipTextBuilder,
-  LegendStudioPluginManager,
 } from '@finos/legend-studio';
 import { LegendStudioPlugin } from '@finos/legend-studio';
 import { FaBuffer, FaSitemap } from 'react-icons/fa';
@@ -79,10 +78,6 @@ export class DSLSerializer_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
   }
 
   getExtraSupportedElementTypes(): string[] {

@@ -18,7 +18,6 @@ import packageJson from '../../package.json';
 import type { Clazz } from '@finos/legend-shared';
 import type {
   DeadReferencesCleaner,
-  GraphPluginManager,
   PackageableElement,
   PureModel,
 } from '@finos/legend-graph';
@@ -29,10 +28,6 @@ import { cleanUpDeadReferencesInDiagram } from '../helpers/DiagramHelper';
 export class DSLDiagram_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphPlugin(this);
   }
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {

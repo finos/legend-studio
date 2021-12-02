@@ -28,9 +28,9 @@ import type {
   Log,
   PlainObject,
   ServerClientConfig,
-  TracerServicePlugin,
 } from '@finos/legend-shared';
 import {
+  TracerService,
   LogEvent,
   getClass,
   guaranteeNonNullable,
@@ -409,14 +409,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   *initialize(
     config: TEMP__EngineSetupConfig,
-    options: {
-      tracerServicePlugins?: TracerServicePlugin<unknown>[] | undefined;
+    options?: {
+      tracerService?: TracerService | undefined;
     },
   ): GeneratorFn<void> {
     this.engine = new V1_Engine(config.clientConfig, this.log);
     this.engine
       .getEngineServerClient()
-      .registerTracerServicePlugins(options.tracerServicePlugins ?? []);
+      .setTracerService(options?.tracerService ?? new TracerService());
     yield this.engine.setup(config);
   }
 

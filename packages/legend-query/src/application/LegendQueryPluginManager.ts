@@ -14,30 +14,19 @@
  * limitations under the License.
  */
 
+import { LegendApplicationPluginManager } from '@finos/legend-application';
 import type {
   GraphPluginManager,
   PureGraphManagerPlugin,
   PureGraphPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
-import type {
-  TelemetryServicePlugin,
-  TelemetryServicePluginManager,
-  TracerServicePlugin,
-  TracerServicePluginManager,
-} from '@finos/legend-shared';
-import { AbstractPluginManager } from '@finos/legend-shared';
 import type { LegendQueryPlugin } from '../stores/LegendQueryPlugin';
 
 export class LegendQueryPluginManager
-  extends AbstractPluginManager
-  implements
-    GraphPluginManager,
-    TracerServicePluginManager,
-    TelemetryServicePluginManager
+  extends LegendApplicationPluginManager
+  implements GraphPluginManager
 {
-  private telemetryServicePlugins: TelemetryServicePlugin[] = [];
-  private tracerServicePlugins: TracerServicePlugin<unknown>[] = [];
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
@@ -49,14 +38,6 @@ export class LegendQueryPluginManager
 
   static create(): LegendQueryPluginManager {
     return new LegendQueryPluginManager();
-  }
-
-  registerTelemetryServicePlugin(plugin: TelemetryServicePlugin): void {
-    this.telemetryServicePlugins.push(plugin);
-  }
-
-  registerTracerServicePlugin(plugin: TracerServicePlugin<unknown>): void {
-    this.tracerServicePlugins.push(plugin);
   }
 
   registerPureProtocolProcessorPlugin(
@@ -75,14 +56,6 @@ export class LegendQueryPluginManager
 
   registerQueryPlugin(plugin: LegendQueryPlugin): void {
     this.queryPlugins.push(plugin);
-  }
-
-  getTelemetryServicePlugins(): TelemetryServicePlugin[] {
-    return [...this.telemetryServicePlugins];
-  }
-
-  getTracerServicePlugins(): TracerServicePlugin<unknown>[] {
-    return [...this.tracerServicePlugins];
   }
 
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {

@@ -43,7 +43,6 @@ import {
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
-  TelemetryService,
   AssertionError,
   assertNonNullable,
   addUniqueEntry,
@@ -301,7 +300,6 @@ export class LegendTaxonomyStore {
   taxonomyServerClient: TaxonomyServerClient;
   graphManagerState: GraphManagerState;
   pluginManager: LegendTaxonomyPluginManager;
-  telemetryService = new TelemetryService();
 
   sideBarDisplayState = new PanelDisplayState({
     initial: 300,
@@ -344,14 +342,11 @@ export class LegendTaxonomyStore {
     this.pluginManager = pluginManager;
 
     // Register plugins
-    this.taxonomyServerClient.registerTracerServicePlugins(
-      this.pluginManager.getTracerServicePlugins(),
+    this.taxonomyServerClient.setTracerService(
+      this.applicationStore.tracerService,
     );
-    this.depotServerClient.registerTracerServicePlugins(
-      this.pluginManager.getTracerServicePlugins(),
-    );
-    this.telemetryService.registerPlugins(
-      this.pluginManager.getTelemetryServicePlugins(),
+    this.depotServerClient.setTracerService(
+      this.applicationStore.tracerService,
     );
 
     // Hotkeys
@@ -586,7 +581,7 @@ export class LegendTaxonomyStore {
             },
           },
           {
-            tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
+            tracerService: this.applicationStore.tracerService,
           },
         ),
       );

@@ -369,6 +369,11 @@ export class LegendQueryStore {
       this.graphManagerState,
       new StandardQueryBuilderMode(),
     );
+
+    // Register plugins
+    this.depotServerClient.setTracerService(
+      this.applicationStore.tracerService,
+    );
   }
 
   reset(): void {
@@ -664,7 +669,7 @@ export class LegendQueryStore {
             },
           },
           {
-            tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
+            tracerService: this.applicationStore.tracerService,
           },
         ),
       );

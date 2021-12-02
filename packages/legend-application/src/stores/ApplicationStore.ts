@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-import type { Log, SuperGenericFunction } from '@finos/legend-shared';
+import type { SuperGenericFunction } from '@finos/legend-shared';
 import {
+  TracerService,
+  TelemetryService,
   assertTrue,
+  Log,
   LogEvent,
   assertErrorThrown,
   isString,
@@ -26,6 +29,7 @@ import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from './ApplicationLogEvent';
 import type { LegendApplicationConfig } from './ApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -97,12 +101,19 @@ export class Notification {
 export class ApplicationStore<T extends LegendApplicationConfig> {
   navigator: WebApplicationNavigator;
   notification?: Notification | undefined;
-  log: Log;
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
   config: T;
 
-  constructor(config: T, navigator: WebApplicationNavigator, log: Log) {
+  log: Log = new Log();
+  telemetryService = new TelemetryService();
+  tracerService = new TracerService();
+
+  constructor(
+    config: T,
+    navigator: WebApplicationNavigator,
+    pluginManager: LegendApplicationPluginManager,
+  ) {
     makeAutoObservable(this, {
       navigator: false,
       setBlockingAlert: action,
@@ -117,7 +128,13 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
 
     this.config = config;
     this.navigator = navigator;
-    this.log = log;
+
+    // Register plugins
+    this.log.registerPlugins(pluginManager.getLoggerPlugins());
+    this.telemetryService.registerPlugins(
+      pluginManager.getTelemetryServicePlugins(),
+    );
+    this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {

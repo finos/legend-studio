@@ -63,10 +63,13 @@ export const URLRedirector = observer(() => {
       }
       // report if the link from a marketing campaign is accessed
       if (queryParams.marketingId) {
-        studioStore.telemetryService.logEvent(EVENT_MARKETING_LINK_ACCESS, {
-          marketingId: queryParams.marketingId,
-          redirectUrl: redirectUrl,
-        });
+        applicationStore.telemetryService.logEvent(
+          EVENT_MARKETING_LINK_ACCESS,
+          {
+            marketingId: queryParams.marketingId,
+            redirectUrl: redirectUrl,
+          },
+        );
       }
       applicationStore.navigator.goTo(`/${redirectUrl}`);
     }

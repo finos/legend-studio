@@ -43,6 +43,7 @@ const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
   return TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(
       TEST__getTestStudioConfig(),
+      pluginManager,
     ),
     graphManagerState: TEST__provideMockedGraphManagerState({ pluginManager }),
     pluginManager,

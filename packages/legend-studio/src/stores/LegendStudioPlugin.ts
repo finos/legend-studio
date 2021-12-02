@@ -55,6 +55,10 @@ export type ClassPreviewRenderer = (
 export abstract class LegendStudioPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'LegendStudioPlugin';
 
+  install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerStudioPlugin(this);
+  }
+
   /**
    * Get the list of setup procedures to be run when booting up the application.
    *
