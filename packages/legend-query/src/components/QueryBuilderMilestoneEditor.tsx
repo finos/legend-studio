@@ -32,6 +32,7 @@ import {
 } from '@finos/legend-graph';
 import {
   DatePrimitiveInstanceValueEditor,
+  LatestDatePrimitiveInstanceValueEditor,
   VariableExpressionParameterEditor,
 } from './QueryBuilderValueSpecificationEditor';
 import {
@@ -160,6 +161,12 @@ const MilestoningParameterEditor = observer(
                 <DatePrimitiveInstanceValueEditor
                   valueSpecification={milestoningParameter}
                 />
+              </div>
+            )}
+            {milestoningParameter.genericType.value.rawType.name ===
+              PRIMITIVE_TYPE.LATESTDATE && (
+              <div className="query-builder__parameter-editor__parameter">
+                <LatestDatePrimitiveInstanceValueEditor />
               </div>
             )}
           </div>

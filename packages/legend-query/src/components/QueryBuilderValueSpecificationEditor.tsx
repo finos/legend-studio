@@ -39,6 +39,7 @@ import type {
   ValueSpecification,
 } from '@finos/legend-graph';
 import {
+  LATEST_DATE,
   Enumeration,
   GenericType,
   GenericTypeExplicitReference,
@@ -483,6 +484,12 @@ export const QueryBuilderUnsupportedValueSpecificationEditor: React.FC = () => (
   </div>
 );
 
+export const LatestDatePrimitiveInstanceValueEditor: React.FC = () => (
+  <div className="query-builder-value-spec-editor__latest-date">
+    {LATEST_DATE}
+  </div>
+);
+
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
@@ -521,13 +528,14 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
-      case PRIMITIVE_TYPE.LATESTDATE:
         return (
           <DatePrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
             className={className}
           />
         );
+      case PRIMITIVE_TYPE.LATESTDATE:
+        return <LatestDatePrimitiveInstanceValueEditor />;
       default:
         return <QueryBuilderUnsupportedValueSpecificationEditor />;
     }
