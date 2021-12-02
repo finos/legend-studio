@@ -40,7 +40,6 @@ import type {
 } from '@finos/legend-graph';
 import {
   Enumeration,
-  LATEST_DATE,
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveType,
@@ -216,7 +215,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
   },
 );
 
-const DatePrimitiveInstanceValueEditor = observer(
+export const DatePrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
@@ -232,43 +231,6 @@ const DatePrimitiveInstanceValueEditor = observer(
         <input
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
           type="date"
-          spellCheck={false}
-          value={value}
-          onChange={changeValue}
-        />
-      </div>
-    );
-  },
-);
-
-export const MilestoningPrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue;
-    className?: string | undefined;
-  }) => {
-    const { valueSpecification, className } = props;
-    const value =
-      valueSpecification.genericType.value.rawType.name ===
-      PRIMITIVE_TYPE.STRICTDATE
-        ? (valueSpecification.values[0] as string)
-        : LATEST_DATE;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      valueSpecification.genericType.value.setRawType(
-        new PrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
-      );
-      valueSpecification.changeValue(event.target.value, 0);
-      if (event.target.value === LATEST_DATE) {
-        valueSpecification.genericType.value.setRawType(
-          new PrimitiveType(PRIMITIVE_TYPE.LATESTDATE),
-        );
-        valueSpecification.changeValues([]);
-      }
-    };
-
-    return (
-      <div className={clsx('query-builder-value-spec-editor', className)}>
-        <input
-          className="panel__content__form__section__input query-builder-value-spec-editor__input"
           spellCheck={false}
           value={value}
           onChange={changeValue}

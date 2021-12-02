@@ -197,12 +197,6 @@ test(unitTest('Milestoned class'), async () => {
   await TEST__buildGraphWithEntities(graphManagerState, data, {
     TEMPORARY__keepSectionIndex: true,
   });
-  graphManagerState.graph.allOwnElements.forEach((entity) => {
-    if (entity instanceof Class) {
-      expect(getMilestoneTemporalStereotype(entity, graphManagerState.graph))
-        .toBeTrue;
-    }
-  });
   expect(
     getMilestoneTemporalStereotype(
       graphManagerState.graph.getClass('test::C'),

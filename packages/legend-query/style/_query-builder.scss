@@ -636,11 +636,9 @@
 .query-builder__parameter-editor {
   @include flexCenter;
 
-  flex-grow: 1;
-  height: 2.8rem;
-  border-radius: 0.2rem;
-  font-size: 1.2rem;
-  font-weight: 500;
+  &__config__item {
+    @include flexCenter;
+  }
 
   &__node__dnd__overlay {
     @include flexCenter;
@@ -655,6 +653,12 @@
     width: 100%;
     pointer-events: none;
     background: var(--color-dark-grey-50);
+  }
+
+  &__parameter {
+    height: 2.8rem;
+    margin: 0.3rem 0 0.5rem;
+    width: 100%;
   }
 
   &__node__action {

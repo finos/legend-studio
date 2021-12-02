@@ -66,7 +66,7 @@ const getParameterValue = (
     ) {
       return LATEST_DATE;
     }
-    return undefined;
+    return 'unknown';
   }
 };
 

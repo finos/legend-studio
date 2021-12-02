@@ -20,6 +20,7 @@ import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersS
 import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
 import { Dialog } from '@material-ui/core';
 import { useCallback } from 'react';
+import type { Type } from '@finos/legend-graph';
 import {
   GenericType,
   GenericTypeExplicitReference,
@@ -30,14 +31,23 @@ import {
   VariableExpression,
 } from '@finos/legend-graph';
 import {
-  MilestoningPrimitiveInstanceValueEditor,
+  DatePrimitiveInstanceValueEditor,
   VariableExpressionParameterEditor,
 } from './QueryBuilderValueSpecificationEditor';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  Randomizer,
+} from '@finos/legend-shared';
 import { MdRefresh } from 'react-icons/md';
 import type { DropTargetMonitor } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
+import type { PackageableElementOption } from '@finos/legend-application';
+import { buildElementOption, DATE_FORMAT } from '@finos/legend-application';
+import { CustomSelectorInput } from '@finos/legend-art';
+import format from 'date-fns/format/index';
+import { addDays } from 'date-fns';
 
 const MilestoningParameterEditor = observer(
   (props: { queryBuilderState: QueryBuilderState; index: number }) => {
@@ -71,6 +81,8 @@ const MilestoningParameterEditor = observer(
       }),
       [handleDrop],
     );
+    const milestoningParameter =
+      queryBuilderState.querySetupState.classMilestoningTemporalValues[index];
     const resetMilestoningParameter = (): void => {
       queryBuilderState.querySetupState.classMilestoningTemporalValues[index] =
         new PrimitiveInstanceValue(
@@ -86,6 +98,43 @@ const MilestoningParameterEditor = observer(
           ),
         );
     };
+    const latestType =
+      queryBuilderState.graphManagerState.graph.getPrimitiveType(
+        PRIMITIVE_TYPE.LATESTDATE,
+      );
+    const variableType =
+      milestoningParameter?.genericType?.value.rawType ?? latestType;
+
+    const selectedType = buildElementOption(variableType);
+    const typeOptions: PackageableElementOption<Type>[] =
+      queryBuilderState.graphManagerState.graph.primitiveTypes
+        .filter(
+          (p) =>
+            p.name === PRIMITIVE_TYPE.STRICTDATE ||
+            p.name === PRIMITIVE_TYPE.LATESTDATE,
+        )
+        .map((p) => buildElementOption(p) as PackageableElementOption<Type>)
+        .concat(queryBuilderState.enumerationOptions);
+    const changeType = (val: PackageableElementOption<Type>): void => {
+      if (variableType !== val.value) {
+        milestoningParameter?.genericType?.value.setRawType(val.value);
+      }
+      if (
+        milestoningParameter instanceof PrimitiveInstanceValue &&
+        milestoningParameter.genericType.value.rawType.name ===
+          PRIMITIVE_TYPE.STRICTDATE
+      ) {
+        milestoningParameter.values = [
+          format(
+            new Randomizer().getRandomDate(
+              new Date(Date.now()),
+              addDays(Date.now(), 100),
+            ),
+            DATE_FORMAT,
+          ),
+        ];
+      }
+    };
     return (
       <div
         ref={dropConnector}
@@ -96,31 +145,39 @@ const MilestoningParameterEditor = observer(
             Change Milestoning Parameter Value
           </div>
         )}
-        {queryBuilderState.querySetupState.classMilestoningTemporalValues[
-          index
-        ] instanceof PrimitiveInstanceValue && (
-          <MilestoningPrimitiveInstanceValueEditor
-            valueSpecification={guaranteeType(
-              guaranteeNonNullable(
-                queryBuilderState.querySetupState
-                  .classMilestoningTemporalValues[index],
-              ),
-              PrimitiveInstanceValue,
+        {milestoningParameter instanceof PrimitiveInstanceValue && (
+          <div className="query-builder__parameter-editor__parameter">
+            <CustomSelectorInput
+              placeholder="Choose a type..."
+              options={typeOptions}
+              onChange={changeType}
+              value={selectedType}
+              darkMode={true}
+            />
+            {milestoningParameter.genericType.value.rawType.name ===
+              PRIMITIVE_TYPE.STRICTDATE && (
+              <div className="query-builder__parameter-editor__parameter">
+                <DatePrimitiveInstanceValueEditor
+                  valueSpecification={milestoningParameter}
+                />
+              </div>
             )}
-          />
+          </div>
         )}
         {queryBuilderState.querySetupState.classMilestoningTemporalValues[
           index
         ] instanceof VariableExpression && (
-          <VariableExpressionParameterEditor
-            valueSpecification={guaranteeType(
-              guaranteeNonNullable(
-                queryBuilderState.querySetupState
-                  .classMilestoningTemporalValues[index],
-              ),
-              VariableExpression,
-            )}
-          />
+          <>
+            <VariableExpressionParameterEditor
+              valueSpecification={guaranteeType(
+                guaranteeNonNullable(
+                  queryBuilderState.querySetupState
+                    .classMilestoningTemporalValues[index],
+                ),
+                VariableExpression,
+              )}
+            />
+          </>
         )}
         <button
           className="query-builder__parameter-editor__node__action"
@@ -139,24 +196,28 @@ const BiTemporalMilestoneEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     return (
-      <div className="panel__content__form__section">
-        <div className="panel__content__form__section__header__label">
-          Business Date
+      <>
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Business Date
+          </div>
+          <MilestoningParameterEditor
+            key="BusinessDate"
+            queryBuilderState={queryBuilderState}
+            index={0}
+          />
         </div>
-        <MilestoningParameterEditor
-          key="BusinessDate"
-          queryBuilderState={queryBuilderState}
-          index={0}
-        />
-        <div className="panel__content__form__section__header__label">
-          Processing Date
+        <div className="panel__content__form__section">
+          <div className="panel__content__form__section__header__label">
+            Processing Date
+          </div>
+          <MilestoningParameterEditor
+            key="ProcessingDate"
+            queryBuilderState={queryBuilderState}
+            index={1}
+          />
         </div>
-        <MilestoningParameterEditor
-          key="ProcessingDate"
-          queryBuilderState={queryBuilderState}
-          index={1}
-        />
-      </div>
+      </>
     );
   },
 );
