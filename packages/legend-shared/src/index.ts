@@ -24,8 +24,11 @@ export * from './format/ValidatorUtils';
 
 export * from './network/NetworkUtils';
 export * from './network/AbstractServerClient';
-export * from './network/TelemetryService';
 export * from './network/TracerService';
+
+export * from './communication/EventNotifierService';
+export * from './communication/IframeEventNotifierPlugin';
+export * from './communication/TelemetryService';
 
 export * from './application/HashUtils';
 export * from './application/TestUtils';

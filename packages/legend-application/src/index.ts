@@ -42,5 +42,3 @@ export * from './stores/PackageableElementOption';
 export { GRAMMAR_ELEMENT_TYPE_LABEL } from './stores/PureLanguageSupport';
 
 export * from './stores/ApplicationStoreTestUtils';
-
-export * from './network/TelemetryEvent';

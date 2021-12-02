@@ -69,6 +69,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "loggerPlugin": "@finos/legend-logger-plugin-browser-console"
+    "iframeEventNotifierPlugin": "@finos/legend-event-notifier-plugin-iframe",
+    "webConsoleLoggerPlugin": "@finos/legend-logger-plugin-web-console"
   }
 }

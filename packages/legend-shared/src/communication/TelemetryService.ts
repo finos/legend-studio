@@ -42,7 +42,8 @@ export abstract class TelemetryServicePlugin extends AbstractPlugin {
 
   /**
    * NOTE: However the telemetry server is configured,
-   * telemetry events should be considered "fire and forget" and be sent asynchronously
+   * telemetry events should be considered "fire and forget"
+   * i.e. being sent asynchronously and not throwing errors
    */
   abstract logEvent(eventType: string, data: TelemetryData): void;
 }

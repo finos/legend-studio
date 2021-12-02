@@ -16,6 +16,7 @@
 
 import type { SuperGenericFunction } from '@finos/legend-shared';
 import {
+  EventNotifierService,
   TracerService,
   TelemetryService,
   assertTrue,
@@ -108,6 +109,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   log: Log = new Log();
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
+  eventNotifierService = new EventNotifierService();
 
   constructor(
     config: T,
@@ -135,6 +137,9 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       pluginManager.getTelemetryServicePlugins(),
     );
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
+    this.eventNotifierService.registerPlugins(
+      pluginManager.getEventNotifierPlugins(),
+    );
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {

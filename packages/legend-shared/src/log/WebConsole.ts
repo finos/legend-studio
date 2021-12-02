@@ -22,7 +22,7 @@ const { debug, info, warn, error } = console;
 
 export class WebConsole extends LoggerPlugin {
   constructor() {
-    super(packageJson.extensions.loggerPlugin, packageJson.version);
+    super(packageJson.extensions.webConsoleLoggerPlugin, packageJson.version);
   }
 
   _debug(event: LogEvent, ...data: unknown[]): void {

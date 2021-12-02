@@ -15,6 +15,8 @@
  */
 
 import type {
+  EventNotifierPlugin,
+  EventNotifierServicePluginManager,
   LoggerPlugin,
   LoggerPluginManager,
   TelemetryServicePlugin,
@@ -29,21 +31,28 @@ export class LegendApplicationPluginManager
   implements
     LoggerPluginManager,
     TelemetryServicePluginManager,
-    TracerServicePluginManager
+    TracerServicePluginManager,
+    EventNotifierServicePluginManager
 {
   protected loggerPlugins: LoggerPlugin[] = [];
   protected telemetryServicePlugins: TelemetryServicePlugin[] = [];
-  private tracerServicePlugins: TracerServicePlugin<unknown>[] = [];
+  protected tracerServicePlugins: TracerServicePlugin<unknown>[] = [];
+  protected eventNotifierPlugins: EventNotifierPlugin[] = [];
 
   registerLoggerPlugin(plugin: LoggerPlugin): void {
     this.loggerPlugins.push(plugin);
   }
+
   registerTelemetryServicePlugin(plugin: TelemetryServicePlugin): void {
     this.telemetryServicePlugins.push(plugin);
   }
 
   registerTracerServicePlugin(plugin: TracerServicePlugin<unknown>): void {
     this.tracerServicePlugins.push(plugin);
+  }
+
+  registerEventNotifierPlugin(plugin: EventNotifierPlugin): void {
+    this.eventNotifierPlugins.push(plugin);
   }
 
   getLoggerPlugins(): LoggerPlugin[] {
@@ -56,5 +65,9 @@ export class LegendApplicationPluginManager
 
   getTracerServicePlugins(): TracerServicePlugin<unknown>[] {
     return [...this.tracerServicePlugins];
+  }
+
+  getEventNotifierPlugins(): EventNotifierPlugin[] {
+    return [...this.eventNotifierPlugins];
   }
 }
