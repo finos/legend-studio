@@ -85,3 +85,4 @@ export {
   GoChevronRight as ChevronRightIcon,
   GoFileBinary as BinaryTypeIcon,
 } from 'react-icons/go';
+export { SiSwagger as SwaggerIcon } from 'react-icons/si';
