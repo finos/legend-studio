@@ -148,13 +148,6 @@ const MilestoningParameterEditor = observer(
         )}
         {milestoningParameter instanceof PrimitiveInstanceValue && (
           <div className="query-builder__parameter-editor__parameter">
-            <CustomSelectorInput
-              placeholder="Choose a type..."
-              options={typeOptions}
-              onChange={changeType}
-              value={selectedType}
-              darkMode={true}
-            />
             {milestoningParameter.genericType.value.rawType.name ===
               PRIMITIVE_TYPE.STRICTDATE && (
               <div className="query-builder__parameter-editor__parameter">
@@ -169,6 +162,13 @@ const MilestoningParameterEditor = observer(
                 <LatestDatePrimitiveInstanceValueEditor />
               </div>
             )}
+            <CustomSelectorInput
+              placeholder="Choose a type..."
+              options={typeOptions}
+              onChange={changeType}
+              value={selectedType}
+              darkMode={true}
+            />
           </div>
         )}
         {queryBuilderState.querySetupState.classMilestoningTemporalValues[
@@ -192,7 +192,7 @@ const MilestoningParameterEditor = observer(
           title="Reset Milestoning Parameter Value"
           onClick={resetMilestoningParameter}
         >
-          <MdRefresh />
+          <MdRefresh style={{ fontSize: '1.6rem' }} />
         </button>
       </div>
     );

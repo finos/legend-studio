@@ -421,6 +421,10 @@
   height: 100%;
   width: 100%;
 
+  ::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+  }
+
   &--unsupported {
     @include flexCenter;
 

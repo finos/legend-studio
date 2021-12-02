@@ -407,7 +407,7 @@ export class QueryBuilderLambdaProcessor
           assertTrue(
             valueSpecification.parametersValues.length ===
               acceptedNoOfParameters,
-            `Can't process getAll() expression: When used with a bitemporal milestoned class getAll() expects two parameters of type 'Date'`,
+            `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters of type 'Date'`,
           );
           milestoningParameters = [
             guaranteeNonNullable(valueSpecification.parametersValues[1]),
@@ -421,7 +421,7 @@ export class QueryBuilderLambdaProcessor
           assertTrue(
             valueSpecification.parametersValues.length ===
               acceptedNoOfParameters,
-            `Can't process getAll() expression: When used with a milestoned class getAll() expects a parameter of type 'Date'`,
+            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter of type 'Date'`,
           );
           milestoningParameters = [
             guaranteeNonNullable(valueSpecification.parametersValues[1]),

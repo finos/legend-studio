@@ -24,6 +24,6 @@ export class CorePureGraphManagerPlugin extends PureGraphManagerPlugin {
   }
 
   override getExtraExposedSystemElementPath(): string[] {
-    return [CORE_ELEMENT_PATH.PROFILE_DOC];
+    return [CORE_ELEMENT_PATH.PROFILE_DOC, CORE_ELEMENT_PATH.PROFILE_TEMPORAL];
   }
 }
