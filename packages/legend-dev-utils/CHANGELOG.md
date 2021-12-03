@@ -1,5 +1,11 @@
 # @finos/legend-dev-utils
 
+## 0.3.0
+
+### Minor Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - Turn off source-mapping for Webpack development build for better performance; to have source-mapping enabled in development mode, use `debug` mode. `advanced` mode is now renamed to `debug` mode for Webpack configuration generator.
+
 ## 0.2.1
 
 ## 0.2.0

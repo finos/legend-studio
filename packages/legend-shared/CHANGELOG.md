@@ -1,5 +1,21 @@
 # @finos/legend-shared
 
+## 1.0.0
+
+### Major Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `Logger` now conforms to plugin structure, the new class to use is `LoggerPlugin`. Create the interface `PluginConsumer` with method `registerPlugins(plugins: AbstractPluginManager[]): void` to make plugin consumers like `Log`, `TelemetryService`, and `TracerService` more similar and systematic.
+
+### Minor Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - The abstract plugin now has a default generic `install` method which just registers the plugin to the compatible plugin manager, this saves plugin author some time and code when implementing plugins.
+
+* [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - Introduce `EventNotifierService` which is very similar to telemetry service but will help creating event hook for cross-application integration (e.g. `Github web-hooks`); also implemented `IframeEventNotifierPlugin` to help with communication between Legend applications and applications that embedded them in `iframe`s.
+
+### Patch Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `AbstractServerClient` nolonger allows registering `TracerServicePlugin`s for the internal `TracerService` instance, but now requires explicitly registering an instance of `TracerService` instead.
+
 ## 0.0.9
 
 ## 0.0.8

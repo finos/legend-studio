@@ -1,5 +1,23 @@
 # @finos/legend-studio
 
+## 2.1.0
+
+### Minor Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - The abstract plugin now has a default generic `install` method which just registers the plugin to the compatible plugin manager, this saves plugin author some time and code when implementing plugins.
+
+* [#640](https://github.com/finos/legend-studio/pull/640) [`b5ce0f99`](https://github.com/finos/legend-studio/commit/b5ce0f995b0e512b5cc3e19aebc75654ff9c24b0) ([@CptTeddy](https://github.com/CptTeddy)) - Added extension mechanism for actions in file generation output viewer. Also added an extension mechanism for file generation type vs. element type matrix (i.e. which element types work with which generation type); \_previously, we only allow `Class` and `Enumeration`.
+
+### Patch Changes
+
+- [#716](https://github.com/finos/legend-studio/pull/716) [`79176bcf`](https://github.com/finos/legend-studio/commit/79176bcfd614d580e15ec1b16abfceb02a1a03e1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `Join` owner as the database owner when dragging join into `RelationalPropertyMappingEditor` ([#651](https://github.com/finos/legend-studio/issues/651)).
+
+* [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - Rework file generation scope filter: the filter will only be activated if the generation type matches. We now also show all generation types in viewer mode dropdown and disable the ones that are not applicable to the currently viewed element.
+
+- [#706](https://github.com/finos/legend-studio/pull/706) [`1c421e43`](https://github.com/finos/legend-studio/commit/1c421e4373a2d8258ac35d0c330487f63f3e6d15) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Sort workflow `jobs` by creation date.
+
+* [#712](https://github.com/finos/legend-studio/pull/712) [`02fbbcf8`](https://github.com/finos/legend-studio/commit/02fbbcf810554addbbc47c1d29b11af00a134db7) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for role in `Snowflake` connection
+
 ## 2.0.2
 
 ### Patch Changes

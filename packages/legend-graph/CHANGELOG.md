@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 0.3.0
+
+### Minor Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - The abstract plugin now has a default generic `install` method which just registers the plugin to the compatible plugin manager, this saves plugin author some time and code when implementing plugins.
+
+### Patch Changes
+
+- [#710](https://github.com/finos/legend-studio/pull/710) [`9a78d326`](https://github.com/finos/legend-studio/commit/9a78d32649f59ace15c048365211552b7262feef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Detect `generic type` while processing `collection` value specification ([#564](https://github.com/finos/legend-studio/issues/564)).
+
+* [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - Introduce tagging mechanism for `Query`.
+
+- [#712](https://github.com/finos/legend-studio/pull/712) [`02fbbcf8`](https://github.com/finos/legend-studio/commit/02fbbcf810554addbbc47c1d29b11af00a134db7) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for role in `Snowflake` connection
+
 ## 0.2.5
 
 ### Patch Changes
