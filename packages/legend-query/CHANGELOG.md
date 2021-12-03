@@ -1,5 +1,17 @@
 # @finos/legend-query
 
+## 0.2.0
+
+### Minor Changes
+
+- [#679](https://github.com/finos/legend-studio/pull/679) [`e2fe3ba8`](https://github.com/finos/legend-studio/commit/e2fe3ba87a8e8ea1484d8f8dd4cf1dbc0f1cb40e) ([@gayathrir11](https://github.com/gayathrir11)) - Support milestoned class in `.all()` ([#679](https://github.com/finos/legend-studio/issues/679)).
+
+* [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - The abstract plugin now has a default generic `install` method which just registers the plugin to the compatible plugin manager, this saves plugin author some time and code when implementing plugins.
+
+### Patch Changes
+
+- [#695](https://github.com/finos/legend-studio/pull/695) [`67612764`](https://github.com/finos/legend-studio/commit/676127644cac0c451a89e57e4f07c8da544a6c98) ([@gayathrir11](https://github.com/gayathrir11)) - Make resetting behaviour in query builder more consistent and systematic.
+
 ## 0.1.5
 
 ## 0.1.4

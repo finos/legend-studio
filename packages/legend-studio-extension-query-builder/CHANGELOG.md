@@ -1,5 +1,11 @@
 # @finos/legend-studio-extension-query-builder
 
+## 0.2.0
+
+### Minor Changes
+
+- [#679](https://github.com/finos/legend-studio/pull/679) [`e2fe3ba8`](https://github.com/finos/legend-studio/commit/e2fe3ba87a8e8ea1484d8f8dd4cf1dbc0f1cb40e) ([@gayathrir11](https://github.com/gayathrir11)) - Support milestoned class in `.all()` ([#679](https://github.com/finos/legend-studio/issues/679)).
+
 ## 0.1.5
 
 ## 0.1.4

@@ -1,5 +1,11 @@
 # @finos/legend-studio-app
 
+## 2.0.0
+
+### Minor Changes
+
+- [#640](https://github.com/finos/legend-studio/pull/640) [`b5ce0f99`](https://github.com/finos/legend-studio/commit/b5ce0f995b0e512b5cc3e19aebc75654ff9c24b0) ([@CptTeddy](https://github.com/CptTeddy)) - Add Legend Studio extension for external language Morphir.
+
 ## 1.6.0
 
 ## 1.5.0
