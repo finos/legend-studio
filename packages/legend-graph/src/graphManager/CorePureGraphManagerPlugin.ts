@@ -15,7 +15,6 @@
  */
 
 import packageJson from '../../package.json';
-import type { GraphPluginManager } from '../GraphPluginManager';
 import { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import { CORE_ELEMENT_PATH } from '../MetaModelConst';
 
@@ -24,11 +23,7 @@ export class CorePureGraphManagerPlugin extends PureGraphManagerPlugin {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }
 
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
-  }
-
   override getExtraExposedSystemElementPath(): string[] {
-    return [CORE_ELEMENT_PATH.PROFILE_DOC];
+    return [CORE_ELEMENT_PATH.PROFILE_DOC, CORE_ELEMENT_PATH.PROFILE_TEMPORAL];
   }
 }

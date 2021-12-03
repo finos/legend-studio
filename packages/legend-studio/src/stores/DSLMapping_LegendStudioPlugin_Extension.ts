@@ -20,11 +20,9 @@ import type { EditorStore } from './EditorStore';
 import type {
   Store,
   Connection,
-  Runtime,
   SetImplementation,
   InstanceSetImplementation,
 } from '@finos/legend-graph';
-import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { NewConnectionValueDriver } from './NewElementState';
@@ -93,26 +91,6 @@ export type MappingTestQueryEditorActionConfiguration = {
   ) => React.ReactNode | undefined;
 };
 
-/**
- * NOTE: this is temporary since we want to eventually move Service out to its own DSL
- */
-export type TEMP__ServiceQueryEditorActionConfiguration = {
-  key: string;
-  renderer: (
-    executionState: ServicePureExecutionState,
-    isReadOnly: boolean,
-  ) => React.ReactNode | undefined;
-};
-
-/**
- * NOTE: this is temporary since we want to eventually move Service out to its own DSL
- */
-export type TEMP__ServiceTestRuntimeConnectionBuilder = (
-  sourceConnection: Connection,
-  runtime: Runtime,
-  testData: string,
-) => Connection | undefined;
-
 export interface DSLMapping_LegendStudioPlugin_Extension
   extends DSL_LegendStudioPlugin_Extension {
   /**
@@ -174,20 +152,4 @@ export interface DSLMapping_LegendStudioPlugin_Extension
    * Get the list of actions for mapping test query editor.
    */
   getExtraMappingTestQueryEditorActionConfigurations?(): MappingTestQueryEditorActionConfiguration[];
-
-  /**
-   * Get the list of actions for service execution query editor.
-   *
-   * NOTE: this is temporary since we want to eventually move Service out to its own DSL
-   * preset/plugin so this should also be moved there
-   */
-  TEMP__getExtraServiceQueryEditorActionConfigurations?(): TEMP__ServiceQueryEditorActionConfiguration[];
-
-  /**
-   * Get the list of service test runtime connection builder for a provided connection and test data.
-   *
-   * NOTE: this is temporary since we want to eventually move Service out to its own DSL
-   * preset/plugin so this should also be moved there
-   */
-  TEMP__getExtraServiceTestRuntimeConnectionBuilders?(): TEMP__ServiceTestRuntimeConnectionBuilder[];
 }

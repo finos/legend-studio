@@ -34,16 +34,10 @@ import type {
   LegendApplicationConfigurationData,
   LegendApplicationVersionData,
 } from '../stores/ApplicationConfig';
-import type {
-  AbstractPlugin,
-  AbstractPluginManager,
-  AbstractPreset,
-  Logger,
-} from '@finos/legend-shared';
+import type { AbstractPlugin, AbstractPreset } from '@finos/legend-shared';
 import {
   assertErrorThrown,
   LogEvent,
-  Log,
   guaranteeNonEmptyString,
   assertNonNullable,
   NetworkClient,
@@ -51,6 +45,46 @@ import {
 import { APPLICATION_LOG_EVENT } from '../stores/ApplicationLogEvent';
 import { configureComponents } from '@finos/legend-art';
 import type { GraphPluginManager } from '@finos/legend-graph';
+import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager';
+
+export abstract class LegendApplicationLogger {
+  abstract debug(event: LogEvent, ...data: unknown[]): void;
+  abstract info(event: LogEvent, ...data: unknown[]): void;
+  abstract warn(event: LogEvent, ...data: unknown[]): void;
+  abstract error(event: LogEvent, ...data: unknown[]): void;
+}
+
+const { debug, info, warn, error } = console;
+
+export class LegendApplicationWebConsole extends LegendApplicationLogger {
+  debug(event: LogEvent, ...data: unknown[]): void {
+    debug(
+      `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
+      ...data,
+    );
+  }
+
+  info(event: LogEvent, ...data: unknown[]): void {
+    info(
+      `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
+      ...data,
+    );
+  }
+
+  warn(event: LogEvent, ...data: unknown[]): void {
+    warn(
+      `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
+      ...data,
+    );
+  }
+
+  error(event: LogEvent, ...data: unknown[]): void {
+    error(
+      `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
+      ...data,
+    );
+  }
+}
 
 export const setupTextEdtiorAPI = (pluginManager: GraphPluginManager): void => {
   // Register Pure as a language in `monaco-editor`
@@ -78,7 +112,7 @@ export const setupTextEdtiorAPI = (pluginManager: GraphPluginManager): void => {
 // See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
 export const setupLegendApplicationUILibrary = async (
   pluginManager: GraphPluginManager,
-  log: Log,
+  logger: LegendApplicationLogger,
 ): Promise<void> => {
   setupTextEdtiorAPI(pluginManager);
 
@@ -92,19 +126,19 @@ export const setupLegendApplicationUILibrary = async (
     .then(() => {
       if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
         monacoEditorAPI.remeasureFonts();
-        log.info(
+        logger.info(
           LogEvent.create(APPLICATION_LOG_EVENT.TEXT_EDITOR_FONT_LOADED),
           `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
         );
       } else {
-        log.error(
+        logger.error(
           LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_SETUP_FAILURE),
           fontLoadFailureErrorMessage,
         );
       }
     })
     .catch(() =>
-      log.error(
+      logger.error(
         LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_SETUP_FAILURE),
         fontLoadFailureErrorMessage,
       ),
@@ -121,34 +155,35 @@ export const setupLegendApplicationUILibrary = async (
 
 export abstract class LegendApplication {
   protected config!: LegendApplicationConfig;
+  protected logger!: LegendApplicationLogger;
 
-  protected pluginManager: AbstractPluginManager;
+  protected pluginManager: LegendApplicationPluginManager;
   protected basePresets: AbstractPreset[] = [];
   protected basePlugins: AbstractPlugin[] = [];
 
-  protected log = new Log();
   protected baseUrl!: string;
   protected pluginRegister?:
     | ((
-        pluginManager: AbstractPluginManager,
+        pluginManager: LegendApplicationPluginManager,
         config: LegendApplicationConfig,
       ) => void)
     | undefined;
   protected _isConfigured = false;
 
-  protected constructor(pluginManager: AbstractPluginManager) {
+  protected constructor(pluginManager: LegendApplicationPluginManager) {
     this.pluginManager = pluginManager;
+    this.logger = new LegendApplicationWebConsole();
   }
 
   setup(options: {
     /** Base URL of the application. e.g. /studio/, /query/ */
     baseUrl: string;
     /**
-     * Provide an alternative mechanism to register plugins and presets which is more flexible
-     * by allowing configuring specific plugin or preset.
+     * Provide an alternative mechanism to register and configure plugins and presets
+     * which is more flexible by allowing configuring specific plugin or preset.
      */
     pluginRegister?: (
-      pluginManager: AbstractPluginManager,
+      pluginManager: LegendApplicationPluginManager,
       config: LegendApplicationConfig,
     ) => void;
   }): LegendApplication {
@@ -181,11 +216,6 @@ export abstract class LegendApplication {
     return this;
   }
 
-  withLoggers(loggers: Logger[]): LegendApplication {
-    loggers.forEach((logger) => this.log.registerLogger(logger));
-    return this;
-  }
-
   async fetchApplicationConfiguration(
     baseUrl: string,
   ): Promise<[LegendApplicationConfig, Record<PropertyKey, object>]> {
@@ -197,7 +227,7 @@ export abstract class LegendApplication {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.log.error(
+      this.logger.error(
         LogEvent.create(
           APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
         ),
@@ -215,7 +245,7 @@ export abstract class LegendApplication {
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.log.error(
+      this.logger.error(
         LogEvent.create(
           APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
         ),
@@ -255,13 +285,13 @@ export abstract class LegendApplication {
 
       await this.loadApplication();
 
-      this.log.info(
+      this.logger.info(
         LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_LOADED),
         'Legend application loaded',
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.log.error(
+      this.logger.error(
         LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_FAILURE),
         'Failed to load Legend application',
       );

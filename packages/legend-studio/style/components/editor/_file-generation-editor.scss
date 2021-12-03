@@ -204,8 +204,8 @@
       margin-right: 1rem;
     }
 
-    &__header__button {
-      margin-right: 1rem;
+    &__header__action + &__header__action {
+      margin-left: 0.5rem;
     }
   }
 }

@@ -66,14 +66,14 @@
     @include flexVCenter;
 
     height: 100%;
-    width: 3.4rem;
+    width: 5.6rem;
   }
 
   &__node__action {
     @include flexCenter;
 
     height: 100%;
-    width: 3.4rem;
+    width: 2.8rem;
 
     svg {
       color: var(--color-light-grey-400);
@@ -253,10 +253,6 @@
       border-radius: 0.2rem;
       font-size: 1.2rem;
       font-weight: 500;
-
-      ::-webkit-calendar-picker-indicator {
-        filter: invert(0.8);
-      }
     }
   }
 

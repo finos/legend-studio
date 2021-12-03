@@ -120,3 +120,7 @@ export abstract class AbstractPluginManager {
     this.presets.forEach((plugin) => plugin.install(this));
   }
 }
+
+export interface PluginConsumer {
+  registerPlugins(plugins: AbstractPlugin[]): void;
+}

@@ -35,7 +35,6 @@ import {
 import { getServiceStore } from '../../../graphManager/ESService_GraphManagerHelper';
 import { ServiceStore } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
 import type {
-  GraphPluginManager,
   PackageableElement,
   V1_ElementProtocolClassifierPathGetter,
   V1_ElementProtocolDeserializer,
@@ -104,10 +103,6 @@ export class ESService_PureProtocolProcessorPlugin
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {

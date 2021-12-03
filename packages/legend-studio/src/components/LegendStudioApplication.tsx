@@ -35,7 +35,6 @@ import {
 import { LegendStudioAppHeaderMenu } from './editor/header/LegendStudioAppHeaderMenu';
 import { ThemeProvider } from '@material-ui/core/styles';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
-import type { Log } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
@@ -47,11 +46,9 @@ import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
   AppHeader,
-  ApplicationStoreProvider,
   BlockingAlert,
   NotificationSnackbar,
   useApplicationStore,
-  useWebApplicationNavigator,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
@@ -144,10 +141,9 @@ export const LegendStudioApplication = observer(
   (props: {
     config: LegendStudioConfig;
     pluginManager: LegendStudioPluginManager;
-    log: Log;
   }) => {
-    const { config, pluginManager, log } = props;
-    const navigator = useWebApplicationNavigator();
+    const { config, pluginManager } = props;
+    const applicationStore = useApplicationStore();
     const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
       generateRoutePatternWithSDLCServerKey('/*'),
     );
@@ -173,7 +169,7 @@ export const LegendStudioApplication = observer(
       if (matchedSDLCServerKey) {
         // auto-fix the URL by using the default server option
         if (!matchingSDLCServerOption) {
-          navigator.goTo(
+          applicationStore.navigator.goTo(
             generateSetupRoute(config.defaultSDLCServerOption, undefined),
           );
         } else if (
@@ -182,7 +178,12 @@ export const LegendStudioApplication = observer(
           config.setCurrentSDLCServerOption(matchingSDLCServerOption);
         }
       }
-    }, [config, navigator, matchedSDLCServerKey, matchingSDLCServerOption]);
+    }, [
+      config,
+      applicationStore,
+      matchedSDLCServerKey,
+      matchingSDLCServerOption,
+    ]);
 
     if (
       // See the note above, we will only pass when the either the server option is properly set
@@ -195,28 +196,29 @@ export const LegendStudioApplication = observer(
       return null;
     }
     return (
-      <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
-        <SDLCServerClientProvider
+      <SDLCServerClientProvider
+        config={{
+          env: config.env,
+          serverUrl: config.sdlcServerUrl,
+        }}
+      >
+        <DepotServerClientProvider
           config={{
-            env: config.env,
-            serverUrl: config.sdlcServerUrl,
+            serverUrl: config.depotServerUrl,
           }}
         >
-          <DepotServerClientProvider
-            config={{
-              serverUrl: config.depotServerUrl,
-            }}
+          <GraphManagerStateProvider
+            pluginManager={pluginManager}
+            log={applicationStore.log}
           >
-            <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
-              <LegendStudioStoreProvider pluginManager={pluginManager}>
-                <ThemeProvider theme={LegendMaterialUITheme}>
-                  <LegendStudioApplicationRoot />
-                </ThemeProvider>
-              </LegendStudioStoreProvider>
-            </GraphManagerStateProvider>
-          </DepotServerClientProvider>
-        </SDLCServerClientProvider>
-      </ApplicationStoreProvider>
+            <LegendStudioStoreProvider pluginManager={pluginManager}>
+              <ThemeProvider theme={LegendMaterialUITheme}>
+                <LegendStudioApplicationRoot />
+              </ThemeProvider>
+            </LegendStudioStoreProvider>
+          </GraphManagerStateProvider>
+        </DepotServerClientProvider>
+      </SDLCServerClientProvider>
     );
   },
 );

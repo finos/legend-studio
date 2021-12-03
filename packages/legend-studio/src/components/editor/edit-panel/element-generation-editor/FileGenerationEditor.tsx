@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
@@ -85,7 +85,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSL_LegendStudioPlugin_Extension } from '../../../../stores/LegendStudioPlugin';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -234,14 +234,15 @@ export const GenerationResultViewer = observer(
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSL_LegendStudioPlugin_Extension
-                ).getExtraFileGenerationResultViewerActions?.() ?? [],
+                  plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+                ).getExtraFileGenerationResultViewerActionConfigurations?.() ??
+                [],
             )
-            .map((extraFileGenerationResultViewerActionsCreator) =>
-              extraFileGenerationResultViewerActionsCreator(
-                fileGenerationState,
-              ),
-            )
+            .map((config) => (
+              <Fragment key={config.key}>
+                {config.renderer(fileGenerationState)}
+              </Fragment>
+            ))
         : null;
     return (
       <ResizablePanelGroup orientation="vertical">

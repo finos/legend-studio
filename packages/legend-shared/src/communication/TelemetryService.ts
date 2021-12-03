@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { AbstractPluginManager } from '../application/AbstractPluginManager';
+import type {
+  AbstractPluginManager,
+  PluginConsumer,
+} from '../application/AbstractPluginManager';
 import { AbstractPlugin } from '../application/AbstractPluginManager';
 
 export interface TelemetryData {
@@ -27,19 +30,26 @@ export interface TelemetryServicePluginManager extends AbstractPluginManager {
 }
 
 export abstract class TelemetryServicePlugin extends AbstractPlugin {
+  install(pluginManager: TelemetryServicePluginManager): void {
+    pluginManager.registerTelemetryServicePlugin(this);
+  }
+
   /**
    * Certain telemetry service needs the user ID set in order to derive more information of the user
    * from directory service in the telemetry server.
    */
   abstract setUserId(val: string): TelemetryServicePlugin;
+
   /**
-   * However the telemetry server is configured, telemetry events should be considered "fire and forget" and be sent asynchronously
+   * NOTE: However the telemetry server is configured,
+   * telemetry events should be considered "fire and forget"
+   * i.e. being sent asynchronously and not throwing errors
    */
-  abstract logEvent(eventName: string, data: TelemetryData): void;
+  abstract logEvent(eventType: string, data: TelemetryData): void;
 }
 
-export class TelemetryService {
-  plugins: TelemetryServicePlugin[] = [];
+export class TelemetryService implements PluginConsumer {
+  private plugins: TelemetryServicePlugin[] = [];
 
   registerPlugins(plugins: TelemetryServicePlugin[]): void {
     this.plugins = plugins;
@@ -49,7 +59,7 @@ export class TelemetryService {
     this.plugins.forEach((plugin) => plugin.setUserId(val));
   }
 
-  logEvent(eventName: string, data: TelemetryData): void {
-    this.plugins.forEach((plugin) => plugin.logEvent(eventName, data));
+  logEvent(eventType: string, data: TelemetryData): void {
+    this.plugins.forEach((plugin) => plugin.logEvent(eventType, data));
   }
 }

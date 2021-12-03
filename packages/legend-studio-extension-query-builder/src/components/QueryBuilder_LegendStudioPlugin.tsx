@@ -28,13 +28,14 @@ import type {
   LegendStudioPluginManager,
   EditorExtensionComponentRendererConfiguration,
   ExplorerContextMenuItemRendererConfiguration,
-  TEMP__ServiceQueryEditorActionConfiguration,
   ServicePureExecutionState,
   MappingExecutionQueryEditorActionConfiguration,
   MappingExecutionState,
   MappingTestQueryEditorActionConfiguration,
   MappingTestState,
   ApplicationSetup,
+  DSLService_LegendStudioPlugin_Extension,
+  ServiceQueryEditorActionConfiguration,
 } from '@finos/legend-studio';
 import {
   NewServiceModal,
@@ -157,14 +158,12 @@ const PromoteToServiceQueryBuilderAction = observer(() => {
 
 export class QueryBuilder_LegendStudioPlugin
   extends LegendStudioPlugin
-  implements DSLDiagram_LegendStudioPlugin_Extension
+  implements
+    DSLDiagram_LegendStudioPlugin_Extension,
+    DSLService_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
   }
 
   override getExtraApplicationSetups(): ApplicationSetup[] {
@@ -269,7 +268,7 @@ export class QueryBuilder_LegendStudioPlugin
     ];
   }
 
-  TEMP__getExtraServiceQueryEditorActionConfigurations(): TEMP__ServiceQueryEditorActionConfiguration[] {
+  getExtraServiceQueryEditorActionConfigurations(): ServiceQueryEditorActionConfiguration[] {
     return [
       {
         key: 'build-query-context-menu-action',

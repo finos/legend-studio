@@ -15,10 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import type {
-  LegendStudioPluginManager,
-  ApplicationPageRenderEntry,
-} from '@finos/legend-studio';
+import type { ApplicationPageRenderEntry } from '@finos/legend-studio';
 import {
   generateRoutePatternWithSDLCServerKey,
   LegendStudioPlugin,
@@ -28,10 +25,6 @@ import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
 export class Management_LegendStudioPlugin extends LegendStudioPlugin {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
   }
 
   override getExtraApplicationPageRenderEntries(): ApplicationPageRenderEntry[] {

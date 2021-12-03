@@ -21,7 +21,6 @@ import {
   UnsupportedInstanceSetImplementationState,
 } from '@finos/legend-studio';
 import type {
-  LegendStudioPluginManager,
   NewElementFromStateCreator,
   RuntimeConnectionTooltipTextBuilder,
   EditorStore,
@@ -58,10 +57,6 @@ export class ESService_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
   }
 
   getExtraSupportedElementTypes(): string[] {

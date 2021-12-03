@@ -18,19 +18,12 @@ import packageJson from '../../package.json';
 import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import type { Clazz } from '@finos/legend-shared';
-import type {
-  GraphPluginManager,
-  PackageableElement,
-} from '@finos/legend-graph';
+import type { PackageableElement } from '@finos/legend-graph';
 import { PureGraphPlugin } from '@finos/legend-graph';
 
 export class DSLSerializer_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphPlugin(this);
   }
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {

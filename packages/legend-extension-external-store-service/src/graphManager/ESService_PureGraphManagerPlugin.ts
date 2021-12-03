@@ -18,7 +18,6 @@ import packageJson from '../../package.json';
 import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
 import type {
   DSLMapping_PureGraphManagerPlugin_Extension,
-  GraphPluginManager,
   PackageableElement,
   PureGrammarElementLabeler,
   PureGrammarConnectionLabeler,
@@ -39,10 +38,6 @@ export class ESService_PureGraphManagerPlugin
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }
 
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
-  }
-
   override getExtraPureGrammarParserNames(): string[] {
     return [PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME];
   }
@@ -50,6 +45,7 @@ export class ESService_PureGraphManagerPlugin
   override getExtraPureGrammarKeywords(): string[] {
     return [PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL];
   }
+
   override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
     return [
       (element: PackageableElement): string | undefined => {
@@ -60,6 +56,7 @@ export class ESService_PureGraphManagerPlugin
       },
     ];
   }
+
   getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
     return [
       (connection): string | undefined => {

@@ -27,17 +27,14 @@ import {
 } from '../stores/LegendTaxonomyRouter';
 import { ThemeProvider } from '@material-ui/core/styles';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
-import type { Log } from '@finos/legend-shared';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
-  ApplicationStoreProvider,
   BlockingAlert,
   NotificationSnackbar,
   useApplicationStore,
-  useWebApplicationNavigator,
 } from '@finos/legend-application';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import { TaxonomyViewer } from './TaxonomyViewer';
@@ -74,10 +71,9 @@ export const LegendTaxonomyApplication = observer(
   (props: {
     config: LegendTaxonomyConfig;
     pluginManager: LegendTaxonomyPluginManager;
-    log: Log;
   }) => {
-    const { config, pluginManager, log } = props;
-    const navigator = useWebApplicationNavigator();
+    const { config, pluginManager } = props;
+    const applicationStore = useApplicationStore();
     const routeMatch = useRouteMatch<LegendTaxonomyPathParams>(
       generateRoutePatternWithTaxonomyServerKey('/*'),
     );
@@ -105,7 +101,7 @@ export const LegendTaxonomyApplication = observer(
       if (matchedTaxonomyServerKey) {
         // auto-fix the URL by using the default server option
         if (!matchingTaxonomyServerOption) {
-          navigator.goTo(
+          applicationStore.navigator.goTo(
             generateViewTaxonomyRoute(config.defaultTaxonomyServerOption),
           );
         } else if (
@@ -116,7 +112,7 @@ export const LegendTaxonomyApplication = observer(
       }
     }, [
       config,
-      navigator,
+      applicationStore,
       matchedTaxonomyServerKey,
       matchingTaxonomyServerOption,
     ]);
@@ -132,23 +128,24 @@ export const LegendTaxonomyApplication = observer(
       return null;
     }
     return (
-      <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
-        <DepotServerClientProvider
-          config={{
-            serverUrl: config.depotServerUrl,
-            TEMP__useLegacyDepotServerAPIRoutes:
-              config.TEMP__useLegacyDepotServerAPIRoutes,
-          }}
+      <DepotServerClientProvider
+        config={{
+          serverUrl: config.depotServerUrl,
+          TEMP__useLegacyDepotServerAPIRoutes:
+            config.TEMP__useLegacyDepotServerAPIRoutes,
+        }}
+      >
+        <GraphManagerStateProvider
+          pluginManager={pluginManager}
+          log={applicationStore.log}
         >
-          <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
-            <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendTaxonomyApplicationRoot />
-              </ThemeProvider>
-            </LegendTaxonomyStoreProvider>
-          </GraphManagerStateProvider>
-        </DepotServerClientProvider>
-      </ApplicationStoreProvider>
+          <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
+            <ThemeProvider theme={LegendMaterialUITheme}>
+              <LegendTaxonomyApplicationRoot />
+            </ThemeProvider>
+          </LegendTaxonomyStoreProvider>
+        </GraphManagerStateProvider>
+      </DepotServerClientProvider>
     );
   },
 );

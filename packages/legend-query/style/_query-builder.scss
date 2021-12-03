@@ -421,6 +421,10 @@
   height: 100%;
   width: 100%;
 
+  ::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+  }
+
   &--unsupported {
     @include flexCenter;
 
@@ -681,5 +685,23 @@
     &:hover svg {
       color: var(--color-light-grey-200);
     }
+  }
+}
+
+.query-builder__unsupported-view {
+  &__main {
+    @include flexCenter;
+
+    flex-direction: column;
+  }
+
+  &__summary {
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  &__to-text-mode__btn {
+    height: 2.8rem;
+    width: 15rem;
   }
 }

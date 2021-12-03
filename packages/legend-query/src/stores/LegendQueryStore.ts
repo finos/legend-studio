@@ -40,6 +40,7 @@ import type {
   Service,
   GraphManagerState,
   Class,
+  QueryTaggedValue,
 } from '@finos/legend-graph';
 import {
   getAllClassMappings,
@@ -78,6 +79,7 @@ import type { ApplicationStore } from '@finos/legend-application';
 import { APPLICATION_LOG_EVENT, TAB_SIZE } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig';
+import { LegendQueryEventNotifierService } from './LegendQueryEventNotifierService';
 
 export abstract class QueryInfoState {
   queryStore: LegendQueryStore;
@@ -96,6 +98,7 @@ export class CreateQueryInfoState extends QueryInfoState {
   mapping: Mapping;
   runtime: PackageableRuntime;
   class?: Class | undefined;
+  taggedValues?: QueryTaggedValue[] | undefined;
 
   constructor(
     queryStore: LegendQueryStore,
@@ -140,6 +143,7 @@ export class CreateQueryInfoState extends QueryInfoState {
     query.groupId = this.project.groupId;
     query.artifactId = this.project.artifactId;
     query.versionId = this.versionId;
+    query.taggedValues = this.taggedValues;
   }
 }
 
@@ -291,6 +295,7 @@ export class QueryExportState {
 
     try {
       if (createNew) {
+        query.id = uuid();
         const newQuery =
           await this.queryStore.graphManagerState.graphManager.createQuery(
             query,
@@ -299,9 +304,14 @@ export class QueryExportState {
         this.queryStore.applicationStore.notifySuccess(
           `Successfully created query!`,
         );
-        this.queryStore.applicationStore.navigator.goTo(
-          generateExistingQueryRoute(newQuery.id),
+        this.queryStore.applicationStore.navigator.jumpTo(
+          this.queryStore.applicationStore.navigator.generateLocation(
+            generateExistingQueryRoute(newQuery.id),
+          ),
         );
+        LegendQueryEventNotifierService.create(
+          this.queryStore.applicationStore.eventNotifierService,
+        ).notify_QueryCreated({ queryId: newQuery.id });
       } else {
         assertType(this.queryStore.queryInfoState, ExistingQueryInfoState);
         const newQuery =
@@ -365,6 +375,11 @@ export class LegendQueryStore {
       this.applicationStore,
       this.graphManagerState,
       new StandardQueryBuilderMode(),
+    );
+
+    // Register plugins
+    this.depotServerClient.setTracerService(
+      this.applicationStore.tracerService,
     );
   }
 
@@ -661,7 +676,7 @@ export class LegendQueryStore {
             },
           },
           {
-            tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
+            tracerService: this.applicationStore.tracerService,
           },
         ),
       );

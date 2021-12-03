@@ -31,7 +31,6 @@ import type {
   V1_ValueSpecification,
   ValueSpecification,
   SimpleFunctionExpression,
-  GraphPluginManager,
 } from '@finos/legend-graph';
 import {
   PureProtocolProcessorPlugin,
@@ -44,10 +43,6 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraFunctionExpressionBuilders(): V1_FunctionExpressionBuilder[] {

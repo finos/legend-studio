@@ -180,6 +180,7 @@ export {
 export * from './graphManager/action/execution/ExecutionResultHelper';
 export * from './graphManager/PureGraphManagerPlugin';
 export * from './graphManager/action/query/Query';
+export * from './graphManager/action/query/QuerySearchSpecification';
 export * from './graphManager/action/EngineError';
 export * from './graphManager/action/SourceInformationHelper';
 export * from './graphManager/action/generation/ImportConfigurationDescription';

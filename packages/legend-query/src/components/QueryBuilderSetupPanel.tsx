@@ -47,13 +47,13 @@ import type { PackageableElementOption } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor';
 import { useState } from 'react';
 import { FaClock } from 'react-icons/fa';
-import { DOLLAR_SIGN } from '../QueryBuilder_Const';
+import { VARIABLE_REFERENCE_TOKEN } from '../QueryBuilder_Const';
 
 const getParameterValue = (
   parameter: ValueSpecification | undefined,
 ): string | undefined => {
   if (parameter instanceof VariableExpression) {
-    return `${DOLLAR_SIGN}${parameter.name}`;
+    return `${VARIABLE_REFERENCE_TOKEN}${parameter.name}`;
   } else {
     if (
       parameter instanceof PrimitiveInstanceValue &&

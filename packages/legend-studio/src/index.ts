@@ -41,6 +41,7 @@ export {
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
+export * from './stores/DSLService_LegendStudioPlugin_Extension';
 
 // components
 export * from './components/editor/EditorStoreProvider';

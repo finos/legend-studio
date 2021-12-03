@@ -19,10 +19,7 @@ import SpanBuilder from 'zipkin-javascript-opentracing';
 import { BatchRecorder, jsonEncoder } from 'zipkin';
 import { HttpLogger } from 'zipkin-transport-http';
 import type { Span as ZipkinSpan } from 'opentracing';
-import type {
-  TraceData,
-  TracerServicePluginManager,
-} from '@finos/legend-shared';
+import type { TraceData } from '@finos/legend-shared';
 import {
   CORE_TRACER_TAG,
   assertNonEmptyString,
@@ -82,10 +79,6 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
       kind: 'client',
     });
     return this;
-  }
-
-  install(pluginManager: TracerServicePluginManager): void {
-    pluginManager.registerTracerServicePlugin(this);
   }
 
   get spanBuilder(): SpanBuilder {

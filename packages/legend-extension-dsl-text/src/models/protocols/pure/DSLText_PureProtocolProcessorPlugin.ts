@@ -29,7 +29,6 @@ import {
   TEXT_TYPE,
 } from '../../metamodels/pure/model/packageableElements/text/Text';
 import type {
-  GraphPluginManager,
   PackageableElement,
   V1_ElementProtocolClassifierPathGetter,
   V1_ElementProtocolDeserializer,
@@ -53,10 +52,6 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {

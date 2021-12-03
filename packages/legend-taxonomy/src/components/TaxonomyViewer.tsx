@@ -62,8 +62,7 @@ import type {
   TaxonomyServerOption,
 } from '../application/LegendTaxonomyConfig';
 import { useResizeDetector } from 'react-resize-detector';
-import { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
 
 const TaxonomyViewerStatusBar = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
@@ -361,17 +360,12 @@ export const TaxonomySearchCommand = observer(() => {
   const openTaxonomyNode = (val: SelectOption | null): void => {
     if (taxonomyStore.treeData) {
       if (val?.value) {
-        const nodeToOpen = guaranteeNonNullable(
-          taxonomyStore.treeData.nodes.get(val.value),
-        );
+        const taxonomyPath = val.value;
         closeModal();
         // NOTE: since it takes time to close the modal, this will prevent any auto-focus effort when we open a new node
         // to fail as the focus is still trapped in this modal, we need to use `setTimeout` here
         setTimeout(
-          () =>
-            taxonomyStore.setCurrentTaxonomyNodeViewerState(
-              new TaxonomyNodeViewerState(taxonomyStore, nodeToOpen),
-            ),
+          () => taxonomyStore.openTaxonomyTreeNodeWithPath(taxonomyPath),
           0,
         );
       }

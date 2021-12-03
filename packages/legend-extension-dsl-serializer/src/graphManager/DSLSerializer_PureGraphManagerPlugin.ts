@@ -19,7 +19,6 @@ import { Binding } from '../models/metamodels/pure/model/packageableElements/sto
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import type {
   DSLMapping_PureGraphManagerPlugin_Extension,
-  GraphPluginManager,
   PureGrammarConnectionLabeler,
   PureGrammarElementLabeler,
 } from '@finos/legend-graph';
@@ -39,10 +38,6 @@ export class DSLSerializer_PureGraphManagerPlugin
 {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
   }
 
   override getExtraPureGrammarParserNames(): string[] {

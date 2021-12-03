@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
-export enum CORE_TELEMETRY_EVENT {
-  APPLICATION_LOADED = 'Application loaded',
+import type { QueryStereotype, QueryTaggedValue } from './Query';
+
+export class QueryProjectCoordinates {
+  groupId!: string;
+  artifactId!: string;
+}
+
+export class QuerySearchSpecification {
+  searchTerm?: string | undefined;
+  projectCoordinates?: QueryProjectCoordinates[] | undefined;
+  taggedValues?: QueryTaggedValue[] | undefined;
+  stereotypes?: QueryStereotype[] | undefined;
+  limit?: number | undefined;
+  showCurrentUserQueriesOnly?: boolean | undefined;
 }

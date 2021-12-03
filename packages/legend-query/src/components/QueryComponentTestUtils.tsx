@@ -38,6 +38,7 @@ import {
 } from '@finos/legend-server-depot';
 import type { ApplicationStore } from '@finos/legend-application';
 import {
+  TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,
   WebApplicationNavigator,
@@ -70,15 +71,20 @@ export const TEST__provideMockedLegendQueryStore = (customization?: {
   graphManagerState?: GraphManagerState;
   pluginManager?: LegendQueryPluginManager;
 }): LegendQueryStore => {
+  const pluginManager =
+    customization?.pluginManager ?? LegendQueryPluginManager.create();
   const value =
     customization?.mock ??
     new LegendQueryStore(
       customization?.applicationStore ??
-        TEST__getTestApplicationStore(TEST__getTestQueryConfig()),
+        TEST__getTestApplicationStore(
+          TEST__getTestQueryConfig(),
+          pluginManager,
+        ),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
       customization?.graphManagerState ??
         TEST__getTestGraphManagerState(customization?.pluginManager),
-      customization?.pluginManager ?? LegendQueryPluginManager.create(),
+      pluginManager,
     );
   const MockedQueryStoreProvider = require('./LegendQueryStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedQueryStoreProvider.useLegendQueryStore = jest.fn();
@@ -157,13 +163,16 @@ export const TEST__setUpQueryEditor = async (
   const history = createMemoryHistory({
     initialEntries: [generateExistingQueryRoute(lightQuery.id)],
   });
-  mockedQueryStore.applicationStore.navigator = new WebApplicationNavigator(
-    history,
-  );
+  const navigator = new WebApplicationNavigator(history);
+  mockedQueryStore.applicationStore.navigator = navigator;
+  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
 
   const renderResult = render(
     <Router history={history}>
-      <TEST__ApplicationStoreProvider config={TEST__getTestQueryConfig()}>
+      <TEST__ApplicationStoreProvider
+        config={TEST__getTestQueryConfig()}
+        pluginManager={LegendQueryPluginManager.create()}
+      >
         <TEST__DepotServerClientProvider>
           <TEST__GraphManagerStateProvider>
             <TEST__LegendQueryStoreProvider>

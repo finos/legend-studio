@@ -17,19 +17,12 @@
 import packageJson from '../../package.json';
 import { Text } from '../models/metamodels/pure/model/packageableElements/text/Text';
 import type { Clazz } from '@finos/legend-shared';
-import type {
-  GraphPluginManager,
-  PackageableElement,
-} from '@finos/legend-graph';
+import type { PackageableElement } from '@finos/legend-graph';
 import { PureGraphPlugin } from '@finos/legend-graph';
 
 export class DSLText_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphPlugin(this);
   }
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {

@@ -102,6 +102,7 @@ describe(
         pluginManager.usePresets([new Query_GraphPreset()]).install();
         const applicationStore = TEST__getTestApplicationStore(
           TEST__getTestQueryConfig(),
+          LegendQueryPluginManager.create(),
         );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
         await TEST__buildGraphWithEntities(graphManagerState, entities);

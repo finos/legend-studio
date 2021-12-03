@@ -20,7 +20,6 @@ import type { ElementEditorState } from './editor-state/element-editor-state/Ele
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { Class, PackageableElement } from '@finos/legend-graph';
-import type { FileGenerationState } from './editor-state/FileGenerationState';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,
@@ -55,6 +54,10 @@ export type ClassPreviewRenderer = (
 
 export abstract class LegendStudioPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'LegendStudioPlugin';
+
+  install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerStudioPlugin(this);
+  }
 
   /**
    * Get the list of setup procedures to be run when booting up the application.
@@ -143,15 +146,6 @@ export type ElementProjectExplorerDnDTypeGetter = (
   element: PackageableElement,
 ) => string | undefined;
 
-export type FileGenerationResultViewerAction = (
-  fileGenerationState: FileGenerationState,
-) => React.ReactNode | undefined;
-
-export type FileGenerationScopeFilter = (
-  fileGenerationType: string,
-  packageableElement: PackageableElement,
-) => boolean;
-
 /**
  * Studio plugins for new DSL extension.
  */
@@ -225,14 +219,4 @@ export interface DSL_LegendStudioPlugin_Extension extends LegendStudioPlugin {
    * Get the list of the supported drag-and-drop type speficiers for grammar text editor.
    */
   getExtraGrammarTextEditorDnDTypes?(): string[];
-
-  /**
-   * Get the list of the supported extra file generation result viewer actions such as buttons.
-   */
-  getExtraFileGenerationResultViewerActions?(): FileGenerationResultViewerAction[];
-
-  /**
-   * Get the list of filters that check if object type is in scope for certain file generation.
-   */
-  getExtraFileGenerationScopeFilters?(): FileGenerationScopeFilter[];
 }

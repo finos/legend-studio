@@ -43,7 +43,6 @@ import {
   DataSpaceSupportEmail,
 } from '../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import type {
-  GraphPluginManager,
   Mapping,
   PackageableElement,
   PackageableElementReference,
@@ -86,10 +85,6 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {

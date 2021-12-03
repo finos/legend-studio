@@ -210,8 +210,7 @@ export class ViewerStore {
           },
         },
         {
-          tracerServicePlugins:
-            this.editorStore.pluginManager.getTracerServicePlugins(),
+          tracerService: this.editorStore.applicationStore.tracerService,
         },
       ),
     );

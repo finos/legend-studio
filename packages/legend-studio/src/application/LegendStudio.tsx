@@ -21,14 +21,15 @@ import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { LegendStudioPluginManager } from './LegendStudioPluginManager';
 import type {
   LegendApplicationConfig,
+  LegendApplicationLogger,
   LegendApplicationVersionData,
 } from '@finos/legend-application';
 import {
+  ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
 } from '@finos/legend-application';
-import type { Log } from '@finos/legend-shared';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
 import type { LegendStudioConfigurationData } from './LegendStudioConfig';
@@ -36,9 +37,9 @@ import { LegendStudioConfig } from './LegendStudioConfig';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: LegendStudioPluginManager,
-  log: Log,
+  logger: LegendApplicationLogger,
 ): Promise<void> => {
-  await setupLegendApplicationUILibrary(pluginManager, log);
+  await setupLegendApplicationUILibrary(pluginManager, logger);
 
   configureReactHotkeys({
     // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
@@ -75,7 +76,7 @@ export class LegendStudio extends LegendApplication {
 
   async loadApplication(): Promise<void> {
     // Setup React application libraries
-    await setupLegendStudioUILibrary(this.pluginManager, this.log);
+    await setupLegendStudioUILibrary(this.pluginManager, this.logger);
 
     // Render React application
     ReactDOM.render(
@@ -84,11 +85,15 @@ export class LegendStudio extends LegendApplication {
       // See https://github.com/mobxjs/mobx-react-lite/issues/53
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
-          <LegendStudioApplication
+          <ApplicationStoreProvider
             config={this.config}
             pluginManager={this.pluginManager}
-            log={this.log}
-          />
+          >
+            <LegendStudioApplication
+              config={this.config}
+              pluginManager={this.pluginManager}
+            />
+          </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
       getRootElement(),

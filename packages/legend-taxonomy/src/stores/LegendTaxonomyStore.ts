@@ -43,7 +43,6 @@ import {
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
   LogEvent,
-  TelemetryService,
   AssertionError,
   assertNonNullable,
   addUniqueEntry,
@@ -301,7 +300,6 @@ export class LegendTaxonomyStore {
   taxonomyServerClient: TaxonomyServerClient;
   graphManagerState: GraphManagerState;
   pluginManager: LegendTaxonomyPluginManager;
-  telemetryService = new TelemetryService();
 
   sideBarDisplayState = new PanelDisplayState({
     initial: 300,
@@ -344,14 +342,11 @@ export class LegendTaxonomyStore {
     this.pluginManager = pluginManager;
 
     // Register plugins
-    this.taxonomyServerClient.registerTracerServicePlugins(
-      this.pluginManager.getTracerServicePlugins(),
+    this.taxonomyServerClient.setTracerService(
+      this.applicationStore.tracerService,
     );
-    this.depotServerClient.registerTracerServicePlugins(
-      this.pluginManager.getTracerServicePlugins(),
-    );
-    this.telemetryService.registerPlugins(
-      this.pluginManager.getTelemetryServicePlugins(),
+    this.depotServerClient.setTracerService(
+      this.applicationStore.tracerService,
     );
 
     // Hotkeys
@@ -508,6 +503,37 @@ export class LegendTaxonomyStore {
     this.setTreeData({ rootIds, nodes });
   }
 
+  openTaxonomyTreeNodeWithPath(
+    taxonomyPath: string,
+  ): TaxonomyTreeNodeData | undefined {
+    assertNonNullable(
+      this.treeData,
+      `Can't open taxonomy tree node: taxonomy tree data has not been initialized`,
+    );
+    const node = this.treeData.nodes.get(taxonomyPath);
+    if (node) {
+      node.isOpen = true;
+      const taxonomyPathParts = taxonomyPath.split(
+        TAXONOMY_NODE_PATH_DELIMITER,
+      );
+      let currentTaxonomyPath = '';
+      for (let i = 0; i < taxonomyPathParts.length; ++i) {
+        currentTaxonomyPath += `${i !== 0 ? TAXONOMY_NODE_PATH_DELIMITER : ''}${
+          taxonomyPathParts[i]
+        }`;
+        const nodeToOpen = guaranteeNonNullable(
+          this.treeData.nodes.get(currentTaxonomyPath),
+        );
+        nodeToOpen.isOpen = true;
+        this.setTreeData({ ...this.treeData });
+      }
+      this.setCurrentTaxonomyNodeViewerState(
+        new TaxonomyNodeViewerState(this, node),
+      );
+    }
+    return node;
+  }
+
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       return;
@@ -555,7 +581,7 @@ export class LegendTaxonomyStore {
             },
           },
           {
-            tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
+            tracerService: this.applicationStore.tracerService,
           },
         ),
       );
@@ -570,27 +596,8 @@ export class LegendTaxonomyStore {
       if (this.treeData) {
         const taxonomyPath = this.initialTaxonomyPath;
         if (taxonomyPath) {
-          const node = this.treeData.nodes.get(taxonomyPath);
+          const node = this.openTaxonomyTreeNodeWithPath(taxonomyPath);
           if (node) {
-            node.isOpen = true;
-            const taxonomyPathParts = taxonomyPath.split(
-              TAXONOMY_NODE_PATH_DELIMITER,
-            );
-            let currentTaxonomyPath = '';
-            for (let i = 0; i < taxonomyPathParts.length; ++i) {
-              currentTaxonomyPath += `${
-                i !== 0 ? TAXONOMY_NODE_PATH_DELIMITER : ''
-              }${taxonomyPathParts[i]}`;
-              const nodeToOpen = guaranteeNonNullable(
-                this.treeData.nodes.get(currentTaxonomyPath),
-              );
-              nodeToOpen.isOpen = true;
-              this.setTreeData({ ...this.treeData });
-            }
-            this.setCurrentTaxonomyNodeViewerState(
-              new TaxonomyNodeViewerState(this, node),
-            );
-
             // open data space if specified
             if (this.initialDataSpaceId) {
               const dataSpaceToOpen = node.rawDataSpaces.find(

@@ -16,6 +16,7 @@
 
 export * from './const';
 
+export * from './application/LegendApplicationPluginManager';
 export * from './application/LegendApplication';
 
 export * from './components/ApplicationStoreProvider';
@@ -41,5 +42,3 @@ export * from './stores/PackageableElementOption';
 export { GRAMMAR_ELEMENT_TYPE_LABEL } from './stores/PureLanguageSupport';
 
 export * from './stores/ApplicationStoreTestUtils';
-
-export * from './network/TelemetryEvent';

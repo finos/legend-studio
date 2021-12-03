@@ -29,6 +29,7 @@ import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1
 import type { V1_ProcessingContext } from './v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';
 import type { SimpleFunctionExpression } from '../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
 import type { ValueSpecification } from '../../metamodels/pure/valueSpecification/ValueSpecification';
+import type { GraphPluginManager } from '../../../GraphPluginManager';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -75,6 +76,10 @@ export type V1_ExecutionInputGetter = (
  */
 export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureProtocolProcessorPlugin';
+
+  install(pluginManager: GraphPluginManager): void {
+    pluginManager.registerPureProtocolProcessorPlugin(this);
+  }
 
   /**
    * Get the list of supported system element models.

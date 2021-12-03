@@ -17,7 +17,6 @@
 import packageJson from '../../../package.json';
 import { LegendStudioPlugin } from '@finos/legend-studio';
 import type {
-  LegendStudioPluginManager,
   NewElementFromStateCreator,
   EditorStore,
   ElementEditorState,
@@ -44,10 +43,6 @@ export class DSLText_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    pluginManager.registerStudioPlugin(this);
   }
 
   getExtraSupportedElementTypes(): string[] {
