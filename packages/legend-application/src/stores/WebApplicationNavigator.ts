@@ -35,8 +35,8 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
  * As such, instead, we should design a more generic concept `Location` to pass around.
  * We would need to flesh out the details, but this is the rough idea.
  *
- * Another thought is that we should also genericize Router so it handles more than just
- * URLs. If we make `router` and `navigator` work together, we can potentially genericize
+ * Another thought is that we should also generalize Router so it handles more than just
+ * URLs. If we make `router` and `navigator` work together, we can potentially generalize
  * application navigation
  *
  * However, this depends on how and when we move to another platform, like `electron` for example
