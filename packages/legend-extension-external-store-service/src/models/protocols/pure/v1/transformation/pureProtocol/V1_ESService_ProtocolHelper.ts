@@ -240,20 +240,7 @@ const V1_serviceModelSchema = (
     parameters: list(usingModelSchema(V1_serviceParameterModelSchema)),
     path: primitive(),
     requestBody: optional(
-      custom(
-        (val) => {
-          if (val !== undefined) {
-            return V1_serializeTypeReference(val);
-          }
-          return undefined;
-        },
-        (val) => {
-          if (val !== undefined) {
-            return V1_deserializeTypeReference(val);
-          }
-          return undefined;
-        },
-      ),
+      custom(V1_serializeTypeReference, V1_deserializeTypeReference),
     ),
     response: usingModelSchema(V1_complexTypeReferenceModelSchema),
     security: list(

@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  custom,
-  SKIP,
-  createModelSchema,
-  primitive,
-  optional,
-} from 'serializr';
+import { custom, SKIP, createModelSchema, primitive } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 
 export enum WorkflowStatus {
@@ -49,21 +43,15 @@ export class Workflow {
         () => SKIP,
         (value: string) => new Date(value),
       ),
-      finishedAt: optional(
-        custom(
-          () => SKIP,
-          (value: string | null | undefined) =>
-            value ? new Date(value) : undefined,
-        ),
+      finishedAt: custom(
+        () => SKIP,
+        (value: string | null | undefined) => (value ? new Date(value) : SKIP),
       ),
       projectId: primitive(),
       revisionId: primitive(),
-      startedAt: optional(
-        custom(
-          () => SKIP,
-          (value: string | null | undefined) =>
-            value ? new Date(value) : undefined,
-        ),
+      startedAt: custom(
+        () => SKIP,
+        (value: string | null | undefined) => (value ? new Date(value) : SKIP),
       ),
       status: primitive(),
       webURL: primitive(),
