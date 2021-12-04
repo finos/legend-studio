@@ -76,7 +76,10 @@ export class SerializationFactory<T> extends BasicSerializationFactory<T> {
  * --> error thrown
  */
 export class NullphobicSerializationFactory<T> {
-  readonly schema: ModelSchema<T>;
+  /**
+   * Since we customize the behavior of the deserializer, we must not expose the schema
+   */
+  private readonly schema: ModelSchema<T>;
 
   constructor(schema: ModelSchema<T>) {
     this.schema = schema;
