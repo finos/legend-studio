@@ -16,16 +16,15 @@
 
 import type { PlainObject } from '@finos/legend-shared';
 import {
+  optionalCustom,
   usingConstantValueSchema,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
-  custom,
   deserialize,
   primitive,
   serialize,
-  SKIP,
 } from 'serializr';
 import { V1_BusinessMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_BusinessMilestoning';
 import { V1_BusinessSnapshotMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_BusinessSnapshotMilestoning';
@@ -49,9 +48,9 @@ const businessMilestoningModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_MilestoningType.BUSINESS_MILESTONING),
     from: primitive(),
-    infinityDate: custom(
-      (val) => (val ? V1_serializeRawValueSpecification(val) : SKIP),
-      (val) => (val ? V1_deserializeRawValueSpecification(val) : SKIP),
+    infinityDate: optionalCustom(
+      V1_serializeRawValueSpecification,
+      V1_deserializeRawValueSpecification,
     ),
     thru: primitive(),
     thruIsInclusive: primitive(),
@@ -64,9 +63,9 @@ const businessSnapshotMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_MilestoningType.BUSINESS_SNAPSHOT_MILESTONING,
     ),
-    infinityDate: custom(
-      (val) => (val ? V1_serializeRawValueSpecification(val) : SKIP),
-      (val) => (val ? V1_deserializeRawValueSpecification(val) : SKIP),
+    infinityDate: optionalCustom(
+      V1_serializeRawValueSpecification,
+      V1_deserializeRawValueSpecification,
     ),
     snapshotDate: primitive(),
   },
@@ -77,9 +76,9 @@ const processingMilestoningModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_MilestoningType.PROCESSING_MILESTONING),
     in: primitive(),
-    infinityDate: custom(
-      (val) => (val ? V1_serializeRawValueSpecification(val) : SKIP),
-      (val) => (val ? V1_deserializeRawValueSpecification(val) : SKIP),
+    infinityDate: optionalCustom(
+      V1_serializeRawValueSpecification,
+      V1_deserializeRawValueSpecification,
     ),
     out: primitive(),
     outIsInclusive: primitive(),

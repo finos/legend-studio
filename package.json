@@ -55,6 +55,7 @@
     "test:ci": "yarn build && yarn test:coverage",
     "test:coverage": "jest --coverage",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
+    "test:manual": "yarn workspace @finos/legend-manual-tests test:manual",
     "test:watch": "jest --watch"
   },
   "lint-staged": {

@@ -129,3 +129,23 @@ export const usingConstantValueSchema = (
     () => value,
     () => value,
   );
+
+/**
+ * This is the idiomatic usage pattern for `optional(custom(...))`.
+ *
+ * `optional` only affects serialization so we must make sure to check
+ * if the value is `undefined` or not, if yes, serialize, else, return `undefined`
+ * which will be processed by `optional(...)` as `SKIP`.
+ *
+ * `optional` does not affect deserialization, however, as `undefined` values
+ * are automatically skipped
+ * See https://github.com/mobxjs/serializr/issues/73#issuecomment-535641545
+ */
+export const optionalCustom = <T>(
+  serializer: (val: T) => PlainObject<T>,
+  deserializer: (val: PlainObject<T>) => T,
+): PropSchema =>
+  custom(
+    (val) => (val ? serializer(val) : SKIP),
+    (val) => (val ? deserializer(val) : SKIP),
+  );

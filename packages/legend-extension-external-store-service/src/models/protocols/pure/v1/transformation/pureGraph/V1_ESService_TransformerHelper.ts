@@ -179,9 +179,9 @@ export const V1_transformServiceStoreService = (
   const service = new V1_ServiceStoreService();
   service.id = metamodel.id;
   service.path = metamodel.path;
-  if (metamodel.requestBody !== undefined) {
-    service.requestBody = V1_transformTypeReference(metamodel.requestBody);
-  }
+  service.requestBody = metamodel.requestBody
+    ? V1_transformTypeReference(metamodel.requestBody)
+    : undefined;
   service.method = metamodel.method;
   service.parameters = metamodel.parameters.map((parameter) =>
     V1_transformServiceParameter(parameter),
@@ -199,11 +199,9 @@ export const V1_transformServiceToServiceGroupPtr = (
   const serviceGroup = new V1_ServiceGroupPtr();
   serviceGroup.serviceGroup = metamodel.id;
   serviceGroup.serviceStore = metamodel.owner.path;
-  if (metamodel.parent !== undefined) {
-    serviceGroup.parent = V1_transformServiceToServiceGroupPtr(
-      metamodel.parent,
-    );
-  }
+  serviceGroup.parent = metamodel.parent
+    ? V1_transformServiceToServiceGroupPtr(metamodel.parent)
+    : undefined;
   return serviceGroup;
 };
 
@@ -213,9 +211,9 @@ export const V1_transformServiceToServicePtr = (
   const service = new V1_ServiceStoreServicePtr();
   service.service = metamodel.id;
   service.serviceStore = metamodel.owner.path;
-  if (metamodel.parent !== undefined) {
-    service.parent = V1_transformServiceToServiceGroupPtr(metamodel.parent);
-  }
+  service.parent = metamodel.parent
+    ? V1_transformServiceToServiceGroupPtr(metamodel.parent)
+    : undefined;
   return service;
 };
 
