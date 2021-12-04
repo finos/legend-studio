@@ -40,7 +40,7 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.3.0",
+    "eslint": "8.4.0",
     "jest": "27.4.3",
     "lodash": "4.17.21",
     "rimraf": "3.0.2",
