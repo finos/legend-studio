@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 1.0.1
+
+### Patch Changes
+
+- [#723](https://github.com/finos/legend-studio/pull/723) [`856e11e0`](https://github.com/finos/legend-studio/commit/856e11e047d1530c263f8e01f5f8bbaac262038e) ([@akphi](https://github.com/akphi)) - Add `NullphobicSerializationFactory` which only differs to `SerializationFactory` in its deserialization helper method: it will prune all `null` values found in the JSON before deserializing. This is to accommodate for use case where some server (e.g. Java using Jackson) returns `null` for fields whose values are not set (technically, the server should return `undefined`, but this is unfortunately, not always the case).
+
 ## 1.0.0
 
 ### Major Changes
