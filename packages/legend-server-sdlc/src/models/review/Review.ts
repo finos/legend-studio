@@ -15,13 +15,7 @@
  */
 
 import { User } from '../User';
-import {
-  SKIP,
-  custom,
-  createModelSchema,
-  primitive,
-  optional,
-} from 'serializr';
+import { SKIP, custom, createModelSchema, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import type { WorkspaceType } from '../workspace/Workspace';
 
@@ -49,31 +43,22 @@ export class Review {
   static readonly serialization = new SerializationFactory(
     createModelSchema(Review, {
       author: usingModelSchema(User.serialization.schema),
-      closedAt: optional(
-        custom(
-          () => SKIP,
-          (value: string | null | undefined) =>
-            value ? new Date(value) : undefined,
-        ),
+      closedAt: custom(
+        () => SKIP,
+        (value: string | null | undefined) => (value ? new Date(value) : SKIP),
       ),
-      committedAt: optional(
-        custom(
-          () => SKIP,
-          (value: string | null | undefined) =>
-            value ? new Date(value) : undefined,
-        ),
+      committedAt: custom(
+        () => SKIP,
+        (value: string | null | undefined) => (value ? new Date(value) : SKIP),
       ),
       createdAt: custom(
         () => SKIP,
         (value: string) => new Date(value),
       ),
       id: primitive(),
-      lastUpdatedAt: optional(
-        custom(
-          () => SKIP,
-          (value: string | null | undefined) =>
-            value ? new Date(value) : undefined,
-        ),
+      lastUpdatedAt: custom(
+        () => SKIP,
+        (value: string | null | undefined) => (value ? new Date(value) : SKIP),
       ),
       projectId: primitive(),
       state: primitive(),

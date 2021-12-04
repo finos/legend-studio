@@ -130,5 +130,3 @@ export const WorkspaceSelector = observer(
   },
   { forwardRef: true },
 );
-
-WorkspaceSelector.displayName = 'WorkspaceSelector';

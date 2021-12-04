@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import {
+  NullphobicSerializationFactory,
+  SerializationFactory,
+  usingModelSchema,
+} from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive } from 'serializr';
 import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr';
 import type { V1_TaggedValue } from '../../model/packageableElements/domain/V1_TaggedValue';
@@ -43,7 +47,7 @@ export class V1_QuerySearchSpecification {
   limit?: number | undefined;
   showCurrentUserQueriesOnly?: boolean | undefined;
 
-  static readonly serialization = new SerializationFactory(
+  static readonly serialization = new NullphobicSerializationFactory(
     createModelSchema(V1_QuerySearchSpecification, {
       limit: optional(primitive()),
       projectCoordinates: optional(

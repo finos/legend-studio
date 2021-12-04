@@ -48,7 +48,7 @@
 
 - [#642](https://github.com/finos/legend-studio/pull/642) [`729e248`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** The handling of multiple SDLC instances has been reworked, to target a specific server option in the config, the URL must now include an additional prefix `sdlc-` to the server key, for example, `/studio/myServer/...` now becomes `/studio/sdlc-myServer/...`. On the config side, when `sdlc` field is configured with a list of option, we expect exactly one option to declare `default: true` and this would be used to the default option - _the old behavior is that the default option is the one with key of value `-`_.
 
-* [#659](https://github.com/finos/legend-studio/pull/659) [`caf3d4aa`](https://github.com/finos/legend-studio/commit/caf3d4aa3a98ca109cabb525eeb7d8615def7343) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Genericize `Studio` plugin methods to generate `Edit Query` buttons to generate any query editor action: i.e. `MappingExecutionQueryEditorRendererConfiguration -> MappingExecutionQueryEditorActionConfiguration`, etc.
+* [#659](https://github.com/finos/legend-studio/pull/659) [`caf3d4aa`](https://github.com/finos/legend-studio/commit/caf3d4aa3a98ca109cabb525eeb7d8615def7343) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Generalize `Studio` plugin methods to generate `Edit Query` buttons to generate any query editor action: i.e. `MappingExecutionQueryEditorRendererConfiguration -> MappingExecutionQueryEditorActionConfiguration`, etc.
 
 - [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update the shape of `ApplicationPageRenderEntry` to take a unique `key` and multiple `urlPatterns`. Also, we nolonger automatically decorate the pattern to pick up the SDLC instance anymore, so plugin authors who need this will need to manually modify their URL patterns with the function `generateRoutePatternWithSDLCServerKey()` that we now expose.
 
@@ -224,7 +224,7 @@
 
 ### Patch Changes
 
-- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) ([@akphi](https://github.com/akphi)) - Genericize `LambdaEditor` so it nolonger depends on `EditorStore` and can be used between different Legend applications.
+- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) ([@akphi](https://github.com/akphi)) - Generalize `LambdaEditor` so it nolonger depends on `EditorStore` and can be used between different Legend applications.
 
 ## 0.2.6
 

@@ -28,13 +28,10 @@ const LegendQueryStoreContext = createContext<LegendQueryStore | undefined>(
   undefined,
 );
 
-export const LegendQueryStoreProvider = ({
-  children,
-  pluginManager,
-}: {
+export const LegendQueryStoreProvider: React.FC<{
   children: React.ReactNode;
   pluginManager: LegendQueryPluginManager;
-}): React.ReactElement => {
+}> = ({ children, pluginManager }) => {
   const applicationStore = useApplicationStore<LegendQueryConfig>();
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();

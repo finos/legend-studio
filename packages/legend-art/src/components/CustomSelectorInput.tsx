@@ -152,7 +152,7 @@ export type SelectComponent = CreatableSelect<SelectOption> | Select;
 export const CustomSelectorInput = forwardRef<
   SelectComponent,
   CustomSelectorInputProps
->((props, ref) => {
+>(function CustomSelectorInput(props, ref) {
   const {
     option,
     allowCreating,
@@ -201,8 +201,6 @@ export const CustomSelectorInput = forwardRef<
     />
   );
 });
-
-CustomSelectorInput.displayName = 'CustomSelectorInput';
 
 export const compareLabelFn = (
   a: { label: string },

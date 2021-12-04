@@ -50,16 +50,6 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
 
-interface QueryProps {
-  query: string;
-  language: EDITOR_LANGUAGE;
-  wordWrap?: 'off' | 'on' | 'wordWrapColumn' | 'bounded';
-}
-
-interface resultColumnsProps {
-  resultColumns: SQLResultColumn[];
-}
-
 const generateDataTypeLabel = (
   type: RelationalDataType | undefined,
 ): string => {
@@ -104,7 +94,11 @@ const generateDataTypeLabel = (
   }
 };
 
-const QueryViewer: React.FC<QueryProps> = ({ query, language, wordWrap }) => (
+const QueryViewer: React.FC<{
+  query: string;
+  language: EDITOR_LANGUAGE;
+  wordWrap?: 'off' | 'on' | 'wordWrapColumn' | 'bounded';
+}> = ({ query, language, wordWrap }) => (
   <div className="mapping-test-editor__query-panel__query">
     <StudioTextInputEditor
       inputValue={query}
@@ -122,7 +116,7 @@ interface labelprops {
   label: string;
   dataType: string;
 }
-const ResultColumsDataViewer: React.FC<labelprops> = ({ label, dataType }) => (
+const ResultColumnsDataViewer: React.FC<labelprops> = ({ label, dataType }) => (
   <div className="property-basic-editor">
     <div className="property-basic-editor__type ">
       <input
@@ -143,15 +137,15 @@ const ResultColumsDataViewer: React.FC<labelprops> = ({ label, dataType }) => (
   </div>
 );
 
-const ResultCoulumsViewer: React.FC<resultColumnsProps> = ({
+const ResultColumnsViewer: React.FC<{ resultColumns: SQLResultColumn[] }> = ({
   resultColumns,
 }) => (
   <div>
-    {resultColumns.map((resultColumn, i) => {
+    {resultColumns.map((resultColumn) => {
       const label = resultColumn.label.match(/(?:"[^"]*"|^[^"]*$)/);
       if (!(label === null)) {
         return (
-          <ResultColumsDataViewer
+          <ResultColumnsDataViewer
             key={resultColumn.label}
             label={label[0]?.replace(/"/g, '') ?? '(no label)'}
             dataType={generateDataTypeLabel(resultColumn.dataType)}
@@ -159,7 +153,7 @@ const ResultCoulumsViewer: React.FC<resultColumnsProps> = ({
         );
       } else {
         return (
-          <ResultColumsDataViewer
+          <ResultColumnsDataViewer
             key={resultColumn.label}
             label={resultColumn.label}
             dataType={generateDataTypeLabel(resultColumn.dataType)}
@@ -170,78 +164,70 @@ const ResultCoulumsViewer: React.FC<resultColumnsProps> = ({
   </div>
 );
 
-interface sqlprops {
+export const SQLPlanViewer: React.FC<{
   query: string;
-  resultCoulumns: SQLResultColumn[];
+  resultColumns: SQLResultColumn[];
   connection: DatabaseConnection;
   executionPlanState: ExecutionPlanState;
-}
-export const SqlPlanViewer: React.FC<sqlprops> = observer(
-  (props: {
-    query: string;
-    resultCoulumns: SQLResultColumn[];
-    connection: DatabaseConnection;
-    executionPlanState: ExecutionPlanState;
-  }) => {
-    const { query, resultCoulumns, connection, executionPlanState } = props;
-    const tabs = [
-      SQL_DISPLAY_TABS.SQL_QUERY,
-      SQL_DISPLAY_TABS.RESULT_COLUMNS,
-      SQL_DISPLAY_TABS.DATABASE_CONNECTION,
-    ];
-    const changeTab =
-      (tab: SQL_DISPLAY_TABS): (() => void) =>
-      (): void => {
-        executionPlanState.setSqlSelectedTab(tab);
-      };
+}> = observer((props) => {
+  const { query, resultColumns, connection, executionPlanState } = props;
+  const tabs = [
+    SQL_DISPLAY_TABS.SQL_QUERY,
+    SQL_DISPLAY_TABS.RESULT_COLUMNS,
+    SQL_DISPLAY_TABS.DATABASE_CONNECTION,
+  ];
+  const changeTab =
+    (tab: SQL_DISPLAY_TABS): (() => void) =>
+    (): void => {
+      executionPlanState.setSqlSelectedTab(tab);
+    };
 
-    return (
-      <div className="panel__content">
-        <div className="panel__main-header edit-panel__header">
-          <div className="edit-panel__header__tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={changeTab(tab)}
-                className={clsx('edit-panel__header__tab', {
-                  'edit-panel__header__tab--active':
-                    tab === executionPlanState.sqlSelectedTab,
-                })}
-              >
-                {prettyCONSTName(tab)}
-              </button>
-            ))}
-          </div>
+  return (
+    <div className="panel__content">
+      <div className="panel__main-header edit-panel__header">
+        <div className="edit-panel__header__tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={changeTab(tab)}
+              className={clsx('edit-panel__header__tab', {
+                'edit-panel__header__tab--active':
+                  tab === executionPlanState.sqlSelectedTab,
+              })}
+            >
+              {prettyCONSTName(tab)}
+            </button>
+          ))}
         </div>
-        {executionPlanState.sqlSelectedTab === SQL_DISPLAY_TABS.SQL_QUERY && (
-          <QueryViewer
-            query={format(query)}
-            language={EDITOR_LANGUAGE.SQL}
-            wordWrap="on"
-          />
-        )}
-        {executionPlanState.sqlSelectedTab ===
-          SQL_DISPLAY_TABS.RESULT_COLUMNS && (
-          <div className="table-view">
-            <ResultCoulumsViewer resultColumns={resultCoulumns} />
+      </div>
+      {executionPlanState.sqlSelectedTab === SQL_DISPLAY_TABS.SQL_QUERY && (
+        <QueryViewer
+          query={format(query)}
+          language={EDITOR_LANGUAGE.SQL}
+          wordWrap="on"
+        />
+      )}
+      {executionPlanState.sqlSelectedTab ===
+        SQL_DISPLAY_TABS.RESULT_COLUMNS && (
+        <div className="table-view">
+          <ResultColumnsViewer resultColumns={resultColumns} />
+        </div>
+      )}
+      {executionPlanState.sqlSelectedTab ===
+        SQL_DISPLAY_TABS.DATABASE_CONNECTION &&
+        connection instanceof RelationalDatabaseConnection && (
+          <div>
+            <RelationalDatabaseConnectionEditor
+              connectionValueState={
+                new RelationalDatabaseConnectionValueState(
+                  executionPlanState.editorStore,
+                  connection,
+                )
+              }
+              isReadOnly={true}
+            />
           </div>
         )}
-        {executionPlanState.sqlSelectedTab ===
-          SQL_DISPLAY_TABS.DATABASE_CONNECTION &&
-          connection instanceof RelationalDatabaseConnection && (
-            <div>
-              <RelationalDatabaseConnectionEditor
-                connectionValueState={
-                  new RelationalDatabaseConnectionValueState(
-                    executionPlanState.editorStore,
-                    connection,
-                  )
-                }
-                isReadOnly={true}
-              />
-            </div>
-          )}
-      </div>
-    );
-  },
-);
+    </div>
+  );
+});

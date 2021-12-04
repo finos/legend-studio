@@ -142,11 +142,9 @@ export const TEST_DATA__DefaultSDLCInfo = {
   ],
 };
 
-export const TEST__LegendStudioStoreProvider = ({
-  children,
-}: {
+export const TEST__LegendStudioStoreProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => (
+}> = ({ children }) => (
   <LegendStudioStoreProvider pluginManager={LegendStudioPluginManager.create()}>
     {children}
   </LegendStudioStoreProvider>

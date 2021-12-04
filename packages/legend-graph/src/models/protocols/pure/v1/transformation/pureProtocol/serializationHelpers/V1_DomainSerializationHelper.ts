@@ -251,10 +251,7 @@ export const V1_constraintSchema = createModelSchema(V1_Constraint, {
   enforcementLevel: optional(primitive()),
   externalId: optional(primitive()),
   functionDefinition: usingModelSchema(V1_rawLambdaModelSchema),
-  messageFunction: custom(
-    (value) => (value ? serialize(V1_rawLambdaModelSchema, value) : SKIP),
-    (value) => deserialize(V1_rawLambdaModelSchema, value),
-  ),
+  messageFunction: optional(usingModelSchema(V1_rawLambdaModelSchema)),
   name: primitive(),
 });
 

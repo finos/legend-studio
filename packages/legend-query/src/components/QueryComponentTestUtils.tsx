@@ -54,11 +54,9 @@ import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 import type { Entity } from '@finos/legend-model-storage';
 
-export const TEST__LegendQueryStoreProvider = ({
-  children,
-}: {
+export const TEST__LegendQueryStoreProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => (
+}> = ({ children }) => (
   <LegendQueryStoreProvider pluginManager={LegendQueryPluginManager.create()}>
     {children}
   </LegendQueryStoreProvider>

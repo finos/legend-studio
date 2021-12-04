@@ -33,11 +33,9 @@ export const TEST__provideMockedSDLCServerClient = (customization?: {
   return value;
 };
 
-export const TEST__SDLCServerClientProvider = ({
-  children,
-}: {
+export const TEST__SDLCServerClientProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => (
+}> = ({ children }) => (
   <SDLCServerClientProvider config={{ serverUrl: '', env: '' }}>
     {children}
   </SDLCServerClientProvider>

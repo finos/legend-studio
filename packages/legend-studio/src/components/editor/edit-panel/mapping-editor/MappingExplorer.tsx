@@ -306,16 +306,16 @@ export const MappingElementExplorer = observer(
   },
 );
 
-type MappingElementTreeNodeContainerProps = TreeNodeContainerProps<
-  MappingExplorerTreeNodeData,
-  {
-    isReadOnly: boolean;
-    onNodeExpand: (node: MappingExplorerTreeNodeData) => void;
-  }
->;
-
 const MappingElementTreeNodeContainer = observer(
-  (props: MappingElementTreeNodeContainerProps) => {
+  (
+    props: TreeNodeContainerProps<
+      MappingExplorerTreeNodeData,
+      {
+        isReadOnly: boolean;
+        onNodeExpand: (node: MappingExplorerTreeNodeData) => void;
+      }
+    >,
+  ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const { isReadOnly, onNodeExpand } = innerProps;
     const mappingElement = node.mappingElement;

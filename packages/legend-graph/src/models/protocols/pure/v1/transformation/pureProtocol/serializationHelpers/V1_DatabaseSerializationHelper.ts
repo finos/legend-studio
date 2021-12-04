@@ -21,13 +21,13 @@ import {
   list,
   deserialize,
   serialize,
-  SKIP,
   object,
   alias,
   optional,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import {
+  optionalCustom,
   usingConstantValueSchema,
   deserializeArray,
   UnsupportedOperationError,
@@ -343,11 +343,9 @@ const V1_elementWithJoinsModelSchema = createModelSchema(V1_ElementWithJoins, {
     V1_RelationalOperationElementType.ELEMENT_WITH_JOINS,
   ),
   joins: list(usingModelSchema(V1_joinPointerModelSchema)),
-  relationalElement: custom(
-    (val) =>
-      val === undefined ? SKIP : V1_serializeRelationalOperationElement(val),
-    (val) =>
-      val === undefined ? SKIP : V1_deserializeRelationalOperationElement(val),
+  relationalElement: optionalCustom(
+    V1_serializeRelationalOperationElement,
+    V1_deserializeRelationalOperationElement,
   ),
 });
 

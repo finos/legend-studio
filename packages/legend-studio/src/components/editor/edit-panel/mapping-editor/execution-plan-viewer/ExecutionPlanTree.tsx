@@ -233,10 +233,7 @@ const ExecutionNodeElementTreeNodeContainer: React.FC<
 export const ExecutionPlanTree: React.FC<{
   executionPlanState: ExecutionPlanState;
   executionPlan: ExecutionPlan;
-}> = (props: {
-  executionPlanState: ExecutionPlanState;
-  executionPlan: ExecutionPlan;
-}) => {
+}> = (props) => {
   const { executionPlanState, executionPlan } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax
   // See https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
@@ -298,6 +295,7 @@ export const ExecutionPlanTree: React.FC<{
 
     return childrenNodes;
   };
+
   return (
     <TreeView
       components={{

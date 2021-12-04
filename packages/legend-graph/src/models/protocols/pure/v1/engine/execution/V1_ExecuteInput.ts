@@ -17,16 +17,16 @@
 import {
   createModelSchema,
   custom,
+  object,
   optional,
   primitive,
   SKIP,
 } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
+import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 import type { V1_Runtime } from '../../model/packageableElements/runtime/V1_Runtime';
 import type { V1_RawExecutionContext } from '../../model/rawValueSpecification/V1_RawExecutionContext';
 import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda';
-import { V1_pureModelContextDataPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization';
 import { V1_serializeRuntime } from '../../transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
 import {
   V1_rawBaseExecutionContextModelSchema,
@@ -46,7 +46,7 @@ export class V1_ExecuteInput {
       clientVersion: optional(primitive()),
       function: usingModelSchema(V1_rawLambdaModelSchema),
       mapping: primitive(),
-      model: V1_pureModelContextDataPropSchema,
+      model: object(V1_PureModelContextData),
       runtime: custom(
         (val) => V1_serializeRuntime(val),
         () => SKIP,

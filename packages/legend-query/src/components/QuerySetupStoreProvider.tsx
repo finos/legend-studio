@@ -24,11 +24,9 @@ const QuerySetupStoreContext = createContext<QuerySetupStore | undefined>(
   undefined,
 );
 
-export const QuerySetupStoreProvider = ({
-  children,
-}: {
+export const QuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => {
+}> = ({ children }) => {
   const queryStore = useLegendQueryStore();
   const store = useLocalObservable(() => new QuerySetupStore(queryStore));
   return (

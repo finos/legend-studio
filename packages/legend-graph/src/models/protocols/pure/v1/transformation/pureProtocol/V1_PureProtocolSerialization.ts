@@ -23,6 +23,7 @@ import {
   SKIP,
   serialize,
   deserialize,
+  object,
 } from 'serializr';
 import type { PlainObject } from '@finos/legend-shared';
 import {
@@ -111,12 +112,6 @@ const alloySDLCSerializationModelSchema = createModelSchema(V1_AlloySDLC, {
   ),
 });
 
-export const V1_pureModelContextDataPropSchema = custom(
-  (value) =>
-    value === undefined ? SKIP : serialize(V1_PureModelContextData, value),
-  (value) => deserialize(V1_PureModelContextData, value),
-);
-
 const V1_pureModelContextTextSchema = createModelSchema(
   V1_PureModelContextText,
   {
@@ -124,14 +119,6 @@ const V1_pureModelContextTextSchema = createModelSchema(
     serializer: usingModelSchema(V1_Protocol.serialization.schema),
     code: optional(primitive()),
   },
-);
-
-export const V1_pureModelContextTextPropSchema = custom(
-  (value) =>
-    value === undefined
-      ? SKIP
-      : serialize(V1_pureModelContextTextSchema, value),
-  (value) => deserialize(V1_pureModelContextTextSchema, value),
 );
 
 const V1_pureModelContextPointerModelSchema = createModelSchema(
@@ -148,7 +135,7 @@ const V1_pureModelContextCompositeModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_PureModelContextType.COMPOSITE),
     serializer: usingModelSchema(V1_Protocol.serialization.schema),
-    data: V1_pureModelContextDataPropSchema,
+    data: object(V1_PureModelContextData),
     pointer: usingModelSchema(V1_pureModelContextPointerModelSchema),
   },
 );

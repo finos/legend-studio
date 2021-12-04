@@ -89,7 +89,7 @@ const ES_RULES = {
   'no-void': ERROR,
   'no-whitespace-before-property': ERROR,
   'object-curly-spacing': [WARN, 'always'],
-  'prefer-arrow-callback': ERROR,
+  'prefer-arrow-callback': [ERROR, { allowNamedFunctions: true }],
   'prefer-const': WARN,
   'prefer-named-capture-group': WARN,
   'prefer-template': WARN,
