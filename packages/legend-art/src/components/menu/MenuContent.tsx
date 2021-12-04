@@ -20,7 +20,7 @@ import clsx from 'clsx';
 export const MenuContent = forwardRef<
   HTMLDivElement,
   { className?: string; children: React.ReactNode }
->((props, ref) => {
+>(function MenuContent(props, ref) {
   const { className, children, ...otherProps } = props;
   return (
     <div ref={ref} className={clsx('menu', className)} {...otherProps}>
@@ -28,8 +28,6 @@ export const MenuContent = forwardRef<
     </div>
   );
 });
-
-MenuContent.displayName = 'MenuContent';
 
 export const MenuContentItem: React.FC<{
   className?: string;

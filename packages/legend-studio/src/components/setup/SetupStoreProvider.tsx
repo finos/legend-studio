@@ -24,11 +24,9 @@ import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const SetupStoreContext = createContext<SetupStore | undefined>(undefined);
 
-export const SetupStoreProvider = ({
-  children,
-}: {
+export const SetupStoreProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => {
+}> = ({ children }) => {
   const applicationStore = useApplicationStore<LegendStudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const store = useLocalObservable(

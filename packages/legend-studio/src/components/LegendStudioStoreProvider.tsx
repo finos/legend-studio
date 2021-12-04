@@ -28,13 +28,10 @@ const LegendStudioStoreContext = createContext<LegendStudioStore | undefined>(
   undefined,
 );
 
-export const LegendStudioStoreProvider = ({
-  pluginManager,
-  children,
-}: {
+export const LegendStudioStoreProvider: React.FC<{
   pluginManager: LegendStudioPluginManager;
   children: React.ReactNode;
-}): React.ReactElement => {
+}> = ({ pluginManager, children }) => {
   const applicationStore = useApplicationStore<LegendStudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();

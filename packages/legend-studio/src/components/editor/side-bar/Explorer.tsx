@@ -349,13 +349,13 @@ const ProjectConfig = observer(() => {
   );
 });
 
-type PackageTreeNodeContainerProps = TreeNodeContainerProps<
-  PackageTreeNodeData,
-  { disableContextMenu: boolean; isContextImmutable?: boolean }
->;
-
 const PackageTreeNodeContainer = observer(
-  (props: PackageTreeNodeContainerProps) => {
+  (
+    props: TreeNodeContainerProps<
+      PackageTreeNodeData,
+      { disableContextMenu: boolean; isContextImmutable?: boolean }
+    >,
+  ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const editorStore = useEditorStore();
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =

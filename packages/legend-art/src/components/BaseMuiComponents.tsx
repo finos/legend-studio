@@ -27,7 +27,7 @@ const useBaseMenuStyles = makeStyles({
   },
 });
 
-export const BaseMenu: React.FC<MenuProps> = (props: MenuProps) => {
+export const BaseMenu: React.FC<MenuProps> = (props) => {
   const classes = useBaseMenuStyles();
   const { children, ...otherProps } = props;
 
@@ -59,7 +59,7 @@ const useBasePopoverStyles = makeStyles({
   },
 });
 
-export const BasePopover: React.FC<PopoverProps> = (props: PopoverProps) => {
+export const BasePopover: React.FC<PopoverProps> = (props) => {
   const classes = useBasePopoverStyles();
   const { children, ...otherProps } = props;
 

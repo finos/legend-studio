@@ -21,15 +21,11 @@ import type { LegendApplicationConfig } from '../stores/ApplicationConfig';
 import { ApplicationStoreProvider } from './ApplicationStoreProvider';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 
-export const TEST__ApplicationStoreProvider = ({
-  children,
-  config,
-  pluginManager,
-}: {
+export const TEST__ApplicationStoreProvider: React.FC<{
   children: React.ReactNode;
   config: LegendApplicationConfig;
   pluginManager: LegendApplicationPluginManager;
-}): React.ReactElement => (
+}> = ({ children, config, pluginManager }) => (
   <ApplicationStoreProvider config={config} pluginManager={pluginManager}>
     {children}
   </ApplicationStoreProvider>

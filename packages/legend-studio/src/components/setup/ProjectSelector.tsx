@@ -143,5 +143,3 @@ export const ProjectSelector = observer(
   },
   { forwardRef: true },
 );
-
-ProjectSelector.displayName = 'ProjectSelector';

@@ -29,13 +29,10 @@ const LegendTaxonomyStoreContext = createContext<
   LegendTaxonomyStore | undefined
 >(undefined);
 
-export const LegendTaxonomyStoreProvider = ({
-  children,
-  pluginManager,
-}: {
+export const LegendTaxonomyStoreProvider: React.FC<{
   children: React.ReactNode;
   pluginManager: LegendTaxonomyPluginManager;
-}): React.ReactElement => {
+}> = ({ children, pluginManager }) => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
   const taxonomyServerClient = new TaxonomyServerClient(
     applicationStore.config.currentTaxonomyServerOption.url,

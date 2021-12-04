@@ -27,11 +27,9 @@ import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const EditorStoreContext = createContext<EditorStore | undefined>(undefined);
 
-export const EditorStoreProvider = ({
-  children,
-}: {
+export const EditorStoreProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => {
+}> = ({ children }) => {
   const applicationStore = useApplicationStore<LegendStudioConfig>();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();

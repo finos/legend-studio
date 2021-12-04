@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { SqlPlanViewer } from './SqlPlanViewer';
+import { SQLPlanViewer } from './SQLExecutionPlanViewer';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { EXECUTION_PLAN_VIEW_MODE } from '../../../../../stores/ExecutionPlanState';
 import {
@@ -95,20 +95,12 @@ const generateDataTypeLabel = (type: unknown | undefined): string => {
     return `UNDEFINED`;
   }
 };
-interface resultTypeProps {
-  resultType: ResultType;
-}
-interface TDSresultTypeProps {
-  colName: string;
-  colType: DataType | undefined;
-  colSourceDatatype: unknown;
-}
 
-const TDSResultTypeViewer: React.FC<TDSresultTypeProps> = (props: {
+const TDSResultTypeViewer: React.FC<{
   colName: string;
   colType: DataType | undefined;
   colSourceDatatype: unknown;
-}) => {
+}> = (props) => {
   const { colName, colType, colSourceDatatype } = props;
 
   return (
@@ -154,10 +146,8 @@ const TDSResultTypeViewer: React.FC<TDSresultTypeProps> = (props: {
   );
 };
 
-//Only TDS result type is supported
-const ResultTypeViewer: React.FC<resultTypeProps> = (props: {
-  resultType: ResultType;
-}) => {
+// Only TDS result type is supported
+const ResultTypeViewer: React.FC<{ resultType: ResultType }> = (props) => {
   const { resultType } = props;
   return (
     <div className="panel">
@@ -185,8 +175,9 @@ const ResultTypeViewer: React.FC<resultTypeProps> = (props: {
     </div>
   );
 };
-//Json viewer
-const JSONViewer: React.FC<{ query: string }> = (props: { query: string }) => {
+
+// JSON viewer
+const JSONViewer: React.FC<{ query: string }> = (props) => {
   const { query } = props;
   return (
     <div className="panel__content">
@@ -199,13 +190,9 @@ const JSONViewer: React.FC<{ query: string }> = (props: { query: string }) => {
     </div>
   );
 };
-interface executionPlanStateProps {
-  displayData: string;
-  executionPlanState: ExecutionPlanState;
-}
 
-//Currently only support SQLExecution Node and RelationalTDSInstatiation Node
-export const ExecutionNodesViewer: React.FC<executionPlanStateProps> = observer(
+// Currently, only support SQLExecution Node and RelationalTDSInstatiation Node
+export const ExecutionNodesViewer = observer(
   (props: { displayData: string; executionPlanState: ExecutionPlanState }) => {
     const { displayData, executionPlanState } = props;
     let currentElement;
@@ -274,9 +261,9 @@ export const ExecutionNodesViewer: React.FC<executionPlanStateProps> = observer(
 
         {currentElement instanceof SQLExecutionNode &&
           executionPlanState.viewMode === EXECUTION_PLAN_VIEW_MODE.FORM && (
-            <SqlPlanViewer
+            <SQLPlanViewer
               query={currentElement.sqlQuery}
-              resultCoulumns={currentElement.resultColumns}
+              resultColumns={currentElement.resultColumns}
               connection={currentElement.connection}
               executionPlanState={executionPlanState}
             />

@@ -25,15 +25,11 @@ const GraphManagerStateContext = createContext<GraphManagerState | undefined>(
   undefined,
 );
 
-export const GraphManagerStateProvider = ({
-  children,
-  pluginManager,
-  log,
-}: {
+export const GraphManagerStateProvider: React.FC<{
   children: React.ReactNode;
   pluginManager: GraphPluginManager;
   log: Log;
-}): React.ReactElement => {
+}> = ({ children, pluginManager, log }) => {
   const graphManagerState = useLocalObservable(
     () => new GraphManagerState(pluginManager, log),
   );

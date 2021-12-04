@@ -24,11 +24,9 @@ import { ViewerEditorMode } from '../../stores/viewer/ViewerEditorMode';
 
 const ViewerStoreContext = createContext<ViewerStore | undefined>(undefined);
 
-export const ViewerStoreProvider = ({
-  children,
-}: {
+export const ViewerStoreProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => {
+}> = ({ children }) => {
   const editorStore = useEditorStore();
   editorStore.setMode(EDITOR_MODE.VIEWER);
   const store = useLocalObservable(() => new ViewerStore(editorStore));

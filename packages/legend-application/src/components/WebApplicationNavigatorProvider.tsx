@@ -25,11 +25,9 @@ const WebApplicationNavigatorContext = createContext<
   WebApplicationNavigator | undefined
 >(undefined);
 
-export const WebApplicationNavigatorProvider = ({
-  children,
-}: {
+export const WebApplicationNavigatorProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => {
+}> = ({ children }) => {
   const history = useHistory() as History;
   const navigator = useLocalObservable(
     () => new WebApplicationNavigator(history),
