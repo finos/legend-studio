@@ -15,7 +15,13 @@
  */
 
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { ActionState, LogEvent, assertErrorThrown } from '@finos/legend-shared';
+import {
+  HttpStatus,
+  NetworkClientError,
+  ActionState,
+  LogEvent,
+  assertErrorThrown,
+} from '@finos/legend-shared';
 import type { ApplicationStore } from '@finos/legend-application';
 import {
   ActionAlertActionType,
@@ -187,11 +193,42 @@ export class LegendStudioStore {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.applicationStore.notifyError(error);
+      if (
+        // eslint-disable-next-line no-process-env
+        process.env.NODE_ENV === 'development' &&
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.UNAUTHORIZED
+      ) {
+        this.applicationStore.setActionAltertInfo({
+          message:
+            'The first time the application starts in development mode, the developer would need to authenticate using SDLC server. Please do so then manually reload the app',
+          type: ActionAlertType.STANDARD,
+          actions: [
+            {
+              label: 'Authenticate using SDLC',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+              handler: (): void => {
+                this.applicationStore.navigator.openNewWindow(
+                  this.sdlcServerClient.currentUserUrl,
+                );
+                this.applicationStore.setBlockingAlert({
+                  message:
+                    'Waiting for the developer to authenticate using SDLC server',
+                  prompt:
+                    'Please manually reload the application after authentication',
+                });
+              },
+            },
+          ],
+        });
+      } else {
+        this.applicationStore.log.error(
+          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+          error,
+        );
+        this.applicationStore.notifyError(error);
+      }
     }
   }
 

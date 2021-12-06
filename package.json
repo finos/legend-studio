@@ -97,7 +97,7 @@
     "jest": "27.4.3",
     "lint-staged": "12.1.2",
     "micromatch": "4.0.4",
-    "prettier": "2.5.0",
+    "prettier": "2.5.1",
     "rimraf": "3.0.2",
     "sass": "1.44.0",
     "semver": "7.3.5",
