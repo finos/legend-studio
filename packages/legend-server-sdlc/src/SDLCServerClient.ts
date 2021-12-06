@@ -103,8 +103,14 @@ export class SDLCServerClient extends AbstractServerClient {
 
   // ------------------------------------------- User -------------------------------------------
 
+  /**
+   * We expose this URL because it is needed for developer to authenticate using SDLC server during development.
+   */
+  get currentUserUrl(): string {
+    return `${this.networkClient.baseUrl}/currentUser`;
+  }
   getCurrentUser = (): Promise<PlainObject<User>> =>
-    this.networkClient.get(`${this.networkClient.baseUrl}/currentUser`);
+    this.networkClient.get(this.currentUserUrl);
 
   // ------------------------------------------- Authorization -------------------------------------------
 
