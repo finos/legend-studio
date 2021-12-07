@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { AbstractPluginManager, Clazz } from '@finos/legend-shared';
+import type { Clazz } from '@finos/legend-shared';
 import { UnsupportedOperationError, unitTest } from '@finos/legend-shared';
 import type { PackageableElementVisitor } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import { PackageableElement } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
@@ -55,10 +55,6 @@ class StubGraphManagerPlugin extends PureProtocolProcessorPlugin {
   constructor(builders: V1_ElementBuilder<V1_PackageableElement>[]) {
     super('stub-graph-manager-plugin', '0.0.0');
     this.builders = builders;
-  }
-
-  install(pluginManager: AbstractPluginManager): void {
-    throw new UnsupportedOperationError();
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {

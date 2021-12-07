@@ -18,6 +18,7 @@ import { AbstractPlugin } from '@finos/legend-shared';
 import type { Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { PureModel } from './PureModel';
+import type { GraphPluginManager } from '../GraphPluginManager';
 
 export type DeadReferencesCleaner = (graph: PureModel) => void;
 
@@ -29,6 +30,10 @@ export type DeadReferencesCleaner = (graph: PureModel) => void;
  */
 export abstract class PureGraphPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphPlugin';
+
+  install(pluginManager: GraphPluginManager): void {
+    pluginManager.registerPureGraphPlugin(this);
+  }
 
   /**
    * Get the list of supported packageable element classes.

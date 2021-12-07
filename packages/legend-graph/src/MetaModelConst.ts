@@ -96,6 +96,7 @@ export enum CORE_ELEMENT_PATH {
   ANY = 'meta::pure::metamodel::type::Any',
 
   PROFILE_DOC = 'meta::pure::profiles::doc',
+  PROFILE_TEMPORAL = 'meta::pure::profiles::temporal',
 
   // classifier paths
   PROFILE = 'meta::pure::metamodel::extension::Profile',
@@ -305,3 +306,11 @@ export enum CORE_HASH_STRUCTURE {
   RAW_VARIABLE = 'RAW_VARIABLE',
   RAW_INSTANCE_VALUE = 'RAW_INSTANCE_VALUE',
 }
+
+export enum MILESTONING_STEROTYPES {
+  BUSINESS_TEMPORAL = 'businesstemporal',
+  PROCESSING_TEMPORAL = 'processingtemporal',
+  BITEMPORAL = 'bitemporal',
+}
+
+export const LATEST_DATE = '%latest';

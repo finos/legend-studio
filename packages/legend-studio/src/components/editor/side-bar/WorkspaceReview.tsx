@@ -31,7 +31,7 @@ import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { formatDistanceToNow } from 'date-fns';
 import { FiGitMerge } from 'react-icons/fi';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState';
@@ -41,7 +41,7 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
@@ -71,7 +71,9 @@ export const WorkspaceReviewDiffs = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={
+            LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+          }
         >
           {changes.length}
         </div>
@@ -95,7 +97,7 @@ export const WorkspaceReviewDiffs = observer(() => {
 
 export const WorkspaceReview = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const workspaceReviewState = editorStore.workspaceReviewState;
   const workspaceReview = workspaceReviewState.workspaceReview;
   // Review Title

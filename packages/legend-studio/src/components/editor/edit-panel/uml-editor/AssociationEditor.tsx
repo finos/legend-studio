@@ -42,11 +42,11 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
-  TimesCircleIcon,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { PropertyEditor } from './PropertyEditor';
@@ -170,24 +170,19 @@ const AssociationPropertyBasicEditor = observer(
 
     return (
       <div className="property-basic-editor">
-        <input
-          className={
-            isPropertyDuplicated(property)
-              ? 'property-basic-editor__name property-basic-editor__name__duplicated'
-              : 'property-basic-editor__name'
-          }
-          disabled={isReadOnly}
-          value={property.name}
-          spellCheck={false}
-          onChange={changeValue}
-          placeholder={`Property name`}
-        />
-        {isPropertyDuplicated(property) && <TimesCircleIcon />}
-        {isPropertyDuplicated(property) && (
-          <div className="input-group__error-message">
-            Found duplicated property
-          </div>
-        )}
+        <div className="input-group__input property-basic-editor__input">
+          <InputWithInlineValidation
+            className="input-group__input property-basic-editor__name__duplicated"
+            disabled={isReadOnly}
+            value={property.name}
+            spellCheck={false}
+            onChange={changeValue}
+            placeholder={`Property name`}
+            validationErrorMessage={
+              isPropertyDuplicated(property) ? 'Duplicated property' : undefined
+            }
+          />
+        </div>
         {!isReadOnly && isEditingType && (
           <CustomSelectorInput
             className="property-basic-editor__type"
@@ -226,7 +221,7 @@ const AssociationPropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -258,7 +253,7 @@ const AssociationPropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -410,7 +405,7 @@ export const AssociationEditor = observer(
     );
     return (
       <div
-        data-testid={STUDIO_TEST_ID.ASSOCIATION_EDITOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.ASSOCIATION_EDITOR}
         className="uml-element-editor association-editor"
       >
         <ResizablePanelGroup orientation="horizontal">

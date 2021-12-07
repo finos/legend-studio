@@ -39,14 +39,14 @@ import {
   RawLambda,
 } from '@finos/legend-graph';
 import {
-  TEST__provideMockedQueryStore,
+  TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
 } from '../QueryComponentTestUtils';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID';
 import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
 
@@ -60,9 +60,9 @@ test(
     'Query builder state is properly set after processing a projection lambda',
   ),
   async () => {
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedQueryStore({
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
@@ -84,8 +84,7 @@ test(
       'model::relational::tests::simpleRelationalMapping',
     );
 
-    queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetData();
+    queryBuilderState.changeClass(_personClass);
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -281,7 +280,8 @@ test(
     ).toBe(0);
 
     // filter with group condition
-    queryBuilderState.resetData();
+    queryBuilderState.resetQueryBuilder();
+    queryBuilderState.resetQuerySetup();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__getAllWithGroupedFilter),
@@ -313,7 +313,8 @@ test(
     ).toBe(0);
 
     // projection column with derived property
-    queryBuilderState.resetData();
+    queryBuilderState.resetQueryBuilder();
+    queryBuilderState.resetQuerySetup();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__projectWithDerivedProperty),
@@ -348,9 +349,9 @@ test(
     'Query builder state is properly set after processing a graph-fetch lambda',
   ),
   async () => {
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedQueryStore({
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
@@ -369,8 +370,7 @@ test(
       'model::target::NFirm',
     );
 
-    queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetData();
+    queryBuilderState.changeClass(_personClass);
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );

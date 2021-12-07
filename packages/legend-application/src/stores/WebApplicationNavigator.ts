@@ -20,6 +20,27 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 /**
  * This is an initial attempt to try to generalize the application
  * to other platforms. But regardless, this is more convenient for testing.
+ *
+ * FIXME: this is not the right way to do this. Our intention here is to make
+ * app navigator something generic enough so we are somewhat platform-agnostic
+ * i.e. browser, electron, PC, UNIX, etc.
+ *
+ * Parameterize on the type of the location might not be the best thing to do.
+ * Because typing wise, this forces us to also parameterize consumers of this,
+ * which is `ApplicationStore`. It means that we must dictate in the source
+ * code the platform the app depends on, clearly for web browser, `string` is the
+ * easy option, but if we do so, it defeats the purpose of this abstraction in the
+ * first place.
+ *
+ * As such, instead, we should design a more generic concept `Location` to pass around.
+ * We would need to flesh out the details, but this is the rough idea.
+ *
+ * Another thought is that we should also generalize Router so it handles more than just
+ * URLs. If we make `router` and `navigator` work together, we can potentially generalize
+ * application navigation
+ *
+ * However, this depends on how and when we move to another platform, like `electron` for example
+ * See https://github.com/finos/legend-studio/issues/718
  */
 interface ApplicationNavigator<T> {
   reload(): void;

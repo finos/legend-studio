@@ -21,8 +21,8 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { observer } from 'mobx-react-lite';
 import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
-import { clsx, TimesCircleIcon } from '@finos/legend-art';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { clsx, InputWithInlineValidation } from '@finos/legend-art';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { Profile } from '@finos/legend-graph';
 import { Tag, Stereotype } from '@finos/legend-graph';
@@ -41,23 +41,18 @@ const TagBasicEditor = observer(
 
     return (
       <div className="tag-basic-editor">
-        <input
-          className={
-            isTagDuplicated(tag)
-              ? 'tag-basic-editor__value tag-basic-editor__value__duplicated'
-              : 'tag-basic-editor__value'
-          }
+        <InputWithInlineValidation
+          className="tag-basic-editor__value input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={tag.value}
           onChange={changeValue}
           placeholder={`Tag value`}
           name={`Tag value`}
+          validationErrorMessage={
+            isTagDuplicated(tag) ? 'Duplicated tag' : undefined
+          }
         />
-        {isTagDuplicated(tag) && <TimesCircleIcon />}
-        {isTagDuplicated(tag) && (
-          <div className="input-group__error-message">Found duplicated tag</div>
-        )}
         {!isReadOnly && (
           <button
             className="uml-element-editor__remove-btn"
@@ -89,25 +84,20 @@ const StereotypeBasicEditor = observer(
 
     return (
       <div className="stereotype-basic-editor">
-        <input
-          className={
-            isStereotypeDuplicated(stereotype)
-              ? 'stereotype-basic-editor__value stereotype-basic-editor__value__duplicated'
-              : 'stereotype-basic-editor__value'
-          }
+        <InputWithInlineValidation
+          className="stereotype-basic-editor__value input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={stereotype.value}
           onChange={changeValue}
           placeholder={`Stereotype value`}
           name={`Stereotype value`}
+          validationErrorMessage={
+            isStereotypeDuplicated(stereotype)
+              ? 'Duplicated stereotype'
+              : undefined
+          }
         />
-        {isStereotypeDuplicated(stereotype) && <TimesCircleIcon />}
-        {isStereotypeDuplicated(stereotype) && (
-          <div className="input-group__error-message">
-            Found duplicated stereotype
-          </div>
-        )}
         {!isReadOnly && (
           <button
             className="uml-element-editor__remove-btn"
@@ -185,7 +175,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           </div>
         </div>
         <div
-          data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+          data-testid={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
           className="panel__header uml-element-editor__tabs__header"
         >
           <div className="uml-element-editor__tabs">

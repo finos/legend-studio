@@ -21,7 +21,7 @@ import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
 import { formatDistanceToNow } from 'date-fns';
 import { FiGitMerge } from 'react-icons/fi';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { STUDIO_TEST_ID } from '../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { ReviewState } from '@finos/legend-server-sdlc';
@@ -204,7 +204,9 @@ export const ReviewSideBar = observer(() => {
               </div>
               <div
                 className="side-bar__panel__header__changes-count"
-                data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                }
               >
                 {changes.length}
               </div>

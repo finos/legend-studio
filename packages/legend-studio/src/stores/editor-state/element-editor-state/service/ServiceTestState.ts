@@ -17,7 +17,7 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   assertErrorThrown,
@@ -60,7 +60,7 @@ import {
   PureClientVersion,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../DSLMapping_StudioPlugin_Extension';
+import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -250,9 +250,8 @@ export class TestContainerState {
               .flatMap(
                 (plugin) =>
                   (
-                    plugin as DSLMapping_StudioPlugin_Extension
-                  ).TEMP__getExtraServiceTestRuntimeConnectionBuilders?.() ??
-                  [],
+                    plugin as DSLService_LegendStudioPlugin_Extension
+                  ).getExtraServiceTestRuntimeConnectionBuilders?.() ?? [],
               );
           for (const builder of extraServiceTestRuntimeConnectionBuilders) {
             testConnection = builder(connection, newRuntime, testData);
@@ -320,7 +319,9 @@ export class TestContainerState {
       assertErrorThrown(error);
       this.setAssertionData(tryToFormatJSONString('{}'));
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -366,7 +367,9 @@ export class TestContainerState {
       assertErrorThrown(error);
       this.setTestExecutionResultText(undefined);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -535,7 +538,9 @@ export class SingleExecutionTestState {
         })),
       );
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
     } finally {

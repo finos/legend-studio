@@ -125,14 +125,13 @@ const getColumnTreeNodeData = (
 // TODO: support more complex join feature (with operation, direction, etc.)
 const generateJoinTreeNodeId = (
   join: Join,
-  relation: Table | View,
   parentNode: TableOrViewTreeNodeData | undefined,
 ): string =>
   parentNode
     ? `${parentNode.id} ${JOIN_OPERATOR} ${JOIN_AT_SYMBOL}${join.name}`
-    : `${generateDatabasePointerText(
-        relation.schema.owner.path,
-      )}${JOIN_AT_SYMBOL}${join.name}`;
+    : `${generateDatabasePointerText(join.owner.path)}${JOIN_AT_SYMBOL}${
+        join.name
+      }`;
 
 const resolveJoinTargetRelation = (
   join: Join,
@@ -162,7 +161,7 @@ const getJoinTreeNodeData = (
   parentNode: TableOrViewTreeNodeData | undefined,
 ): TableOrViewTreeNodeData => {
   const joinNode = new JoinNodeData(
-    generateJoinTreeNodeId(join, relation, parentNode),
+    generateJoinTreeNodeId(join, parentNode),
     join.name,
     relation,
     join,
@@ -192,14 +191,7 @@ const getJoinTreeNodeData = (
     )
     .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
     .forEach((childJoin) => {
-      addUniqueEntry(
-        childrenIds,
-        generateJoinTreeNodeId(
-          childJoin,
-          resolveJoinTargetRelation(childJoin, relation),
-          joinNode,
-        ),
-      );
+      addUniqueEntry(childrenIds, generateJoinTreeNodeId(childJoin, joinNode));
     });
   joinNode.childrenIds = childrenIds;
   return joinNode;

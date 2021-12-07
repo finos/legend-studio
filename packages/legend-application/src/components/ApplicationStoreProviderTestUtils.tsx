@@ -19,20 +19,14 @@ import { ApplicationStore } from '../stores/ApplicationStore';
 import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
 import type { LegendApplicationConfig } from '../stores/ApplicationConfig';
 import { ApplicationStoreProvider } from './ApplicationStoreProvider';
-import { Log } from '@finos/legend-shared';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 
-export const TEST__ApplicationStoreProvider = ({
-  children,
-  config,
-}: {
+export const TEST__ApplicationStoreProvider: React.FC<{
   children: React.ReactNode;
   config: LegendApplicationConfig;
-}): React.ReactElement => (
-  <ApplicationStoreProvider
-    config={config}
-    navigator={new WebApplicationNavigator(createMemoryHistory())}
-    log={new Log()}
-  >
+  pluginManager: LegendApplicationPluginManager;
+}> = ({ children, config, pluginManager }) => (
+  <ApplicationStoreProvider config={config} pluginManager={pluginManager}>
     {children}
   </ApplicationStoreProvider>
 );
@@ -41,6 +35,7 @@ export const TEST__provideMockedApplicationStore = <
   T extends LegendApplicationConfig,
 >(
   config: T,
+  pluginManager: LegendApplicationPluginManager,
   customization?: {
     mock?: ApplicationStore<T>;
     navigator?: WebApplicationNavigator;
@@ -52,7 +47,7 @@ export const TEST__provideMockedApplicationStore = <
       config,
       customization?.navigator ??
         new WebApplicationNavigator(createMemoryHistory()),
-      new Log(),
+      pluginManager,
     );
   const MockedApplicationStoreProvider = require('./ApplicationStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedApplicationStoreProvider.useApplicationStore = jest.fn();

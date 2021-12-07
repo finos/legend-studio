@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema, object, optional, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { V1_ParserError } from '../../engine/grammar/V1_ParserError';
 import { V1_LambdaInput } from './V1_LambdaInput';
-import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
-import { V1_pureModelContextDataPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization';
+import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
 
 export enum V1_RenderStyle {
   STANDARD = 'STANDARD',
@@ -35,7 +34,7 @@ export class V1_JsonToGrammarInput {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_JsonToGrammarInput, {
-      modelDataContext: V1_pureModelContextDataPropSchema,
+      modelDataContext: optional(object(V1_PureModelContextData)),
       isolatedLambdas: usingModelSchema(V1_LambdaInput.serialization.schema),
       renderStyle: optional(primitive()),
       codeError: usingModelSchema(V1_ParserError.serialization.schema),

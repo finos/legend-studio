@@ -16,31 +16,24 @@
 
 export const EXPECTED__MappingData_ComplexM2MModel = [
   {
-    name: 'nEmployees',
-    mappingData: { mapped: true },
     childNodes: [
-      {
-        name: 'fullName',
-        mappingData: { mapped: true },
-        childNodes: [],
-      },
-      {
-        name: 'age',
-        mappingData: { mapped: false },
-        childNodes: [],
-      },
+      { childNodes: [], mappingData: { mapped: true }, name: 'fullName' },
+      { childNodes: [], mappingData: { mapped: false }, name: 'age' },
     ],
-  },
-  {
-    name: 'name',
     mappingData: { mapped: true },
-    childNodes: [],
+    name: 'nEmployees',
   },
+  { childNodes: [], mappingData: { mapped: true }, name: 'name' },
+  { childNodes: [], mappingData: { mapped: true }, name: 'incType' },
   {
-    name: 'incType',
+    childNodes: [
+      { childNodes: [], mappingData: { mapped: true }, name: 'fullName' },
+      { childNodes: [], mappingData: { mapped: true }, name: 'age' },
+    ],
     mappingData: { mapped: true },
-    childNodes: [],
+    name: 'firstEmployee',
   },
+  { childNodes: [], mappingData: { mapped: true }, name: 'myName' },
 ];
 
 export const EXPECTED__MappingData__COVIDDataSimpleModel = [

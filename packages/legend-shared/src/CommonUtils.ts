@@ -138,6 +138,22 @@ export const pruneObject = (
     unknown
   >;
 
+/**
+ * Recursively remove fields with null values in object
+ *
+ * This is particularly useful in serialization, especially when handling response
+ * coming from servers where `null` are returned for missing fields. We would like to
+ * treat them as `undefined` instead, so we want to strip all the `null` values from the
+ * plain JSON object.
+ */
+export const pruneNullValues = (
+  obj: Record<PropertyKey, unknown>,
+): Record<PropertyKey, unknown> =>
+  pickBy(obj, (val: unknown): boolean => val !== null) as Record<
+    PropertyKey,
+    unknown
+  >;
+
 // Stringify object shallowly
 // See https://stackoverflow.com/questions/16466220/limit-json-stringification-depth
 export const shallowStringify = (object: unknown): string =>

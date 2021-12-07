@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { FaInfoCircle, FaTimes, FaUserFriends, FaUser } from 'react-icons/fa';
 import { MdModeEdit } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
@@ -37,7 +37,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const WorkspaceViewerContextMenu = observer<
   {
@@ -70,7 +70,7 @@ const WorkspaceViewerContextMenu = observer<
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const isActive = areWorkspacesEquivalent(
     editorStore.sdlcState.activeWorkspace,
     workspace,
@@ -148,7 +148,9 @@ const WorkspacesViewer = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={
+            LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+          }
         >
           {workspaces.length}
         </div>
@@ -156,7 +158,7 @@ const WorkspacesViewer = observer(() => {
       <div className="panel__content project-overview__panel__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div
-          data-testid={STUDIO_TEST_ID.PANEL_CONTENT_LIST}
+          data-testid={LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_LIST}
           className="panel__content__list"
         >
           {workspaces.map((workspace) => (
@@ -173,7 +175,7 @@ const WorkspacesViewer = observer(() => {
 
 const ReleaseEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const projectOverviewState = editorStore.projectOverviewState;
   const sdlcState = editorStore.sdlcState;
   const commitedReviews =
@@ -327,7 +329,7 @@ const ReleaseEditor = observer(() => {
                 <div
                   className="side-bar__panel__header__changes-count"
                   data-testid={
-                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                    LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
                   }
                 >
                   {commitedReviews.length}
@@ -368,7 +370,7 @@ const ReleaseEditor = observer(() => {
 
 const VersionsViewer = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const versions = editorStore.sdlcState.projectVersions;
   const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
 
@@ -389,7 +391,9 @@ const VersionsViewer = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={
+            LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+          }
         >
           {versions.length}
         </div>
@@ -566,7 +570,9 @@ const OverviewViewer = observer(() => {
             <div className="panel__content__form__section__list"></div>
             <div
               className="panel__content__form__section__list__items"
-              data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+              data-testid={
+                LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+              }
             >
               {tagsArray.map((value, idx) => (
                 // NOTE: since the value must be unique, we will use it as the key
@@ -702,7 +708,7 @@ export const ProjectOverviewActivityBar = observer(() => {
 
   return (
     <div
-      data-testid={STUDIO_TEST_ID.PROJECT_OVERVIEW__ACTIVITY_BAR}
+      data-testid={LEGEND_STUDIO_TEST_ID.PROJECT_OVERVIEW__ACTIVITY_BAR}
       className="project-overview__activity-bar"
     >
       <div className="project-overview__activity-bar__items">

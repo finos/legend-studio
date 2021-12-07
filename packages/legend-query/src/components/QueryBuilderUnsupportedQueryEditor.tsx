@@ -34,8 +34,8 @@ const QueryBuilderUnsupportedQueryExplorer = observer(() => (
     </div>
     <div className="panel__content">
       <BlankPanelContent>
-        <div className="unsupported-element-editor__main">
-          <div className="unsupported-element-editor__summary">{`Can't display query in form mode`}</div>
+        <div className="query-builder__unsupported-view__main">
+          <div className="query-builder__unsupported-view__summary">{`Can't display query in form mode`}</div>
         </div>
       </BlankPanelContent>
     </div>
@@ -61,10 +61,10 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
         </div>
         <div className="panel__content">
           <BlankPanelContent>
-            <div className="unsupported-element-editor__main">
-              <div className="unsupported-element-editor__summary">{`Can't display query in form mode ${errorMessage}`}</div>
+            <div className="query-builder__unsupported-view__main">
+              <div className="query-builder__unsupported-view__summary">{`Can't display query in form mode ${errorMessage}`}</div>
               <button
-                className="btn--dark unsupported-element-editor__to-text-mode__btn"
+                className="btn--dark query-builder__unsupported-view__to-text-mode__btn"
                 onClick={openLambdaModal}
               >
                 Edit in text mode

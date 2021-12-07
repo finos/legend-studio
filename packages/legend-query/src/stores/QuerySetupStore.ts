@@ -35,14 +35,18 @@ import type {
   PackageableRuntime,
   Service,
 } from '@finos/legend-graph';
-import { PureSingleExecution, PureMultiExecution } from '@finos/legend-graph';
-import type { QueryStore } from './QueryStore';
+import {
+  QuerySearchSpecification,
+  PureSingleExecution,
+  PureMultiExecution,
+} from '@finos/legend-graph';
+import type { LegendQueryStore } from './LegendQueryStore';
 import { ProjectData } from '@finos/legend-server-depot';
 import type { PackageableElementOption } from '@finos/legend-application';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
-  queryStore: QueryStore;
+  queryStore: LegendQueryStore;
 
   constructor(setupStore: QuerySetupStore) {
     this.setupStore = setupStore;
@@ -102,12 +106,17 @@ export class ExistingQuerySetupState extends QuerySetupState {
     const isValidSearchString = searchText.length >= 3;
     this.loadQueriesState.inProgress();
     try {
+      const searchSpecification = new QuerySearchSpecification();
+      searchSpecification.searchTerm = isValidSearchString
+        ? searchText
+        : undefined;
+      searchSpecification.limit = 10;
+      searchSpecification.showCurrentUserQueriesOnly =
+        this.showCurrentUserQueriesOnly;
       this.queries =
-        (yield this.queryStore.graphManagerState.graphManager.getQueries({
-          search: isValidSearchString ? searchText : undefined,
-          showCurrentUserQueriesOnly: this.showCurrentUserQueriesOnly,
-          limit: 10,
-        })) as LightQuery[];
+        (yield this.queryStore.graphManagerState.graphManager.searchQueries(
+          searchSpecification,
+        )) as LightQuery[];
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -271,10 +280,10 @@ export class ServiceQuerySetupState extends QuerySetupState {
 }
 
 export class QuerySetupStore {
-  queryStore: QueryStore;
+  queryStore: LegendQueryStore;
   querySetupState?: QuerySetupState | undefined;
 
-  constructor(queryStore: QueryStore) {
+  constructor(queryStore: LegendQueryStore) {
     makeAutoObservable(this, {
       queryStore: false,
       setSetupState: action,

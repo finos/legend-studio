@@ -55,6 +55,7 @@ RelationalDatabaseConnection model::MySnowflakePoxy
     nonProxyHosts: 'sample';
     accountType: VPS;
     organization: 'sampleOrganization';
+    role: 'sampleRole';
   };
   auth: SnowflakePublic
   {

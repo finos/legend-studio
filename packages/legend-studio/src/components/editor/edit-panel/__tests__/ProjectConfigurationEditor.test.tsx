@@ -26,7 +26,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../EditorComponentTestUtils';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import type { EditorStore } from '../../../../stores/EditorStore';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
 
@@ -129,14 +129,18 @@ beforeEach(async () => {
     projectDependency: TEST_DATA__DependencyEntities,
   });
   fireEvent.click(renderResult.getByText('config'));
-  const editPanel = renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL_CONTENT);
+  const editPanel = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
+  );
   const updateButton = getByText(editPanel, 'Update');
   expect(updateButton.getAttribute('disabled')).not.toBeNull();
   await waitFor(() => renderResult.getByText('Project Structure'));
 });
 
 test(integrationTest('Test Project Structure'), async () => {
-  const editPanel = renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL_CONTENT);
+  const editPanel = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
+  );
   await waitFor(() => getByText(editPanel, 'PROJECT STRUCTURE VERSION 10.1'));
   await waitFor(() => getByText(editPanel, 'Update to version 11.1'));
   await waitFor(() => getByDisplayValue(editPanel, 'org.finos.legend'));
@@ -145,9 +149,10 @@ test(integrationTest('Test Project Structure'), async () => {
 });
 
 test(integrationTest('Test Project Dependency'), async () => {
-  const editPanel = renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL_CONTENT);
+  const editPanel = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
+  );
   const updateButton = getByText(editPanel, 'Update');
-  expect(updateButton.getAttribute('disabled')).toBeNull();
   fireEvent.click(getByText(editPanel, 'Project Dependencies'));
 
   // dependency 1
@@ -175,6 +180,7 @@ test(integrationTest('Test Project Dependency'), async () => {
           (dep) => dep.hashCode === originalProjDep.hashCode,
         ),
     );
+  expect(updateButton.getAttribute('disabled')).toBeNull();
   expect(projectDependenciesToAdd).toHaveLength(1);
   expect(projectDependenciesToRemove).toHaveLength(1);
   expect((projectDependenciesToAdd[0] as ProjectDependency).projectId).toBe(

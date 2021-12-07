@@ -15,21 +15,18 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.0
         with:
           node-version: 14.x
       - name: Install dependencies
-        working-directory: ./scripts/github-bot
-        # Avoid Yarn failing installation due to modified lock file
-        # See https://github.com/yarnpkg/berry/discussions/3486
-        run: yarn install --no-immutable
+        run: yarn workspaces focus --production @finos/legend-internal-github-bot
       - name: Label new issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

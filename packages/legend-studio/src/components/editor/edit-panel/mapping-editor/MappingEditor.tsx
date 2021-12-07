@@ -51,7 +51,7 @@ import { MappingExplorer } from './MappingExplorer';
 import { MappingTestEditor } from './MappingTestEditor';
 import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingTestsExplorer } from './MappingTestsExplorer';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
@@ -240,7 +240,7 @@ export const MappingEditor = observer(() => {
               disabled={true}
             >
               <div
-                data-testid={STUDIO_TEST_ID.EDITOR__TABS__HEADER}
+                data-testid={LEGEND_STUDIO_TEST_ID.EDITOR__TABS__HEADER}
                 className="mapping-editor__header__tabs"
               >
                 {mappingEditorState.openedTabStates.map((tabState) => (

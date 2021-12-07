@@ -48,7 +48,7 @@ import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil
 import { NewServiceModal } from '../service-editor/NewServiceModal';
 import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
-import { guaranteeType, uniq, isNonNullable } from '@finos/legend-shared';
+import { guaranteeType, uniq } from '@finos/legend-shared';
 import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
   MappingExecutionEmptyInputDataState,
@@ -73,7 +73,7 @@ import {
   RelationalInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSLMapping_StudioPlugin_Extension } from '../../../../stores/DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -172,10 +172,9 @@ const MappingExecutionQueryEditor = observer(
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioPlugin_Extension
           ).getExtraMappingExecutionQueryEditorActionConfigurations?.() ?? [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>{config.renderer(executionState)}</Fragment>
       ));

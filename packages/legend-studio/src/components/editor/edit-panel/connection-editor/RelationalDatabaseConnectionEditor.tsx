@@ -53,8 +53,8 @@ import {
 import { runInAction } from 'mobx';
 import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { StudioPlugin } from '../../../../stores/StudioPlugin';
-import type { StoreRelational_StudioPlugin_Extension } from '../../../../stores/StoreRelational_StudioPlugin_Extension';
+import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin';
+import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
@@ -560,6 +560,14 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             sourceSpec.setAccountType(value)
           }
         />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.role}
+          propertyName="role"
+          update={(value: string | undefined): void =>
+            sourceSpec.setRole(value)
+          }
+        />
         {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}
         <ConnectionEditor_BooleanEditor
           isReadOnly={isReadOnly}
@@ -839,7 +847,7 @@ const RelationalConnectionStoreEditor = observer(
 const renderDatasourceSpecificationEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: StudioPlugin[],
+  plugins: LegendStudioPlugin[],
 ): React.ReactNode => {
   const sourceSpec = connection.datasourceSpecification;
   if (sourceSpec instanceof StaticDatasourceSpecification) {
@@ -888,7 +896,7 @@ const renderDatasourceSpecificationEditor = (
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_StudioPlugin_Extension
+          plugin as StoreRelational_LegendStudioPlugin_Extension
         ).getExtraDatasourceSpecificationEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraDatasourceSpecificationEditorRenderers) {
@@ -905,7 +913,7 @@ const renderDatasourceSpecificationEditor = (
 const renderAuthenticationStrategyEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: StudioPlugin[],
+  plugins: LegendStudioPlugin[],
 ): React.ReactNode => {
   const authSpec = connection.authenticationStrategy;
   if (authSpec instanceof DelegatedKerberosAuthenticationStrategy) {
@@ -940,7 +948,7 @@ const renderAuthenticationStrategyEditor = (
     const extraAuthenticationStrategyEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_StudioPlugin_Extension
+          plugin as StoreRelational_LegendStudioPlugin_Extension
         ).getExtraAuthenticationStrategyEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraAuthenticationStrategyEditorRenderers) {
@@ -986,7 +994,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_StudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioPlugin_Extension
             ).getExtraDatasourceSpecificationTypes?.() ?? [],
         ),
       )
@@ -1014,7 +1022,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_StudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioPlugin_Extension
             ).getExtraAuthenticationStrategyTypes?.() ?? [],
         ),
       )

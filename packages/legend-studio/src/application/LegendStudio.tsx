@@ -18,27 +18,28 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
-import { StudioPluginManager } from './StudioPluginManager';
+import { LegendStudioPluginManager } from './LegendStudioPluginManager';
 import type {
   LegendApplicationConfig,
+  LegendApplicationLogger,
   LegendApplicationVersionData,
 } from '@finos/legend-application';
 import {
+  ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
 } from '@finos/legend-application';
-import type { Log } from '@finos/legend-shared';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
-import type { StudioConfigurationData } from './StudioConfig';
-import { StudioConfig } from './StudioConfig';
+import type { LegendStudioConfigurationData } from './LegendStudioConfig';
+import { LegendStudioConfig } from './LegendStudioConfig';
 
 const setupLegendStudioUILibrary = async (
-  pluginManager: StudioPluginManager,
-  log: Log,
+  pluginManager: LegendStudioPluginManager,
+  logger: LegendApplicationLogger,
 ): Promise<void> => {
-  await setupLegendApplicationUILibrary(pluginManager, log);
+  await setupLegendApplicationUILibrary(pluginManager, logger);
 
   configureReactHotkeys({
     // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
@@ -56,26 +57,26 @@ const setupLegendStudioUILibrary = async (
 };
 
 export class LegendStudio extends LegendApplication {
-  declare config: StudioConfig;
-  declare pluginManager: StudioPluginManager;
+  declare config: LegendStudioConfig;
+  declare pluginManager: LegendStudioPluginManager;
 
   static create(): LegendStudio {
-    const application = new LegendStudio(StudioPluginManager.create());
+    const application = new LegendStudio(LegendStudioPluginManager.create());
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
     return application;
   }
 
   async configureApplication(
-    configData: StudioConfigurationData,
+    configData: LegendStudioConfigurationData,
     versionData: LegendApplicationVersionData,
     baseUrl: string,
   ): Promise<LegendApplicationConfig> {
-    return new StudioConfig(configData, versionData, baseUrl);
+    return new LegendStudioConfig(configData, versionData, baseUrl);
   }
 
   async loadApplication(): Promise<void> {
     // Setup React application libraries
-    await setupLegendStudioUILibrary(this.pluginManager, this.log);
+    await setupLegendStudioUILibrary(this.pluginManager, this.logger);
 
     // Render React application
     ReactDOM.render(
@@ -84,11 +85,15 @@ export class LegendStudio extends LegendApplication {
       // See https://github.com/mobxjs/mobx-react-lite/issues/53
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
-          <LegendStudioApplication
+          <ApplicationStoreProvider
             config={this.config}
             pluginManager={this.pluginManager}
-            log={this.log}
-          />
+          >
+            <LegendStudioApplication
+              config={this.config}
+              pluginManager={this.pluginManager}
+            />
+          </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
       getRootElement(),

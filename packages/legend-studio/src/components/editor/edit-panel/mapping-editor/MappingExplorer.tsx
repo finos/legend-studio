@@ -49,7 +49,7 @@ import {
   FaChevronDown,
   FaFilter,
 } from 'react-icons/fa';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
@@ -306,16 +306,16 @@ export const MappingElementExplorer = observer(
   },
 );
 
-type MappingElementTreeNodeContainerProps = TreeNodeContainerProps<
-  MappingExplorerTreeNodeData,
-  {
-    isReadOnly: boolean;
-    onNodeExpand: (node: MappingExplorerTreeNodeData) => void;
-  }
->;
-
 const MappingElementTreeNodeContainer = observer(
-  (props: MappingElementTreeNodeContainerProps) => {
+  (
+    props: TreeNodeContainerProps<
+      MappingExplorerTreeNodeData,
+      {
+        isReadOnly: boolean;
+        onNodeExpand: (node: MappingExplorerTreeNodeData) => void;
+      }
+    >,
+  ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const { isReadOnly, onNodeExpand } = innerProps;
     const mappingElement = node.mappingElement;
@@ -483,7 +483,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
 
   return (
     <div
-      data-testid={STUDIO_TEST_ID.MAPPING_EXPLORER}
+      data-testid={LEGEND_STUDIO_TEST_ID.MAPPING_EXPLORER}
       className="panel mapping-explorer"
     >
       <div className="panel__header">

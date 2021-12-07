@@ -145,6 +145,7 @@ export * from './helpers/MappingHelper';
 export * from './helpers/MappingResolutionHelper';
 export * from './helpers/ValidationHelper';
 export * from './helpers/Stubable'; // TODO: to be removed
+export * from './helpers/DomainHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
@@ -179,6 +180,7 @@ export {
 export * from './graphManager/action/execution/ExecutionResultHelper';
 export * from './graphManager/PureGraphManagerPlugin';
 export * from './graphManager/action/query/Query';
+export * from './graphManager/action/query/QuerySearchSpecification';
 export * from './graphManager/action/EngineError';
 export * from './graphManager/action/SourceInformationHelper';
 export * from './graphManager/action/generation/ImportConfigurationDescription';
@@ -217,10 +219,7 @@ export { V1_rawLambdaModelSchema } from './models/protocols/pure/v1/transformati
 export { V1_transformPropertyReference } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_MappingTransformer';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
-export {
-  V1_pureModelContextDataPropSchema,
-  V1_deserializePureModelContextData as V1_jsonToPureModelContextData,
-} from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
+export { V1_deserializePureModelContextData as V1_jsonToPureModelContextData } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
 export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrSchema,

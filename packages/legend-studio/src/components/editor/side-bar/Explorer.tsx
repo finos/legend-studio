@@ -53,7 +53,7 @@ import {
 } from './CreateNewElementModal';
 import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtil';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
@@ -61,7 +61,7 @@ import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerati
 import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerationTreeUtil';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
-import { isNonNullable, toTitleCase } from '@finos/legend-shared';
+import { toTitleCase } from '@finos/legend-shared';
 import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
@@ -74,7 +74,7 @@ import {
   isValidPath,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;
@@ -182,7 +182,7 @@ const ExplorerContextMenu = observer(
   ) => {
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore<StudioConfig>();
+    const applicationStore = useApplicationStore<LegendStudioConfig>();
     const extraExplorerContextMenuItems = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
@@ -190,7 +190,6 @@ const ExplorerContextMenu = observer(
           plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
           [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>
           {config.renderer(editorStore, node?.packageableElement)}
@@ -263,7 +262,7 @@ const ExplorerContextMenu = observer(
 
     if (_package && !isReadOnly) {
       return (
-        <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+        <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
           {elementTypes.map((type) => (
             <MenuContentItem key={type} onClick={createNewElement(type)}>
               <MenuContentItemIcon>
@@ -288,7 +287,7 @@ const ExplorerContextMenu = observer(
       );
     }
     return (
-      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {extraExplorerContextMenuItems}
         {!isReadOnly && node && (
           <>
@@ -350,13 +349,13 @@ const ProjectConfig = observer(() => {
   );
 });
 
-type PackageTreeNodeContainerProps = TreeNodeContainerProps<
-  PackageTreeNodeData,
-  { disableContextMenu: boolean; isContextImmutable?: boolean }
->;
-
 const PackageTreeNodeContainer = observer(
-  (props: PackageTreeNodeContainerProps) => {
+  (
+    props: TreeNodeContainerProps<
+      PackageTreeNodeData,
+      { disableContextMenu: boolean; isContextImmutable?: boolean }
+    >,
+  ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const editorStore = useEditorStore();
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
@@ -473,7 +472,7 @@ const ExplorerDropdownMenu = observer(
       );
 
     return (
-      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {elementTypes.map((type) => (
           <MenuContentItem key={type} onClick={createNewElement(type)}>
             <MenuContentItemIcon>
@@ -577,7 +576,7 @@ const ExplorerTrees = observer(() => {
       content={<ExplorerContextMenu />}
       menuProps={{ elevation: 7 }}
     >
-      <div data-testid={STUDIO_TEST_ID.EXPLORER_TREES}>
+      <div data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_TREES}>
         {editorStore.explorerTreeState.buildState.hasCompleted &&
           showPackageTrees && (
             <>

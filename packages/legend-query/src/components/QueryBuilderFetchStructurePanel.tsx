@@ -30,8 +30,8 @@ const QueryBuilderUnsupportedFetchStructure = observer(
     return (
       <div className="panel__content">
         <BlankPanelContent>
-          <div className="unsupported-element-editor__main">
-            <div className="unsupported-element-editor__summary">{`Unsupported fetch structure mode ${prettyCONSTName(
+          <div className="query-builder__unsupported-view__main">
+            <div className="query-builder__unsupported-view__summary">{`Unsupported fetch structure mode ${prettyCONSTName(
               mode,
             )}`}</div>
           </div>
@@ -79,7 +79,7 @@ export const QueryBuilderFetchStructurePanel = observer(
         if (fetchStructureState.fetchStructureMode !== fetchMode) {
           fetchStructureState.setFetchStructureMode(fetchMode);
           // TODO: might want to add alert modal to alert user changing fetch structure resets state
-          queryBuilderState.resetData();
+          queryBuilderState.changeFetchStructure();
         }
       };
 

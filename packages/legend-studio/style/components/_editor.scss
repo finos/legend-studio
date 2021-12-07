@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../mixins' as *;
+@use 'mixins' as *;
 
 @forward 'editor/activity-bar';
 @forward 'editor/status-bar';

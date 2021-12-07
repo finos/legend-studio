@@ -38,179 +38,60 @@ import {
 } from '@finos/legend-server-depot';
 import type { ApplicationStore } from '@finos/legend-application';
 import {
+  TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,
   WebApplicationNavigator,
 } from '@finos/legend-application';
-import { QueryStore } from '../stores/QueryStore';
+import { LegendQueryStore } from '../stores/LegendQueryStore';
 import { TEST__getTestQueryConfig } from '../stores/QueryStoreTestUtils';
-import { QueryStoreProvider } from './QueryStoreProvider';
-import { QueryPluginManager } from '../application/QueryPluginManager';
+import { LegendQueryStoreProvider } from './LegendQueryStoreProvider';
+import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
 import { ExistingQueryLoader } from './QueryEditor';
 import { generateExistingQueryRoute } from '../stores/LegendQueryRouter';
 import { flowResult } from 'mobx';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import type { QueryConfig } from '../application/QueryConfig';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 import type { Entity } from '@finos/legend-model-storage';
 
-// const TEST_DATA__simpleModelEntities = [
-//   {
-//     path: 'model::Person',
-//     content: {
-//       _type: 'class',
-//       name: 'Person',
-//       package: 'model',
-//       properties: [
-//         {
-//           multiplicity: {
-//             lowerBound: 1,
-//             upperBound: 1,
-//           },
-//           name: 'name',
-//           type: 'String',
-//         },
-//       ],
-//     },
-//     classifierPath: 'meta::pure::metamodel::type::Class',
-//   },
-//   {
-//     path: 'model::MyMapping',
-//     content: {
-//       _type: 'mapping',
-//       classMappings: [
-//         {
-//           _type: 'pureInstance',
-//           class: 'model::Person',
-//           propertyMappings: [
-//             {
-//               _type: 'purePropertyMapping',
-//               property: {
-//                 class: 'model::Person',
-//                 property: 'name',
-//               },
-//               source: '',
-//               transform: {
-//                 _type: 'lambda',
-//                 body: [
-//                   {
-//                     _type: 'property',
-//                     parameters: [
-//                       {
-//                         _type: 'var',
-//                         name: 'src',
-//                       },
-//                     ],
-//                     property: 'name',
-//                   },
-//                 ],
-//                 parameters: [],
-//               },
-//             },
-//           ],
-//           root: true,
-//           srcClass: 'model::Person',
-//         },
-//       ],
-//       enumerationMappings: [],
-//       includedMappings: [],
-//       name: 'MyMapping',
-//       package: 'model',
-//       tests: [],
-//     },
-//     classifierPath: 'meta::pure::mapping::Mapping',
-//   },
-//   {
-//     path: 'model::MyRuntime',
-//     content: {
-//       _type: 'runtime',
-//       name: 'MyRuntime',
-//       package: 'model',
-//       runtimeValue: {
-//         _type: 'engineRuntime',
-//         connections: [
-//           {
-//             store: {
-//               path: 'ModelStore',
-//               type: 'STORE',
-//             },
-//             storeConnections: [
-//               {
-//                 connection: {
-//                   _type: 'JsonModelConnection',
-//                   class: 'model::Person',
-//                   url: 'data:application/json,%7B%7D',
-//                 },
-//                 id: 'connection_1',
-//               },
-//             ],
-//           },
-//         ],
-//         mappings: [
-//           {
-//             path: 'model::MyMapping',
-//             type: 'MAPPING',
-//           },
-//         ],
-//       },
-//     },
-//     classifierPath: 'meta::pure::runtime::PackageableRuntime',
-//   },
-// ];
-
-// const TEST_DATA__simpleQuery = {
-//   _type: 'lambda',
-//   body: [
-//     {
-//       _type: 'func',
-//       function: 'getAll',
-//       parameters: [
-//         {
-//           _type: 'packageableElementPtr',
-//           fullPath: 'model::Person',
-//         },
-//       ],
-//     },
-//   ],
-//   parameters: [],
-// };
-
-// const TEST_DATA__simpleQueryGrammarText = 'model::Person.all()';
-
-export const TEST__QueryStoreProvider = ({
-  children,
-}: {
+export const TEST__LegendQueryStoreProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => (
-  <QueryStoreProvider pluginManager={QueryPluginManager.create()}>
+}> = ({ children }) => (
+  <LegendQueryStoreProvider pluginManager={LegendQueryPluginManager.create()}>
     {children}
-  </QueryStoreProvider>
+  </LegendQueryStoreProvider>
 );
 
-export const TEST__provideMockedQueryStore = (customization?: {
-  mock?: QueryStore;
-  applicationStore?: ApplicationStore<QueryConfig>;
+export const TEST__provideMockedLegendQueryStore = (customization?: {
+  mock?: LegendQueryStore;
+  applicationStore?: ApplicationStore<LegendQueryConfig>;
   depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
-  pluginManager?: QueryPluginManager;
-}): QueryStore => {
+  pluginManager?: LegendQueryPluginManager;
+}): LegendQueryStore => {
+  const pluginManager =
+    customization?.pluginManager ?? LegendQueryPluginManager.create();
   const value =
     customization?.mock ??
-    new QueryStore(
+    new LegendQueryStore(
       customization?.applicationStore ??
-        TEST__getTestApplicationStore(TEST__getTestQueryConfig()),
+        TEST__getTestApplicationStore(
+          TEST__getTestQueryConfig(),
+          pluginManager,
+        ),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
       customization?.graphManagerState ??
         TEST__getTestGraphManagerState(customization?.pluginManager),
-      customization?.pluginManager ?? QueryPluginManager.create(),
+      pluginManager,
     );
-  const MockedQueryStoreProvider = require('./QueryStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedQueryStoreProvider.useQueryStore = jest.fn();
-  MockedQueryStoreProvider.useQueryStore.mockReturnValue(value);
+  const MockedQueryStoreProvider = require('./LegendQueryStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MockedQueryStoreProvider.useLegendQueryStore = jest.fn();
+  MockedQueryStoreProvider.useLegendQueryStore.mockReturnValue(value);
   return value;
 };
 
 export const TEST__setUpQueryEditor = async (
-  mockedQueryStore: QueryStore,
+  mockedQueryStore: LegendQueryStore,
   entities: Entity[],
   lambda: RawLambda,
   mappingPath: string,
@@ -280,18 +161,21 @@ export const TEST__setUpQueryEditor = async (
   const history = createMemoryHistory({
     initialEntries: [generateExistingQueryRoute(lightQuery.id)],
   });
-  mockedQueryStore.applicationStore.navigator = new WebApplicationNavigator(
-    history,
-  );
+  const navigator = new WebApplicationNavigator(history);
+  mockedQueryStore.applicationStore.navigator = navigator;
+  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
 
   const renderResult = render(
     <Router history={history}>
-      <TEST__ApplicationStoreProvider config={TEST__getTestQueryConfig()}>
+      <TEST__ApplicationStoreProvider
+        config={TEST__getTestQueryConfig()}
+        pluginManager={LegendQueryPluginManager.create()}
+      >
         <TEST__DepotServerClientProvider>
           <TEST__GraphManagerStateProvider>
-            <TEST__QueryStoreProvider>
+            <TEST__LegendQueryStoreProvider>
               <ExistingQueryLoader />
-            </TEST__QueryStoreProvider>
+            </TEST__LegendQueryStoreProvider>
           </TEST__GraphManagerStateProvider>
         </TEST__DepotServerClientProvider>
       </TEST__ApplicationStoreProvider>

@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 0.0.12
+
+## 0.0.11
+
+## 0.0.10
+
 ## 0.0.9
 
 ### Patch Changes

@@ -17,7 +17,6 @@
 import packageJson from '../../package.json';
 import { Text } from '../models/metamodels/pure/model/packageableElements/text/Text';
 import type {
-  GraphPluginManager,
   PackageableElement,
   PureGrammarElementLabeler,
 } from '@finos/legend-graph';
@@ -29,10 +28,6 @@ const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
 export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
   }
 
   override getExtraPureGrammarParserNames(): string[] {

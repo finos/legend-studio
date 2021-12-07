@@ -15,7 +15,7 @@
  */
 
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import { assertErrorThrown, LogEvent, ActionState } from '@finos/legend-shared';
@@ -30,7 +30,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import type { StudioConfig } from '../application/StudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -69,7 +69,7 @@ export interface WorkspaceIdentifier {
 }
 
 export class SetupStore {
-  applicationStore: ApplicationStore<StudioConfig>;
+  applicationStore: ApplicationStore<LegendStudioConfig>;
   sdlcServerClient: SDLCServerClient;
 
   currentProjectId?: string | undefined;
@@ -85,7 +85,7 @@ export class SetupStore {
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<StudioConfig>,
+    applicationStore: ApplicationStore<LegendStudioConfig>,
     sdlcServerClient: SDLCServerClient,
   ) {
     makeAutoObservable(this, {
@@ -190,7 +190,9 @@ export class SetupStore {
                 } projects: ${error.message}`,
               );
               this.applicationStore.log.error(
-                LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+                LogEvent.create(
+                  LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE,
+                ),
                 wrappedError,
               );
               this.applicationStore.notifyError(wrappedError);
@@ -208,7 +210,7 @@ export class SetupStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -350,7 +352,7 @@ export class SetupStore {
       assertErrorThrown(error);
       // TODO handle error when fetching workspaces for an individual project
       this.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE),
         error,
       );
     } finally {
@@ -401,7 +403,7 @@ export class SetupStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);

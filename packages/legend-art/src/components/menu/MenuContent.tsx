@@ -20,7 +20,7 @@ import clsx from 'clsx';
 export const MenuContent = forwardRef<
   HTMLDivElement,
   { className?: string; children: React.ReactNode }
->((props, ref) => {
+>(function MenuContent(props, ref) {
   const { className, children, ...otherProps } = props;
   return (
     <div ref={ref} className={clsx('menu', className)} {...otherProps}>
@@ -29,21 +29,21 @@ export const MenuContent = forwardRef<
   );
 });
 
-MenuContent.displayName = 'MenuContent';
-
 export const MenuContentItem: React.FC<{
   className?: string;
+  disabled?: boolean;
   onClick?: () => void;
 }> = (props) => {
-  const { className, onClick, children, ...otherProps } = props;
+  const { className, onClick, disabled, children, ...otherProps } = props;
   return (
-    <div
+    <button
       className={clsx('menu__item', className)}
+      disabled={Boolean(disabled)}
       onClick={onClick}
       {...otherProps}
     >
       {children}
-    </div>
+    </button>
   );
 };
 

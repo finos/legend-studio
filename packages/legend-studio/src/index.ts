@@ -15,18 +15,18 @@
  */
 
 // application
-export * from './components/StudioStoreProvider';
+export * from './components/LegendStudioStoreProvider';
 export * from './application/LegendStudio';
-export * from './application/StudioConfig';
-export * from './application/StudioPluginManager';
+export * from './application/LegendStudioConfig';
+export * from './application/LegendStudioPluginManager';
 export {
   LEGEND_STUDIO_PATH_PARAM_TOKEN,
   generateRoutePatternWithSDLCServerKey,
 } from './stores/LegendStudioRouter';
-export { STUDIO_LOG_EVENT } from './stores/StudioLogEvent';
+export { LEGEND_STUDIO_LOG_EVENT_TYPE } from './stores/LegendStudioLogEvent';
 
 // stores
-export * from './stores/StudioPlugin';
+export * from './stores/LegendStudioPlugin';
 export * from './stores/EditorStore';
 export * from './stores/EditorConfig';
 export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState';
@@ -40,13 +40,13 @@ export {
   TypeDragSource,
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
-export * from './stores/DSLMapping_StudioPlugin_Extension';
+export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
+export * from './stores/DSLService_LegendStudioPlugin_Extension';
 
 // components
 export * from './components/editor/EditorStoreProvider';
-export * from './components/shared/AppHeader';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor';
-export { AppHeaderMenu } from './components/editor/header/AppHeaderMenu';
+export { LegendStudioAppHeaderMenu } from './components/editor/header/LegendStudioAppHeaderMenu';
 export { TypeTree } from './components/shared/TypeTree';
 export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor';
 
@@ -57,7 +57,7 @@ export {
   TEST__setUpEditorWithDefaultSDLCData,
   TEST__openElementFromExplorerTree,
 } from './components/EditorComponentTestUtils';
-export { STUDIO_TEST_ID } from './components/StudioTestID';
+export * from './components/LegendStudioTestID';
 export * from './stores/EditorStoreTestUtils';
 
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
@@ -77,9 +77,11 @@ export {
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor';
-export * from './stores/DSLGenerationSpecification_StudioPlugin_Extension';
+export * from './stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
-export * from './stores/StoreRelational_StudioPlugin_Extension';
+export * from './stores/StoreRelational_LegendStudioPlugin_Extension';
 
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal';
+export { GenerationFile } from './stores/shared/FileGenerationTreeUtil';
+export { FileGenerationState } from './stores/editor-state/FileGenerationState';

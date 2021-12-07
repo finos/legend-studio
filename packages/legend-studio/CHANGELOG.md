@@ -1,12 +1,56 @@
 # @finos/legend-studio
 
+## 2.1.1
+
+## 2.1.0
+
+### Minor Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - The abstract plugin now has a default generic `install` method which just registers the plugin to the compatible plugin manager, this saves plugin author some time and code when implementing plugins.
+
+* [#640](https://github.com/finos/legend-studio/pull/640) [`b5ce0f99`](https://github.com/finos/legend-studio/commit/b5ce0f995b0e512b5cc3e19aebc75654ff9c24b0) ([@CptTeddy](https://github.com/CptTeddy)) - Added extension mechanism for actions in file generation output viewer. Also added an extension mechanism for file generation type vs. element type matrix (i.e. which element types work with which generation type); \_previously, we only allow `Class` and `Enumeration`.
+
+### Patch Changes
+
+- [#716](https://github.com/finos/legend-studio/pull/716) [`79176bcf`](https://github.com/finos/legend-studio/commit/79176bcfd614d580e15ec1b16abfceb02a1a03e1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `Join` owner as the database owner when dragging join into `RelationalPropertyMappingEditor` ([#651](https://github.com/finos/legend-studio/issues/651)).
+
+* [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - Rework file generation scope filter: the filter will only be activated if the generation type matches. We now also show all generation types in viewer mode dropdown and disable the ones that are not applicable to the currently viewed element.
+
+- [#706](https://github.com/finos/legend-studio/pull/706) [`1c421e43`](https://github.com/finos/legend-studio/commit/1c421e4373a2d8258ac35d0c330487f63f3e6d15) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Sort workflow `jobs` by creation date.
+
+* [#712](https://github.com/finos/legend-studio/pull/712) [`02fbbcf8`](https://github.com/finos/legend-studio/commit/02fbbcf810554addbbc47c1d29b11af00a134db7) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for role in `Snowflake` connection
+
+## 2.0.2
+
+### Patch Changes
+
+- [#700](https://github.com/finos/legend-studio/pull/700) [`2063cc76`](https://github.com/finos/legend-studio/commit/2063cc76fb27d65f4e287041014ab347a80b4663) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering generated file with no content in file generation editor.
+
+* [#701](https://github.com/finos/legend-studio/pull/701) [`c4039cfc`](https://github.com/finos/legend-studio/commit/c4039cfc3efe33d720da040d96dbf4564b8c5a26) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fetch depot projects for dependencies only in dependency tab in the config editor.
+
+## 2.0.1
+
+## 2.0.0
+
+### Major Changes
+
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - Moved `AppHeader` component to `@finos/legend-application`, renamed `AppHeaderMenu` to `LegendStudioAppHeaderMenu`.
+
+* [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename the enum `STUDIO_LOG_EVENT` to `LEGEND_STUDIO_LOG_EVENT_TYPE`, `STUDIO_HOTKEY` to `LEGEND_STUDIO_HOTKEY`, and `STUDIO_TEST_ID` to `LEGEND_STUDIO_TEST_ID`.
+
+### Patch Changes
+
+- [#663](https://github.com/finos/legend-studio/pull/663) [`44115178`](https://github.com/finos/legend-studio/commit/44115178fa3bad5d3f2225aa8b1330e89f721993) ([@gayathrir11](https://github.com/gayathrir11)) - Fix bug in `FileGenerationEditor` not resetting while changing elements ([#142](https://github.com/finos/legend-studio/issues/142)]).
+
+* [#685](https://github.com/finos/legend-studio/pull/685) [`1ae0553b`](https://github.com/finos/legend-studio/commit/1ae0553b7af88217a8642492cab2252a589ab091) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `StudioPlugin` to `LegendStudioPlugin`. This change applies for other extension-related classes as well, e.g. `LegendStudioPluginManager`, `*_LegendStudioPreset`, `*_LegendStudioPlugin`, etc.
+
 ## 1.0.0
 
 ### Major Changes
 
 - [#642](https://github.com/finos/legend-studio/pull/642) [`729e248`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** The handling of multiple SDLC instances has been reworked, to target a specific server option in the config, the URL must now include an additional prefix `sdlc-` to the server key, for example, `/studio/myServer/...` now becomes `/studio/sdlc-myServer/...`. On the config side, when `sdlc` field is configured with a list of option, we expect exactly one option to declare `default: true` and this would be used to the default option - _the old behavior is that the default option is the one with key of value `-`_.
 
-* [#659](https://github.com/finos/legend-studio/pull/659) [`caf3d4aa`](https://github.com/finos/legend-studio/commit/caf3d4aa3a98ca109cabb525eeb7d8615def7343) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Genericize `Studio` plugin methods to generate `Edit Query` buttons to generate any query editor action: i.e. `MappingExecutionQueryEditorRendererConfiguration -> MappingExecutionQueryEditorActionConfiguration`, etc.
+* [#659](https://github.com/finos/legend-studio/pull/659) [`caf3d4aa`](https://github.com/finos/legend-studio/commit/caf3d4aa3a98ca109cabb525eeb7d8615def7343) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Generalize `Studio` plugin methods to generate `Edit Query` buttons to generate any query editor action: i.e. `MappingExecutionQueryEditorRendererConfiguration -> MappingExecutionQueryEditorActionConfiguration`, etc.
 
 - [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update the shape of `ApplicationPageRenderEntry` to take a unique `key` and multiple `urlPatterns`. Also, we nolonger automatically decorate the pattern to pick up the SDLC instance anymore, so plugin authors who need this will need to manually modify their URL patterns with the function `generateRoutePatternWithSDLCServerKey()` that we now expose.
 
@@ -182,7 +226,7 @@
 
 ### Patch Changes
 
-- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) ([@akphi](https://github.com/akphi)) - Genericize `LambdaEditor` so it nolonger depends on `EditorStore` and can be used between different Legend applications.
+- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) ([@akphi](https://github.com/akphi)) - Generalize `LambdaEditor` so it nolonger depends on `EditorStore` and can be used between different Legend applications.
 
 ## 0.2.6
 

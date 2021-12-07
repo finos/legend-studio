@@ -29,11 +29,11 @@ import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
-import { STUDIO_TEST_ID } from '../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import {
   ACTIVITY_MODE,
-  STUDIO_HOTKEY,
-  STUDIO_HOTKEY_MAP,
+  LEGEND_STUDIO_HOTKEY,
+  LEGEND_STUDIO_HOTKEY_MAP,
 } from '../../stores/EditorConfig';
 import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
@@ -48,8 +48,7 @@ import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
 import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { flowResult } from 'mobx';
 import {
@@ -57,16 +56,17 @@ import {
   useEditorStore,
 } from '../editor/EditorStoreProvider';
 import {
+  AppHeader,
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
   const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const latestVersion = viewerStore.onLatestVersion;
   const currentRevision = viewerStore.onCurrentRevision;
   const extraSDLCInfo = params.revisionId ?? params.versionId ?? 'HEAD';
@@ -94,7 +94,7 @@ const ViewerStatusBar = observer(() => {
 
   return (
     <div
-      data-testid={STUDIO_TEST_ID.STATUS_BAR}
+      data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
       className="editor__status-bar viewer__status-bar"
     >
       <div className="editor__status-bar__left">
@@ -209,20 +209,23 @@ export const ViewerInner = observer(() => {
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
   // Hotkeys
   const keyMap = {
-    [STUDIO_HOTKEY.OPEN_ELEMENT]: [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
-    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
+    [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: [
+      LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT,
+    ],
+    [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [
+      LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE,
+    ],
   };
   const handlers = {
-    [STUDIO_HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(() =>
-      editorStore.searchElementCommandState.open(),
+    [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(
+      () => editorStore.searchElementCommandState.open(),
     ),
-    [STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: editorStore.createGlobalHotKeyAction(
-      () => {
+    [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]:
+      editorStore.createGlobalHotKeyAction(() => {
         flowResult(editorStore.toggleTextMode()).catch(
           applicationStore.alertIllegalUnhandledError,
         );
-      },
-    ),
+      }),
   };
 
   useEffect(() => {
@@ -246,7 +249,7 @@ export const ViewerInner = observer(() => {
   return (
     <div className="app__page">
       <AppHeader>
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="editor viewer">

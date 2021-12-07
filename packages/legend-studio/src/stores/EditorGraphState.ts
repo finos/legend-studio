@@ -32,7 +32,7 @@ import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   EntityChange,
@@ -93,7 +93,7 @@ import {
   ActionAlertType,
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
-import type { DSLMapping_StudioPlugin_Extension } from './DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -1091,7 +1091,7 @@ export class EditorGraphState {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementTypeGetters?.() ?? [],
       );
     for (const labelGetter of extraElementTypeLabelGetters) {
@@ -1130,7 +1130,7 @@ export class EditorGraphState {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioPlugin_Extension
           ).getExtraSetImplementationClassifiers?.() ?? [],
       );
     for (const Classifier of extraSetImplementationClassifiers) {

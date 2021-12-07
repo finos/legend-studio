@@ -43,23 +43,23 @@ import {
   generateViewProjectRoute,
   generateEditorRoute,
 } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
 import {
+  AppHeader,
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const currentUserId =
     editorStore.sdlcServerClient.currentUser?.userId ?? '(unknown)';
   const currentProject = reviewStore.currentProject
@@ -210,7 +210,7 @@ const ReviewInner = observer(() => {
   return (
     <div className="app__page">
       <AppHeader>
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="review">

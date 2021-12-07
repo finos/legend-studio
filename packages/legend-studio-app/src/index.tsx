@@ -15,29 +15,34 @@
  */
 
 import { LegendStudio } from '@finos/legend-studio';
-import { QueryBuilder_StudioPreset } from '@finos/legend-studio-extension-query-builder';
-import { DSLText_StudioPreset } from '@finos/legend-extension-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
-import { BrowserConsole } from '@finos/legend-shared';
-import { DSLDiagram_StudioPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLSerializer_StudioPreset } from '@finos/legend-extension-dsl-serializer';
-import { DSLDataSpace_StudioPreset } from '@finos/legend-extension-dsl-data-space';
-import { ESService_StudioPreset } from '@finos/legend-extension-external-store-service';
+import { WebConsole } from '@finos/legend-shared';
+import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
+import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
+import { DSLText_LegendStudioPlugin } from '@finos/legend-extension-dsl-text';
+import { DSLDiagram_LegendStudioPlugin } from '@finos/legend-extension-dsl-diagram';
+import { DSLSerializer_LegendStudioPlugin } from '@finos/legend-extension-dsl-serializer';
+import { DSLDataSpace_LegendStudioPlugin } from '@finos/legend-extension-dsl-data-space';
+import { ESService_LegendStudioPlugin } from '@finos/legend-extension-external-store-service';
+import { ELMorphir_LegendStudioPlugin } from '@finos/legend-extension-external-language-morphir';
 
-export class LegendStudioApplication {
+export class LegendStudioWebApplication {
   static run(baseUrl: string): void {
     LegendStudio.create()
       .setup({ baseUrl })
       .withPresets([
-        new DSLText_StudioPreset(),
-        new DSLDiagram_StudioPreset(),
-        new DSLDataSpace_StudioPreset(),
-        new EFJSONSchema_GraphPreset(),
-        new QueryBuilder_StudioPreset(),
-        new DSLSerializer_StudioPreset(),
-        new ESService_StudioPreset(),
+        ...getLegendGraphExtensionCollection(),
+        new QueryBuilder_LegendStudioPreset(),
       ])
-      .withLoggers([new BrowserConsole()])
+      .withPlugins([
+        new DSLText_LegendStudioPlugin(),
+        new DSLDiagram_LegendStudioPlugin(),
+        new DSLDataSpace_LegendStudioPlugin(),
+        new DSLSerializer_LegendStudioPlugin(),
+        new ESService_LegendStudioPlugin(),
+        new ELMorphir_LegendStudioPlugin(),
+        // loggers
+        new WebConsole(),
+      ])
       .start()
       .catch((e: unknown) => {
         throw e;

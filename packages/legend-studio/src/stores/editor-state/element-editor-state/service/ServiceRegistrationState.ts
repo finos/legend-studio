@@ -29,11 +29,11 @@ import {
   getNullableFirstElement,
   assertTrue,
 } from '@finos/legend-shared';
-import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
 import { Version } from '@finos/legend-server-sdlc';
 import type { ServiceRegistrationResult } from '@finos/legend-graph';
 import { ServiceExecutionMode } from '@finos/legend-graph';
-import { ServiceRegistrationEnvInfo } from '../../../../application/StudioConfig';
+import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioConfig';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
@@ -231,7 +231,9 @@ export class ServiceRegistrationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_REGISTRATION_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_REGISTRATION_FAILURE,
+        ),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

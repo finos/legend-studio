@@ -51,12 +51,12 @@ import {
   CreateQueryInfoState,
   ExistingQueryInfoState,
   ServiceQueryInfoState,
-} from '../stores/QueryStore';
+} from '../stores/LegendQueryStore';
 import {
   QuerySetupStoreProvider,
   useQuerySetupStore,
 } from './QuerySetupStoreProvider';
-import { useQueryStore } from './QueryStoreProvider';
+import { useLegendQueryStore } from './LegendQueryStoreProvider';
 import type { ProjectData } from '@finos/legend-server-depot';
 import {
   LATEST_VERSION_ALIAS,
@@ -81,7 +81,7 @@ const ExistingQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const querySearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
     const back = (): void => {
@@ -286,7 +286,7 @@ const ServiceQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
@@ -527,7 +527,7 @@ const CreateQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
@@ -808,7 +808,7 @@ const CreateQuerySetup = observer(
 
 const QuerySetupLandingPage = observer(() => {
   const setupStore = useQuerySetupStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const extraQuerySetupOptions = queryStore.pluginManager
     .getQueryPlugins()
     .flatMap(
@@ -881,7 +881,7 @@ const QuerySetupLandingPage = observer(() => {
 
 const QuerySetupInner = observer(() => {
   const setupStore = useQuerySetupStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const querySetupState = setupStore.querySetupState;
   const renderQuerySetupScreen = (
     setupState: QuerySetupState,

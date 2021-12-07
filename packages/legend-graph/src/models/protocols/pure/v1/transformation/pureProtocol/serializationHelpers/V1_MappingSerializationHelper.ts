@@ -577,7 +577,7 @@ function V1_serializeClassMapping(
   } else if (value instanceof V1_AggregationAwareClassMapping) {
     return serialize(aggregationAwareClassMappingModelSchema, value);
   }
-  if (plugins !== undefined) {
+  if (plugins) {
     const extraClassMappingSerializers = plugins.flatMap(
       (plugin) =>
         (
@@ -615,7 +615,7 @@ function V1_deserializeClassMapping(
     case V1_ClassMappingType.AGGREGATION_AWARE:
       return deserialize(aggregationAwareClassMappingModelSchema, json);
     default: {
-      if (plugins !== undefined) {
+      if (plugins) {
         const extraClassMappingDeserializers = plugins.flatMap(
           (plugin) =>
             (
@@ -1007,18 +1007,8 @@ export const V1_mappingModelSchema = (
     ),
     classMappings: list(
       custom(
-        (val) => {
-          if (plugins !== undefined) {
-            return V1_serializeClassMapping(val, plugins);
-          }
-          return V1_serializeClassMapping(val);
-        },
-        (val) => {
-          if (plugins !== undefined) {
-            return V1_deserializeClassMapping(val, plugins);
-          }
-          return V1_deserializeClassMapping(val);
-        },
+        (val) => V1_serializeClassMapping(val, plugins),
+        (val) => V1_deserializeClassMapping(val, plugins),
       ),
     ),
     enumerationMappings: list(

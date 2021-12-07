@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
@@ -69,7 +69,7 @@ import {
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type {
   GenerationProperty,
@@ -85,6 +85,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -226,7 +227,23 @@ export const GenerationResultViewer = observer(
     const regenerate = applicationStore.guaranteeSafeAction(() =>
       flowResult(fileGenerationState.generate()),
     );
-
+    const extraFileGenerationResultViewerActions =
+      fileNode instanceof GenerationFile
+        ? fileGenerationState.editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+                ).getExtraFileGenerationResultViewerActionConfigurations?.() ??
+                [],
+            )
+            .map((config) => (
+              <Fragment key={config.key}>
+                {config.renderer(fileGenerationState)}
+              </Fragment>
+            ))
+        : null;
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={250} minSize={250}>
@@ -281,11 +298,14 @@ export const GenerationResultViewer = observer(
               {fileNode && !(fileNode instanceof GenerationDirectory) && (
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">file</div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header-name">
+                  <div className="panel__header__title__content generation-result-viewer__file__header__name">
                     {fileNode.name}
                   </div>
                 </div>
               )}
+              <div className="panel__header__actions">
+                {extraFileGenerationResultViewerActions}
+              </div>
             </div>
             <div className="panel__content">
               {fileNode instanceof GenerationFile && (
@@ -412,7 +432,9 @@ const FileGenerationScopeEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {scopeElements.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -809,7 +831,9 @@ const GenerationArrayPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {arrayValues.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -1017,7 +1041,9 @@ const GenerationMapPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {Array.from(Object.entries(mapValues)).map(([key, value], idx) => (
               // NOTE: since the key must be unique, we will use it to generate the key

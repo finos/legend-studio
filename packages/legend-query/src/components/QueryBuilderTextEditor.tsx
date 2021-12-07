@@ -90,6 +90,7 @@ export const QueryBuilderTextEditor = observer(
                   forceExpansion={true}
                   useBaseTextEditorSettings={true}
                   hideErrorBar={true}
+                  disablePopUp={true}
                 />
               )}
               {mode === QueryTextEditorMode.JSON && (

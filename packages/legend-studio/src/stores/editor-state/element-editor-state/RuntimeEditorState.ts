@@ -63,7 +63,7 @@ import {
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
 } from '@finos/legend-graph';
-import type { DSLMapping_StudioPlugin_Extension } from '../../DSLMapping_StudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
@@ -461,7 +461,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_StudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioPlugin_Extension
           ).getExtraDefaultConnectionValueBuilders?.() ?? [],
       );
 

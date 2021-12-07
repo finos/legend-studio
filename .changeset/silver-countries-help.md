@@ -1,5 +1,3 @@
 ---
-"@finos/legend-graph": patch
+"@finos/legend-art": patch
 ---
-
-Properly handle duplicated attributes in `profile`, `enumeration`, `class`, `association`.

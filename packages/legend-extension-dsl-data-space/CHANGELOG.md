@@ -1,5 +1,25 @@
 # @finos/legend-extension-dsl-data-space
 
+## 1.0.4
+
+## 1.0.3
+
+### Patch Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - Add information about the dataspace where a query is created from using query tagged value.
+
+## 1.0.2
+
+## 1.0.1
+
+## 1.0.0
+
+### Major Changes
+
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move enterprise model explorer out to `@finos/legend-taxonomy` and create a new application `Legend Taxonomy`.
+
+* [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `LegendStudioPreset` and `LegendQueryPreset` and expose `LegendStudioPlugin` and `LegendQueryPlugin` respectively as we now prefer the usage of `@finos/legend-graph-extension-collection` to better manage graph presets.
+
 ## 0.2.0
 
 ### Minor Changes

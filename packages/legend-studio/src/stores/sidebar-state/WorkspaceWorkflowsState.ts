@@ -16,7 +16,7 @@
 
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { makeAutoObservable, observable, action, flowResult } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
@@ -149,7 +149,7 @@ export class WorkflowLogState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -171,7 +171,7 @@ export class WorkflowLogState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -240,13 +240,15 @@ export class WorkspaceWorkflowState {
           undefined,
           undefined,
         )) as PlainObject<WorkflowJob>[]
-      ).map((job) => WorkflowJob.serialization.fromJson(job));
+      )
+        .map((job) => WorkflowJob.serialization.fromJson(job))
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
       updateWorkflowJobData(workflowJobs, workflowId, treeData);
       this.setWorkflowTreeData({ ...treeData });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -285,7 +287,7 @@ export class WorkspaceWorkflowState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -327,7 +329,7 @@ export class WorkspaceWorkflowState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -404,7 +406,11 @@ export class WorkspaceWorkflowsState {
               .then((jobs: PlainObject<WorkflowJob>[]) =>
                 workflowToJobsMap.set(
                   workflow.id,
-                  jobs.map((x) => WorkflowJob.serialization.fromJson(x)),
+                  jobs
+                    .map((x) => WorkflowJob.serialization.fromJson(x))
+                    .sort(
+                      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+                    ),
                 ),
               ),
           ),
@@ -422,7 +428,7 @@ export class WorkspaceWorkflowsState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

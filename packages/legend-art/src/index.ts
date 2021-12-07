@@ -18,10 +18,12 @@ export * from './utils/ComponentUtils';
 export * from './utils/StubTransition';
 export * from './utils/PanelDisplayState';
 export * from './utils/TextEditorUtils';
+export * from './utils/HotkeyConfiguration';
 
 export * from './theme/LegendApplicationMaterialUITheme';
 
 export * from './components/Icon';
+export * from './components/Input';
 export * from './components/LegendIcon';
 export * from './components/LegendLogo';
 export * from './components/TreeView';

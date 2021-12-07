@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-// Mixins
-@use 'mixins' as *;
-
 // Dependencies
 @forward 'extensions';
 
 // Components
+@forward 'components/app';
 @forward 'components/blocking-alert';
 @forward 'components/backdrop';
 @forward 'components/lambda-editor';

@@ -17,12 +17,39 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator } from '@finos/legend-art';
+import type { TelemetryService } from '@finos/legend-shared';
 import { getQueryParameters } from '@finos/legend-shared';
 import { useParams } from 'react-router-dom';
-import { useStudioStore, AppHeader, AppHeaderMenu } from '@finos/legend-studio';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  LegendStudioAppHeaderMenu,
+  useLegendStudioStore,
+} from '@finos/legend-studio';
+import { AppHeader, useApplicationStore } from '@finos/legend-application';
 
-const EVENT_MARKETING_LINK_ACCESS = 'Marketing link accessed';
+const MARKETING_LINK_ACCESS = 'marketing_link_accessed';
+type MarketingLinkAccess_TelemetryData = {
+  marketingId?: string | undefined;
+  redirectUrl: string;
+};
+
+export class Management_TelemetryService {
+  private telemetryService!: TelemetryService;
+
+  private constructor(telemetryService: TelemetryService) {
+    this.telemetryService = telemetryService;
+  }
+
+  static create(
+    telemetryService: TelemetryService,
+  ): Management_TelemetryService {
+    return new Management_TelemetryService(telemetryService);
+  }
+
+  logEvent_MarketingLinkAccess(data: MarketingLinkAccess_TelemetryData): void {
+    this.telemetryService.logEvent(MARKETING_LINK_ACCESS, data);
+  }
+}
+
 export const PATH_PARAM_TOKEN_REDIRECT_URL = 'redirectUrl';
 
 enum SPECIAL_REDIRECT_ALIAS {
@@ -42,7 +69,7 @@ interface RedirectPathParams {
  */
 export const URLRedirector = observer(() => {
   const applicationStore = useApplicationStore();
-  const studioStore = useStudioStore();
+  const studioStore = useLegendStudioStore();
   const params = useParams<RedirectPathParams>();
 
   useEffect(() => {
@@ -60,7 +87,9 @@ export const URLRedirector = observer(() => {
       }
       // report if the link from a marketing campaign is accessed
       if (queryParams.marketingId) {
-        studioStore.telemetryService.logEvent(EVENT_MARKETING_LINK_ACCESS, {
+        Management_TelemetryService.create(
+          applicationStore.telemetryService,
+        ).logEvent_MarketingLinkAccess({
           marketingId: queryParams.marketingId,
           redirectUrl: redirectUrl,
         });
@@ -77,7 +106,7 @@ export const URLRedirector = observer(() => {
   return (
     <div className="app__page">
       <AppHeader>
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <PanelLoadingIndicator isLoading={true} />

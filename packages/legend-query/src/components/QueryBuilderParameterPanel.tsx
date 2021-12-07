@@ -322,7 +322,7 @@ const QueryBuilderParameterDragLayer = observer(
   },
 );
 
-const VariableExpressionViewer = observer(
+export const VariableExpressionViewer = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
     variableExpressionState: QueryParameterState;

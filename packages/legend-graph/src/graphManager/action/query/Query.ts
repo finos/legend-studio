@@ -18,6 +18,17 @@ import type { Mapping } from '../../../models/metamodels/pure/packageableElement
 import type { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference';
 import type { PackageableRuntime } from '../../../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
 
+export class QueryTaggedValue {
+  profile!: string;
+  tag!: string;
+  value!: string;
+}
+
+export class QueryStereotype {
+  profile!: string;
+  stereotype!: string;
+}
+
 export class Query {
   name!: string;
   id!: string;
@@ -30,6 +41,10 @@ export class Query {
   // if not owner is specified, any user can own the query
   // NOTE: the owner is managed automatically by the backend
   owner?: string | undefined;
+  // NOTE: these are different from metamodel tagged values and stereotypes
+  // because we don't process them
+  taggedValues?: QueryTaggedValue[] | undefined;
+  stereotypes?: QueryStereotype[] | undefined;
   // Store query in text to be more compact and stable
   content!: string;
 

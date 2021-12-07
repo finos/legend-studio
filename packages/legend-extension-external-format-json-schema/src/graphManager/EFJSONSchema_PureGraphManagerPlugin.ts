@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-import type { GraphPluginManager } from '@finos/legend-graph';
 import { PureGraphManagerPlugin } from '@finos/legend-graph';
 import packageJson from '../../package.json';
 
 export class EFJSONSchema_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
   }
 
   override getExtraExposedSystemElementPath(): string[] {

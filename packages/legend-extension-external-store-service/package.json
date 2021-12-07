@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-external-store-service",
-  "version": "0.1.3",
+  "version": "1.0.4",
   "description": "Legend extension for Service Store",
   "keywords": [
     "legend",
@@ -43,8 +43,8 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.34",
-    "mobx": "6.3.7",
+    "@types/react": "17.0.37",
+    "mobx": "6.3.8",
     "mobx-react-lite": "3.2.2",
     "monaco-editor": "0.30.1",
     "react": "17.0.2",
@@ -53,12 +53,12 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.2.0",
-    "jest": "27.3.1",
+    "eslint": "8.4.0",
+    "jest": "27.4.3",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.43.4",
-    "typescript": "4.4.4"
+    "sass": "1.44.0",
+    "typescript": "4.5.2"
   },
   "peerDependencies": {
     "react": "^17.0.0"
@@ -71,7 +71,6 @@
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-external-store-service-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-external-store-service-pure-graph-manager",
     "pureGraphPlugin": "@finos/legend-graph-plugin-external-store-service-pure-graph",
-    "studioPreset": "@finos/legend-studio-preset-external-store-service",
     "studioPlugin": "@finos/legend-studio-plugin-external-store-service"
   }
 }

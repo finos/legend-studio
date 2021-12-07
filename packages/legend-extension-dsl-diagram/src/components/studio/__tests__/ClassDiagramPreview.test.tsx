@@ -20,10 +20,11 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
   TEST__openElementFromExplorerTree,
-  StudioPluginManager,
+  LegendStudioPluginManager,
 } from '@finos/legend-studio';
-import { DSLDiagram_StudioPreset } from '../../../DSLDiagram_Extension';
 import { DSL_DIAGRAM_TEST_ID } from '../DSLDiagram_TestID';
+import { DSLDiagram_GraphPreset } from '../../../DSLDiagram_Extension';
+import { DSLDiagram_LegendStudioPlugin } from '../DSLDiagram_LegendStudioPlugin';
 
 const TEST_DATA__dummyModel = [
   {
@@ -47,8 +48,11 @@ const TEST_DATA__dummyModel = [
   },
 ];
 
-const pluginManager = StudioPluginManager.create();
-pluginManager.usePresets([new DSLDiagram_StudioPreset()]).install();
+const pluginManager = LegendStudioPluginManager.create();
+pluginManager
+  .usePresets([new DSLDiagram_GraphPreset()])
+  .usePlugins([new DSLDiagram_LegendStudioPlugin()])
+  .install();
 
 test(integrationTest('Class diagram preview shows up properly'), async () => {
   const mockedEditorStore = TEST__provideMockedEditorStore({ pluginManager });

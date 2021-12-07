@@ -24,13 +24,10 @@ const SDLCServerClientContext = createContext<SDLCServerClient | undefined>(
   undefined,
 );
 
-export const SDLCServerClientProvider = ({
-  children,
-  config,
-}: {
+export const SDLCServerClientProvider: React.FC<{
   children: React.ReactNode;
   config: SDLCServerClientConfig;
-}): React.ReactElement => {
+}> = ({ children, config }) => {
   const sdlcServerClient = useLocalObservable(
     () => new SDLCServerClient(config),
   );

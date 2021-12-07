@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { guaranteeNonNullable } from '../error/AssertionUtils';
 import type {
   Parameters,
   RequestHeaders,
@@ -26,8 +27,7 @@ import {
   createRequestHeaders,
   NetworkClient,
 } from './NetworkUtils';
-import type { TraceData, TracerServicePlugin } from './TracerService';
-import { TracerService } from './TracerService';
+import type { TraceData, TracerService } from './TracerService';
 
 export interface ServerClientConfig {
   baseUrl?: string;
@@ -50,7 +50,7 @@ export interface ServerClientConfig {
  */
 export abstract class AbstractServerClient {
   protected networkClient: NetworkClient;
-  private readonly tracerService = new TracerService();
+  private _tracerService?: TracerService;
   enableCompression: boolean;
   baseUrl?: string | undefined;
   autoReAuthenticateUrl?: string | undefined;
@@ -74,8 +74,15 @@ export abstract class AbstractServerClient {
     this.enableCompression = val;
   }
 
-  registerTracerServicePlugins(plugins: TracerServicePlugin<unknown>[]): void {
-    this.tracerService.registerPlugins(plugins);
+  setTracerService(val: TracerService): void {
+    this._tracerService = val;
+  }
+
+  private get tracerService(): TracerService {
+    return guaranteeNonNullable(
+      this._tracerService,
+      `Tracer service has not been set`,
+    );
   }
 
   async get<T>(

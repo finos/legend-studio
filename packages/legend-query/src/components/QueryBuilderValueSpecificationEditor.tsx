@@ -39,6 +39,7 @@ import type {
   ValueSpecification,
 } from '@finos/legend-graph';
 import {
+  LATEST_DATE,
   Enumeration,
   GenericType,
   GenericTypeExplicitReference,
@@ -102,7 +103,7 @@ const QueryBuilderParameterInfoTooltip: React.FC<{
   );
 };
 
-const VariableExpressionEditor = observer(
+export const VariableExpressionParameterEditor = observer(
   (props: {
     valueSpecification: VariableExpression;
     className?: string | undefined;
@@ -215,15 +216,16 @@ const NumberPrimitiveInstanceValueEditor = observer(
   },
 );
 
-const DatePrimitiveInstanceValueEditor = observer(
+export const DatePrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
   }) => {
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       valueSpecification.changeValue(event.target.value, 0);
+    };
 
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
@@ -482,6 +484,12 @@ export const QueryBuilderUnsupportedValueSpecificationEditor: React.FC = () => (
   </div>
 );
 
+export const LatestDatePrimitiveInstanceValueEditor: React.FC = () => (
+  <div className="query-builder-value-spec-editor__latest-date">
+    {LATEST_DATE}
+  </div>
+);
+
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
@@ -526,6 +534,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
             className={className}
           />
         );
+      case PRIMITIVE_TYPE.LATESTDATE:
+        return <LatestDatePrimitiveInstanceValueEditor />;
       default:
         return <QueryBuilderUnsupportedValueSpecificationEditor />;
     }
@@ -555,7 +565,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   // property expression
   else if (valueSpecification instanceof VariableExpression) {
     return (
-      <VariableExpressionEditor
+      <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}
         className={className}
       />

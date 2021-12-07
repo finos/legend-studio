@@ -16,6 +16,7 @@
 
 import type { PlainObject } from '@finos/legend-shared';
 import {
+  optionalCustom,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
@@ -239,21 +240,9 @@ const V1_serviceModelSchema = (
     method: primitive(),
     parameters: list(usingModelSchema(V1_serviceParameterModelSchema)),
     path: primitive(),
-    requestBody: optional(
-      custom(
-        (val) => {
-          if (val !== undefined) {
-            return V1_serializeTypeReference(val);
-          }
-          return undefined;
-        },
-        (val) => {
-          if (val !== undefined) {
-            return V1_deserializeTypeReference(val);
-          }
-          return undefined;
-        },
-      ),
+    requestBody: optionalCustom(
+      V1_serializeTypeReference,
+      V1_deserializeTypeReference,
     ),
     response: usingModelSchema(V1_complexTypeReferenceModelSchema),
     security: list(

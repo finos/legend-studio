@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use './mixins' as *;
+@use 'mixins' as *;
 
 .query-builder__projection {
   &__columns {
@@ -91,7 +91,7 @@
     &__handler {
       @include flexCenter;
 
-      background: var(--color-dark-grey-85);
+      background: var(--color-dark-grey-100);
       height: 2.4rem;
       width: 1.6rem;
       min-width: 1.6rem;

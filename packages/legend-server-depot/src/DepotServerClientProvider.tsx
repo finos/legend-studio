@@ -24,13 +24,10 @@ const DepotServerClientContext = createContext<DepotServerClient | undefined>(
   undefined,
 );
 
-export const DepotServerClientProvider = ({
-  children,
-  config,
-}: {
+export const DepotServerClientProvider: React.FC<{
   children: React.ReactNode;
   config: DepotServerClientConfig;
-}): React.ReactElement => {
+}> = ({ children, config }) => {
   const depotServerClient = useLocalObservable(
     () => new DepotServerClient(config),
   );

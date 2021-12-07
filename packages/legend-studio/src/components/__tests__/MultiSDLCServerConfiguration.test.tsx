@@ -19,7 +19,6 @@ import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
-  Log,
   guaranteeType,
   unitTest,
   guaranteeNonNullable,
@@ -32,20 +31,21 @@ import {
   TEST_DATA__applicationVersion,
   WebApplicationNavigator,
   useWebApplicationNavigator,
+  ApplicationStoreProvider,
 } from '@finos/legend-application';
 import {
   generateSetupRoute,
   updateRouteWithNewSDLCServerOption,
 } from '../../stores/LegendStudioRouter';
 import { TEST__provideMockedSDLCServerClient } from '@finos/legend-server-sdlc';
-import { StudioPluginManager } from '../../application/StudioPluginManager';
+import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager';
 import { TEST_DATA__studioConfig } from '../../stores/EditorStoreTestUtils';
-import { StudioConfig } from '../../application/StudioConfig';
+import { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const getTestStudioConfigWithMultiSDLCServer = (
   extraConfigData = {},
-): StudioConfig =>
-  new StudioConfig(
+): LegendStudioConfig =>
+  new LegendStudioConfig(
     {
       ...TEST_DATA__studioConfig,
       ...extraConfigData,
@@ -95,6 +95,7 @@ test(
       navigator = useWebApplicationNavigator();
       return null;
     };
+    const pluginManager = LegendStudioPluginManager.create();
 
     const TEST_ROUTE_PATTERN = '/someApplicationRouteThatWeWouldNeverSupport/';
 
@@ -102,11 +103,15 @@ test(
       <MemoryRouter initialEntries={[TEST_ROUTE_PATTERN]}>
         <WebApplicationNavigatorProvider>
           <CaptureNavigator />
-          <LegendStudioApplication
+          <ApplicationStoreProvider
             config={config}
-            pluginManager={StudioPluginManager.create()}
-            log={new Log()}
-          />
+            pluginManager={pluginManager}
+          >
+            <LegendStudioApplication
+              config={config}
+              pluginManager={pluginManager}
+            />
+          </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </MemoryRouter>,
     );
@@ -150,17 +155,19 @@ test(integrationTest('SDLC server can be specified via URL'), async () => {
       },
     ],
   });
+  const pluginManager = LegendStudioPluginManager.create();
 
   setup();
 
   const { queryByText } = render(
     <MemoryRouter initialEntries={['/sdlc-server2/']}>
       <WebApplicationNavigatorProvider>
-        <LegendStudioApplication
-          config={config}
-          pluginManager={StudioPluginManager.create()}
-          log={new Log()}
-        />
+        <ApplicationStoreProvider config={config} pluginManager={pluginManager}>
+          <LegendStudioApplication
+            config={config}
+            pluginManager={pluginManager}
+          />
+        </ApplicationStoreProvider>
       </WebApplicationNavigatorProvider>
     </MemoryRouter>,
   );
@@ -194,16 +201,21 @@ test(
       navigator = useWebApplicationNavigator();
       return null;
     };
+    const pluginManager = LegendStudioPluginManager.create();
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/sdlc-someServer/somethingElse']}>
         <WebApplicationNavigatorProvider>
           <CaptureNavigator />
-          <LegendStudioApplication
+          <ApplicationStoreProvider
             config={config}
-            pluginManager={StudioPluginManager.create()}
-            log={new Log()}
-          />
+            pluginManager={pluginManager}
+          >
+            <LegendStudioApplication
+              config={config}
+              pluginManager={pluginManager}
+            />
+          </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </MemoryRouter>,
     );
@@ -237,16 +249,21 @@ test(
       navigator = useWebApplicationNavigator();
       return null;
     };
+    const pluginManager = LegendStudioPluginManager.create();
 
     const { queryByText } = render(
       <MemoryRouter initialEntries={['/sdlc-someServer/']}>
         <WebApplicationNavigatorProvider>
           <CaptureNavigator />
-          <LegendStudioApplication
+          <ApplicationStoreProvider
             config={config}
-            pluginManager={StudioPluginManager.create()}
-            log={new Log()}
-          />
+            pluginManager={pluginManager}
+          >
+            <LegendStudioApplication
+              config={config}
+              pluginManager={pluginManager}
+            />
+          </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </MemoryRouter>,
     );
@@ -265,7 +282,7 @@ test(
 );
 
 test(unitTest('Route update with SDLC server option changes'), async () => {
-  const config = new StudioConfig(
+  const config = new LegendStudioConfig(
     {
       ...TEST_DATA__studioConfig,
       ...{

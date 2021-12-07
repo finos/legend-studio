@@ -28,6 +28,12 @@ import {
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__firmPersonGraphFetch,
   TEST_DATA__personWithParameter,
+  TEST_DATA__allFuncOnBusinessTemporalMilestonedClass,
+  TEST_DATA__allFuncOnProcessingTemporalMilestonedClass,
+  TEST_DATA__allFuncOnBiTemporalMilestonedClass,
+  TEST_DATA__graphFetchWithDerivedProperty,
+  TEST_DATA__graphFetchWithDerivedPropertyWithParameter,
+  TEST_DATA__temporalModel,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
 import {
   simpleDerivationProjection,
@@ -39,9 +45,9 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 
-const pluginManager = QueryPluginManager.create();
+const pluginManager = LegendQueryPluginManager.create();
 pluginManager.usePresets([new Query_GraphPreset()]).install();
 
 type RoundtripTestCase = [
@@ -56,12 +62,31 @@ const relationalCtx = {
   entities: TEST_DATA__complexRelationalModel,
 };
 
+const temporalCtx = {
+  entities: TEST_DATA__temporalModel,
+};
+
 const m2mCtx = {
   entities: TEST_DATA__M2MModel,
 };
 
 const cases: RoundtripTestCase[] = [
   ['Simple all() function', relationalCtx, TEST_DATA__simpleAllFunc],
+  [
+    'Simple all() function with businesstemporal milestoned class',
+    temporalCtx,
+    TEST_DATA__allFuncOnBusinessTemporalMilestonedClass,
+  ],
+  [
+    'Simple all() function with processisngtemporal milestoned class',
+    temporalCtx,
+    TEST_DATA__allFuncOnProcessingTemporalMilestonedClass,
+  ],
+  [
+    'Simple all() function with bitemporal milestoned class',
+    temporalCtx,
+    TEST_DATA__allFuncOnBiTemporalMilestonedClass,
+  ],
   ['Simple filter() function', relationalCtx, TEST_DATA__simpleFilterFunc],
   ['Simple project() function', relationalCtx, TEST_DATA__simpleProjection],
   [
@@ -93,6 +118,16 @@ const cases: RoundtripTestCase[] = [
   ['Simple graph fetch', m2mCtx, TEST_DATA__simpleGraphFetch],
   ['Complex graph fetch', m2mCtx, TEST_DATA__firmPersonGraphFetch],
   [
+    'Graph fetch with derived property',
+    m2mCtx,
+    TEST_DATA__graphFetchWithDerivedProperty,
+  ],
+  [
+    'Graph fetch with derived property with parameter',
+    m2mCtx,
+    TEST_DATA__graphFetchWithDerivedPropertyWithParameter,
+  ],
+  [
     'Simple project() and filter() with parameter',
     relationalCtx,
     TEST_DATA__personWithParameter,
@@ -102,7 +137,7 @@ const cases: RoundtripTestCase[] = [
 describe(unitTest('Lambda processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, lambdaJson) => {
     const { entities } = context;
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
     const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
     await TEST__buildGraphWithEntities(graphManagerState, entities);

@@ -30,7 +30,8 @@ const require = createRequire(import.meta.url);
 export const getEnvInfo = (env, arg) => ({
   isEnvDevelopment: arg.mode === 'development',
   isEnvProduction: arg.mode === 'production',
-  isEnvDevelopment_Advanced: process.env.DEVELOPMENT_MODE === 'advanced',
+  isEnvDevelopment_Debug:
+    arg.mode === 'development' && process.env.DEVELOPMENT_MODE === 'debug',
 });
 
 /**
@@ -46,7 +47,7 @@ const getBaseWebpackConfig = (
   if (!dirname) {
     throw new Error(`\`dirname\` is required to build Webpack config`);
   }
-  const { isEnvDevelopment, isEnvProduction, isEnvDevelopment_Advanced } =
+  const { isEnvDevelopment, isEnvProduction, isEnvDevelopment_Debug } =
     getEnvInfo(env, arg);
 
   const config = {
@@ -57,12 +58,18 @@ const getBaseWebpackConfig = (
       // See https://webpack.js.org/guides/build-performance/#output-without-path-info
       // NOTE: for debugging, this flag is quite useful as it gives information about the bundle, tree-shaking, bailouts, etc.
       // See https://webpack.js.org/configuration/output/#outputpathinfo
-      pathinfo: isEnvDevelopment_Advanced,
+      pathinfo: isEnvDevelopment_Debug,
     },
     devtool: isEnvDevelopment
       ? // NOTE: `eval-cheap-module-source-map` is recommend for dev, but it doesn't report error location accurately
         // See https://github.com/vuejs-templates/webpack/issues/520#issuecomment-356773702
-        'cheap-module-source-map'
+        isEnvDevelopment_Debug
+        ? 'cheap-module-source-map'
+        : // no source map makes development build happens really fast
+          // and one would be able to see the final generated code, which could be helpful in certain cases
+          // but for debugging (e.g. where putting breakpoints is needed), source maps might be required
+          // See https://webpack.js.org/configuration/devtool/
+          false
       : 'source-map',
     watchOptions: {
       ignored: /node_modules/,
@@ -177,7 +184,7 @@ const getBaseWebpackConfig = (
         }
       : {},
     plugins: [
-      (isEnvDevelopment_Advanced || isEnvProduction) &&
+      (isEnvProduction || isEnvDevelopment_Debug) &&
         new CircularDependencyPlugin({
           exclude: /node_modules/,
           include: /src\/.+\.(?:tsx|ts|mjs|js)$/,

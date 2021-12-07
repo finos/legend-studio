@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore';
 import { observable, action, makeAutoObservable } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { TreeData } from '@finos/legend-art';
 import type {
   GenerationTreeNodeData,
@@ -128,7 +128,7 @@ export class FileGenerationState {
       this.selectedNode = undefined;
       this.processGenerationResult([]);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -153,7 +153,7 @@ export class FileGenerationState {
       entry.cleanFileName(rootFolder);
       if (generationResultMap.has(entry.fileName)) {
         this.editorStore.applicationStore.log.warn(
-          LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
           'Found 2 generation outputs with same path',
         );
       }
@@ -180,11 +180,11 @@ export class FileGenerationState {
     reprocessOpenNodes(treeData, this.filesIndex, this.root, openedNodeIds);
     // select the current file node if available, else select the first output
     const selectedFileNodePath =
-      this.selectedNode?.fileNode.path ??
-      (generationResult.length === 1
+      generationResult.length === 1 ||
+      (this.selectedNode === undefined && generationResult.length !== 0)
         ? (generationResult[0] as GenerationOutputResult).generationOutput
             .fileName
-        : undefined);
+        : this.selectedNode?.fileNode.path;
     if (selectedFileNodePath) {
       const file = this.filesIndex.get(selectedFileNodePath);
       if (file) {

@@ -40,14 +40,14 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN,
   generateCreateQueryRoute,
 } from '../stores/LegendQueryRouter';
-import type { QueryExportState } from '../stores/QueryStore';
+import type { QueryExportState } from '../stores/LegendQueryStore';
 import {
   ExistingQueryInfoState,
   ServiceQueryInfoState,
   CreateQueryInfoState,
-} from '../stores/QueryStore';
+} from '../stores/LegendQueryStore';
 import { QueryBuilder } from './QueryBuilder';
-import { useQueryStore } from './QueryStoreProvider';
+import { useLegendQueryStore } from './LegendQueryStoreProvider';
 import { RuntimePointer } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 
@@ -112,7 +112,7 @@ const QueryExportInner = observer(
 );
 
 const QueryExport = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const queryExportState = queryStore.queryExportState;
   const close = (): void => queryStore.setQueryExportState(undefined);
 
@@ -139,7 +139,7 @@ const QueryExport = observer(() => {
 });
 
 const QueryEditorHeader = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const queryInfoState = queryStore.queryInfoState;
   const applicationStore = useApplicationStore();
   const backToMainMenu = (): void =>
@@ -222,7 +222,7 @@ const QueryEditorHeader = observer(() => {
 });
 
 const QueryEditorInner = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const isLoadingEditor =
     !queryStore.graphManagerState.graph.buildState.hasCompleted ||
     !queryStore.editorInitState.hasCompleted;
@@ -247,7 +247,7 @@ const QueryEditor: React.FC = () => (
 );
 
 export const ExistingQueryLoader = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const params = useParams<ExistingQueryPathParams>();
 
   useEffect(() => {
@@ -259,7 +259,7 @@ export const ExistingQueryLoader = observer(() => {
 
 export const ServiceQueryLoader = observer(() => {
   const applicationStore = useApplicationStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const params = useParams<ServiceQueryPathParams>();
   const queryParams = getQueryParameters<ServiceQueryQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
@@ -275,7 +275,7 @@ export const ServiceQueryLoader = observer(() => {
 
 export const CreateQueryLoader = observer(() => {
   const applicationStore = useApplicationStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const params = useParams<CreateQueryPathParams>();
   const currentMapping = queryStore.queryBuilderState.querySetupState.mapping;
   const currentRuntime =

@@ -30,23 +30,23 @@ import {
   LegendMaterialUITheme,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import type { Log } from '@finos/legend-shared';
-import { QueryStoreProvider, useQueryStore } from './QueryStoreProvider';
+import {
+  LegendQueryStoreProvider,
+  useLegendQueryStore,
+} from './LegendQueryStoreProvider';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
-  ApplicationStoreProvider,
   BlockingAlert,
   NotificationSnackbar,
   useApplicationStore,
-  useWebApplicationNavigator,
 } from '@finos/legend-application';
-import type { QueryPluginManager } from '../application/QueryPluginManager';
-import type { QueryConfig } from '../application/QueryConfig';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 
 const LegendQueryApplicationInner = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const applicationStore = useApplicationStore();
 
   useEffect(() => {
@@ -92,31 +92,31 @@ const LegendQueryApplicationInner = observer(() => {
 
 export const LegendQueryApplication = observer(
   (props: {
-    config: QueryConfig;
-    pluginManager: QueryPluginManager;
-    log: Log;
+    config: LegendQueryConfig;
+    pluginManager: LegendQueryPluginManager;
   }) => {
-    const { config, pluginManager, log } = props;
-    const navigator = useWebApplicationNavigator();
+    const { config, pluginManager } = props;
+    const applicationStore = useApplicationStore();
 
     return (
-      <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
-        <DepotServerClientProvider
-          config={{
-            serverUrl: config.depotServerUrl,
-            TEMP__useLegacyDepotServerAPIRoutes:
-              config.TEMP__useLegacyDepotServerAPIRoutes,
-          }}
+      <DepotServerClientProvider
+        config={{
+          serverUrl: config.depotServerUrl,
+          TEMP__useLegacyDepotServerAPIRoutes:
+            config.TEMP__useLegacyDepotServerAPIRoutes,
+        }}
+      >
+        <GraphManagerStateProvider
+          pluginManager={pluginManager}
+          log={applicationStore.log}
         >
-          <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
-            <QueryStoreProvider pluginManager={pluginManager}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendQueryApplicationInner />
-              </ThemeProvider>
-            </QueryStoreProvider>
-          </GraphManagerStateProvider>
-        </DepotServerClientProvider>
-      </ApplicationStoreProvider>
+          <LegendQueryStoreProvider pluginManager={pluginManager}>
+            <ThemeProvider theme={LegendMaterialUITheme}>
+              <LegendQueryApplicationInner />
+            </ThemeProvider>
+          </LegendQueryStoreProvider>
+        </GraphManagerStateProvider>
+      </DepotServerClientProvider>
     );
   },
 );

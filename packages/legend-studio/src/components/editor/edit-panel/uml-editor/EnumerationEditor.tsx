@@ -31,13 +31,13 @@ import {
   BlankPanelContent,
   clsx,
   getControlledResizablePanelProps,
+  InputWithInlineValidation,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  TimesCircleIcon,
 } from '@finos/legend-art';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import {
@@ -79,33 +79,19 @@ const EnumBasicEditor = observer(
     };
 
     return (
-      <div
-        className={
-          isEnumValueDuplicated(_enum)
-            ? 'input-group enum-basic-editor enum-basic-editor__error'
-            : 'enum-basic-editor'
-        }
-      >
-        <input
-          className={
-            isEnumValueDuplicated(_enum)
-              ? 'enum-basic-editor__name enum-basic-editor__name__duplicated'
-              : 'enum-basic-editor__name'
-          }
+      <div className="enum-basic-editor">
+        <InputWithInlineValidation
+          className="enum-basic-editor__name input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={_enum.name}
           onChange={changeValue}
           placeholder={`Enum name`}
           name={`Type enum name`}
+          validationErrorMessage={
+            isEnumValueDuplicated(_enum) ? 'Duplicated enum' : undefined
+          }
         />
-        {isEnumValueDuplicated(_enum) && <TimesCircleIcon />}
-        {isEnumValueDuplicated(_enum) && (
-          <div className="input-group__error-message enum-basic-editor__error-message">
-            Found duplicated Enum
-          </div>
-        )}
-
         <button
           className="uml-element-editor__basic__detail-btn"
           onClick={selectValue}
@@ -225,7 +211,7 @@ const EnumEditor = observer(
 
     return (
       <div className="uml-element-editor enum-editor">
-        <div data-testid={STUDIO_TEST_ID.PANEL} className="panel">
+        <div data-testid={LEGEND_STUDIO_TEST_ID.PANEL} className="panel">
           <div className="panel__header">
             <div className="panel__header__title">
               {isReadOnly && (
@@ -248,7 +234,7 @@ const EnumEditor = observer(
             </div>
           </div>
           <div
-            data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+            data-testid={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
             className="panel__header uml-element-editor__tabs__header"
           >
             <div className="uml-element-editor__tabs">
@@ -450,7 +436,7 @@ export const EnumerationEditor = observer(
 
     return (
       <div
-        data-testid={STUDIO_TEST_ID.ENUMERATION_EDITOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.ENUMERATION_EDITOR}
         className="uml-element-editor enumeration-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
@@ -485,7 +471,9 @@ export const EnumerationEditor = observer(
                 </div>
               </div>
               <div
-                data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER
+                }
                 className="panel__header uml-element-editor__tabs__header"
               >
                 <div className="uml-element-editor__tabs">

@@ -564,7 +564,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 title="Reset Filter Value"
                 onClick={resetNode}
               >
-                <MdRefresh />
+                <MdRefresh style={{ fontSize: '1.6rem' }} />
               </button>
             )}
             <button

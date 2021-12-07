@@ -30,7 +30,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type {
   GenerationTreeNodeData,
   GenerationOutputResult,
@@ -60,11 +60,12 @@ import type {
   GenerationTreeNode,
 } from '@finos/legend-graph';
 import {
-  GenerationSpecification,
   Class,
   Enumeration,
+  GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -128,14 +129,32 @@ export class GraphGenerationState {
   get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
     if (this.editorStore.currentEditorState instanceof ElementEditorState) {
       const currentElement = this.editorStore.currentEditorState.element;
-      if (
-        currentElement instanceof Class ||
-        currentElement instanceof Enumeration
-      ) {
-        return this.fileGenerationConfigurations
-          .slice()
-          .sort((a, b): number => a.label.localeCompare(b.label));
-      }
+      // Note: For now we only allow classes and enumerations for all types of generations.
+      const extraFileGenerationScopeFilterConfigurations =
+        this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+              ).getExtraFileGenerationScopeFilterConfigurations?.() ?? [],
+          );
+      return this.fileGenerationConfigurations.filter((generationType) => {
+        const scopeFilters =
+          extraFileGenerationScopeFilterConfigurations.filter(
+            (configuration) =>
+              configuration.type.toLowerCase() === generationType.key,
+          );
+        if (scopeFilters.length) {
+          return scopeFilters.some((scopeFilter) =>
+            scopeFilter.filter(currentElement),
+          );
+        }
+        return (
+          currentElement instanceof Class ||
+          currentElement instanceof Enumeration
+        );
+      });
     }
     return [];
   }
@@ -168,7 +187,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -192,7 +211,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -247,7 +266,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -301,7 +320,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -392,7 +411,7 @@ export class GraphGenerationState {
         genOutput.cleanFileName(rootFolder);
         if (generationResultMap.has(genOutput.fileName)) {
           this.editorStore.applicationStore.log.warn(
-            LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+            LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );
         }

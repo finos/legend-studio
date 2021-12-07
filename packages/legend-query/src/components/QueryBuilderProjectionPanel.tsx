@@ -26,6 +26,7 @@ import {
   CaretDownIcon,
   GripVerticalIcon,
   ContextMenu,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import { MdFunctions } from 'react-icons/md';
 import type {
@@ -252,11 +253,17 @@ const QueryBuilderProjectionColumnEditor = observer(
       projectionColumnState.projectionState.queryBuilderState;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
+    const removeColumn = (): void =>
+      projectionState.removeColumn(projectionColumnState);
+
+    // name
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => projectionColumnState.setColumnName(event.target.value);
-    const removeColumn = (): void =>
-      projectionState.removeColumn(projectionColumnState);
+    const isDuplicatedColumnName =
+      projectionColumnState.projectionState.columns.filter(
+        (column) => column.columnName === projectionColumnState.columnName,
+      ).length > 1;
 
     // aggregation
     const aggregateColumnState = projectionState.aggregationState.columns.find(
@@ -375,11 +382,14 @@ const QueryBuilderProjectionColumnEditor = observer(
               </div>
             </div>
             <div className="query-builder__projection__column__name">
-              <input
-                className="query-builder__projection__column__name__input"
+              <InputWithInlineValidation
+                className="query-builder__projection__column__name__input input-group__input"
                 spellCheck={false}
                 value={projectionColumnState.columnName}
                 onChange={changeColumnName}
+                validationErrorMessage={
+                  isDuplicatedColumnName ? 'Duplicated column' : undefined
+                }
               />
             </div>
             <div className="query-builder__projection__column__value">

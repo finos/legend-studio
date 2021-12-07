@@ -32,11 +32,9 @@ export const TEST__provideMockedDepotServerClient = (customization?: {
   return value;
 };
 
-export const TEST__DepotServerClientProvider = ({
-  children,
-}: {
+export const TEST__DepotServerClientProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => (
+}> = ({ children }) => (
   <DepotServerClientProvider config={{ serverUrl: '' }}>
     {children}
   </DepotServerClientProvider>

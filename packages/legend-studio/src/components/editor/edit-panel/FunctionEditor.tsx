@@ -32,7 +32,7 @@ import {
 import { useDrop } from 'react-dnd';
 import { FaLock, FaPlus, FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
 import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
@@ -205,7 +205,7 @@ const ParameterBasicEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -237,7 +237,7 @@ const ParameterBasicEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -388,7 +388,7 @@ const ReturnTypeEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
@@ -420,7 +420,7 @@ const ReturnTypeEditor = observer(
             </div>
             {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}

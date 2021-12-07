@@ -33,12 +33,12 @@ import { clsx } from '@finos/legend-art';
 import { MdModeEdit } from 'react-icons/md';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/service-editor/ServiceRegistrationModalEditor';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import { validateServicePattern } from '@finos/legend-graph';
-import type { StudioConfig } from '../../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../../application/LegendStudioConfig';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -269,7 +269,9 @@ const ServiceGeneralEditor = observer(() => {
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {owners.map((value, idx) => (
               <div
@@ -389,7 +391,7 @@ const ServiceGeneralEditor = observer(() => {
 
 export const ServiceEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
   const isReadOnly = serviceState.isReadOnly;

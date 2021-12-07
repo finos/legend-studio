@@ -133,12 +133,9 @@ yarn dev
 # have other terminal tabs for auto-building code and style
 yarn dev:tsc
 yarn dev:sass
-
-# NOTE: Sometimes, it might be better to call `dev` for each workspace, either `cd`
-# to the workspace and run the script, or using `yarn workspace <workspace-name> <workspace-script>`
-# syntax to call the script from anywhere in the project.
-# e.g. To call `build` script of workspace `lib1`, use the command `yarn workspace lib1 build`
 ```
+
+> Note that `dev:tsc` is convenient as it watches for changes in the whole project, but sometimes, it might take long time or cause Webpack recompilation to take a long time. So there are times when it's better to focus the watcher in a particular workspace using the command `yarn workspace <workspace-name> <workspace-script>`, e.g. to call `dev` script of workspace `lib1`, use the command `yarn workspace lib1 dev`.
 
 #### :construction: Testing your code
 
@@ -200,6 +197,10 @@ Also please try to commit your code with messages following our [convention](#co
 #### :package: Releasing
 
 This section is only for maintainers, or whoever has [write access and above](https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/repository-permission-levels-for-an-organization#repository-access-for-each-permission-level) permission in this repository. Only this group of people should have the permission to trigger the release. For details of the release process, please read this [guide](./docs/workflow/release-process.md).
+
+#### :woman_technologist: Code contributor guide `[advanced]`
+
+To keep this guide succinct, we have a separate [guide](./docs/workflow/code-contributor-guide.md) for more advanced and miscellaneous topics regarding the development process: e.g. debugging, troubleshooting, etc.
 
 ### Code Conventions
 
