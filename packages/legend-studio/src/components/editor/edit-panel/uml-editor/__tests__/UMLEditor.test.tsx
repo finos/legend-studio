@@ -123,7 +123,8 @@ test(
     fireEvent.click(getByText(classForm, 'Properties'));
     await waitFor(() => getByText(classForm, 'founder'));
     const inputA = getByDisplayValue(classForm, 'a');
-    const propertyA = inputA.parentElement as HTMLElement;
+    const propertyA = inputA.parentElement?.parentElement
+      ?.parentElement as HTMLElement;
     fireEvent.change(inputA, { target: { value: 'abcdefg' } });
     await waitFor(() => getByDisplayValue(classForm, 'abcdefg'));
     expect(getAllByDisplayValue(propertyA, '1')).toHaveLength(2);
@@ -133,7 +134,8 @@ test(
     expect(queryByDisplayValue(classForm, 'abcdefg')).toBeNull();
     // Sub Panel Property
     const inputB = getByDisplayValue(classForm, 'b');
-    const propertyB = inputB.parentElement as HTMLElement;
+    const propertyB = inputB.parentElement?.parentElement
+      ?.parentElement as HTMLElement;
     const buttons = getAllByRole(propertyB, 'button');
     expect(buttons).toHaveLength(2);
     expect(queryByDisplayValue(classForm, 'ProfileTest')).toBeNull();
@@ -177,7 +179,7 @@ test(integrationTest('Enumeration editor'), async () => {
   fireEvent.click(getByText(enumerationEditor, 'Values'));
   await waitFor(() => getByDisplayValue(enumerationEditor, 'enumA'));
   const enumB = getByDisplayValue(enumerationEditor, 'enumA');
-  const parentElement = enumB.parentElement as HTMLElement;
+  const parentElement = enumB.parentElement?.parentElement as HTMLElement;
   const buttons = queryAllByRole(parentElement, 'button');
   expect(buttons).toHaveLength(2);
   fireEvent.click(guaranteeNonNullable(buttons[0])); // navigate
@@ -221,7 +223,8 @@ test(integrationTest('Association editor'), async () => {
   fireEvent.click(getByText(associationEditor, 'Properties'));
   await waitFor(() => getByDisplayValue(associationEditor, 'testClassProp'));
   const inputA = getByDisplayValue(associationEditor, 'testClassProp');
-  const propertyTypeA = inputA.parentElement as HTMLElement;
+  const propertyTypeA = inputA.parentElement?.parentElement
+    ?.parentElement as HTMLElement;
   fireEvent.change(inputA, { target: { value: 'random' } });
   await waitFor(() => getByDisplayValue(associationEditor, 'random'));
   expect(getAllByDisplayValue(propertyTypeA, '1')).toHaveLength(2);
@@ -229,7 +232,8 @@ test(integrationTest('Association editor'), async () => {
   expect(getAllByRole(propertyTypeA, 'button')).toHaveLength(2);
   // sub panel property
   const inputB = getByDisplayValue(associationEditor, 'testClassSibling');
-  const propertyTypeB = inputB.parentElement as HTMLElement;
+  const propertyTypeB = inputB.parentElement?.parentElement
+    ?.parentElement as HTMLElement;
   const buttons = getAllByRole(propertyTypeB, 'button');
   expect(buttons).toHaveLength(2);
   expect(queryByDisplayValue(associationEditor, 'ProfileTest')).toBeNull();
