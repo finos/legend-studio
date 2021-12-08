@@ -106,11 +106,11 @@ export const TEST_DATA__allFuncOnBiTemporalMilestonedClass = {
         },
         {
           _type: 'var',
-          name: 'businessDate',
+          name: 'processingDate',
         },
         {
           _type: 'var',
-          name: 'processingDate',
+          name: 'businessDate',
         },
       ],
     },

@@ -92,9 +92,9 @@ const generateClassLabel = (
         )}`;
         break;
       case MILESTONING_STEROTYPES.BITEMPORAL:
-        milestoningParameterValues = `Business Date: ${getParameterValue(
+        milestoningParameterValues = `Processing Date: ${getParameterValue(
           queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
-        )}, Processing Date: ${getParameterValue(
+        )}, Business Date: ${getParameterValue(
           queryBuilderState.querySetupState.classMilestoningTemporalValues[1],
         )}`;
         break;

@@ -150,25 +150,23 @@ const MilestoningParameterEditor = observer(
           <div className="query-builder__parameter-editor__parameter">
             {milestoningParameter.genericType.value.rawType.name ===
               PRIMITIVE_TYPE.STRICTDATE && (
-              <div className="query-builder__parameter-editor__parameter">
-                <DatePrimitiveInstanceValueEditor
-                  valueSpecification={milestoningParameter}
-                />
-              </div>
+              <DatePrimitiveInstanceValueEditor
+                valueSpecification={milestoningParameter}
+              />
             )}
             {milestoningParameter.genericType.value.rawType.name ===
               PRIMITIVE_TYPE.LATESTDATE && (
-              <div className="query-builder__parameter-editor__parameter">
-                <LatestDatePrimitiveInstanceValueEditor />
-              </div>
+              <LatestDatePrimitiveInstanceValueEditor />
             )}
-            <CustomSelectorInput
-              placeholder="Choose a type..."
-              options={typeOptions}
-              onChange={changeType}
-              value={selectedType}
-              darkMode={true}
-            />
+            <div className="query-builder__parameter-editor__parameter">
+              <CustomSelectorInput
+                placeholder="Choose a type..."
+                options={typeOptions}
+                onChange={changeType}
+                value={selectedType}
+                darkMode={true}
+              />
+            </div>
           </div>
         )}
         {queryBuilderState.querySetupState.classMilestoningTemporalValues[
@@ -206,20 +204,20 @@ const BiTemporalMilestoneEditor = observer(
       <>
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
-            Business Date
+            Processing Date
           </div>
           <MilestoningParameterEditor
-            key="BusinessDate"
+            key="ProcessingDate"
             queryBuilderState={queryBuilderState}
             index={0}
           />
         </div>
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
-            Processing Date
+            Business Date
           </div>
           <MilestoningParameterEditor
-            key="ProcessingDate"
+            key="BusinessDate"
             queryBuilderState={queryBuilderState}
             index={1}
           />
