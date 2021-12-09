@@ -29,6 +29,7 @@ const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
 const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
 const PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL =
   'ServiceStoreConnection';
+const PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL = 'ServiceGroup';
 
 export class ESService_PureGraphManagerPlugin
   extends PureGraphManagerPlugin
@@ -43,7 +44,11 @@ export class ESService_PureGraphManagerPlugin
   }
 
   override getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL];
+    return [
+      PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL,
+      PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL,
+    ];
   }
 
   override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {

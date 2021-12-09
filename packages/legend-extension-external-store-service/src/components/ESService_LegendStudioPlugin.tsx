@@ -36,7 +36,9 @@ import type {
   MappingElementState,
   MappingElementSourceGetter,
   MappingElementSource,
+  ElementIconGetter,
 } from '@finos/legend-studio';
+import { SwaggerIcon } from '@finos/legend-art';
 import type {
   Connection,
   PackageableElement,
@@ -68,6 +70,26 @@ export class ESService_LegendStudioPlugin
       (element: PackageableElement): string | undefined => {
         if (element instanceof ServiceStore) {
           return SERVICE_STORE_ELEMENT_TYPE;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraElementIconGetters(): ElementIconGetter[] {
+    return [
+      (type: string): React.ReactNode | undefined => {
+        if (type === SERVICE_STORE_ELEMENT_TYPE) {
+          return (
+            <div
+              className="icon"
+              style={{
+                color: 'var(--color-light-grey-50)',
+              }}
+            >
+              <SwaggerIcon />
+            </div>
+          );
         }
         return undefined;
       },
