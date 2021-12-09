@@ -1106,3 +1106,109 @@ export const TEST_DATA__MissingClassMappingWithTargetId = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
+
+export const TEST_DATA__DuplicateEnumerationValues = [
+  {
+    classifierPath: 'meta::pure::metamodel::type::Enumeration',
+    path: 'test::enum',
+    content: {
+      _type: 'Enumeration',
+      name: 'enum',
+      package: 'test',
+      values: [
+        {
+          value: 'enum_value',
+        },
+        {
+          value: 'enum_value',
+        },
+      ],
+    },
+  },
+];
+
+export const TEST_DATA__DuplicateProfileTags = [
+  {
+    classifierPath: 'meta::pure::metamodel::extension::Profile',
+    path: 'test::profile1',
+    content: {
+      _type: 'profile',
+      name: 'profile1',
+      package: 'test',
+      tags: ['tag1', 'tag1'],
+    },
+  },
+];
+
+export const TEST_DATA__DuplicateProfileStereotypes = [
+  {
+    classifierPath: 'meta::pure::metamodel::extension::Profile',
+    path: 'test::profile2',
+    content: {
+      _type: 'profile',
+      name: 'profile2',
+      package: 'test',
+      stereotypes: ['stereotype1', 'stereotype1'],
+    },
+  },
+];
+
+export const TEST_DATA__DuplicateClassProperties = [
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    path: 'test::class',
+    content: {
+      _type: 'class',
+      name: 'class',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'abc',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'abc',
+          type: 'String',
+        },
+      ],
+    },
+  },
+];
+
+export const TEST_DATA__DuplicateAssociationProperties = [
+  {
+    classifierPath: 'meta::pure::metamodel::relationship::Association',
+    path: 'test::association',
+    content: {
+      _type: 'association',
+      name: 'association',
+      package: 'test',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'abc',
+          type: 'pack::class',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'abc',
+          type: 'pack::c',
+        },
+      ],
+    },
+  },
+];

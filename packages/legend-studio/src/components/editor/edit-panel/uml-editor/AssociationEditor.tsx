@@ -42,6 +42,7 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
@@ -80,9 +81,19 @@ const AssociationPropertyBasicEditor = observer(
   }) => {
     const { association, property, selectProperty, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const isPropertyDuplicated = (val: Property): boolean => {
+      if (
+        association.properties[0].name === val.name &&
+        association.properties[1].name === val.name
+      ) {
+        return true;
+      }
+      return false;
+    };
     // Name
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property.setName(event.target.value);
+    };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     // FIXME: make this so that association can only refer to classes from the same space
@@ -159,14 +170,19 @@ const AssociationPropertyBasicEditor = observer(
 
     return (
       <div className="property-basic-editor">
-        <input
-          className="property-basic-editor__name"
-          disabled={isReadOnly}
-          value={property.name}
-          spellCheck={false}
-          onChange={changeValue}
-          placeholder={`Property name`}
-        />
+        <div className="input-group__input property-basic-editor__input">
+          <InputWithInlineValidation
+            className="input-group__input property-basic-editor__input--with-validation"
+            disabled={isReadOnly}
+            value={property.name}
+            spellCheck={false}
+            onChange={changeValue}
+            placeholder={`Property name`}
+            validationErrorMessage={
+              isPropertyDuplicated(property) ? 'Duplicated property' : undefined
+            }
+          />
+        </div>
         {!isReadOnly && isEditingType && (
           <CustomSelectorInput
             className="property-basic-editor__type"

@@ -20,6 +20,7 @@ import {
   isNonNullable,
   assertErrorThrown,
   guaranteeNonNullable,
+  LogEvent,
 } from '@finos/legend-shared';
 import { CORE_ELEMENT_PATH } from '../../../../../../../MetaModelConst';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
@@ -105,9 +106,19 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
         }
       }
     });
-    element.properties.forEach((property) =>
-      _class.properties.push(V1_buildProperty(property, this.context, _class)),
-    );
+    const uniqueProperties = new Set<string>();
+    element.properties.forEach((property) => {
+      if (uniqueProperties.has(property.name)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated property '${property.name}' in class '${_class.path}'`,
+          ),
+        );
+      }
+      _class.properties.push(V1_buildProperty(property, this.context, _class));
+      uniqueProperties.add(property.name);
+    });
   }
 
   visit_Association(element: V1_Association): void {
@@ -120,6 +131,14 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     );
     const first = guaranteeNonNullable(element.properties[0]);
     const second = guaranteeNonNullable(element.properties[1]);
+    if (first.name === second.name) {
+      /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+      this.context.log.warn(
+        LogEvent.create(
+          `Found duplicated property '${element.properties[0]?.name}' in association '${element.name}'`,
+        ),
+      );
+    }
     association.setProperties([
       V1_buildAssociationProperty(first, second, this.context, association),
       V1_buildAssociationProperty(second, first, this.context, association),

@@ -31,6 +31,7 @@ import {
   BlankPanelContent,
   clsx,
   getControlledResizablePanelProps,
+  InputWithInlineValidation,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -66,19 +67,25 @@ const EnumBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { _enum, selectValue, deleteValue, isReadOnly } = props;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       _enum.setName(event.target.value);
+    };
+    const isEnumValueDuplicated = (val: Enum): boolean =>
+      _enum.owner.values.filter((value) => value.name === val.name).length >= 2;
 
     return (
       <div className="enum-basic-editor">
-        <input
-          className="enum-basic-editor__name"
+        <InputWithInlineValidation
+          className="enum-basic-editor__name input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={_enum.name}
           onChange={changeValue}
           placeholder={`Enum name`}
           name={`Type enum name`}
+          validationErrorMessage={
+            isEnumValueDuplicated(_enum) ? 'Duplicated enum' : undefined
+          }
         />
         <button
           className="uml-element-editor__basic__detail-btn"

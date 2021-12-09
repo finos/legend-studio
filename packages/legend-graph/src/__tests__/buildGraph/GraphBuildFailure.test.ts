@@ -24,6 +24,11 @@ import {
   TEST_DATA__MissingSetImp,
   TEST_DATA__MissingClassMapping,
   TEST_DATA__MissingClassMappingWithTargetId,
+  TEST_DATA__DuplicateEnumerationValues,
+  TEST_DATA__DuplicateProfileTags,
+  TEST_DATA__DuplicateProfileStereotypes,
+  TEST_DATA__DuplicateClassProperties,
+  TEST_DATA__DuplicateAssociationProperties,
 } from './TEST_DATA__GraphBuildFailure';
 import { unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -144,5 +149,70 @@ test.skip(unitTest('Missing set implementation'), async () => {
   );
   await expect(buildGraph).rejects.toThrowError(
     `Can't find set implementation 'targetClassAMissing'`,
+  );
+});
+
+/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+test.skip(unitTest('Duplicate enumeration values'), async () => {
+  const buildGraph = flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicateEnumerationValues as Entity[],
+    ),
+  );
+  await expect(buildGraph).rejects.toThrowError(
+    `Found duplicated value 'enum_value' in enumeration 'test::enum'`,
+  );
+});
+
+/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+test.skip(unitTest('Duplicate profile tags'), async () => {
+  const buildGraph = flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicateProfileTags as Entity[],
+    ),
+  );
+  await expect(buildGraph).rejects.toThrowError(
+    `Found duplicated tag 'tag1' in profile 'test::profile1'`,
+  );
+});
+
+/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+test.skip(unitTest('Duplicate profile stereotypes'), async () => {
+  const buildGraph = flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicateProfileStereotypes as Entity[],
+    ),
+  );
+  await expect(buildGraph).rejects.toThrowError(
+    `Found duplicated stereotype 'stereotype1' in profile 'test::profile2'`,
+  );
+});
+
+/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+test.skip(unitTest('Duplicate class properties'), async () => {
+  const buildGraph = flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicateClassProperties as Entity[],
+    ),
+  );
+  await expect(buildGraph).rejects.toThrowError(
+    `Found duplicated property 'abc' in class 'test::class'`,
+  );
+});
+
+/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+test.skip(unitTest('Duplicate aoociation properties'), async () => {
+  const buildGraph = flowResult(
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicateAssociationProperties as Entity[],
+    ),
+  );
+  await expect(buildGraph).rejects.toThrowError(
+    `Found duplicated property 'abc' in association 'test::association'`,
   );
 });

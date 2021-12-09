@@ -19,12 +19,14 @@ import { TimesCircleIcon } from './Icon';
 
 const InputGroup = styled.div`
   position: relative;
+  width: 100%;
 `;
 
 const class__InputValidationErrorStyle = css`
   border: 0.1rem solid var(--color-red-300);
   background: var(--color-red-500);
   padding-right: 2.3rem;
+  color: var(--color-light-grey-100);
 
   :focus {
     border: 0.1rem solid var(--color-red-300);

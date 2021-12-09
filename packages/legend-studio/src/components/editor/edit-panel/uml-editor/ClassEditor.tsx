@@ -42,6 +42,7 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { PropertyEditor } from './PropertyEditor';
@@ -98,9 +99,13 @@ const PropertyBasicEditor = observer(
       property.owner instanceof Class && property.owner !== _class;
     const isPropertyFromAssociation = property.owner instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
+    const isPropertyDuplicated = (val: Property): boolean =>
+      _class.properties.filter((property) => property.name === val.name)
+        .length >= 2;
     // Name
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property.setName(event.target.value);
+    };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
@@ -179,15 +184,22 @@ const PropertyBasicEditor = observer(
           </div>
         )}
         {!isIndirectProperty && (
-          <input
-            className="property-basic-editor__name"
-            disabled={isReadOnly}
-            value={property.name}
-            spellCheck={false}
-            onChange={changeValue}
-            placeholder={`Property name`}
-            name={`Property name`}
-          />
+          <div className="input-group__input property-basic-editor__input">
+            <InputWithInlineValidation
+              className="property-basic-editor__input--with-validation input-group__input"
+              disabled={isReadOnly}
+              value={property.name}
+              spellCheck={false}
+              onChange={changeValue}
+              placeholder={`Property name`}
+              name={`Property name`}
+              validationErrorMessage={
+                isPropertyDuplicated(property)
+                  ? 'Duplicated property'
+                  : undefined
+              }
+            />
+          </div>
         )}
         {!isIndirectProperty && !isReadOnly && isEditingType && (
           <CustomSelectorInput

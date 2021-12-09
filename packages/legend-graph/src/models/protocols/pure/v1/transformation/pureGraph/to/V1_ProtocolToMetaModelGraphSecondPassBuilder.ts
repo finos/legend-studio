@@ -22,6 +22,7 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
   assertTrue,
+  LogEvent,
 } from '@finos/legend-shared';
 import { Stereotype } from '../../../../../../metamodels/pure/packageableElements/domain/Stereotype';
 import { Tag } from '../../../../../../metamodels/pure/packageableElements/domain/Tag';
@@ -93,10 +94,32 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const profile = this.context.graph.getProfile(
       this.context.graph.buildPath(element.package, element.name),
     );
-    profile.stereotypes = element.stereotypes.map(
-      (stereotype) => new Stereotype(profile, stereotype),
-    );
-    profile.tags = element.tags.map((tag) => new Tag(profile, tag));
+    const uniqueStereotypes = new Set<string>();
+    profile.stereotypes = element.stereotypes.map((stereotype) => {
+      if (uniqueStereotypes.has(stereotype)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`,
+          ),
+        );
+      }
+      uniqueStereotypes.add(stereotype);
+      return new Stereotype(profile, stereotype);
+    });
+    const uniqueTags = new Set<string>();
+    profile.tags = element.tags.map((tag) => {
+      if (uniqueTags.has(tag)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated tag '${tag}' in profile '${element.path}'`,
+          ),
+        );
+      }
+      uniqueTags.add(tag);
+      return new Tag(profile, tag);
+    });
   }
 
   visit_Enumeration(element: V1_Enumeration): void {
@@ -108,11 +131,20 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     enumeration.taggedValues = element.taggedValues
       .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
+    const uniqueEnumValues = new Set<string>();
     enumeration.values = element.values.map((enumValue) => {
       assertNonEmptyString(
         enumValue.value,
         `Enum value 'value' field is missing or empty`,
       );
+      if (uniqueEnumValues.has(enumValue.value)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`,
+          ),
+        );
+      }
       const _enum = new Enum(enumValue.value, enumeration);
       _enum.stereotypes = enumValue.stereotypes
         .map((stereotype) => this.context.resolveStereotype(stereotype))
@@ -120,6 +152,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       _enum.taggedValues = enumValue.taggedValues
         .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
         .filter(isNonNullable);
+      uniqueEnumValues.add(enumValue.value);
       return _enum;
     });
   }

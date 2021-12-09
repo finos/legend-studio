@@ -21,7 +21,7 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { observer } from 'mobx-react-lite';
 import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
-import { clsx } from '@finos/legend-art';
+import { clsx, InputWithInlineValidation } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { Profile } from '@finos/legend-graph';
@@ -30,19 +30,25 @@ import { Tag, Stereotype } from '@finos/legend-graph';
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {
     const { tag, deleteValue, isReadOnly } = props;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tag.setValue(event.target.value);
+    };
+    const isTagDuplicated = (val: Tag): boolean =>
+      tag.owner.tags.filter((tag) => tag.value === val.value).length >= 2;
 
     return (
       <div className="tag-basic-editor">
-        <input
-          className="tag-basic-editor__value"
+        <InputWithInlineValidation
+          className="tag-basic-editor__value input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={tag.value}
           onChange={changeValue}
           placeholder={`Tag value`}
           name={`Tag value`}
+          validationErrorMessage={
+            isTagDuplicated(tag) ? 'Duplicated tag' : undefined
+          }
         />
         {!isReadOnly && (
           <button
@@ -67,19 +73,29 @@ const StereotypeBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { stereotype, deleteStereotype, isReadOnly } = props;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       stereotype.setValue(event.target.value);
+    };
+    const isStereotypeDuplicated = (val: Stereotype): boolean =>
+      stereotype.owner.stereotypes.filter(
+        (stereotype) => stereotype.value === val.value,
+      ).length >= 2;
 
     return (
       <div className="stereotype-basic-editor">
-        <input
-          className="stereotype-basic-editor__value"
+        <InputWithInlineValidation
+          className="stereotype-basic-editor__value input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={stereotype.value}
           onChange={changeValue}
           placeholder={`Stereotype value`}
           name={`Stereotype value`}
+          validationErrorMessage={
+            isStereotypeDuplicated(stereotype)
+              ? 'Duplicated stereotype'
+              : undefined
+          }
         />
         {!isReadOnly && (
           <button
