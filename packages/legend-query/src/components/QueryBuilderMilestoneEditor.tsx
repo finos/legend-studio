@@ -51,15 +51,15 @@ import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
 
 const MilestoningParameterEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState; index: number }) => {
-    const { queryBuilderState, index } = props;
+  (props: { queryBuilderState: QueryBuilderState; parameterIndex: number }) => {
+    const { queryBuilderState, parameterIndex } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
         queryBuilderState.querySetupState.classMilestoningTemporalValues[
-          index
+          parameterIndex
         ] = item.variable.parameter;
       },
-      [queryBuilderState, index],
+      [queryBuilderState, parameterIndex],
     );
     const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop(
       () => ({
@@ -83,21 +83,24 @@ const MilestoningParameterEditor = observer(
       [handleDrop],
     );
     const milestoningParameter =
-      queryBuilderState.querySetupState.classMilestoningTemporalValues[index];
+      queryBuilderState.querySetupState.classMilestoningTemporalValues[
+        parameterIndex
+      ];
     const resetMilestoningParameter = (): void => {
-      queryBuilderState.querySetupState.classMilestoningTemporalValues[index] =
-        new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.LATESTDATE,
-              ),
+      queryBuilderState.querySetupState.classMilestoningTemporalValues[
+        parameterIndex
+      ] = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            queryBuilderState.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.LATESTDATE,
             ),
           ),
-          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
-        );
+        ),
+        queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+          TYPICAL_MULTIPLICITY_TYPE.ONE,
+        ),
+      );
     };
     const latestType =
       queryBuilderState.graphManagerState.graph.getPrimitiveType(
@@ -150,36 +153,34 @@ const MilestoningParameterEditor = observer(
           <div className="query-builder__parameter-editor__parameter">
             {milestoningParameter.genericType.value.rawType.name ===
               PRIMITIVE_TYPE.STRICTDATE && (
-              <div className="query-builder__parameter-editor__parameter">
-                <DatePrimitiveInstanceValueEditor
-                  valueSpecification={milestoningParameter}
-                />
-              </div>
+              <DatePrimitiveInstanceValueEditor
+                valueSpecification={milestoningParameter}
+              />
             )}
             {milestoningParameter.genericType.value.rawType.name ===
               PRIMITIVE_TYPE.LATESTDATE && (
-              <div className="query-builder__parameter-editor__parameter">
-                <LatestDatePrimitiveInstanceValueEditor />
-              </div>
+              <LatestDatePrimitiveInstanceValueEditor />
             )}
-            <CustomSelectorInput
-              placeholder="Choose a type..."
-              options={typeOptions}
-              onChange={changeType}
-              value={selectedType}
-              darkMode={true}
-            />
+            <div className="query-builder__parameter-editor__parameter">
+              <CustomSelectorInput
+                placeholder="Choose a type..."
+                options={typeOptions}
+                onChange={changeType}
+                value={selectedType}
+                darkMode={true}
+              />
+            </div>
           </div>
         )}
         {queryBuilderState.querySetupState.classMilestoningTemporalValues[
-          index
+          parameterIndex
         ] instanceof VariableExpression && (
           <>
             <VariableExpressionParameterEditor
               valueSpecification={guaranteeType(
                 guaranteeNonNullable(
                   queryBuilderState.querySetupState
-                    .classMilestoningTemporalValues[index],
+                    .classMilestoningTemporalValues[parameterIndex],
                 ),
                 VariableExpression,
               )}
@@ -206,22 +207,20 @@ const BiTemporalMilestoneEditor = observer(
       <>
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
-            Business Date
+            Processing Date
           </div>
           <MilestoningParameterEditor
-            key="BusinessDate"
             queryBuilderState={queryBuilderState}
-            index={0}
+            parameterIndex={0}
           />
         </div>
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
-            Processing Date
+            Business Date
           </div>
           <MilestoningParameterEditor
-            key="ProcessingDate"
             queryBuilderState={queryBuilderState}
-            index={1}
+            parameterIndex={1}
           />
         </div>
       </>
@@ -240,7 +239,7 @@ const BusinessTemporalMilestoneEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          index={0}
+          parameterIndex={0}
         />
       </div>
     );
@@ -258,7 +257,7 @@ const ProcessingTemporalMilestoneEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          index={0}
+          parameterIndex={0}
         />
       </div>
     );
