@@ -95,7 +95,7 @@
     min-width: calc(100% - 36rem);
   }
 
-  &__name__duplicated {
+  &__input--with-validation {
     @include flexVCenter;
 
     flex: auto;

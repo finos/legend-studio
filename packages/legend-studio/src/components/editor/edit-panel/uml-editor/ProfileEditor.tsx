@@ -28,16 +28,13 @@ import type { Profile } from '@finos/legend-graph';
 import { Tag, Stereotype } from '@finos/legend-graph';
 
 const TagBasicEditor = observer(
-  (props: {
-    tag: Tag;
-    deleteValue: () => void;
-    isTagDuplicated: (val: Tag) => boolean;
-    isReadOnly: boolean;
-  }) => {
-    const { tag, deleteValue, isTagDuplicated, isReadOnly } = props;
+  (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {
+    const { tag, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tag.setValue(event.target.value);
     };
+    const isTagDuplicated = (val: Tag): boolean =>
+      tag.owner.tags.filter((tag) => tag.value === val.value).length >= 2;
 
     return (
       <div className="tag-basic-editor">
@@ -73,14 +70,16 @@ const StereotypeBasicEditor = observer(
   (props: {
     stereotype: Stereotype;
     deleteStereotype: () => void;
-    isStereotypeDuplicated: (val: Stereotype) => boolean;
     isReadOnly: boolean;
   }) => {
-    const { stereotype, deleteStereotype, isStereotypeDuplicated, isReadOnly } =
-      props;
+    const { stereotype, deleteStereotype, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       stereotype.setValue(event.target.value);
     };
+    const isStereotypeDuplicated = (val: Stereotype): boolean =>
+      stereotype.owner.stereotypes.filter(
+        (stereotype) => stereotype.value === val.value,
+      ).length >= 2;
 
     return (
       <div className="stereotype-basic-editor">
@@ -155,11 +154,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
     (val: Tag): (() => void) =>
     (): void =>
       profile.deleteTag(val);
-  const isStereotypeDuplicated = (val: Stereotype): boolean =>
-    profile.stereotypes.filter((stereotype) => stereotype.value === val.value)
-      .length >= 2;
-  const isTagDuplicated = (val: Tag): boolean =>
-    profile.tags.filter((tag) => tag.value === val.value).length >= 2;
   return (
     <div className="uml-element-editor profile-editor">
       <div className="panel">
@@ -211,7 +205,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   key={tag.uuid}
                   tag={tag}
                   deleteValue={deleteTag(tag)}
-                  isTagDuplicated={isTagDuplicated}
                   isReadOnly={isReadOnly}
                 />
               ))}
@@ -224,7 +217,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   key={stereotype.uuid}
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
-                  isStereotypeDuplicated={isStereotypeDuplicated}
                   isReadOnly={isReadOnly}
                 />
               ))}

@@ -64,19 +64,14 @@ const EnumBasicEditor = observer(
     _enum: Enum;
     selectValue: () => void;
     deleteValue: () => void;
-    isEnumValueDuplicated: (val: Enum) => boolean;
     isReadOnly: boolean;
   }) => {
-    const {
-      _enum,
-      selectValue,
-      deleteValue,
-      isEnumValueDuplicated,
-      isReadOnly,
-    } = props;
+    const { _enum, selectValue, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       _enum.setName(event.target.value);
     };
+    const isEnumValueDuplicated = (val: Enum): boolean =>
+      _enum.owner.values.filter((value) => value.name === val.name).length >= 2;
 
     return (
       <div className="enum-basic-editor">
@@ -431,8 +426,6 @@ export const EnumerationEditor = observer(
         editorStore.openElement(enumeration.generationParentElement);
       }
     };
-    const isEnumValueDuplicated = (val: Enum): boolean =>
-      enumeration.values.filter((value) => value.name === val.name).length >= 2;
 
     return (
       <div
@@ -509,7 +502,6 @@ export const EnumerationEditor = observer(
                         _enum={enumValue}
                         deleteValue={deleteValue(enumValue)}
                         selectValue={selectValue(enumValue)}
-                        isEnumValueDuplicated={isEnumValueDuplicated}
                         isReadOnly={isReadOnly}
                       />
                     ))}

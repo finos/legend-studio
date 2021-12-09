@@ -172,7 +172,7 @@ const AssociationPropertyBasicEditor = observer(
       <div className="property-basic-editor">
         <div className="input-group__input property-basic-editor__input">
           <InputWithInlineValidation
-            className="input-group__input property-basic-editor__name__duplicated"
+            className="input-group__input property-basic-editor__input--with-validation"
             disabled={isReadOnly}
             value={property.name}
             spellCheck={false}

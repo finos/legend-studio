@@ -186,7 +186,7 @@ const PropertyBasicEditor = observer(
         {!isIndirectProperty && (
           <div className="input-group__input property-basic-editor__input">
             <InputWithInlineValidation
-              className="property-basic-editor__name__duplicated input-group__input"
+              className="property-basic-editor__input--with-validation input-group__input"
               disabled={isReadOnly}
               value={property.name}
               spellCheck={false}
