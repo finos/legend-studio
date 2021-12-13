@@ -56,6 +56,7 @@ import type { LightQuery, Query } from './action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification';
+import type { VariableExpression } from '../models/metamodels/pure/valueSpecification/VariableExpression';
 
 export interface TEMP__EngineSetupConfig {
   env: string;
@@ -195,6 +196,10 @@ export abstract class AbstractPureGraphManager {
     valueSpecificationJson: Record<PropertyKey, unknown>,
     graph: PureModel,
   ): ValueSpecification;
+  abstract buildLambdaParameters(
+    valueSpecificationJson: Record<PropertyKey, unknown>,
+    graph: PureModel,
+  ): VariableExpression[];
   abstract serializeValueSpecification(
     valueSpecification: ValueSpecification,
   ): Record<PropertyKey, unknown>;

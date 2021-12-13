@@ -30,6 +30,7 @@ import type {
   ServerClientConfig,
 } from '@finos/legend-shared';
 import {
+  assertType,
   TracerService,
   LogEvent,
   getClass,
@@ -205,6 +206,8 @@ import {
 import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { GraphPluginManager } from '../../../../GraphPluginManager';
 import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification';
+import { VariableExpression } from '../../../metamodels/pure/valueSpecification/VariableExpression';
+import { V1_Lambda } from '../v1/model/valueSpecification/raw/V1_Lambda';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1667,6 +1670,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.log,
       ).build(),
     );
+  }
+
+  buildLambdaParameters(
+    json: Record<PropertyKey, unknown>,
+    graph: PureModel,
+  ): VariableExpression[] {
+    const protocol = V1_deserializeValueSpecification(json);
+    if (protocol instanceof V1_Lambda) {
+      return protocol.parameters.map((e) => {
+        const parameter = V1_buildValueSpecification(
+          e,
+          new V1_GraphBuilderContextBuilder(
+            graph,
+            graph,
+            this.extensions,
+            this.log,
+          ).build(),
+        );
+        assertType(parameter, VariableExpression);
+        return parameter;
+      });
+    }
+    return [];
   }
 
   serializeValueSpecification(

@@ -92,7 +92,10 @@ import type {
   PackageableElementOption,
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
-import { QueryParametersState } from './QueryParametersState';
+import {
+  QueryParametersState,
+  QueryParameterState,
+} from './QueryParametersState';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -208,7 +211,7 @@ export class QueryBuilderState {
             keepSourceInformation: Boolean(options?.keepSourceInformation),
           }),
         )
-      : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
+      : this.buildQueryParametersForUnsupportedState();
   }
 
   resetQueryBuilder(): void {
@@ -242,7 +245,9 @@ export class QueryBuilderState {
       this.buildStateFromRawLambda(rawLambda);
     } catch (error) {
       assertErrorThrown(error);
+      const queryParametersState = this.queryParametersState;
       this.changeClass(undefined, true);
+      this.queryParametersState = queryParametersState;
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Unable to initialize query builder: ${error.message}`,
@@ -263,11 +268,26 @@ export class QueryBuilderState {
     this.resetQueryBuilder();
     this.resetQuerySetup();
     if (!rawLambda.isStub) {
+      const lambdaJson =
+        this.graphManagerState.graphManager.serializeRawValueSpecification(
+          rawLambda,
+        );
+      const parameters =
+        this.graphManagerState.graphManager.buildLambdaParameters(
+          lambdaJson,
+          this.graphManagerState.graph,
+        );
+      parameters.forEach((parameter) => {
+        const variableState = new QueryParameterState(
+          this.queryParametersState,
+          parameter,
+        );
+        variableState.mockParameterValues();
+        this.queryParametersState.addParameter(variableState);
+      });
       const valueSpec =
         this.graphManagerState.graphManager.buildValueSpecification(
-          this.graphManagerState.graphManager.serializeRawValueSpecification(
-            rawLambda,
-          ),
+          lambdaJson,
           this.graphManagerState.graph,
         );
       const compiledValueSpecification = guaranteeType(
@@ -296,6 +316,18 @@ export class QueryBuilderState {
       ),
       RawLambda,
     );
+  }
+
+  buildQueryParametersForUnsupportedState(): RawLambda {
+    const parameters = this.queryParametersState.parameters.map((e) =>
+      this.graphManagerState.graphManager.serializeValueSpecification(
+        e.parameter,
+      ),
+    );
+    this.queryUnsupportedState.setRawLambda(
+      new RawLambda(parameters, this.queryUnsupportedState.rawLambda?.body),
+    );
+    return guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
   }
 
   buildClassMilestoningTemporalValue(element: Class, stereotype: string): void {
