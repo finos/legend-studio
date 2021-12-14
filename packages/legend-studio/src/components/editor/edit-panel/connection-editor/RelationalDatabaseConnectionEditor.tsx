@@ -42,6 +42,7 @@ import {
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -773,6 +774,43 @@ const OAuthAuthenticationStrategyEditor = observer(
   },
 );
 
+const UsernamePasswordAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: UsernamePasswordAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.baseVaultReference}
+          propertyName={'base valut reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setBaseVaultReference(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.userNameVaultReference}
+          propertyName={'user name vault reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setUserNameVaultReference(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.passwordVaultReference}
+          propertyName={'password valut reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setPasswordVaultReference(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 const RelationalConnectionStoreEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
@@ -940,6 +978,13 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof OAuthAuthenticationStrategy) {
     return (
       <OAuthAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (authSpec instanceof UsernamePasswordAuthenticationStrategy) {
+    return (
+      <UsernamePasswordAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

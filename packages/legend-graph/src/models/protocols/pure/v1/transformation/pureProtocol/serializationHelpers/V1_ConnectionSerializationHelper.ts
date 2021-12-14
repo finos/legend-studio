@@ -57,6 +57,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
+  V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
@@ -285,6 +286,7 @@ enum V1_AuthenticationStrategyType {
   TEST = 'test',
   OAUTH = 'oauth',
   USER_PASSWORD = 'userPassword',
+  USERNAME_PASSWORD = 'userNamePassword',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -337,6 +339,18 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     ),
   });
 
+const V1_UsernamePasswordAuthenticationStrategyModelSchema = createModelSchema(
+  V1_UsernamePasswordAuthenticationStrategy,
+  {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.USERNAME_PASSWORD,
+    ),
+    baseVaultReference: optional(primitive()),
+    userNameVaultReference: primitive(),
+    passwordVaultReference: primitive(),
+  },
+);
+
 const V1_oAuthAuthenticationStrategyModelSchema = createModelSchema(
   V1_OAuthAuthenticationStrategy,
   {
@@ -380,6 +394,11 @@ export const V1_serializeAuthenticationStrategy = (
   } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
     return serialize(
       V1_userPasswordAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
+    return serialize(
+      V1_UsernamePasswordAuthenticationStrategyModelSchema,
       protocol,
     );
   }
@@ -437,6 +456,11 @@ export const V1_deserializeAuthenticationStrategy = (
       );
     case V1_AuthenticationStrategyType.OAUTH:
       return deserialize(V1_oAuthAuthenticationStrategyModelSchema, json);
+    case V1_AuthenticationStrategyType.USERNAME_PASSWORD:
+      return deserialize(
+        V1_UsernamePasswordAuthenticationStrategyModelSchema,
+        json,
+      );
     default: {
       const extraConnectionAuthenticationStrategyProtocolDeserializers =
         plugins.flatMap(

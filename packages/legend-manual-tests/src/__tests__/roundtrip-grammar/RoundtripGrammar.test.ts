@@ -89,6 +89,9 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'nested-embedded-relational-mapping.pure': SKIP,
   'relational-mapping-filter.pure': SKIP,
 
+  // TODO: remove `SKIP` flag when compilation is supported in engine
+  'username-password-auth-connection.pure': SKIP,
+
   // TODO: remove these when the issue of source ID in relational property mapping is resolved.
   // Engine is removing these sources when the owner is the parent class mapping and studio is not
   'basic-class-mapping-extends.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
