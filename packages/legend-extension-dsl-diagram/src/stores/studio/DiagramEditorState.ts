@@ -377,7 +377,7 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
-    this.renderer.handleEditProperty = (
+    const editProperty = (
       property: AbstractProperty,
       point: Point,
       propertyHolderView: PropertyHolderView | undefined,
@@ -393,6 +393,8 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
+    this.renderer.onClassPropertyDoubleClick = editProperty;
+    this.renderer.handleEditProperty = editProperty;
     this.renderer.handleAddSimpleProperty = (classView: ClassView): void => {
       if (!this.isReadOnly && !classView.class.value.isReadOnly) {
         const _class = classView.class.value;
