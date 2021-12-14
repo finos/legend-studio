@@ -79,7 +79,7 @@
   "devDependencies": {
     "@actions/core": "1.6.0",
     "@actions/github": "5.0.0",
-    "@babel/core": "7.16.0",
+    "@babel/core": "7.16.5",
     "@changesets/cli": "2.18.1",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
@@ -94,16 +94,16 @@
     "fs-extra": "10.0.0",
     "husky": "7.0.4",
     "inquirer": "8.2.0",
-    "jest": "27.4.4",
+    "jest": "27.4.5",
     "lint-staged": "12.1.2",
     "micromatch": "4.0.4",
     "prettier": "2.5.1",
     "rimraf": "3.0.2",
-    "sass": "1.44.0",
+    "sass": "1.45.0",
     "semver": "7.3.5",
     "sort-package-json": "1.53.1",
     "stylelint": "14.1.0",
-    "typescript": "4.5.3",
+    "typescript": "4.5.4",
     "yargs": "17.3.0"
   },
   "engines": {
