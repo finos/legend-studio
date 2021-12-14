@@ -249,7 +249,6 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           this.dataSpaceViewerState.dataSpaceVersionId,
         ),
       ];
-      queryInfoState.class = _class;
       this.queryStore.setQueryInfoState(queryInfoState);
       this.queryStore.applicationStore.navigator.goTo(
         generateCreateQueryRoute(
@@ -258,6 +257,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           this.dataSpaceViewerState.dataSpace.versionId,
           this.dataSpaceViewerState.currentExecutionContext.mapping.value.path,
           this.dataSpaceViewerState.currentRuntime.path,
+          _class?.path,
         ),
       );
       this.setupStore.setSetupState(undefined);
