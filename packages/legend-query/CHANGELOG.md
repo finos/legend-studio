@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 0.2.2
+
+### Patch Changes
+
+- [#729](https://github.com/finos/legend-studio/pull/729) [`bed72461`](https://github.com/finos/legend-studio/commit/bed724618f61c14cef8e56f39c2f0ff9240f04ea) ([@gayathrir11](https://github.com/gayathrir11)) - Fix processing of `bitemporal` milestoning stereotype.
+
 ## 0.2.1
 
 ## 0.2.0
