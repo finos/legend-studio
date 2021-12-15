@@ -33,6 +33,7 @@ import type { AuthenticationStrategy } from '../../../../../../../metamodels/pur
 import {
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
@@ -58,6 +59,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
+  V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
@@ -249,6 +251,22 @@ export const V1_buildAuthenticationStrategy = (
       protocol.userName,
       protocol.passwordVaultReference,
     );
+  } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
+    assertNonEmptyString(
+      protocol.userNameVaultReference,
+      `Username password authentication strategy 'userNameVaultReference' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      protocol.passwordVaultReference,
+      `Username password authentication strategy 'passwordVaultReference' field is missing or empty`,
+    );
+
+    const metamodel = new UsernamePasswordAuthenticationStrategy(
+      protocol.userNameVaultReference,
+      protocol.passwordVaultReference,
+    );
+    metamodel.baseVaultReference = protocol.baseVaultReference;
+    return metamodel;
   }
   const extraConnectionAuthenticationStrategyBuilders =
     context.extensions.plugins.flatMap(

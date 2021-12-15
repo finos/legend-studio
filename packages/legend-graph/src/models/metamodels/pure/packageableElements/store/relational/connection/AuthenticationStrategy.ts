@@ -234,3 +234,50 @@ export class GCPApplicationDefaultCredentialsAuthenticationStrategy
     ]);
   }
 }
+
+export class UsernamePasswordAuthenticationStrategy
+  extends AuthenticationStrategy
+  implements Hashable
+{
+  baseVaultReference?: string | undefined;
+  userNameVaultReference: string;
+  passwordVaultReference: string;
+
+  constructor(userNameVaultReference: string, passwordVaultReference: string) {
+    super();
+
+    makeObservable(this, {
+      hashCode: computed,
+      userNameVaultReference: observable,
+      passwordVaultReference: observable,
+      baseVaultReference: observable,
+      setBaseVaultReference: action,
+      setPasswordVaultReference: action,
+      setUserNameVaultReference: action,
+    });
+
+    this.userNameVaultReference = userNameVaultReference;
+    this.passwordVaultReference = passwordVaultReference;
+  }
+
+  setBaseVaultReference(val: string | undefined): void {
+    this.baseVaultReference = val;
+  }
+
+  setUserNameVaultReference(val: string): void {
+    this.userNameVaultReference = val;
+  }
+
+  setPasswordVaultReference(val: string): void {
+    this.passwordVaultReference = val;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.USERNAME_PASSWORD_AUTHENTICATION_STRATEGY,
+      this.baseVaultReference?.toString() ?? '',
+      this.userNameVaultReference,
+      this.passwordVaultReference,
+    ]);
+  }
+}

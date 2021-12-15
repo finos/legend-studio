@@ -37,6 +37,7 @@ import {
   TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
   OAuthAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { DatasourceSpecification } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
 import {
@@ -68,6 +69,7 @@ import {
   V1_SnowflakePublicAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
+  V1_UsernamePasswordAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -221,6 +223,12 @@ const transformAuthenticationStrategy = (
   ) {
     const auth =
       new V1_GCPApplicationDefaultCredentialsAuthenticationStrategy();
+    return auth;
+  } else if (metamodel instanceof UsernamePasswordAuthenticationStrategy) {
+    const auth = new V1_UsernamePasswordAuthenticationStrategy();
+    auth.baseVaultReference = metamodel.baseVaultReference;
+    auth.userNameVaultReference = metamodel.userNameVaultReference;
+    auth.passwordVaultReference = metamodel.passwordVaultReference;
     return auth;
   }
   const extraConnectionAuthenticationStrategyTransformers =

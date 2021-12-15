@@ -117,3 +117,21 @@ export class V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
     ]);
   }
 }
+
+export class V1_UsernamePasswordAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  baseVaultReference?: string | undefined;
+  userNameVaultReference!: string;
+  passwordVaultReference!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.USERNAME_PASSWORD_AUTHENTICATION_STRATEGY,
+      this.baseVaultReference?.toString() ?? '',
+      this.userNameVaultReference,
+      this.passwordVaultReference,
+    ]);
+  }
+}
