@@ -557,6 +557,7 @@ const CreateQuerySetup = observer(
             querySetupState.currentVersionId,
             querySetupState.currentMapping.path,
             querySetupState.currentRuntime.path,
+            undefined,
           ),
         );
       }

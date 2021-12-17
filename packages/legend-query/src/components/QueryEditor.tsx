@@ -305,6 +305,7 @@ export const CreateQueryLoader = observer(() => {
             queryStore.queryInfoState.versionId,
             currentMapping.path,
             currentRuntime.path,
+            undefined,
           ),
         );
       }

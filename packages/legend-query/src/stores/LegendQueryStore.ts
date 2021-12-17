@@ -39,7 +39,6 @@ import type {
   RawLambda,
   Service,
   GraphManagerState,
-  Class,
   QueryTaggedValue,
 } from '@finos/legend-graph';
 import {
@@ -61,7 +60,10 @@ import type {
   ExistingQueryPathParams,
   ServiceQueryPathParams,
 } from './LegendQueryRouter';
-import { generateExistingQueryRoute } from './LegendQueryRouter';
+import {
+  generateCreateQueryRoute,
+  generateExistingQueryRoute,
+} from './LegendQueryRouter';
 import { LEGEND_QUERY_LOG_EVENT_TYPE } from '../LegendQueryLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
@@ -97,7 +99,6 @@ export class CreateQueryInfoState extends QueryInfoState {
   versionId: string;
   mapping: Mapping;
   runtime: PackageableRuntime;
-  class?: Class | undefined;
   taggedValues?: QueryTaggedValue[] | undefined;
 
   constructor(
@@ -576,7 +577,14 @@ export class LegendQueryStore {
   }
 
   *setupCreateQueryInfoState(params: CreateQueryPathParams): GeneratorFn<void> {
-    const { groupId, artifactId, versionId, mappingPath, runtimePath } = params;
+    const {
+      groupId,
+      artifactId,
+      versionId,
+      mappingPath,
+      runtimePath,
+      classPath,
+    } = params;
     try {
       this.editorInitState.inProgress();
       let queryInfoState: CreateQueryInfoState;
@@ -615,7 +623,20 @@ export class LegendQueryStore {
       this.queryBuilderState.querySetupState.runtime = new RuntimePointer(
         PackageableElementExplicitReference.create(queryInfoState.runtime),
       );
-      this.queryBuilderState.querySetupState._class = queryInfoState.class;
+      if (classPath) {
+        this.queryBuilderState.querySetupState._class =
+          this.queryBuilderState.graphManagerState.graph.getClass(classPath);
+        this.applicationStore.navigator.goTo(
+          generateCreateQueryRoute(
+            groupId,
+            artifactId,
+            versionId,
+            mappingPath,
+            runtimePath,
+            undefined,
+          ),
+        );
+      }
       if (!this.queryBuilderState.querySetupState._class) {
         const possibleTargets = getAllClassMappings(
           this.queryBuilderState.querySetupState.mapping,

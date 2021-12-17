@@ -34,6 +34,7 @@ import {
   ExternalLinkIcon,
   ShieldIcon,
   TagsIcon,
+  LightBulbIcon,
 } from '@finos/legend-art';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram';
@@ -166,7 +167,14 @@ const DataSpaceModelsOverview = observer(
             />
           )}
         </div>
-        <div className="data-space__viewer__diagrams__footer"></div>
+        <div className="data-space__viewer__diagrams__footer">
+          <div className="data-space__viewer__diagrams__footer__icon">
+            <LightBulbIcon />
+          </div>
+          <div className="data-space__viewer__diagrams__footer__text">
+            Double-click a class to start a query for that class
+          </div>
+        </div>
       </div>
     );
   },
