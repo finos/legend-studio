@@ -82,11 +82,37 @@ export class DepotServerClient extends AbstractServerClient {
   ): Promise<PlainObject<Entity>[]> =>
     this.get(this._version(groupId, artifactId, versionId));
 
+  getVersionEntity = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>[]> =>
+    this.get(
+      `${this._version(
+        groupId,
+        artifactId,
+        versionId,
+      )}/entities/${encodeURIComponent(entityPath)}`,
+    );
+
   getLatestRevisionEntities = (
     groupId: string,
     artifactId: string,
   ): Promise<PlainObject<Entity>[]> =>
     this.get(`${this._revisions(groupId, artifactId)}/latest`);
+
+  getLatestRevisionEntity = (
+    groupId: string,
+    artifactId: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> =>
+    this.get(
+      `${this._revisions(
+        groupId,
+        artifactId,
+      )}/latest/entities/${encodeURIComponent(entityPath)}`,
+    );
 
   // NOTE: this is experimental API to get elements by classifier path
   getEntitiesByClassifierPath = (

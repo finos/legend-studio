@@ -28,10 +28,13 @@ import {
   extractDataSpaceTaxonomyNodes,
   getResolvedDataSpace,
 } from '@finos/legend-extension-dsl-data-space';
+import type { DataSpace } from '@finos/legend-extension-dsl-data-space/src/models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { GraphManagerState } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
+import {
   DepotServerClient,
+  parseGAVCoordinates,
   StoredEntity,
 } from '@finos/legend-server-depot';
 import {
@@ -61,7 +64,10 @@ import {
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import { LEGEND_TAXONOMY_LOG_EVENT } from './LegendTaxonomyLogEvent';
-import type { LegendTaxonomyPathParams } from './LegendTaxonomyRouter';
+import type {
+  LegendTaxonomyPathParams,
+  LegendTaxonomyStandaloneDataSpaceViewerParams,
+} from './LegendTaxonomyRouter';
 import { generateViewTaxonomyRoute } from './LegendTaxonomyRouter';
 import type { TaxonomyServerClient } from './TaxonomyServerClient';
 import { TaxonomyNodeData } from './TaxonomyServerClient';
@@ -274,6 +280,19 @@ export class TaxonomyNodeViewerState {
           },
         },
       );
+      dataSpaceViewerState.onDiagramClassDoubleClick = (
+        classView: ClassView,
+      ): void => {
+        this.taxonomyStore.applicationStore.navigator.openNewWindow(
+          `${this.taxonomyStore.applicationStore.config.queryUrl}/create/` +
+            `${dataSpaceViewerState.dataSpace.groupId}/` +
+            `${dataSpaceViewerState.dataSpace.artifactId}/` +
+            `${dataSpaceViewerState.dataSpace.versionId}/` +
+            `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
+            `${dataSpaceViewerState.currentRuntime.path}/` +
+            `${classView.class.value.path}/`,
+        );
+      };
       this.dataSpaceViewerState = dataSpaceViewerState;
       this.currentDataSpace = rawDataSpace;
     } catch (error) {
@@ -319,6 +338,11 @@ export class LegendTaxonomyStore {
   initialDataSpaceId?: string | undefined;
   currentTaxonomyNodeViewerState?: TaxonomyNodeViewerState | undefined;
 
+  // standalone data space viewer
+  initStandaloneDataSpaceViewerState = ActionState.create();
+  standaloneDataSpaceViewerState?: DataSpaceViewerState | undefined;
+  initStandaloneDataSpaceViewerStatusText?: string | undefined;
+
   constructor(
     applicationStore: ApplicationStore<LegendTaxonomyConfig>,
     taxonomyServerClient: TaxonomyServerClient,
@@ -328,9 +352,12 @@ export class LegendTaxonomyStore {
   ) {
     makeObservable(this, {
       isInExpandedMode: observable,
+      standaloneDataSpaceViewerState: observable,
       treeData: observable.ref,
       currentTaxonomyNodeViewerState: observable,
+      initStandaloneDataSpaceViewerStatusText: observable,
       initialize: flow,
+      initializeStandaloneDataSpaceViewer: flow,
       setExpandedMode: action,
       setTreeData: action,
       setCurrentTaxonomyNodeViewerState: action,
@@ -632,5 +659,184 @@ export class LegendTaxonomyStore {
       this.initState.fail();
       this.applicationStore.notifyError(error);
     }
+  }
+
+  *initializeStandaloneDataSpaceViewer(
+    params: LegendTaxonomyStandaloneDataSpaceViewerParams,
+  ): GeneratorFn<void> {
+    if (!this.initStandaloneDataSpaceViewerState.isInInitialState) {
+      return;
+    }
+    this.initStandaloneDataSpaceViewerState.inProgress();
+
+    try {
+      yield flowResult(
+        this.graphManagerState.graphManager.initialize(
+          {
+            env: this.applicationStore.config.env,
+            tabSize: TAB_SIZE,
+            clientConfig: {
+              baseUrl: this.applicationStore.config.engineServerUrl,
+              queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+              enableCompression: true,
+            },
+          },
+          {
+            tracerService: this.applicationStore.tracerService,
+          },
+        ),
+      );
+
+      yield flowResult(this.graphManagerState.initializeSystem());
+
+      // fetch data space entity
+      this.initStandaloneDataSpaceViewerStatusText = `Fetching information for data space...`;
+      const { dataSpacePath, gav } = params;
+      const dataSpaceGAVCoordinates = parseGAVCoordinates(gav);
+      const dataSpaceProjectData = ProjectData.serialization.fromJson(
+        (yield flowResult(
+          this.depotServerClient.getProject(
+            dataSpaceGAVCoordinates.groupId,
+            dataSpaceGAVCoordinates.artifactId,
+          ),
+        )) as PlainObject<ProjectData>,
+      );
+      const resolvedDataSpaceVersionId =
+        dataSpaceGAVCoordinates.versionId === LATEST_VERSION_ALIAS
+          ? dataSpaceProjectData.latestVersion
+          : dataSpaceGAVCoordinates.versionId;
+      this.depotServerClient.get;
+      const dataSpaceEntity = (yield this.depotServerClient.getVersionEntity(
+        dataSpaceGAVCoordinates.groupId,
+        dataSpaceGAVCoordinates.artifactId,
+        resolvedDataSpaceVersionId,
+        dataSpacePath,
+      )) as Entity;
+
+      const groupId = guaranteeNonNullable(
+        dataSpaceEntity.content.groupId,
+        `Data space 'groupId' field is missing`,
+      ) as string;
+      const artifactId = guaranteeNonNullable(
+        dataSpaceEntity.content.artifactId,
+        `Data space 'artifactId' field is missing`,
+      ) as string;
+      const versionId = guaranteeNonNullable(
+        dataSpaceEntity.content.versionId,
+        `Data space 'versionId' field is missing`,
+      ) as string;
+
+      // build graph
+      this.initStandaloneDataSpaceViewerStatusText = `Building graph...`;
+      const projectData = ProjectData.serialization.fromJson(
+        (yield flowResult(
+          this.depotServerClient.getProject(groupId, artifactId),
+        )) as PlainObject<ProjectData>,
+      );
+      const resolvedVersionId =
+        versionId === LATEST_VERSION_ALIAS
+          ? projectData.latestVersion
+          : versionId;
+      const entities = (yield this.depotServerClient.getVersionEntities(
+        groupId,
+        artifactId,
+        resolvedVersionId,
+      )) as Entity[];
+      this.graphManagerState.resetGraph();
+      // build dependencies
+      const dependencyManager =
+        this.graphManagerState.createEmptyDependencyManager();
+      const dependencyEntitiesMap = new Map<string, Entity[]>();
+      (
+        (yield this.depotServerClient.getDependencyEntities(
+          groupId,
+          artifactId,
+          resolvedVersionId,
+          true,
+          false,
+        )) as PlainObject<ProjectVersionEntities>[]
+      )
+        .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+        .forEach((dependencyInfo) => {
+          dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
+        });
+      yield flowResult(
+        this.graphManagerState.graphManager.buildDependencies(
+          this.graphManagerState.coreModel,
+          this.graphManagerState.systemModel,
+          dependencyManager,
+          dependencyEntitiesMap,
+        ),
+      );
+      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      yield flowResult(
+        this.graphManagerState.graphManager.buildGraph(
+          this.graphManagerState.graph,
+          entities,
+        ),
+      );
+
+      // resolve data space
+      const resolvedDataSpace = getResolvedDataSpace(
+        dataSpaceEntity.content,
+        this.graphManagerState.graph,
+      );
+      const dataSpaceViewerState = new DataSpaceViewerState(
+        this.graphManagerState,
+        groupId,
+        artifactId,
+        versionId,
+        resolvedDataSpace,
+        {
+          viewProject: (
+            groupId: string,
+            artifactId: string,
+            versionId: string,
+            entityPath: string | undefined,
+          ): void => {
+            this.applicationStore.navigator.openNewWindow(
+              `${
+                this.applicationStore.config.studioUrl
+              }/view/${generateGAVCoordinates(groupId, artifactId, versionId)}${
+                entityPath ? `/entity/${entityPath}` : ''
+              }`,
+            );
+          },
+        },
+      );
+      dataSpaceViewerState.onDiagramClassDoubleClick = (
+        classView: ClassView,
+      ): void => {
+        this.applicationStore.navigator.openNewWindow(
+          `${this.applicationStore.config.queryUrl}/create/` +
+            `${dataSpaceViewerState.dataSpace.groupId}/` +
+            `${dataSpaceViewerState.dataSpace.artifactId}/` +
+            `${dataSpaceViewerState.dataSpace.versionId}/` +
+            `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
+            `${dataSpaceViewerState.currentRuntime.path}/` +
+            `${classView.class.value.path}/`,
+        );
+      };
+      this.standaloneDataSpaceViewerState = dataSpaceViewerState;
+
+      this.initStandaloneDataSpaceViewerState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.initStandaloneDataSpaceViewerState.fail();
+      this.applicationStore.notifyError(error);
+    } finally {
+      this.initStandaloneDataSpaceViewerStatusText = undefined;
+    }
+  }
+
+  queryUsingDataSpace(dataSpaceViewerState: DataSpaceViewerState): void {
+    this.applicationStore.navigator.openNewWindow(
+      `${this.applicationStore.config.queryUrl}/create/` +
+        `${dataSpaceViewerState.dataSpace.groupId}/` +
+        `${dataSpaceViewerState.dataSpace.artifactId}/` +
+        `${dataSpaceViewerState.dataSpace.versionId}/` +
+        `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
+        `${dataSpaceViewerState.currentRuntime.path}`,
+    );
   }
 }

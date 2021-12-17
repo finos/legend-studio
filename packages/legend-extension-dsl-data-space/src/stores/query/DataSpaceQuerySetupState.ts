@@ -81,6 +81,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
   dataSpaces: LightDataSpace[] = [];
   loadDataSpacesState = ActionState.create();
   setUpDataSpaceState = ActionState.create();
+  setUpDataSpaceStatusText?: string | undefined;
   currentDataSpace?: LightDataSpace | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   toGetSnapShot = false;
@@ -92,6 +93,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       dataSpaces: observable,
       currentDataSpace: observable.ref,
       dataSpaceViewerState: observable,
+      setUpDataSpaceStatusText: observable,
       toGetSnapShot: observable,
       setCurrentDataSpace: action,
       setDataSpaceViewerState: action,
@@ -177,6 +179,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     }
     this.setUpDataSpaceState.inProgress();
     try {
+      this.setUpDataSpaceStatusText = `Fetching information for data space...`;
       const projectData = ProjectData.serialization.fromJson(
         (yield flowResult(
           this.queryStore.depotServerClient.getProject(
@@ -185,6 +188,8 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           ),
         )) as PlainObject<ProjectData>,
       );
+
+      this.setUpDataSpaceStatusText = `Building graph...`;
       yield flowResult(
         this.queryStore.buildGraph(projectData, dataSpace.content.versionId),
       );
@@ -221,6 +226,8 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       assertErrorThrown(error);
       this.setUpDataSpaceState.fail();
       this.queryStore.applicationStore.notifyError(error);
+    } finally {
+      this.setUpDataSpaceStatusText = undefined;
     }
   }
 

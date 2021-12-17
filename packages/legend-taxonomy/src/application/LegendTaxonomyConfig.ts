@@ -60,6 +60,7 @@ export interface LegendTaxonomyConfigurationData
     TEMP__useLegacyDepotServerAPIRoutes?: boolean;
   };
   engine: { url: string; queryUrl?: string };
+  query: { url: string };
   studio: { url: string };
   taxonomy: PlainObject<TaxonomyServerOption>[];
   extensions?: Record<PropertyKey, unknown>;
@@ -69,6 +70,7 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
+  readonly queryUrl: string;
   readonly studioUrl: string;
   readonly TEMP__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
@@ -145,6 +147,10 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
+    );
+    this.queryUrl = guaranteeNonEmptyString(
+      configData.query.url,
+      `Can't configure application: 'query.url' field is missing or empty`,
     );
     this.studioUrl = guaranteeNonEmptyString(
       configData.studio.url,
