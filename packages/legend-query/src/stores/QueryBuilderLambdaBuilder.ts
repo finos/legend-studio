@@ -19,7 +19,11 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { ValueSpecification, Class } from '@finos/legend-graph';
+import {
+  ValueSpecification,
+  Class,
+  MILESTONING_STEROTYPES,
+} from '@finos/legend-graph';
 import {
   Multiplicity,
   getMilestoneTemporalStereotype,
@@ -100,21 +104,55 @@ export const buildLambdaFunction = (
 
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
-  if (
-    getMilestoneTemporalStereotype(
-      _class,
-      queryBuilderState.graphManagerState.graph,
-    )
-  ) {
-    queryBuilderState.querySetupState.classMilestoningTemporalValues.forEach(
-      (parameter) =>
+  const stereotype = getMilestoneTemporalStereotype(
+    _class,
+    queryBuilderState.graphManagerState.graph,
+  );
+  if (stereotype) {
+    switch (stereotype) {
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+        let parameter;
+        if (
+          queryBuilderState.querySetupState.classMilestoningTemporalValues
+            .length === 1
+        ) {
+          parameter =
+            queryBuilderState.querySetupState.classMilestoningTemporalValues[0];
+        } else {
+          parameter =
+            queryBuilderState.querySetupState.classMilestoningTemporalValues[1];
+        }
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
             parameter,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
-        ),
-    );
+        );
+        break;
+      }
+      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
+        );
+        break;
+      }
+      case MILESTONING_STEROTYPES.BITEMPORAL: {
+        queryBuilderState.querySetupState.classMilestoningTemporalValues.forEach(
+          (parameter) =>
+            getAllFunction.parametersValues.push(
+              guaranteeNonNullable(
+                parameter,
+                `Milestoning class should have a parameter of type 'Date'`,
+              ),
+            ),
+        );
+        break;
+      }
+      default:
+    }
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;
 

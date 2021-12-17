@@ -32,9 +32,117 @@ import type {
 } from '../stores/QueryBuilderExplorerState';
 import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
-import type { ValueSpecification } from '@finos/legend-graph';
+import type {
+  ValueSpecification,
+  VariableExpression,
+} from '@finos/legend-graph';
+import { PrimitiveInstanceValue, PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { Class, Enumeration, PrimitiveType } from '@finos/legend-graph';
+import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
+import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
+import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
+import { MdRefresh } from 'react-icons/md';
+import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
+const DerivedPropertyParameterEditor = observer(
+  (props: {
+    derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
+    variable: VariableExpression;
+    idx: number;
+  }) => {
+    const { derivedPropertyExpressionState, variable, idx } = props;
+    const handleDrop = useCallback(
+      (item: QueryBuilderParameterDragSource): void => {
+        derivedPropertyExpressionState.propertyExpression.parametersValues[
+          idx + 1
+        ] = item.variable.parameter;
+      },
+      [derivedPropertyExpressionState, idx],
+    );
+    const [{ isParameterValueDragOver }, dropConnector] = useDrop(
+      () => ({
+        accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
+        drop: (
+          item: QueryBuilderParameterDragSource,
+          monitor: DropTargetMonitor,
+        ): void => {
+          if (!monitor.didDrop()) {
+            handleDrop(item);
+          }
+        },
+        collect: (monitor): { isParameterValueDragOver: boolean } => ({
+          isParameterValueDragOver: monitor.isOver({
+            shallow: true,
+          }),
+        }),
+      }),
+      [handleDrop],
+    );
+    const resetParameterValue = (): void => {
+      const genericType = guaranteeNonNullable(variable.genericType);
+      const primitiveInstanceValue = new PrimitiveInstanceValue(
+        genericType,
+        variable.multiplicity,
+      );
+      if (genericType.value.rawType.name !== PRIMITIVE_TYPE.LATESTDATE) {
+        primitiveInstanceValue.values = [
+          generateDefaultValueForPrimitiveType(
+            genericType.value.rawType.name as PRIMITIVE_TYPE,
+          ),
+        ];
+      }
+      derivedPropertyExpressionState.propertyExpression.parametersValues[
+        idx + 1
+      ] = primitiveInstanceValue;
+    };
+
+    return (
+      <div key={variable.name} className="panel__content__form__section">
+        <div className="panel__content__form__section__header__label">
+          {variable.name}
+        </div>
+        <div className="panel__content__form__section__header__prompt">{`${
+          variable.multiplicity.lowerBound === 0 ? 'optional' : ''
+        }`}</div>
+        <div
+          ref={dropConnector}
+          className="query-builder__parameter-editor dnd__overlay__container"
+        >
+          {isParameterValueDragOver && (
+            <div className="query-builder__parameter-editor__node__dnd__overlay">
+              Change Parameter Value
+            </div>
+          )}
+          <QueryBuilderValueSpecificationEditor
+            valueSpecification={
+              derivedPropertyExpressionState.parameterValues[
+                idx
+              ] as ValueSpecification
+            }
+            graph={
+              derivedPropertyExpressionState.queryBuilderState.graphManagerState
+                .graph
+            }
+            expectedType={
+              derivedPropertyExpressionState.propertyExpression.func.genericType
+                .value.rawType
+            }
+          />
+          <button
+            className="query-builder-filter-tree__node__action"
+            tabIndex={-1}
+            title="Reset Parameter Value"
+            onClick={resetParameterValue}
+          >
+            <MdRefresh style={{ fontSize: '1.6rem' }} />
+          </button>
+        </div>
+        <div className="panel__content__form__section__list"></div>
+      </div>
+    );
+  },
+);
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
@@ -54,26 +162,12 @@ const DerivedPropertyExpressionEditor = observer(
           </div>
         )}
         {parameters.map((variable, idx) => (
-          <div key={variable.name} className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              {variable.name}
-            </div>
-            <div className="panel__content__form__section__header__prompt">{`${
-              variable.multiplicity.lowerBound === 0 ? 'optional' : ''
-            }`}</div>
-            <QueryBuilderValueSpecificationEditor
-              valueSpecification={parameterValues[idx] as ValueSpecification}
-              graph={
-                derivedPropertyExpressionState.queryBuilderState
-                  .graphManagerState.graph
-              }
-              expectedType={
-                derivedPropertyExpressionState.propertyExpression.func
-                  .genericType.value.rawType
-              }
-            />
-            <div className="panel__content__form__section__list"></div>
-          </div>
+          <DerivedPropertyParameterEditor
+            key={variable.name}
+            derivedPropertyExpressionState={derivedPropertyExpressionState}
+            variable={variable}
+            idx={idx}
+          />
         ))}
       </div>
     );
@@ -111,6 +205,24 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 />
               ),
             )}
+            <div className="modal__body query-builder__parameters__modal__body">
+              <div className="panel__content__form__section__header__label">
+                List of available parameters
+              </div>
+              <div className="panel__content__form__section__list__items">
+                {propertyExpressionState.queryBuilderState.queryParametersState.parameters.map(
+                  (parameter) => (
+                    <VariableExpressionViewer
+                      key={parameter.uuid}
+                      queryBuilderState={
+                        propertyExpressionState.queryBuilderState
+                      }
+                      variableExpressionState={parameter}
+                    />
+                  ),
+                )}
+              </div>
+            </div>
           </div>
           <div className="modal__footer">
             <button

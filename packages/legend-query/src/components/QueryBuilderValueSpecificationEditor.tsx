@@ -28,6 +28,7 @@ import {
 import {
   guaranteeNonNullable,
   isNonNullable,
+  Randomizer,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
@@ -55,6 +56,11 @@ import {
 import type { TooltipProps } from '@material-ui/core';
 import { Tooltip } from '@material-ui/core';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import type { PackageableElementOption } from '@finos/legend-application';
+import { DATE_FORMAT } from '@finos/legend-application';
+import { buildElementOption } from '@finos/legend-application';
+import format from 'date-fns/format/index';
+import { addDays } from 'date-fns';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -490,6 +496,75 @@ export const LatestDatePrimitiveInstanceValueEditor: React.FC = () => (
   </div>
 );
 
+export const DateInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    graph: PureModel;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, graph, className } = props;
+    const latestType = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
+    const variableType =
+      valueSpecification.genericType?.value.rawType ?? latestType;
+    const selectedType = buildElementOption(variableType);
+    const typeOptions: PackageableElementOption<Type>[] = graph.primitiveTypes
+      .filter(
+        (p) =>
+          p.name === PRIMITIVE_TYPE.STRICTDATE ||
+          p.name === PRIMITIVE_TYPE.DATETIME ||
+          p.name === PRIMITIVE_TYPE.LATESTDATE,
+      )
+      .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
+
+    const changeType = (val: PackageableElementOption<Type>): void => {
+      if (variableType !== val.value) {
+        valueSpecification.genericType?.value.setRawType(val.value);
+      }
+      if (
+        valueSpecification.genericType.value.rawType.name !==
+        PRIMITIVE_TYPE.LATESTDATE
+      ) {
+        valueSpecification.values = [
+          format(
+            new Randomizer().getRandomDate(
+              new Date(Date.now()),
+              addDays(Date.now(), 100),
+            ),
+            DATE_FORMAT,
+          ),
+        ];
+      }
+    };
+
+    return (
+      <div className="query-builder__parameter-editor__parameter">
+        {(valueSpecification.genericType.value.rawType.name ===
+          PRIMITIVE_TYPE.STRICTDATE ||
+          valueSpecification.genericType.value.rawType.name ===
+            PRIMITIVE_TYPE.DATETIME) && (
+          <DatePrimitiveInstanceValueEditor
+            valueSpecification={valueSpecification}
+            className={className}
+          />
+        )}
+        {valueSpecification.genericType.value.rawType.name ===
+          PRIMITIVE_TYPE.LATESTDATE && (
+          <LatestDatePrimitiveInstanceValueEditor />
+        )}
+        <div className="query-builder__parameter-editor__parameter">
+          <CustomSelectorInput
+            placeholder="Choose a type..."
+            options={typeOptions}
+            onChange={changeType}
+            value={selectedType}
+            darkMode={true}
+          />
+        </div>
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
@@ -528,6 +603,16 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
+      case PRIMITIVE_TYPE.LATESTDATE:
+        return (
+          <DateInstanceValueEditor
+            valueSpecification={valueSpecification}
+            graph={graph}
+            className={className}
+          />
+        );
+      /*case PRIMITIVE_TYPE.STRICTDATE:
+      case PRIMITIVE_TYPE.DATETIME:
         return (
           <DatePrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
@@ -535,7 +620,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           />
         );
       case PRIMITIVE_TYPE.LATESTDATE:
-        return <LatestDatePrimitiveInstanceValueEditor />;
+        return <LatestDatePrimitiveInstanceValueEditor />;*/
       default:
         return <QueryBuilderUnsupportedValueSpecificationEditor />;
     }

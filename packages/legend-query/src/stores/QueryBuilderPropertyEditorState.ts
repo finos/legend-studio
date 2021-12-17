@@ -30,6 +30,11 @@ import type {
   ValueSpecification,
 } from '@finos/legend-graph';
 import {
+  getMilestoneTemporalStereotype,
+  MILESTONING_STEROTYPES,
+} from '@finos/legend-graph';
+import {
+  Class,
   TYPICAL_MULTIPLICITY_TYPE,
   CollectionInstanceValue,
   AbstractPropertyExpression,
@@ -106,6 +111,7 @@ const fillDerivedPropertyArguments = (
             PRIMITIVE_TYPE.DATE,
             PRIMITIVE_TYPE.STRICTDATE,
             PRIMITIVE_TYPE.DATETIME,
+            PRIMITIVE_TYPE.LATESTDATE,
           ] as string[]
         ).includes(_type.name)
       ) {
@@ -113,9 +119,11 @@ const fillDerivedPropertyArguments = (
           genericType,
           parameter.multiplicity,
         );
-        primitiveInstanceValue.values = [
-          generateDefaultValueForPrimitiveType(_type.name as PRIMITIVE_TYPE),
-        ];
+        if (_type.name !== PRIMITIVE_TYPE.LATESTDATE) {
+          primitiveInstanceValue.values = [
+            generateDefaultValueForPrimitiveType(_type.name as PRIMITIVE_TYPE),
+          ];
+        }
         argument = primitiveInstanceValue;
       } else if (_type instanceof Enumeration) {
         const enumValueInstanceValue = new EnumValueInstanceValue(
@@ -133,12 +141,152 @@ const fillDerivedPropertyArguments = (
     }
     // for arguments of types we don't support, we will fill them with `[]`
     // which in Pure is equivalent to `null` in other languages
-    propertyArguments.push(
-      argument ??
-        new CollectionInstanceValue(
-          graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
-        ),
-    );
+    const querySetupState =
+      derivedPropertyExpressionState.queryBuilderState.querySetupState;
+    let isMilestonedProperty = false;
+    let temporalTarget;
+    if (
+      derivedPropertyExpressionState.propertyExpression.func.genericType.value
+        .rawType instanceof Class &&
+      derivedPropertyExpressionState.propertyExpression.func.owner
+        ._originalMilestonedProperties.length !== 0
+    ) {
+      temporalTarget = getMilestoneTemporalStereotype(
+        derivedPropertyExpressionState.propertyExpression.func.genericType.value
+          .rawType,
+        derivedPropertyExpressionState.queryBuilderState.graphManagerState
+          .graph,
+      );
+      isMilestonedProperty = true;
+      const name = derivedPropertyExpressionState.propertyExpression.func.name;
+      derivedPropertyExpressionState.propertyExpression.func =
+        guaranteeNonNullable(
+          derivedPropertyExpressionState.propertyExpression.func.owner._originalMilestonedProperties.find(
+            (e) => e.name === name,
+          ),
+        );
+    } else {
+      isMilestonedProperty = false;
+    }
+    if (isMilestonedProperty) {
+      switch (temporalTarget) {
+        case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+          let parameter;
+          if (querySetupState.classMilestoningTemporalValues.length === 0) {
+            derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+              'businessDate',
+            );
+            parameter = querySetupState.classMilestoningTemporalValues[0];
+          } else if (
+            querySetupState.classMilestoningTemporalValues.length === 1
+          ) {
+            if (
+              querySetupState.classMilestoningTemporalValues[0] instanceof
+                VariableExpression &&
+              querySetupState.classMilestoningTemporalValues[0].name ===
+                'businessDate'
+            ) {
+              parameter = querySetupState.classMilestoningTemporalValues[0];
+            } else {
+              derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+                'businessDate',
+              );
+              parameter = querySetupState.classMilestoningTemporalValues[1];
+            }
+          } else {
+            parameter = querySetupState.classMilestoningTemporalValues[1];
+          }
+          propertyArguments.push(guaranteeNonNullable(parameter));
+          break;
+        }
+        case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+          let parameter;
+          if (querySetupState.classMilestoningTemporalValues.length === 0) {
+            derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+              'processingDate',
+            );
+            parameter = querySetupState.classMilestoningTemporalValues[0];
+          } else if (
+            querySetupState.classMilestoningTemporalValues.length === 1
+          ) {
+            if (
+              querySetupState.classMilestoningTemporalValues[0] instanceof
+                VariableExpression &&
+              querySetupState.classMilestoningTemporalValues[0].name ===
+                'processingDate'
+            ) {
+              parameter = querySetupState.classMilestoningTemporalValues[0];
+            } else {
+              const businessTemporalMilestoningParameter = guaranteeNonNullable(
+                querySetupState.classMilestoningTemporalValues[0],
+              );
+              querySetupState.setClassMilestoningTemporalValues([]);
+              derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+                'processingDate',
+              );
+              parameter = querySetupState.classMilestoningTemporalValues[0];
+              querySetupState.addClassMilestoningTemporalValues(
+                businessTemporalMilestoningParameter,
+              );
+            }
+          } else {
+            parameter = querySetupState.classMilestoningTemporalValues[0];
+          }
+          propertyArguments.push(guaranteeNonNullable(parameter));
+          break;
+        }
+        case MILESTONING_STEROTYPES.BITEMPORAL: {
+          let parameters;
+          if (querySetupState.classMilestoningTemporalValues.length === 0) {
+            derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+              'processingDate',
+            );
+            derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+              'businessDate',
+            );
+            parameters = querySetupState.classMilestoningTemporalValues;
+          } else if (
+            querySetupState.classMilestoningTemporalValues.length === 1
+          ) {
+            if (
+              querySetupState.classMilestoningTemporalValues[0] instanceof
+                VariableExpression &&
+              querySetupState.classMilestoningTemporalValues[0].name ===
+                'processingDate'
+            ) {
+              derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+                'businessDate',
+              );
+              parameters = querySetupState.classMilestoningTemporalValues;
+            } else {
+              const businessTemporalMilestoningParameter = guaranteeNonNullable(
+                querySetupState.classMilestoningTemporalValues[0],
+              );
+              querySetupState.setClassMilestoningTemporalValues([]);
+              derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+                'processingDate',
+              );
+              querySetupState.addClassMilestoningTemporalValues(
+                businessTemporalMilestoningParameter,
+              );
+              parameters = querySetupState.classMilestoningTemporalValues;
+            }
+          } else {
+            parameters = querySetupState.classMilestoningTemporalValues;
+          }
+          propertyArguments.concat(...parameters);
+          break;
+        }
+        default:
+      }
+    } else {
+      propertyArguments.push(
+        argument ??
+          new CollectionInstanceValue(
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
+          ),
+      );
+    }
   });
   derivedPropertyExpressionState.propertyExpression.setParametersValues([
     guaranteeNonNullable(
@@ -200,7 +348,12 @@ export class QueryBuilderDerivedPropertyExpressionState {
       if (paramValue instanceof InstanceValue) {
         const isRequired = paramValue.multiplicity.lowerBound >= 1;
         // required and no values provided
-        if (isRequired && !paramValue.values.length) {
+        if (
+          isRequired &&
+          paramValue.genericType?.value.rawType.name !==
+            PRIMITIVE_TYPE.LATESTDATE &&
+          !paramValue.values.length
+        ) {
           return false;
         }
         // more values than allowed

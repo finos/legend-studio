@@ -35,7 +35,7 @@ import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
 import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type {
+import {
   Class,
   Enumeration,
   GraphManagerState,
@@ -43,6 +43,7 @@ import type {
   Mapping,
   PackageableRuntime,
   Service,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   PrimitiveInstanceValue,
@@ -92,7 +93,10 @@ import type {
   PackageableElementOption,
 } from '@finos/legend-application';
 import { buildElementOption } from '@finos/legend-application';
-import { QueryParametersState } from './QueryParametersState';
+import {
+  QueryParametersState,
+  QueryParameterState,
+} from './QueryParametersState';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -298,51 +302,50 @@ export class QueryBuilderState {
     );
   }
 
-  buildClassMilestoningTemporalValue(element: Class, stereotype: string): void {
-    const milestoningParameter = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(
-        new GenericType(
-          this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-            PRIMITIVE_TYPE.LATESTDATE,
-          ),
-        ),
-      ),
+  buildMilestoningParameter(parameterName: string): void {
+    const milestoningParameter = new VariableExpression(
+      parameterName,
       this.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       ),
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.DATE,
+          ),
+        ),
+      ),
     );
+    if (
+      !this.queryParametersState.parameters.find(
+        (p) => p.variableName === parameterName,
+      )
+    ) {
+      const variableState = new QueryParameterState(
+        this.queryParametersState,
+        milestoningParameter,
+      );
+      variableState.mockParameterValues();
+      this.queryParametersState.addParameter(variableState);
+    }
+    this.querySetupState.addClassMilestoningTemporalValues(
+      milestoningParameter,
+    );
+  }
+
+  buildClassMilestoningTemporalValue(stereotype: string): void {
     switch (stereotype) {
       case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-        this.querySetupState.addClassMilestoningTemporalValues(
-          milestoningParameter,
-        );
+        this.buildMilestoningParameter('businessDate');
         break;
       }
       case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
-        this.querySetupState.addClassMilestoningTemporalValues(
-          milestoningParameter,
-        );
+        this.buildMilestoningParameter('processingDate');
         break;
       }
       case MILESTONING_STEROTYPES.BITEMPORAL: {
-        const bitemporalMilestoningParameter = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              this.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.LATESTDATE,
-              ),
-            ),
-          ),
-          this.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
-        );
-        this.querySetupState.addClassMilestoningTemporalValues(
-          milestoningParameter,
-        );
-        this.querySetupState.addClassMilestoningTemporalValues(
-          bitemporalMilestoningParameter,
-        );
+        this.buildMilestoningParameter('processingDate');
+        this.buildMilestoningParameter('businessDate');
         break;
       }
       default:

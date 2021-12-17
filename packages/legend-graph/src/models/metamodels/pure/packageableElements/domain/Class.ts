@@ -56,6 +56,7 @@ export class Class extends Type implements Hashable, Stubable {
    * if this belongs to immutable elements: i.e. in system, project dependency, etc.
    * we have to make sure to remove of disposed classes from this when we reprocess the graph
    */
+  _originalMilestonedProperties: Property[] = [];
   _subClasses: Class[] = [];
   constraints: Constraint[] = [];
   stereotypes: StereotypeReference[] = [];
@@ -196,6 +197,11 @@ export class Class extends Type implements Hashable, Stubable {
       .map((_class) => _class.constraints)
       .flat();
 
+  /*getAllUnmilestonedDerivedProperties = (): DerivedProperty[] =>
+    this.derivedProperties.filter(
+      (e) => !this._originalMilestonedProperties.includes(e),
+    );*/
+
   isSuperType(type: Type): boolean {
     return (
       type.path === CORE_ELEMENT_PATH.ANY ||
@@ -310,6 +316,7 @@ export class Class extends Type implements Hashable, Stubable {
       CORE_HASH_STRUCTURE.CLASS,
       this.path,
       hashArray(this.properties),
+      //hashArray(this.getAllUnmilestonedDerivedProperties()),
       hashArray(this.derivedProperties),
       hashArray(
         this.generalizations.map((gen) => gen.ownerReference.hashValue),

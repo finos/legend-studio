@@ -16,7 +16,16 @@
 
 import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { CORE_ELEMENT_PATH, MILESTONING_STEROTYPES } from '../MetaModelConst';
+import {
+  CORE_ELEMENT_PATH,
+  MILESTONING_STEROTYPES,
+  TYPICAL_MULTIPLICITY_TYPE,
+} from '../MetaModelConst';
+import type { PropertyOwner } from '../models/metamodels/pure/packageableElements/domain/AbstractProperty';
+import { DerivedProperty } from '../models/metamodels/pure/packageableElements/domain/DerivedProperty';
+import { GenericTypeExplicitReference } from '../models/metamodels/pure/packageableElements/domain/GenericTypeReference';
+import { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType';
+import { Property } from '../models/metamodels/pure/packageableElements/domain/Property';
 
 export const getMilestoneTemporalStereotype = (
   val: Class,
@@ -50,4 +59,271 @@ export const getMilestoneTemporalStereotype = (
     }
   });
   return stereotype;
+};
+
+export const milestoningPropertyGenerator = (
+  propertyOwner: PropertyOwner,
+  graph: PureModel,
+): void => {
+  propertyOwner.properties.forEach((property) => {
+    if (property.genericType.value.rawType instanceof Class) {
+      const milestonedStereotype = getMilestoneTemporalStereotype(
+        property.genericType.value.rawType,
+        graph,
+      );
+      switch (milestonedStereotype) {
+        case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+          const dateProperty = new DerivedProperty(
+            `${property.name}`,
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getClass(property.genericType.value.rawType.path),
+              ),
+            ),
+            property.owner,
+          );
+          dateProperty.parameters = [
+            {
+              _type: 'var',
+              class: 'Date',
+              name: 'businessDate',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ];
+          dateProperty.body = [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'this',
+                },
+              ],
+              property: `${property.name}`,
+            },
+          ];
+          const milestonedAllVersions = new Property(
+            `${property.name}AllVersions`,
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONEMANY),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getClass(property.genericType.value.rawType.path),
+              ),
+            ),
+            property.owner,
+          );
+          const milestonedAllVersionsInRange = new DerivedProperty(
+            `${property.name}AllVersionsInRange`,
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getClass(property.genericType.value.rawType.path),
+              ),
+            ),
+            property.owner,
+          );
+          milestonedAllVersionsInRange.parameters = [
+            {
+              _type: 'var',
+              class: 'Date',
+              name: 'start',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+            {
+              _type: 'var',
+              class: 'Date',
+              name: 'end',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ];
+          milestonedAllVersionsInRange.body = [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'this',
+                },
+              ],
+              property: `${property.name}`,
+            },
+          ];
+          propertyOwner._originalMilestonedProperties.push(dateProperty);
+          propertyOwner._originalMilestonedProperties.push(
+            milestonedAllVersions,
+          );
+          propertyOwner._originalMilestonedProperties.push(
+            milestonedAllVersionsInRange,
+          );
+          break;
+        }
+        case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+          const dateProperty = new DerivedProperty(
+            `${property.name}`,
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getClass(property.genericType.value.rawType.path),
+              ),
+            ),
+            property.owner,
+          );
+          dateProperty.parameters = [
+            {
+              _type: 'var',
+              class: 'Date',
+              name: 'processingDate',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ];
+          dateProperty.body = [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'this',
+                },
+              ],
+              property: `${property.name}`,
+            },
+          ];
+          const milestonedAllVersions = new Property(
+            `${property.name}AllVersions`,
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONEMANY),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getClass(property.genericType.value.rawType.path),
+              ),
+            ),
+            property.owner,
+          );
+          const milestonedAllVersionsInRange = new DerivedProperty(
+            `${property.name}AllVersionsInRange`,
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getClass(property.genericType.value.rawType.path),
+              ),
+            ),
+            property.owner,
+          );
+          milestonedAllVersionsInRange.parameters = [
+            {
+              _type: 'var',
+              class: 'Date',
+              name: 'start',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+            {
+              _type: 'var',
+              class: 'Date',
+              name: 'end',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ];
+          milestonedAllVersionsInRange.body = [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'this',
+                },
+              ],
+              property: `${property.name}`,
+            },
+          ];
+          propertyOwner._originalMilestonedProperties.push(dateProperty);
+          propertyOwner._originalMilestonedProperties.push(
+            milestonedAllVersions,
+          );
+          propertyOwner._originalMilestonedProperties.push(
+            milestonedAllVersionsInRange,
+          );
+          break;
+        }
+        case MILESTONING_STEROTYPES.BITEMPORAL: {
+          const dateProperty = new DerivedProperty(
+            `${property.name}`,
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getClass(property.genericType.value.rawType.path),
+              ),
+            ),
+            property.owner,
+          );
+          dateProperty.parameters = [
+            {
+              _type: 'var',
+              class: 'Date',
+              name: 'processingDate',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+            {
+              _type: 'var',
+              class: 'Date',
+              name: 'businessDate',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ];
+          dateProperty.body = [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'this',
+                },
+              ],
+              property: `${property.name}`,
+            },
+          ];
+          const milestonedAllVersions = new Property(
+            `${property.name}AllVersions`,
+            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONEMANY),
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                graph.getClass(property.genericType.value.rawType.path),
+              ),
+            ),
+            property.owner,
+          );
+          propertyOwner._originalMilestonedProperties.push(dateProperty);
+          propertyOwner._originalMilestonedProperties.push(
+            milestonedAllVersions,
+          );
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  });
 };

@@ -53,6 +53,7 @@ import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Me
 import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
+import { milestoningPropertyGenerator } from '../../../../../../../helpers/DomainHelper';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -153,6 +154,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
       (derivedProperty) =>
         V1_buildDerivedProperty(derivedProperty, this.context, association),
     );
+    milestoningPropertyGenerator(association, this.context.graph);
   }
 
   visit_ConcreteFunctionDefinition(

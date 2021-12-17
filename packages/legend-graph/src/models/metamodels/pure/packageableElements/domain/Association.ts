@@ -78,6 +78,8 @@ export class Association
   taggedValues: TaggedValue[] = [];
   derivedProperties: DerivedProperty[] = [];
 
+  _originalMilestonedProperties: Property[] = [];
+
   constructor(name: string) {
     super(name);
 
@@ -127,7 +129,9 @@ export class Association
 
   getProperty = (name: string): Property =>
     guaranteeNonNullable(
-      this.properties.find((p) => p.name === name),
+      this.properties
+        .concat(...this._originalMilestonedProperties)
+        .find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );
 
