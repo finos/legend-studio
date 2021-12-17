@@ -86,7 +86,7 @@
     "@finos/legend-dev-utils": "workspace:*",
     "@finos/stylelint-config-legend-studio": "workspace:*",
     "@types/jest": "27.0.3",
-    "@types/node": "16.11.12",
+    "@types/node": "16.11.14",
     "chalk": "5.0.0",
     "cross-env": "7.0.3",
     "envinfo": "7.8.1",
