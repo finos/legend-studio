@@ -111,7 +111,7 @@ export const generateViewTaxonomyByDataSpaceRoute = (
 export const generateStandaloneDataSpaceViewerRoute = (
   GAVCoordinates: string,
   dataSpacePath: string,
-) =>
+): string =>
   generatePath(LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE, {
     [LEGEND_TAXONOMY_PARAM_TOKEN.GAV]: GAVCoordinates,
     [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]: dataSpacePath,

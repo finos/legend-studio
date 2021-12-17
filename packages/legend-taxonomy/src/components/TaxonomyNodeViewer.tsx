@@ -44,7 +44,7 @@ import {
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import {
   DataSpaceViewer,
-  DataSpaceViewerState,
+  type DataSpaceViewerState,
 } from '@finos/legend-extension-dsl-data-space';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';

@@ -28,16 +28,13 @@ import {
   extractDataSpaceTaxonomyNodes,
   getResolvedDataSpace,
 } from '@finos/legend-extension-dsl-data-space';
-import type { DataSpace } from '@finos/legend-extension-dsl-data-space/src/models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { GraphManagerState } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import {
-  DepotServerClient,
+  type DepotServerClient,
+  type StoredEntity,
   parseGAVCoordinates,
-  StoredEntity,
-} from '@finos/legend-server-depot';
-import {
   LATEST_VERSION_ALIAS,
   ProjectVersionEntities,
   ProjectData,
