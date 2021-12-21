@@ -37,6 +37,7 @@ import {
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
@@ -85,6 +86,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   TEST = 'TEST',
   OAUTH = 'OAUTH',
   USER_PASSWORD = 'USER_PASSWORD',
+  USERNAME_PASSWORD = 'USERNAME_PASSWORD',
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
@@ -234,6 +236,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
     } else if (auth instanceof UserPasswordAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD;
+    } else if (auth instanceof UsernamePasswordAuthenticationStrategy) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD;
     } else if (
       auth instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
     ) {
@@ -290,6 +294,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD: {
         this.connection.setAuthenticationStrategy(
           new UserPasswordAuthenticationStrategy('', ''),
+        );
+        return;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD: {
+        this.connection.setAuthenticationStrategy(
+          new UsernamePasswordAuthenticationStrategy('', ''),
         );
         return;
       }
