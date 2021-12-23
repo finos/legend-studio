@@ -16,16 +16,17 @@
 
 import { computed, observable, action, makeObservable } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   guaranteeType,
   assertType,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
-import type { CompilationError, PackageableElement } from '@finos/legend-graph';
 import {
+  type CompilationError,
+  type PackageableElement,
   GRAPH_MANAGER_LOG_EVENT,
   LAMBDA_PIPE,
   ParserError,

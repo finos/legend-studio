@@ -19,8 +19,9 @@ import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   downloadFile,

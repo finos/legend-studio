@@ -25,8 +25,8 @@ import {
   custom,
   alias,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   usingConstantValueSchema,
   UnsupportedOperationError,
   usingModelSchema,

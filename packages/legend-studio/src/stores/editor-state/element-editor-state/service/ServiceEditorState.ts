@@ -17,12 +17,17 @@
 import { observable, computed, action, makeObservable } from 'mobx';
 import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import type { ServiceExecutionState } from './ServiceExecutionState';
-import { ServicePureExecutionState } from './ServiceExecutionState';
+import {
+  type ServiceExecutionState,
+  ServicePureExecutionState,
+} from './ServiceExecutionState';
 import { ServiceRegistrationState } from '../../../editor-state/element-editor-state/service/ServiceRegistrationState';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState';
-import type { PackageableElement } from '@finos/legend-graph';
-import { Service, PureExecution } from '@finos/legend-graph';
+import {
+  type PackageableElement,
+  Service,
+  PureExecution,
+} from '@finos/legend-graph';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',

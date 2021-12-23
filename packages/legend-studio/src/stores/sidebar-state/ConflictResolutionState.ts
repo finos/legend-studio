@@ -19,8 +19,9 @@ import type { EditorStore } from '../EditorStore';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { EditorSDLCState } from '../EditorSDLCState';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   assertTrue,
@@ -36,11 +37,9 @@ import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { ACTIVITY_MODE } from '../EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  EntityChangeConflict,
-  EntityChangeConflictResolution,
-} from '@finos/legend-server-sdlc';
 import {
+  type EntityChangeConflict,
+  type EntityChangeConflictResolution,
   EntityChangeType,
   EntityDiff,
   ProjectConfiguration,

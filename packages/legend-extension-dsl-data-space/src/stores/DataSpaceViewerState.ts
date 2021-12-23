@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import type {
-  ClassView,
-  DiagramRenderer,
-} from '@finos/legend-extension-dsl-diagram';
 import {
+  type ClassView,
+  type DiagramRenderer,
   Diagram,
   DIAGRAM_INTERACTION_MODE,
 } from '@finos/legend-extension-dsl-diagram';

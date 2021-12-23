@@ -19,17 +19,17 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection';
-import type {
-  Connection,
-  ConnectionVisitor,
+import {
+  ConnectionPointer,
+  type Connection,
+  type ConnectionVisitor,
 } from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
-import { ConnectionPointer } from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
 import type { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
 import type { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
 import type { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
 import type { RelationalDatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import type { AuthenticationStrategy } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
+  type AuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
@@ -39,8 +39,8 @@ import {
   OAuthAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
-import type { DatasourceSpecification } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
 import {
+  type DatasourceSpecification,
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
@@ -54,8 +54,8 @@ import {
   V1_transformElementReference,
 } from './V1_CoreTransformerHelper';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
-import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
+  type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
@@ -63,8 +63,8 @@ import {
   V1_StaticDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
-import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
+  type V1_AuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
@@ -75,8 +75,10 @@ import {
   V1_OAuthAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection';
-import type { V1_DatabaseType } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
+import {
+  type V1_DatabaseType,
+  V1_RelationalDatabaseConnection,
+} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';

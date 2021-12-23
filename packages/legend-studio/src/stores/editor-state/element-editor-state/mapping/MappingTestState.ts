@@ -18,8 +18,8 @@ import type {
   MappingEditorState,
   MappingElementSource,
 } from './MappingEditorState';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   hashObject,
   UnsupportedOperationError,
@@ -48,16 +48,14 @@ import {
 } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type {
-  MappingTest,
-  RawLambda,
-  Runtime,
-  InputData,
-  MappingTestAssert,
-  Mapping,
-  ExecutionResult,
-} from '@finos/legend-graph';
 import {
+  type MappingTest,
+  type RawLambda,
+  type Runtime,
+  type InputData,
+  type MappingTestAssert,
+  type Mapping,
+  type ExecutionResult,
   extractExecutionResultValues,
   GRAPH_MANAGER_LOG_EVENT,
   LAMBDA_PIPE,

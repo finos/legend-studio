@@ -16,13 +16,13 @@
 
 import packageJson from '../../package.json';
 import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
-import type {
-  DSLMapping_PureGraphManagerPlugin_Extension,
-  PackageableElement,
-  PureGrammarElementLabeler,
-  PureGrammarConnectionLabeler,
+import {
+  PureGraphManagerPlugin,
+  type DSLMapping_PureGraphManagerPlugin_Extension,
+  type PackageableElement,
+  type PureGrammarElementLabeler,
+  type PureGrammarConnectionLabeler,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
 import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ServiceStoreConnection';
 
 const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';

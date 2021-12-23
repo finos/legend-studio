@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { MappingExecutionState } from '@finos/legend-studio';
-import { useEditorStore } from '@finos/legend-studio';
+import {
+  type MappingExecutionState,
+  useEditorStore,
+} from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';

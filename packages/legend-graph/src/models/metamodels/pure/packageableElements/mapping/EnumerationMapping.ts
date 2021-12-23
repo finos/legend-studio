@@ -15,15 +15,12 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type {
-  PackageableElementReference,
-  OptionalPackageableElementReference,
-} from '../PackageableElementReference';
 import {
+  type PackageableElementReference,
+  type OptionalPackageableElementReference,
   PackageableElementExplicitReference,
   OptionalPackageableElementExplicitReference,
 } from '../PackageableElementReference';
@@ -31,10 +28,11 @@ import type { Mapping, MappingElementLabel } from './Mapping';
 import type { Enumeration } from '../domain/Enumeration';
 import type { EnumValueMapping } from './EnumValueMapping';
 import type { Type } from '../domain/Type';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
-import { InferableMappingElementIdExplicitValue } from './InferableMappingElementId';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
+import {
+  type InferableMappingElementIdValue,
+  InferableMappingElementIdExplicitValue,
+} from './InferableMappingElementId';
 
 export class EnumerationMapping implements Hashable, Stubable {
   parent: Mapping;

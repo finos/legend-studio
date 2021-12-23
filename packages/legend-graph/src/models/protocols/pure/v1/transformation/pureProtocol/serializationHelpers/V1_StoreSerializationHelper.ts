@@ -23,8 +23,8 @@ import {
   serialize,
   optional,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   usingConstantValueSchema,
   deserializeArray,
   assertTrue,
@@ -34,8 +34,8 @@ import {
 } from '@finos/legend-shared';
 import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';
-import type { V1_FlatDataDataType } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
 import {
+  type V1_FlatDataDataType,
   V1_FlatDataDecimal,
   V1_FlatDataDate,
   V1_FlatDataDateTime,

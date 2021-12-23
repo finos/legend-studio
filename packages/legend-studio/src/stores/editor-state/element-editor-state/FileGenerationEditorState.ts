@@ -19,8 +19,10 @@ import { ElementEditorState } from './ElementEditorState';
 import { assertType, guaranteeType } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore';
 import { FileGenerationState } from '../../editor-state/FileGenerationState';
-import type { PackageableElement } from '@finos/legend-graph';
-import { FileGenerationSpecification } from '@finos/legend-graph';
+import {
+  type PackageableElement,
+  FileGenerationSpecification,
+} from '@finos/legend-graph';
 
 export class FileGenerationEditorState extends ElementEditorState {
   isGenerating = false;

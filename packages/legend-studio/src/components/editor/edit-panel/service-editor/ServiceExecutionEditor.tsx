@@ -34,11 +34,11 @@ import type { SingleExecutionTestState } from '../../../../stores/editor-state/e
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
 import { VscError } from 'react-icons/vsc';
 import { useDrop } from 'react-dnd';
-import type {
-  ElementDragSource,
-  UMLEditorElementDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import {
   clsx,
@@ -57,8 +57,9 @@ import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/Ser
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { KeyedExecutionParameter, Runtime } from '@finos/legend-graph';
 import {
+  type KeyedExecutionParameter,
+  type Runtime,
   PureSingleExecution,
   PureMultiExecution,
   Mapping,

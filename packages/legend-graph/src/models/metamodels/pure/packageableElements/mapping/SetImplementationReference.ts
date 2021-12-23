@@ -15,11 +15,11 @@
  */
 
 import { observable, action, makeObservable } from 'mobx';
-import type {
-  PackageableElementReference,
-  PackageableElementImplicitReference,
+import {
+  PackageableElementExplicitReference,
+  type PackageableElementReference,
+  type PackageableElementImplicitReference,
 } from '../PackageableElementReference';
-import { PackageableElementExplicitReference } from '../PackageableElementReference';
 import type { Mapping } from './Mapping';
 import type { SetImplementation } from './SetImplementation';
 import { ReferenceWithOwner } from '../../Reference';

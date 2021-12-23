@@ -15,15 +15,21 @@
  */
 
 import { observable, computed, action, makeObservable } from 'mobx';
-import { hashArray, uuid, addUniqueEntry } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  uuid,
+  addUniqueEntry,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Mapping } from '../mapping/Mapping';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Service } from './Service';
 import type { Runtime } from '../runtime/Runtime';
-import type { ValidationIssue } from '../../../../../helpers/ValidationHelper';
-import { createValidationError } from '../../../../../helpers/ValidationHelper';
+import {
+  type ValidationIssue,
+  createValidationError,
+} from '../../../../../helpers/ValidationHelper';
 import type { PackageableElementReference } from '../PackageableElementReference';
 
 export abstract class ServiceExecution implements Hashable {

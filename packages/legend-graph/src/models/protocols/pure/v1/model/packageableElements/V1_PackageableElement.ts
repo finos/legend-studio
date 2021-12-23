@@ -18,8 +18,7 @@ import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_Profile } from './domain/V1_Profile';
 import type { V1_Class } from './domain/V1_Class';
 import type { V1_Enumeration } from './domain/V1_Enumeration';

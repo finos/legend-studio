@@ -17,9 +17,12 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WorkspaceOption } from '../../stores/SetupStore';
-import type { SelectComponent } from '@finos/legend-art';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
-import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
+import {
+  type SelectComponent,
+  compareLabelFn,
+  CustomSelectorInput,
+} from '@finos/legend-art';
 import { FaPlus, FaUserFriends, FaUser } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';

@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import type {
-  LegendApplicationConfig,
-  LegendApplicationVersionData,
-} from '@finos/legend-application';
 import {
+  type LegendApplicationConfig,
+  type LegendApplicationVersionData,
   ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
@@ -34,8 +32,10 @@ import { LegendQueryPluginManager } from './LegendQueryPluginManager';
 import { Query_GraphPreset } from '../models/Query_GraphPreset';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
-import type { LegendQueryConfigurationData } from './LegendQueryConfig';
-import { LegendQueryConfig } from './LegendQueryConfig';
+import {
+  type LegendQueryConfigurationData,
+  LegendQueryConfig,
+} from './LegendQueryConfig';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   // Register module extensions for `ag-grid`

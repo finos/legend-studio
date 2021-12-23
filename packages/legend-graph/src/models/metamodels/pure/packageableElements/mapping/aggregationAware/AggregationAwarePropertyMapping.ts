@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { PropertyMappingVisitor } from '../PropertyMapping';
-import { PropertyMapping } from '../PropertyMapping';
+import {
+  type PropertyMappingVisitor,
+  PropertyMapping,
+} from '../PropertyMapping';
 
 export class AggregationAwarePropertyMapping extends PropertyMapping {
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {

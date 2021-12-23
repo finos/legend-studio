@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import type { QueryBuilderMode } from '@finos/legend-query';
 import {
+  type QueryBuilderMode,
   StandardQueryBuilderMode,
   QueryBuilderState,
 } from '@finos/legend-query';
 import type { GeneratorFn } from '@finos/legend-shared';
-import type { EditorStore } from '@finos/legend-studio';
-import { EditorExtensionState } from '@finos/legend-studio';
+import { type EditorStore, EditorExtensionState } from '@finos/legend-studio';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 
 interface EmbeddedQueryBuilderMode {

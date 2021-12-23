@@ -21,8 +21,8 @@ import type {
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
 import { Dialog } from '@material-ui/core';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   BlankPanelContent,
   ArrowCircleDownIcon,
   clsx,

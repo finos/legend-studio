@@ -29,11 +29,13 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
-import type { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { FORMAT_TYPE } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import {
+  type SchemaSet,
+  FORMAT_TYPE,
+} from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const SchemaSetFormatBasicEditor = observer(

@@ -15,9 +15,8 @@
  */
 
 import { computed, action, makeObservable, observable } from 'mobx';
-import type { EditorStore } from '@finos/legend-studio';
 import { guaranteeType } from '@finos/legend-shared';
-import { ElementEditorState } from '@finos/legend-studio';
+import { type EditorStore, ElementEditorState } from '@finos/legend-studio';
 import type { PackageableElement } from '@finos/legend-graph';
 import { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import type { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';

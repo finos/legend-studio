@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import type { TooltipProps } from '@material-ui/core';
-import { Tooltip } from '@material-ui/core';
+import { type TooltipProps, Tooltip } from '@material-ui/core';
 import { StubTransition } from '@finos/legend-art';
-import type { AbstractProperty } from '@finos/legend-graph';
-import { DerivedProperty } from '@finos/legend-graph';
+import { type AbstractProperty, DerivedProperty } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 export const QueryBuilderPropertyInfoTooltip: React.FC<{

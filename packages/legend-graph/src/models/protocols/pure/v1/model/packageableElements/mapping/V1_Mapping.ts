@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { V1_MappingInclude } from '../../../model/packageableElements/mapping/V1_MappingInclude';
 import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_AssociationMapping } from '../../../model/packageableElements/mapping/V1_AssociationMapping';
 import type { V1_EnumerationMapping } from '../../../model/packageableElements/mapping/V1_EnumerationMapping';
-import type { V1_PackageableElementVisitor } from '../../../model/packageableElements/V1_PackageableElement';
-import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
+import {
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
+} from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest';
 
 export class V1_Mapping extends V1_PackageableElement implements Hashable {

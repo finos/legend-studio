@@ -25,8 +25,8 @@ import {
   LegendMaterialUITheme,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
 import {
+  type SDLCServerKeyPathParams,
   URL_PATH_PLACEHOLDER,
   generateSetupRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,

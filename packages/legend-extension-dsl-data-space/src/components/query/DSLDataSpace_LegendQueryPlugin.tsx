@@ -15,13 +15,13 @@
  */
 
 import packageJson from '../../../package.json';
-import type {
-  QuerySetupOptionRendererConfiguration,
-  QuerySetupRenderer,
-  QuerySetupState,
-  QuerySetupStore,
+import {
+  LegendQueryPlugin,
+  type QuerySetupOptionRendererConfiguration,
+  type QuerySetupRenderer,
+  type QuerySetupState,
+  type QuerySetupStore,
 } from '@finos/legend-query';
-import { LegendQueryPlugin } from '@finos/legend-query';
 import { SquareIcon } from '@finos/legend-art';
 import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState';
 import { DataspaceQuerySetup } from './DataSpaceQuerySetup';

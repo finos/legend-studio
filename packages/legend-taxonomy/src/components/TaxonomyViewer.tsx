@@ -23,16 +23,16 @@ import {
 import { GlobalHotKeys } from 'react-hotkeys';
 import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
-import type { LegendTaxonomyPathParams } from '../stores/LegendTaxonomyRouter';
-import { updateRouteWithNewTaxonomyServerOption } from '../stores/LegendTaxonomyRouter';
+import {
+  type LegendTaxonomyPathParams,
+  updateRouteWithNewTaxonomyServerOption,
+} from '../stores/LegendTaxonomyRouter';
 import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
 import { flowResult } from 'mobx';
-import type {
-  ResizablePanelHandlerProps,
-  SelectComponent,
-  SelectOption,
-} from '@finos/legend-art';
 import {
+  type ResizablePanelHandlerProps,
+  type SelectComponent,
+  type SelectOption,
   SearchIcon,
   PlusIcon,
   TimesIcon,

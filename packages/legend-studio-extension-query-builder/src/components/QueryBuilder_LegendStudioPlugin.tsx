@@ -21,23 +21,21 @@ import type {
   DiagramEditorState,
   DSLDiagram_LegendStudioPlugin_Extension,
 } from '@finos/legend-extension-dsl-diagram';
-import type {
-  EditorExtensionState,
-  EditorExtensionStateCreator,
-  EditorStore,
-  LegendStudioPluginManager,
-  EditorExtensionComponentRendererConfiguration,
-  ExplorerContextMenuItemRendererConfiguration,
-  ServicePureExecutionState,
-  MappingExecutionQueryEditorActionConfiguration,
-  MappingExecutionState,
-  MappingTestQueryEditorActionConfiguration,
-  MappingTestState,
-  ApplicationSetup,
-  DSLService_LegendStudioPlugin_Extension,
-  ServiceQueryEditorActionConfiguration,
-} from '@finos/legend-studio';
 import {
+  type EditorExtensionState,
+  type EditorExtensionStateCreator,
+  type EditorStore,
+  type LegendStudioPluginManager,
+  type EditorExtensionComponentRendererConfiguration,
+  type ExplorerContextMenuItemRendererConfiguration,
+  type ServicePureExecutionState,
+  type MappingExecutionQueryEditorActionConfiguration,
+  type MappingExecutionState,
+  type MappingTestQueryEditorActionConfiguration,
+  type MappingTestState,
+  type ApplicationSetup,
+  type DSLService_LegendStudioPlugin_Extension,
+  type ServiceQueryEditorActionConfiguration,
   NewServiceModal,
   useEditorStore,
   LegendStudioPlugin,
@@ -49,12 +47,12 @@ import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder';
 import { MappingTestQueryBuilder } from './MappingTestQueryBuilder';
 import { flowResult } from 'mobx';
 import {
+  type PackageableElement,
   Class,
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
 } from '@finos/legend-graph';
-import type { PackageableElement } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
 import {
   setupLegendQueryUILibrary,

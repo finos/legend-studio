@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import type { ClassValue } from 'clsx';
-import clsx from 'clsx';
-import type { HandlerProps, ReflexElementProps } from 'react-reflex';
-import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
+import clsx, { type ClassValue } from 'clsx';
+import {
+  type HandlerProps,
+  type ReflexElementProps,
+  ReflexContainer,
+  ReflexElement,
+  ReflexSplitter,
+} from 'react-reflex';
 
 /**
  * We need test-mocks for `react-reflex` or else some of our tests might fail since

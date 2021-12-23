@@ -18,8 +18,8 @@ import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   losslessStringify,
@@ -32,14 +32,12 @@ import {
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import type {
-  ServiceTestResult,
-  KeyedSingleExecutionTest,
-  Runtime,
-  ExecutionResult,
-  Connection,
-} from '@finos/legend-graph';
 import {
+  type ServiceTestResult,
+  type KeyedSingleExecutionTest,
+  type Runtime,
+  type ExecutionResult,
+  type Connection,
   extractExecutionResultValues,
   GRAPH_MANAGER_LOG_EVENT,
   TestContainer,

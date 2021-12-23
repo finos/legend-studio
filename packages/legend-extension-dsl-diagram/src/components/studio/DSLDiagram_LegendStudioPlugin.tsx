@@ -15,22 +15,22 @@
  */
 
 import packageJson from '../../../package.json';
-import type {
-  NewElementFromStateCreator,
-  EditorStore,
-  ElementEditorState,
-  ElementEditorStateCreator,
-  ElementTypeGetter,
-  ElementProjectExplorerDnDTypeGetter,
-  ElementIconGetter,
-  ElementEditorRenderer,
-  DSL_LegendStudioPlugin_Extension,
-  NewElementState,
-  ElementEditorPostDeleteAction,
-  ElementEditorPostRenameAction,
-  ClassPreviewRenderer,
+import {
+  LegendStudioPlugin,
+  type NewElementFromStateCreator,
+  type EditorStore,
+  type ElementEditorState,
+  type ElementEditorStateCreator,
+  type ElementTypeGetter,
+  type ElementProjectExplorerDnDTypeGetter,
+  type ElementIconGetter,
+  type ElementEditorRenderer,
+  type DSL_LegendStudioPlugin_Extension,
+  type NewElementState,
+  type ElementEditorPostDeleteAction,
+  type ElementEditorPostRenameAction,
+  type ClassPreviewRenderer,
 } from '@finos/legend-studio';
-import { LegendStudioPlugin } from '@finos/legend-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
 import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';

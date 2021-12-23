@@ -22,24 +22,24 @@ import {
   list,
   serialize,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   usingConstantValueSchema,
   deserializeArray,
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
 } from '@finos/legend-shared';
-import type { V1_ServiceExecution } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import {
+  type V1_ServiceExecution,
   V1_KeyedExecutionParameter,
   V1_PureMultiExecution,
   V1_PureSingleExecution,
 } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service';
 import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper';
-import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
+  type V1_Runtime,
   V1_EngineRuntime,
   V1_LegacyRuntime,
   V1_RuntimePointer,
@@ -48,8 +48,8 @@ import {
   V1_runtimePointerModelSchema,
   V1_RuntimeType,
 } from './V1_RuntimeSerializationHelper';
-import type { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
 import {
+  type V1_ServiceTest,
   V1_KeyedSingleExecutionTest,
   V1_MultiExecutionTest,
   V1_SingleExecutionTest,

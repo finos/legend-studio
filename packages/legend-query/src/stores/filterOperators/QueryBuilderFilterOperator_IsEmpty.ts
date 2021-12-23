@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
-import type {
-  QueryBuilderFilterState,
-  FilterConditionState,
+import {
+  QueryBuilderFilterOperator,
+  type QueryBuilderFilterState,
+  type FilterConditionState,
 } from '../QueryBuilderFilterState';
-import type {
-  ValueSpecification,
-  SimpleFunctionExpression,
+import {
+  PRIMITIVE_TYPE,
+  type ValueSpecification,
+  type SimpleFunctionExpression,
 } from '@finos/legend-graph';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
   buildNotExpression,

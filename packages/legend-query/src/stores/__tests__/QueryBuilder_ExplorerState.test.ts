@@ -18,14 +18,14 @@ import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryB
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  AbstractProperty,
-  GraphManagerState,
-  Mapping,
-} from '@finos/legend-graph';
-import { Class } from '@finos/legend-graph';
-import type { QueryBuilderPropertyMappingData } from '../../stores/QueryBuilderExplorerState';
 import {
+  Class,
+  type AbstractProperty,
+  type GraphManagerState,
+  type Mapping,
+} from '@finos/legend-graph';
+import {
+  type QueryBuilderPropertyMappingData,
   getPropertyNodeMappingData,
   getRootMappingData,
 } from '../../stores/QueryBuilderExplorerState';

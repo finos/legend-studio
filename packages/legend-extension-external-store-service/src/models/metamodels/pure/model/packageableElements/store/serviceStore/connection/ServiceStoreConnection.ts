@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type {
-  ConnectionVisitor,
-  PackageableElementReference,
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  Connection,
+  type ConnectionVisitor,
+  type PackageableElementReference,
 } from '@finos/legend-graph';
-import { Connection } from '@finos/legend-graph';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type { ServiceStore } from '../model/ServiceStore';

@@ -22,13 +22,11 @@ import {
   returnUndefOnError,
 } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const';
-import type {
-  V1_GraphBuilderContext,
-  V1_ProcessingContext,
-  V1_ValueSpecification,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type V1_GraphBuilderContext,
+  type V1_ProcessingContext,
+  type V1_ValueSpecification,
+  type ValueSpecification,
   extractElementNameFromPath,
   V1_AppliedProperty,
   CollectionInstanceValue,

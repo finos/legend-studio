@@ -17,12 +17,12 @@
 import packageJson from '../../package.json';
 import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import type {
-  DSLMapping_PureGraphManagerPlugin_Extension,
-  PureGrammarConnectionLabeler,
-  PureGrammarElementLabeler,
+import {
+  PureGraphManagerPlugin,
+  type DSLMapping_PureGraphManagerPlugin_Extension,
+  type PureGrammarConnectionLabeler,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
 import { ExternalFormatConnection } from '../models/metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
 
 const PURE_GRAMMAR_BINDING_PARSER_NAME = 'ExternalFormat';

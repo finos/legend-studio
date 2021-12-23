@@ -16,19 +16,19 @@
 
 import { observer } from 'mobx-react-lite';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
-import { SQL_DISPLAY_TABS } from '../../../../../stores/ExecutionPlanState';
+import {
+  type ExecutionPlanState,
+  SQL_DISPLAY_TABS,
+} from '../../../../../stores/ExecutionPlanState';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { clsx } from '@finos/legend-art';
 import { RelationalDatabaseConnectionEditor } from '../../connection-editor/RelationalDatabaseConnectionEditor';
 import { format } from 'sql-formatter';
 import { RelationalDatabaseConnectionValueState } from '../../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import type {
-  SQLResultColumn,
-  RelationalDataType,
-  DatabaseConnection,
-} from '@finos/legend-graph';
 import {
+  type SQLResultColumn,
+  type RelationalDataType,
+  type DatabaseConnection,
   Real,
   Binary,
   Bit,

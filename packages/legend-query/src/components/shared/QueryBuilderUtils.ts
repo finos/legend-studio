@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { Multiplicity } from '@finos/legend-graph';
-import { MULTIPLICITY_INFINITE } from '@finos/legend-graph';
+import { type Multiplicity, MULTIPLICITY_INFINITE } from '@finos/legend-graph';
 
 export const getMultiplicityDescription = (
   multiplicity: Multiplicity,

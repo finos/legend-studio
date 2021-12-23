@@ -15,8 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { SnackbarCloseReason } from '@material-ui/core/Snackbar';
-import Snackbar from '@material-ui/core/Snackbar';
+import Snackbar, { type SnackbarCloseReason } from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import {
   DEFAULT_NOTIFICATION_HIDE_TIME,

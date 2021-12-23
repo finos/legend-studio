@@ -16,24 +16,21 @@
 
 import packageJson from '../../../../package.json';
 import { V1_Diagram } from './v1/model/packageableElements/diagram/V1_Diagram';
-import type { PlainObject } from '@finos/legend-shared';
-import { assertType } from '@finos/legend-shared';
+import { type PlainObject, assertType } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_diagramModelSchema,
   V1_DIAGRAM_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLDiagram_ProtocolHelper';
-import type {
-  PackageableElement,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_GraphBuilderContext,
-  V1_GraphTransformerContext,
-  V1_PackageableElement,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type V1_ElementProtocolClassifierPathGetter,
+  type V1_ElementProtocolDeserializer,
+  type V1_ElementProtocolSerializer,
+  type V1_ElementTransformer,
+  type V1_GraphBuilderContext,
+  type V1_GraphTransformerContext,
+  type V1_PackageableElement,
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
 } from '@finos/legend-graph';

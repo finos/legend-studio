@@ -22,8 +22,8 @@ import {
   makeAutoObservable,
 } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import type { Clazz } from '@finos/legend-shared';
 import {
+  type Clazz,
   IllegalStateError,
   guaranteeType,
   UnsupportedOperationError,
@@ -31,17 +31,17 @@ import {
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
-import type { FileGenerationTypeOption } from './editor-state/GraphGenerationState';
-import { DEFAULT_GENERATION_SPECIFICATION_NAME } from './editor-state/GraphGenerationState';
-import type {
-  PackageableElement,
-  Runtime,
-  Store,
-  ModelStore,
-  Connection,
-  PureModelConnection,
-} from '@finos/legend-graph';
 import {
+  type FileGenerationTypeOption,
+  DEFAULT_GENERATION_SPECIFICATION_NAME,
+} from './editor-state/GraphGenerationState';
+import {
+  type PackageableElement,
+  type Runtime,
+  type Store,
+  type ModelStore,
+  type Connection,
+  type PureModelConnection,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   ELEMENT_PATH_DELIMITER,

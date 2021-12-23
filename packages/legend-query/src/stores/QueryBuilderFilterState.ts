@@ -38,11 +38,9 @@ import {
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
 import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type {
-  AbstractPropertyExpression,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type AbstractPropertyExpression,
+  type ValueSpecification,
   extractElementNameFromPath,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,

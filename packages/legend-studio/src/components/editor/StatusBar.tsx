@@ -28,11 +28,11 @@ import { clsx, HammerIcon } from '@finos/legend-art';
 import { GoSync } from 'react-icons/go';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import type {
-  EditorPathParams,
-  GroupEditorPathParams,
+import {
+  generateSetupRoute,
+  type EditorPathParams,
+  type GroupEditorPathParams,
 } from '../../stores/LegendStudioRouter';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';

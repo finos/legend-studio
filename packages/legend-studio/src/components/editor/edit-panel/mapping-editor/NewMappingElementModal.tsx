@@ -17,14 +17,14 @@
 import { useState, useRef } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   CustomSelectorInput,
   createFilter,
   compareLabelFn,
 } from '@finos/legend-art';
-import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type MappingElement,
   createClassMapping,
   createEnumerationMapping,
   getAllMappingElements,
@@ -36,8 +36,8 @@ import {
 } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { PackageableElement } from '@finos/legend-graph';
 import {
+  type PackageableElement,
   PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   Class,

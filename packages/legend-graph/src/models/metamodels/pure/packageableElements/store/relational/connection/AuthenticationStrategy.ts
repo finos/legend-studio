@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { observable, computed, makeObservable, action } from 'mobx';
 
 export abstract class AuthenticationStrategy implements Hashable {

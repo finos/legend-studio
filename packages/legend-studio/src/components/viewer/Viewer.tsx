@@ -35,8 +35,8 @@ import {
   LEGEND_STUDIO_HOTKEY,
   LEGEND_STUDIO_HOTKEY_MAP,
 } from '../../stores/EditorConfig';
-import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  type ResizablePanelHandlerProps,
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
@@ -46,8 +46,10 @@ import {
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
-import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
+import {
+  type ViewerPathParams,
+  generateSetupRoute,
+} from '../../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { flowResult } from 'mobx';

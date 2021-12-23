@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { RelationshipView } from './RelationshipView';
 import type { ClassView } from './ClassView';
 import type { Diagram } from './Diagram';

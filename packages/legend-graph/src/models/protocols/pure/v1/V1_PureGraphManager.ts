@@ -22,14 +22,12 @@ import {
   ROOT_PACKAGE_NAME,
   SOURCE_INFORMATION_KEY,
 } from '../../../../MetaModelConst';
-import type {
-  Clazz,
-  GeneratorFn,
-  Log,
-  PlainObject,
-  ServerClientConfig,
-} from '@finos/legend-shared';
 import {
+  type Clazz,
+  type GeneratorFn,
+  type Log,
+  type PlainObject,
+  type ServerClientConfig,
   TracerService,
   LogEvent,
   getClass,
@@ -41,11 +39,11 @@ import {
   promisify,
 } from '@finos/legend-shared';
 import type { TEMP__AbstractEngineConfig } from '../../../../graphManager/action/TEMP__AbstractEngineConfig';
-import type {
-  TEMP__EngineSetupConfig,
-  GraphBuilderOptions,
+import {
+  AbstractPureGraphManager,
+  type TEMP__EngineSetupConfig,
+  type GraphBuilderOptions,
 } from '../../../../graphManager/AbstractPureGraphManager';
-import { AbstractPureGraphManager } from '../../../../graphManager/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/packageableElements/runtime/Runtime';
 import type {
@@ -53,8 +51,11 @@ import type {
   ImportMode,
 } from '../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { PackageableElement } from '../../../metamodels/pure/packageableElements/PackageableElement';
-import type { SystemModel, CoreModel } from '../../../../graph/PureModel';
-import { PureModel } from '../../../../graph/PureModel';
+import {
+  type SystemModel,
+  type CoreModel,
+  PureModel,
+} from '../../../../graph/PureModel';
 import type { BasicModel } from '../../../../graph/BasicModel';
 import type { DependencyManager } from '../../../../graph/DependencyManager';
 import type { Class } from '../../../metamodels/pure/packageableElements/domain/Class';
@@ -90,11 +91,9 @@ import {
   V1_setupPureModelContextDataSerialization,
 } from './transformation/pureProtocol/V1_PureProtocolSerialization';
 import { V1_PureModelContextData } from './model/context/V1_PureModelContextData';
-import type {
-  V1_PackageableElement,
-  V1_PackageableElementVisitor,
-} from './model/packageableElements/V1_PackageableElement';
 import {
+  type V1_PackageableElement,
+  type V1_PackageableElementVisitor,
   V1_PackageableElementPointerType,
   V1_PackageableElementPointer,
 } from './model/packageableElements/V1_PackageableElement';
@@ -105,8 +104,10 @@ import { V1_ProtocolToMetaModelGraphFourthPassBuilder } from './transformation/p
 import { V1_ProtocolToMetaModelGraphFifthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFifthPassBuilder';
 import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelRawValueSpecificationBuilder';
 import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext';
-import type { V1_GraphBuilderContext } from './transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_GraphBuilderContextBuilder } from './transformation/pureGraph/to/V1_GraphBuilderContext';
+import {
+  type V1_GraphBuilderContext,
+  V1_GraphBuilderContextBuilder,
+} from './transformation/pureGraph/to/V1_GraphBuilderContext';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer';
 import { V1_Engine } from './engine/V1_Engine';
 import { V1_PackageableElementTransformer } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
@@ -195,8 +196,10 @@ import {
   V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper';
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
-import type { Entity } from '@finos/legend-model-storage';
-import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
+import {
+  type Entity,
+  ENTITY_PATH_DELIMITER,
+} from '@finos/legend-model-storage';
 import {
   DependencyGraphBuilderError,
   GraphBuilderError,

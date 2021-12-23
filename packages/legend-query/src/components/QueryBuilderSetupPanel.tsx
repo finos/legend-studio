@@ -27,13 +27,11 @@ import {
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import type {
-  Class,
-  Mapping,
-  Runtime,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type Class,
+  type Mapping,
+  type Runtime,
+  type ValueSpecification,
   PRIMITIVE_TYPE,
   LATEST_DATE,
   MILESTONING_STEROTYPES,

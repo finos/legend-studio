@@ -15,8 +15,7 @@
  */
 
 import { FaAsterisk } from 'react-icons/fa';
-import { MULTIPLICITY_INFINITE } from '@finos/legend-graph';
-import type { Multiplicity } from '@finos/legend-graph';
+import { MULTIPLICITY_INFINITE, type Multiplicity } from '@finos/legend-graph';
 
 export const MultiplicityBadge: React.FC<{
   multiplicity: Multiplicity;

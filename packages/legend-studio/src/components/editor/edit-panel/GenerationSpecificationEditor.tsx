@@ -16,16 +16,21 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type {
-  GenerationSpecNodeDragSource,
-  GenerationSpecNodeDropTarget,
-  GenerationTreeNodeState,
+import {
+  GenerationSpecificationEditorState,
+  type GenerationSpecNodeDragSource,
+  type GenerationSpecNodeDropTarget,
+  type GenerationTreeNodeState,
 } from '../../../stores/editor-state/GenerationSpecificationEditorState';
-import { GenerationSpecificationEditorState } from '../../../stores/editor-state/GenerationSpecificationEditorState';
 import { FaFire, FaTimes, FaPlus, FaLongArrowAltRight } from 'react-icons/fa';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import type { DropTargetMonitor, XYCoord } from 'react-dnd';
-import { useDragLayer, useDrag, useDrop } from 'react-dnd';
+import {
+  type DropTargetMonitor,
+  type XYCoord,
+  useDragLayer,
+  useDrag,
+  useDrop,
+} from 'react-dnd';
 import { getElementIcon } from '../../shared/ElementIconUtils';
 import { MdRefresh } from 'react-icons/md';
 import {
@@ -38,23 +43,23 @@ import {
   ResizablePanelSplitterLine,
   FileGenerationIcon,
 } from '@finos/legend-art';
-import type {
-  ElementDragSource,
-  FileGenerationSourceDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type FileGenerationSourceDropTarget,
 } from '../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+} from '../../../stores/shared/PackageableElementOptionUtil';
 import { getNullableFirstElement } from '@finos/legend-shared';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import type {
-  PackageableElement,
-  PackageableElementReference,
-  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type PackageableElementReference,
+  type DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
   FileGenerationSpecification,
   PackageableElementExplicitReference,
   GenerationTreeNode,

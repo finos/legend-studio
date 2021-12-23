@@ -15,8 +15,7 @@
  */
 
 import { observable, action, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { Point } from './Point';
 import { Rectangle } from './Rectangle';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../../DSLDiagram_ModelUtils';

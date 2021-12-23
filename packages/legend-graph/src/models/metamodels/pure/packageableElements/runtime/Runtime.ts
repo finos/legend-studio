@@ -16,6 +16,7 @@
 
 import { observable, computed, action, makeObservable } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   generateEnumerableNameFromToken,
   assertTrue,
@@ -23,14 +24,15 @@ import {
   addUniqueEntry,
   deleteEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Connection } from '../connection/Connection';
 import type { PackageableRuntime } from './PackageableRuntime';
 import type { Mapping } from '../mapping/Mapping';
 import type { Store } from '../store/Store';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import { PackageableElementExplicitReference } from '../PackageableElementReference';
+import {
+  type PackageableElementReference,
+  PackageableElementExplicitReference,
+} from '../PackageableElementReference';
 import {
   getElementPointerHashCode,
   PACKAGEABLE_ELEMENT_POINTER_TYPE,

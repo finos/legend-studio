@@ -20,8 +20,8 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
 } from '@finos/legend-shared';
-import type { DatasourceSpecification } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
 import {
+  type DatasourceSpecification,
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
@@ -29,8 +29,8 @@ import {
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
-import type { AuthenticationStrategy } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
+  type AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
@@ -41,8 +41,8 @@ import {
   UserPasswordAuthenticationStrategy,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_DatasourceSpecification } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
+  type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
@@ -50,8 +50,8 @@ import {
   V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
-import type { V1_AuthenticationStrategy } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
+  type V1_AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,

@@ -16,8 +16,9 @@
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import type { PlainObject, GeneratorFn } from '@finos/legend-shared';
 import {
+  type PlainObject,
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   NetworkClientError,
@@ -27,10 +28,13 @@ import {
 } from '@finos/legend-shared';
 import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
-import type { Entity } from '@finos/legend-model-storage';
-import { extractEntityNameFromPath } from '@finos/legend-model-storage';
-import type { EntityDiff, WorkspaceType } from '@finos/legend-server-sdlc';
 import {
+  type Entity,
+  extractEntityNameFromPath,
+} from '@finos/legend-model-storage';
+import {
+  type EntityDiff,
+  type WorkspaceType,
   Workflow,
   Project,
   ProjectType,

@@ -15,8 +15,7 @@
  */
 
 import { observable, action, makeObservable, computed } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type { Class, PackageableElementReference } from '@finos/legend-graph';
 import type { Binding } from '@finos/legend-extension-dsl-serializer';

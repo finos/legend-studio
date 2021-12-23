@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../../DSLDataSpace_ModelUtils';
-import type {
-  V1_PackageableElementPointer,
-  V1_PackageableElementVisitor,
-  V1_StereotypePtr,
-  V1_TaggedValue,
+import {
+  V1_PackageableElement,
+  type V1_PackageableElementPointer,
+  type V1_PackageableElementVisitor,
+  type V1_StereotypePtr,
+  type V1_TaggedValue,
 } from '@finos/legend-graph';
-import { V1_PackageableElement } from '@finos/legend-graph';
 
 export abstract class V1_DataSpaceSupportInfo implements Hashable {
   abstract get hashCode(): string;

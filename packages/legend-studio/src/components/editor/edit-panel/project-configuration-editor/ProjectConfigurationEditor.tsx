@@ -31,11 +31,17 @@ import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
 } from '../../../../stores/editor-state/ProjectConfigurationEditorState';
-import type { SelectComponent } from '@finos/legend-art';
-import { compareLabelFn, clsx, CustomSelectorInput } from '@finos/legend-art';
+import {
+  type SelectComponent,
+  compareLabelFn,
+  clsx,
+  CustomSelectorInput,
+} from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import { ProjectDependency } from '@finos/legend-server-sdlc';
-import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
+import {
+  ProjectDependency,
+  type ProjectConfiguration,
+} from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   ActionAlertActionType,

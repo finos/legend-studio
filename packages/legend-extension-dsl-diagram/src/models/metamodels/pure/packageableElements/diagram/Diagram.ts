@@ -15,14 +15,20 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  addUniqueEntry,
+  deleteEntry,
+  type Hashable,
+} from '@finos/legend-shared';
 import type { ClassView } from './ClassView';
 import type { PropertyView } from './PropertyView';
 import type { GeneralizationView } from './GeneralizationView';
 import type { AssociationView } from './AssociationView';
-import type { PackageableElementVisitor } from '@finos/legend-graph';
-import { PackageableElement } from '@finos/legend-graph';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '@finos/legend-graph';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
 export class Diagram extends PackageableElement implements Hashable {

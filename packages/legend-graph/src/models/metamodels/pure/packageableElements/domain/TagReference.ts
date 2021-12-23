@@ -17,11 +17,11 @@
 import { observable, action, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashString } from '@finos/legend-shared';
-import type {
-  PackageableElementReference,
-  PackageableElementImplicitReference,
+import {
+  PackageableElementExplicitReference,
+  type PackageableElementReference,
+  type PackageableElementImplicitReference,
 } from '../PackageableElementReference';
-import { PackageableElementExplicitReference } from '../PackageableElementReference';
 import type { Profile } from './Profile';
 import type { Tag } from './Tag';
 import type { Stubable } from '../../../../../helpers/Stubable';

@@ -20,13 +20,13 @@ import type { ProjectType } from '../project/Project';
 import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion';
 import { ProjectDependency } from '../configuration/ProjectDependency';
 import {
+  type Hashable,
   hashArray,
   addUniqueEntry,
   deleteEntry,
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
 
 const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';

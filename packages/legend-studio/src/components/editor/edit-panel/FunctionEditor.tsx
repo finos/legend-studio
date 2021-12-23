@@ -20,11 +20,11 @@ import {
   FunctionEditorState,
   FUNCTION_SPEC_TAB,
 } from '../../../stores/editor-state/element-editor-state/FunctionEditorState';
-import type {
-  UMLEditorElementDropTarget,
-  ElementDragSource,
+import {
+  CORE_DND_TYPE,
+  type UMLEditorElementDropTarget,
+  type ElementDragSource,
 } from '../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
 import {
   prettyCONSTName,
   UnsupportedOperationError,
@@ -38,11 +38,9 @@ import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import type {
-  ConcreteFunctionDefinition,
-  StereotypeReference,
-} from '@finos/legend-graph';
 import {
+  type ConcreteFunctionDefinition,
+  type StereotypeReference,
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   TaggedValue,

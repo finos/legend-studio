@@ -15,6 +15,7 @@
  */
 
 import {
+  type TypeReference,
   StringTypeReference,
   BooleanTypeReference,
   FloatTypeReference,
@@ -22,20 +23,21 @@ import {
   ComplexTypeReference,
 } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
 import {
+  type V1_TypeReference,
   V1_StringTypeReference,
   V1_BooleanTypeReference,
   V1_FloatTypeReference,
   V1_ComplexTypeReference,
   V1_IntegerTypeReference,
 } from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
-import type { TypeReference } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
-import type { V1_TypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { ServiceParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceParameterMapping';
 import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
-import type { V1_GraphTransformerContext } from '@finos/legend-graph';
-import { V1_RawLambda } from '@finos/legend-graph';
+import {
+  type V1_GraphTransformerContext,
+  V1_RawLambda,
+} from '@finos/legend-graph';
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
 import type { ServiceParameter } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceParameter';
 import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';

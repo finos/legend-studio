@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { ModelSchema } from 'serializr';
 import {
+  type ModelSchema,
   createModelSchema,
   list,
   primitive,
@@ -26,8 +26,8 @@ import {
   optional,
   raw,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   usingConstantValueSchema,
   deserializeArray,
   assertTrue,
@@ -65,8 +65,8 @@ import {
   V1_tablePtrModelSchema,
 } from './V1_DatabaseSerializationHelper';
 import { V1_MappingInclude } from '../../../model/packageableElements/mapping/V1_MappingInclude';
-import type { V1_EnumValueMappingSourceValue } from '../../../model/packageableElements/mapping/V1_EnumValueMapping';
 import {
+  type V1_EnumValueMappingSourceValue,
   V1_EnumValueMappingEnumSourceValue,
   V1_EnumValueMappingIntegerSourceValue,
   V1_EnumValueMappingStringSourceValue,

@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
-import { usingConstantValueSchema } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  usingConstantValueSchema,
+} from '@finos/legend-shared';
 import {
   createModelSchema,
   list,
@@ -25,8 +27,8 @@ import {
   primitive,
   serialize,
 } from 'serializr';
-import type { V1_Section } from '../../../model/packageableElements/section/V1_Section';
 import {
+  type V1_Section,
   V1_ImportAwareCodeSection,
   V1_DefaultCodeSection,
 } from '../../../model/packageableElements/section/V1_Section';

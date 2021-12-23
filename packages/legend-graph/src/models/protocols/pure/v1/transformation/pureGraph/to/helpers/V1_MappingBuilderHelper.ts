@@ -42,16 +42,20 @@ import { FlatDataInputData } from '../../../../../../../metamodels/pure/packagea
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId';
-import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { toOptionalPackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+import {
+  type PackageableElementImplicitReference,
+  toOptionalPackageableElementReference,
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { EnumValueImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference';
 import { MappingInclude } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingInclude';
 import { SubstituteStore } from '../../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
 import type { SetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import { InferableMappingElementRootImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementRoot';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_EnumValueMapping } from '../../../../model/packageableElements/mapping/V1_EnumValueMapping';
-import { V1_getEnumValueMappingSourceValueType } from '../../../../model/packageableElements/mapping/V1_EnumValueMapping';
+import {
+  type V1_EnumValueMapping,
+  V1_getEnumValueMappingSourceValueType,
+} from '../../../../model/packageableElements/mapping/V1_EnumValueMapping';
 import type { V1_EnumerationMapping } from '../../../../model/packageableElements/mapping/V1_EnumerationMapping';
 import type { V1_MappingTest } from '../../../../model/packageableElements/mapping/V1_MappingTest';
 import { V1_ExpectedOutputMappingTestAssert } from '../../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert';

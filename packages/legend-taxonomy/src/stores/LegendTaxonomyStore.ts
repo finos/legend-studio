@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { ApplicationStore } from '@finos/legend-application';
-import { TAB_SIZE } from '@finos/legend-application';
-import type { TreeData, TreeNodeData } from '@finos/legend-art';
+import { type ApplicationStore, TAB_SIZE } from '@finos/legend-application';
 import {
+  type TreeData,
+  type TreeNodeData,
   HotkeyConfiguration,
   NonBlockingDialogState,
   PanelDisplayState,
@@ -40,8 +40,9 @@ import {
   ProjectData,
   generateGAVCoordinates,
 } from '@finos/legend-server-depot';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   AssertionError,
   assertNonNullable,
@@ -61,13 +62,15 @@ import {
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import { LEGEND_TAXONOMY_LOG_EVENT } from './LegendTaxonomyLogEvent';
-import type {
-  LegendTaxonomyPathParams,
-  LegendTaxonomyStandaloneDataSpaceViewerParams,
+import {
+  generateViewTaxonomyRoute,
+  type LegendTaxonomyPathParams,
+  type LegendTaxonomyStandaloneDataSpaceViewerParams,
 } from './LegendTaxonomyRouter';
-import { generateViewTaxonomyRoute } from './LegendTaxonomyRouter';
-import type { TaxonomyServerClient } from './TaxonomyServerClient';
-import { TaxonomyNodeData } from './TaxonomyServerClient';
+import {
+  type TaxonomyServerClient,
+  TaxonomyNodeData,
+} from './TaxonomyServerClient';
 
 const DATA_SPACE_ID_DELIMITER = '@';
 const TAXONOMY_NODE_PATH_DELIMITER = '::';

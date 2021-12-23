@@ -16,8 +16,8 @@
 
 import { Fragment, useState, useRef, useCallback } from 'react';
 import { flowResult } from 'mobx';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
@@ -38,19 +38,21 @@ import {
 import { FaScroll, FaRobot } from 'react-icons/fa';
 import { MdRefresh } from 'react-icons/md';
 import { observer } from 'mobx-react-lite';
-import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type MappingEditorState,
   getMappingElementSource,
   getMappingElementTarget,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useDrop } from 'react-dnd';
-import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { NewServiceModal } from '../service-editor/NewServiceModal';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
+import {
+  type MappingElementDragSource,
+  CORE_DND_TYPE,
+} from '../../../../stores/shared/DnDUtil';
 import Dialog from '@material-ui/core/Dialog';
 import { guaranteeType, uniq } from '@finos/legend-shared';
-import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
+  type MappingExecutionState,
   MappingExecutionEmptyInputDataState,
   MappingExecutionObjectInputDataState,
   MappingExecutionFlatDataInputDataState,

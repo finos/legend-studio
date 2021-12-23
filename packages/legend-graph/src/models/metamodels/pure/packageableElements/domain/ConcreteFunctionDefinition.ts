@@ -16,13 +16,13 @@
 
 import { action, observable, makeObservable, override } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   addUniqueEntry,
   deleteEntry,
   changeEntry,
 } from '@finos/legend-shared';
 import { hashLambda } from '../../../../../MetaModelUtils';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression';

@@ -18,8 +18,8 @@ import {
   PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../../../MetaModelConst';
-import type { Log } from '@finos/legend-shared';
 import {
+  type Log,
   uniq,
   guaranteeNonNullable,
   assertNonEmptyString,
@@ -29,8 +29,10 @@ import { GenericType } from '../../../../../../metamodels/pure/packageableElemen
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { PureModel } from '../../../../../../../graph/PureModel';
 import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
-import type { Section } from '../../../../../../metamodels/pure/packageableElements/section/Section';
-import { ImportAwareCodeSection } from '../../../../../../metamodels/pure/packageableElements/section/Section';
+import {
+  type Section,
+  ImportAwareCodeSection,
+} from '../../../../../../metamodels/pure/packageableElements/section/Section';
 import { StereotypeImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/StereotypeReference';
 import { GenericTypeImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference';
 import type { Type } from '../../../../../../metamodels/pure/packageableElements/domain/Type';

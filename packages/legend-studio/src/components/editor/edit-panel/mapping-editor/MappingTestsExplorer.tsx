@@ -17,8 +17,8 @@
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDrop } from 'react-dnd';
-import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
+  type MappingTestState,
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
@@ -36,8 +36,10 @@ import {
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
 import { clsx, ContextMenu } from '@finos/legend-art';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
+import {
+  type MappingElementDragSource,
+  CORE_DND_TYPE,
+} from '../../../../stores/shared/DnDUtil';
 import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { Randomizer } from '@finos/legend-shared';

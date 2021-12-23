@@ -16,8 +16,8 @@
 
 import { observer } from 'mobx-react-lite';
 import Dialog from '@material-ui/core/Dialog';
-import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
@@ -30,12 +30,10 @@ import {
   TableIcon,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
-import type {
-  DatabaseBuilderState,
-  DatabaseBuilderTreeData,
-  DatabaseBuilderTreeNodeData,
-} from '../../../../stores/editor-state/element-editor-state/connection/DatabaseBuilderState';
 import {
+  type DatabaseBuilderState,
+  type DatabaseBuilderTreeData,
+  type DatabaseBuilderTreeNodeData,
   ColumnDatabaseBuilderTreeNodeData,
   SchemaDatabaseBuilderTreeNodeData,
   TableDatabaseBuilderTreeNodeData,

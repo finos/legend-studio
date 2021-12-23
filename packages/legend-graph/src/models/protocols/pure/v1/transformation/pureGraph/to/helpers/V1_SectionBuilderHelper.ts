@@ -21,8 +21,8 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../graphManager/GraphManagerLogEvent';
-import type { Section } from '../../../../../../../metamodels/pure/packageableElements/section/Section';
 import {
+  type Section,
   ImportAwareCodeSection,
   DefaultCodeSection,
 } from '../../../../../../../metamodels/pure/packageableElements/section/Section';
@@ -30,8 +30,8 @@ import type { SectionIndex } from '../../../../../../../metamodels/pure/packagea
 import { Package } from '../../../../../../../metamodels/pure/packageableElements/domain/Package';
 import { PackageableElementExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_Section } from '../../../../model/packageableElements/section/V1_Section';
 import {
+  type V1_Section,
   V1_ImportAwareCodeSection,
   V1_DefaultCodeSection,
 } from '../../../../model/packageableElements/section/V1_Section';

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { GenericClazz } from '@finos/legend-shared';
 import {
+  type GenericClazz,
   isClassAssignableFrom,
   isNonNullable,
   getClass,

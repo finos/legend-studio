@@ -15,8 +15,12 @@
  */
 
 import { observable, computed, makeObservable, action } from 'mobx';
-import { addUniqueEntry, deleteEntry, hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  deleteEntry,
+  hashArray,
+  type Hashable,
+} from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import { ServiceStoreElement } from './ServiceStoreElement';
 import type { ServiceParameter } from './ServiceParameter';

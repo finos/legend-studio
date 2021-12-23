@@ -15,18 +15,21 @@
  */
 
 import { observable, computed, makeObservable, action } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../../../mapping/EnumerationMapping';
-import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping';
-import { PropertyMapping } from '../../../mapping/PropertyMapping';
+import {
+  type PropertyMappingVisitor,
+  PropertyMapping,
+} from '../../../mapping/PropertyMapping';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
 import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { SetImplementation } from '../../../mapping/SetImplementation';
 import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils';
-import { isStubRelationalOperationElement } from '../model/RawRelationalOperationElement';
-import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement';
+import {
+  isStubRelationalOperationElement,
+  type RawRelationalOperationElement,
+} from '../model/RawRelationalOperationElement';
 
 export class RelationalPropertyMapping
   extends PropertyMapping

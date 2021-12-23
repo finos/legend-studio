@@ -44,8 +44,10 @@ import { extractLine } from '../../../../../../metamodels/pure/packageableElemen
 import type { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { OperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation';
-import { OperationType } from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+import {
+  type OperationSetImplementation,
+  OperationType,
+} from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation';
 import type { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import type { RelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
 import type { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';

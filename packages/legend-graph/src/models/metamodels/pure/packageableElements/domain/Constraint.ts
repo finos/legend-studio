@@ -15,9 +15,8 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, uuid } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Class } from './Class';
 import type { Stubable } from '../../../../../helpers/Stubable';

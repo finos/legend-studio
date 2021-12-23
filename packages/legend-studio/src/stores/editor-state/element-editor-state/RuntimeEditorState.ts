@@ -30,15 +30,13 @@ import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
 import type { TreeData } from '@finos/legend-art';
 import { ConnectionEditorState } from './connection/ConnectionEditorState';
 import { getMappingElementSource } from './mapping/MappingEditorState';
-import type {
-  PackageableElement,
-  Mapping,
-  Connection,
-  PackageableConnection,
-  SetImplementation,
-  PackageableElementReference,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type Mapping,
+  type Connection,
+  type PackageableConnection,
+  type SetImplementation,
+  type PackageableElementReference,
   getAllClassMappings,
   PackageableRuntime,
   Runtime,

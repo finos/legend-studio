@@ -19,21 +19,24 @@ import Dialog from '@material-ui/core/Dialog';
 import { clsx, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import type {
-  QueryBuilderDerivedPropertyExpressionState,
-  QueryBuilderPropertyExpressionState,
+import {
+  getPropertyPath,
+  type QueryBuilderDerivedPropertyExpressionState,
+  type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState';
-import { getPropertyPath } from '../stores/QueryBuilderPropertyEditorState';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDrop } from 'react-dnd';
-import type {
-  QueryBuilderExplorerTreeDragSource,
-  QueryBuilderExplorerTreePropertyNodeData,
+import { type DropTargetMonitor, useDrop } from 'react-dnd';
+import {
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
+  type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreePropertyNodeData,
 } from '../stores/QueryBuilderExplorerState';
-import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
-import type { ValueSpecification } from '@finos/legend-graph';
-import { Class, Enumeration, PrimitiveType } from '@finos/legend-graph';
+import {
+  type ValueSpecification,
+  Class,
+  Enumeration,
+  PrimitiveType,
+} from '@finos/legend-graph';
 
 const DerivedPropertyExpressionEditor = observer(
   (props: {

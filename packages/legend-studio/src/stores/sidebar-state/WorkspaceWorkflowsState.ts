@@ -19,8 +19,9 @@ import { makeAutoObservable, observable, action, flowResult } from 'mobx';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   uuid,
   assertErrorThrown,
   LogEvent,

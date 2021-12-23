@@ -29,8 +29,8 @@ import {
   generateReviewRoute,
 } from '../../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
-import type { Workspace } from '@finos/legend-server-sdlc';
 import {
+  type Workspace,
   NewVersionType,
   WorkspaceType,
   areWorkspacesEquivalent,

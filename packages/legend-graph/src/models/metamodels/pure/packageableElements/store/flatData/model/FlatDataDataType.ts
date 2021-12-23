@@ -15,8 +15,7 @@
  */
 
 import { observable, computed, action, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { FlatDataSection } from './FlatDataSection';
 import type { PrimitiveType } from '../../../domain/PrimitiveType';

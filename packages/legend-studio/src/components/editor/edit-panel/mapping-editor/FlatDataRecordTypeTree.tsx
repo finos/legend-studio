@@ -16,20 +16,25 @@
 
 import { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import type { TreeNodeContainerProps, TreeData } from '@finos/legend-art';
-import { clsx, TreeView, PrimitiveTypeIcon } from '@finos/legend-art';
+import {
+  type TreeNodeContainerProps,
+  type TreeData,
+  clsx,
+  TreeView,
+  PrimitiveTypeIcon,
+} from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
 } from '../../../../stores/shared/DnDUtil';
 import type { FlatDataRecordTypeTreeNodeData } from '../../../../stores/shared/TreeUtil';
 import { addUniqueEntry } from '@finos/legend-shared';
-import type {
-  Type,
-  RootFlatDataRecordType,
-  FlatDataRecordField,
+import {
+  DEFAULT_SOURCE_PARAMETER_NAME,
+  type Type,
+  type RootFlatDataRecordType,
+  type FlatDataRecordField,
 } from '@finos/legend-graph';
-import { DEFAULT_SOURCE_PARAMETER_NAME } from '@finos/legend-graph';
 
 const getRecordTypeTreeNodeData = (
   field: FlatDataRecordField,

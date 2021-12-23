@@ -24,18 +24,16 @@ import {
   getEditorLanguageFromFormat,
 } from '../../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
-import type { DebouncedFunc } from '@finos/legend-shared';
 import {
+  type DebouncedFunc,
   UnsupportedOperationError,
   debounce,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
+  type TreeData,
+  type TreeNodeData,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
@@ -59,24 +57,24 @@ import {
   FaSave,
 } from 'react-icons/fa';
 import { MdModeEdit, MdRefresh } from 'react-icons/md';
-import type { FileGenerationSourceDropTarget } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
+import {
+  type FileGenerationSourceDropTarget,
+  CORE_DND_TYPE,
+} from '../../../../stores/shared/DnDUtil';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
-import type { GenerationTreeNodeData } from '../../../../stores/shared/FileGenerationTreeUtil';
 import {
+  type GenerationTreeNodeData,
   GenerationDirectory,
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  GenerationProperty,
-  PackageableElement,
-  FileGenerationSpecification,
-} from '@finos/legend-graph';
 import {
+  type GenerationProperty,
+  type PackageableElement,
+  type FileGenerationSpecification,
   GenerationPropertyItemType,
   PackageableElementReference,
   PackageableElementExplicitReference,
