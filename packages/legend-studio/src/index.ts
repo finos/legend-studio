@@ -33,11 +33,12 @@ export { ClassEditorState } from './stores/editor-state/element-editor-state/Cla
 export { ElementEditorState } from './stores/editor-state/element-editor-state/ElementEditorState';
 export { UnsupportedElementEditorState } from './stores/editor-state/UnsupportedElementEditorState';
 export { NewElementState, NewElementDriver } from './stores/NewElementState';
-export type { TransformDropTarget } from './stores/shared/DnDUtil';
 export {
   CORE_DND_TYPE,
   ElementDragSource,
   TypeDragSource,
+  type UMLEditorElementDropTarget,
+  type TransformDropTarget,
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
@@ -64,7 +65,6 @@ export { MappingExecutionState } from './stores/editor-state/element-editor-stat
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
 export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 export { NewConnectionValueDriver } from './stores/NewElementState';
-export type { UMLEditorElementDropTarget } from './stores/shared/DnDUtil';
 export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
 export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';

@@ -34,7 +34,7 @@ export {
   ColumnReference,
   ColumnExplicitReference,
 } from './models/metamodels/pure/packageableElements/store/relational/model/ColumnReference';
-export type { Mapper } from './models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/Mapper';
+export { type Mapper } from './models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/Mapper';
 export { PostProcessor } from './models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor';
 export { DatasourceSpecification } from './models/metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
 export { AuthenticationStrategy } from './models/metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
@@ -69,7 +69,7 @@ export {
 } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PostProcessorTransformer';
 export { V1_getRelation } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 export { V1_tablePtrModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
-export type { V1_Mapper } from './models/protocols/pure/v1/model/packageableElements/store/relational/connection/postprocessor/V1_Mapper';
+export { type V1_Mapper } from './models/protocols/pure/v1/model/packageableElements/store/relational/connection/postprocessor/V1_Mapper';
 export { V1_PostProcessor } from './models/protocols/pure/v1/model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor';
 export { V1_DatasourceSpecification } from './models/protocols/pure/v1/model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 export { V1_AuthenticationStrategy } from './models/protocols/pure/v1/model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';

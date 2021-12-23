@@ -50,6 +50,11 @@ const ES_RULES = {
   'no-console': WARN,
   'no-const-assign': ERROR,
   'no-debugger': WARN,
+  // NOTE: this rule is useful for us to enforce usage of inline type imports
+  // e.g. `import { type A, B } from ...` over `import type { A } from ...; import { B } from ...;`
+  // We would not need to enable rule `import/no-duplicates` anymore
+  // See https://github.com/typescript-eslint/typescript-eslint/issues/4338
+  'no-duplicate-imports': WARN,
   'no-fallthrough': ERROR,
   'no-global-assign': ERROR,
   'no-invalid-regexp': ERROR,
