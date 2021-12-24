@@ -79,6 +79,7 @@ export const MappingTestQueryBuilder = observer(
                   <button
                     className="query-builder__dialog__header__custom-action"
                     tabIndex={-1}
+                    disabled={isReadOnly}
                     onClick={save}
                   >
                     Save Query
@@ -96,7 +97,6 @@ export const MappingTestQueryBuilder = observer(
       <button
         className="panel__header__action"
         tabIndex={-1}
-        disabled={isReadOnly}
         onClick={editWithQueryBuilder}
         title="Edit query..."
       >

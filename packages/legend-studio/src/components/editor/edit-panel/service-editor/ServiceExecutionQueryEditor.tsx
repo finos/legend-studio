@@ -281,7 +281,6 @@ export const ServiceExecutionQueryEditor = observer(
             <button
               className="panel__header__action"
               onClick={execute}
-              disabled={isReadOnly}
               tabIndex={-1}
               title="Run service execution"
             >
@@ -290,7 +289,6 @@ export const ServiceExecutionQueryEditor = observer(
             <button
               className="panel__header__action"
               onClick={generatePlan}
-              disabled={isReadOnly}
               tabIndex={-1}
               title="Generate execution plan"
             >
