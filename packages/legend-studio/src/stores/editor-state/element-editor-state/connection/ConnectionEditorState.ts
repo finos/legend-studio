@@ -24,12 +24,10 @@ import {
 import { ElementEditorState } from './../ElementEditorState';
 import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../StoreRelational_LegendStudioPlugin_Extension';
 import { DatabaseBuilderState } from './DatabaseBuilderState';
-import type {
-  PackageableElement,
-  Connection,
-  ValidationIssue,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type Connection,
+  type ValidationIssue,
   PackageableConnection,
   JsonModelConnection,
   FlatDataConnection,

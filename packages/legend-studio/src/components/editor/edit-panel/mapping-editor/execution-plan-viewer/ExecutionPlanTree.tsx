@@ -15,12 +15,10 @@
  */
 
 import { useState } from 'react';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
+  type TreeData,
+  type TreeNodeData,
   clsx,
   TreeView,
   ChevronDownIcon,
@@ -29,11 +27,11 @@ import {
 import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import {
+  type ExecutionPlan,
   ExecutionNode,
   SQLExecutionNode,
   RelationalTDSInstantiationExecutionNode,
 } from '@finos/legend-graph';
-import type { ExecutionPlan } from '@finos/legend-graph';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;

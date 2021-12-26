@@ -23,13 +23,13 @@ import {
   primitive,
   list,
 } from 'serializr';
-import type { V1_Mapper } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper';
 import {
+  type V1_Mapper,
   V1_SchemaNameMapper,
   V1_TableNameMapper,
 } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   usingConstantValueSchema,
   UnsupportedOperationError,
   usingModelSchema,

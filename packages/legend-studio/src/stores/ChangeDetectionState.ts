@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { IReactionDisposer } from 'mobx';
 import {
+  type IReactionDisposer,
   flowResult,
   observable,
   action,
@@ -24,8 +24,8 @@ import {
   makeObservable,
 } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   IllegalStateError,
   shallowStringify,
@@ -36,8 +36,8 @@ import {
 import type { EditorStore } from './EditorStore';
 import type { EditorGraphState } from './EditorGraphState';
 import type { Entity } from '@finos/legend-model-storage';
-import type { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import {
+  type EntityChangeConflictResolution,
   EntityChangeConflict,
   EntityChangeType,
   EntityDiff,

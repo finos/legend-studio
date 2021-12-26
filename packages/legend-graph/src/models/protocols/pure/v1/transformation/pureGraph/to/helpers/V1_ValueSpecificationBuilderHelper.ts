@@ -31,24 +31,26 @@ import {
   FunctionType,
   LambdaFunctionInstanceValue,
 } from '../../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
-import type { ExecutionContext } from '../../../../../../../metamodels/pure/valueSpecification/ExecutionContext';
 import {
+  type ExecutionContext,
   BaseExecutionContext,
   AnalyticsExecutionContext,
 } from '../../../../../../../metamodels/pure/valueSpecification/ExecutionContext';
 import { VariableExpression } from '../../../../../../../metamodels/pure/valueSpecification/VariableExpression';
 import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { GraphFetchTree } from '../../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
 import type { AbstractProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import {
+  type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
   PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
 } from '../../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
 import { ValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
-import type { SimpleFunctionExpression } from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
-import { AbstractPropertyExpression } from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
+import {
+  type SimpleFunctionExpression,
+  AbstractPropertyExpression,
+} from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
 import { GenericType } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericType';
 import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference';
 import {

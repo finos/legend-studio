@@ -15,24 +15,24 @@
  */
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import type { Class } from '@finos/legend-graph';
-import { QueryTaggedValue } from '@finos/legend-graph';
+import { type Class, QueryTaggedValue } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
-import type { QuerySetupStore } from '@finos/legend-query';
 import {
+  type QuerySetupStore,
   CreateQueryInfoState,
   QuerySetupState,
   generateCreateQueryRoute,
 } from '@finos/legend-query';
-import type { StoredEntity } from '@finos/legend-server-depot';
 import {
+  type StoredEntity,
   generateGAVCoordinates,
   DepotScope,
   ProjectData,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,

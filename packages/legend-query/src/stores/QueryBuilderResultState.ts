@@ -15,19 +15,17 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type {
-  RawExecutionPlan,
-  ExecutionResult,
-  RawLambda,
-} from '@finos/legend-graph';
 import {
+  type RawExecutionPlan,
+  type ExecutionResult,
+  type RawLambda,
   GRAPH_MANAGER_LOG_EVENT,
   PureClientVersion,
 } from '@finos/legend-graph';

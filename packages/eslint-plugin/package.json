@@ -24,7 +24,8 @@
     "index.js"
   ],
   "scripts": {
-    "clean": "rimraf \"build\"",
+    "clean": "yarn clean:cache",
+    "clean:cache": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.{mjs,cjs,js}\" \"src/**/*.{mjs,cjs,js}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
@@ -32,13 +33,13 @@
   "dependencies": {
     "@babel/core": "7.16.5",
     "@babel/eslint-parser": "7.16.5",
-    "@typescript-eslint/eslint-plugin": "5.7.0",
-    "@typescript-eslint/parser": "5.7.0",
-    "eslint": "8.4.1",
+    "@typescript-eslint/eslint-plugin": "5.8.0",
+    "@typescript-eslint/parser": "5.8.0",
+    "eslint": "8.5.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.25.3",
     "eslint-plugin-prettier": "4.0.0",
-    "eslint-plugin-react": "7.27.1",
+    "eslint-plugin-react": "7.28.0",
     "eslint-plugin-react-hooks": "4.3.0",
     "micromatch": "4.0.4",
     "prettier": "2.5.1"

@@ -29,22 +29,23 @@ import {
   InputWithInlineValidation,
 } from '@finos/legend-art';
 import { MdFunctions } from 'react-icons/md';
-import type {
-  QueryBuilderExplorerTreeDragSource,
-  QueryBuilderExplorerTreePropertyNodeData,
-} from '../stores/QueryBuilderExplorerState';
 import {
+  type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryBuilderExplorerState';
-import type { DropTargetMonitor, XYCoord } from 'react-dnd';
-import { useDragLayer, useDrag, useDrop } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
-import type {
-  QueryBuilderProjectionColumnDragSource,
-  QueryBuilderProjectionColumnState,
-} from '../stores/QueryBuilderProjectionState';
 import {
+  type DropTargetMonitor,
+  type XYCoord,
+  useDragLayer,
+  useDrag,
+  useDrop,
+} from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
+import {
+  type QueryBuilderProjectionColumnDragSource,
+  type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
@@ -57,8 +58,10 @@ import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggreg
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
-import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
+import {
+  type QueryBuilderParameterDragSource,
+  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+} from '../stores/QueryParametersState';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

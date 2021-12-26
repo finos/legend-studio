@@ -24,8 +24,8 @@ import {
   findLast,
   uniqBy,
 } from '@finos/legend-shared';
-import type { AbstractProperty } from '@finos/legend-graph';
 import {
+  type AbstractProperty,
   Class,
   Enumeration,
   PrimitiveType,
@@ -45,8 +45,10 @@ import { PositionedRectangle } from './models/metamodels/pure/packageableElement
 import { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
 import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
 import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/GeneralizationView';
-import type { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
-import { manageInsidePointsDynamically } from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
+import {
+  type RelationshipView,
+  manageInsidePointsDynamically,
+} from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
 import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/PropertyView';
 import { getElementPosition } from './helpers/DiagramHelper';
 import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/AssociationView';

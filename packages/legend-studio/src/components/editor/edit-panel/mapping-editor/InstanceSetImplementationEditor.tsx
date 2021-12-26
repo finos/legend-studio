@@ -24,21 +24,23 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
 } from '@finos/legend-art';
-import type {
-  ElementDragSource,
-  MappingElementSourceDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type MappingElementSourceDropTarget,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import {
   InstanceSetImplementationState,
   MappingElementState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
-import type { PureInstanceSetImplementationFilterState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { guaranteeNonNullable, noop } from '@finos/legend-shared';
-import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type PureInstanceSetImplementationFilterState,
+  PureInstanceSetImplementationState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
+import { guaranteeNonNullable, noop } from '@finos/legend-shared';
+import {
+  type MappingElementSource,
   getMappingElementSource,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
@@ -61,13 +63,11 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type {
-  InstanceSetImplementation,
-  Property,
-  PackageableElement,
-  View,
-} from '@finos/legend-graph';
 import {
+  type InstanceSetImplementation,
+  type Property,
+  type PackageableElement,
+  type View,
   Class,
   Type,
   FlatData,

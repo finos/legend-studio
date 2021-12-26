@@ -15,8 +15,10 @@
  */
 
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
-import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
+import {
+  type V1_ValueSpecificationVisitor,
+  V1_ValueSpecification,
+} from '../../../model/valueSpecification/V1_ValueSpecification';
 
 export class V1_RuntimeInstance extends V1_ValueSpecification {
   runtime!: V1_Runtime;

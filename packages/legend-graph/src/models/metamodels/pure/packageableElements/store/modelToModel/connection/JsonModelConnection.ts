@@ -16,11 +16,11 @@
 
 import { observable, computed, action, makeObservable } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   ContentType,
   createUrlStringFromData,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { ConnectionVisitor } from '../../../connection/Connection';
 import type { Class } from '../../../domain/Class';

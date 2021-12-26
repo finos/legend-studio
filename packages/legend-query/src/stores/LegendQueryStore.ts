@@ -22,8 +22,9 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   uuid,
@@ -32,16 +33,14 @@ import {
   guaranteeNonNullable,
   ActionState,
 } from '@finos/legend-shared';
-import type {
-  LightQuery,
-  Mapping,
-  PackageableRuntime,
-  RawLambda,
-  Service,
-  GraphManagerState,
-  QueryTaggedValue,
-} from '@finos/legend-graph';
 import {
+  type LightQuery,
+  type Mapping,
+  type PackageableRuntime,
+  type RawLambda,
+  type Service,
+  type GraphManagerState,
+  type QueryTaggedValue,
   getAllClassMappings,
   toLightQuery,
   Query,
@@ -55,30 +54,29 @@ import {
   QueryBuilderState,
   StandardQueryBuilderMode,
 } from './QueryBuilderState';
-import type {
-  CreateQueryPathParams,
-  ExistingQueryPathParams,
-  ServiceQueryPathParams,
-} from './LegendQueryRouter';
 import {
+  type CreateQueryPathParams,
+  type ExistingQueryPathParams,
+  type ServiceQueryPathParams,
   generateCreateQueryRoute,
   generateExistingQueryRoute,
 } from './LegendQueryRouter';
 import { LEGEND_QUERY_LOG_EVENT_TYPE } from '../LegendQueryLogEvent';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  DepotServerClient,
-  ProjectGAVCoordinates,
-} from '@finos/legend-server-depot';
 import {
+  type DepotServerClient,
+  type ProjectGAVCoordinates,
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
   generateGAVCoordinates,
   ProjectData,
   ProjectVersionEntities,
 } from '@finos/legend-server-depot';
-import type { ApplicationStore } from '@finos/legend-application';
-import { APPLICATION_LOG_EVENT, TAB_SIZE } from '@finos/legend-application';
+import {
+  type ApplicationStore,
+  APPLICATION_LOG_EVENT,
+  TAB_SIZE,
+} from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 import { LegendQueryEventNotifierService } from './LegendQueryEventNotifierService';

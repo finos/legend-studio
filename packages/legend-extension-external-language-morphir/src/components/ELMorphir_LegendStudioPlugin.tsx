@@ -15,21 +15,23 @@
  */
 
 import packageJson from '../../package.json';
-import type {
-  DSL_LegendStudioPlugin_Extension,
-  GenerationFile,
-  FileGenerationState,
-  FileGenerationResultViewerActionConfiguration,
-  FileGenerationScopeFilterConfiguration,
+import {
+  LegendStudioPlugin,
+  type DSL_LegendStudioPlugin_Extension,
+  type GenerationFile,
+  type FileGenerationState,
+  type FileGenerationResultViewerActionConfiguration,
+  type FileGenerationScopeFilterConfiguration,
 } from '@finos/legend-studio';
-import { LegendStudioPlugin } from '@finos/legend-studio';
 import {
   NetworkClient,
   guaranteeNonEmptyString,
   assertErrorThrown,
 } from '@finos/legend-shared';
-import type { PackageableElement } from '@finos/legend-graph';
-import { ConcreteFunctionDefinition } from '@finos/legend-graph';
+import {
+  type PackageableElement,
+  ConcreteFunctionDefinition,
+} from '@finos/legend-graph';
 
 const MORPHIR_TYPE_NAME = `morphir`;
 

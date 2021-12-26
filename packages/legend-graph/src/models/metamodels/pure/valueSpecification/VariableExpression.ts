@@ -17,8 +17,10 @@
 import { makeObservable, observable, action } from 'mobx';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { ValueSpecificationVisitor } from './ValueSpecification';
-import { ValueSpecification } from './ValueSpecification';
+import {
+  type ValueSpecificationVisitor,
+  ValueSpecification,
+} from './ValueSpecification';
 
 export class VariableExpression extends ValueSpecification {
   name: string;

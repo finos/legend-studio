@@ -30,11 +30,9 @@ import {
   FaCaretDown,
 } from 'react-icons/fa';
 import { BsFillTriangleFill } from 'react-icons/bs';
-import type {
-  TreeNodeContainerProps,
-  TreeNodeViewProps,
-} from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
+  type TreeNodeViewProps,
   clsx,
   ContextMenu,
   DropdownMenu,
@@ -42,13 +40,11 @@ import {
   MenuContentItem,
   BlankPanelPlaceholder,
 } from '@finos/legend-art';
-import type {
-  QueryBuilderFilterConditionDragSource,
-  QueryBuilderFilterDropTarget,
-  QueryBuilderFilterTreeNodeData,
-  QueryBuilderFilterOperator,
-} from '../stores/QueryBuilderFilterState';
 import {
+  type QueryBuilderFilterConditionDragSource,
+  type QueryBuilderFilterDropTarget,
+  type QueryBuilderFilterTreeNodeData,
+  type QueryBuilderFilterOperator,
   QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QUERY_BUILDER_FILTER_DND_TYPE,
   FilterConditionState,
@@ -57,14 +53,16 @@ import {
   QueryBuilderFilterTreeGroupNodeData,
 } from '../stores/QueryBuilderFilterState';
 import { ClickAwayListener } from '@material-ui/core';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDragLayer, useDrag, useDrop } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
-import type {
-  QueryBuilderExplorerTreeDragSource,
-  QueryBuilderExplorerTreePropertyNodeData,
-} from '../stores/QueryBuilderExplorerState';
 import {
+  type DropTargetMonitor,
+  useDragLayer,
+  useDrag,
+  useDrop,
+} from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
+import {
+  type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryBuilderExplorerState';
@@ -74,8 +72,10 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { useApplicationStore } from '@finos/legend-application';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
-import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
+import {
+  type QueryBuilderParameterDragSource,
+  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+} from '../stores/QueryParametersState';
 import { MdRefresh } from 'react-icons/md';
 
 const FilterConditionDragLayer: React.FC = () => {

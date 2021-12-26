@@ -18,8 +18,8 @@ import packageJson from '../../../../package.json';
 import { V1_Binding } from './v1/model/packageableElements/store/V1_Binding';
 import { V1_SchemaSet } from './v1/model/packageableElements/schemaSet/V1_SchemaSet';
 import { V1_ExternalFormatConnection } from './v1/model/packageableElements/connection/V1_ExternalFormatConnection';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   assertType,
   guaranteeNonEmptyString,
   assertNonNullable,
@@ -52,30 +52,28 @@ import {
 } from '../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import { Schema } from '../../metamodels/pure/model/packageableElements/schemaSet/Schema';
 import { ExternalFormatConnection } from '../../metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
-import type {
-  PackageableElement,
-  Connection,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_ConnectionBuilder,
-  V1_ConnectionTransformer,
-  V1_ConnectionProtocolSerializer,
-  V1_ConnectionProtocolDeserializer,
-  V1_GraphBuilderContext,
-  V1_GraphTransformerContext,
-  V1_Connection,
-  V1_PackageableElement,
-  Store,
-  V1_ExecutionInputGetter,
-  PureModel,
-  Mapping,
-  Runtime,
-  V1_PureModelContextData,
-  DSLMapping_PureProtocolProcessorPlugin_Extension,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type Connection,
+  type V1_ElementProtocolClassifierPathGetter,
+  type V1_ElementProtocolDeserializer,
+  type V1_ElementProtocolSerializer,
+  type V1_ElementTransformer,
+  type V1_ConnectionBuilder,
+  type V1_ConnectionTransformer,
+  type V1_ConnectionProtocolSerializer,
+  type V1_ConnectionProtocolDeserializer,
+  type V1_GraphBuilderContext,
+  type V1_GraphTransformerContext,
+  type V1_Connection,
+  type V1_PackageableElement,
+  type Store,
+  type V1_ExecutionInputGetter,
+  type PureModel,
+  type Mapping,
+  type Runtime,
+  type V1_PureModelContextData,
+  type DSLMapping_PureProtocolProcessorPlugin_Extension,
   PureProtocolProcessorPlugin,
   V1_transformElementReference,
   V1_ElementBuilder,

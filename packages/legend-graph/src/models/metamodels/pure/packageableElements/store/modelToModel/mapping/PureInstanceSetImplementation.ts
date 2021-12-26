@@ -15,15 +15,16 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { Class } from '../../../domain/Class';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { PurePropertyMapping } from './PurePropertyMapping';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
-import type { Stubable } from '../../../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../../../helpers/Stubable';
+import {
+  type Stubable,
+  isStubArray,
+} from '../../../../../../../helpers/Stubable';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
 import type {
   PackageableElementReference,

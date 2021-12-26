@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   ArrowLeftIcon,
   ArrowRightIcon,
   BlankPanelContent,
@@ -38,11 +38,9 @@ import {
   generateExistingQueryRoute,
   generateServiceQueryRoute,
 } from '../stores/LegendQueryRouter';
-import type {
-  QuerySetupState,
-  ServiceExecutionOption,
-} from '../stores/QuerySetupStore';
 import {
+  type QuerySetupState,
+  type ServiceExecutionOption,
   CreateQuerySetupState,
   ExistingQuerySetupState,
   ServiceQuerySetupState,
@@ -57,8 +55,8 @@ import {
   useQuerySetupStore,
 } from './QuerySetupStoreProvider';
 import { useLegendQueryStore } from './LegendQueryStoreProvider';
-import type { ProjectData } from '@finos/legend-server-depot';
 import {
+  type ProjectData,
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
@@ -67,8 +65,10 @@ import type {
   Mapping,
   PackageableRuntime,
 } from '@finos/legend-graph';
-import type { PackageableElementOption } from '@finos/legend-application';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  type PackageableElementOption,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 type QueryOption = { label: string; value: LightQuery };
 const buildQueryOption = (query: LightQuery): QueryOption => ({

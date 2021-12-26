@@ -23,7 +23,8 @@
     "index.js"
   ],
   "scripts": {
-    "clean": "rimraf \"build\"",
+    "clean": "yarn clean:cache",
+    "clean:cache": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.{mjs,cjs,js}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
@@ -31,14 +32,14 @@
   "dependencies": {
     "postcss": "8.4.5",
     "postcss-scss": "4.0.2",
-    "stylelint": "14.1.0",
+    "stylelint": "14.2.0",
     "stylelint-config-prettier": "9.0.3",
     "stylelint-config-standard": "24.0.0",
-    "stylelint-scss": "4.0.1"
+    "stylelint-scss": "4.1.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.4.1",
+    "eslint": "8.5.0",
     "rimraf": "3.0.2"
   },
   "peerDependencies": {

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { SuperGenericFunction } from '../CommonUtils';
-import { printObject } from '../CommonUtils';
+import { type SuperGenericFunction, printObject } from '../CommonUtils';
 
 /**
  * A generic error that can be used for building other errors in the application

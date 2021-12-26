@@ -19,8 +19,9 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { ValueSpecification, Class } from '@finos/legend-graph';
 import {
+  type ValueSpecification,
+  type Class,
   Multiplicity,
   getMilestoneTemporalStereotype,
   INTERNAL__UnknownValueSpecification,

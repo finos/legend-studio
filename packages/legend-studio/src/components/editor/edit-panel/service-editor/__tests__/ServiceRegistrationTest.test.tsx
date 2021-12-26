@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { RenderResult } from '@testing-library/react';
 import {
+  type RenderResult,
   getByPlaceholderText,
   getByTitle,
   waitFor,
@@ -24,6 +24,7 @@ import {
 } from '@testing-library/react';
 import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/TEST_DATA__ServiceRegistration.json';
 import {
+  type PlainObject,
   integrationTest,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
@@ -36,7 +37,6 @@ import {
   TEST__setUpEditor,
 } from '../../../../EditorComponentTestUtils';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID';
-import type { PlainObject } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import {

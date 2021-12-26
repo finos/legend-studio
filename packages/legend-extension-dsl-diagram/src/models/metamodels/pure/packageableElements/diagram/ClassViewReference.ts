@@ -20,10 +20,8 @@ import type { ClassView } from './ClassView';
 import {
   PackageableElementExplicitReference,
   ReferenceWithOwner,
-} from '@finos/legend-graph';
-import type {
-  PackageableElementImplicitReference,
-  PackageableElementReference,
+  type PackageableElementImplicitReference,
+  type PackageableElementReference,
 } from '@finos/legend-graph';
 
 export abstract class ClassViewReference extends ReferenceWithOwner {

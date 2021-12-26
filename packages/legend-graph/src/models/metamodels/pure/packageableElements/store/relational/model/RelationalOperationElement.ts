@@ -15,9 +15,12 @@
  */
 
 import { observable, computed, makeObservable } from 'mobx';
-import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  UnsupportedOperationError,
+  type Hashable,
+} from '@finos/legend-shared';
 import type { GroupByMapping } from '../mapping/GroupByMapping';
 import type { FilterMapping } from '../mapping/FilterMapping';
 import type { JoinReference } from './JoinReference';

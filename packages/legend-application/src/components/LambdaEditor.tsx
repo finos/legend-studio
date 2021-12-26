@@ -15,8 +15,11 @@
  */
 
 import { useRef, useEffect, useState, useMemo } from 'react';
-import type { IDisposable, IKeyboardEvent } from 'monaco-editor';
-import { editor as monacoEditorAPI } from 'monaco-editor';
+import {
+  editor as monacoEditorAPI,
+  type IDisposable,
+  type IKeyboardEvent,
+} from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
 import { useResizeDetector } from 'react-resize-detector';
 import {
@@ -34,11 +37,14 @@ import {
   FaWindowMaximize,
 } from 'react-icons/fa';
 import type { LambdaEditorState } from '../stores/LambdaEditorState';
-import type { DebouncedFunc, GeneratorFn } from '@finos/legend-shared';
-import { noop, debounce } from '@finos/legend-shared';
+import {
+  debounce,
+  noop,
+  type DebouncedFunc,
+  type GeneratorFn,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import type { EngineError, Type } from '@finos/legend-graph';
-import { ParserError } from '@finos/legend-graph';
+import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import { APPLICATION_TEST_ID } from './ApplicationTestID';
 import { useApplicationStore } from './ApplicationStoreProvider';
 import { EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../const';

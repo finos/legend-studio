@@ -22,35 +22,37 @@ import {
   assertNonNullable,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../graphManager/GraphManagerLogEvent';
-import type { Runtime } from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
-import { RuntimePointer } from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
-import type { Service } from '../../../../../../../metamodels/pure/packageableElements/service/Service';
-import type { ServiceTest } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
 import {
+  type Runtime,
+  RuntimePointer,
+} from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
+import type { Service } from '../../../../../../../metamodels/pure/packageableElements/service/Service';
+import {
+  type ServiceTest,
   SingleExecutionTest,
   MultiExecutionTest,
   TestContainer,
   KeyedSingleExecutionTest,
 } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
-import type { ServiceExecution } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceExecution';
 import {
+  type ServiceExecution,
   PureSingleExecution,
   PureMultiExecution,
   KeyedExecutionParameter,
 } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceExecution';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest';
 import {
+  type V1_ServiceTest,
   V1_SingleExecutionTest,
   V1_MultiExecutionTest,
 } from '../../../../model/packageableElements/service/V1_ServiceTest';
-import type { V1_ServiceExecution } from '../../../../model/packageableElements/service/V1_ServiceExecution';
 import {
+  type V1_ServiceExecution,
   V1_PureSingleExecution,
   V1_PureMultiExecution,
 } from '../../../../model/packageableElements/service/V1_ServiceExecution';
-import type { V1_Runtime } from '../../../../model/packageableElements/runtime/V1_Runtime';
 import {
+  type V1_Runtime,
   V1_RuntimePointer,
   V1_EngineRuntime,
   V1_LegacyRuntime,

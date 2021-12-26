@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { Log } from '@finos/legend-shared';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { type Log, guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
 import { GraphManagerState } from './GraphManagerState';

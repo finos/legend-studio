@@ -15,8 +15,9 @@
  */
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
-import type { InstanceValue, Type } from '@finos/legend-graph';
 import {
+  type InstanceValue,
+  type Type,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
   Enumeration,

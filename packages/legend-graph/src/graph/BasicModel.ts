@@ -15,8 +15,9 @@
  */
 
 import { observable, computed, action, flow, makeObservable } from 'mobx';
-import type { Clazz, GeneratorFn } from '@finos/legend-shared';
 import {
+  type Clazz,
+  type GeneratorFn,
   ActionState,
   assertNonEmptyString,
   UnsupportedOperationError,
@@ -25,8 +26,10 @@ import {
   IllegalStateError,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import type { ROOT_PACKAGE_NAME } from '../MetaModelConst';
-import { ELEMENT_PATH_DELIMITER } from '../MetaModelConst';
+import {
+  type ROOT_PACKAGE_NAME,
+  ELEMENT_PATH_DELIMITER,
+} from '../MetaModelConst';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
 import { Association } from '../models/metamodels/pure/packageableElements/domain/Association';

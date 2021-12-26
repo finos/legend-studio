@@ -17,8 +17,10 @@
 import { returnUndefOnError } from '@finos/legend-shared';
 import { ConfigurationProperty } from '../../../../../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
-import type { PackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+import {
+  type PackageableElementReference,
+  PackageableElementExplicitReference,
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_ConfigurationProperty } from '../../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty';
 

@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '../CommonUtils';
-import { pruneNullValues } from '../CommonUtils';
-import type { ClazzOrModelSchema, ModelSchema, PropSchema } from 'serializr';
-import { custom, SKIP, deserialize, serialize } from 'serializr';
+import { type PlainObject, pruneNullValues } from '../CommonUtils';
+import {
+  type ClazzOrModelSchema,
+  type ModelSchema,
+  type PropSchema,
+  custom,
+  SKIP,
+  deserialize,
+  serialize,
+} from 'serializr';
 
 // NOTE: we need these methods because `map()` of `serializr` tries to smartly determines if it should produce object or ES6 Map
 // but we always want ES6 Map, so we would use this function

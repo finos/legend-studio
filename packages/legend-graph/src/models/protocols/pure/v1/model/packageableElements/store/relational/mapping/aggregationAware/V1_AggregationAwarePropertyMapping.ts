@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_PropertyMappingVisitor } from '../../../../../../model/packageableElements/mapping/V1_PropertyMapping';
-import { V1_PropertyMapping } from '../../../../../../model/packageableElements/mapping/V1_PropertyMapping';
+import {
+  type V1_PropertyMappingVisitor,
+  V1_PropertyMapping,
+} from '../../../../../../model/packageableElements/mapping/V1_PropertyMapping';
 
 export class V1_AggregationAwarePropertyMapping extends V1_PropertyMapping {
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {

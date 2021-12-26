@@ -15,9 +15,12 @@
  */
 
 import { observable, computed, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import type { FlatData } from './FlatData';
 import type { FlatDataProperty } from './FlatDataProperty';
 import type { RootFlatDataRecordType } from './FlatDataDataType';

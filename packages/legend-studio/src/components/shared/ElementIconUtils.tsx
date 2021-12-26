@@ -17,8 +17,9 @@
 import { returnUndefOnError } from '@finos/legend-shared';
 import type { EditorStore } from '../../stores/EditorStore';
 import type { DSL_LegendStudioPlugin_Extension } from '../../stores/LegendStudioPlugin';
-import type { PackageableElement, Type } from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type Type,
   Class,
   Enumeration,
   Measure,

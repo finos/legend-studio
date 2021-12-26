@@ -15,8 +15,11 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  UnsupportedOperationError,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import { Type } from './Type';

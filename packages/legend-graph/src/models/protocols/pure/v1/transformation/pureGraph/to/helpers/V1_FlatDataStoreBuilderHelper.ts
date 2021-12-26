@@ -26,8 +26,8 @@ import {
 } from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../../MetaModelConst';
 import { FlatDataSection } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
-import type { FlatDataDataType } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
 import {
+  type FlatDataDataType,
   FlatDataString,
   FlatDataBoolean,
   FlatDataNumber,
@@ -45,11 +45,9 @@ import type { FlatData } from '../../../../../../../metamodels/pure/packageableE
 import { FlatDataProperty } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataProperty';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_FlatDataSection } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataSection';
-import type {
-  V1_FlatDataDataType,
-  V1_FlatDataRecordField,
-} from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
 import {
+  type V1_FlatDataDataType,
+  type V1_FlatDataRecordField,
   V1_FlatDataString,
   V1_FlatDataBoolean,
   V1_FlatDataNumber,

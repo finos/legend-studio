@@ -21,8 +21,8 @@ import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type { ExecutionResult } from '@finos/legend-graph';
 import {
+  type ExecutionResult,
   extractExecutionResultValues,
   TdsExecutionResult,
 } from '@finos/legend-graph';

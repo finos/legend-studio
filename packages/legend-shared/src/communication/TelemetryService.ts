@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type {
-  AbstractPluginManager,
-  PluginConsumer,
+import {
+  AbstractPlugin,
+  type AbstractPluginManager,
+  type PluginConsumer,
 } from '../application/AbstractPluginManager';
-import { AbstractPlugin } from '../application/AbstractPluginManager';
 
 export interface TelemetryData {
   [key: string]: unknown;

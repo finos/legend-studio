@@ -15,13 +15,11 @@
  */
 
 import { guaranteeNonNullable } from '../error/AssertionUtils';
-import type {
-  Parameters,
-  RequestHeaders,
-  RequestProcessConfig,
-  ResponseProcessConfig,
-} from './NetworkUtils';
 import {
+  type Parameters,
+  type RequestHeaders,
+  type RequestProcessConfig,
+  type ResponseProcessConfig,
   HttpMethod,
   makeUrl,
   createRequestHeaders,

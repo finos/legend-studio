@@ -15,16 +15,21 @@
  */
 
 import { observable, action, computed, makeObservable, override } from 'mobx';
-import { hashArray, deleteEntry, addUniqueEntry } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  deleteEntry,
+  addUniqueEntry,
+  type Hashable,
+} from '@finos/legend-shared';
 import type { EnumerationMapping } from './EnumerationMapping';
 import type { SetImplementation } from './SetImplementation';
 import type { AssociationImplementation } from './AssociationImplementation';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import { PackageableElement } from '../PackageableElement';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '../PackageableElement';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { MappingTest } from './MappingTest';
 import type { MappingInclude } from './MappingInclude';
 

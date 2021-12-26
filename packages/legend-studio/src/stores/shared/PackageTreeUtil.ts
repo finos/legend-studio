@@ -20,8 +20,8 @@ import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore';
 import { CORE_DND_TYPE } from './DnDUtil';
 import type { DSL_LegendStudioPlugin_Extension } from '../LegendStudioPlugin';
-import type { PackageableElement } from '@finos/legend-graph';
 import {
+  type PackageableElement,
   ROOT_PACKAGE_NAME,
   Package,
   Class,

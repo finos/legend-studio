@@ -15,14 +15,13 @@
  */
 
 import { makeObservable, override } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type {
-  PackageableElementVisitor,
-  StereotypeReference,
-  TaggedValue,
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  PackageableElement,
+  type PackageableElementVisitor,
+  type StereotypeReference,
+  type TaggedValue,
 } from '@finos/legend-graph';
-import { PackageableElement } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils';
 
 export abstract class DataSpaceSupportInfo implements Hashable {

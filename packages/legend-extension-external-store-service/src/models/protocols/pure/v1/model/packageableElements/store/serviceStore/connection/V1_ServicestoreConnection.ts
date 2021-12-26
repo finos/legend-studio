@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type { V1_ConnectionVisitor } from '@finos/legend-graph';
-import { V1_Connection } from '@finos/legend-graph';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import { type V1_ConnectionVisitor, V1_Connection } from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 
 export class V1_ServiceStoreConnection

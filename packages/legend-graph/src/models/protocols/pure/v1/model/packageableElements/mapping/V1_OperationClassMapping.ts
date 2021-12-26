@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_ClassMappingVisitor } from './V1_ClassMapping';
-import { V1_ClassMapping } from './V1_ClassMapping';
+import {
+  type V1_ClassMappingVisitor,
+  V1_ClassMapping,
+} from './V1_ClassMapping';
 
 export enum V1_MappingOperationType {
   STORE_UNION = 'STORE_UNION',

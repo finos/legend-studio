@@ -22,8 +22,9 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type { LambdaFunction, ValueSpecification } from '@finos/legend-graph';
 import {
+  type LambdaFunction,
+  type ValueSpecification,
   extractElementNameFromPath,
   matchFunctionName,
   CollectionInstanceValue,

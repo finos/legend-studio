@@ -15,9 +15,12 @@
  */
 
 import { computed, observable, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { NamedRelation } from './RelationalOperationElement';
 import type { Schema } from './Schema';
 import { Column } from './Column';

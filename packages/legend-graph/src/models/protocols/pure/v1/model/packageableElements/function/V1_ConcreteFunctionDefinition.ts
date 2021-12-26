@@ -21,8 +21,10 @@ import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_Raw
 import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
-import type { V1_PackageableElementVisitor } from '../../../model/packageableElements/V1_PackageableElement';
-import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
+import {
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
+} from '../../../model/packageableElements/V1_PackageableElement';
 
 export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
   parameters: V1_RawVariable[] = []; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda

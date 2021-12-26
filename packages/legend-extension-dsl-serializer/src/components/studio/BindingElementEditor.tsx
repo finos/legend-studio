@@ -15,8 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   clsx,
   CustomSelectorInput,
   ResizablePanel,
@@ -26,11 +26,9 @@ import {
   TimesIcon,
 } from '@finos/legend-art';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
-import type {
-  ElementDragSource,
-  UMLEditorElementDropTarget,
-} from '@finos/legend-studio';
 import {
+  type ElementDragSource,
+  type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
   useEditorStore,
   getElementIcon,
@@ -41,11 +39,11 @@ import {
 } from '../../stores/studio/BindingEditorState';
 import { FaLock } from 'react-icons/fa';
 import { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import type {
-  PackageableElement,
-  PackageableElementReference,
+import {
+  PackageableElementExplicitReference,
+  type PackageableElement,
+  type PackageableElementReference,
 } from '@finos/legend-graph';
-import { PackageableElementExplicitReference } from '@finos/legend-graph';
 import { useCallback, useRef } from 'react';
 import { BINDING_CONTENT_TYPE } from '../../models/metamodels/pure/model/packageableElements/store/Binding';
 import { useDrop } from 'react-dnd';

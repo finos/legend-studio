@@ -15,8 +15,7 @@
  */
 
 import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification/V1_RawLambda';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst';
 import { hashLambda } from '../../../../../../../../../../MetaModelUtils';
 

@@ -16,22 +16,23 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   guaranteeNonNullable,
   addUniqueEntry,
   deleteEntry,
   changeEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
-import type { SetImplementationVisitor } from './SetImplementation';
-import { SetImplementation } from './SetImplementation';
+import {
+  type SetImplementationVisitor,
+  SetImplementation,
+} from './SetImplementation';
 import type { SetImplementationContainer } from './SetImplementationContainer';
 import type { Mapping } from './Mapping';
 import type { Class } from '../domain/Class';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 

@@ -30,18 +30,16 @@ import { useEffect, useRef } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useParams } from 'react-router';
-import type {
-  CreateQueryPathParams,
-  ExistingQueryPathParams,
-  ServiceQueryPathParams,
-  ServiceQueryQueryParams,
-} from '../stores/LegendQueryRouter';
 import {
+  type CreateQueryPathParams,
+  type ExistingQueryPathParams,
+  type ServiceQueryPathParams,
+  type ServiceQueryQueryParams,
   LEGEND_QUERY_ROUTE_PATTERN,
   generateCreateQueryRoute,
 } from '../stores/LegendQueryRouter';
-import type { QueryExportState } from '../stores/LegendQueryStore';
 import {
+  type QueryExportState,
   ExistingQueryInfoState,
   ServiceQueryInfoState,
   CreateQueryInfoState,

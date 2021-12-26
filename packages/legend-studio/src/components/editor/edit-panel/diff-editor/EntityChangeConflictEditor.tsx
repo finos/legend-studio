@@ -16,8 +16,8 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { IDisposable } from 'monaco-editor';
 import {
+  type IDisposable,
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
   Range,
@@ -29,11 +29,9 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
-import type {
-  MergeEditorComparisonViewInfo,
-  MergeConflict,
-} from '../../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import {
+  type MergeEditorComparisonViewInfo,
+  type MergeConflict,
   EntityChangeConflictEditorState,
   ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE,
 } from '../../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';

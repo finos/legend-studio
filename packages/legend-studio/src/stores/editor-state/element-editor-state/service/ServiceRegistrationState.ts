@@ -17,8 +17,8 @@
 import { action, computed, makeAutoObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   ActionState,
@@ -31,8 +31,10 @@ import {
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
 import { Version } from '@finos/legend-server-sdlc';
-import type { ServiceRegistrationResult } from '@finos/legend-graph';
-import { ServiceExecutionMode } from '@finos/legend-graph';
+import {
+  type ServiceRegistrationResult,
+  ServiceExecutionMode,
+} from '@finos/legend-graph';
 import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioConfig';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';

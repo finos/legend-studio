@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  AbstractPropertyExpression,
-  Class,
-  PureModel,
-} from '@finos/legend-graph';
 import {
+  type AbstractPropertyExpression,
+  type Class,
+  type PureModel,
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveInstanceValue,

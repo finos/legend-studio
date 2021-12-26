@@ -17,11 +17,16 @@
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import type { ApplicationStore } from '@finos/legend-application';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { assertErrorThrown, LogEvent, ActionState } from '@finos/legend-shared';
-import { generateSetupRoute } from './LegendStudioRouter';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import {
+  type GeneratorFn,
+  type PlainObject,
+  assertErrorThrown,
+  LogEvent,
+  ActionState,
+} from '@finos/legend-shared';
+import { generateSetupRoute } from './LegendStudioRouter';
+import {
+  type SDLCServerClient,
   WorkspaceType,
   ImportReport,
   Project,

@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import type {
-  EventNotifierPlugin,
-  EventNotifierServicePluginManager,
-  LoggerPlugin,
-  LoggerPluginManager,
-  TelemetryServicePlugin,
-  TelemetryServicePluginManager,
-  TracerServicePlugin,
-  TracerServicePluginManager,
+import {
+  type EventNotifierPlugin,
+  type EventNotifierServicePluginManager,
+  type LoggerPlugin,
+  type LoggerPluginManager,
+  type TelemetryServicePlugin,
+  type TelemetryServicePluginManager,
+  type TracerServicePlugin,
+  type TracerServicePluginManager,
+  AbstractPluginManager,
 } from '@finos/legend-shared';
-import { AbstractPluginManager } from '@finos/legend-shared';
 
 export class LegendApplicationPluginManager
   extends AbstractPluginManager

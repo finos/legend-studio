@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { SuperGenericFunction } from '@finos/legend-shared';
 import {
+  type SuperGenericFunction,
   EventNotifierService,
   TracerService,
   TelemetryService,

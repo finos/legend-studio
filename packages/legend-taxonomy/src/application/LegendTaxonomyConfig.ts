@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   AssertionError,
   guaranteeNonNullable,
   assertNonNullable,
   guaranteeNonEmptyString,
   SerializationFactory,
 } from '@finos/legend-shared';
-import type {
-  LegendApplicationConfigurationData,
-  LegendApplicationVersionData,
+import {
+  LegendApplicationConfig,
+  type LegendApplicationConfigurationData,
+  type LegendApplicationVersionData,
 } from '@finos/legend-application';
-import { LegendApplicationConfig } from '@finos/legend-application';
 import { createModelSchema, optional, primitive } from 'serializr';
 import { action, computed, makeObservable, observable } from 'mobx';
 

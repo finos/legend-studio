@@ -18,8 +18,8 @@ import { useEffect } from 'react';
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { LegendMaterialUITheme } from '@finos/legend-art';
-import type { LegendTaxonomyPathParams } from '../stores/LegendTaxonomyRouter';
 import {
+  type LegendTaxonomyPathParams,
   URL_PATH_PLACEHOLDER,
   generateRoutePatternWithTaxonomyServerKey,
   generateViewTaxonomyRoute,

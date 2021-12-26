@@ -15,13 +15,14 @@
  */
 
 import { useMemo } from 'react';
-import type { editor as monacoEditorAPI, IKeyboardEvent } from 'monaco-editor';
-import { KeyCode } from 'monaco-editor';
-import type {
-  TextInputEditorOnKeyDownEventHandler,
-  EDITOR_LANGUAGE,
-} from '@finos/legend-application';
 import {
+  type editor as monacoEditorAPI,
+  type IKeyboardEvent,
+  KeyCode,
+} from 'monaco-editor';
+import {
+  type TextInputEditorOnKeyDownEventHandler,
+  type EDITOR_LANGUAGE,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';

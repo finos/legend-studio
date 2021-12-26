@@ -23,19 +23,18 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type {
-  LightQuery,
-  Mapping,
-  PackageableRuntime,
-  Service,
-} from '@finos/legend-graph';
 import {
+  type LightQuery,
+  type Mapping,
+  type PackageableRuntime,
+  type Service,
   QuerySearchSpecification,
   PureSingleExecution,
   PureMultiExecution,

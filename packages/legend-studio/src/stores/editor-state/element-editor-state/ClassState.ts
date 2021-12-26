@@ -15,15 +15,17 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore';
-import type { Class, Constraint, DerivedProperty } from '@finos/legend-graph';
 import {
+  type Class,
+  type Constraint,
+  type DerivedProperty,
   LAMBDA_PIPE,
   GRAPH_MANAGER_LOG_EVENT,
   ParserError,

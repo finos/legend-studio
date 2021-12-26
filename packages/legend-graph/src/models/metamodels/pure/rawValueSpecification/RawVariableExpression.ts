@@ -15,16 +15,19 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, uuid } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 import type { Type } from '../packageableElements/domain/Type';
 import { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import type { Stubable } from '../../../../helpers/Stubable';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
-import { PackageableElementExplicitReference } from '../packageableElements/PackageableElementReference';
-import type { RawValueSpecificationVisitor } from './RawValueSpecification';
-import { RawValueSpecification } from './RawValueSpecification';
+import {
+  type PackageableElementReference,
+  PackageableElementExplicitReference,
+} from '../packageableElements/PackageableElementReference';
+import {
+  type RawValueSpecificationVisitor,
+  RawValueSpecification,
+} from './RawValueSpecification';
 
 export class RawVariableExpression
   extends RawValueSpecification

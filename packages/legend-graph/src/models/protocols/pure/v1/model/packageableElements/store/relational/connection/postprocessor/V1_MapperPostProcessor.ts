@@ -15,10 +15,9 @@
  */
 
 import type { V1_Mapper } from './V1_Mapper';
-import type { Hashable } from '@finos/legend-shared';
 import { V1_PostProcessor } from './V1_PostProcessor';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class V1_MapperPostProcessor
   extends V1_PostProcessor

@@ -15,11 +15,12 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { TEXT_HASH_STRUCTURE } from '../../../../../DSLText_ModelUtils';
-import type { PackageableElementVisitor } from '@finos/legend-graph';
-import { PackageableElement } from '@finos/legend-graph';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '@finos/legend-graph';
 
 export enum TEXT_TYPE {
   PLAIN_TEXT = 'plainText',

@@ -27,8 +27,9 @@ import {
   DERIVED_PROPERTY_SOURCE_ID_LABEL,
 } from './ClassState';
 import type { EditorStore } from '../../EditorStore';
-import type { CompilationError, PackageableElement } from '@finos/legend-graph';
 import {
+  type CompilationError,
+  type PackageableElement,
   GRAPH_MANAGER_LOG_EVENT,
   extractSourceInformationCoordinates,
   Class,

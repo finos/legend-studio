@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-import type {
-  ValueSpecification,
-  SimpleFunctionExpression,
-  VariableExpression,
-  PureModel,
-  AbstractPropertyExpression,
+import {
+  PRIMITIVE_TYPE,
+  type ValueSpecification,
+  type SimpleFunctionExpression,
+  type VariableExpression,
+  type PureModel,
+  type AbstractPropertyExpression,
 } from '@finos/legend-graph';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
-import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
-import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
-import { QueryBuilderSimpleProjectionColumnState } from '../QueryBuilderProjectionState';
+import {
+  type QueryBuilderAggregateColumnState,
+  QueryBuilderAggregateOperator,
+} from '../QueryBuilderAggregationState';
+import {
+  type QueryBuilderProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from '../QueryBuilderProjectionState';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,

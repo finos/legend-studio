@@ -15,8 +15,8 @@
  */
 
 import { useApplicationStore } from '@finos/legend-application';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   BoltIcon,
   ArrowRightIcon,
   clsx,

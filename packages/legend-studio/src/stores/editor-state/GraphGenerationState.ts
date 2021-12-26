@@ -22,8 +22,8 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   assertTrue,
   assertErrorThrown,
@@ -31,11 +31,9 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
-import type {
-  GenerationTreeNodeData,
-  GenerationOutputResult,
-} from '../shared/FileGenerationTreeUtil';
 import {
+  type GenerationTreeNodeData,
+  type GenerationOutputResult,
   GenerationDirectory,
   GENERATION_FILE_ROOT_NAME,
   GenerationFile,
@@ -53,13 +51,11 @@ import type { EditorState } from './EditorState';
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  GenerationConfigurationDescription,
-  GenerationOutput,
-  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
-  GenerationTreeNode,
-} from '@finos/legend-graph';
 import {
+  type GenerationConfigurationDescription,
+  type GenerationOutput,
+  type DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+  type GenerationTreeNode,
   Class,
   Enumeration,
   GenerationSpecification,

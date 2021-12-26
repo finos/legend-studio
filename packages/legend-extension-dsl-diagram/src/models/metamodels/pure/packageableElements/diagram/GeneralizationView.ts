@@ -15,8 +15,7 @@
  */
 
 import { computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { RelationshipView } from './RelationshipView';
 import type { Diagram } from './Diagram';
 import type { ClassView } from './ClassView';

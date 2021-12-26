@@ -15,9 +15,8 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../../../mapping/EnumerationMapping';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
 import { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';

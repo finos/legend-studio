@@ -26,11 +26,11 @@ import {
   FaArrowAltCircleRight,
   FaLongArrowAltRight,
 } from 'react-icons/fa';
-import type {
-  UMLEditorElementDropTarget,
-  ElementDragSource,
+import {
+  CORE_DND_TYPE,
+  type UMLEditorElementDropTarget,
+  type ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
 import {
   clsx,
@@ -52,12 +52,10 @@ import { TaggedValueEditor } from './TaggedValueEditor';
 import { PropertyEditor } from './PropertyEditor';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  Association,
-  Property,
-  StereotypeReference,
-} from '@finos/legend-graph';
 import {
+  type Association,
+  type Property,
+  type StereotypeReference,
   MULTIPLICITY_INFINITE,
   TaggedValue,
   Stereotype,

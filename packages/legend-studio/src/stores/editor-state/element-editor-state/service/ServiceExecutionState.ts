@@ -15,8 +15,8 @@
  */
 
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   ActionState,
   assertErrorThrown,
   LogEvent,
@@ -33,18 +33,16 @@ import {
 } from '../../../editor-state/element-editor-state/RuntimeEditorState';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type {
-  ServiceExecution,
-  KeyedExecutionParameter,
-  PureExecution,
-  ServiceTest,
-  Mapping,
-  Runtime,
-  ExecutionResult,
-  LightQuery,
-  PackageableRuntime,
-} from '@finos/legend-graph';
 import {
+  type ServiceExecution,
+  type KeyedExecutionParameter,
+  type PureExecution,
+  type ServiceTest,
+  type Mapping,
+  type Runtime,
+  type ExecutionResult,
+  type LightQuery,
+  type PackageableRuntime,
   GRAPH_MANAGER_LOG_EVENT,
   RawLambda,
   PureSingleExecution,

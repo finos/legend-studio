@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification';
-import { V1_ValueSpecification } from '../V1_ValueSpecification';
+import {
+  type V1_ValueSpecificationVisitor,
+  V1_ValueSpecification,
+} from '../V1_ValueSpecification';
 
 /**
  * @deprecated

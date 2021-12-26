@@ -28,7 +28,9 @@
   "scripts": {
     "build": "yarn clean && yarn build:tsc",
     "build:tsc": "tsc --project ./tsconfig.build.json",
-    "clean": "rimraf \"lib\" \"build\"",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
     "dev": "yarn dev:tsc",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
@@ -43,8 +45,8 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.37",
-    "mobx": "6.3.9",
+    "@types/react": "17.0.38",
+    "mobx": "6.3.10",
     "mobx-react-lite": "3.2.2",
     "monaco-editor": "0.31.1",
     "react": "17.0.2",
@@ -53,11 +55,11 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.4.1",
+    "eslint": "8.5.0",
     "jest": "27.4.5",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.45.0",
+    "sass": "1.45.1",
     "typescript": "4.5.4"
   },
   "peerDependencies": {

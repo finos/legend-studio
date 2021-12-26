@@ -16,8 +16,8 @@
 
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
+  type MappingTestState,
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
   MappingTestObjectInputDataState,
@@ -44,8 +44,10 @@ import {
 } from '@finos/legend-art';
 import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
-import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
+import {
+  type MappingElementDragSource,
+  CORE_DND_TYPE,
+} from '../../../../stores/shared/DnDUtil';
 import {
   IllegalStateError,
   guaranteeType,

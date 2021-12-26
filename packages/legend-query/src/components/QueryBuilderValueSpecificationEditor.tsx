@@ -32,13 +32,11 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import CSVParser from 'papaparse';
-import type {
-  Enum,
-  PureModel,
-  Type,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type Enum,
+  type PureModel,
+  type Type,
+  type ValueSpecification,
   LATEST_DATE,
   Enumeration,
   GenericType,
@@ -52,8 +50,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import type { TooltipProps } from '@material-ui/core';
-import { Tooltip } from '@material-ui/core';
+import { type TooltipProps, Tooltip } from '@material-ui/core';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{

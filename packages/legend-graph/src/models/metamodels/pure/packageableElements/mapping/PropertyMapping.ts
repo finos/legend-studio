@@ -15,8 +15,11 @@
  */
 
 import { observable, makeObservable } from 'mobx';
-import { UnsupportedOperationError, hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  UnsupportedOperationError,
+  hashArray,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PropertyReference } from '../domain/PropertyReference';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';

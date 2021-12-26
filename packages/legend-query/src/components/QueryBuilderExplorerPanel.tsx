@@ -16,11 +16,9 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import type {
-  TreeNodeContainerProps,
-  TreeNodeViewProps,
-} from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
+  type TreeNodeViewProps,
   clsx,
   TreeView,
   BlankPanelContent,
@@ -43,11 +41,9 @@ import {
   ClassIcon,
   CheckIcon,
 } from '@finos/legend-art';
-import type {
-  QueryBuilderExplorerTreeDragSource,
-  QueryBuilderExplorerTreeNodeData,
-} from '../stores/QueryBuilderExplorerState';
 import {
+  type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
@@ -63,8 +59,8 @@ import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderP
 import { flowResult } from 'mobx';
 import { Dialog } from '@material-ui/core';
 import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState';
-import type { Type } from '@finos/legend-graph';
 import {
+  type Type,
   Class,
   DerivedProperty,
   PrimitiveType,

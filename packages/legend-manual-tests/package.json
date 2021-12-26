@@ -15,7 +15,8 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "clean": "rimraf \"dist\" \"build\"",
+    "clean": "yarn clean:cache",
+    "clean:cache": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
     "test:manual": "jest --config jest.config.manual.js",
     "test:watch": "jest --config jest.config.manual.js --watch"
@@ -34,7 +35,7 @@
     "@finos/legend-dev-utils": "workspace:*",
     "axios": "0.24.0",
     "cross-env": "7.0.3",
-    "eslint": "8.4.1",
+    "eslint": "8.5.0",
     "jest": "27.4.5",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",

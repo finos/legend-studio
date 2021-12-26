@@ -15,14 +15,19 @@
  */
 
 /// <reference types="jest-extended" />
-import type { PlainObject } from '@finos/legend-shared';
-import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  unitTest,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
-import { ProjectVersionEntities } from '@finos/legend-server-depot';
-import type { ProjectData } from '@finos/legend-server-depot';
+import {
+  ProjectVersionEntities,
+  type ProjectData,
+} from '@finos/legend-server-depot';
 import {
   DependencyManager,
   PackageableElementReference,

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
-import type { V1_PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
-import { V1_PropertyMapping } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  type V1_PropertyMappingVisitor,
+  V1_PropertyMapping,
+} from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
 import { hashObjectWithoutSourceInformation } from '../../../../../../../../../MetaModelUtils';
 import type { V1_RawRelationalOperationElement } from '../model/V1_RawRelationalOperationElement';
 

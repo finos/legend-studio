@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
-import type {
-  V1_PackageableElementVisitor,
-  V1_PackageableElementPointer,
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import {
+  V1_PackageableElement,
+  type V1_PackageableElementVisitor,
+  type V1_PackageableElementPointer,
 } from '../../../model/packageableElements/V1_PackageableElement';
-import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 
 export class V1_GenerationTreeNode {
   id!: string;

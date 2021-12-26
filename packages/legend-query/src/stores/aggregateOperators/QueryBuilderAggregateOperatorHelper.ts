@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import type { PureModel, ValueSpecification } from '@finos/legend-graph';
 import {
+  type PureModel,
+  type ValueSpecification,
   SimpleFunctionExpression,
   extractElementNameFromPath,
   matchFunctionName,
@@ -23,8 +24,10 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { guaranteeType, assertTrue } from '@finos/legend-shared';
-import type { QueryBuilderAggregateOperator } from '../QueryBuilderAggregationState';
-import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
+import {
+  type QueryBuilderAggregateOperator,
+  QueryBuilderAggregateColumnState,
+} from '../QueryBuilderAggregationState';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
 
 export const buildAggregateExpression = (

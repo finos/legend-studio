@@ -18,8 +18,13 @@ import type { EditorStore } from '../../EditorStore';
 import { observable, action, makeObservable } from 'mobx';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
-import type { PackageableElement } from '@finos/legend-graph';
-import { Class, Profile, Association, Enumeration } from '@finos/legend-graph';
+import {
+  type PackageableElement,
+  Class,
+  Profile,
+  Association,
+  Enumeration,
+} from '@finos/legend-graph';
 
 export enum UML_EDITOR_TAB {
   TAGGED_VALUES = 'TAGGED_VALUES',

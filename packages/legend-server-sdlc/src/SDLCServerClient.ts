@@ -16,8 +16,7 @@
 
 import type { Project, SDLCMode, ProjectType } from './models/project/Project';
 import type { ImportReport } from './models/project/ImportReport';
-import type { Workspace } from './models/workspace/Workspace';
-import { WorkspaceType } from './models/workspace/Workspace';
+import { type Workspace, WorkspaceType } from './models/workspace/Workspace';
 import type { Revision, RevisionAlias } from './models/revision/Revision';
 import type { Workflow, WorkflowStatus } from './models/workflow/Workflow';
 import type { Review, ReviewState } from './models/review/Review';
@@ -27,8 +26,12 @@ import type { ProjectConfiguration } from './models/configuration/ProjectConfigu
 import type { CreateVersionCommand } from './models/version/VersionCommands';
 import type { ProjectStructureVersion } from './models/configuration/ProjectStructureVersion';
 import type { User } from './models/User';
-import type { PlainObject, TraceData } from '@finos/legend-shared';
-import { AbstractServerClient, ContentType } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  type TraceData,
+  AbstractServerClient,
+  ContentType,
+} from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
   CreateProjectCommand,
