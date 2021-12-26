@@ -2295,6 +2295,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.5.0
     jest: 27.4.5
+    npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.5.4
   languageName: unknown
@@ -2363,6 +2364,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     lodash: 4.17.21
+    npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.5.4
   languageName: unknown
@@ -2516,6 +2518,7 @@ __metadata:
     lodash-es: 4.17.21
     lossless-json: 1.0.5
     mobx: 6.3.10
+    npm-run-all: 4.1.5
     object-hash: 2.2.0
     pako: 2.0.4
     pretty-format: 27.4.2
@@ -2776,6 +2779,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.5.0
     jest: 27.4.5
+    npm-run-all: 4.1.5
     opentracing: 0.14.5
     rimraf: 3.0.2
     typescript: 4.5.4

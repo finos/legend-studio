@@ -23,6 +23,7 @@
     "check:tsc": "yarn build:tsc",
     "check:update": "yarn upgrade-interactive",
     "clean": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean",
+    "clean:cache": "rimraf \"build\" && yarn workspaces foreach --all --topological-dev --parallel --verbose run clean:cache",
     "dev": "yarn dev:studio",
     "dev:mock-server": "yarn workspace @finos/legend-fixture-mock-server dev",
     "dev:query": "yarn workspace @finos/legend-query-deployment dev",

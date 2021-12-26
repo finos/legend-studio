@@ -26,7 +26,9 @@
   "scripts": {
     "build": "yarn clean && yarn build:tsc",
     "build:tsc": "tsc --project ./tsconfig.build.json",
-    "clean": "rimraf \"lib\" \"build\"",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
     "dev": "yarn dev:tsc",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",

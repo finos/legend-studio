@@ -15,7 +15,8 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "clean": "rimraf \"dist\" \"build\"",
+    "clean": "yarn clean:cache",
+    "clean:cache": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
     "test:manual": "jest --config jest.config.manual.js",
     "test:watch": "jest --config jest.config.manual.js --watch"

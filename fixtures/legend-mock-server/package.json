@@ -17,7 +17,9 @@
   "type": "module",
   "scripts": {
     "build:tsc": "tsc --project ./tsconfig.build.json",
-    "clean": "rimraf \"lib\" \"build\"",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
     "dev": "npm-run-all --parallel dev:tsc dev:server",
     "dev:server": "yarn build:tsc && nodemon --experimental-json-modules --watch lib lib/index.js",
     "dev:tsc": "tsc --watch --preserveWatchOutput",

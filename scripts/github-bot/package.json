@@ -10,6 +10,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
+    "clean:cache": "echo \"Skipped\"",
     "lint:js": "echo \"Skipped - already done as part of linting ./scripts\""
   },
   "dependencies": {
