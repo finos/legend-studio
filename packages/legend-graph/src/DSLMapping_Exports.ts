@@ -21,11 +21,14 @@ export {
   Runtime,
   EngineRuntime,
   RuntimePointer,
+  IdentifiedConnection,
 } from './models/metamodels/pure/packageableElements/runtime/Runtime';
 export { PackageableRuntime } from './models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
-export { SetImplementation } from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
 export { PureInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-export { OperationSetImplementation } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+export {
+  OperationSetImplementation,
+  OperationType,
+} from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
 export { PropertyMapping } from './models/metamodels/pure/packageableElements/mapping/PropertyMapping';
 export {
   Connection,
@@ -37,7 +40,6 @@ export { ModelStore } from './models/metamodels/pure/packageableElements/store/m
 export { PureModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/PureModelConnection';
 export { JsonModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
 export { XmlModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
-export { IdentifiedConnection } from './models/metamodels/pure/packageableElements/runtime/Runtime';
 export * from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
 export { PurePropertyMapping } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 export { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
@@ -46,7 +48,6 @@ export {
   EnumValueMapping,
   SourceValue,
 } from './models/metamodels/pure/packageableElements/mapping/EnumValueMapping';
-export { OperationType } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
 export { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
 export { SetImplementationContainer } from './models/metamodels/pure/packageableElements/mapping/SetImplementationContainer';
 export { AggregationAwareSetImplementation } from './models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';

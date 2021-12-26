@@ -32,7 +32,11 @@ export * from './stores/EditorConfig';
 export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState';
 export { ElementEditorState } from './stores/editor-state/element-editor-state/ElementEditorState';
 export { UnsupportedElementEditorState } from './stores/editor-state/UnsupportedElementEditorState';
-export { NewElementState, NewElementDriver } from './stores/NewElementState';
+export {
+  NewElementState,
+  NewElementDriver,
+  NewConnectionValueDriver,
+} from './stores/NewElementState';
 export {
   CORE_DND_TYPE,
   ElementDragSource,
@@ -64,7 +68,6 @@ export * from './stores/EditorStoreTestUtils';
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
 export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-export { NewConnectionValueDriver } from './stores/NewElementState';
 export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
 export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
