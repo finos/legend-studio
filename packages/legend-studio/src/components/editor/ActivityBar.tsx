@@ -62,7 +62,7 @@ const SettingsMenu = observer(
   { forwardRef: true },
 );
 
-interface ActivityDisplay {
+export interface ActivityDisplay {
   mode: ACTIVITY_MODE;
   title: string;
   info?: string;
