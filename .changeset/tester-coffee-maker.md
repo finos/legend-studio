@@ -2,4 +2,4 @@
 '@finos/legend-studio-extension-query-builder': patch
 ---
 
-Enable opening query builder in read only via Mapping Test and Service. Disable saving query in read only mode.
+Enable opening query builder in read-only mode for mapping test and service.
