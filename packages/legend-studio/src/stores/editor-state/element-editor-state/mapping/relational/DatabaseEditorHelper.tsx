@@ -23,8 +23,8 @@ import {
   StringTypeIcon,
 } from '@finos/legend-art';
 import { getClass, UnsupportedOperationError } from '@finos/legend-shared';
-import type { RelationalDataType } from '@finos/legend-graph';
 import {
+  type RelationalDataType,
   Real,
   Binary,
   Bit,

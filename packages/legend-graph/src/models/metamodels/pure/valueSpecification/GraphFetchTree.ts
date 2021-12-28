@@ -18,11 +18,11 @@ import { makeObservable, observable, action, computed } from 'mobx';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { Class } from '../packageableElements/domain/Class';
 import type { PropertyReference } from '../packageableElements/domain/PropertyReference';
-import type {
-  OptionalPackageableElementReference,
-  PackageableElementReference,
+import {
+  OptionalPackageableElementExplicitReference,
+  type OptionalPackageableElementReference,
+  type PackageableElementReference,
 } from '../packageableElements/PackageableElementReference';
-import { OptionalPackageableElementExplicitReference } from '../packageableElements/PackageableElementReference';
 import type {
   ValueSpecification,
   ValueSpecificationVisitor,

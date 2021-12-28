@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
 import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
+import {
+  V1_ValueSpecification,
+  type V1_ValueSpecificationVisitor,
+} from '../../../model/valueSpecification/V1_ValueSpecification';
 
 export class V1_CStrictTime extends V1_ValueSpecification {
   multiplicity!: V1_Multiplicity;

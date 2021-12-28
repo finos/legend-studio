@@ -16,16 +16,18 @@
 
 import { observable, computed, action, makeObservable } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   ContentType,
   guaranteeType,
   createUrlStringFromData,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { FlatData } from '../model/FlatData';
-import type { ConnectionVisitor } from '../../../connection/Connection';
-import { Connection } from '../../../connection/Connection';
+import {
+  type ConnectionVisitor,
+  Connection,
+} from '../../../connection/Connection';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 
 export class FlatDataConnection extends Connection implements Hashable {

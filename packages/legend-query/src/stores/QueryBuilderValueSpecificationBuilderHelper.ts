@@ -15,8 +15,9 @@
  */
 
 import { DATE_FORMAT } from '@finos/legend-application';
-import type { PureModel, ValueSpecification } from '@finos/legend-graph';
 import {
+  type PureModel,
+  type ValueSpecification,
   CORE_ELEMENT_PATH,
   FunctionType,
   LambdaFunction,

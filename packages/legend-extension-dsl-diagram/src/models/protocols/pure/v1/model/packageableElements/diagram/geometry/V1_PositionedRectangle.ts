@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_Point } from './V1_Point';
 import type { V1_Rectangle } from './V1_Rectangle';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../../DSLDiagram_ModelUtils';

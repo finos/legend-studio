@@ -24,8 +24,7 @@ import {
   QueryStereotype,
   QueryTaggedValue,
 } from '../../../../../graphManager/action/query/Query';
-import type { V1_LightQuery } from './query/V1_Query';
-import { V1_Query } from './query/V1_Query';
+import { type V1_LightQuery, V1_Query } from './query/V1_Query';
 import type { PureModel } from '../../../../../graph/PureModel';
 import { PackageableElementExplicitReference } from '../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { ServiceTestResult } from '../../../../../graphManager/action/service/ServiceTestResult';

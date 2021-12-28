@@ -15,8 +15,9 @@
  */
 
 import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,

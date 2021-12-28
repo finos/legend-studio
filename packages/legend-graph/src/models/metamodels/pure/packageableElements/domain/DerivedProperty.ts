@@ -16,6 +16,7 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   uuid,
   deleteEntry,
@@ -24,7 +25,6 @@ import {
 } from '@finos/legend-shared';
 import { hashLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
 import { Multiplicity } from './Multiplicity';
 import type { TaggedValue } from './TaggedValue';
 import type { AbstractProperty, PropertyOwner } from './AbstractProperty';
@@ -34,8 +34,10 @@ import type { Class } from './Class';
 import type { Type } from './Type';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
-import type { GenericTypeReference } from './GenericTypeReference';
-import { GenericTypeExplicitReference } from './GenericTypeReference';
+import {
+  type GenericTypeReference,
+  GenericTypeExplicitReference,
+} from './GenericTypeReference';
 
 export class DerivedProperty
   implements AbstractProperty, AnnotatedElement, Hashable, Stubable

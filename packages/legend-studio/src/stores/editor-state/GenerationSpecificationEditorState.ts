@@ -30,11 +30,11 @@ import {
   action,
 } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import type {
-  GenerationTreeNode,
-  PackageableElement,
+import {
+  GenerationSpecification,
+  type GenerationTreeNode,
+  type PackageableElement,
 } from '@finos/legend-graph';
-import { GenerationSpecification } from '@finos/legend-graph';
 
 export interface GenerationSpecNodeDragSource {
   nodeState: GenerationTreeNodeState;

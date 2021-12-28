@@ -152,3 +152,40 @@ RelationalDatabaseConnection connection::relational::SnowflakeConnection
   };
   auth: DefaultH2;
 }
+
+RelationalDatabaseConnection connection::relational::StaticWithUserName
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'dbName';
+    account: 'acct1';
+    warehouse: 'warehouse';
+    region: 'reg1';
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: 'user';
+    userNameVaultReference: 'value';
+    passwordVaultReference: 'value';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::StaticWithUserNameNoBase
+{
+  store: store::db;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'dbName';
+    account: 'acct1';
+    warehouse: 'warehouse';
+    region: 'reg1';
+  };
+  auth: UserNamePassword
+  {
+    userNameVaultReference: 'value';
+    passwordVaultReference: 'value';
+  };
+}

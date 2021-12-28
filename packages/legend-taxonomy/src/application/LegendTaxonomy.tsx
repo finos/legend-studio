@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import type {
-  LegendApplicationConfig,
-  LegendApplicationVersionData,
-} from '@finos/legend-application';
 import {
+  type LegendApplicationConfig,
+  type LegendApplicationVersionData,
   LegendApplication,
   ApplicationStoreProvider,
   setupLegendApplicationUILibrary,
@@ -31,8 +29,10 @@ import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplicati
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
-import type { LegendTaxonomyConfigurationData } from './LegendTaxonomyConfig';
-import { LegendTaxonomyConfig } from './LegendTaxonomyConfig';
+import {
+  type LegendTaxonomyConfigurationData,
+  LegendTaxonomyConfig,
+} from './LegendTaxonomyConfig';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   configureReactHotkeys({

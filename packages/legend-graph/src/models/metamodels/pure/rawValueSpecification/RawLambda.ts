@@ -15,12 +15,13 @@
  */
 
 import { computed, observable, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
 import { hashLambda } from '../../../../MetaModelUtils';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
-import type { RawValueSpecificationVisitor } from './RawValueSpecification';
-import { RawValueSpecification } from './RawValueSpecification';
+import {
+  type RawValueSpecificationVisitor,
+  RawValueSpecification,
+} from './RawValueSpecification';
 import type { Stubable } from '../../../../helpers/Stubable';
 
 export class RawLambda

@@ -23,8 +23,8 @@ import {
   list,
   optional,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   optionalCustom,
   deserializeArray,
   serializeArray,

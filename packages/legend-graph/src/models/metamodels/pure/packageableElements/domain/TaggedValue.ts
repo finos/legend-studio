@@ -15,13 +15,11 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, uuid } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Tag } from './Tag';
 import type { Stubable } from '../../../../../helpers/Stubable';
-import type { TagReference } from './TagReference';
-import { TagExplicitReference } from './TagReference';
+import { type TagReference, TagExplicitReference } from './TagReference';
 
 export class TaggedValue implements Hashable, Stubable {
   uuid = uuid();

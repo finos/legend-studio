@@ -25,22 +25,22 @@ import {
   serialize,
   SKIP,
 } from 'serializr';
-import type { V1_StereotypePtr } from '@finos/legend-graph';
 import {
+  type V1_StereotypePtr,
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
   V1_packageableElementPointerDeserializerSchema,
 } from '@finos/legend-graph';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   deserializeArray,
   serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
-import type { V1_DataSpaceSupportInfo } from '../../model/packageableElements/dataSpace/V1_DataSpace';
 import {
+  type V1_DataSpaceSupportInfo,
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,

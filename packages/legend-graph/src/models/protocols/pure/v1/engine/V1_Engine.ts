@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  Log,
-  PlainObject,
-  ServerClientConfig,
-} from '@finos/legend-shared';
 import {
+  type Log,
+  type PlainObject,
+  type ServerClientConfig,
   LogEvent,
   losslessParse,
   assertErrorThrown,
@@ -29,11 +27,15 @@ import {
   NetworkClientError,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../graphManager/GraphManagerLogEvent';
-import type { ImportConfigurationDescription } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
-import { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
+import {
+  type ImportConfigurationDescription,
+  ImportMode,
+} from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { RawLambda } from '../../../../metamodels/pure/rawValueSpecification/RawLambda';
-import { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import type { GenerationConfigurationDescription } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
+import {
+  GenerationMode,
+  type GenerationConfigurationDescription,
+} from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
 import { TEMP__AbstractEngineConfig } from '../../../../../graphManager/action/TEMP__AbstractEngineConfig';
 import { V1_EngineServerClient } from './V1_EngineServerClient';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
@@ -76,8 +78,10 @@ import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
 import { V1_ExecuteInput } from './execution/V1_ExecuteInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
-import type { V1_ExecutionResult } from './execution/V1_ExecutionResult';
-import { V1_serializeExecutionResult } from './execution/V1_ExecutionResult';
+import {
+  type V1_ExecutionResult,
+  V1_serializeExecutionResult,
+} from './execution/V1_ExecutionResult';
 import { V1_ServiceStorage } from './service/V1_ServiceStorage';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';

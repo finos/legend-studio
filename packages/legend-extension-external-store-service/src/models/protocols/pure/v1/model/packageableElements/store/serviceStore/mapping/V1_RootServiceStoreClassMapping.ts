@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import { V1_ClassMapping } from '@finos/legend-graph';
-import type { V1_ClassMappingVisitor } from '@finos/legend-graph';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  V1_ClassMapping,
+  type V1_ClassMappingVisitor,
+} from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 import type { V1_LocalMappingProperty } from './V1_LocalMappingProperty';
 import type { V1_ServiceMapping } from './V1_ServiceMapping';

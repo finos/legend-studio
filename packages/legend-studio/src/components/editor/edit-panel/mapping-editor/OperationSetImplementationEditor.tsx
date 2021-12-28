@@ -19,11 +19,11 @@ import { observer } from 'mobx-react-lite';
 import { FaTimes, FaArrowAltCircleRight, FaPlus } from 'react-icons/fa';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
-import type {
-  OperationSetImplementationDropTarget,
-  MappingElementDragSource,
+import {
+  CORE_DND_TYPE,
+  type OperationSetImplementationDropTarget,
+  type MappingElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
 import { noop } from '@finos/legend-shared';
 import {

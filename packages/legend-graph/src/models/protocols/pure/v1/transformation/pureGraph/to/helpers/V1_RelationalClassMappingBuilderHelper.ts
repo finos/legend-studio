@@ -21,8 +21,10 @@ import type { SetImplementation } from '../../../../../../../metamodels/pure/pac
 import type { RelationalPropertyMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { EnumerationMapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import type { TableAlias } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import { TableAliasColumn } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
+import {
+  type TableAlias,
+  TableAliasColumn,
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import type { Column } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Column';
 import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table';
 import { View } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/View';

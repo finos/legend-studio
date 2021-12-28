@@ -15,11 +15,12 @@
  */
 
 import { computed, observable, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
-import type { Relation } from './RelationalOperationElement';
-import { RelationalOperationElement } from './RelationalOperationElement';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import {
+  type Relation,
+  RelationalOperationElement,
+} from './RelationalOperationElement';
 import type { RelationalDataType } from './RelationalDataType';
 
 export class Column extends RelationalOperationElement implements Hashable {

@@ -16,8 +16,7 @@
 
 import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { PackageableElement } from '../PackageableElement';
 import type { Package } from '../domain/Package';
 import type { SectionIndex } from './SectionIndex';

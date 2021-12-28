@@ -15,8 +15,7 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import type { PlainObject } from '@finos/legend-shared';
-import { AbstractServerClient } from '@finos/legend-shared';
+import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import type { DepotScope } from './models/DepotScope';
 import type { ProjectData } from './models/ProjectData';
 import type {
@@ -82,11 +81,37 @@ export class DepotServerClient extends AbstractServerClient {
   ): Promise<PlainObject<Entity>[]> =>
     this.get(this._version(groupId, artifactId, versionId));
 
+  getVersionEntity = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>[]> =>
+    this.get(
+      `${this._version(
+        groupId,
+        artifactId,
+        versionId,
+      )}/entities/${encodeURIComponent(entityPath)}`,
+    );
+
   getLatestRevisionEntities = (
     groupId: string,
     artifactId: string,
   ): Promise<PlainObject<Entity>[]> =>
     this.get(`${this._revisions(groupId, artifactId)}/latest`);
+
+  getLatestRevisionEntity = (
+    groupId: string,
+    artifactId: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> =>
+    this.get(
+      `${this._revisions(
+        groupId,
+        artifactId,
+      )}/latest/entities/${encodeURIComponent(entityPath)}`,
+    );
 
   // NOTE: this is experimental API to get elements by classifier path
   getEntitiesByClassifierPath = (

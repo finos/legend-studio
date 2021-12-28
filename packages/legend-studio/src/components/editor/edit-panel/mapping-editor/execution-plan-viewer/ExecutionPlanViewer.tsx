@@ -15,12 +15,10 @@
  */
 
 import { useState } from 'react';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
+  type TreeData,
+  type TreeNodeData,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanel,
@@ -36,8 +34,8 @@ import { observer } from 'mobx-react-lite';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
 import Dialog from '@material-ui/core/Dialog';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
-import type { ExecutionPlan } from '@finos/legend-graph';
 import {
+  type ExecutionPlan,
   ExecutionNode,
   SQLExecutionNode,
   RelationalTDSInstantiationExecutionNode,

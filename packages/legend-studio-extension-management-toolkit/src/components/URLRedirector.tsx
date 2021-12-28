@@ -17,8 +17,10 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator } from '@finos/legend-art';
-import type { TelemetryService } from '@finos/legend-shared';
-import { getQueryParameters } from '@finos/legend-shared';
+import {
+  type TelemetryService,
+  getQueryParameters,
+} from '@finos/legend-shared';
 import { useParams } from 'react-router-dom';
 import {
   LegendStudioAppHeaderMenu,

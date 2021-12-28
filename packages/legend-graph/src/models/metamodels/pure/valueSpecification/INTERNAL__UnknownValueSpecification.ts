@@ -15,8 +15,10 @@
  */
 
 import { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { ValueSpecificationVisitor } from './ValueSpecification';
-import { ValueSpecification } from './ValueSpecification';
+import {
+  type ValueSpecificationVisitor,
+  ValueSpecification,
+} from './ValueSpecification';
 
 export class INTERNAL__UnknownValueSpecification extends ValueSpecification {
   content: object;

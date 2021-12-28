@@ -19,8 +19,8 @@ import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   CheckSquareIcon,
   clsx,
   SquareIcon,
@@ -35,8 +35,8 @@ import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import Dialog from '@material-ui/core/Dialog';
 import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
-import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {
+  type SetupPathParams,
   generateEditorRoute,
   generateViewProjectRoute,
 } from '../../stores/LegendStudioRouter';

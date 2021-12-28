@@ -16,21 +16,22 @@
 
 import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { FlatDataPropertyMappingTransformDropTarget } from '../../../../stores/shared/DnDUtil';
 import {
+  type FlatDataPropertyMappingTransformDropTarget,
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  type MappingElement,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type {
   FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { clsx, CustomSelectorInput } from '@finos/legend-art';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
-import type { ConnectDropTarget } from 'react-dnd';
-import { useDrop } from 'react-dnd';
+import { type ConnectDropTarget, useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { guaranteeType } from '@finos/legend-shared';
 import {

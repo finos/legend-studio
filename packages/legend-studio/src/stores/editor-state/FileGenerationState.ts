@@ -18,12 +18,10 @@ import type { EditorStore } from '../EditorStore';
 import { observable, action, makeAutoObservable } from 'mobx';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { TreeData } from '@finos/legend-art';
-import type {
-  GenerationTreeNodeData,
-  GenerationFile,
-  GenerationOutputResult,
-} from '../shared/FileGenerationTreeUtil';
 import {
+  type GenerationTreeNodeData,
+  type GenerationFile,
+  type GenerationOutputResult,
   GenerationDirectory,
   GENERATION_FILE_ROOT_NAME,
   getGenerationTreeData,
@@ -32,20 +30,18 @@ import {
   buildGenerationDirectory,
   reprocessOpenNodes,
 } from '../shared/FileGenerationTreeUtil';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   addUniqueEntry,
   deepEqual,
   isEmpty,
   LogEvent,
 } from '@finos/legend-shared';
-import type {
-  FileGenerationSpecification,
-  GenerationOutput,
-  GenerationProperty,
-} from '@finos/legend-graph';
 import {
+  type FileGenerationSpecification,
+  type GenerationOutput,
+  type GenerationProperty,
   ConfigurationProperty,
   GenerationPropertyItemType,
   PackageableElement,

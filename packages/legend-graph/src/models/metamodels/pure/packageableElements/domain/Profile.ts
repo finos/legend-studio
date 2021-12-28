@@ -16,19 +16,20 @@
 
 import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
+  type Hashable,
   guaranteeNonNullable,
   hashArray,
   deleteEntry,
   addUniqueEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import { PackageableElement } from '../PackageableElement';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '../PackageableElement';
 import type { Stereotype } from './Stereotype';
 import type { Tag } from './Tag';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 
 export class Profile extends PackageableElement implements Hashable, Stubable {
   stereotypes: Stereotype[] = [];

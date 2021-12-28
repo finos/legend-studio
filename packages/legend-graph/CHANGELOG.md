@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 0.4.1
+
+## 0.4.0
+
+### Minor Changes
+
+- [#742](https://github.com/finos/legend-studio/pull/742) [`42ea0ed9`](https://github.com/finos/legend-studio/commit/42ea0ed977608804b41fb8272daeb2130a4f6143) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `UsernamePasswordAuthenticationStrategy`.
+
+### Patch Changes
+
+- [#680](https://github.com/finos/legend-studio/pull/680) [`69c607e6`](https://github.com/finos/legend-studio/commit/69c607e641beb4827b2a9c17baa6b699c9384d14) ([@gayathrir11](https://github.com/gayathrir11)) - Show warning when detecting duplicated attributes in `profile`, `enumeration`, `class`, `association`
+
 ## 0.3.1
 
 ## 0.3.0

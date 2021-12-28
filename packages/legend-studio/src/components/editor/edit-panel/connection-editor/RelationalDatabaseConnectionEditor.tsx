@@ -16,11 +16,11 @@
 
 import { observer } from 'mobx-react-lite';
 import {
+  type RelationalDatabaseConnectionValueState,
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import type { RelationalDatabaseConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { useState } from 'react';
 import { MdModeEdit } from 'react-icons/md';
 import { VscError } from 'react-icons/vsc';
@@ -35,13 +35,15 @@ import {
   TimesIcon,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
-import type { RelationalDatabaseConnection, Store } from '@finos/legend-graph';
 import {
+  type RelationalDatabaseConnection,
+  type Store,
   DatabaseType,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -51,8 +53,10 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { runInAction } from 'mobx';
-import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '../../../../stores/shared/PackageableElementOptionUtil';
 import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin';
 import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
@@ -773,6 +777,43 @@ const OAuthAuthenticationStrategyEditor = observer(
   },
 );
 
+const UsernamePasswordAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: UsernamePasswordAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.baseVaultReference}
+          propertyName={'base valut reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setBaseVaultReference(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.userNameVaultReference}
+          propertyName={'user name vault reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setUserNameVaultReference(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.passwordVaultReference}
+          propertyName={'password valut reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setPasswordVaultReference(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 const RelationalConnectionStoreEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
@@ -940,6 +981,13 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof OAuthAuthenticationStrategy) {
     return (
       <OAuthAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (authSpec instanceof UsernamePasswordAuthenticationStrategy) {
+    return (
+      <UsernamePasswordAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

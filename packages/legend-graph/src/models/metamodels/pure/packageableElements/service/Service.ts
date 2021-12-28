@@ -15,14 +15,20 @@
  */
 
 import { observable, action, computed, makeObservable, override } from 'mobx';
-import { hashArray, uniq, uuid, addUniqueEntry } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  uniq,
+  uuid,
+  addUniqueEntry,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { ServiceExecution } from './ServiceExecution';
-import type { ServiceTest } from './ServiceTest';
-import { SingleExecutionTest } from './ServiceTest';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import { PackageableElement } from '../PackageableElement';
+import { type ServiceTest, SingleExecutionTest } from './ServiceTest';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '../PackageableElement';
 import type { StereotypeReference } from '../domain/StereotypeReference';
 import type { TaggedValue } from '../domain/TaggedValue';
 

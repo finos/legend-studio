@@ -14,59 +14,58 @@
  * limitations under the License.
  */
 
-import type { RenderResult } from '@testing-library/react';
-import { render, fireEvent, waitFor, getByText } from '@testing-library/react';
+import {
+  type RenderResult,
+  render,
+  fireEvent,
+  waitFor,
+  getByText,
+} from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID';
 import { EditorStore } from '../stores/EditorStore';
 import { Editor } from './editor/Editor';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
 import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  Project,
-  ProjectConfiguration,
-  ProjectStructureVersion,
-  Revision,
-  SDLCServerClient,
-  Version,
-  Workspace,
-} from '@finos/legend-server-sdlc';
 import {
+  type Project,
+  type ProjectConfiguration,
+  type ProjectStructureVersion,
+  type Revision,
+  type SDLCServerClient,
+  type Version,
+  type Workspace,
   WorkspaceType,
   TEST__SDLCServerClientProvider,
   TEST__getTestSDLCServerClient,
 } from '@finos/legend-server-sdlc';
-import type {
-  ImportConfigurationDescription,
-  ImportMode,
-  GenerationConfigurationDescription,
-  GenerationMode,
-  GraphManagerState,
-} from '@finos/legend-graph';
 import {
+  type ImportConfigurationDescription,
+  type ImportMode,
+  type GenerationConfigurationDescription,
+  type GenerationMode,
+  type GraphManagerState,
   TEST__GraphManagerStateProvider,
   TEST__getTestGraphManagerState,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type {
-  DepotServerClient,
-  ProjectData,
-  ProjectVersionEntities,
-} from '@finos/legend-server-depot';
 import {
+  type DepotServerClient,
+  type ProjectData,
+  type ProjectVersionEntities,
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
 } from '@finos/legend-server-depot';
 import { LegendStudioStoreProvider } from './LegendStudioStoreProvider';
-import type { ApplicationStore } from '@finos/legend-application';
 import {
+  type ApplicationStore,
   TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,

@@ -21,8 +21,8 @@ import {
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
 } from './v1/model/packageableElements/dataSpace/V1_DataSpace';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   uuid,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
@@ -36,29 +36,27 @@ import {
   V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper';
 import { getDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper';
-import type { DataSpaceSupportInfo } from '../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import {
+  type DataSpaceSupportInfo,
   DataSpace,
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
 } from '../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import type {
-  Mapping,
-  PackageableElement,
-  PackageableElementReference,
-  PackageableRuntime,
-  PureModel,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_GraphBuilderContext,
-  V1_GraphTransformerContext,
-  V1_PackageableElement,
-  V1_PureModelContextData,
-  V1_TaggedValue,
-} from '@finos/legend-graph';
 import {
+  type Mapping,
+  type PackageableElement,
+  type PackageableElementReference,
+  type PackageableRuntime,
+  type PureModel,
+  type V1_ElementProtocolClassifierPathGetter,
+  type V1_ElementProtocolDeserializer,
+  type V1_ElementProtocolSerializer,
+  type V1_ElementTransformer,
+  type V1_GraphBuilderContext,
+  type V1_GraphTransformerContext,
+  type V1_PackageableElement,
+  type V1_PureModelContextData,
+  type V1_TaggedValue,
   V1_taggedValueSchema,
   PackageableElementExplicitReference,
   V1_PackageableElementPointer,

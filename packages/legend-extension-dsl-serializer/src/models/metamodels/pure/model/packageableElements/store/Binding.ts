@@ -15,13 +15,12 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type {
-  OptionalPackageableElementReference,
-  PackageableElementVisitor,
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  Store,
+  type OptionalPackageableElementReference,
+  type PackageableElementVisitor,
 } from '@finos/legend-graph';
-import { Store } from '@finos/legend-graph';
 import type { ModelUnit } from './ModelUnit';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 import type { SchemaSet } from '../schemaSet/SchemaSet';

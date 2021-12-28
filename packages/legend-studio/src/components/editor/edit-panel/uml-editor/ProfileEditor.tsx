@@ -24,8 +24,7 @@ import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
 import { clsx, InputWithInlineValidation } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { Profile } from '@finos/legend-graph';
-import { Tag, Stereotype } from '@finos/legend-graph';
+import { type Profile, Tag, Stereotype } from '@finos/legend-graph';
 
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {

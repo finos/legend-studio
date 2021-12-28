@@ -15,11 +15,11 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import type {
-  PackageableElementReference,
-  PackageableElementImplicitReference,
+import {
+  PackageableElementExplicitReference,
+  type PackageableElementReference,
+  type PackageableElementImplicitReference,
 } from '../PackageableElementReference';
-import { PackageableElementExplicitReference } from '../PackageableElementReference';
 import type { Enumeration } from './Enumeration';
 import type { Enum } from './Enum';
 import type { Stubable } from '../../../../../helpers/Stubable';

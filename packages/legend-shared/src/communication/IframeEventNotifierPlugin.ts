@@ -15,8 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import type { EventData } from './EventNotifierService';
-import { EventNotifierPlugin } from './EventNotifierService';
+import { type EventData, EventNotifierPlugin } from './EventNotifierService';
 
 export class IframeEventNotifierPlugin extends EventNotifierPlugin {
   constructor() {

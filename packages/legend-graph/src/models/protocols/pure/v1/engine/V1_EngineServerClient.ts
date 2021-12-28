@@ -15,12 +15,13 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type {
-  PlainObject,
-  ServerClientConfig,
-  TraceData,
+import {
+  ContentType,
+  AbstractServerClient,
+  type PlainObject,
+  type ServerClientConfig,
+  type TraceData,
 } from '@finos/legend-shared';
-import { ContentType, AbstractServerClient } from '@finos/legend-shared';
 import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult';

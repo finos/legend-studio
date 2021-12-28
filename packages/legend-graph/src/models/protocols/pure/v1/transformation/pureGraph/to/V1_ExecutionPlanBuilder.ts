@@ -26,6 +26,7 @@ import { SQLExecutionNode } from '../../../../../../metamodels/pure/executionPla
 import { SQLResultColumn } from '../../../../../../metamodels/pure/executionPlan/nodes/SQLResultColumn';
 import { DatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import {
+  type RelationalDataType,
   Real,
   Binary,
   Bit,
@@ -44,7 +45,6 @@ import {
   SmallInt,
   BigInt,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
-import type { RelationalDataType } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import type { V1_ExecutionNode } from '../../../model/executionPlan/nodes/V1_ExecutionNode';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
 import { V1_SQLExecutionNode } from '../../../model/executionPlan/nodes/V1_SQLExecutionNode';

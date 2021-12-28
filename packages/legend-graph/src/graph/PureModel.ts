@@ -21,8 +21,8 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../MetaModelConst';
-import type { Clazz } from '@finos/legend-shared';
 import {
+  type Clazz,
   guaranteeNonNullable,
   guaranteeType,
   returnUndefOnError,

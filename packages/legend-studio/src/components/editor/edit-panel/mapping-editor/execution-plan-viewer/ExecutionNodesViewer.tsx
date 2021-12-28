@@ -16,14 +16,17 @@
 
 import { observer } from 'mobx-react-lite';
 import { SQLPlanViewer } from './SQLExecutionPlanViewer';
-import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
-import { EXECUTION_PLAN_VIEW_MODE } from '../../../../../stores/ExecutionPlanState';
+import {
+  type ExecutionPlanState,
+  EXECUTION_PLAN_VIEW_MODE,
+} from '../../../../../stores/ExecutionPlanState';
 import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from './ExecutionPlanViewer';
-import type { ResultType, DataType } from '@finos/legend-graph';
 import {
+  type ResultType,
+  type DataType,
   SQLExecutionNode,
   ExecutionPlan,
   RelationalTDSInstantiationExecutionNode,

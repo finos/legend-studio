@@ -17,12 +17,10 @@
 import type { EditorStore } from '../EditorStore';
 import { action, makeAutoObservable } from 'mobx';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type {
-  PackageableElement,
-  EngineError,
-  DSLMapping_PureGraphManagerPlugin_Extension,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type EngineError,
+  type DSLMapping_PureGraphManagerPlugin_Extension,
   Profile,
   Enumeration,
   Class,

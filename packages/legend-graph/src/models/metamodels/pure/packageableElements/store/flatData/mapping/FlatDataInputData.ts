@@ -15,8 +15,7 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
 import type { FlatData } from '../model/FlatData';
@@ -25,8 +24,10 @@ import {
   PACKAGEABLE_ELEMENT_POINTER_TYPE,
   getElementPointerHashCode,
 } from '../../../PackageableElement';
-import type { ValidationIssue } from '../../../../../../../helpers/ValidationHelper';
-import { createValidationError } from '../../../../../../../helpers/ValidationHelper';
+import {
+  type ValidationIssue,
+  createValidationError,
+} from '../../../../../../../helpers/ValidationHelper';
 
 export class FlatDataInputData extends InputData implements Hashable {
   sourceFlatData: PackageableElementReference<FlatData>;

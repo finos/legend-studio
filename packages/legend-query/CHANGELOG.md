@@ -1,5 +1,17 @@
 # @finos/legend-query
 
+## 0.3.0
+
+### Minor Changes
+
+- [#738](https://github.com/finos/legend-studio/pull/738) [`2f239197`](https://github.com/finos/legend-studio/commit/2f23919725f3b103ab2208f26bdbb482ef40186b) ([@akphi](https://github.com/akphi)) - Allow configuring via url the class to initialize the query lambda with in create new query mode. e.g. `/query/create/org.finos.legend.test/legend-query-test/latest/model::dummyMapping/model::dummyRuntime/model::dummyClass`.
+
+## 0.2.2
+
+### Patch Changes
+
+- [#729](https://github.com/finos/legend-studio/pull/729) [`bed72461`](https://github.com/finos/legend-studio/commit/bed724618f61c14cef8e56f39c2f0ff9240f04ea) ([@gayathrir11](https://github.com/gayathrir11)) - Fix processing of `bitemporal` milestoning stereotype.
+
 ## 0.2.1
 
 ## 0.2.0

@@ -16,19 +16,19 @@
 
 import { assertType, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import type {
-  AbstractProperty,
-  GraphFetchTree,
-  Type,
-  RootGraphFetchTree,
-} from '@finos/legend-graph';
 import {
+  type AbstractProperty,
+  type GraphFetchTree,
+  type Type,
+  type RootGraphFetchTree,
   PropertyExplicitReference,
   Class,
   PropertyGraphFetchTree,
 } from '@finos/legend-graph';
-import type { QueryBuilderExplorerTreeNodeData } from './QueryBuilderExplorerState';
-import { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
+import {
+  type QueryBuilderExplorerTreeNodeData,
+  QueryBuilderExplorerTreePropertyNodeData,
+} from './QueryBuilderExplorerState';
 
 export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;

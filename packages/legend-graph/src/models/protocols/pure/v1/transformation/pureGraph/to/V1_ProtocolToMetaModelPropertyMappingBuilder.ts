@@ -37,10 +37,14 @@ import { Class } from '../../../../../../metamodels/pure/packageableElements/dom
 import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
 import type { TableAlias } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import { InferableMappingElementIdExplicitValue } from '../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId';
-import type { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { PropertyReference } from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
-import { PropertyImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
+import {
+  type PackageableElementReference,
+  PackageableElementImplicitReference,
+} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+import {
+  type PropertyReference,
+  PropertyImplicitReference,
+} from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';

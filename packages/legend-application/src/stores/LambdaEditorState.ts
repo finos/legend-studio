@@ -15,10 +15,12 @@
  */
 
 import { observable, action, computed, makeObservable, flow } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
-import { uuid } from '@finos/legend-shared';
-import type { ParserError, CompilationError } from '@finos/legend-graph';
-import { SourceInformation } from '@finos/legend-graph';
+import { type GeneratorFn, uuid } from '@finos/legend-shared';
+import {
+  type ParserError,
+  type CompilationError,
+  SourceInformation,
+} from '@finos/legend-graph';
 
 /**
  * This is not strictly meant for lambda. The idea is to create an editor that allows

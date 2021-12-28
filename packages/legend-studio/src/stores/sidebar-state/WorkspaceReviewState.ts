@@ -19,8 +19,9 @@ import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   assertNonNullable,
@@ -30,8 +31,8 @@ import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/En
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { generateSetupRoute } from '../LegendStudioRouter';
 import type { Entity } from '@finos/legend-model-storage';
-import type { Revision } from '@finos/legend-server-sdlc';
 import {
+  type Revision,
   EntityDiff,
   Review,
   ReviewState,

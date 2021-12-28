@@ -15,12 +15,12 @@
  */
 
 import {
+  type RenderResult,
   getByDisplayValue,
   waitFor,
   fireEvent,
   getByText,
 } from '@testing-library/react';
-import type { RenderResult } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared';
 import {
   TEST__provideMockedEditorStore,

@@ -16,8 +16,8 @@
 
 import { observable, action, flow, makeObservable } from 'mobx';
 import { EditorState } from '../editor-state/EditorState';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   UnsupportedOperationError,
@@ -26,8 +26,10 @@ import {
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { Entity } from '@finos/legend-model-storage';
-import type { ImportConfigurationDescription } from '@finos/legend-graph';
-import { ImportMode } from '@finos/legend-graph';
+import {
+  type ImportConfigurationDescription,
+  ImportMode,
+} from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 
 export enum MODEL_UPDATER_INPUT_TYPE {

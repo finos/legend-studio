@@ -34,10 +34,12 @@ import {
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-art';
-import type { GenerationTreeNodeData } from './shared/FileGenerationTreeUtil';
-import { getGenerationTreeData } from './shared/FileGenerationTreeUtil';
-import type { PackageableElement } from '@finos/legend-graph';
 import {
+  type GenerationTreeNodeData,
+  getGenerationTreeData,
+} from './shared/FileGenerationTreeUtil';
+import {
+  type PackageableElement,
   ROOT_PACKAGE_NAME,
   Package,
   Unit,

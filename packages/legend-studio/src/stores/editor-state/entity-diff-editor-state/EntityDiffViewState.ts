@@ -15,8 +15,8 @@
  */
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   assertNonNullable,
@@ -24,10 +24,14 @@ import {
   hashObject,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore';
-import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
-import { EntityDiffEditorState } from './EntityDiffEditorState';
-import type { Entity } from '@finos/legend-model-storage';
-import { extractEntityNameFromPath } from '@finos/legend-model-storage';
+import {
+  type SPECIAL_REVISION_ALIAS,
+  EntityDiffEditorState,
+} from './EntityDiffEditorState';
+import {
+  type Entity,
+  extractEntityNameFromPath,
+} from '@finos/legend-model-storage';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../LegendStudioLogEvent';
 import type { PackageableElement } from '@finos/legend-graph';
 

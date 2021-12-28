@@ -16,8 +16,7 @@
 
 import type { AggregationFunctionSpecification } from './AggregationFunctionSpecification';
 import type { GroupByFunctionSpecification } from './GroupByFunctionSpecification';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 
 export class AggregateSpecification implements Hashable {

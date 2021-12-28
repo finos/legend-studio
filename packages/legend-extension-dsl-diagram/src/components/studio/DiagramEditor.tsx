@@ -16,8 +16,7 @@
 
 import { useRef, useState, useEffect, useCallback, Fragment } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDrop } from 'react-dnd';
+import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { FaRegKeyboard } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
@@ -26,18 +25,16 @@ import {
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
 } from '../../DiagramRenderer';
-import type {
-  DiagramEditorInlineClassCreatorState,
-  DiagramEditorInlineClassRenamerState,
-  DiagramEditorInlinePropertyEditorState,
-} from '../../stores/studio/DiagramEditorState';
 import {
+  type DiagramEditorInlineClassCreatorState,
+  type DiagramEditorInlineClassRenamerState,
+  type DiagramEditorInlinePropertyEditorState,
   DIAGRAM_EDITOR_SIDE_PANEL_TAB,
   DiagramEditorClassViewEditorSidePanelState,
   DiagramEditorState,
 } from '../../stores/studio/DiagramEditorState';
-import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  type ResizablePanelHandlerProps,
   ContextMenu,
   getControlledResizablePanelProps,
   BasePopover,
@@ -57,8 +54,8 @@ import {
   ResizablePanelSplitter,
   ResizablePanel,
 } from '@finos/legend-art';
-import type { Type } from '@finos/legend-graph';
 import {
+  type Type,
   Class,
   DerivedProperty,
   Property,
@@ -89,8 +86,10 @@ import {
   prettyCONSTName,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import type { PackageableElementOption } from '@finos/legend-application';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  type PackageableElementOption,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   ClassFormEditor,
   CORE_DND_TYPE,

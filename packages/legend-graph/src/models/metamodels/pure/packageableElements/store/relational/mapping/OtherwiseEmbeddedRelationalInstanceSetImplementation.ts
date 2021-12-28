@@ -15,8 +15,11 @@
  */
 
 import { observable, computed, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
 import type { OtherwiseEmebddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';

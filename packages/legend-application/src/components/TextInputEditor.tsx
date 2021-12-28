@@ -15,8 +15,11 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import type { IDisposable, IKeyboardEvent } from 'monaco-editor';
-import { editor as monacoEditorAPI } from 'monaco-editor';
+import {
+  type IDisposable,
+  type IKeyboardEvent,
+  editor as monacoEditorAPI,
+} from 'monaco-editor';
 import { useResizeDetector } from 'react-resize-detector';
 import {
   disposeEditor,
@@ -26,8 +29,7 @@ import {
   getEditorValue,
   normalizeLineEnding,
 } from '@finos/legend-art';
-import type { EDITOR_LANGUAGE } from '../const';
-import { EDITOR_THEME, TAB_SIZE } from '../const';
+import { type EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../const';
 import { useApplicationStore } from './ApplicationStoreProvider';
 
 export type TextInputEditorOnKeyDownEventHandler = {

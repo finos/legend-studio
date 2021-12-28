@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_ClassView } from './V1_ClassView';
 import type { V1_PropertyView } from './V1_PropertyView';
 import type { V1_GeneralizationView } from './V1_GeneralizationView';
-import type { V1_PackageableElementVisitor } from '@finos/legend-graph';
-import { V1_PackageableElement } from '@finos/legend-graph';
+import {
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
+} from '@finos/legend-graph';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils';
 
 export class V1_Diagram extends V1_PackageableElement implements Hashable {

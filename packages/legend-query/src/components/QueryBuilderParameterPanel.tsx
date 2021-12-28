@@ -24,17 +24,22 @@ import {
   DollarIcon,
 } from '@finos/legend-art';
 import { FaPlus } from 'react-icons/fa';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
 import {
+  type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
   QueryParameterState,
 } from '../stores/QueryParametersState';
 import { Dialog } from '@material-ui/core';
 import { useEffect, useState } from 'react';
-import type { Type } from '@finos/legend-graph';
-import { MULTIPLICITY_INFINITE, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import type { PackageableElementOption } from '@finos/legend-application';
-import { buildElementOption } from '@finos/legend-application';
+import {
+  type Type,
+  MULTIPLICITY_INFINITE,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+} from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';

@@ -15,8 +15,8 @@
  */
 
 import packageJson from '../../package.json';
-import type { ApplicationPageRenderEntry } from '@finos/legend-studio';
 import {
+  type ApplicationPageRenderEntry,
   generateRoutePatternWithSDLCServerKey,
   LegendStudioPlugin,
 } from '@finos/legend-studio';

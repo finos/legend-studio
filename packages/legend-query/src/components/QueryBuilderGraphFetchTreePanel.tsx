@@ -16,9 +16,9 @@
 
 import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDrop } from 'react-dnd';
+import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import {
+  type TreeNodeContainerProps,
   clsx,
   TreeView,
   BlankPanelPlaceholder,
@@ -28,20 +28,19 @@ import {
   CheckSquareIcon,
   SquareIcon,
 } from '@finos/legend-art';
-import type { TreeNodeContainerProps } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { isNonNullable } from '@finos/legend-shared';
-import type {
-  QueryBuilderGraphFetchTreeData,
-  QueryBuilderGraphFetchTreeNodeData,
-} from '../stores/QueryBuilderGraphFetchTreeUtil';
 import {
+  type QueryBuilderGraphFetchTreeData,
+  type QueryBuilderGraphFetchTreeNodeData,
   removeNodeRecursively,
   isGraphFetchTreeDataEmpty,
 } from '../stores/QueryBuilderGraphFetchTreeUtil';
-import type { QueryBuilderExplorerTreeDragSource } from '../stores/QueryBuilderExplorerState';
-import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
+import {
+  type QueryBuilderExplorerTreeDragSource,
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
+} from '../stores/QueryBuilderExplorerState';
 import type { QueryBuilderGraphFetchTreeState } from '../stores/QueryBuilderGraphFetchTreeState';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
 

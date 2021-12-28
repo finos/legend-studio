@@ -16,17 +16,18 @@
 
 import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type {
-  RelationalPropertyMappingState,
-  RootRelationalInstanceSetImplementationState,
+import {
+  EmbeddedRelationalInstanceSetImplementationState,
+  type RelationalPropertyMappingState,
+  type RootRelationalInstanceSetImplementationState,
 } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
-import { EmbeddedRelationalInstanceSetImplementationState } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
-import type { MappingElement } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  type MappingElement,
+  MappingEditorState,
+} from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { clsx, CustomSelectorInput } from '@finos/legend-art';
 import { FaArrowAltCircleRight } from 'react-icons/fa';
-import type { ConnectDropTarget } from 'react-dnd';
-import { useDrop } from 'react-dnd';
+import { type ConnectDropTarget, useDrop } from 'react-dnd';
 import { guaranteeType } from '@finos/legend-shared';
 import {
   TableOrViewTreeNodeDragSource,

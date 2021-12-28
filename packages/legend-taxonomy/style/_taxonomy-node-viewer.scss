@@ -61,7 +61,7 @@
   &__explorer__header {
     background: var(--color-yellow-100);
     height: 3.4rem !important;
-    border-radius: 0.2rem;
+    border-radius: 0.2rem 0 0;
   }
 
   &__explorer__header__title {
@@ -90,6 +90,29 @@
     background: var(--color-dark-grey-85);
     padding: 0.5rem 0;
     border: 0.1rem solid var(--color-dark-grey-50);
+  }
+
+  &__data-space-viewer {
+    &__header {
+      background: var(--color-dark-grey-80);
+      height: 3.4rem !important;
+      border-radius: 0 0.2rem 0 0;
+    }
+
+    &__header__actions {
+      @include flexVCenter;
+
+      margin-right: 0.3rem;
+    }
+
+    &__header__action {
+      height: 2.8rem;
+      width: 2.8rem;
+    }
+
+    &__header__action + &__header__action {
+      margin-left: 0.3rem;
+    }
   }
 
   &__explorer__entry {

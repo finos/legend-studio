@@ -15,8 +15,11 @@
  */
 
 import { observable, makeObservable } from 'mobx';
-import { UnsupportedOperationError, hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  UnsupportedOperationError,
+  hashArray,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
 import type { EmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';
@@ -27,8 +30,10 @@ import type {
   SetImplementation,
 } from '../../../mapping/SetImplementation';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
-import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping';
-import { PropertyMapping } from '../../../mapping/PropertyMapping';
+import {
+  type PropertyMappingVisitor,
+  PropertyMapping,
+} from '../../../mapping/PropertyMapping';
 import type { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { RootRelationalInstanceSetImplementation } from './RootRelationalInstanceSetImplementation';
 import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { RenderResult } from '@testing-library/react';
 import {
+  type RenderResult,
   getByText,
   getByDisplayValue,
   queryByDisplayValue,

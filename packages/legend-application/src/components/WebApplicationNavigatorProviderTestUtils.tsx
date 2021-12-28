@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { createMemoryHistory } from 'history';
 import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
-import type { History } from 'history';
+import { createMemoryHistory, type History } from 'history';
 
 export const TEST__provideMockedWebApplicationNavigator = (customization?: {
   mock?: WebApplicationNavigator;

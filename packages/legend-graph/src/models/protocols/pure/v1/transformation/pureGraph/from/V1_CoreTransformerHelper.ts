@@ -21,11 +21,11 @@ import type {
   PackageableElementReference,
 } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import type {
-  V1_PackageableElement,
-  V1_PackageableElementPointerType,
+import {
+  V1_PackageableElementPointer,
+  type V1_PackageableElement,
+  type V1_PackageableElementPointerType,
 } from '../../../model/packageableElements/V1_PackageableElement';
-import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement';
 
 export const V1_transformOptionalElementReference = <
   T extends PackageableElement,

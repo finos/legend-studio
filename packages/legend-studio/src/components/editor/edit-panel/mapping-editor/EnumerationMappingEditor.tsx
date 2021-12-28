@@ -17,8 +17,8 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaTimes, FaPlus } from 'react-icons/fa';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -31,12 +31,10 @@ import {
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { TypeTree } from '../../../shared/TypeTree';
 import { useDrop } from 'react-dnd';
-import type {
-  TransformDropTarget,
-  ElementDragSource,
-  MappingElementSourceDropTarget,
-} from '../../../../stores/shared/DnDUtil';
 import {
+  type TransformDropTarget,
+  type ElementDragSource,
+  type MappingElementSourceDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
@@ -48,16 +46,21 @@ import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  PackageableElement,
-  SourceValue,
-  EnumerationMapping,
-  OptionalPackageableElementReference,
+import {
+  PRIMITIVE_TYPE,
+  Type,
+  Enum,
+  Enumeration,
+  type PackageableElement,
+  type SourceValue,
+  type EnumerationMapping,
+  type OptionalPackageableElementReference,
 } from '@finos/legend-graph';
-import { PRIMITIVE_TYPE, Type, Enum, Enumeration } from '@finos/legend-graph';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {

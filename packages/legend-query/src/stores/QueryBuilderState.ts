@@ -15,15 +15,17 @@
  */
 
 import { action, flow, observable, makeObservable, computed } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import type { QueryBuilderFilterOperator } from './QueryBuilderFilterState';
-import { QueryBuilderFilterState } from './QueryBuilderFilterState';
+import {
+  type QueryBuilderFilterOperator,
+  QueryBuilderFilterState,
+} from './QueryBuilderFilterState';
 import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState';
 import { QueryResultSetModifierState } from './QueryResultSetModifierState';
 import {
@@ -35,16 +37,14 @@ import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
 import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type {
-  Class,
-  Enumeration,
-  GraphManagerState,
-  LambdaFunction,
-  Mapping,
-  PackageableRuntime,
-  Service,
-} from '@finos/legend-graph';
 import {
+  type Class,
+  type Enumeration,
+  type GraphManagerState,
+  type LambdaFunction,
+  type Mapping,
+  type PackageableRuntime,
+  type Service,
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
@@ -86,12 +86,12 @@ import {
   QueryBuilderFilterOperator_NotIn,
 } from './filterOperators/QueryBuilderFilterOperator_In';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
-import type {
-  ApplicationStore,
-  LegendApplicationConfig,
-  PackageableElementOption,
+import {
+  buildElementOption,
+  type ApplicationStore,
+  type LegendApplicationConfig,
+  type PackageableElementOption,
 } from '@finos/legend-application';
-import { buildElementOption } from '@finos/legend-application';
 import {
   QueryParametersState,
   QueryParameterState,

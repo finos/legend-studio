@@ -16,16 +16,20 @@
 
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
-import { CustomSelectorInput, createFilter } from '@finos/legend-art';
-import type {
-  MappingEditorState,
-  MappingElementSource,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { getMappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import Dialog from '@material-ui/core/Dialog';
-import type { InstanceSetImplementation, View } from '@finos/legend-graph';
 import {
+  type SelectComponent,
+  CustomSelectorInput,
+  createFilter,
+} from '@finos/legend-art';
+import {
+  getMappingElementSource,
+  type MappingEditorState,
+  type MappingElementSource,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import Dialog from '@material-ui/core/Dialog';
+import {
+  type InstanceSetImplementation,
+  type View,
   Class,
   RootFlatDataRecordType,
   Table,

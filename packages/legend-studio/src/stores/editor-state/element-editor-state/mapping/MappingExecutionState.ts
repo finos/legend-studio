@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import type {
-  MappingEditorState,
-  MappingElementSource,
-} from './MappingEditorState';
 import {
+  type MappingEditorState,
+  type MappingElementSource,
   getMappingElementSource,
   getMappingElementTarget,
   generateMappingTestName,
@@ -33,8 +31,8 @@ import {
   makeAutoObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
@@ -51,17 +49,15 @@ import {
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type {
-  Runtime,
-  InputData,
-  Mapping,
-  Connection,
-  ExecutionResult,
-  SetImplementation,
-  Table,
-  View,
-} from '@finos/legend-graph';
 import {
+  type Runtime,
+  type InputData,
+  type Mapping,
+  type Connection,
+  type ExecutionResult,
+  type SetImplementation,
+  type Table,
+  type View,
   extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_LOG_EVENT,

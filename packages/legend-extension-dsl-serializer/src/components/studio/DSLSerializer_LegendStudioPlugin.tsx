@@ -15,35 +15,33 @@
  */
 
 import packageJson from '../../../package.json';
-import type {
-  ConnectionEditorRenderer,
-  ConnectionValueEditorStateBuilder,
-  ConnectionValueState,
-  DefaultConnectionValueBuilder,
-  DSLMapping_LegendStudioPlugin_Extension,
-  EditorStore,
-  ElementEditorRenderer,
-  ElementEditorState,
-  ElementEditorStateCreator,
-  ElementIconGetter,
-  ElementProjectExplorerDnDTypeGetter,
-  ElementTypeGetter,
-  NewConnectionDriverCreator,
-  NewConnectionValueDriver,
-  NewElementFromStateCreator,
-  NewElementState,
-  RuntimeConnectionTooltipTextBuilder,
+import {
+  LegendStudioPlugin,
+  type ConnectionEditorRenderer,
+  type ConnectionValueEditorStateBuilder,
+  type ConnectionValueState,
+  type DefaultConnectionValueBuilder,
+  type DSLMapping_LegendStudioPlugin_Extension,
+  type EditorStore,
+  type ElementEditorRenderer,
+  type ElementEditorState,
+  type ElementEditorStateCreator,
+  type ElementIconGetter,
+  type ElementProjectExplorerDnDTypeGetter,
+  type ElementTypeGetter,
+  type NewConnectionDriverCreator,
+  type NewConnectionValueDriver,
+  type NewElementFromStateCreator,
+  type NewElementState,
+  type RuntimeConnectionTooltipTextBuilder,
 } from '@finos/legend-studio';
-import { LegendStudioPlugin } from '@finos/legend-studio';
 import { FaBuffer, FaSitemap } from 'react-icons/fa';
 import { SchemaSetEditor } from './SchemaSetElementEditor';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
-import type {
-  Connection,
-  PackageableElement,
-  Store,
-} from '@finos/legend-graph';
 import {
+  type Connection,
+  type PackageableElement,
+  type Store,
   OptionalPackageableElementExplicitReference,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';

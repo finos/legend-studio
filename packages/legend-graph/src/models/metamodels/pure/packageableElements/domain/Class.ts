@@ -16,6 +16,7 @@
 
 import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   uniqBy,
   IllegalStateError,
@@ -25,7 +26,6 @@ import {
   deleteEntry,
   changeEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   CORE_ELEMENT_PATH,
@@ -35,8 +35,7 @@ import type { Property } from './Property';
 import type { Constraint } from './Constraint';
 import type { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import { PrimitiveType } from './PrimitiveType';
 import { Enumeration } from './Enumeration';

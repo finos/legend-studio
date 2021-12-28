@@ -22,14 +22,12 @@ import { clsx, CustomSelectorInput, ClassIcon } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  SetImplementation,
-  PureInstanceSetImplementation,
-  FlatDataInstanceSetImplementation,
-  EmbeddedFlatDataPropertyMapping,
-  RootRelationalInstanceSetImplementation,
-} from '@finos/legend-graph';
 import {
+  type SetImplementation,
+  type PureInstanceSetImplementation,
+  type FlatDataInstanceSetImplementation,
+  type EmbeddedFlatDataPropertyMapping,
+  type RootRelationalInstanceSetImplementation,
   fromElementPathToMappingElementId,
   SET_IMPLEMENTATION_TYPE,
   OperationSetImplementation,

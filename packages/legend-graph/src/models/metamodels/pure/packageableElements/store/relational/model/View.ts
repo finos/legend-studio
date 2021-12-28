@@ -15,14 +15,19 @@
  */
 
 import { computed, observable, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { ColumnMapping } from './ColumnMapping';
 import type { Schema } from './Schema';
 import { Column } from './Column';
-import type { RelationalMappingSpecification } from './RelationalOperationElement';
-import { NamedRelation } from './RelationalOperationElement';
+import {
+  type RelationalMappingSpecification,
+  NamedRelation,
+} from './RelationalOperationElement';
 import type { GroupByMapping } from '../mapping/GroupByMapping';
 import type { FilterMapping } from '../mapping/FilterMapping';
 

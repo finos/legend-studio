@@ -15,10 +15,13 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type { PackageableElementVisitor } from '@finos/legend-graph';
-import { Store } from '@finos/legend-graph';
+import {
+  hashArray,
+  addUniqueEntry,
+  deleteEntry,
+  type Hashable,
+} from '@finos/legend-shared';
+import { type PackageableElementVisitor, Store } from '@finos/legend-graph';
 import type { ServiceStoreElement } from './ServiceStoreElement';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 

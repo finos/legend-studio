@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { TEXT_HASH_STRUCTURE } from '../../../../../../DSLText_ModelUtils';
-import type { V1_PackageableElementVisitor } from '@finos/legend-graph';
-import { V1_PackageableElement } from '@finos/legend-graph';
+import {
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
+} from '@finos/legend-graph';
 
 export class V1_Text extends V1_PackageableElement implements Hashable {
   type!: string;

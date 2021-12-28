@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-diagram
 
+## 1.0.6
+
+### Patch Changes
+
+- [#738](https://github.com/finos/legend-studio/pull/738) [`2f239197`](https://github.com/finos/legend-studio/commit/2f23919725f3b103ab2208f26bdbb482ef40186b) ([@akphi](https://github.com/akphi)) - Make the `onDoubleClick` event handlers optional: when they are not set, we nolonger call `noop()` but actually will ignore the events.
+
+## 1.0.5
+
 ## 1.0.4
 
 ## 1.0.3

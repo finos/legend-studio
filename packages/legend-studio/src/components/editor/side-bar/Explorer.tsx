@@ -29,6 +29,7 @@ import {
   FaFileImport,
 } from 'react-icons/fa';
 import {
+  type TreeNodeContainerProps,
   clsx,
   MenuContent,
   MenuContentItem,
@@ -42,7 +43,6 @@ import {
   TreeView,
   ProjectConfigurationIcon,
 } from '@finos/legend-art';
-import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
   getElementIcon,
   getElementTypeIcon,
@@ -57,8 +57,10 @@ import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
-import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerationTreeUtil';
-import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerationTreeUtil';
+import {
+  type GenerationTreeNodeData,
+  getFileGenerationChildNodes,
+} from '../../../stores/shared/FileGenerationTreeUtil';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
 import { toTitleCase } from '@finos/legend-shared';

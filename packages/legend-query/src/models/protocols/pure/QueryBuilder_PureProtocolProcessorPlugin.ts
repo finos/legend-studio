@@ -24,15 +24,13 @@ import {
   V1_buildGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
 } from './v1/V1_QueryBuilder_FunctionExpressionBuilder';
-import type {
-  V1_GraphBuilderContext,
-  V1_ProcessingContext,
-  V1_FunctionExpressionBuilder,
-  V1_ValueSpecification,
-  ValueSpecification,
-  SimpleFunctionExpression,
-} from '@finos/legend-graph';
 import {
+  type V1_GraphBuilderContext,
+  type V1_ProcessingContext,
+  type V1_FunctionExpressionBuilder,
+  type V1_ValueSpecification,
+  type ValueSpecification,
+  type SimpleFunctionExpression,
   PureProtocolProcessorPlugin,
   matchFunctionName,
 } from '@finos/legend-graph';

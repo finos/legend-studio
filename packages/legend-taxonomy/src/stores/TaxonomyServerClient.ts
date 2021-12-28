@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   SerializationFactory,
   AbstractServerClient,
 } from '@finos/legend-shared';

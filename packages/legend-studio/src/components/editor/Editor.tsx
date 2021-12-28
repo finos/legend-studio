@@ -20,8 +20,8 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
-import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  type ResizablePanelHandlerProps,
   buildReactHotkeysConfiguration,
   getControlledResizablePanelProps,
   clsx,

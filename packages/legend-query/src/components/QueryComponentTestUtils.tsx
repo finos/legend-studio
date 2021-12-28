@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import type { RenderResult } from '@testing-library/react';
-import { render, waitFor } from '@testing-library/react';
+import { type RenderResult, render, waitFor } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import {
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import type { GraphManagerState } from '@finos/legend-graph';
 import {
+  type GraphManagerState,
   Query,
   LightQuery,
   RawLambda,
@@ -31,13 +30,13 @@ import {
   TEST__getTestGraphManagerState,
   TEST__GraphManagerStateProvider,
 } from '@finos/legend-graph';
-import type { DepotServerClient } from '@finos/legend-server-depot';
 import {
+  type DepotServerClient,
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
 } from '@finos/legend-server-depot';
-import type { ApplicationStore } from '@finos/legend-application';
 import {
+  type ApplicationStore,
   TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,

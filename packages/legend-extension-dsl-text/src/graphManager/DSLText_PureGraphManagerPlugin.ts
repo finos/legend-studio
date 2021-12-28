@@ -16,11 +16,11 @@
 
 import packageJson from '../../package.json';
 import { Text } from '../models/metamodels/pure/model/packageableElements/text/Text';
-import type {
-  PackageableElement,
-  PureGrammarElementLabeler,
+import {
+  PureGraphManagerPlugin,
+  type PackageableElement,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
 
 const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
 const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';

@@ -35,19 +35,22 @@ import {
   LEGEND_STUDIO_HOTKEY,
   LEGEND_STUDIO_HOTKEY_MAP,
 } from '../../stores/EditorConfig';
-import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  type ResizablePanelHandlerProps,
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
+  EyeIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
-import type { ViewerPathParams } from '../../stores/LegendStudioRouter';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
+import {
+  type ViewerPathParams,
+  generateSetupRoute,
+} from '../../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { flowResult } from 'mobx';
@@ -61,6 +64,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import type { ActivityDisplay } from '../editor/ActivityBar';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
@@ -165,18 +169,44 @@ const ViewerActivityBar = observer(() => {
     (activity: ACTIVITY_MODE): (() => void) =>
     (): void =>
       editorStore.setActiveActivity(activity);
+  // tabs
+  const activities: ActivityDisplay[] = [
+    {
+      mode: ACTIVITY_MODE.EXPLORER,
+      title: 'Explorer (Ctrl + Shift + X)',
+      icon: <FaList />,
+    },
+    !editorStore.isInConflictResolutionMode && {
+      mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
+      title: 'Project',
+      icon: (
+        <div className="activity-bar__project-overview-icon">
+          <EyeIcon />
+        </div>
+      ),
+    },
+  ].filter((activity): activity is ActivityDisplay => Boolean(activity));
 
   return (
     <div className="activity-bar">
       <div className="activity-bar__items">
-        <button
-          className={clsx('activity-bar__item', 'activity-bar__item--active')}
-          tabIndex={-1}
-          title="Explorer"
-          onClick={changeActivity(ACTIVITY_MODE.EXPLORER)}
-        >
-          <FaList />
-        </button>
+        {activities.map((activity) => (
+          <button
+            key={activity.mode}
+            className={clsx('activity-bar__item', {
+              'activity-bar__item--active':
+                editorStore.sideBarDisplayState.isOpen &&
+                editorStore.activeActivity === activity.mode,
+            })}
+            onClick={changeActivity(activity.mode)}
+            tabIndex={-1}
+            title={`${activity.title}${
+              activity.info ? ` - ${activity.info}` : ''
+            }`}
+          >
+            {activity.icon}
+          </button>
+        ))}
       </div>
     </div>
   );

@@ -16,12 +16,12 @@
 
 import { createModelSchema, primitive } from 'serializr';
 import {
+  type Hashable,
   hashArray,
   uuid,
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { VersionId } from '../version/VersionId';
 import { observable, action, computed, makeObservable } from 'mobx';
 

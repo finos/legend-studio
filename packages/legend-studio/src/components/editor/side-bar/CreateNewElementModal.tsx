@@ -32,8 +32,10 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
 import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';
-import type { Mapping, Store, Class } from '@finos/legend-graph';
 import {
+  type Mapping,
+  type Store,
+  type Class,
   ELEMENT_PATH_DELIMITER,
   PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';

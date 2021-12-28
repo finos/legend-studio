@@ -36,11 +36,9 @@ import {
 import { ClassMappingEditor } from './ClassMappingEditor';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor';
 import { useResizeDetector } from 'react-resize-detector';
-import type {
-  MappingEditorTabState,
-  MappingElement,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type MappingEditorTabState,
+  type MappingElement,
   MappingEditorState,
   getMappingElementTarget,
   getMappingElementType,
@@ -56,11 +54,13 @@ import { MappingExecutionState } from '../../../../stores/editor-state/element-e
 import { MappingExecutionBuilder } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  SetImplementation,
-  EnumerationMapping,
+import {
+  Class,
+  Enumeration,
+  Association,
+  type SetImplementation,
+  type EnumerationMapping,
 } from '@finos/legend-graph';
-import { Class, Enumeration, Association } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingEditorSplashScreen: React.FC = () => {

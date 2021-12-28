@@ -16,11 +16,11 @@
 
 import packageJson from '../../package.json';
 import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import type {
-  PackageableElement,
-  PureGrammarElementLabeler,
+import {
+  PureGraphManagerPlugin,
+  type PackageableElement,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
 
 const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
 const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';

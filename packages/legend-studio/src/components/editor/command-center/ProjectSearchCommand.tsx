@@ -18,8 +18,8 @@ import { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FaCaretDown } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   compareLabelFn,
   DropdownMenu,
   NonBlockingDialog,
@@ -28,8 +28,10 @@ import {
 } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../shared/ElementIconUtils';
 import type { PackageableElement } from '@finos/legend-graph';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+} from '../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../EditorStoreProvider';
 
 export const ProjectSearchCommand = observer(() => {

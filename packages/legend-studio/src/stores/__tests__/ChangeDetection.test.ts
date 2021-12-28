@@ -17,8 +17,7 @@
 import { unitTest } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
-import type { EntityDiff } from '@finos/legend-server-sdlc';
-import { EntityChangeType } from '@finos/legend-server-sdlc';
+import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { Class } from '@finos/legend-graph';
 
 const entities = [

@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { ServicePureExecutionState } from '@finos/legend-studio';
-import { useEditorStore } from '@finos/legend-studio';
+import {
+  type ServicePureExecutionState,
+  useEditorStore,
+} from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
@@ -88,6 +90,7 @@ export const ServiceQueryBuilder = observer(
                       <button
                         className="query-builder__dialog__header__custom-action"
                         tabIndex={-1}
+                        disabled={isReadOnly}
                         onClick={save}
                       >
                         Save Query
@@ -114,7 +117,6 @@ export const ServiceQueryBuilder = observer(
       <button
         className="panel__header__action"
         tabIndex={-1}
-        disabled={isReadOnly}
         onClick={editWithQueryBuilder}
         title="Edit query..."
       >

@@ -21,8 +21,8 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
-import type { EditorStore } from '@finos/legend-studio';
 import {
+  type EditorStore,
   LegendStudioPluginManager,
   LEGEND_STUDIO_TEST_ID,
   TEST__openElementFromExplorerTree,

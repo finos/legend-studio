@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
-import { ContentType, hashArray } from '@finos/legend-shared';
-import type {
-  ConnectionVisitor,
-  PackageableElementReference,
+import { type Hashable, ContentType, hashArray } from '@finos/legend-shared';
+import {
+  Connection,
+  type ConnectionVisitor,
+  type PackageableElementReference,
 } from '@finos/legend-graph';
-import { Connection } from '@finos/legend-graph';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { Binding } from '../store/Binding';
 import type { UrlStream } from './UrlStream';

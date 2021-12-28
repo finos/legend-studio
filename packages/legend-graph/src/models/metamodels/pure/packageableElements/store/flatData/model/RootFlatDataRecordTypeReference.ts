@@ -15,11 +15,11 @@
  */
 
 import { observable, action, makeObservable } from 'mobx';
-import type {
-  PackageableElementReference,
-  PackageableElementImplicitReference,
+import {
+  PackageableElementExplicitReference,
+  type PackageableElementReference,
+  type PackageableElementImplicitReference,
 } from '../../../PackageableElementReference';
-import { PackageableElementExplicitReference } from '../../../PackageableElementReference';
 import { ReferenceWithOwner } from '../../../../Reference';
 import type { RootFlatDataRecordType } from './FlatDataDataType';
 import type { FlatData } from './FlatData';

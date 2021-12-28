@@ -23,13 +23,11 @@ import {
   prettyCamelCase,
   prettyCONSTName,
 } from '@finos/legend-shared';
-import type {
-  AbstractProperty,
-  Enum,
-  PureModel,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type AbstractProperty,
+  type Enum,
+  type PureModel,
+  type ValueSpecification,
   TYPICAL_MULTIPLICITY_TYPE,
   CollectionInstanceValue,
   AbstractPropertyExpression,

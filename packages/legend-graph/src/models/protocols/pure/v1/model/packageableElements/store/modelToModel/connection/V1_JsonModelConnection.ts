@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import type { V1_ConnectionVisitor } from '../../../../../model/packageableElements/connection/V1_Connection';
-import { V1_Connection } from '../../../../../model/packageableElements/connection/V1_Connection';
+import {
+  type V1_ConnectionVisitor,
+  V1_Connection,
+} from '../../../../../model/packageableElements/connection/V1_Connection';
 
 export class V1_JsonModelConnection extends V1_Connection implements Hashable {
   class!: string;

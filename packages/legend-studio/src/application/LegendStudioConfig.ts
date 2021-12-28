@@ -22,8 +22,8 @@ import {
   primitive,
   SKIP,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   AssertionError,
   assertNonNullable,
   guaranteeNonEmptyString,
@@ -31,11 +31,11 @@ import {
   SerializationFactory,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import type {
-  LegendApplicationConfigurationData,
-  LegendApplicationVersionData,
+import {
+  LegendApplicationConfig,
+  type LegendApplicationConfigurationData,
+  type LegendApplicationVersionData,
 } from '@finos/legend-application';
-import { LegendApplicationConfig } from '@finos/legend-application';
 
 export class ServiceRegistrationEnvInfo {
   env!: string;
@@ -239,6 +239,10 @@ export class LegendStudioConfig extends LegendApplicationConfig {
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
     this.engineQueryServerUrl = configData.engine.queryUrl;
+    assertNonNullable(
+      configData.depot,
+      `Can't configure application: 'depot' field is missing`,
+    );
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,

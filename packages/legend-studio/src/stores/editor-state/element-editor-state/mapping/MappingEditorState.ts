@@ -35,8 +35,8 @@ import {
   TEST_RESULT,
 } from './MappingTestState';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   deleteEntry,
@@ -58,14 +58,12 @@ import {
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
 import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
-import type {
-  CompilationError,
-  PackageableElement,
-  AbstractFlatDataPropertyMapping,
-  InputData,
-  Type,
-} from '@finos/legend-graph';
 import {
+  type CompilationError,
+  type PackageableElement,
+  type AbstractFlatDataPropertyMapping,
+  type InputData,
+  type Type,
   getAllClassMappings,
   GRAPH_MANAGER_LOG_EVENT,
   PRIMITIVE_TYPE,

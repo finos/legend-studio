@@ -16,6 +16,7 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import {
+  type Hashable,
   uuid,
   hashArray,
   deleteEntry,
@@ -23,7 +24,6 @@ import {
   changeEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
 import type { Enumeration } from './Enumeration';
 import type { TaggedValue } from './TaggedValue';
 import type { AnnotatedElement } from './AnnotatedElement';

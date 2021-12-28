@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type {
-  AbstractPluginManager,
-  PluginConsumer,
+import {
+  AbstractPlugin,
+  type AbstractPluginManager,
+  type PluginConsumer,
 } from '../application/AbstractPluginManager';
-import { AbstractPlugin } from '../application/AbstractPluginManager';
 
 // NOTE: here, we keep event data at a very generic shape
 // One of the main motivation of event notifier is Github web hook

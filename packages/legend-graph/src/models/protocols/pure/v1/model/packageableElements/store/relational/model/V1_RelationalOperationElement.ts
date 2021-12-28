@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 import type { V1_JoinPointer } from './V1_JoinPointer';
 import type { V1_TablePtr } from './V1_TablePtr';

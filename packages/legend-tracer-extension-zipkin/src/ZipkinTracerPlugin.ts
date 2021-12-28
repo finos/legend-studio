@@ -19,8 +19,8 @@ import SpanBuilder from 'zipkin-javascript-opentracing';
 import { BatchRecorder, jsonEncoder } from 'zipkin';
 import { HttpLogger } from 'zipkin-transport-http';
 import type { Span as ZipkinSpan } from 'opentracing';
-import type { TraceData } from '@finos/legend-shared';
 import {
+  type TraceData,
   CORE_TRACER_TAG,
   assertNonEmptyString,
   guaranteeNonNullable,

@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  AbstractPropertyExpression,
-  PureModel,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type AbstractPropertyExpression,
+  type PureModel,
+  type ValueSpecification,
   SimpleFunctionExpression,
   VariableExpression,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -33,8 +31,10 @@ import {
   QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
 } from '../QueryBuilderAggregationState';
-import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
-import { QueryBuilderSimpleProjectionColumnState } from '../QueryBuilderProjectionState';
+import {
+  type QueryBuilderProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from '../QueryBuilderProjectionState';
 
 export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {

@@ -16,8 +16,10 @@
 
 import { DiagramRenderer } from '../../DiagramRenderer';
 import { uuid } from '@finos/legend-shared';
-import type { Class } from '@finos/legend-graph';
-import { PackageableElementExplicitReference } from '@finos/legend-graph';
+import {
+  type Class,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
 import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
 import { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/ClassView';
 
