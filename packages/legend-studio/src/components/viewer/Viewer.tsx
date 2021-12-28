@@ -42,6 +42,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
+  EyeIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -63,7 +64,6 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import { GoEye } from 'react-icons/go';
 import type { ActivityDisplay } from '../editor/ActivityBar';
 
 const ViewerStatusBar = observer(() => {
@@ -181,7 +181,7 @@ const ViewerActivityBar = observer(() => {
       title: 'Project',
       icon: (
         <div className="activity-bar__project-overview-icon">
-          <GoEye />
+          <EyeIcon />
         </div>
       ),
     },

@@ -22,18 +22,14 @@ import {
   FaRegClock,
   FaWrench,
 } from 'react-icons/fa';
-import {
-  GoGitPullRequest,
-  GoGitMerge,
-  GoEye,
-  GoCloudDownload,
-} from 'react-icons/go';
+import { GoGitPullRequest, GoGitMerge, GoCloudDownload } from 'react-icons/go';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import {
   CheckIcon,
   clsx,
   DropdownMenu,
+  EyeIcon,
   MenuContent,
   MenuContentItem,
   MenuContentItemIcon,
@@ -240,7 +236,7 @@ export const ActivityBar = observer(() => {
       title: 'Project',
       icon: (
         <div className="activity-bar__project-overview-icon">
-          <GoEye />
+          <EyeIcon />
         </div>
       ),
     },
