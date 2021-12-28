@@ -43,5 +43,5 @@ export class TaxonomyServerClient extends AbstractServerClient {
   }
 
   getTaxonomyData = (): Promise<PlainObject<TaxonomyNodeData>[]> =>
-    this.networkClient.get(`${this.networkClient.baseUrl}`);
+    this.get(`${this.baseUrl}`);
 }

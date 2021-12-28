@@ -29,6 +29,7 @@ import type { User } from './models/User';
 import {
   type PlainObject,
   type TraceData,
+  type RequestHeaders,
   AbstractServerClient,
   ContentType,
 } from '@finos/legend-shared';
@@ -67,6 +68,7 @@ enum SDLC_TRACER_SPAN {
 export interface SDLCServerClientConfig {
   env: string;
   serverUrl: string;
+  baseHeaders?: RequestHeaders | undefined;
 }
 
 export class SDLCServerClient extends AbstractServerClient {
@@ -76,6 +78,7 @@ export class SDLCServerClient extends AbstractServerClient {
   constructor(config: SDLCServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
+      baseHeaders: config.baseHeaders,
     });
     this.env = config.env;
   }
@@ -110,34 +113,34 @@ export class SDLCServerClient extends AbstractServerClient {
    * We expose this URL because it is needed for developer to authenticate using SDLC server during development.
    */
   get currentUserUrl(): string {
-    return `${this.networkClient.baseUrl}/currentUser`;
+    return `${this.baseUrl}/currentUser`;
   }
   getCurrentUser = (): Promise<PlainObject<User>> =>
-    this.networkClient.get(this.currentUserUrl);
+    this.get(this.currentUserUrl);
 
   // ------------------------------------------- Authorization -------------------------------------------
 
-  private _auth = (): string => `${this.networkClient.baseUrl}/auth`;
+  private _auth = (): string => `${this.baseUrl}/auth`;
   isAuthorized = (mode: SDLCMode): Promise<boolean> =>
-    this.networkClient.get(`${this._auth()}/authorized?mode=${mode}`);
+    this.get(`${this._auth()}/authorized?mode=${mode}`);
   hasAcceptedTermsOfService = (): Promise<string[]> =>
-    this.networkClient.get(`${this._auth()}/termsOfServiceAcceptance`);
+    this.get(`${this._auth()}/termsOfServiceAcceptance`);
 
   // ------------------------------------------- Project -------------------------------------------
 
-  private _projects = (): string => `${this.networkClient.baseUrl}/projects`;
+  private _projects = (): string => `${this.baseUrl}/projects`;
   private _project = (projectId: string): string =>
     `${this._projects()}/${encodeURIComponent(projectId)}`;
 
   getProject = (projectId: string): Promise<PlainObject<Project>> =>
-    this.networkClient.get(this._project(projectId));
+    this.get(this._project(projectId));
   getProjects = (
     type: ProjectType | undefined,
     user: boolean | undefined,
     search: string | undefined,
     tag: string[] | undefined,
   ): Promise<PlainObject<Project>[]> =>
-    this.networkClient.get(this._projects(), undefined, undefined, {
+    this.get(this._projects(), undefined, undefined, {
       type,
       user,
       search,
@@ -204,8 +207,8 @@ export class SDLCServerClient extends AbstractServerClient {
 
   getWorkspaces = (projectId: string): Promise<PlainObject<Workspace>[]> =>
     Promise.all([
-      this.networkClient.get(this._workspaces(projectId)),
-      this.networkClient.get(this._groupWorkspaces(projectId)),
+      this.get(this._workspaces(projectId)),
+      this.get(this._groupWorkspaces(projectId)),
     ]).then((workspaces) => workspaces.flat()) as Promise<
       PlainObject<Workspace>[]
     >;
@@ -214,19 +217,17 @@ export class SDLCServerClient extends AbstractServerClient {
     workspaceId: string,
     workspaceType: WorkspaceType,
   ): Promise<PlainObject<Workspace>> =>
-    this.networkClient.get(
-      this._workspaceByType(projectId, workspaceId, workspaceType),
-    );
+    this.get(this._workspaceByType(projectId, workspaceId, workspaceType));
   isWorkspaceOutdated = (
     projectId: string,
     workspace: Workspace,
   ): Promise<boolean> =>
-    this.networkClient.get(`${this._workspace(projectId, workspace)}/outdated`);
+    this.get(`${this._workspace(projectId, workspace)}/outdated`);
   checkIfWorkspaceIsInConflictResolutionMode = (
     projectId: string,
     workspace: Workspace,
   ): Promise<boolean> =>
-    this.networkClient.get(
+    this.get(
       `${this._workspace(projectId, workspace)}/inConflictResolutionMode`,
     );
   createWorkspace = (
@@ -275,13 +276,13 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
   ): Promise<PlainObject<Revision>[]> =>
-    this.networkClient.get(this._revisions(projectId, workspace));
+    this.get(this._revisions(projectId, workspace));
   getRevision = (
     projectId: string,
     workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Revision>> =>
-    this.networkClient.get(this._revision(projectId, workspace, revisionId));
+    this.get(this._revision(projectId, workspace, revisionId));
 
   // ------------------------------------------- Version -------------------------------------------
 
@@ -291,12 +292,12 @@ export class SDLCServerClient extends AbstractServerClient {
     `${this._versions(projectId)}/${encodeURIComponent(versionId)}`;
 
   getVersions = (projectId: string): Promise<PlainObject<Version>[]> =>
-    this.networkClient.get(this._versions(projectId));
+    this.get(this._versions(projectId));
   getVersion = (
     projectId: string,
     versionId: string,
   ): Promise<PlainObject<Version>> =>
-    this.networkClient.get(this._version(projectId, versionId));
+    this.get(this._version(projectId, versionId));
   createVersion = (
     projectId: string,
     command: PlainObject<CreateVersionCommand>,
@@ -309,7 +310,7 @@ export class SDLCServerClient extends AbstractServerClient {
   getLatestVersion = (
     projectId: string,
   ): Promise<PlainObject<Version> | undefined> =>
-    this.networkClient.get(`${this._versions(projectId)}/latest`);
+    this.get(`${this._versions(projectId)}/latest`);
 
   // ------------------------------------------- Configuration -------------------------------------------
 
@@ -322,14 +323,12 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
   ): Promise<PlainObject<ProjectConfiguration>> =>
-    this.networkClient.get(this._configuration(projectId, workspace));
+    this.get(this._configuration(projectId, workspace));
   getConfigurationByVersion = (
     projectId: string,
     versionId: string,
   ): Promise<PlainObject<ProjectConfiguration>> =>
-    this.networkClient.get(
-      `${this._version(projectId, versionId)}/configuration`,
-    );
+    this.get(`${this._version(projectId, versionId)}/configuration`);
   updateConfiguration = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -342,10 +341,7 @@ export class SDLCServerClient extends AbstractServerClient {
     );
   getLatestProjectStructureVersion = (): Promise<
     PlainObject<ProjectStructureVersion>
-  > =>
-    this.networkClient.get(
-      `${this.networkClient.baseUrl}/configuration/latestProjectStructureVersion`,
-    );
+  > => this.get(`${this.baseUrl}/configuration/latestProjectStructureVersion`);
 
   // ------------------------------------------- Workflow -------------------------------------------
 
@@ -384,7 +380,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     workflowId: string,
   ): Promise<PlainObject<Workflow>> =>
-    this.networkClient.get(this._workflow(projectId, workspace, workflowId));
+    this.get(this._workflow(projectId, workspace, workflowId));
   getWorkflows = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -392,23 +388,19 @@ export class SDLCServerClient extends AbstractServerClient {
     revisionIds: string[] | undefined,
     limit: number | undefined,
   ): Promise<PlainObject<Workflow>[]> =>
-    this.networkClient.get(
-      this._workflows(projectId, workspace),
-      undefined,
-      undefined,
-      { status, revisionIds, limit },
-    );
+    this.get(this._workflows(projectId, workspace), undefined, undefined, {
+      status,
+      revisionIds,
+      limit,
+    });
   getWorkflowsByRevision = (
     projectId: string,
     workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Workflow>[]> =>
-    this.networkClient.get(
-      this._workflows(projectId, workspace),
-      undefined,
-      undefined,
-      { revisionId },
-    );
+    this.get(this._workflows(projectId, workspace), undefined, undefined, {
+      revisionId,
+    });
   getWorkflowJobs = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -417,7 +409,7 @@ export class SDLCServerClient extends AbstractServerClient {
     revisionIds: string[] | undefined,
     limit: number | undefined,
   ): Promise<PlainObject<WorkflowJob>[]> =>
-    this.networkClient.get(
+    this.get(
       this._workflowJobs(projectId, workspace, workflowId),
       undefined,
       undefined,
@@ -428,7 +420,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
   ): Promise<PlainObject<WorkflowJob>> =>
-    this.networkClient.get(
+    this.get(
       `${this._workflowJob(
         projectId,
         workspace,
@@ -441,7 +433,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
   ): Promise<string> =>
-    this.networkClient.get(
+    this.get(
       `${this._workflowJob(
         projectId,
         workspace,
@@ -456,7 +448,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
   ): Promise<PlainObject<WorkflowJob>> =>
-    this.networkClient.post(
+    this.post(
       `${this._workflowJob(
         projectId,
         workspace,
@@ -469,7 +461,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
   ): Promise<PlainObject<WorkflowJob>> =>
-    this.networkClient.post(
+    this.post(
       `${this._workflowJob(
         projectId,
         workspace,
@@ -482,7 +474,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     workflowJob: WorkflowJob,
   ): Promise<PlainObject<WorkflowJob>> =>
-    this.networkClient.post(
+    this.post(
       `${this._workflowJob(
         projectId,
         workspace,
@@ -501,20 +493,18 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
   ): Promise<PlainObject<Entity>[]> =>
-    this.networkClient.get(this._entities(projectId, workspace));
+    this.get(this._entities(projectId, workspace));
   getEntitiesByRevision = (
     projectId: string,
     workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Entity>[]> =>
-    this.networkClient.get(
-      `${this._revision(projectId, workspace, revisionId)}/entities`,
-    );
+    this.get(`${this._revision(projectId, workspace, revisionId)}/entities`);
   getEntitiesByVersion = (
     projectId: string,
     versionId: string,
   ): Promise<PlainObject<Entity>[]> =>
-    this.networkClient.get(`${this._version(projectId, versionId)}/entities`);
+    this.get(`${this._version(projectId, versionId)}/entities`);
   updateEntities = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -551,7 +541,7 @@ export class SDLCServerClient extends AbstractServerClient {
     until: Date | undefined,
     limit: number | undefined,
   ): Promise<PlainObject<Review>[]> =>
-    this.networkClient.get(this._reviews(projectId), undefined, undefined, {
+    this.get(this._reviews(projectId), undefined, undefined, {
       state,
       revisionIds,
       since: since?.toISOString(),
@@ -562,7 +552,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     reviewId: string,
   ): Promise<PlainObject<Review>> =>
-    this.networkClient.get(this._review(projectId, reviewId));
+    this.get(this._review(projectId, reviewId));
   createReview = (
     projectId: string,
     command: PlainObject<CreateReviewCommand>,
@@ -576,31 +566,28 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     reviewId: string,
   ): Promise<PlainObject<Review>> =>
-    this.networkClient.post(`${this._review(projectId, reviewId)}/approve`);
+    this.post(`${this._review(projectId, reviewId)}/approve`);
   rejectReview = (
     projectId: string,
     reviewId: string,
   ): Promise<PlainObject<Review>> =>
-    this.networkClient.post(`${this._review(projectId, reviewId)}/reject`);
+    this.post(`${this._review(projectId, reviewId)}/reject`);
   closeReview = (
     projectId: string,
     reviewId: string,
   ): Promise<PlainObject<Review>> =>
-    this.networkClient.post(`${this._review(projectId, reviewId)}/close`);
+    this.post(`${this._review(projectId, reviewId)}/close`);
   reopenReview = (
     projectId: string,
     reviewId: string,
   ): Promise<PlainObject<Review>> =>
-    this.networkClient.post(`${this._review(projectId, reviewId)}/reopen`);
+    this.post(`${this._review(projectId, reviewId)}/reopen`);
   commitReview = (
     projectId: string,
     reviewId: string,
     command: PlainObject<CommitReviewCommand>,
   ): Promise<PlainObject<Review>> =>
-    this.networkClient.post(
-      `${this._review(projectId, reviewId)}/commit`,
-      command,
-    );
+    this.post(`${this._review(projectId, reviewId)}/commit`, command);
 
   // ------------------------------------------- Comparison -------------------------------------------
 
@@ -611,16 +598,12 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     reviewId: string,
   ): Promise<PlainObject<Entity>[]> =>
-    this.networkClient.get(
-      `${this._reviewComparison(projectId, reviewId)}/from/entities`,
-    );
+    this.get(`${this._reviewComparison(projectId, reviewId)}/from/entities`);
   getReviewToEntities = (
     projectId: string,
     reviewId: string,
   ): Promise<PlainObject<Entity>[]> =>
-    this.networkClient.get(
-      `${this._reviewComparison(projectId, reviewId)}/to/entities`,
-    );
+    this.get(`${this._reviewComparison(projectId, reviewId)}/to/entities`);
 
   // ------------------------------------------- Conflict Resolution -------------------------------------------
 
@@ -633,17 +616,17 @@ export class SDLCServerClient extends AbstractServerClient {
   getWorkspacesInConflictResolutionMode = (
     projectId: string,
   ): Promise<PlainObject<Workspace>[]> =>
-    this.networkClient.get(this._conflictResolution(projectId, undefined));
+    this.get(this._conflictResolution(projectId, undefined));
   abortConflictResolution = (
     projectId: string,
     workspace: Workspace | undefined,
   ): Promise<void> =>
-    this.networkClient.delete(this._conflictResolution(projectId, workspace));
+    this.delete(this._conflictResolution(projectId, workspace));
   discardConflictResolutionChanges = (
     projectId: string,
     workspace: Workspace | undefined,
   ): Promise<void> =>
-    this.networkClient.post(
+    this.post(
       `${this._conflictResolution(projectId, workspace)}/discardChanges`,
     );
   acceptConflictResolution = (
@@ -651,7 +634,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     command: PlainObject<PerformEntitiesChangesCommand>,
   ): Promise<void> =>
-    this.networkClient.post(
+    this.post(
       `${this._conflictResolution(projectId, workspace)}/accept`,
       command,
     );
@@ -659,15 +642,13 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
   ): Promise<boolean> =>
-    this.networkClient.get(
-      `${this._conflictResolution(projectId, workspace)}/outdated`,
-    );
+    this.get(`${this._conflictResolution(projectId, workspace)}/outdated`);
   getConflictResolutionRevision = (
     projectId: string,
     workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Revision>> =>
-    this.networkClient.get(
+    this.get(
       `${this._conflictResolution(
         projectId,
         workspace,
@@ -678,7 +659,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace | undefined,
     revisionId: string | RevisionAlias,
   ): Promise<PlainObject<Entity>[]> =>
-    this.networkClient.get(
+    this.get(
       `${this._conflictResolution(
         projectId,
         workspace,
@@ -688,7 +669,5 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
   ): Promise<PlainObject<ProjectConfiguration>> =>
-    this.networkClient.get(
-      `${this._conflictResolution(projectId, workspace)}/configuration`,
-    );
+    this.get(`${this._conflictResolution(projectId, workspace)}/configuration`);
 }

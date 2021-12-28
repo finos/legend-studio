@@ -43,7 +43,7 @@ export class DepotServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Projects -------------------------------------------
 
-  private _projects = (): string => `${this.networkClient.baseUrl}/projects`;
+  private _projects = (): string => `${this.baseUrl}/projects`;
   private _project = (groupId: string, artifactId: string): string =>
     `${this._projects()}/${encodeURIComponent(groupId)}/${encodeURIComponent(
       artifactId,
@@ -124,9 +124,7 @@ export class DepotServerClient extends AbstractServerClient {
   ): Promise<PlainObject<StoredEntity>[]> =>
     this.TEMP__useLegacyDepotServerAPIRoutes
       ? this.get(
-          `${this.networkClient.baseUrl}/classifiers/${encodeURIComponent(
-            classifierPath,
-          )}`,
+          `${this.baseUrl}/classifiers/${encodeURIComponent(classifierPath)}`,
           undefined,
           undefined,
           {
@@ -134,9 +132,9 @@ export class DepotServerClient extends AbstractServerClient {
           },
         )
       : this.get(
-          `${
-            this.networkClient.baseUrl
-          }/entitiesByClassifierPath/${encodeURIComponent(classifierPath)}`,
+          `${this.baseUrl}/entitiesByClassifierPath/${encodeURIComponent(
+            classifierPath,
+          )}`,
           undefined,
           undefined,
           {

@@ -200,6 +200,7 @@ export const LegendStudioApplication = observer(
         config={{
           env: config.env,
           serverUrl: config.sdlcServerUrl,
+          baseHeaders: config.SDLCServerBaseHeaders,
         }}
       >
         <DepotServerClientProvider

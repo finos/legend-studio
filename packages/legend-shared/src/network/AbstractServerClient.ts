@@ -31,6 +31,7 @@ export interface ServerClientConfig {
   baseUrl?: string;
   networkClientOptions?: Record<PropertyKey, unknown>;
   enableCompression?: boolean;
+  baseHeaders?: RequestHeaders | undefined;
   /**
    * This supports a basic re-authenticate mechanism using <iframe>.
    * The provided URL will be loaded in the <iframe> in the background
@@ -47,10 +48,11 @@ export interface ServerClientConfig {
  * such as request payload compression, etc.
  */
 export abstract class AbstractServerClient {
-  protected networkClient: NetworkClient;
+  private networkClient: NetworkClient;
   private _tracerService?: TracerService;
   enableCompression: boolean;
   baseUrl?: string | undefined;
+  baseHeaders?: RequestHeaders | undefined;
   autoReAuthenticateUrl?: string | undefined;
 
   constructor(config: ServerClientConfig) {
@@ -60,6 +62,7 @@ export abstract class AbstractServerClient {
     });
     this.baseUrl = config.baseUrl;
     this.enableCompression = Boolean(config.enableCompression);
+    this.baseHeaders = config.baseHeaders;
     this.autoReAuthenticateUrl = config.autoReAuthenticateUrl;
   }
 
@@ -288,7 +291,9 @@ export abstract class AbstractServerClient {
         url,
         data,
         options,
-        headers,
+        this.baseHeaders
+          ? { ...this.baseHeaders, ...(headers ?? {}) }
+          : headers,
         parameters,
         {
           ...(requestProcessConfig ?? {}),
