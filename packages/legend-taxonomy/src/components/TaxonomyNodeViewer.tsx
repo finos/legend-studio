@@ -202,13 +202,15 @@ const TaxonomyNodeDataSpaceViewer = observer(
       taxonomyStore.queryUsingDataSpace(dataSpaceViewerState);
     const viewDataSpace = (): void =>
       taxonomyStore.applicationStore.navigator.openNewWindow(
-        generateStandaloneDataSpaceViewerRoute(
-          generateGAVCoordinates(
-            dataSpaceViewerState.dataSpaceGroupId,
-            dataSpaceViewerState.dataSpaceArtifactId,
-            dataSpaceViewerState.dataSpaceVersionId,
+        taxonomyStore.applicationStore.navigator.generateLocation(
+          generateStandaloneDataSpaceViewerRoute(
+            generateGAVCoordinates(
+              dataSpaceViewerState.dataSpaceGroupId,
+              dataSpaceViewerState.dataSpaceArtifactId,
+              dataSpaceViewerState.dataSpaceVersionId,
+            ),
+            dataSpaceViewerState.dataSpace.path,
           ),
-          dataSpaceViewerState.dataSpace.path,
         ),
       );
 

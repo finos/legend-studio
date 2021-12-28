@@ -113,6 +113,10 @@
     &__header__action + &__header__action {
       margin-left: 0.3rem;
     }
+
+    &__content {
+      background: var(--color-dark-grey-80);
+    }
   }
 
   &__explorer__entry {

@@ -76,6 +76,7 @@
 
     &__artifact-id {
       color: var(--color-light-grey-400);
+      white-space: nowrap;
     }
 
     &__version-id {
