@@ -82,7 +82,7 @@ const CreateProjectModal = observer(() => {
     setupStore.createOrImportProjectState.isInProgress ||
     setupStore.createWorkspaceState.isInProgress;
   const closeModal = (): void => {
-    setupStore.setCreateProjectModal(false);
+    setupStore.setShowCreateProjectModal(false);
     setupStore.setImportProjectSuccessReport(undefined);
   };
   const createProject = applicationStore.guaranteeSafeAction(() =>
@@ -515,7 +515,7 @@ const CreateWorkspaceModal = observer(() => {
     : 'You have no projects, please create or acquire access for at least one';
 
   const closeModal = (): void => {
-    setupStore.setCreateWorkspaceModal(false);
+    setupStore.setShowCreateWorkspaceModal(false);
   };
   const createWorkspace = (): void => {
     if (currentProjectId && workspaceName) {
@@ -664,9 +664,9 @@ const SetupSelection = observer(() => {
       ? proceedButtonRef.current?.focus()
       : workspaceSelectorRef.current?.focus();
   const handleCreateProjectModal = (): void =>
-    setupStore.setCreateProjectModal(true);
+    setupStore.setShowCreateProjectModal(true);
   const handleCreateWorkspaceModal = (): void =>
-    setupStore.setCreateWorkspaceModal(true);
+    setupStore.setShowCreateWorkspaceModal(true);
   const handleProceed = (): void => {
     if (
       setupStore.currentProjectId &&

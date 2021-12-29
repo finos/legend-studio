@@ -372,12 +372,12 @@ export const CreateNewElementModal = observer(() => {
     save();
   };
 
-  if (!newElementState.modal) {
+  if (!newElementState.showModal) {
     return null;
   }
   return (
     <Dialog
-      open={newElementState.modal}
+      open={newElementState.showModal}
       onClose={closeModal}
       TransitionProps={{
         onEnter: handleEnter,

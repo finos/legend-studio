@@ -409,7 +409,7 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
 
 export class NewElementState {
   editorStore: EditorStore;
-  modal = false;
+  showModal = false;
   showType = false;
   type: string;
   _package?: Package | undefined;
@@ -419,7 +419,7 @@ export class NewElementState {
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
       editorStore: false,
-      setModal: action,
+      setShowModal: action,
       setName: action,
       setShowType: action,
       setNewElementDriver: action,
@@ -452,8 +452,8 @@ export class NewElementState {
     return this.newElementDriver?.isValid ?? true;
   }
 
-  setModal(modal: boolean): void {
-    this.modal = modal;
+  setShowModal(val: boolean): void {
+    this.showModal = val;
   }
   setName(name: string): void {
     this.name = name;
@@ -521,14 +521,14 @@ export class NewElementState {
   }
 
   openModal(type?: string, _package?: Package): void {
-    this.setModal(true);
+    this.setShowModal(true);
     this.setElementType(type ?? PACKAGEABLE_ELEMENT_TYPE.PACKAGE);
     this.setPackage(_package);
     this.setShowType(!type);
   }
 
   closeModal(): void {
-    this.setModal(false);
+    this.setShowModal(false);
     this.setElementType(PACKAGEABLE_ELEMENT_TYPE.PACKAGE);
     this.setPackage(undefined);
     this.setShowType(false);

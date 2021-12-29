@@ -62,7 +62,7 @@ interface ServiceVersionOption {
 export class ServiceRegistrationState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
-  modal = false;
+  showModal = false;
   registrationState = ActionState.create();
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
@@ -75,7 +75,7 @@ export class ServiceRegistrationState {
   ) {
     makeAutoObservable(this, {
       editorStore: false,
-      setModal: action,
+      setShowModal: action,
       executionModes: computed,
       updateVersion: action,
       setProjectVersion: action,
@@ -90,8 +90,8 @@ export class ServiceRegistrationState {
     this.serviceEditorState = serviceEditorState;
   }
 
-  setModal(modal: boolean): void {
-    this.modal = modal;
+  setShowModal(val: boolean): void {
+    this.showModal = val;
   }
   setServiceEnv(val: string | undefined): void {
     this.serviceEnv = val;
@@ -108,7 +108,7 @@ export class ServiceRegistrationState {
   }
 
   openModal(): void {
-    this.setModal(true);
+    this.setShowModal(true);
     this.initialize();
   }
 
@@ -222,7 +222,7 @@ export class ServiceRegistrationState {
           serviceRegistrationResult.serviceInstanceId,
         );
       }
-      this.setModal(false);
+      this.setShowModal(false);
       this.editorStore.applicationStore.notifySuccess(
         `service with patten ${serviceRegistrationResult.pattern} registered ${
           this.activatePostRegistration ? ' and activated ' : ''

@@ -452,7 +452,7 @@ export const ServiceEditor = observer(() => {
         <div className="panel__content service-editor__content">
           {selectedTab === SERVICE_TAB.GENERAL && <ServiceGeneralEditor />}
           {selectedTab === SERVICE_TAB.EXECUTION && <ServiceExecutionEditor />}
-          {serviceState.registrationState.modal && (
+          {serviceState.registrationState.showModal && (
             <ServiceRegistrationModalEditor />
           )}
         </div>

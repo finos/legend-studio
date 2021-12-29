@@ -109,7 +109,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
     }
   };
   const closeModal = (): void => {
-    registrationState.setModal(false);
+    registrationState.setShowModal(false);
   };
   const disableRegistration =
     !selectedEnvOption ||
@@ -117,7 +117,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
     registrationState.registrationState.isInProgress;
   return (
     <Dialog
-      open={registrationState.modal}
+      open={registrationState.showModal}
       onClose={closeModal}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
