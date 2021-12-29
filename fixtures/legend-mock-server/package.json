@@ -27,7 +27,7 @@
     "start": "node --experimental-json-modules lib/index.js"
   },
   "dependencies": {
-    "fastify": "3.25.2",
+    "fastify": "3.25.3",
     "fastify-cors": "6.0.2"
   },
   "devDependencies": {

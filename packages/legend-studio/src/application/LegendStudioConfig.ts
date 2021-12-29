@@ -24,6 +24,7 @@ import {
 } from 'serializr';
 import {
   type PlainObject,
+  type RequestHeaders,
   AssertionError,
   assertNonNullable,
   guaranteeNonEmptyString,
@@ -154,7 +155,9 @@ export interface LegendStudioConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
-  sdlc: { url: string } | PlainObject<SDLCServerOption>[];
+  sdlc:
+    | { url: string; baseHeaders?: RequestHeaders }
+    | PlainObject<SDLCServerOption>[];
   depot: { url: string };
   engine: { url: string; queryUrl?: string };
   documentation: { url: string };
@@ -164,11 +167,13 @@ export class LegendStudioConfig extends LegendApplicationConfig {
   readonly options = new ApplicationCoreOptions();
 
   readonly documentationUrl: string;
-  currentSDLCServerOption!: SDLCServerOption;
-  SDLCServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
+
+  currentSDLCServerOption!: SDLCServerOption;
+  SDLCServerOptions: SDLCServerOption[] = [];
+  SDLCServerBaseHeaders?: RequestHeaders | undefined;
 
   constructor(
     configData: LegendStudioConfigurationData,
@@ -217,6 +222,7 @@ export class LegendStudioConfig extends LegendApplicationConfig {
       }
       this.SDLCServerOptions = options;
     } else {
+      this.SDLCServerBaseHeaders = configData.sdlc.baseHeaders;
       this.SDLCServerOptions = [
         SDLCServerOption.serialization.fromJson({
           key: 'default',

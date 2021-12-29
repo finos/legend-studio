@@ -24,7 +24,7 @@ import {
   type PlainObject,
   LogEvent,
   assertErrorThrown,
-  downloadFile,
+  downloadFileUsingDataURI,
   guaranteeNonNullable,
   ContentType,
   NetworkClientError,
@@ -159,7 +159,7 @@ export class LocalChangesState {
       undefined,
       TAB_SIZE,
     );
-    downloadFile(fileName, content, ContentType.APPLICATION_JSON);
+    downloadFileUsingDataURI(fileName, content, ContentType.APPLICATION_JSON);
   };
 
   *syncWithWorkspace(syncMessage?: string): GeneratorFn<void> {

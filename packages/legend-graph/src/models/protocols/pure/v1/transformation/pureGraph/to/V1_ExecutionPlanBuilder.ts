@@ -61,7 +61,7 @@ import { DataTypeResultType } from '../../../../../../metamodels/pure/executionP
 import { TDSResultType } from '../../../../../../metamodels/pure/executionPlan/result/TDSResultType';
 import { TDSColumn } from '../../../../../../metamodels/pure/executionPlan/result/TDSColumn';
 import type { V1_TDSColumn } from '../../../model/executionPlan/results/V1_TDSColumn';
-import { CORE_ELEMENT_PATH } from '../../../../../../../MetaModelConst';
+import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst';
 
 const parseDataType = (val: string): RelationalDataType => {
   const getTypeParams = (typeVal: string): number[] =>
@@ -178,7 +178,7 @@ const buildTDSResultType = (
   context: V1_GraphBuilderContext,
 ): TDSResultType => {
   const metamodel = new TDSResultType();
-  metamodel.type = context.resolveType(CORE_ELEMENT_PATH.ANY);
+  metamodel.type = context.resolveType(CORE_PURE_PATH.ANY);
   metamodel.tdsColumns = protocol.tdsColumns.map((column) =>
     buildTDSColumn(column, context),
   );

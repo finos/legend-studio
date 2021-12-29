@@ -67,7 +67,7 @@ members of the project's leadership.
 
 ## Attribution
 
-This Code of Conduct is adapted from [FINOS Community Code of Conduct](https://www.finos.org/code-of-conduct) and the [Contributor Covenant][https://www.contributor-covenant.org], version 1.4,
+This Code of Conduct is adapted from [FINOS Community Code of Conduct](https://www.finos.org/code-of-conduct) and the [Contributor Covenant](https://www.contributor-covenant.org), version 1.4,
 available at https://www.contributor-covenant.org/version/1/4/code-of-conduct.html
 
 For answers to common questions about this code of conduct, see

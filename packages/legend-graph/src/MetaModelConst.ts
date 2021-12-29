@@ -92,7 +92,7 @@ export const AUTO_IMPORTS = [
   'meta::pure::profiles',
 ];
 
-export enum CORE_ELEMENT_PATH {
+export enum CORE_PURE_PATH {
   ANY = 'meta::pure::metamodel::type::Any',
 
   PROFILE_DOC = 'meta::pure::profiles::doc',

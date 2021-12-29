@@ -23,7 +23,7 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   CollectionInstanceValue,
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
   extractElementNameFromPath,
   FunctionType,
   LambdaFunction,
@@ -57,7 +57,7 @@ const buildGroupByFunction = (
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
-  const typeAny = graph.getType(CORE_ELEMENT_PATH.ANY);
+  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
   const typeString = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
   const lambdaFunction = new LambdaFunction(
     new FunctionType(typeAny, multiplicityOne),
@@ -174,7 +174,7 @@ export const buildNumericPreviewDataQuery = (
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
-  const typeAny = graph.getType(CORE_ELEMENT_PATH.ANY);
+  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
   const lambdaFunction = new LambdaFunction(
     new FunctionType(typeAny, multiplicityOne),
   );
@@ -226,7 +226,7 @@ export const buildNonNumericPreviewDataQuery = (
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
-  const typeAny = graph.getType(CORE_ELEMENT_PATH.ANY);
+  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
   const lambdaFunction = new LambdaFunction(
     new FunctionType(typeAny, multiplicityOne),
   );
