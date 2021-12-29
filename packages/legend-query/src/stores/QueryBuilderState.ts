@@ -35,7 +35,10 @@ import {
 import { QueryBuilderSetupState } from './QueryBuilderSetupState';
 import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
-import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor';
+import {
+  processQueryBuilderLambdaFunction,
+  processQueryParameters,
+} from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import {
   type Class,
@@ -45,6 +48,7 @@ import {
   type Mapping,
   type PackageableRuntime,
   type Service,
+  type ValueSpecification,
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
@@ -56,6 +60,7 @@ import {
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
   MILESTONING_STEROTYPES,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -93,6 +98,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { QueryParametersState } from './QueryParametersState';
+import { type } from 'os';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -248,6 +254,22 @@ export class QueryBuilderState {
           `Unable to initialize query builder: ${error.message}`,
         );
       }
+      const vars = ((rawLambda.parameters ?? []) as object[]).map((v) =>
+        this.graphManagerState.graphManager.buildValueSpecification(
+          this.graphManagerState.graphManager.serializeRawValueSpecification(
+            new RawLambda(rawLambda.parameters, []),
+          ),
+          this.graphManagerState.graph,
+        ),
+      );
+      processQueryParameters(
+        vars.filter(
+          (i: ValueSpecification): i is VariableExpression =>
+            i instanceof VariableExpression,
+        ),
+        this,
+      );
+
       this.queryUnsupportedState.setLambdaError(error);
       this.queryUnsupportedState.setRawLambda(rawLambda);
     }
