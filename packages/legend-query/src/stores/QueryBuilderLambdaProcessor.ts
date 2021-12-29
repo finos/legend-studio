@@ -78,6 +78,7 @@ import {
 } from './QueryBuilderProjectionState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
+import { QueryParameterState } from './QueryParametersState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -995,10 +996,31 @@ export class QueryBuilderLambdaProcessor
   }
 }
 
+export const processQueryParameters = (
+  parameters: VariableExpression[],
+  queryBuilderState: QueryBuilderState,
+): void => {
+  const queryParameterState = queryBuilderState.queryParametersState;
+  parameters.forEach((parameter) => {
+    const variableState = new QueryParameterState(
+      queryParameterState,
+      parameter,
+    );
+    variableState.mockParameterValues();
+    queryParameterState.addParameter(variableState);
+  });
+};
+
 export const processQueryBuilderLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   lambdaFunc: LambdaFunction,
 ): void => {
+  if (lambdaFunc.functionType.parameters.length) {
+    processQueryParameters(
+      lambdaFunc.functionType.parameters,
+      queryBuilderState,
+    );
+  }
   lambdaFunc.expressionSequence.map((e) =>
     e.accept_ValueSpecificationVisitor(
       new QueryBuilderLambdaProcessor(queryBuilderState, undefined),

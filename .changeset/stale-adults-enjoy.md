@@ -2,4 +2,4 @@
 "@finos/legend-query": patch
 ---
 
-Add support for parameter editor in QueryUnsupportedState
+Allow configuring query parameters in `unsupported` mode.
