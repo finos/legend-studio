@@ -16,7 +16,7 @@
 
 import packageJson from '../../package.json';
 import { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
-import { CORE_ELEMENT_PATH } from '../MetaModelConst';
+import { CORE_PURE_PATH } from '../MetaModelConst';
 
 export class CorePureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -24,6 +24,6 @@ export class CorePureGraphManagerPlugin extends PureGraphManagerPlugin {
   }
 
   override getExtraExposedSystemElementPath(): string[] {
-    return [CORE_ELEMENT_PATH.PROFILE_DOC, CORE_ELEMENT_PATH.PROFILE_TEMPORAL];
+    return [CORE_PURE_PATH.PROFILE_DOC, CORE_PURE_PATH.PROFILE_TEMPORAL];
   }
 }

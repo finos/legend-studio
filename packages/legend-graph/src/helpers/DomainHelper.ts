@@ -16,15 +16,13 @@
 
 import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { CORE_ELEMENT_PATH, MILESTONING_STEROTYPES } from '../MetaModelConst';
+import { CORE_PURE_PATH, MILESTONING_STEROTYPES } from '../MetaModelConst';
 
 export const getMilestoneTemporalStereotype = (
   val: Class,
   graph: PureModel,
 ): MILESTONING_STEROTYPES | undefined => {
-  const milestonedProfile = graph.getProfile(
-    CORE_ELEMENT_PATH.PROFILE_TEMPORAL,
-  );
+  const milestonedProfile = graph.getProfile(CORE_PURE_PATH.PROFILE_TEMPORAL);
   let stereotype;
   const profile = val.stereotypes.find(
     (e) => e.ownerReference.value === milestonedProfile,

@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
 } from '../../../../../MetaModelConst';
 import { Type } from './Type';
 import type { Property } from './Property';
@@ -197,14 +197,14 @@ export class Class extends Type implements Hashable, Stubable {
 
   isSuperType(type: Type): boolean {
     return (
-      type.path === CORE_ELEMENT_PATH.ANY ||
+      type.path === CORE_PURE_PATH.ANY ||
       (type instanceof Class && type.allSuperClasses.includes(this))
     );
   }
 
   isSubType(type: Type): boolean {
     return (
-      this.path === CORE_ELEMENT_PATH.ANY ||
+      this.path === CORE_PURE_PATH.ANY ||
       (type instanceof Class && type.allSubClasses.includes(this))
     );
   }

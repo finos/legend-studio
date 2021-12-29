@@ -18,7 +18,7 @@ import { DATE_FORMAT } from '@finos/legend-application';
 import {
   type PureModel,
   type ValueSpecification,
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
   FunctionType,
   LambdaFunction,
   LambdaFunctionInstanceValue,
@@ -61,7 +61,7 @@ export const buildGenericLambdaFunctionInstanceValue = (
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
-  const typeAny = graph.getType(CORE_ELEMENT_PATH.ANY);
+  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
   const aggregateLambda = new LambdaFunctionInstanceValue(multiplicityOne);
   const colLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
   colLambdaFunctionType.parameters.push(
