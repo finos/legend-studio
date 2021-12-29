@@ -2271,7 +2271,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     cross-env: 7.0.3
     eslint: 8.5.0
-    fastify: 3.25.2
+    fastify: 3.25.3
     fastify-cors: 6.0.2
     nodemon: 2.0.15
     npm-run-all: 4.1.5
@@ -2433,7 +2433,7 @@ __metadata:
     "@types/react-dom": 17.0.11
     "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
-    date-fns: 2.27.0
+    date-fns: 2.28.0
     eslint: 8.5.0
     history: 5.2.0
     jest: 27.4.5
@@ -2661,7 +2661,7 @@ __metadata:
     "@types/react-dom": 17.0.11
     "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
-    date-fns: 2.27.0
+    date-fns: 2.28.0
     eslint: 8.5.0
     history: 5.2.0
     jest: 27.4.5
@@ -6223,10 +6223,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:2.27.0":
-  version: 2.27.0
-  resolution: "date-fns@npm:2.27.0"
-  checksum: db62036b3816eb0322c9532b353beac7f660a91e1a55dbd21c14893c621ebb8509f21c66ba287844dabd34dee0207edd54a9537bce6bb7cab9383dedc6b8bc90
+"date-fns@npm:2.28.0":
+  version: 2.28.0
+  resolution: "date-fns@npm:2.28.0"
+  checksum: a0516b2e4f99b8bffc6cc5193349f185f195398385bdcaf07f17c2c4a24473c99d933eb0018be4142a86a6d46cb0b06be6440ad874f15e795acbedd6fd727a1f
   languageName: node
   linkType: hard
 
@@ -7423,26 +7423,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:3.25.2":
-  version: 3.25.2
-  resolution: "fastify@npm:3.25.2"
+"fastify@npm:3.25.3":
+  version: 3.25.3
+  resolution: "fastify@npm:3.25.3"
   dependencies:
     "@fastify/ajv-compiler": ^1.0.0
     abstract-logging: ^2.0.0
     avvio: ^7.1.2
     fast-json-stringify: ^2.5.2
     fastify-error: ^0.3.0
-    fastify-warning: ^0.2.0
     find-my-way: ^4.5.0
     flatstr: ^1.0.12
     light-my-request: ^4.2.0
     pino: ^6.13.0
+    process-warning: ^1.0.0
     proxy-addr: ^2.0.7
     rfdc: ^1.1.4
     secure-json-parse: ^2.0.0
     semver: ^7.3.2
     tiny-lru: ^7.0.0
-  checksum: 730acc309d91870560c0bb09644fa37f5c229b190c0dbf8d91b9bac655cfcb4c3ed518f3ac43bbd51e26e907fd922cf7c7328f88a943389d41bd2108d4a9618a
+  checksum: b0ab3f9ae1c58386232a67c39e91611b856107c56c74d7b905454edbe001973b8fa4386d56714392a562ce1adfbc8dd7a2cf663a2516a1732f2ec35f3cf7f6de
   languageName: node
   linkType: hard
 
@@ -12335,6 +12335,13 @@ __metadata:
   version: 2.0.1
   resolution: "process-nextick-args@npm:2.0.1"
   checksum: 1d38588e520dab7cea67cbbe2efdd86a10cc7a074c09657635e34f035277b59fbb57d09d8638346bf7090f8e8ebc070c96fa5fd183b777fff4f5edff5e9466cf
+  languageName: node
+  linkType: hard
+
+"process-warning@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "process-warning@npm:1.0.0"
+  checksum: c708a03241deec3cabaeee39c4f9ee8c4d71f1c5ef9b746c8252cdb952a6059068cfcdaf348399775244cbc441b6ae5e26a9c87ed371f88335d84f26d19180f9
   languageName: node
   linkType: hard
 
