@@ -18,15 +18,100 @@ import { observer } from 'mobx-react-lite';
 import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { FaInfoCircle, FaDownload } from 'react-icons/fa';
+import { FaInfoCircle, FaDownload, FaUpload, FaTimes } from 'react-icons/fa';
 import { MdRefresh } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
-import type { EntityDiff } from '@finos/legend-server-sdlc';
+import type { EntityChange, EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
+import { Dialog } from '@material-ui/core';
+
+const PatchLoaderEditor = observer(() => {
+  const editorStore = useEditorStore();
+  const localChangesState = editorStore.localChangesState;
+  const patchState = localChangesState.patchLoaderState;
+  const onClose = (): void => patchState.closeModal();
+  const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      patchState.loadPatchFile(file);
+    }
+  };
+  const upload = (): void => {
+    patchState.applyChanges();
+  };
+  const deleteChange = (change: EntityChange): void =>
+    patchState.deleteChange(change);
+  return (
+    <Dialog onClose={onClose} open={patchState.showModal}>
+      <div className="modal modal--dark modal--scrollable patch-loader">
+        <div className="modal__header">
+          <div className="modal__title">
+            <div className="modal__title__label">Patch Loader</div>
+          </div>
+        </div>
+        <div className="modal__body">
+          <PanelLoadingIndicator isLoading={patchState.isLoadingChanges} />
+          <div>
+            <input
+              id="upload-file"
+              type="file"
+              name="myFiles"
+              onChange={onChange}
+            />
+          </div>
+          {Boolean(patchState.overiddingChanges.length) && (
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Overriding Changes
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                The following element changes will be overridden by the patch
+              </div>
+              <div className="panel__content__form__section__list">
+                <div className="panel__content__form__section__list__items">
+                  {patchState.overiddingChanges.map((value) => (
+                    <div
+                      key={value.entityPath}
+                      className="panel__content__form__section__list__item"
+                    >
+                      <div className="panel__content__form__section__list__item__value">
+                        {value.entityPath}
+                      </div>
+                      <div className="panel__content__form__section__list__item__actions">
+                        <button
+                          title="Remove change"
+                          className="panel__content__form__section__list__item__remove-btn"
+                          onClick={(): void => deleteChange(value)}
+                          tabIndex={-1}
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="modal__footer">
+          <button
+            type="button"
+            className="btn btn--dark blocking-alert__action--standard"
+            onClick={upload}
+            disabled={!patchState.changes?.length || !patchState.isValidPatch}
+          >
+            Apply Patch
+          </button>
+        </div>
+      </div>
+    </Dialog>
+  );
+});
 
 export const LocalChanges = observer(() => {
   const editorStore = useEditorStore();
@@ -35,6 +120,10 @@ export const LocalChanges = observer(() => {
   // Actions
   const downloadLocalChanges = (): void =>
     localChangesState.downloadLocalChanges();
+  const uploadPatchChanges = (): void =>
+    localChangesState.patchLoaderState.openModal(
+      editorStore.graphState.computeLocalEntityChanges(),
+    );
   const syncingWithWorkspace = applicationStore.guaranteeSafeAction(() =>
     flowResult(localChangesState.syncWithWorkspace()),
   );
@@ -80,6 +169,20 @@ export const LocalChanges = observer(() => {
             <FaDownload />
           </button>
           <button
+            className="panel__header__action side-bar__header__action local-changes__download-patch-btn"
+            onClick={uploadPatchChanges}
+            disabled={
+              isDispatchingAction ||
+              editorStore.workspaceUpdaterState.isUpdatingWorkspace ||
+              !editorStore.changeDetectionState.isChangeDetectionRunning ||
+              !editorStore.isInFormMode
+            }
+            tabIndex={-1}
+            title="Upload local entity changes"
+          >
+            <FaUpload />
+          </button>
+          <button
             className={clsx(
               'panel__header__action side-bar__header__action local-changes__refresh-btn',
               {
@@ -116,6 +219,7 @@ export const LocalChanges = observer(() => {
       </div>
       <div className="panel__content side-bar__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
+        {localChangesState.patchLoaderState.showModal && <PatchLoaderEditor />}
         <div className="panel side-bar__panel">
           <div className="panel__header">
             <div className="panel__header__title">
