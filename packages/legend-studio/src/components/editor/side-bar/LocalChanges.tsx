@@ -15,10 +15,10 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
+import { clsx, PanelLoadingIndicator, TimesIcon } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { FaInfoCircle, FaDownload, FaUpload, FaTimes } from 'react-icons/fa';
+import { FaInfoCircle, FaDownload, FaUpload } from 'react-icons/fa';
 import { MdRefresh } from 'react-icons/md';
 import { GoSync } from 'react-icons/go';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
@@ -29,7 +29,7 @@ import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import { Dialog } from '@material-ui/core';
 
-const PatchLoaderEditor = observer(() => {
+const PatchLoader = observer(() => {
   const editorStore = useEditorStore();
   const localChangesState = editorStore.localChangesState;
   const patchState = localChangesState.patchLoaderState;
@@ -88,7 +88,7 @@ const PatchLoaderEditor = observer(() => {
                           onClick={(): void => deleteChange(value)}
                           tabIndex={-1}
                         >
-                          <FaTimes />
+                          <TimesIcon />
                         </button>
                       </div>
                     </div>
@@ -219,7 +219,7 @@ export const LocalChanges = observer(() => {
       </div>
       <div className="panel__content side-bar__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
-        {localChangesState.patchLoaderState.showModal && <PatchLoaderEditor />}
+        {localChangesState.patchLoaderState.showModal && <PatchLoader />}
         <div className="panel side-bar__panel">
           <div className="panel__header">
             <div className="panel__header__title">

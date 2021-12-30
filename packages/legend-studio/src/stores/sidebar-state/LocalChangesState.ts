@@ -31,8 +31,8 @@ import {
   HttpStatus,
   deleteEntry,
   assertTrue,
-  readFileAsText,
   UnsupportedOperationError,
+  readFileAsText,
 } from '@finos/legend-shared';
 import {
   DATE_TIME_FORMAT,
@@ -50,13 +50,6 @@ import {
   EntityChangeType,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
-
-const isValidEntityChange = (change: EntityChange): boolean => {
-  if (change.type !== EntityChangeType.DELETE && !change.content) {
-    return false;
-  }
-  return true;
-};
 
 class PatchLoaderState {
   editorStore: EditorStore;
@@ -128,7 +121,7 @@ class PatchLoaderState {
       this.setPatchChanges(undefined);
       assertTrue(
         file.type === ContentType.APPLICATION_JSON,
-        'Patch file expected to be of type `JSON`',
+        `Patch file expected to be of type 'JSON'`,
       );
       const fileText = (yield readFileAsText(file)) as string;
       const entityChanges = JSON.parse(fileText) as {
@@ -154,50 +147,58 @@ class PatchLoaderState {
       this.closeModal();
     }
   }
+
   applyEntityChanges(
     currentEntities: Entity[],
     entityChanges: EntityChange[],
   ): Entity[] {
-    entityChanges.filter(isValidEntityChange).forEach((change) => {
-      switch (change.type) {
-        case EntityChangeType.DELETE:
-          {
-            const elementIdx = currentEntities.findIndex(
+    entityChanges
+      .filter((change: EntityChange) => {
+        if (change.type !== EntityChangeType.DELETE && !change.content) {
+          return false;
+        }
+        return true;
+      })
+      .forEach((change) => {
+        switch (change.type) {
+          case EntityChangeType.DELETE:
+            {
+              const elementIdx = currentEntities.findIndex(
+                (e) => e.path === change.entityPath,
+              );
+              if (elementIdx !== -1) {
+                currentEntities.splice(elementIdx, 1);
+              }
+            }
+            break;
+          case EntityChangeType.CREATE:
+            {
+              if (!currentEntities.find((e) => e.path === change.entityPath)) {
+                const entity = new Entity();
+                entity.content = change.content ?? {};
+                entity.path = change.entityPath;
+                entity.classifierPath = change.classifierPath ?? '';
+                currentEntities.push(entity);
+              }
+            }
+            break;
+          case EntityChangeType.MODIFY: {
+            const entity = currentEntities.find(
               (e) => e.path === change.entityPath,
             );
-            if (elementIdx !== -1) {
-              currentEntities.splice(elementIdx, 1);
-            }
-          }
-          break;
-        case EntityChangeType.CREATE:
-          {
-            if (!currentEntities.find((e) => e.path === change.entityPath)) {
-              const entity = new Entity();
+            if (entity) {
               entity.content = change.content ?? {};
-              entity.path = change.entityPath;
               entity.classifierPath = change.classifierPath ?? '';
-              currentEntities.push(entity);
             }
+            break;
           }
-          break;
-        case EntityChangeType.MODIFY: {
-          const entity = currentEntities.find(
-            (e) => e.path === change.entityPath,
-          );
-          if (entity) {
-            entity.content = change.content ?? {};
-            entity.classifierPath = change.classifierPath ?? '';
-          }
-          break;
+          default:
+            throw new UnsupportedOperationError(
+              `Can't apply entity change`,
+              change,
+            );
         }
-        default:
-          throw new UnsupportedOperationError(
-            `Can't apply entity change`,
-            change,
-          );
-      }
-    });
+      });
     return currentEntities;
   }
 }

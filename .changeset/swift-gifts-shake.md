@@ -2,4 +2,4 @@
 '@finos/legend-studio': minor
 ---
 
-Support updload and load patch.
+Support upload and load patch.

@@ -27,10 +27,7 @@ import {
   parse as _getQueryParams,
   parseUrl as _getQueryParamsFromUrl,
 } from 'query-string';
-import {
-  returnUndefOnError,
-  UnsupportedOperationError,
-} from '../error/ErrorUtils';
+import { returnUndefOnError } from '../error/ErrorUtils';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms
@@ -495,21 +492,6 @@ export const downloadFile = (
     location.replace(url);
   }
 };
-
-export const readFileAsText = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = (): void => {
-      const result = fileReader.result;
-      if (isString(result)) {
-        resolve(result);
-      } else {
-        throw new UnsupportedOperationError(`Cant read file`);
-      }
-    };
-    fileReader.onerror = reject;
-    fileReader.readAsText(file);
-  });
 
 export const createUrlStringFromData = (
   data: string,
