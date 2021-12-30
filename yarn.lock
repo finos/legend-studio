@@ -1961,7 +1961,7 @@ __metadata:
     history: 5.2.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     monaco-editor: 0.31.1
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -1997,7 +1997,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     monaco-editor: 0.31.1
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2032,7 +2032,7 @@ __metadata:
     "@juggle/resize-observer": 3.3.1
     "@manypkg/get-packages": 1.1.3
     "@pmmmwh/react-refresh-webpack-plugin": 0.5.4
-    autoprefixer: 10.4.0
+    autoprefixer: 10.4.1
     babel-jest: 27.4.5
     babel-loader: 8.2.3
     chalk: 5.0.0
@@ -2084,7 +2084,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     monaco-editor: 0.31.1
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2120,7 +2120,7 @@ __metadata:
     jest: 27.4.5
     jest-canvas-mock: 2.3.1
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dnd: 14.0.4
@@ -2152,7 +2152,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     monaco-editor: 0.31.1
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2183,7 +2183,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     monaco-editor: 0.31.1
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2251,7 +2251,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     monaco-editor: 0.31.1
     npm-run-all: 4.1.5
     react: 17.0.2
@@ -2312,7 +2312,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2407,7 +2407,7 @@ __metadata:
     webpack: 5.65.0
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
-    webpack-dev-server: 4.7.1
+    webpack-dev-server: 4.7.2
   languageName: unknown
   linkType: soft
 
@@ -2438,7 +2438,7 @@ __metadata:
     history: 5.2.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     monaco-editor: 0.31.1
     npm-run-all: 4.1.5
     papaparse: 5.3.1
@@ -2469,7 +2469,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2489,7 +2489,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2574,7 +2574,7 @@ __metadata:
     webpack: 5.65.0
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
-    webpack-dev-server: 4.7.1
+    webpack-dev-server: 4.7.2
   languageName: unknown
   linkType: soft
 
@@ -2594,7 +2594,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     npm-run-all: 4.1.5
     react: 17.0.2
     react-icons: 4.3.1
@@ -2629,7 +2629,7 @@ __metadata:
     eslint: 8.5.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
@@ -2666,7 +2666,7 @@ __metadata:
     history: 5.2.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     monaco-editor: 0.31.1
     node-diff3: 3.1.0
     npm-run-all: 4.1.5
@@ -2725,7 +2725,7 @@ __metadata:
     webpack: 5.65.0
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
-    webpack-dev-server: 4.7.1
+    webpack-dev-server: 4.7.2
   languageName: unknown
   linkType: soft
 
@@ -2752,7 +2752,7 @@ __metadata:
     history: 5.2.0
     jest: 27.4.5
     mobx: 6.3.10
-    mobx-react-lite: 3.2.2
+    mobx-react-lite: 3.2.3
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
@@ -4836,21 +4836,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:10.4.0":
-  version: 10.4.0
-  resolution: "autoprefixer@npm:10.4.0"
+"autoprefixer@npm:10.4.1":
+  version: 10.4.1
+  resolution: "autoprefixer@npm:10.4.1"
   dependencies:
-    browserslist: ^4.17.5
-    caniuse-lite: ^1.0.30001272
-    fraction.js: ^4.1.1
+    browserslist: ^4.19.1
+    caniuse-lite: ^1.0.30001294
+    fraction.js: ^4.1.2
     normalize-range: ^0.1.2
     picocolors: ^1.0.0
-    postcss-value-parser: ^4.1.0
+    postcss-value-parser: ^4.2.0
   peerDependencies:
     postcss: ^8.1.0
   bin:
     autoprefixer: bin/autoprefixer
-  checksum: 7d511c64daeaa13c7888b40b0394cd891fab1852a1f60165330c9e49ab70ac29ad1e3386665d86361661cf2bbe90cea42b78ea73cb77b373ffe30a8f4973a955
+  checksum: 96527cd62b88e44ad3949fd2dedcc771ece8818d0bfffffdffd9aa87e409e4c5c00cf0cda1ebe1dc75910a62052d33a7628adf3c13a1763ba7677c027250f88c
   languageName: node
   linkType: hard
 
@@ -5371,10 +5371,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001272, caniuse-lite@npm:^1.0.30001286":
+"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001286":
   version: 1.0.30001292
   resolution: "caniuse-lite@npm:1.0.30001292"
   checksum: 930d02514769243f26033919f56536a307db83bba933374e6955c6678878fe8a8105051796868947d230f31d237b782fa2cf7390b84b69b555077add12469966
+  languageName: node
+  linkType: hard
+
+"caniuse-lite@npm:^1.0.30001294":
+  version: 1.0.30001294
+  resolution: "caniuse-lite@npm:1.0.30001294"
+  checksum: 4e22649ef83781afbe6c81d6112ceac23c3ba29f91597ca1c14d323d5bfb646571edeb17436e76a29b07c8e9d75468655a2098a3e13dcc1438db47ff46fbb3ad
   languageName: node
   linkType: hard
 
@@ -7643,7 +7650,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fraction.js@npm:^4.1.1":
+"fraction.js@npm:^4.1.2":
   version: 4.1.2
   resolution: "fraction.js@npm:4.1.2"
   checksum: a67eff2b599cb6546b77ce9c913bd0cccd646e1a525c793ba4e0bf5a399fc403f379227fca83423a6ea79d01e35c2f2b0f141ffa1d09e41377041268a53fb150
@@ -10796,9 +10803,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx-react-lite@npm:3.2.2":
-  version: 3.2.2
-  resolution: "mobx-react-lite@npm:3.2.2"
+"mobx-react-lite@npm:3.2.3":
+  version: 3.2.3
+  resolution: "mobx-react-lite@npm:3.2.3"
   peerDependencies:
     mobx: ^6.1.0
     react: ^16.8.0 || ^17
@@ -10807,7 +10814,7 @@ __metadata:
       optional: true
     react-native:
       optional: true
-  checksum: f64957cb71e45f8bbce0429b90f15fef6e0ad06a38e1522cf887900a2869e157beb3438bf6c2621cfc6907ad891428726686d7b544988995745e9a9c8255ff95
+  checksum: d645e3c76f29ab22e4125f372531e00a776bd3833d3aab5cab2631e0eb1a90aa6cd36aa78ef1a27b53489eac89335bbdbb3b2c4f0c15248e8d306cd15b555931
   languageName: node
   linkType: hard
 
@@ -15119,9 +15126,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-dev-server@npm:4.7.1":
-  version: 4.7.1
-  resolution: "webpack-dev-server@npm:4.7.1"
+"webpack-dev-server@npm:4.7.2":
+  version: 4.7.2
+  resolution: "webpack-dev-server@npm:4.7.2"
   dependencies:
     "@types/bonjour": ^3.5.9
     "@types/connect-history-api-fallback": ^1.3.5
@@ -15159,7 +15166,7 @@ __metadata:
       optional: true
   bin:
     webpack-dev-server: bin/webpack-dev-server.js
-  checksum: a47bff0f6371e63db19424831ce3804c85f7dc69b4feb3a401958fb5edfe1080d1dd8be80fb6e1960eb66b0d3b0aeeb2c92e1a49b3344c3ab14c902b2e74a5e7
+  checksum: d3dd7d61f25a2ac1ac64d4298396043b1b8b46c009afc12c7af4d7c7724b077baa84d4ea353f1956e3f591ab09cde1d15f18d94e8884c1adaa2e1d816c37f814
   languageName: node
   linkType: hard
 

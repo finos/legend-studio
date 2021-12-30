@@ -31,7 +31,6 @@ import {
   HttpStatus,
   deleteEntry,
   assertTrue,
-  UnsupportedOperationError,
   readFileAsText,
 } from '@finos/legend-shared';
 import {
@@ -42,13 +41,8 @@ import {
 } from '@finos/legend-application';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { Entity } from '@finos/legend-model-storage';
-import {
-  EntityDiff,
-  EntityChange,
-  Revision,
-  EntityChangeType,
-} from '@finos/legend-server-sdlc';
+import type { Entity } from '@finos/legend-model-storage';
+import { EntityDiff, EntityChange, Revision } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 
 class PatchLoaderState {
@@ -65,7 +59,6 @@ class PatchLoaderState {
     makeAutoObservable(this, {
       editorStore: false,
       sdlcState: false,
-      setModal: action,
       openModal: action,
       closeModal: action,
       deleteChange: action,
@@ -78,17 +71,13 @@ class PatchLoaderState {
 
   openModal(localChanges: EntityChange[]): void {
     this.currentChanges = localChanges;
-    this.setModal(true);
+    this.showModal = true;
   }
 
   closeModal(): void {
     this.currentChanges = [];
     this.setPatchChanges(undefined);
-    this.setModal(false);
-  }
-
-  setModal(val: boolean): void {
-    this.showModal = val;
+    this.showModal = false;
   }
 
   setIsValidPatch(val: boolean): void {
@@ -146,60 +135,6 @@ class PatchLoaderState {
       this.editorStore.graphState.loadEntityChangesToGraph(this.changes);
       this.closeModal();
     }
-  }
-
-  applyEntityChanges(
-    currentEntities: Entity[],
-    entityChanges: EntityChange[],
-  ): Entity[] {
-    entityChanges
-      .filter((change: EntityChange) => {
-        if (change.type !== EntityChangeType.DELETE && !change.content) {
-          return false;
-        }
-        return true;
-      })
-      .forEach((change) => {
-        switch (change.type) {
-          case EntityChangeType.DELETE:
-            {
-              const elementIdx = currentEntities.findIndex(
-                (e) => e.path === change.entityPath,
-              );
-              if (elementIdx !== -1) {
-                currentEntities.splice(elementIdx, 1);
-              }
-            }
-            break;
-          case EntityChangeType.CREATE:
-            {
-              if (!currentEntities.find((e) => e.path === change.entityPath)) {
-                const entity = new Entity();
-                entity.content = change.content ?? {};
-                entity.path = change.entityPath;
-                entity.classifierPath = change.classifierPath ?? '';
-                currentEntities.push(entity);
-              }
-            }
-            break;
-          case EntityChangeType.MODIFY: {
-            const entity = currentEntities.find(
-              (e) => e.path === change.entityPath,
-            );
-            if (entity) {
-              entity.content = change.content ?? {};
-              entity.classifierPath = change.classifierPath ?? '';
-            }
-            break;
-          }
-          default:
-            throw new UnsupportedOperationError(
-              `Can't apply entity change`,
-              change,
-            );
-        }
-      });
-    return currentEntities;
   }
 }
 

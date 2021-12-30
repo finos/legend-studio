@@ -207,13 +207,7 @@ export class QueryBuilderState {
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
-    if (this.isQuerySupported()) {
-      return this.buildRawLambdaFromLambdaFunction(
-        buildLambdaFunction(this, {
-          keepSourceInformation: Boolean(options?.keepSourceInformation),
-        }),
-      );
-    } else {
+    if (!this.isQuerySupported()) {
       const parameters = this.queryParametersState.parameters.map((e) =>
         this.graphManagerState.graphManager.serializeValueSpecification(
           e.parameter,
@@ -224,6 +218,11 @@ export class QueryBuilderState {
       );
       return guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
     }
+    return this.buildRawLambdaFromLambdaFunction(
+      buildLambdaFunction(this, {
+        keepSourceInformation: Boolean(options?.keepSourceInformation),
+      }),
+    );
   }
 
   resetQueryBuilder(): void {
@@ -258,16 +257,17 @@ export class QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.changeClass(undefined, true);
-      const vars = ((rawLambda.parameters ?? []) as object[]).map((v) =>
-        this.graphManagerState.graphManager.buildValueSpecification(
-          v as Record<PropertyKey, unknown>,
-          this.graphManagerState.graph,
-        ),
+      const parameters = ((rawLambda.parameters ?? []) as object[]).map(
+        (param) =>
+          this.graphManagerState.graphManager.buildValueSpecification(
+            param as Record<PropertyKey, unknown>,
+            this.graphManagerState.graph,
+          ),
       );
       processQueryParameters(
-        vars.filter(
-          (i: ValueSpecification): i is VariableExpression =>
-            i instanceof VariableExpression,
+        parameters.filter(
+          (parameter: ValueSpecification): parameter is VariableExpression =>
+            parameter instanceof VariableExpression,
         ),
         this,
       );

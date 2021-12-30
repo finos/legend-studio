@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EntityChange } from '@finos/legend-server-sdlc';
+import { applyEntityChanges, EntityChange } from '@finos/legend-server-sdlc';
 import { unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
@@ -112,10 +112,8 @@ const changedEntities = [
   },
 ];
 
-test(unitTest('Apply Entity Changes'), async () => {
-  const editorStore = TEST__getTestEditorStore();
-  const patchLoaderState = editorStore.localChangesState.patchLoaderState;
-  const changed = patchLoaderState.applyEntityChanges(
+test(unitTest('Apply entity changes'), async () => {
+  const changed = applyEntityChanges(
     entities,
     entityChanges.entityChanges.map((e) =>
       EntityChange.serialization.fromJson(e),
@@ -124,7 +122,7 @@ test(unitTest('Apply Entity Changes'), async () => {
   expect(changed).toIncludeSameMembers(changedEntities);
 });
 
-test(unitTest('Load Entity Changes'), async () => {
+test(unitTest('Load entity changes'), async () => {
   const editorStore = TEST__getTestEditorStore();
   await flowResult(editorStore.graphManagerState.initializeSystem());
   await flowResult(
