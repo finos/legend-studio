@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { createModelSchema, raw, optional, primitive } from 'serializr';
+import { SerializationFactory } from '@finos/legend-shared';
+
 export enum EntityChangeType {
   CREATE = 'CREATE',
   DELETE = 'DELETE',
@@ -29,4 +32,14 @@ export class EntityChange {
   classifierPath?: string;
   newEntityPath?: string;
   content?: Record<PropertyKey, unknown>;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(EntityChange, {
+      type: primitive(),
+      entityPath: primitive(),
+      classifierPath: optional(primitive()),
+      newEntityPath: optional(primitive()),
+      content: optional(raw()),
+    }),
+  );
 }

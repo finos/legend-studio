@@ -36,6 +36,7 @@ export * from './application/SerializationUtils';
 export * from './application/RandomizerUtils';
 export * from './application/ActionState';
 export * from './application/AbstractPluginManager';
+export * from './application/BrowserUtils';
 
 export * from './data-structure/Pair';
 export * from './data-structure/Stack';

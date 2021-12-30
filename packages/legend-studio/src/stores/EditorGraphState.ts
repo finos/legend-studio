@@ -392,6 +392,31 @@ export class EditorGraphState {
     return entityChanges;
   }
 
+  *loadEntityChangesToGraph(changes: EntityChange[]): GeneratorFn<void> {
+    try {
+      assertTrue(
+        this.editorStore.isInFormMode,
+        'Applying changes only supported in form mode',
+      );
+      const updatedEntities =
+        this.editorStore.localChangesState.patchLoaderState.applyEntityChanges(
+          this.editorStore.graphManagerState.graph.allOwnElements.map(
+            (element) =>
+              this.editorStore.graphManagerState.graphManager.elementToEntity(
+                element,
+              ),
+          ),
+          changes,
+        );
+      yield flowResult(this.updateGraphAndApplication(updatedEntities));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(
+        `Unable to load entity changes: ${error.message}`,
+      );
+    }
+  }
+
   // FIXME: when we support showing multiple notifications, we can take this options out as the only users of this
   // is delete element flow, where we want to say `re-compiling graph after deletion`, but because compilation
   // sometimes is so fast, the message flashes, so we want to combine with the message in this method
