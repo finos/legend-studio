@@ -40,6 +40,7 @@ import {
   type ProjectDependency,
   EntityChangeType,
   ProjectConfiguration,
+  applyEntityChanges,
 } from '@finos/legend-server-sdlc';
 import {
   ProjectVersionEntities,
@@ -398,21 +399,19 @@ export class EditorGraphState {
         this.editorStore.isInFormMode,
         'Applying changes only supported in form mode',
       );
-      const updatedEntities =
-        this.editorStore.localChangesState.patchLoaderState.applyEntityChanges(
-          this.editorStore.graphManagerState.graph.allOwnElements.map(
-            (element) =>
-              this.editorStore.graphManagerState.graphManager.elementToEntity(
-                element,
-              ),
+      const updatedEntities = applyEntityChanges(
+        this.editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+          this.editorStore.graphManagerState.graphManager.elementToEntity(
+            element,
           ),
-          changes,
-        );
+        ),
+        changes,
+      );
       yield flowResult(this.updateGraphAndApplication(updatedEntities));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(
-        `Unable to load entity changes: ${error.message}`,
+        `Can't load entity changes: ${error.message}`,
       );
     }
   }

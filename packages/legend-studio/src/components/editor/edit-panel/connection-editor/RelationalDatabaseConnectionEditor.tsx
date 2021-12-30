@@ -852,7 +852,8 @@ const RelationalConnectionStoreEditor = observer(
         );
       }
     };
-    const openDatabaseBuilder = (): void => databaseBuilderState.setModal(true);
+    const openDatabaseBuilder = (): void =>
+      databaseBuilderState.setShowModal(true);
 
     return (
       <div className="relational-connection-editor">

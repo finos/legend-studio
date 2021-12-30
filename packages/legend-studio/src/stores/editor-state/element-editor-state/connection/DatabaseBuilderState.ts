@@ -115,7 +115,7 @@ export class DatabaseBuilderState {
       databaseGrammarCode: observable,
       isSavingDatabase: observable,
       setTargetDatabasePath: action,
-      setModal: action,
+      setShowModal: action,
       setDatabaseGrammarCode: action,
       setTreeData: action,
       treeData: observable,
@@ -134,7 +134,7 @@ export class DatabaseBuilderState {
     this.targetDatabasePath = this.currentDatabase?.path ?? 'store::MyDatabase';
   }
 
-  setModal(val: boolean): void {
+  setShowModal(val: boolean): void {
     this.showModal = val;
   }
 
@@ -150,7 +150,6 @@ export class DatabaseBuilderState {
     this.targetDatabasePath = val;
   }
 
-  // Tree Operations
   *onNodeSelect(
     node: DatabaseBuilderTreeNodeData,
     treeData: DatabaseBuilderTreeData,

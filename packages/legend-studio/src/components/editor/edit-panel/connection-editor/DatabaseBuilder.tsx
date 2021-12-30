@@ -225,7 +225,7 @@ export const DatabaseBuilder = observer(
     const saveOrUpdateDatabase = (): Promise<void> =>
       flowResult(databaseBuilderState.createOrUpdateDatabase());
     const closeModal = (): void => {
-      databaseBuilderState.setModal(false);
+      databaseBuilderState.setShowModal(false);
     };
     const isExecutingAction =
       databaseBuilderState.isBuildingDatabase ||
