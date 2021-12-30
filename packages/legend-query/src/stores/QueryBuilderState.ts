@@ -35,7 +35,10 @@ import {
 import { QueryBuilderSetupState } from './QueryBuilderSetupState';
 import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
-import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor';
+import {
+  processQueryBuilderLambdaFunction,
+  processQueryParameters,
+} from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import {
   type Class,
@@ -45,6 +48,7 @@ import {
   type Mapping,
   type PackageableRuntime,
   type Service,
+  type ValueSpecification,
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
@@ -56,6 +60,7 @@ import {
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
   MILESTONING_STEROTYPES,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -202,13 +207,23 @@ export class QueryBuilderState {
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
-    return this.isQuerySupported()
-      ? this.buildRawLambdaFromLambdaFunction(
-          buildLambdaFunction(this, {
-            keepSourceInformation: Boolean(options?.keepSourceInformation),
-          }),
-        )
-      : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
+    if (this.isQuerySupported()) {
+      return this.buildRawLambdaFromLambdaFunction(
+        buildLambdaFunction(this, {
+          keepSourceInformation: Boolean(options?.keepSourceInformation),
+        }),
+      );
+    } else {
+      const parameters = this.queryParametersState.parameters.map((e) =>
+        this.graphManagerState.graphManager.serializeValueSpecification(
+          e.parameter,
+        ),
+      );
+      this.queryUnsupportedState.setRawLambda(
+        new RawLambda(parameters, this.queryUnsupportedState.rawLambda?.body),
+      );
+      return guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
+    }
   }
 
   resetQueryBuilder(): void {
@@ -243,6 +258,19 @@ export class QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.changeClass(undefined, true);
+      const vars = ((rawLambda.parameters ?? []) as object[]).map((v) =>
+        this.graphManagerState.graphManager.buildValueSpecification(
+          v as Record<PropertyKey, unknown>,
+          this.graphManagerState.graph,
+        ),
+      );
+      processQueryParameters(
+        vars.filter(
+          (i: ValueSpecification): i is VariableExpression =>
+            i instanceof VariableExpression,
+        ),
+        this,
+      );
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Unable to initialize query builder: ${error.message}`,
@@ -273,6 +301,7 @@ export class QueryBuilderState {
       const compiledValueSpecification = guaranteeType(
         valueSpec,
         LambdaFunctionInstanceValue,
+        `Can't build query state: query builder only support lambda`,
       );
       const compiledLambda = guaranteeNonNullable(
         compiledValueSpecification.values[0],

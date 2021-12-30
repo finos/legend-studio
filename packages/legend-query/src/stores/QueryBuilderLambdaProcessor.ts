@@ -996,12 +996,12 @@ export class QueryBuilderLambdaProcessor
   }
 }
 
-const processQueryParameters = (
-  lambdaFunc: LambdaFunction,
+export const processQueryParameters = (
+  parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
 ): void => {
   const queryParameterState = queryBuilderState.queryParametersState;
-  lambdaFunc.functionType.parameters.forEach((parameter) => {
+  parameters.forEach((parameter) => {
     const variableState = new QueryParameterState(
       queryParameterState,
       parameter,
@@ -1016,7 +1016,10 @@ export const processQueryBuilderLambdaFunction = (
   lambdaFunc: LambdaFunction,
 ): void => {
   if (lambdaFunc.functionType.parameters.length) {
-    processQueryParameters(lambdaFunc, queryBuilderState);
+    processQueryParameters(
+      lambdaFunc.functionType.parameters,
+      queryBuilderState,
+    );
   }
   lambdaFunc.expressionSequence.map((e) =>
     e.accept_ValueSpecificationVisitor(
