@@ -16,8 +16,9 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { TreeData, TreeNodeContainerProps } from '@finos/legend-art';
 import {
+  type TreeData,
+  type TreeNodeContainerProps,
   MenuContent,
   MenuContentItem,
   clsx,
@@ -45,13 +46,11 @@ import {
   EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
-import type {
-  WorkflowExplorerTreeNodeData,
-  WorkflowLogState,
-  WorkspaceWorkflowsState,
-  WorkspaceWorkflowState,
-} from '../../../stores/sidebar-state/WorkspaceWorkflowsState';
 import {
+  type WorkflowExplorerTreeNodeData,
+  type WorkflowLogState,
+  type WorkspaceWorkflowsState,
+  type WorkspaceWorkflowState,
   WorkflowJobTreeNodeData,
   WorkflowTreeNodeData,
 } from '../../../stores/sidebar-state/WorkspaceWorkflowsState';

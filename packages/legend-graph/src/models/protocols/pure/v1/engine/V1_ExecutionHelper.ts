@@ -19,6 +19,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
+  type ExecutionResult,
   TdsRow,
   INTERNAL__UnknownExecutionResult,
   ClassExecutionResult,
@@ -27,12 +28,9 @@ import {
   TdsBuilder,
   TDSColumn,
 } from '../../../../../graphManager/action/execution/ExecutionResult';
-import type { ExecutionResult } from '../../../../../graphManager/action/execution/ExecutionResult';
-import type {
-  V1_ExecutionResult,
-  V1_TdsBuilder,
-} from './execution/V1_ExecutionResult';
 import {
+  type V1_ExecutionResult,
+  type V1_TdsBuilder,
   V1_ClassExecutionResult,
   V1_JsonExecutionResult,
   V1_INTERNAL__UnknownExecutionResult,

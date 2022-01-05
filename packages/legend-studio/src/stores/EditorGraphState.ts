@@ -17,8 +17,9 @@
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertType,
   UnsupportedOperationError,
@@ -34,13 +35,12 @@ import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  EntityChange,
-  ProjectDependency,
-} from '@finos/legend-server-sdlc';
 import {
+  type EntityChange,
+  type ProjectDependency,
   EntityChangeType,
   ProjectConfiguration,
+  applyEntityChanges,
 } from '@finos/legend-server-sdlc';
 import {
   ProjectVersionEntities,
@@ -48,11 +48,9 @@ import {
   ProjectDependencyCoordinates,
   generateGAVCoordinates,
 } from '@finos/legend-server-depot';
-import type {
-  SetImplementation,
-  PackageableElement,
-} from '@finos/legend-graph';
 import {
+  type SetImplementation,
+  type PackageableElement,
   GRAPH_MANAGER_LOG_EVENT,
   CompilationError,
   EngineError,
@@ -87,8 +85,8 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
 } from '@finos/legend-graph';
-import type { LambdaEditorState } from '@finos/legend-application';
 import {
+  type LambdaEditorState,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
@@ -393,6 +391,29 @@ export class EditorGraphState {
       });
     });
     return entityChanges;
+  }
+
+  *loadEntityChangesToGraph(changes: EntityChange[]): GeneratorFn<void> {
+    try {
+      assertTrue(
+        this.editorStore.isInFormMode,
+        'Applying changes only supported in form mode',
+      );
+      const updatedEntities = applyEntityChanges(
+        this.editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+          this.editorStore.graphManagerState.graphManager.elementToEntity(
+            element,
+          ),
+        ),
+        changes,
+      );
+      yield flowResult(this.updateGraphAndApplication(updatedEntities));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(
+        `Can't load entity changes: ${error.message}`,
+      );
+    }
   }
 
   // FIXME: when we support showing multiple notifications, we can take this options out as the only users of this

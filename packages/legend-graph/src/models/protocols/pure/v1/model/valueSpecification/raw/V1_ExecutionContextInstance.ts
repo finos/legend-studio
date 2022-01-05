@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
+import {
+  type V1_ValueSpecificationVisitor,
+  V1_ValueSpecification,
+} from '../../../model/valueSpecification/V1_ValueSpecification';
 import type { V1_ExecutionContext } from './executionContext/V1_ExecutionContext';
 
 export class V1_ExecutionContextInstance extends V1_ValueSpecification {

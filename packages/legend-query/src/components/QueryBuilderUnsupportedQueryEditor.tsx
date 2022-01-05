@@ -24,6 +24,7 @@ import {
   ResizablePanelSplitter,
 } from '@finos/legend-art';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
+import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
 
 const QueryBuilderUnsupportedQueryExplorer = observer(() => (
   <div className="panel query-builder__explorer">
@@ -84,8 +85,18 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={450}>
-          <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
-          <QueryBuilderUnsupportedQueryExplorer />
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel>
+              <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
+              <QueryBuilderUnsupportedQueryExplorer />
+            </ResizablePanel>
+            <ResizablePanelSplitter />
+            <ResizablePanel minSize={40} direction={-1}>
+              <QueryBuilderParameterPanel
+                queryBuilderState={queryBuilderState}
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </ResizablePanel>
         <ResizablePanelSplitter />
         <ResizablePanel>

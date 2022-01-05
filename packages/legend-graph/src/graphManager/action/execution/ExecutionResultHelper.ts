@@ -15,8 +15,8 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { ExecutionResult } from './ExecutionResult';
 import {
+  type ExecutionResult,
   JsonExecutionResult,
   TdsExecutionResult,
   ClassExecutionResult,

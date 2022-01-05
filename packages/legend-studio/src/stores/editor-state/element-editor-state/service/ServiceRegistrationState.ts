@@ -17,8 +17,8 @@
 import { action, computed, makeAutoObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   ActionState,
@@ -31,8 +31,10 @@ import {
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
 import { Version } from '@finos/legend-server-sdlc';
-import type { ServiceRegistrationResult } from '@finos/legend-graph';
-import { ServiceExecutionMode } from '@finos/legend-graph';
+import {
+  type ServiceRegistrationResult,
+  ServiceExecutionMode,
+} from '@finos/legend-graph';
 import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioConfig';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
@@ -60,7 +62,7 @@ interface ServiceVersionOption {
 export class ServiceRegistrationState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
-  modal = false;
+  showModal = false;
   registrationState = ActionState.create();
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
@@ -73,7 +75,7 @@ export class ServiceRegistrationState {
   ) {
     makeAutoObservable(this, {
       editorStore: false,
-      setModal: action,
+      setShowModal: action,
       executionModes: computed,
       updateVersion: action,
       setProjectVersion: action,
@@ -88,8 +90,8 @@ export class ServiceRegistrationState {
     this.serviceEditorState = serviceEditorState;
   }
 
-  setModal(modal: boolean): void {
-    this.modal = modal;
+  setShowModal(val: boolean): void {
+    this.showModal = val;
   }
   setServiceEnv(val: string | undefined): void {
     this.serviceEnv = val;
@@ -106,7 +108,7 @@ export class ServiceRegistrationState {
   }
 
   openModal(): void {
-    this.setModal(true);
+    this.setShowModal(true);
     this.initialize();
   }
 
@@ -220,7 +222,7 @@ export class ServiceRegistrationState {
           serviceRegistrationResult.serviceInstanceId,
         );
       }
-      this.setModal(false);
+      this.setShowModal(false);
       this.editorStore.applicationStore.notifySuccess(
         `service with patten ${serviceRegistrationResult.pattern} registered ${
           this.activatePostRegistration ? ' and activated ' : ''

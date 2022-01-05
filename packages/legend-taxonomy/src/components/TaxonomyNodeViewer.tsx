@@ -27,6 +27,8 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
+  WindowMaximizeIcon,
+  ArrowRightIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
@@ -35,10 +37,17 @@ import type {
   RawDataSpace,
   TaxonomyNodeViewerState,
 } from '../stores/LegendTaxonomyStore';
-import { generateViewTaxonomyByDataSpaceRoute } from '../stores/LegendTaxonomyRouter';
+import {
+  generateStandaloneDataSpaceViewerRoute,
+  generateViewTaxonomyByDataSpaceRoute,
+} from '../stores/LegendTaxonomyRouter';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
-import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
+import {
+  DataSpaceViewer,
+  type DataSpaceViewerState,
+} from '@finos/legend-extension-dsl-data-space';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
+import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
 
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {
@@ -185,6 +194,57 @@ const TaxonomyNodeViewerExplorer = observer(
   },
 );
 
+const TaxonomyNodeDataSpaceViewer = observer(
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+    const taxonomyStore = useLegendTaxonomyStore();
+    const queryDataSpace = (): void =>
+      taxonomyStore.queryUsingDataSpace(dataSpaceViewerState);
+    const viewDataSpace = (): void =>
+      taxonomyStore.applicationStore.navigator.openNewWindow(
+        taxonomyStore.applicationStore.navigator.generateLocation(
+          generateStandaloneDataSpaceViewerRoute(
+            generateGAVCoordinates(
+              dataSpaceViewerState.dataSpaceGroupId,
+              dataSpaceViewerState.dataSpaceArtifactId,
+              dataSpaceViewerState.dataSpaceVersionId,
+            ),
+            dataSpaceViewerState.dataSpace.path,
+          ),
+        ),
+      );
+
+    return (
+      <div className="panel taxonomy-node-viewer__data-space-viewer">
+        <div className="panel__header taxonomy-node-viewer__data-space-viewer__header">
+          <div className="panel__header__title"></div>
+          <div className="panel__header__actions taxonomy-node-viewer__data-space-viewer__header__actions">
+            <button
+              className="taxonomy-node-viewer__data-space-viewer__header__action btn--dark"
+              onClick={viewDataSpace}
+              tabIndex={-1}
+              title="View data space in a separate view"
+            >
+              <WindowMaximizeIcon />
+            </button>
+            <button
+              className="taxonomy-node-viewer__data-space-viewer__header__action btn--dark"
+              onClick={queryDataSpace}
+              tabIndex={-1}
+              title="Query data space..."
+            >
+              <ArrowRightIcon />
+            </button>
+          </div>
+        </div>
+        <div className="panel__content taxonomy-node-viewer__data-space-viewer__content">
+          <DataSpaceViewer dataSpaceViewerState={dataSpaceViewerState} />
+        </div>
+      </div>
+    );
+  },
+);
+
 export const TaxonomyNodeViewer = observer(
   (props: { taxonomyNodeViewerState: TaxonomyNodeViewerState }) => {
     const { taxonomyNodeViewerState } = props;
@@ -215,7 +275,7 @@ export const TaxonomyNodeViewer = observer(
             <ResizablePanelSplitter />
             <ResizablePanel minSize={300}>
               {taxonomyNodeViewerState.dataSpaceViewerState && (
-                <DataSpaceViewer
+                <TaxonomyNodeDataSpaceViewer
                   dataSpaceViewerState={
                     taxonomyNodeViewerState.dataSpaceViewerState
                   }
@@ -226,7 +286,9 @@ export const TaxonomyNodeViewer = observer(
                   .isInProgress && (
                   <div className="taxonomy-node-viewer__content-placeholder">
                     <PanelLoadingIndicator isLoading={true} />
-                    <BlankPanelContent>Loading data space...</BlankPanelContent>
+                    <BlankPanelContent>
+                      Setting up data space...
+                    </BlankPanelContent>
                   </div>
                 )}
               {!taxonomyNodeViewerState.dataSpaceViewerState && (

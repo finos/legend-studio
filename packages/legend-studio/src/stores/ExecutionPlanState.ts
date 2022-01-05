@@ -20,15 +20,16 @@ import type {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree';
-import type { GeneratorFn } from '@finos/legend-shared';
-import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
-import type {
-  RawExecutionPlan,
-  Mapping,
-  RawLambda,
-  Runtime,
-} from '@finos/legend-graph';
 import {
+  type GeneratorFn,
+  assertErrorThrown,
+  LogEvent,
+} from '@finos/legend-shared';
+import {
+  type RawExecutionPlan,
+  type Mapping,
+  type RawLambda,
+  type Runtime,
   ExecutionPlan,
   ExecutionNode,
   GRAPH_MANAGER_LOG_EVENT,

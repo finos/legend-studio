@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
+import {
+  type V1_ValueSpecificationVisitor,
+  V1_ValueSpecification,
+} from '../../../model/valueSpecification/V1_ValueSpecification';
 
 export class V1_PrimitiveType extends V1_ValueSpecification {
   name!: string;

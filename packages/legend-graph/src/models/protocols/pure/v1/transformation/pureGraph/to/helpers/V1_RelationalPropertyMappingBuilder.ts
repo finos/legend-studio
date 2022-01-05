@@ -18,8 +18,10 @@ import { guaranteeType } from '@finos/legend-shared';
 import type { InstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import type { PackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+import {
+  type PackageableElementReference,
+  PackageableElementImplicitReference,
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { InferableMappingElementIdExplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId';
 import type { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property';
 import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';

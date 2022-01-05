@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '@finos/legend-studio';
 import {
+  type EditorStore,
   ConnectionValueState,
   NewConnectionValueDriver,
 } from '@finos/legend-studio';

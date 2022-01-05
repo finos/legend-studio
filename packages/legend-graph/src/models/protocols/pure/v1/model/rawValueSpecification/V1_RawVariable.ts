@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import type { V1_RawValueSpecificationVisitor } from '../../model/rawValueSpecification/V1_RawValueSpecification';
-import { V1_RawValueSpecification } from '../../model/rawValueSpecification/V1_RawValueSpecification';
+import {
+  type V1_RawValueSpecificationVisitor,
+  V1_RawValueSpecification,
+} from '../../model/rawValueSpecification/V1_RawValueSpecification';
 import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity';
 
 export class V1_RawVariable

@@ -15,12 +15,13 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type {
-  PlainObject,
-  ServerClientConfig,
-  TraceData,
+import {
+  ContentType,
+  AbstractServerClient,
+  type PlainObject,
+  type ServerClientConfig,
+  type TraceData,
 } from '@finos/legend-shared';
-import { ContentType, AbstractServerClient } from '@finos/legend-shared';
 import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult';
@@ -122,13 +123,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
     },
   });
 
-  _pure = (): string => `${this.networkClient.baseUrl}/pure/v1`;
+  _pure = (): string => `${this.baseUrl}/pure/v1`;
 
   // ------------------------------------------- Server -------------------------------------------
 
-  _server = (): string => `${this.networkClient.baseUrl}/server/v1`;
+  _server = (): string => `${this.baseUrl}/server/v1`;
   getCurrentUserId = (): Promise<string> =>
-    this.networkClient.get(`${this._server()}/currentUser`);
+    this.get(`${this._server()}/currentUser`);
 
   // ------------------------------------------- Grammar -------------------------------------------
 
@@ -187,13 +188,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   getAvailableCodeImportDescriptions = (): Promise<
     PlainObject<V1_ImportConfigurationDescription>[]
-  > => this.networkClient.get(`${this._pure()}/codeImport/availableImports`);
+  > => this.get(`${this._pure()}/codeImport/availableImports`);
 
   // ------------------------------------------- Schema Import -------------------------------------------
 
   getAvailableSchemaImportDescriptions = (): Promise<
     PlainObject<V1_ImportConfigurationDescription>[]
-  > => this.networkClient.get(`${this._pure()}/schemaImport/availableImports`);
+  > => this.get(`${this._pure()}/schemaImport/availableImports`);
   transformExternalFormatToProtocol = (
     input: PlainObject<V1_PureModelContextGenerationInput>,
     type: string,
@@ -213,10 +214,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   getAvailableCodeGenerationDescriptions = (): Promise<
     PlainObject<V1_GenerationConfigurationDescription>[]
-  > =>
-    this.networkClient.get(
-      `${this._pure()}/codeGeneration/availableGenerations`,
-    );
+  > => this.get(`${this._pure()}/codeGeneration/availableGenerations`);
   generateFile = (
     mode: GenerationMode,
     type: string,
@@ -236,10 +234,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   getAvailableSchemaGenerationDescriptions = (): Promise<
     PlainObject<V1_GenerationConfigurationDescription>[]
-  > =>
-    this.networkClient.get(
-      `${this._pure()}/schemaGeneration/availableGenerations`,
-    );
+  > => this.get(`${this._pure()}/schemaGeneration/availableGenerations`);
 
   // ------------------------------------------- Compile -------------------------------------------
 
@@ -331,10 +326,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Service -------------------------------------------
 
   _service = (serviceServerUrl?: string): string =>
-    `${serviceServerUrl ?? this.networkClient.baseUrl}/service/v1`;
+    `${serviceServerUrl ?? this.baseUrl}/service/v1`;
   getServerServiceInfo = (): Promise<
     PlainObject<V1_ServiceConfigurationInfo>
-  > => this.networkClient.get(`${this._server()}/info/services`);
+  > => this.get(`${this._server()}/info/services`);
   registerService = (
     graphModelData: PlainObject<V1_PureModelContext>,
     serviceServerUrl: string,
@@ -391,7 +386,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Query -------------------------------------------
 
   _query = (queryId?: string): string =>
-    `${this.queryBaseUrl ?? this.networkClient.baseUrl}/pure/v1/query${
+    `${this.queryBaseUrl ?? this.baseUrl}/pure/v1/query${
       queryId ? `/${encodeURIComponent(queryId)}` : ''
     }`;
   searchQueries = (

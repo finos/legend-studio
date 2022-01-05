@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Type } from '@finos/legend-graph';
 import {
+  type Type,
   Class,
   Enumeration,
   Measure,

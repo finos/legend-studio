@@ -16,17 +16,19 @@
 
 import { observable, computed, makeObservable, action } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   UnsupportedOperationError,
   isValidJSONString,
   tryToMinifyLosslessJSONString,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
 import type { Class } from '../../../domain/Class';
-import type { ValidationIssue } from '../../../../../../../helpers/ValidationHelper';
-import { createValidationError } from '../../../../../../../helpers/ValidationHelper';
+import {
+  type ValidationIssue,
+  createValidationError,
+} from '../../../../../../../helpers/ValidationHelper';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 
 export enum ObjectInputType {

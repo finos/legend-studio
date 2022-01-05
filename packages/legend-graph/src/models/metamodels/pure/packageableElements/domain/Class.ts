@@ -16,6 +16,7 @@
 
 import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   uniqBy,
   IllegalStateError,
@@ -25,18 +26,16 @@ import {
   deleteEntry,
   changeEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
 } from '../../../../../MetaModelConst';
 import { Type } from './Type';
 import type { Property } from './Property';
 import type { Constraint } from './Constraint';
 import type { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import { PrimitiveType } from './PrimitiveType';
 import { Enumeration } from './Enumeration';
@@ -56,11 +55,18 @@ export class Class extends Type implements Hashable, Stubable {
    * if this belongs to immutable elements: i.e. in system, project dependency, etc.
    * we have to make sure to remove of disposed classes from this when we reprocess the graph
    */
-  _originalMilestonedProperties: Property[] = [];
   _subClasses: Class[] = [];
   constraints: Constraint[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
+
+  //To store the properties generated while processing the milestoning properties. The properties
+  //generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
+  //Engine does the processing differently by adding the derived properties generated to the list
+  // of qualified properties and the actual milestoning properties to the list of _originalMilestonedProperties
+  // and the properties to the list of actual proeprties. We are not doing that here to easy the process of
+  //handling milestoning properties in query builder.
+  _generatedMilestonedProperties: Property[] = [];
 
   constructor(name: string) {
     super(name);
@@ -166,7 +172,9 @@ export class Class extends Type implements Hashable, Stubable {
 
   getProperty = (name: string): Property =>
     guaranteeNonNullable(
-      this.getAllProperties().find((p) => p.name === name),
+      this.getAllProperties()
+        .concat(...this._generatedMilestonedProperties)
+        .find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );
 
@@ -197,21 +205,16 @@ export class Class extends Type implements Hashable, Stubable {
       .map((_class) => _class.constraints)
       .flat();
 
-  /*getAllUnmilestonedDerivedProperties = (): DerivedProperty[] =>
-    this.derivedProperties.filter(
-      (e) => !this._originalMilestonedProperties.includes(e),
-    );*/
-
   isSuperType(type: Type): boolean {
     return (
-      type.path === CORE_ELEMENT_PATH.ANY ||
+      type.path === CORE_PURE_PATH.ANY ||
       (type instanceof Class && type.allSuperClasses.includes(this))
     );
   }
 
   isSubType(type: Type): boolean {
     return (
-      this.path === CORE_ELEMENT_PATH.ANY ||
+      this.path === CORE_PURE_PATH.ANY ||
       (type instanceof Class && type.allSubClasses.includes(this))
     );
   }

@@ -40,7 +40,6 @@ import type { V1_GenerationSpecification } from '../../../model/packageableEleme
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import { V1_buildDatabaseSchemaViewsSecondPass } from './helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import { milestoningPropertyGenerator } from '../../../../../../../helpers/DomainHelper';
 
 export class V1_ProtocolToMetaModelGraphFifthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -80,7 +79,6 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
     _class.constraints = element.constraints.map((constraint) =>
       V1_buildConstraint(constraint, _class, this.context),
     );
-    milestoningPropertyGenerator(_class, this.context.graph);
   }
 
   visit_Association(element: V1_Association): void {

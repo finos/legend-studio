@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   assertNonNullable,
   assertTrue,
   assertType,
@@ -32,30 +32,28 @@ import {
   COLUMN_SORT_TYPE,
   SortColumnState,
 } from './QueryResultSetModifierState';
-import type { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import {
+  type QueryBuilderFilterState,
   QueryBuilderFilterTreeGroupNodeData,
   QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QueryBuilderFilterTreeConditionNodeData,
 } from './QueryBuilderFilterState';
 import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState';
-import type {
-  AlloySerializationConfigInstanceValue,
-  EnumValueInstanceValue,
-  FunctionExpression,
-  MappingInstanceValue,
-  PairInstanceValue,
-  PropertyGraphFetchTreeInstanceValue,
-  PureListInstanceValue,
-  RootGraphFetchTreeInstanceValue,
-  RuntimeInstanceValue,
-  ValueSpecification,
-  ValueSpecificationVisitor,
-  InstanceValue,
-  INTERNAL__UnknownValueSpecification,
-  LambdaFunction,
-} from '@finos/legend-graph';
 import {
+  type AlloySerializationConfigInstanceValue,
+  type EnumValueInstanceValue,
+  type FunctionExpression,
+  type MappingInstanceValue,
+  type PairInstanceValue,
+  type PropertyGraphFetchTreeInstanceValue,
+  type PureListInstanceValue,
+  type RootGraphFetchTreeInstanceValue,
+  type RuntimeInstanceValue,
+  type ValueSpecification,
+  type ValueSpecificationVisitor,
+  type InstanceValue,
+  type INTERNAL__UnknownValueSpecification,
+  type LambdaFunction,
   MILESTONING_STEROTYPES,
   DerivedProperty,
   RawLambda,
@@ -73,8 +71,8 @@ import {
   V1_RawLambda,
   getMilestoneTemporalStereotype,
 } from '@finos/legend-graph';
-import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 import {
+  type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState';
@@ -998,12 +996,12 @@ export class QueryBuilderLambdaProcessor
   }
 }
 
-const processQueryParameters = (
-  lambdaFunc: LambdaFunction,
+export const processQueryParameters = (
+  parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
 ): void => {
   const queryParameterState = queryBuilderState.queryParametersState;
-  lambdaFunc.functionType.parameters.forEach((parameter) => {
+  parameters.forEach((parameter) => {
     const variableState = new QueryParameterState(
       queryParameterState,
       parameter,
@@ -1018,7 +1016,10 @@ export const processQueryBuilderLambdaFunction = (
   lambdaFunc: LambdaFunction,
 ): void => {
   if (lambdaFunc.functionType.parameters.length) {
-    processQueryParameters(lambdaFunc, queryBuilderState);
+    processQueryParameters(
+      lambdaFunc.functionType.parameters,
+      queryBuilderState,
+    );
   }
   lambdaFunc.expressionSequence.map((e) =>
     e.accept_ValueSpecificationVisitor(

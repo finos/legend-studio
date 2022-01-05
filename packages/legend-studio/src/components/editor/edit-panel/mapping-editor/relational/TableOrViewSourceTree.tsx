@@ -16,12 +16,10 @@
 
 import { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
+  type TreeData,
+  type TreeNodeData,
   TableJoinIcon,
   TreeView,
   ChevronDownIcon,
@@ -37,8 +35,13 @@ import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
 } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper';
-import type { Type, Table, Join, View } from '@finos/legend-graph';
-import { Column } from '@finos/legend-graph';
+import {
+  type Type,
+  type Table,
+  type Join,
+  type View,
+  Column,
+} from '@finos/legend-graph';
 
 export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
 

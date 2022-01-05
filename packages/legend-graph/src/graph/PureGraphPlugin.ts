@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin } from '@finos/legend-shared';
-import type { Clazz } from '@finos/legend-shared';
+import { AbstractPlugin, type Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { PureModel } from './PureModel';
 import type { GraphPluginManager } from '../GraphPluginManager';

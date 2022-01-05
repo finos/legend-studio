@@ -25,8 +25,8 @@ import {
   LegendMaterialUITheme,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import type { SDLCServerKeyPathParams } from '../stores/LegendStudioRouter';
 import {
+  type SDLCServerKeyPathParams,
   URL_PATH_PLACEHOLDER,
   generateSetupRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
@@ -200,6 +200,7 @@ export const LegendStudioApplication = observer(
         config={{
           env: config.env,
           serverUrl: config.sdlcServerUrl,
+          baseHeaders: config.SDLCServerBaseHeaders,
         }}
       >
         <DepotServerClientProvider

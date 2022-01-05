@@ -15,8 +15,7 @@
  */
 
 import { computed, observable, action, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PositionedRectangle } from './geometry/PositionedRectangle';
 import { Rectangle } from './geometry/Rectangle';
 import { Point } from './geometry/Point';

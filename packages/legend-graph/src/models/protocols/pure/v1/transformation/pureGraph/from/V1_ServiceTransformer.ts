@@ -16,20 +16,16 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
-import type {
-  KeyedSingleExecutionTest,
-  ServiceTest,
-  TestContainer,
-} from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
 import {
+  type KeyedSingleExecutionTest,
+  type ServiceTest,
+  type TestContainer,
   MultiExecutionTest,
   SingleExecutionTest,
 } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
-import type {
-  KeyedExecutionParameter,
-  ServiceExecution,
-} from '../../../../../../metamodels/pure/packageableElements/service/ServiceExecution';
 import {
+  type KeyedExecutionParameter,
+  type ServiceExecution,
   PureSingleExecution,
   PureMultiExecution,
 } from '../../../../../../metamodels/pure/packageableElements/service/ServiceExecution';
@@ -38,14 +34,14 @@ import {
   V1_transformElementReference,
 } from './V1_CoreTransformerHelper';
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service';
-import type { V1_ServiceExecution } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import {
+  type V1_ServiceExecution,
   V1_PureSingleExecution,
   V1_PureMultiExecution,
   V1_KeyedExecutionParameter,
 } from '../../../model/packageableElements/service/V1_ServiceExecution';
-import type { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
 import {
+  type V1_ServiceTest,
   V1_MultiExecutionTest,
   V1_TestContainer,
   V1_SingleExecutionTest,

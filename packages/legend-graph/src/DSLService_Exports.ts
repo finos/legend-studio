@@ -15,10 +15,5 @@
  */
 
 export { Service } from './models/metamodels/pure/packageableElements/service/Service';
-export {
-  PureExecution,
-  PureSingleExecution,
-  PureMultiExecution,
-} from './models/metamodels/pure/packageableElements/service/ServiceExecution';
 export * from './models/metamodels/pure/packageableElements/service/ServiceTest';
 export * from './models/metamodels/pure/packageableElements/service/ServiceExecution';

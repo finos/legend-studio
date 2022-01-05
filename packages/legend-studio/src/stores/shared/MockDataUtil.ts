@@ -23,8 +23,9 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore';
 import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState';
-import type { PrimitiveType, Enumeration } from '@finos/legend-graph';
 import {
+  type PrimitiveType,
+  type Enumeration,
   PRIMITIVE_TYPE,
   Class,
   CLASS_PROPERTY_TYPE,

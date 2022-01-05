@@ -15,8 +15,8 @@
  */
 
 import { observable, computed, action, makeObservable, override } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
 import {
+  type Hashable,
   guaranteeNonNullable,
   guaranteeType,
   assertTrue,
@@ -27,11 +27,12 @@ import {
   changeEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import { PackageableElement } from '../PackageableElement';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '../PackageableElement';
 import { Property } from './Property';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import { GenericType } from './GenericType';
 import { Class } from './Class';
 import type { AnnotatedElement } from './AnnotatedElement';
@@ -78,7 +79,13 @@ export class Association
   taggedValues: TaggedValue[] = [];
   derivedProperties: DerivedProperty[] = [];
 
-  _originalMilestonedProperties: Property[] = [];
+  //To store the properties generated while processing the milestoning properties. The properties
+  //generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
+  //Engine does the processing differently by adding the derived properties generated to the list
+  // of qualified properties and the actual milestoning properties to the list of _originalMilestonedProperties
+  // and the properties to the list of actual proeprties. We are not doing that here to easy the process of
+  //handling milestoning properties in query builder.
+  _generatedMilestonedProperties: Property[] = [];
 
   constructor(name: string) {
     super(name);
@@ -130,7 +137,7 @@ export class Association
   getProperty = (name: string): Property =>
     guaranteeNonNullable(
       this.properties
-        .concat(...this._originalMilestonedProperties)
+        .concat(...this._generatedMilestonedProperties)
         .find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );

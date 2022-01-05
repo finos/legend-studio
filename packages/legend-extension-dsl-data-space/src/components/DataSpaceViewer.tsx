@@ -34,15 +34,22 @@ import {
   ExternalLinkIcon,
   ShieldIcon,
   TagsIcon,
+  LightBulbIcon,
 } from '@finos/legend-art';
-import type { Diagram } from '@finos/legend-extension-dsl-diagram';
-import { DiagramRenderer } from '@finos/legend-extension-dsl-diagram';
-import { DataSpaceSupportEmail } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import type { DataSpaceSupportInfo } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import {
+  type Diagram,
+  DiagramRenderer,
+} from '@finos/legend-extension-dsl-diagram';
+import {
+  DataSpaceSupportEmail,
+  type DataSpaceSupportInfo,
+} from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
 import type { ResolvedDataSpaceExecutionContext } from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
 import type { PackageableRuntime } from '@finos/legend-graph';
-import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState';
-import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../stores/DataSpaceViewerState';
+import {
+  type DataSpaceViewerState,
+  DATA_SPACE_VIEWER_ACTIVITY_MODE,
+} from '../stores/DataSpaceViewerState';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -166,7 +173,14 @@ const DataSpaceModelsOverview = observer(
             />
           )}
         </div>
-        <div className="data-space__viewer__diagrams__footer"></div>
+        <div className="data-space__viewer__diagrams__footer">
+          <div className="data-space__viewer__diagrams__footer__icon">
+            <LightBulbIcon />
+          </div>
+          <div className="data-space__viewer__diagrams__footer__text">
+            Double-click a class to start a query for that class
+          </div>
+        </div>
       </div>
     );
   },

@@ -24,8 +24,8 @@ import {
 import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import {
+  type SDLCServerClient,
   TEST__SDLCServerClientProvider,
   TEST__provideMockedSDLCServerClient,
 } from '@finos/legend-server-sdlc';

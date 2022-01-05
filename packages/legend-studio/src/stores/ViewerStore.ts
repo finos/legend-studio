@@ -16,16 +16,17 @@
 
 import { action, flowResult, makeAutoObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   assertErrorThrown,
   AssertionError,
   LogEvent,
   IllegalStateError,
   ActionState,
 } from '@finos/legend-shared';
-import type { ViewerPathParams } from './LegendStudioRouter';
 import {
+  type ViewerPathParams,
   generateViewProjectByGAVRoute,
   generateViewVersionRoute,
   generateViewRevisionRoute,
@@ -41,8 +42,8 @@ import {
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import { TAB_SIZE } from '@finos/legend-application';
-import type { ProjectGAVCoordinates } from '@finos/legend-server-depot';
 import {
+  type ProjectGAVCoordinates,
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
   parseGAVCoordinates,

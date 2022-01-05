@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  UnsupportedOperationError,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_PackageableElementVisitor } from '../../../model/packageableElements/V1_PackageableElement';
-import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
+import {
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
+} from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 
 export class V1_Unit extends V1_PackageableElement implements Hashable {

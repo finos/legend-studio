@@ -15,8 +15,8 @@
  */
 
 import { useApplicationStore } from '@finos/legend-application';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   BoltIcon,
   ArrowRightIcon,
   clsx,
@@ -211,7 +211,10 @@ export const DataspaceQuerySetup = observer(
             )}
             {!querySetupState.dataSpaceViewerState &&
               querySetupState.setUpDataSpaceState.isInProgress && (
-                <BlankPanelContent>Setting up data space...</BlankPanelContent>
+                <BlankPanelContent>
+                  {querySetupState.setUpDataSpaceStatusText ??
+                    `Setting up data space...`}
+                </BlankPanelContent>
               )}
             {!querySetupState.dataSpaceViewerState &&
               querySetupState.setUpDataSpaceState.hasFailed && (

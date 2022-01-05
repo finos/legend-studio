@@ -16,11 +16,12 @@
 
 import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
-import { extractLine } from '../model/RelationalOperationElement';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { Database } from '../model/Database';
-import type { JoinTreeNode } from '../model/RelationalOperationElement';
+import {
+  extractLine,
+  type JoinTreeNode,
+} from '../model/RelationalOperationElement';
 import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 import type { FilterReference } from '../model/FilterReference';
 

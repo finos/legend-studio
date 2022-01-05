@@ -16,10 +16,13 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { TaxonomyTreeNodeData } from '../stores/LegendTaxonomyStore';
-import { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
-import type { TreeData, TreeNodeContainerProps } from '@finos/legend-art';
 import {
+  type TaxonomyTreeNodeData,
+  TaxonomyNodeViewerState,
+} from '../stores/LegendTaxonomyStore';
+import {
+  type TreeData,
+  type TreeNodeContainerProps,
   ContextMenu,
   MenuContent,
   MenuContentItem,

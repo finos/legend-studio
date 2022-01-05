@@ -21,11 +21,11 @@ import {
   UML_EDITOR_TAB,
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { useDrop } from 'react-dnd';
-import type {
-  ElementDragSource,
-  UMLEditorElementDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
@@ -49,8 +49,9 @@ import {
   FaArrowCircleRight,
 } from 'react-icons/fa';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { Enumeration, StereotypeReference } from '@finos/legend-graph';
 import {
+  type Enumeration,
+  type StereotypeReference,
   Enum,
   Profile,
   Tag,

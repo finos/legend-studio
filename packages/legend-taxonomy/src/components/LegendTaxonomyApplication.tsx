@@ -18,8 +18,8 @@ import { useEffect } from 'react';
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { LegendMaterialUITheme } from '@finos/legend-art';
-import type { LegendTaxonomyPathParams } from '../stores/LegendTaxonomyRouter';
 import {
+  type LegendTaxonomyPathParams,
   URL_PATH_PLACEHOLDER,
   generateRoutePatternWithTaxonomyServerKey,
   generateViewTaxonomyRoute,
@@ -38,6 +38,7 @@ import {
 } from '@finos/legend-application';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import { TaxonomyViewer } from './TaxonomyViewer';
+import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
@@ -56,6 +57,11 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
             ...LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_BY_DATA_SPACE,
           ]}
           component={TaxonomyViewer}
+        />
+        <Route
+          exact={true}
+          path={LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE}
+          component={StandaloneDataSpaceViewer}
         />
         <Redirect
           to={generateViewTaxonomyRoute(

@@ -29,8 +29,8 @@ import {
   generateReviewRoute,
 } from '../../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
-import type { Workspace } from '@finos/legend-server-sdlc';
 import {
+  type Workspace,
   NewVersionType,
   WorkspaceType,
   areWorkspacesEquivalent,
@@ -163,7 +163,7 @@ const WorkspacesViewer = observer(() => {
         >
           {workspaces.map((workspace) => (
             <WorkspaceViewer
-              key={workspace.workspaceId}
+              key={`${workspace.workspaceType}.${workspace.workspaceId}`}
               workspace={workspace}
             />
           ))}
@@ -177,7 +177,6 @@ const ReleaseEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
   const projectOverviewState = editorStore.projectOverviewState;
-  const sdlcState = editorStore.sdlcState;
   const commitedReviews =
     projectOverviewState.committedReviewsBetweenMostRecentVersionAndProjectLatest;
   const isDispatchingAction =
@@ -210,13 +209,6 @@ const ReleaseEditor = observer(() => {
     );
   }, [applicationStore, projectOverviewState]);
 
-  if (!sdlcState.isCurrentProjectInProduction) {
-    return (
-      <div className="panel__content project-overview__release--empty">
-        Release is only supported for PROD projects
-      </div>
-    );
-  }
   return (
     <div className="panel side-bar__panel project-overview__panel project-overview__release">
       <div className="panel__header">
@@ -696,7 +688,7 @@ export const ProjectOverviewActivityBar = observer(() => {
       projectOverviewState.setActivityMode(activity);
   const activities: ProjectOverviewActivityDisplay[] = [
     { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW, title: 'Overview' },
-    editorStore.sdlcState.isCurrentProjectInProduction && {
+    {
       mode: PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE,
       title: 'Release',
     },
@@ -750,23 +742,6 @@ export const ProjectOverview = observer(() => {
         return null;
     }
   };
-
-  // we do not support release for non-prod projects
-  useEffect(() => {
-    if (
-      projectOverviewState.activityMode ===
-        PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE &&
-      !editorStore.sdlcState.isCurrentProjectInProduction
-    ) {
-      projectOverviewState.setActivityMode(
-        PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW,
-      );
-    }
-  }, [
-    projectOverviewState.activityMode,
-    editorStore.sdlcState.isCurrentProjectInProduction,
-    projectOverviewState,
-  ]);
 
   return (
     <div className="panel project-overview">

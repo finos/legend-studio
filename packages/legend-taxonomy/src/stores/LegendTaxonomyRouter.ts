@@ -41,12 +41,18 @@ export const LEGEND_TAXONOMY_ROUTE_PATTERN = Object.freeze({
   VIEW_BY_DATA_SPACE: generateRoutePatternWithTaxonomyServerKey(
     `/:${LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_PATH}/:${LEGEND_TAXONOMY_PARAM_TOKEN.GAV}/:${LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH}`,
   ),
+  VIEW_DATA_SPACE: `/dataspace/:${LEGEND_TAXONOMY_PARAM_TOKEN.GAV}/:${LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH}`,
 });
 
 export interface LegendTaxonomyPathParams {
   [LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_PATH]?: string;
   [LEGEND_TAXONOMY_PARAM_TOKEN.GAV]?: string;
   [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]?: string;
+}
+
+export interface LegendTaxonomyStandaloneDataSpaceViewerParams {
+  [LEGEND_TAXONOMY_PARAM_TOKEN.GAV]: string;
+  [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]: string;
 }
 
 export const generateViewTaxonomyRoute = (
@@ -101,6 +107,15 @@ export const generateViewTaxonomyByDataSpaceRoute = (
       [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]: dataSpacePath,
     },
   );
+
+export const generateStandaloneDataSpaceViewerRoute = (
+  GAVCoordinates: string,
+  dataSpacePath: string,
+): string =>
+  generatePath(LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE, {
+    [LEGEND_TAXONOMY_PARAM_TOKEN.GAV]: GAVCoordinates,
+    [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]: dataSpacePath,
+  });
 
 /**
  * This will check if the provided path matches the taxonomy server pattern

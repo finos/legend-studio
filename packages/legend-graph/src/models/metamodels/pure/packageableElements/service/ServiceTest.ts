@@ -15,13 +15,13 @@
  */
 
 import {
+  type Hashable,
   uuid,
   hashArray,
   addUniqueEntry,
   deleteEntry,
 } from '@finos/legend-shared';
 import { observable, computed, action, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Service } from './Service';

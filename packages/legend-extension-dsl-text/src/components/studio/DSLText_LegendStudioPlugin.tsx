@@ -15,18 +15,18 @@
  */
 
 import packageJson from '../../../package.json';
-import { LegendStudioPlugin } from '@finos/legend-studio';
-import type {
-  NewElementFromStateCreator,
-  EditorStore,
-  ElementEditorState,
-  ElementEditorStateCreator,
-  ElementTypeGetter,
-  ElementProjectExplorerDnDTypeGetter,
-  ElementIconGetter,
-  ElementEditorRenderer,
-  DSL_LegendStudioPlugin_Extension,
-  NewElementState,
+import {
+  LegendStudioPlugin,
+  type NewElementFromStateCreator,
+  type EditorStore,
+  type ElementEditorState,
+  type ElementEditorStateCreator,
+  type ElementTypeGetter,
+  type ElementProjectExplorerDnDTypeGetter,
+  type ElementIconGetter,
+  type ElementEditorRenderer,
+  type DSL_LegendStudioPlugin_Extension,
+  type NewElementState,
 } from '@finos/legend-studio';
 import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../../stores/studio/TextEditorState';

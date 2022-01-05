@@ -201,9 +201,6 @@ export const V1_transformClass = (
   _class.superTypes = element.generalizations.map(
     (e) => e.ownerReference.valueForSerialization ?? '',
   );
-  /*const unMilestonedDerivedProperties =
-    element.getAllUnmilestonedDerivedProperties();
-  _class.derivedProperties = unMilestonedDerivedProperties.map((dp) =>*/
   _class.derivedProperties = element.derivedProperties.map((dp) =>
     transformDerviedProperty(dp, context),
   );

@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-import { hashArray, getNullableFirstElement } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  getNullableFirstElement,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_EnumValueMapping } from '../../../model/packageableElements/mapping/V1_EnumValueMapping';
-import { V1_getEnumValueMappingSourceValueType } from '../../../model/packageableElements/mapping/V1_EnumValueMapping';
+import {
+  type V1_EnumValueMapping,
+  V1_getEnumValueMappingSourceValueType,
+} from '../../../model/packageableElements/mapping/V1_EnumValueMapping';
 
 export class V1_EnumerationMapping implements Hashable {
   id?: string | undefined;

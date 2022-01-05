@@ -34,8 +34,9 @@ import type {
   LegendApplicationConfigurationData,
   LegendApplicationVersionData,
 } from '../stores/ApplicationConfig';
-import type { AbstractPlugin, AbstractPreset } from '@finos/legend-shared';
 import {
+  type AbstractPlugin,
+  type AbstractPreset,
   assertErrorThrown,
   LogEvent,
   guaranteeNonEmptyString,

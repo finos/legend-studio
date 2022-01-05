@@ -15,23 +15,25 @@
  */
 
 import { computed, observable, action, makeObservable, override } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
+  type Hashable,
   UnsupportedOperationError,
   hashArray,
   addUniqueEntry,
   deleteEntry,
 } from '@finos/legend-shared';
 import { FileGenerationSpecification } from '../fileGeneration/FileGenerationSpecification';
-import type { PackageableElementVisitor } from '../PackageableElement';
 import {
+  type PackageableElementVisitor,
   PackageableElement,
   PACKAGEABLE_ELEMENT_POINTER_TYPE,
   getElementPointerHashCode,
 } from '../PackageableElement';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import { PackageableElementExplicitReference } from '../PackageableElementReference';
+import {
+  type PackageableElementReference,
+  PackageableElementExplicitReference,
+} from '../PackageableElementReference';
 import { ModelGenerationSpecification } from './ModelGenerationSpecification';
 
 // NOTE: As of now the tree only supports a linear order of generation. This is because the only use case is linear,

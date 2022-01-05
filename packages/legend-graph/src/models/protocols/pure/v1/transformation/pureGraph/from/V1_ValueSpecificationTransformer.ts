@@ -21,12 +21,10 @@ import {
 } from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
 import type { AlloySerializationConfigInstanceValue } from '../../../../../../metamodels/pure/valueSpecification/AlloySerializationConfig';
-import type {
-  GraphFetchTree,
-  PropertyGraphFetchTreeInstanceValue,
-  RootGraphFetchTreeInstanceValue,
-} from '../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
 import {
+  type GraphFetchTree,
+  type PropertyGraphFetchTreeInstanceValue,
+  type RootGraphFetchTreeInstanceValue,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
 } from '../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
@@ -40,15 +38,19 @@ import type {
   CollectionInstanceValue,
   InstanceValue,
 } from '../../../../../../metamodels/pure/valueSpecification/InstanceValue';
-import { LambdaFunctionInstanceValue } from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
-import type { LambdaFunction } from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
+import {
+  LambdaFunctionInstanceValue,
+  type LambdaFunction,
+} from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
 import type {
   AbstractPropertyExpression,
   FunctionExpression,
   SimpleFunctionExpression,
 } from '../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
-import type { ValueSpecificationVisitor } from '../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
-import { ValueSpecification } from '../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
+import {
+  type ValueSpecificationVisitor,
+  ValueSpecification,
+} from '../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
 import type { VariableExpression } from '../../../../../../metamodels/pure/valueSpecification/VariableExpression';
 import { V1_Lambda } from '../../../model/valueSpecification/raw/V1_Lambda';
 import type { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';

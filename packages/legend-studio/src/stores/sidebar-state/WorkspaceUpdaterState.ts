@@ -18,8 +18,9 @@ import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -31,11 +32,9 @@ import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/En
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  EntityChangeConflict,
-  WorkspaceUpdateReport,
-} from '@finos/legend-server-sdlc';
 import {
+  type EntityChangeConflict,
+  type WorkspaceUpdateReport,
   WorkspaceUpdateReportStatus,
   EntityDiff,
   Review,

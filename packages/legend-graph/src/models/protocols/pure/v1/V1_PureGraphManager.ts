@@ -17,19 +17,17 @@
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../graphManager/GraphManagerLogEvent';
 import {
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   SOURCE_INFORMATION_KEY,
 } from '../../../../MetaModelConst';
-import type {
-  Clazz,
-  GeneratorFn,
-  Log,
-  PlainObject,
-  ServerClientConfig,
-} from '@finos/legend-shared';
 import {
+  type Clazz,
+  type GeneratorFn,
+  type Log,
+  type PlainObject,
+  type ServerClientConfig,
   TracerService,
   LogEvent,
   getClass,
@@ -41,11 +39,11 @@ import {
   promisify,
 } from '@finos/legend-shared';
 import type { TEMP__AbstractEngineConfig } from '../../../../graphManager/action/TEMP__AbstractEngineConfig';
-import type {
-  TEMP__EngineSetupConfig,
-  GraphBuilderOptions,
+import {
+  AbstractPureGraphManager,
+  type TEMP__EngineSetupConfig,
+  type GraphBuilderOptions,
 } from '../../../../graphManager/AbstractPureGraphManager';
-import { AbstractPureGraphManager } from '../../../../graphManager/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/packageableElements/runtime/Runtime';
 import type {
@@ -53,8 +51,11 @@ import type {
   ImportMode,
 } from '../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { PackageableElement } from '../../../metamodels/pure/packageableElements/PackageableElement';
-import type { SystemModel, CoreModel } from '../../../../graph/PureModel';
-import { PureModel } from '../../../../graph/PureModel';
+import {
+  type SystemModel,
+  type CoreModel,
+  PureModel,
+} from '../../../../graph/PureModel';
 import type { BasicModel } from '../../../../graph/BasicModel';
 import type { DependencyManager } from '../../../../graph/DependencyManager';
 import type { Class } from '../../../metamodels/pure/packageableElements/domain/Class';
@@ -90,11 +91,9 @@ import {
   V1_setupPureModelContextDataSerialization,
 } from './transformation/pureProtocol/V1_PureProtocolSerialization';
 import { V1_PureModelContextData } from './model/context/V1_PureModelContextData';
-import type {
-  V1_PackageableElement,
-  V1_PackageableElementVisitor,
-} from './model/packageableElements/V1_PackageableElement';
 import {
+  type V1_PackageableElement,
+  type V1_PackageableElementVisitor,
   V1_PackageableElementPointerType,
   V1_PackageableElementPointer,
 } from './model/packageableElements/V1_PackageableElement';
@@ -105,8 +104,10 @@ import { V1_ProtocolToMetaModelGraphFourthPassBuilder } from './transformation/p
 import { V1_ProtocolToMetaModelGraphFifthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFifthPassBuilder';
 import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelRawValueSpecificationBuilder';
 import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext';
-import type { V1_GraphBuilderContext } from './transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_GraphBuilderContextBuilder } from './transformation/pureGraph/to/V1_GraphBuilderContext';
+import {
+  type V1_GraphBuilderContext,
+  V1_GraphBuilderContextBuilder,
+} from './transformation/pureGraph/to/V1_GraphBuilderContext';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer';
 import { V1_Engine } from './engine/V1_Engine';
 import { V1_PackageableElementTransformer } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
@@ -195,8 +196,10 @@ import {
   V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper';
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
-import type { Entity } from '@finos/legend-model-storage';
-import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
+import {
+  type Entity,
+  ENTITY_PATH_DELIMITER,
+} from '@finos/legend-model-storage';
 import {
   DependencyGraphBuilderError,
   GraphBuilderError,
@@ -1119,6 +1122,31 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           this.visitWithErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
+    //Fourth Pass
+    yield Promise.all(
+      inputs.flatMap((input) =>
+        input.data.classes.map((element) =>
+          this.visitWithErrorHandling(
+            element,
+            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
+    yield Promise.all(
+      inputs.flatMap((input) =>
+        input.data.associations.map((element) =>
+          this.visitWithErrorHandling(
+            element,
+            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -2259,35 +2287,35 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     protocol: V1_PackageableElement,
   ): string => {
     if (protocol instanceof V1_Association) {
-      return CORE_ELEMENT_PATH.ASSOCIATION;
+      return CORE_PURE_PATH.ASSOCIATION;
     } else if (protocol instanceof V1_Class) {
-      return CORE_ELEMENT_PATH.CLASS;
+      return CORE_PURE_PATH.CLASS;
     } else if (protocol instanceof V1_Enumeration) {
-      return CORE_ELEMENT_PATH.ENUMERATION;
+      return CORE_PURE_PATH.ENUMERATION;
     } else if (protocol instanceof V1_ConcreteFunctionDefinition) {
-      return CORE_ELEMENT_PATH.FUNCTION;
+      return CORE_PURE_PATH.FUNCTION;
     } else if (protocol instanceof V1_Profile) {
-      return CORE_ELEMENT_PATH.PROFILE;
+      return CORE_PURE_PATH.PROFILE;
     } else if (protocol instanceof V1_Measure) {
-      return CORE_ELEMENT_PATH.MEASURE;
+      return CORE_PURE_PATH.MEASURE;
     } else if (protocol instanceof V1_Mapping) {
-      return CORE_ELEMENT_PATH.MAPPING;
+      return CORE_PURE_PATH.MAPPING;
     } else if (protocol instanceof V1_PackageableConnection) {
-      return CORE_ELEMENT_PATH.CONNECTION;
+      return CORE_PURE_PATH.CONNECTION;
     } else if (protocol instanceof V1_PackageableRuntime) {
-      return CORE_ELEMENT_PATH.RUNTIME;
+      return CORE_PURE_PATH.RUNTIME;
     } else if (protocol instanceof V1_SectionIndex) {
-      return CORE_ELEMENT_PATH.SECTION_INDEX;
+      return CORE_PURE_PATH.SECTION_INDEX;
     } else if (protocol instanceof V1_FlatData) {
-      return CORE_ELEMENT_PATH.FLAT_DATA;
+      return CORE_PURE_PATH.FLAT_DATA;
     } else if (protocol instanceof V1_Database) {
-      return CORE_ELEMENT_PATH.DATABASE;
+      return CORE_PURE_PATH.DATABASE;
     } else if (protocol instanceof V1_Service) {
-      return CORE_ELEMENT_PATH.SERVICE;
+      return CORE_PURE_PATH.SERVICE;
     } else if (protocol instanceof V1_FileGenerationSpecification) {
-      return CORE_ELEMENT_PATH.FILE_GENERATION;
+      return CORE_PURE_PATH.FILE_GENERATION;
     } else if (protocol instanceof V1_GenerationSpecification) {
-      return CORE_ELEMENT_PATH.GENERATION_SPECIFICATION;
+      return CORE_PURE_PATH.GENERATION_SPECIFICATION;
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()

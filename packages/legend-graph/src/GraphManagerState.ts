@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import type { GeneratorFn, Log } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type Log,
   LogEvent,
   uniq,
   ActionState,

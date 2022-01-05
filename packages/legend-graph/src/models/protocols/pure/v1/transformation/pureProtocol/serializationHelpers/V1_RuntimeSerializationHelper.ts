@@ -23,16 +23,16 @@ import {
   deserialize,
   object,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   usingConstantValueSchema,
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-shared';
 import { V1_packageableElementPointerDeserializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
-import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
+  type V1_Runtime,
   V1_EngineRuntime,
   V1_IdentifiedConnection,
   V1_LegacyRuntime,

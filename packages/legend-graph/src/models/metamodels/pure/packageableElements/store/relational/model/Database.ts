@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-import { hashArray, guaranteeNonNullable } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  guaranteeNonNullable,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { observable, makeObservable, override } from 'mobx';
 import { Store } from '../../Store';

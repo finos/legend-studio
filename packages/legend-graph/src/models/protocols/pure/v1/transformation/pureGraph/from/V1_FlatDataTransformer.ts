@@ -28,16 +28,14 @@ import {
   FlatDataStrictDate,
   RootFlatDataRecordType,
   FlatDataRecordType,
-} from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
-import type {
-  FlatDataDataType,
-  FlatDataRecordField,
+  type FlatDataDataType,
+  type FlatDataRecordField,
 } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
 import type { FlatDataSection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
 import { V1_FlatDataSection } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataSection';
 import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData';
-import type { V1_FlatDataDataType } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
 import {
+  type V1_FlatDataDataType,
   V1_FlatDataRecordField,
   V1_RootFlatDataRecordType,
   V1_FlatDataRecordType,

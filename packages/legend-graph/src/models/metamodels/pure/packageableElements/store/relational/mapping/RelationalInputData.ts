@@ -15,12 +15,17 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  UnsupportedOperationError,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
-import type { ValidationIssue } from '../../../../../../../helpers/ValidationHelper';
-import { createValidationError } from '../../../../../../../helpers/ValidationHelper';
+import {
+  type ValidationIssue,
+  createValidationError,
+} from '../../../../../../../helpers/ValidationHelper';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { Database } from '../model/Database';
 

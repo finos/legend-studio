@@ -17,8 +17,10 @@
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
-import type { DepotServerClientConfig } from './DepotServerClient';
-import { DepotServerClient } from './DepotServerClient';
+import {
+  type DepotServerClientConfig,
+  DepotServerClient,
+} from './DepotServerClient';
 
 const DepotServerClientContext = createContext<DepotServerClient | undefined>(
   undefined,

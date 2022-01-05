@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin } from '@finos/legend-shared';
-import type { PlainObject } from '@finos/legend-shared';
+import { AbstractPlugin, type PlainObject } from '@finos/legend-shared';
 import type { PackageableElement } from '../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement';
 import type { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder';

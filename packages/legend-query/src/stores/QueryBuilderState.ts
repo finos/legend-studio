@@ -15,15 +15,17 @@
  */
 
 import { action, flow, observable, makeObservable, computed } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import type { QueryBuilderFilterOperator } from './QueryBuilderFilterState';
-import { QueryBuilderFilterState } from './QueryBuilderFilterState';
+import {
+  type QueryBuilderFilterOperator,
+  QueryBuilderFilterState,
+} from './QueryBuilderFilterState';
 import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState';
 import { QueryResultSetModifierState } from './QueryResultSetModifierState';
 import {
@@ -33,20 +35,20 @@ import {
 import { QueryBuilderSetupState } from './QueryBuilderSetupState';
 import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
-import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor';
+import {
+  processQueryBuilderLambdaFunction,
+  processQueryParameters,
+} from './QueryBuilderLambdaProcessor';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
 import {
-  Class,
-  Enumeration,
-  GraphManagerState,
-  LambdaFunction,
-  Mapping,
-  PackageableRuntime,
-  Service,
-  VariableExpression,
-} from '@finos/legend-graph';
-import {
-  PrimitiveInstanceValue,
+  type Class,
+  type Enumeration,
+  type GraphManagerState,
+  type LambdaFunction,
+  type Mapping,
+  type PackageableRuntime,
+  type Service,
+  type ValueSpecification,
   GenericTypeExplicitReference,
   GenericType,
   PRIMITIVE_TYPE,
@@ -57,6 +59,7 @@ import {
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
   MILESTONING_STEROTYPES,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -87,12 +90,12 @@ import {
   QueryBuilderFilterOperator_NotIn,
 } from './filterOperators/QueryBuilderFilterOperator_In';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
-import type {
-  ApplicationStore,
-  LegendApplicationConfig,
-  PackageableElementOption,
+import {
+  buildElementOption,
+  type ApplicationStore,
+  type LegendApplicationConfig,
+  type PackageableElementOption,
 } from '@finos/legend-application';
-import { buildElementOption } from '@finos/legend-application';
 import {
   QueryParametersState,
   QueryParameterState,
@@ -206,13 +209,22 @@ export class QueryBuilderState {
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
-    return this.isQuerySupported()
-      ? this.buildRawLambdaFromLambdaFunction(
-          buildLambdaFunction(this, {
-            keepSourceInformation: Boolean(options?.keepSourceInformation),
-          }),
-        )
-      : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
+    if (!this.isQuerySupported()) {
+      const parameters = this.queryParametersState.parameters.map((e) =>
+        this.graphManagerState.graphManager.serializeValueSpecification(
+          e.parameter,
+        ),
+      );
+      this.queryUnsupportedState.setRawLambda(
+        new RawLambda(parameters, this.queryUnsupportedState.rawLambda?.body),
+      );
+      return guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
+    }
+    return this.buildRawLambdaFromLambdaFunction(
+      buildLambdaFunction(this, {
+        keepSourceInformation: Boolean(options?.keepSourceInformation),
+      }),
+    );
   }
 
   resetQueryBuilder(): void {
@@ -247,6 +259,20 @@ export class QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.changeClass(undefined, true);
+      const parameters = ((rawLambda.parameters ?? []) as object[]).map(
+        (param) =>
+          this.graphManagerState.graphManager.buildValueSpecification(
+            param as Record<PropertyKey, unknown>,
+            this.graphManagerState.graph,
+          ),
+      );
+      processQueryParameters(
+        parameters.filter(
+          (parameter: ValueSpecification): parameter is VariableExpression =>
+            parameter instanceof VariableExpression,
+        ),
+        this,
+      );
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Unable to initialize query builder: ${error.message}`,
@@ -277,6 +303,7 @@ export class QueryBuilderState {
       const compiledValueSpecification = guaranteeType(
         valueSpec,
         LambdaFunctionInstanceValue,
+        `Can't build query state: query builder only support lambda`,
       );
       const compiledLambda = guaranteeNonNullable(
         compiledValueSpecification.values[0],

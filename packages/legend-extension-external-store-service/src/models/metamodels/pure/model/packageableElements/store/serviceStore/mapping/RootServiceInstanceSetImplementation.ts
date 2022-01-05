@@ -15,18 +15,22 @@
  */
 
 import { observable, action, makeObservable, computed } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
-import type {
-  Class,
-  InferableMappingElementIdValue,
-  InferableMappingElementRoot,
-  Mapping,
-  PackageableElementReference,
-  PropertyMapping,
-  SetImplementationVisitor,
+import {
+  type Hashable,
+  hashArray,
+  addUniqueEntry,
+  deleteEntry,
+} from '@finos/legend-shared';
+import {
+  InstanceSetImplementation,
+  type Class,
+  type InferableMappingElementIdValue,
+  type InferableMappingElementRoot,
+  type Mapping,
+  type PackageableElementReference,
+  type PropertyMapping,
+  type SetImplementationVisitor,
 } from '@finos/legend-graph';
-import { InstanceSetImplementation } from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type { LocalMappingProperty } from './LocalMappingProperty';
 import type { ServiceMapping } from './ServiceMapping';

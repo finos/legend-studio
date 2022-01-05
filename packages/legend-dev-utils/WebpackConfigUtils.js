@@ -32,6 +32,8 @@ export const getEnvInfo = (env, arg) => ({
   isEnvProduction: arg.mode === 'production',
   isEnvDevelopment_Debug:
     arg.mode === 'development' && process.env.DEVELOPMENT_MODE === 'debug',
+  isEnvProduction_Fast:
+    arg.mode === 'production' && process.env.PRODUCTION_MODE === 'fast',
 });
 
 /**
@@ -47,8 +49,14 @@ const getBaseWebpackConfig = (
   if (!dirname) {
     throw new Error(`\`dirname\` is required to build Webpack config`);
   }
-  const { isEnvDevelopment, isEnvProduction, isEnvDevelopment_Debug } =
-    getEnvInfo(env, arg);
+  const {
+    isEnvDevelopment,
+    isEnvDevelopment_Debug,
+    isEnvProduction,
+    isEnvProduction_Fast,
+  } = getEnvInfo(env, arg);
+
+  const enableSourceMap = isEnvProduction && !isEnvProduction_Fast;
 
   const config = {
     mode: arg.mode,
@@ -70,7 +78,9 @@ const getBaseWebpackConfig = (
           // but for debugging (e.g. where putting breakpoints is needed), source maps might be required
           // See https://webpack.js.org/configuration/devtool/
           false
-      : 'source-map',
+      : enableSourceMap
+      ? 'source-map'
+      : false,
     watchOptions: {
       ignored: /node_modules/,
     },
@@ -140,7 +150,7 @@ const getBaseWebpackConfig = (
               // Helps resolve @import and url() like import/require()
               loader: require.resolve('css-loader'),
               options: {
-                sourceMap: isEnvProduction,
+                sourceMap: enableSourceMap,
               },
             },
             isEnvProduction && {
@@ -153,14 +163,14 @@ const getBaseWebpackConfig = (
                     require.resolve('cssnano'), // minification
                   ].filter(Boolean),
                 },
-                sourceMap: true,
+                sourceMap: enableSourceMap,
               },
             },
             {
               loader: require.resolve('sass-loader'),
               options: {
                 implementation: sass,
-                sourceMap: isEnvProduction,
+                sourceMap: enableSourceMap,
               },
             },
           ].filter(Boolean),
@@ -184,7 +194,7 @@ const getBaseWebpackConfig = (
         }
       : {},
     plugins: [
-      (isEnvProduction || isEnvDevelopment_Debug) &&
+      ((isEnvProduction && !isEnvProduction_Fast) || isEnvDevelopment_Debug) &&
         new CircularDependencyPlugin({
           exclude: /node_modules/,
           include: /src\/.+\.(?:tsx|ts|mjs|js)$/,

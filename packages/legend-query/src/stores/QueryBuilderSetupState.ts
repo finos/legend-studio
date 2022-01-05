@@ -22,14 +22,12 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type {
-  Class,
-  Mapping,
-  PackageableRuntime,
-  Runtime,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type Class,
+  type Mapping,
+  type PackageableRuntime,
+  type Runtime,
+  type ValueSpecification,
   getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,

@@ -41,8 +41,7 @@ jest.mock('@finos/legend-shared', () => ({
 
 import { resolve, basename } from 'path';
 import fs from 'fs';
-import type { AxiosResponse } from 'axios';
-import axios from 'axios';
+import axios, { type AxiosResponse } from 'axios';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,

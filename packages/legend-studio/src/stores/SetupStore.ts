@@ -17,11 +17,16 @@
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import type { ApplicationStore } from '@finos/legend-application';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
-import { assertErrorThrown, LogEvent, ActionState } from '@finos/legend-shared';
-import { generateSetupRoute } from './LegendStudioRouter';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import {
+  type GeneratorFn,
+  type PlainObject,
+  assertErrorThrown,
+  LogEvent,
+  ActionState,
+} from '@finos/legend-shared';
+import { generateSetupRoute } from './LegendStudioRouter';
+import {
+  type SDLCServerClient,
   WorkspaceType,
   ImportReport,
   Project,
@@ -91,8 +96,8 @@ export class SetupStore {
     makeAutoObservable(this, {
       applicationStore: false,
       sdlcServerClient: false,
-      setCreateProjectModal: action,
-      setCreateWorkspaceModal: action,
+      setShowCreateProjectModal: action,
+      setShowCreateWorkspaceModal: action,
       setCurrentProjectId: action,
       setCurrentWorkspaceIdentifier: action,
       setImportProjectSuccessReport: action,
@@ -145,11 +150,11 @@ export class SetupStore {
     }
   }
 
-  setCreateProjectModal(modal: boolean): void {
-    this.showCreateProjectModal = modal;
+  setShowCreateProjectModal(val: boolean): void {
+    this.showCreateProjectModal = val;
   }
-  setCreateWorkspaceModal(modal: boolean): void {
-    this.showCreateWorkspaceModal = modal;
+  setShowCreateWorkspaceModal(val: boolean): void {
+    this.showCreateWorkspaceModal = val;
   }
   setCurrentProjectId(id: string | undefined): void {
     this.currentProjectId = id;
@@ -252,7 +257,7 @@ export class SetupStore {
           createdProject.projectId,
         ),
       );
-      this.setCreateProjectModal(false);
+      this.setShowCreateProjectModal(false);
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
@@ -398,7 +403,7 @@ export class SetupStore {
       );
       this.setCurrentProjectId(projectId);
       this.setCurrentWorkspaceIdentifier(workspace);
-      this.setCreateWorkspaceModal(false);
+      this.setShowCreateWorkspaceModal(false);
       this.createWorkspaceState.pass();
     } catch (error) {
       assertErrorThrown(error);

@@ -22,8 +22,9 @@ import {
   primitive,
   SKIP,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
+  type RequestHeaders,
   AssertionError,
   assertNonNullable,
   guaranteeNonEmptyString,
@@ -31,11 +32,11 @@ import {
   SerializationFactory,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
-import type {
-  LegendApplicationConfigurationData,
-  LegendApplicationVersionData,
+import {
+  LegendApplicationConfig,
+  type LegendApplicationConfigurationData,
+  type LegendApplicationVersionData,
 } from '@finos/legend-application';
-import { LegendApplicationConfig } from '@finos/legend-application';
 
 export class ServiceRegistrationEnvInfo {
   env!: string;
@@ -154,7 +155,9 @@ export interface LegendStudioConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
-  sdlc: { url: string } | PlainObject<SDLCServerOption>[];
+  sdlc:
+    | { url: string; baseHeaders?: RequestHeaders }
+    | PlainObject<SDLCServerOption>[];
   depot: { url: string };
   engine: { url: string; queryUrl?: string };
   documentation: { url: string };
@@ -164,11 +167,13 @@ export class LegendStudioConfig extends LegendApplicationConfig {
   readonly options = new ApplicationCoreOptions();
 
   readonly documentationUrl: string;
-  currentSDLCServerOption!: SDLCServerOption;
-  SDLCServerOptions: SDLCServerOption[] = [];
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
+
+  currentSDLCServerOption!: SDLCServerOption;
+  SDLCServerOptions: SDLCServerOption[] = [];
+  SDLCServerBaseHeaders?: RequestHeaders | undefined;
 
   constructor(
     configData: LegendStudioConfigurationData,
@@ -217,6 +222,7 @@ export class LegendStudioConfig extends LegendApplicationConfig {
       }
       this.SDLCServerOptions = options;
     } else {
+      this.SDLCServerBaseHeaders = configData.sdlc.baseHeaders;
       this.SDLCServerOptions = [
         SDLCServerOption.serialization.fromJson({
           key: 'default',
@@ -239,6 +245,10 @@ export class LegendStudioConfig extends LegendApplicationConfig {
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
     this.engineQueryServerUrl = configData.engine.queryUrl;
+    assertNonNullable(
+      configData.depot,
+      `Can't configure application: 'depot' field is missing`,
+    );
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,

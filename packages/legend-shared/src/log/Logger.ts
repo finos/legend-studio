@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type {
-  AbstractPluginManager,
-  PluginConsumer,
+import {
+  AbstractPlugin,
+  type AbstractPluginManager,
+  type PluginConsumer,
 } from '../application/AbstractPluginManager';
-import { AbstractPlugin } from '../application/AbstractPluginManager';
 
 // We use numeric enum here for because we want to do comparison
 // In order to retrieve the name of the enum we can do reverse mapping, for example: LogLevel[LogLevel.INFO] -> INFO

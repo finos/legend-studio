@@ -19,10 +19,8 @@ import type { PackageableRuntime } from '../../../../../../metamodels/pure/packa
 import {
   EngineRuntime,
   RuntimePointer,
-} from '../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
-import type {
-  StoreConnections,
-  Runtime,
+  type StoreConnections,
+  type Runtime,
 } from '../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
 import { V1_PackageableElementPointerType } from '../../../model/packageableElements/V1_PackageableElement';
 import {
@@ -31,8 +29,8 @@ import {
   V1_transformElementReferencePointer,
 } from './V1_CoreTransformerHelper';
 import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
-import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import {
+  type V1_Runtime,
   V1_EngineRuntime,
   V1_StoreConnections,
   V1_IdentifiedConnection,

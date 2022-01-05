@@ -20,8 +20,8 @@ import { guaranteeType } from '@finos/legend-shared';
 import Dialog from '@material-ui/core/Dialog';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import type { Mapping } from '@finos/legend-graph';
 import {
+  type Mapping,
   ELEMENT_PATH_DELIMITER,
   resolvePackagePathAndElementName,
   Package,

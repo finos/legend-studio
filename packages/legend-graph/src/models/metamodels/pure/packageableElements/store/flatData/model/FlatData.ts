@@ -16,13 +16,13 @@
 
 import { observable, computed, action, makeObservable, override } from 'mobx';
 import {
+  type Hashable,
   guaranteeNonNullable,
   hashArray,
   addUniqueEntry,
   deleteEntry,
   changeEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { FlatDataSection } from './FlatDataSection';
 import { Store } from '../../Store';

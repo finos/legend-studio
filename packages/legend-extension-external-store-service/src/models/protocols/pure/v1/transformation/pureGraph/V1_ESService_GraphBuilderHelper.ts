@@ -16,9 +16,10 @@
 
 import { getServiceStore } from '../../../../../../graphManager/ESService_GraphManagerHelper';
 import type { ServiceStore } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
-import type {
-  PackageableElementImplicitReference,
-  V1_GraphBuilderContext,
+import {
+  RawLambda,
+  type PackageableElementImplicitReference,
+  type V1_GraphBuilderContext,
 } from '@finos/legend-graph';
 import type { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
 import {
@@ -27,16 +28,16 @@ import {
 } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreService';
 import type { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
 import { ServiceGroup } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceGroup';
-import type { V1_TypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
 import {
+  type V1_TypeReference,
   V1_BooleanTypeReference,
   V1_ComplexTypeReference,
   V1_FloatTypeReference,
   V1_IntegerTypeReference,
   V1_StringTypeReference,
 } from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
-import type { TypeReference } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
 import {
+  type TypeReference,
   BooleanTypeReference,
   ComplexTypeReference,
   FloatTypeReference,
@@ -58,7 +59,6 @@ import {
 import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
 import type { ServiceParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceParameterMapping';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
-import { RawLambda } from '@finos/legend-graph';
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
 import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
 import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreElement';

@@ -22,7 +22,7 @@ import {
   guaranteeNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { CORE_ELEMENT_PATH } from '../../../../../../../MetaModelConst';
+import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type {
@@ -53,7 +53,6 @@ import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Me
 import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
-import { milestoningPropertyGenerator } from '../../../../../../../helpers/DomainHelper';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -88,7 +87,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     );
     element.superTypes.forEach((type) => {
       // supertype `Any` will not be processed
-      if (type !== CORE_ELEMENT_PATH.ANY) {
+      if (type !== CORE_PURE_PATH.ANY) {
         try {
           const genricTypeReference = this.context.resolveGenericType(type);
           _class.addSuperType(genricTypeReference);
@@ -154,7 +153,6 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
       (derivedProperty) =>
         V1_buildDerivedProperty(derivedProperty, this.context, association),
     );
-    milestoningPropertyGenerator(association, this.context.graph);
   }
 
   visit_ConcreteFunctionDefinition(

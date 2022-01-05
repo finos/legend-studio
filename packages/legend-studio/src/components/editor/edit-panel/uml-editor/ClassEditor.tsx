@@ -18,11 +18,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
-import type {
-  ElementDragSource,
-  UMLEditorElementDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import {
   FaLock,
   FaPlus,
@@ -53,11 +53,9 @@ import { ClassEditorState } from '../../../../stores/editor-state/element-editor
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  StereotypeReference,
-  GenericTypeReference,
-} from '@finos/legend-graph';
 import {
+  type StereotypeReference,
+  type GenericTypeReference,
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Class,

@@ -23,18 +23,12 @@ import {
   prettyCamelCase,
   prettyCONSTName,
 } from '@finos/legend-shared';
-import type {
-  AbstractProperty,
-  Enum,
-  PureModel,
-  ValueSpecification,
-} from '@finos/legend-graph';
-import {
-  getMilestoneTemporalStereotype,
-  MILESTONING_STEROTYPES,
-} from '@finos/legend-graph';
 import {
   Class,
+  type AbstractProperty,
+  type Enum,
+  type PureModel,
+  type ValueSpecification,
   TYPICAL_MULTIPLICITY_TYPE,
   CollectionInstanceValue,
   AbstractPropertyExpression,
@@ -46,6 +40,8 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   VariableExpression,
+  getMilestoneTemporalStereotype,
+  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -139,8 +135,6 @@ const fillDerivedPropertyArguments = (
         argument = enumValueInstanceValue;
       }
     }
-    // for arguments of types we don't support, we will fill them with `[]`
-    // which in Pure is equivalent to `null` in other languages
     const querySetupState =
       derivedPropertyExpressionState.queryBuilderState.querySetupState;
     let isMilestonedProperty = false;
@@ -149,7 +143,7 @@ const fillDerivedPropertyArguments = (
       derivedPropertyExpressionState.propertyExpression.func.genericType.value
         .rawType instanceof Class &&
       derivedPropertyExpressionState.propertyExpression.func.owner
-        ._originalMilestonedProperties.length !== 0
+        ._generatedMilestonedProperties.length !== 0
     ) {
       temporalTarget = getMilestoneTemporalStereotype(
         derivedPropertyExpressionState.propertyExpression.func.genericType.value
@@ -161,7 +155,7 @@ const fillDerivedPropertyArguments = (
       const name = derivedPropertyExpressionState.propertyExpression.func.name;
       derivedPropertyExpressionState.propertyExpression.func =
         guaranteeNonNullable(
-          derivedPropertyExpressionState.propertyExpression.func.owner._originalMilestonedProperties.find(
+          derivedPropertyExpressionState.propertyExpression.func.owner._generatedMilestonedProperties.find(
             (e) => e.name === name,
           ),
         );
@@ -274,7 +268,8 @@ const fillDerivedPropertyArguments = (
           } else {
             parameters = querySetupState.classMilestoningTemporalValues;
           }
-          propertyArguments.concat(...parameters);
+          propertyArguments.push(guaranteeNonNullable(parameters[0]));
+          propertyArguments.push(guaranteeNonNullable(parameters[1]));
           break;
         }
         default:
@@ -288,6 +283,8 @@ const fillDerivedPropertyArguments = (
       );
     }
   });
+  // for arguments of types we don't support, we will fill them with `[]`
+  // which in Pure is equivalent to `null` in other languages
   derivedPropertyExpressionState.propertyExpression.setParametersValues([
     guaranteeNonNullable(
       derivedPropertyExpressionState.propertyExpression.parametersValues[0],
@@ -430,6 +427,18 @@ export class QueryBuilderPropertyExpressionState {
       ) {
         requiresExistsHandling = true;
       }
+      if (
+        currentExpression.func.genericType.value.rawType instanceof Class &&
+        currentExpression.func.owner._generatedMilestonedProperties.length !== 0
+      ) {
+        const name = currentExpression.func.name;
+        currentExpression.func = guaranteeNonNullable(
+          currentExpression.func.owner._generatedMilestonedProperties.find(
+            (e) => e.name === name,
+          ),
+        );
+      }
+
       // Create states to hold derived properties' parameters and arguments for editing
       if (currentExpression.func instanceof DerivedProperty) {
         const derivedPropertyExpressionState =

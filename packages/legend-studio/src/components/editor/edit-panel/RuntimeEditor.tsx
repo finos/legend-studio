@@ -16,8 +16,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { RuntimeEditorState } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import {
+  type RuntimeEditorState,
   PackageableRuntimeEditorState,
   RuntimeEditorRuntimeTabState,
   IdentifiedConnectionsEditorTabState,
@@ -25,8 +25,8 @@ import {
   IdentifiedConnectionsPerStoreEditorTabState,
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
-import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -58,8 +58,8 @@ import {
 import { getElementIcon } from '../../shared/ElementIconUtils';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor';
-import type { UMLEditorElementDropTarget } from '../../../stores/shared/DnDUtil';
 import {
+  type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
   ElementDragSource,
 } from '../../../stores/shared/DnDUtil';
@@ -71,11 +71,13 @@ import {
 } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { Dialog } from '@material-ui/core';
-import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../EditorStoreProvider';
-import type { PackageableElementReference } from '@finos/legend-graph';
 import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../EditorStoreProvider';
+import {
+  type PackageableElementReference,
   Connection,
   ConnectionPointer,
   Runtime,

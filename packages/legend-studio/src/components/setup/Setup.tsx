@@ -19,8 +19,8 @@ import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
   CheckSquareIcon,
   clsx,
   SquareIcon,
@@ -35,8 +35,8 @@ import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import Dialog from '@material-ui/core/Dialog';
 import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
-import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {
+  type SetupPathParams,
   generateEditorRoute,
   generateViewProjectRoute,
 } from '../../stores/LegendStudioRouter';
@@ -82,7 +82,7 @@ const CreateProjectModal = observer(() => {
     setupStore.createOrImportProjectState.isInProgress ||
     setupStore.createWorkspaceState.isInProgress;
   const closeModal = (): void => {
-    setupStore.setCreateProjectModal(false);
+    setupStore.setShowCreateProjectModal(false);
     setupStore.setImportProjectSuccessReport(undefined);
   };
   const createProject = applicationStore.guaranteeSafeAction(() =>
@@ -515,7 +515,7 @@ const CreateWorkspaceModal = observer(() => {
     : 'You have no projects, please create or acquire access for at least one';
 
   const closeModal = (): void => {
-    setupStore.setCreateWorkspaceModal(false);
+    setupStore.setShowCreateWorkspaceModal(false);
   };
   const createWorkspace = (): void => {
     if (currentProjectId && workspaceName) {
@@ -664,9 +664,9 @@ const SetupSelection = observer(() => {
       ? proceedButtonRef.current?.focus()
       : workspaceSelectorRef.current?.focus();
   const handleCreateProjectModal = (): void =>
-    setupStore.setCreateProjectModal(true);
+    setupStore.setShowCreateProjectModal(true);
   const handleCreateWorkspaceModal = (): void =>
-    setupStore.setCreateWorkspaceModal(true);
+    setupStore.setShowCreateWorkspaceModal(true);
   const handleProceed = (): void => {
     if (
       setupStore.currentProjectId &&

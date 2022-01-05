@@ -18,8 +18,7 @@ import type { EditorStore } from '../../EditorStore';
 import { FileGenerationState } from '../../editor-state/FileGenerationState';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import { ElementEditorState } from './ElementEditorState';
-import type { GeneratorFn } from '@finos/legend-shared';
-import { AssertionError, uuid } from '@finos/legend-shared';
+import { type GeneratorFn, AssertionError, uuid } from '@finos/legend-shared';
 import {
   FileGenerationSpecification,
   PackageableElementExplicitReference,

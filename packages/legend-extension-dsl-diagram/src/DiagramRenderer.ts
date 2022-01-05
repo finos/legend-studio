@@ -24,8 +24,8 @@ import {
   findLast,
   uniqBy,
 } from '@finos/legend-shared';
-import type { AbstractProperty } from '@finos/legend-graph';
 import {
+  type AbstractProperty,
   Class,
   Enumeration,
   PrimitiveType,
@@ -45,8 +45,10 @@ import { PositionedRectangle } from './models/metamodels/pure/packageableElement
 import { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
 import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
 import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/GeneralizationView';
-import type { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
-import { manageInsidePointsDynamically } from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
+import {
+  type RelationshipView,
+  manageInsidePointsDynamically,
+} from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
 import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/PropertyView';
 import { getElementPosition } from './helpers/DiagramHelper';
 import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/AssociationView';
@@ -222,9 +224,22 @@ export class DiagramRenderer {
   // interactions
   onAddClassViewClick: (point: Point) => void = noop();
   onClassViewRightClick: (classView: ClassView, point: Point) => void = noop();
-  onBackgroundDoubleClick: (point: Point) => void = noop();
-  onClassViewDoubleClick: (classView: ClassView, point: Point) => void = noop();
-  onClassNameDoubleClick: (classView: ClassView, point: Point) => void = noop();
+
+  onBackgroundDoubleClick?: ((point: Point) => void) | undefined;
+  onClassViewDoubleClick?:
+    | ((classView: ClassView, point: Point) => void)
+    | undefined;
+  onClassNameDoubleClick?:
+    | ((classView: ClassView, point: Point) => void)
+    | undefined;
+  onClassPropertyDoubleClick?:
+    | ((
+        property: AbstractProperty,
+        point: Point,
+        propertyHolderView: PropertyHolderView | undefined,
+      ) => void)
+    | undefined;
+
   handleEditClassView: (classView: ClassView) => void = noop();
   handleEditProperty: (
     property: AbstractProperty,
@@ -2477,21 +2492,25 @@ export class DiagramRenderer {
 
     // Check double click on class property
     if (this.mouseOverClassProperty) {
-      this.handleEditProperty(
-        this.mouseOverClassProperty,
-        eventPointInModelCoordinate,
-        undefined,
-      );
-      return;
+      if (this.onClassPropertyDoubleClick) {
+        this.onClassPropertyDoubleClick(
+          this.mouseOverClassProperty,
+          eventPointInModelCoordinate,
+          undefined,
+        );
+        return;
+      }
     }
 
     // Check double click on class name
     if (this.mouseOverClassName) {
-      this.onClassNameDoubleClick(
-        this.mouseOverClassName,
-        eventPointInModelCoordinate,
-      );
-      return;
+      if (this.onClassNameDoubleClick) {
+        this.onClassNameDoubleClick(
+          this.mouseOverClassName,
+          eventPointInModelCoordinate,
+        );
+        return;
+      }
     }
 
     // Check double click on class view
@@ -2502,22 +2521,28 @@ export class DiagramRenderer {
       ),
     );
     if (selectedClass) {
-      this.onClassViewDoubleClick(selectedClass, eventPointInModelCoordinate);
-      return;
+      if (this.onClassViewDoubleClick) {
+        this.onClassViewDoubleClick(selectedClass, eventPointInModelCoordinate);
+        return;
+      }
     }
 
     // Check double click on line property label
     if (this.mouseOverPropertyHolderViewLabel) {
-      this.handleEditProperty(
-        this.mouseOverPropertyHolderViewLabel.property.value,
-        eventPointInModelCoordinate,
-        this.mouseOverPropertyHolderViewLabel,
-      );
-      return;
+      if (this.onClassPropertyDoubleClick) {
+        this.onClassPropertyDoubleClick(
+          this.mouseOverPropertyHolderViewLabel.property.value,
+          eventPointInModelCoordinate,
+          this.mouseOverPropertyHolderViewLabel,
+        );
+        return;
+      }
     }
 
     // Check double click on background
-    this.onBackgroundDoubleClick(eventPointInModelCoordinate);
+    if (this.onBackgroundDoubleClick) {
+      this.onBackgroundDoubleClick(eventPointInModelCoordinate);
+    }
     return;
   }
 

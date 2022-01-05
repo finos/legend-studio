@@ -16,24 +16,22 @@
 
 import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import {
-  CORE_ELEMENT_PATH,
-  MILESTONING_STEROTYPES,
-  TYPICAL_MULTIPLICITY_TYPE,
-} from '../MetaModelConst';
 import type { PropertyOwner } from '../models/metamodels/pure/packageableElements/domain/AbstractProperty';
 import { DerivedProperty } from '../models/metamodels/pure/packageableElements/domain/DerivedProperty';
 import { GenericTypeExplicitReference } from '../models/metamodels/pure/packageableElements/domain/GenericTypeReference';
 import { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType';
 import { Property } from '../models/metamodels/pure/packageableElements/domain/Property';
+import {
+  CORE_PURE_PATH,
+  MILESTONING_STEROTYPES,
+  TYPICAL_MULTIPLICITY_TYPE,
+} from '../MetaModelConst';
 
 export const getMilestoneTemporalStereotype = (
   val: Class,
   graph: PureModel,
 ): MILESTONING_STEROTYPES | undefined => {
-  const milestonedProfile = graph.getProfile(
-    CORE_ELEMENT_PATH.PROFILE_TEMPORAL,
-  );
+  const milestonedProfile = graph.getProfile(CORE_PURE_PATH.PROFILE_TEMPORAL);
   let stereotype;
   const profile = val.stereotypes.find(
     (e) => e.ownerReference.value === milestonedProfile,
@@ -158,11 +156,11 @@ export const milestoningPropertyGenerator = (
               property: `${property.name}`,
             },
           ];
-          propertyOwner._originalMilestonedProperties.push(dateProperty);
-          propertyOwner._originalMilestonedProperties.push(
+          propertyOwner._generatedMilestonedProperties.push(dateProperty);
+          propertyOwner._generatedMilestonedProperties.push(
             milestonedAllVersions,
           );
-          propertyOwner._originalMilestonedProperties.push(
+          propertyOwner._generatedMilestonedProperties.push(
             milestonedAllVersionsInRange,
           );
           break;
@@ -253,11 +251,11 @@ export const milestoningPropertyGenerator = (
               property: `${property.name}`,
             },
           ];
-          propertyOwner._originalMilestonedProperties.push(dateProperty);
-          propertyOwner._originalMilestonedProperties.push(
+          propertyOwner._generatedMilestonedProperties.push(dateProperty);
+          propertyOwner._generatedMilestonedProperties.push(
             milestonedAllVersions,
           );
-          propertyOwner._originalMilestonedProperties.push(
+          propertyOwner._generatedMilestonedProperties.push(
             milestonedAllVersionsInRange,
           );
           break;
@@ -315,8 +313,8 @@ export const milestoningPropertyGenerator = (
             ),
             property.owner,
           );
-          propertyOwner._originalMilestonedProperties.push(dateProperty);
-          propertyOwner._originalMilestonedProperties.push(
+          propertyOwner._generatedMilestonedProperties.push(dateProperty);
+          propertyOwner._generatedMilestonedProperties.push(
             milestonedAllVersions,
           );
           break;

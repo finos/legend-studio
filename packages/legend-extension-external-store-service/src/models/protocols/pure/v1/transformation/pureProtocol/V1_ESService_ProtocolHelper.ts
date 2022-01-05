@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   optionalCustom,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
-import type { ModelSchema } from 'serializr';
 import {
+  type ModelSchema,
   alias,
   createModelSchema,
   primitive,
@@ -38,8 +38,8 @@ import { V1_ServiceStoreService } from '../../model/packageableElements/store/se
 import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroup';
 import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
 import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
-import type { V1_TypeReference } from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
 import {
+  type V1_TypeReference,
   V1_BooleanTypeReference,
   V1_ComplexTypeReference,
   V1_FloatTypeReference,
@@ -54,8 +54,11 @@ import { V1_ServiceMapping } from '../../model/packageableElements/store/service
 import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
 import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
 import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
-import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
-import { V1_Multiplicity, V1_rawLambdaModelSchema } from '@finos/legend-graph';
+import {
+  type PureProtocolProcessorPlugin,
+  V1_Multiplicity,
+  V1_rawLambdaModelSchema,
+} from '@finos/legend-graph';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';

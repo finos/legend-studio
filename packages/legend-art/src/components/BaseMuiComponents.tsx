@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-import type { MenuProps, PopoverProps } from '@material-ui/core';
-import { makeStyles, Menu, Popover } from '@material-ui/core';
+import {
+  type MenuProps,
+  type PopoverProps,
+  makeStyles,
+  Menu,
+  Popover,
+} from '@material-ui/core';
 
 const useBaseMenuStyles = makeStyles({
   listPadding: {

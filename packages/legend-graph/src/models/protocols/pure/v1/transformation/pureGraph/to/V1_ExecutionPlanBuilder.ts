@@ -26,6 +26,7 @@ import { SQLExecutionNode } from '../../../../../../metamodels/pure/executionPla
 import { SQLResultColumn } from '../../../../../../metamodels/pure/executionPlan/nodes/SQLResultColumn';
 import { DatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import {
+  type RelationalDataType,
   Real,
   Binary,
   Bit,
@@ -44,7 +45,6 @@ import {
   SmallInt,
   BigInt,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
-import type { RelationalDataType } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import type { V1_ExecutionNode } from '../../../model/executionPlan/nodes/V1_ExecutionNode';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
 import { V1_SQLExecutionNode } from '../../../model/executionPlan/nodes/V1_SQLExecutionNode';
@@ -61,7 +61,7 @@ import { DataTypeResultType } from '../../../../../../metamodels/pure/executionP
 import { TDSResultType } from '../../../../../../metamodels/pure/executionPlan/result/TDSResultType';
 import { TDSColumn } from '../../../../../../metamodels/pure/executionPlan/result/TDSColumn';
 import type { V1_TDSColumn } from '../../../model/executionPlan/results/V1_TDSColumn';
-import { CORE_ELEMENT_PATH } from '../../../../../../../MetaModelConst';
+import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst';
 
 const parseDataType = (val: string): RelationalDataType => {
   const getTypeParams = (typeVal: string): number[] =>
@@ -178,7 +178,7 @@ const buildTDSResultType = (
   context: V1_GraphBuilderContext,
 ): TDSResultType => {
   const metamodel = new TDSResultType();
-  metamodel.type = context.resolveType(CORE_ELEMENT_PATH.ANY);
+  metamodel.type = context.resolveType(CORE_PURE_PATH.ANY);
   metamodel.tdsColumns = protocol.tdsColumns.map((column) =>
     buildTDSColumn(column, context),
   );

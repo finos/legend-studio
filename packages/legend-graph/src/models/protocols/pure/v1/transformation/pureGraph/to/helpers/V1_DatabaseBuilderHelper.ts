@@ -38,12 +38,10 @@ import {
   SELF_JOIN_ALIAS_PREFIX,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Join';
 import { Filter } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Filter';
-import type {
-  JoinType,
-  RelationalOperationElement,
-  Relation,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import {
+  type JoinType,
+  type RelationalOperationElement,
+  type Relation,
   Literal,
   LiteralList,
   DynaFunction,
@@ -53,8 +51,8 @@ import {
   RelationalOperationElementWithJoin,
   getJoinType,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import type { RelationalDataType } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import {
+  type RelationalDataType,
   Real,
   Binary,
   Bit,
@@ -86,8 +84,8 @@ import type { V1_GraphBuilderContext } from '../../../../transformation/pureGrap
 import type { V1_Schema } from '../../../../model/packageableElements/store/relational/model/V1_Schema';
 import type { V1_Table } from '../../../../model/packageableElements/store/relational/model/V1_Table';
 import type { V1_Column } from '../../../../model/packageableElements/store/relational/model/V1_Column';
-import type { V1_RelationalDataType } from '../../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
 import {
+  type V1_RelationalDataType,
   V1_VarChar,
   V1_SmallInt,
   V1_Integer,

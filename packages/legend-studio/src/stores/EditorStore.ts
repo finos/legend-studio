@@ -27,8 +27,11 @@ import {
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
-import type { GraphBuilderReport } from './EditorGraphState';
-import { EditorGraphState, GraphBuilderStatus } from './EditorGraphState';
+import {
+  type GraphBuilderReport,
+  EditorGraphState,
+  GraphBuilderStatus,
+} from './EditorGraphState';
 import { ChangeDetectionState } from './ChangeDetectionState';
 import { NewElementState } from './NewElementState';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState';
@@ -38,8 +41,10 @@ import { LocalChangesState } from './sidebar-state/LocalChangesState';
 import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState';
 import { WorkspaceWorkflowsState } from './sidebar-state/WorkspaceWorkflowsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
-import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type Clazz,
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   addUniqueEntry,
   isNonNullable,
@@ -80,22 +85,22 @@ import {
   NonBlockingDialogState,
   PanelDisplayState,
 } from '@finos/legend-art';
-import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
-import { buildElementOption } from './shared/PackageableElementOptionUtil';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+} from './shared/PackageableElementOptionUtil';
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  SDLCServerClient,
-  WorkspaceType,
-} from '@finos/legend-server-sdlc';
-import { ProjectConfiguration } from '@finos/legend-server-sdlc';
-import type {
-  PackageableElement,
-  Type,
-  Store,
-  GraphManagerState,
-} from '@finos/legend-graph';
 import {
+  ProjectConfiguration,
+  type SDLCServerClient,
+  type WorkspaceType,
+} from '@finos/legend-server-sdlc';
+import {
+  type PackageableElement,
+  type Type,
+  type Store,
+  type GraphManagerState,
   GRAPH_MANAGER_LOG_EVENT,
   PACKAGEABLE_ELEMENT_TYPE,
   PrimitiveType,
@@ -118,12 +123,10 @@ import {
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
-import type {
-  ActionAlertInfo,
-  ApplicationStore,
-  BlockingAlertInfo,
-} from '@finos/legend-application';
 import {
+  type ActionAlertInfo,
+  type ApplicationStore,
+  type BlockingAlertInfo,
   ActionAlertActionType,
   ActionAlertType,
   APPLICATION_LOG_EVENT,

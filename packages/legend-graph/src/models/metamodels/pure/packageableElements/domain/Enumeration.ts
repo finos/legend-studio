@@ -16,18 +16,17 @@
 
 import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   guaranteeNonNullable,
   addUniqueEntry,
   deleteEntry,
   changeEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { DataType } from './DataType';
 import type { Enum } from './Enum';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';

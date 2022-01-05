@@ -24,15 +24,16 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorSDLCState } from '../EditorSDLCState';
-import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
+  type ProjectConfiguration,
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
 } from '@finos/legend-server-sdlc';

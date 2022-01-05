@@ -19,31 +19,34 @@ import Dialog from '@material-ui/core/Dialog';
 import { clsx, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import type {
+import {
+  getPropertyPath,
   QueryBuilderDerivedPropertyExpressionState,
-  QueryBuilderPropertyExpressionState,
+  type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState';
-import { getPropertyPath } from '../stores/QueryBuilderPropertyEditorState';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDrop } from 'react-dnd';
-import type {
-  QueryBuilderExplorerTreeDragSource,
-  QueryBuilderExplorerTreePropertyNodeData,
+import { type DropTargetMonitor, useDrop } from 'react-dnd';
+import {
+  QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
+  type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreePropertyNodeData,
 } from '../stores/QueryBuilderExplorerState';
-import { QUERY_BUILDER_EXPLORER_TREE_DND_TYPE } from '../stores/QueryBuilderExplorerState';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
-import type {
-  ValueSpecification,
-  VariableExpression,
-} from '@finos/legend-graph';
-import { PrimitiveInstanceValue, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { Class, Enumeration, PrimitiveType } from '@finos/legend-graph';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
 import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
 import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
 import { MdRefresh } from 'react-icons/md';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  type ValueSpecification,
+  Class,
+  Enumeration,
+  VariableExpression,
+  PrimitiveType,
+  PrimitiveInstanceValue,
+  PRIMITIVE_TYPE,
+  DerivedProperty,
+} from '@finos/legend-graph';
 
 const DerivedPropertyParameterEditor = observer(
   (props: {
@@ -146,10 +149,32 @@ const DerivedPropertyParameterEditor = observer(
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
+    // propertyExpressionState: QueryBuilderPropertyExpressionState;
+    // index: number;
   }) => {
     const { derivedPropertyExpressionState } = props;
+
     const parameterValues = derivedPropertyExpressionState.parameterValues;
     const parameters = derivedPropertyExpressionState.parameters;
+    /*const changeToAllVersionsInRange = (): void => {
+      const name = `${derivedPropertyExpressionState.derivedProperty.name}AllVersionsInRange`;
+      derivedPropertyExpressionState.derivedProperty = guaranteeType(
+        derivedPropertyExpressionState.derivedProperty.owner._generatedMilestonedProperties.find(
+          (e) => e.name === name,
+        ),
+        DerivedProperty,
+      );
+      derivedPropertyExpressionState.propertyExpression.func =
+        derivedPropertyExpressionState.derivedProperty;
+      propertyExpressionState.derivedPropertyExpressionStates[index] =
+        new QueryBuilderDerivedPropertyExpressionState(
+          derivedPropertyExpressionState.queryBuilderState,
+          derivedPropertyExpressionState.propertyExpression,
+        );
+      derivedPropertyExpressionState = guaranteeNonNullable(
+        propertyExpressionState.derivedPropertyExpressionStates[index],
+      );
+    };*/
 
     return (
       <div className="query-builder-property-editor__section">
@@ -202,6 +227,8 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 <DerivedPropertyExpressionEditor
                   key={pe.path}
                   derivedPropertyExpressionState={pe}
+                  // propertyExpressionState={propertyExpressionState}
+                  // index={index}
                 />
               ),
             )}

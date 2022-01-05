@@ -15,9 +15,8 @@
  */
 
 import { computed, observable, makeObservable } from 'mobx';
-import type { Hashable, Pair } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, type Pair, hashArray } from '@finos/legend-shared';
 import type { Operation, TableAlias } from './RelationalOperationElement';
 import type { Database } from './Database';
 

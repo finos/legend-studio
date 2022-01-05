@@ -16,12 +16,14 @@
 
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
-import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
+import {
+  type QueryBuilderParameterDragSource,
+  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+} from '../stores/QueryParametersState';
 import { Dialog } from '@material-ui/core';
 import { useCallback } from 'react';
-import type { Type } from '@finos/legend-graph';
 import {
+  type Type,
   GenericType,
   GenericTypeExplicitReference,
   MILESTONING_STEROTYPES,
@@ -41,11 +43,13 @@ import {
   Randomizer,
 } from '@finos/legend-shared';
 import { MdRefresh } from 'react-icons/md';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDrop } from 'react-dnd';
+import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
-import type { PackageableElementOption } from '@finos/legend-application';
-import { buildElementOption, DATE_FORMAT } from '@finos/legend-application';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+  DATE_FORMAT,
+} from '@finos/legend-application';
 import { CustomSelectorInput } from '@finos/legend-art';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';

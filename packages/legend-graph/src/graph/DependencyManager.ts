@@ -16,8 +16,8 @@
 
 import { observable, computed, makeObservable } from 'mobx';
 import { ROOT_PACKAGE_NAME } from '../MetaModelConst';
-import type { Clazz } from '@finos/legend-shared';
 import {
+  type Clazz,
   ActionState,
   guaranteeNonNullable,
   isNonNullable,

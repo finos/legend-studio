@@ -15,8 +15,7 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, changeEntry } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, changeEntry, type Hashable } from '@finos/legend-shared';
 import { RelationShipEdgeView as RelationshipEdgeView } from './RelationshipEdgeView';
 import { Point } from './geometry/Point';
 import type { ClassView } from './ClassView';

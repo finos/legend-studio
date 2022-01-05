@@ -22,10 +22,14 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst';
-import type { DatabaseType } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { RelationalDatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import type { Connection } from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
-import { ConnectionPointer } from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
+import {
+  type DatabaseType,
+  RelationalDatabaseConnection,
+} from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import {
+  type Connection,
+  ConnectionPointer,
+} from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
 import { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
 import { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
 import { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
@@ -33,8 +37,10 @@ import type { Store } from '../../../../../../metamodels/pure/packageableElement
 import { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
 import { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
 import { ModelStore } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
-import type { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+import {
+  type PackageableElementReference,
+  PackageableElementImplicitReference,
+} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type {

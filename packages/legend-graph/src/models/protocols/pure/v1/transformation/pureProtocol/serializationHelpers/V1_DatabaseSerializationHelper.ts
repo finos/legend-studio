@@ -25,8 +25,8 @@ import {
   alias,
   optional,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   optionalCustom,
   usingConstantValueSchema,
   deserializeArray,
@@ -41,8 +41,8 @@ import { V1_Schema } from '../../../model/packageableElements/store/relational/m
 import { V1_Join } from '../../../model/packageableElements/store/relational/model/V1_Join';
 import { V1_Filter } from '../../../model/packageableElements/store/relational/model/V1_Filter';
 import { V1_Table } from '../../../model/packageableElements/store/relational/model/V1_Table';
-import type { V1_RelationalDataType } from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
 import {
+  type V1_RelationalDataType,
   V1_VarChar,
   V1_Char,
   V1_VarBinary,
@@ -66,8 +66,8 @@ import { V1_FilterPointer } from '../../../model/packageableElements/store/relat
 import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
 import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer';
 import { V1_ColumnMapping } from '../../../model/packageableElements/store/relational/model/V1_ColumnMapping';
-import type { V1_RelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
 import {
+  type V1_RelationalOperationElement,
   V1_DynaFunc,
   V1_ElementWithJoins,
   V1_Literal,

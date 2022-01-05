@@ -15,6 +15,7 @@
  */
 
 import {
+  type ModelSchema,
   alias,
   createModelSchema,
   deserialize,
@@ -24,9 +25,8 @@ import {
   list,
   optional,
 } from 'serializr';
-import type { ModelSchema } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   usingConstantValueSchema,
   IllegalStateError,
   UnsupportedOperationError,
@@ -37,10 +37,12 @@ import type { V1_Connection } from '../../../model/packageableElements/connectio
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
 import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
-import type { V1_DatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
+  type V1_DatabaseConnection,
+  V1_RelationalDatabaseConnection,
+} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
+import {
+  type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
@@ -48,8 +50,8 @@ import {
   V1_EmbeddedH2DatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
-import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
+  type V1_AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -57,6 +59,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
+  V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
@@ -285,6 +288,7 @@ enum V1_AuthenticationStrategyType {
   TEST = 'test',
   OAUTH = 'oauth',
   USER_PASSWORD = 'userPassword',
+  USERNAME_PASSWORD = 'userNamePassword',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -337,6 +341,18 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     ),
   });
 
+const V1_UsernamePasswordAuthenticationStrategyModelSchema = createModelSchema(
+  V1_UsernamePasswordAuthenticationStrategy,
+  {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.USERNAME_PASSWORD,
+    ),
+    baseVaultReference: optional(primitive()),
+    userNameVaultReference: primitive(),
+    passwordVaultReference: primitive(),
+  },
+);
+
 const V1_oAuthAuthenticationStrategyModelSchema = createModelSchema(
   V1_OAuthAuthenticationStrategy,
   {
@@ -380,6 +396,11 @@ export const V1_serializeAuthenticationStrategy = (
   } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
     return serialize(
       V1_userPasswordAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
+    return serialize(
+      V1_UsernamePasswordAuthenticationStrategyModelSchema,
       protocol,
     );
   }
@@ -437,6 +458,11 @@ export const V1_deserializeAuthenticationStrategy = (
       );
     case V1_AuthenticationStrategyType.OAUTH:
       return deserialize(V1_oAuthAuthenticationStrategyModelSchema, json);
+    case V1_AuthenticationStrategyType.USERNAME_PASSWORD:
+      return deserialize(
+        V1_UsernamePasswordAuthenticationStrategyModelSchema,
+        json,
+      );
     default: {
       const extraConnectionAuthenticationStrategyProtocolDeserializers =
         plugins.flatMap(

@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import type {
-  Enumeration,
-  PrimitiveType,
-  Type,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type Enumeration,
+  type PrimitiveType,
+  type Type,
+  type ValueSpecification,
   extractElementNameFromPath,
   matchFunctionName,
   LambdaFunctionInstanceValue,
@@ -41,11 +39,11 @@ import {
   generateEnumerableNameFromToken,
   addUniqueEntry,
 } from '@finos/legend-shared';
-import type {
-  QueryBuilderFilterState,
-  QueryBuilderFilterOperator,
+import {
+  FilterConditionState,
+  type QueryBuilderFilterState,
+  type QueryBuilderFilterOperator,
 } from '../QueryBuilderFilterState';
-import { FilterConditionState } from '../QueryBuilderFilterState';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from '../QueryBuilderValueSpecificationBuilderHelper';
 

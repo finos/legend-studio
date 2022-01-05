@@ -76,6 +76,7 @@
 
     &__artifact-id {
       color: var(--color-light-grey-400);
+      white-space: nowrap;
     }
 
     &__version-id {
@@ -199,6 +200,22 @@
       padding: 0 0.5rem;
       user-select: none;
       cursor: default;
+
+      &__icon {
+        @include flexCenter;
+
+        height: 100%;
+
+        svg {
+          font-size: 1.2rem;
+        }
+      }
+
+      &__text {
+        margin-left: 0.5rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
     }
 
     &__diagram-selector {

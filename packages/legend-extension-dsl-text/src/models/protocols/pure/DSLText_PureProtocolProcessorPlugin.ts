@@ -16,8 +16,11 @@
 
 import packageJson from '../../../../package.json';
 import { V1_Text } from './v1/model/packageableElements/text/V1_Text';
-import type { PlainObject } from '@finos/legend-shared';
-import { guaranteeNonNullable, assertType } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  guaranteeNonNullable,
+  assertType,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_textModelSchema,
@@ -28,17 +31,15 @@ import {
   Text,
   TEXT_TYPE,
 } from '../../metamodels/pure/model/packageableElements/text/Text';
-import type {
-  PackageableElement,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_GraphBuilderContext,
-  V1_GraphTransformerContext,
-  V1_PackageableElement,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type V1_ElementProtocolClassifierPathGetter,
+  type V1_ElementProtocolDeserializer,
+  type V1_ElementProtocolSerializer,
+  type V1_ElementTransformer,
+  type V1_GraphBuilderContext,
+  type V1_GraphTransformerContext,
+  type V1_PackageableElement,
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,

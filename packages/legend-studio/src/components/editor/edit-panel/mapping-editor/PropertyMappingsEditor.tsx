@@ -19,8 +19,10 @@ import { FaArrowAltCircleRight } from 'react-icons/fa';
 import { MultiplicityBadge } from '../../../shared/MultiplicityBadge';
 import { PurePropertyMappingEditor } from './PurePropertyMappingEditor';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
-import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  type MappingElement,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import {
   PurePropertyMappingState,
@@ -28,8 +30,10 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 import { clsx } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
-import type { FlatDataPropertyMappingState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
+import {
+  type FlatDataPropertyMappingState,
+  FlatDataInstanceSetImplementationState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor';
 import { RelationalPropertyMappingEditor } from './relational/RelationalPropertyMappingEditor';
 import type {
@@ -37,8 +41,8 @@ import type {
   RootRelationalInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { Property } from '@finos/legend-graph';
 import {
+  type Property,
   getRootSetImplementation,
   nominateRootSetImplementation,
   Class,

@@ -22,9 +22,6 @@ import {
 import {
   ValueSpecification,
   Class,
-  MILESTONING_STEROTYPES,
-} from '@finos/legend-graph';
-import {
   Multiplicity,
   getMilestoneTemporalStereotype,
   INTERNAL__UnknownValueSpecification,
@@ -35,7 +32,7 @@ import {
   InstanceValue,
   PackageableElementExplicitReference,
   CollectionInstanceValue,
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
   FunctionType,
   GenericType,
   GenericTypeExplicitReference,
@@ -45,6 +42,7 @@ import {
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -96,7 +94,7 @@ export const buildLambdaFunction = (
     PRIMITIVE_TYPE.STRING,
   );
   const typeAny = queryBuilderState.graphManagerState.graph.getType(
-    CORE_ELEMENT_PATH.ANY,
+    CORE_PURE_PATH.ANY,
   );
   const lambdaFunction = new LambdaFunction(
     new FunctionType(typeAny, multiplicityOne),

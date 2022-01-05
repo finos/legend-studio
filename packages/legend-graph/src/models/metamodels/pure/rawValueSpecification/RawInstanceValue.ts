@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
 import type { Type } from '../packageableElements/domain/Type';
-import type { RawValueSpecificationVisitor } from './RawValueSpecification';
-import { RawValueSpecification } from './RawValueSpecification';
+import {
+  type RawValueSpecificationVisitor,
+  RawValueSpecification,
+} from './RawValueSpecification';
 import { computed, makeObservable, observable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 

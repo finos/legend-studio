@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   SerializationFactory,
   AbstractServerClient,
 } from '@finos/legend-shared';
@@ -43,5 +43,5 @@ export class TaxonomyServerClient extends AbstractServerClient {
   }
 
   getTaxonomyData = (): Promise<PlainObject<TaxonomyNodeData>[]> =>
-    this.networkClient.get(`${this.networkClient.baseUrl}`);
+    this.get(`${this.baseUrl}`);
 }

@@ -15,10 +15,11 @@
  */
 
 import { observable, makeObservable, action } from 'mobx';
-import { deleteEntry, addUniqueEntry } from '@finos/legend-shared';
-import type { Pair } from '@finos/legend-shared';
-import type { ValueSpecificationVisitor } from './ValueSpecification';
-import { ValueSpecification } from './ValueSpecification';
+import { deleteEntry, addUniqueEntry, type Pair } from '@finos/legend-shared';
+import {
+  type ValueSpecificationVisitor,
+  ValueSpecification,
+} from './ValueSpecification';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
 import type { EnumValueReference } from '../packageableElements/domain/EnumValueReference';

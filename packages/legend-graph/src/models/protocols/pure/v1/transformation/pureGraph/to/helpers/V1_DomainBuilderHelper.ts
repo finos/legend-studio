@@ -23,8 +23,10 @@ import {
 } from '@finos/legend-shared';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
 import type { Association } from '../../../../../../../metamodels/pure/packageableElements/domain/Association';
-import type { Measure } from '../../../../../../../metamodels/pure/packageableElements/domain/Measure';
-import { Unit } from '../../../../../../../metamodels/pure/packageableElements/domain/Measure';
+import {
+  type Measure,
+  Unit,
+} from '../../../../../../../metamodels/pure/packageableElements/domain/Measure';
 import { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property';
 import { DerivedProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty';
 import { RawVariableExpression } from '../../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression';

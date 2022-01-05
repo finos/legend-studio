@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import type { CSSProperties } from 'react';
-import { useRef, useEffect, forwardRef } from 'react';
+import { type CSSProperties, useRef, useEffect, forwardRef } from 'react';
 import { FaCaretDown, FaCircleNotch, FaTimes } from 'react-icons/fa';
-import type { Props } from 'react-select/creatable';
-import CreatableSelect from 'react-select/creatable';
+import CreatableSelect, { type Props } from 'react-select/creatable';
 import Select from 'react-select';
 import { FixedSizeList } from 'react-window';
 

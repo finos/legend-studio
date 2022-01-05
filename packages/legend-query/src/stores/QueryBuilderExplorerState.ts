@@ -20,16 +20,14 @@ import {
   addUniqueEntry,
   uniq,
 } from '@finos/legend-shared';
-import type {
-  AbstractProperty,
-  GraphManagerState,
-  Mapping,
-  PropertyMapping,
-  PureModel,
-  SetImplementation,
-  Type,
-} from '@finos/legend-graph';
 import {
+  type AbstractProperty,
+  type GraphManagerState,
+  type Mapping,
+  type PropertyMapping,
+  type PureModel,
+  type SetImplementation,
+  type Type,
   getRootSetImplementation,
   TYPICAL_MULTIPLICITY_TYPE,
   OperationSetImplementation,

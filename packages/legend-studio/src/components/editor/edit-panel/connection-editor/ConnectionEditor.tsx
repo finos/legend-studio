@@ -18,12 +18,12 @@ import { observer } from 'mobx-react-lite';
 import { FlatDataConnectionEditor } from './FlatDataConnectionEditor';
 import { RelationalDatabaseConnectionEditor } from './RelationalDatabaseConnectionEditor';
 import {
+  type ConnectionEditorState,
   RelationalDatabaseConnectionValueState,
   JsonModelConnectionValueState,
   FlatDataConnectionValueState,
   PackageableConnectionEditorState,
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import type { ConnectionEditorState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import type { Class } from '@finos/legend-graph';
 import { FaLock } from 'react-icons/fa';

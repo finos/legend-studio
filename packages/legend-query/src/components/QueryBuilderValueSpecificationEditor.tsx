@@ -33,13 +33,11 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import CSVParser from 'papaparse';
-import type {
-  Enum,
-  PureModel,
-  Type,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type Enum,
+  type PureModel,
+  type Type,
+  type ValueSpecification,
   LATEST_DATE,
   Enumeration,
   GenericType,
@@ -53,8 +51,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import type { TooltipProps } from '@material-ui/core';
-import { Tooltip } from '@material-ui/core';
+import { type TooltipProps, Tooltip } from '@material-ui/core';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { DATE_FORMAT } from '@finos/legend-application';
@@ -537,7 +534,10 @@ export const DateInstanceValueEditor = observer(
     };
 
     return (
-      <div className="query-builder__parameter-editor__parameter">
+      <div
+        className="query-builder__parameter-editor__parameter"
+        style={{ height: '3.5rem' }}
+      >
         {(valueSpecification.genericType.value.rawType.name ===
           PRIMITIVE_TYPE.STRICTDATE ||
           valueSpecification.genericType.value.rawType.name ===
@@ -551,6 +551,7 @@ export const DateInstanceValueEditor = observer(
           PRIMITIVE_TYPE.LATESTDATE && (
           <LatestDatePrimitiveInstanceValueEditor />
         )}
+
         <div className="query-builder__parameter-editor__parameter">
           <CustomSelectorInput
             placeholder="Choose a type..."
@@ -611,16 +612,6 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
             className={className}
           />
         );
-      /*case PRIMITIVE_TYPE.STRICTDATE:
-      case PRIMITIVE_TYPE.DATETIME:
-        return (
-          <DatePrimitiveInstanceValueEditor
-            valueSpecification={valueSpecification}
-            className={className}
-          />
-        );
-      case PRIMITIVE_TYPE.LATESTDATE:
-        return <LatestDatePrimitiveInstanceValueEditor />;*/
       default:
         return <QueryBuilderUnsupportedValueSpecificationEditor />;
     }

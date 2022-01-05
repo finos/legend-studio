@@ -16,8 +16,8 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   addUniqueEntry,
@@ -29,12 +29,10 @@ import {
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
 import type { EditorStore } from '../../../EditorStore';
-import type {
-  RelationalDatabaseConnection,
-  Schema,
-  Table,
-} from '@finos/legend-graph';
 import {
+  type RelationalDatabaseConnection,
+  type Schema,
+  type Table,
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
@@ -117,7 +115,7 @@ export class DatabaseBuilderState {
       databaseGrammarCode: observable,
       isSavingDatabase: observable,
       setTargetDatabasePath: action,
-      setModal: action,
+      setShowModal: action,
       setDatabaseGrammarCode: action,
       setTreeData: action,
       treeData: observable,
@@ -136,7 +134,7 @@ export class DatabaseBuilderState {
     this.targetDatabasePath = this.currentDatabase?.path ?? 'store::MyDatabase';
   }
 
-  setModal(val: boolean): void {
+  setShowModal(val: boolean): void {
     this.showModal = val;
   }
 
@@ -152,7 +150,6 @@ export class DatabaseBuilderState {
     this.targetDatabasePath = val;
   }
 
-  // Tree Operations
   *onNodeSelect(
     node: DatabaseBuilderTreeNodeData,
     treeData: DatabaseBuilderTreeData,

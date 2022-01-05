@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_PackageableElementVisitor } from '../../../model/packageableElements/V1_PackageableElement';
-import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
+import {
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
+} from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_EngineRuntime } from '../../../model/packageableElements/runtime/V1_Runtime';
 
 export class V1_PackageableRuntime

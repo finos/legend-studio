@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, flowResult } from 'mobx';
+import { action, makeAutoObservable, flowResult, flow } from 'mobx';
 import format from 'date-fns/format';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
-  downloadFile,
+  downloadFileUsingDataURI,
   guaranteeNonNullable,
   ContentType,
   NetworkClientError,
   HttpStatus,
+  deleteEntry,
+  assertTrue,
+  readFileAsText,
 } from '@finos/legend-shared';
 import {
   DATE_TIME_FORMAT,
@@ -38,14 +42,108 @@ import {
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { Entity } from '@finos/legend-model-storage';
-import { EntityDiff, Revision } from '@finos/legend-server-sdlc';
+import { EntityDiff, EntityChange, Revision } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+
+class PatchLoaderState {
+  editorStore: EditorStore;
+  sdlcState: EditorSDLCState;
+
+  changes: EntityChange[] | undefined;
+  currentChanges: EntityChange[] = [];
+  isLoadingChanges = false;
+  showModal = false;
+  isValidPatch = false;
+
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
+    makeAutoObservable(this, {
+      editorStore: false,
+      sdlcState: false,
+      openModal: action,
+      closeModal: action,
+      deleteChange: action,
+      loadPatchFile: flow,
+    });
+
+    this.editorStore = editorStore;
+    this.sdlcState = sdlcState;
+  }
+
+  openModal(localChanges: EntityChange[]): void {
+    this.currentChanges = localChanges;
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.currentChanges = [];
+    this.setPatchChanges(undefined);
+    this.showModal = false;
+  }
+
+  setIsValidPatch(val: boolean): void {
+    this.isValidPatch = val;
+  }
+
+  setPatchChanges(changes: EntityChange[] | undefined): void {
+    this.changes = changes;
+  }
+
+  deleteChange(change: EntityChange): void {
+    if (this.changes) {
+      deleteEntry(this.changes, change);
+    }
+  }
+
+  get overiddingChanges(): EntityChange[] {
+    if (this.changes?.length) {
+      return this.changes.filter((change) =>
+        this.currentChanges.find(
+          (local) => local.entityPath === change.entityPath,
+        ),
+      );
+    }
+    return [];
+  }
+
+  *loadPatchFile(file: File): GeneratorFn<void> {
+    try {
+      this.setPatchChanges(undefined);
+      assertTrue(
+        file.type === ContentType.APPLICATION_JSON,
+        `Patch file expected to be of type 'JSON'`,
+      );
+      const fileText = (yield readFileAsText(file)) as string;
+      const entityChanges = JSON.parse(fileText) as {
+        entityChanges: PlainObject<EntityChange>[];
+      };
+      const changes = entityChanges.entityChanges.map((e) =>
+        EntityChange.serialization.fromJson(e),
+      );
+      this.setPatchChanges(changes);
+      this.setIsValidPatch(true);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.setIsValidPatch(false);
+      this.editorStore.applicationStore.notifyError(
+        `Can't load patch: Error: ${error.message}`,
+      );
+    }
+  }
+
+  *applyChanges(): GeneratorFn<void> {
+    if (this.changes?.length) {
+      this.editorStore.graphState.loadEntityChangesToGraph(this.changes);
+      this.closeModal();
+    }
+  }
+}
 
 export class LocalChangesState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
   isSyncingWithWorkspace = false;
   isRefreshingLocalChangesDetector = false;
+  patchLoaderState: PatchLoaderState;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
@@ -56,6 +154,7 @@ export class LocalChangesState {
 
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
+    this.patchLoaderState = new PatchLoaderState(editorStore, sdlcState);
   }
 
   openLocalChange(diff: EntityDiff): void {
@@ -158,7 +257,7 @@ export class LocalChangesState {
       undefined,
       TAB_SIZE,
     );
-    downloadFile(fileName, content, ContentType.APPLICATION_JSON);
+    downloadFileUsingDataURI(fileName, content, ContentType.APPLICATION_JSON);
   };
 
   *syncWithWorkspace(syncMessage?: string): GeneratorFn<void> {

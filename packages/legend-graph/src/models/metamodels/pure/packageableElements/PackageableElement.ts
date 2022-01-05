@@ -16,12 +16,12 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   hashString,
   IllegalStateError,
   uuid,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,

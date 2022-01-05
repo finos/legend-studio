@@ -16,12 +16,12 @@
 
 import { observable, computed, makeObservable, action } from 'mobx';
 import {
+  type Hashable,
   addUniqueEntry,
   changeEntry,
   deleteEntry,
   hashArray,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 import type {
   PackageableElement,

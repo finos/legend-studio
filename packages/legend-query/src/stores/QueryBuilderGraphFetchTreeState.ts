@@ -20,8 +20,8 @@ import {
   PackageableElementExplicitReference,
   RootGraphFetchTree,
 } from '@finos/legend-graph';
-import type { QueryBuilderGraphFetchTreeData } from './QueryBuilderGraphFetchTreeUtil';
 import {
+  type QueryBuilderGraphFetchTreeData,
   addQueryBuilderPropertyNode,
   buildGraphFetchTreeData,
 } from './QueryBuilderGraphFetchTreeUtil';

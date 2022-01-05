@@ -19,12 +19,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
 import { LegendStudioPluginManager } from './LegendStudioPluginManager';
-import type {
-  LegendApplicationConfig,
-  LegendApplicationLogger,
-  LegendApplicationVersionData,
-} from '@finos/legend-application';
 import {
+  type LegendApplicationConfig,
+  type LegendApplicationLogger,
+  type LegendApplicationVersionData,
   ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
@@ -32,8 +30,10 @@ import {
 } from '@finos/legend-application';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
-import type { LegendStudioConfigurationData } from './LegendStudioConfig';
-import { LegendStudioConfig } from './LegendStudioConfig';
+import {
+  type LegendStudioConfigurationData,
+  LegendStudioConfig,
+} from './LegendStudioConfig';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: LegendStudioPluginManager,

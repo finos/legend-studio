@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 import { addUniqueEntry } from '@finos/legend-shared';
-import type { ValidationIssue } from './ValidationHelper';
-import { createValidationError } from './ValidationHelper';
+import {
+  type ValidationIssue,
+  createValidationError,
+} from './ValidationHelper';
 
 export const validateServicePattern = (pattern: string): ValidationIssue => {
   const errors: string[] = [];

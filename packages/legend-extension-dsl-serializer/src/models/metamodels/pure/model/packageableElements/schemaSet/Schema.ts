@@ -15,8 +15,7 @@
  */
 
 import { observable, computed, makeObservable, action } from 'mobx';
-import { uuid, hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 
 export class Schema implements Hashable {

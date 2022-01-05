@@ -43,11 +43,10 @@ jest.mock('@finos/legend-shared', () => ({
 
 import { resolve, basename } from 'path';
 import fs from 'fs';
-import type { AxiosResponse } from 'axios';
-import axios from 'axios';
+import axios, { type AxiosResponse } from 'axios';
 import type { PlainObject } from '@finos/legend-shared';
-import type { V1_PackageableElement } from '@finos/legend-graph';
 import {
+  type V1_PackageableElement,
   TEST__GraphPluginManager,
   TEST__buildGraphWithEntities,
   TEST__checkGraphHashUnchanged,

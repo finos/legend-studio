@@ -39,10 +39,11 @@ import {
 import { useResizeDetector } from 'react-resize-detector';
 import { FaUserSecret } from 'react-icons/fa';
 import { MdMoreHoriz } from 'react-icons/md';
-import type { ElementDragSource } from '../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDrop } from 'react-dnd';
+import {
+  type ElementDragSource,
+  CORE_DND_TYPE,
+} from '../../../stores/shared/DnDUtil';
+import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';

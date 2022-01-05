@@ -20,15 +20,15 @@ import {
   guaranteeType,
   uuid,
 } from '@finos/legend-shared';
-import type { DiagramRenderer } from '../../DiagramRenderer';
-import { DIAGRAM_INTERACTION_MODE } from '../../DiagramRenderer';
-import { HotkeyConfiguration, PanelDisplayState } from '@finos/legend-art';
-import type {
-  PackageableElement,
-  AbstractProperty,
-  PropertyReference,
-} from '@finos/legend-graph';
 import {
+  type DiagramRenderer,
+  DIAGRAM_INTERACTION_MODE,
+} from '../../DiagramRenderer';
+import { HotkeyConfiguration, PanelDisplayState } from '@finos/legend-art';
+import {
+  type PackageableElement,
+  type AbstractProperty,
+  type PropertyReference,
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -36,8 +36,11 @@ import {
   GenericType,
   PropertyExplicitReference,
 } from '@finos/legend-graph';
-import type { EditorStore } from '@finos/legend-studio';
-import { ClassEditorState, ElementEditorState } from '@finos/legend-studio';
+import {
+  type EditorStore,
+  ClassEditorState,
+  ElementEditorState,
+} from '@finos/legend-studio';
 import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/ClassView';
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
 import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
@@ -377,7 +380,7 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
-    this.renderer.handleEditProperty = (
+    const editProperty = (
       property: AbstractProperty,
       point: Point,
       propertyHolderView: PropertyHolderView | undefined,
@@ -393,6 +396,8 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
+    this.renderer.onClassPropertyDoubleClick = editProperty;
+    this.renderer.handleEditProperty = editProperty;
     this.renderer.handleAddSimpleProperty = (classView: ClassView): void => {
       if (!this.isReadOnly && !classView.class.value.isReadOnly) {
         const _class = classView.class.value;

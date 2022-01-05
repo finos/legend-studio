@@ -16,24 +16,24 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type {
-  MappingExplorerDropTarget,
-  ElementDragSource,
-} from '../../../../stores/shared/DnDUtil';
 import {
+  type MappingExplorerDropTarget,
+  type ElementDragSource,
   CORE_DND_TYPE,
   MappingElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { TreeNodeContainerProps } from '@finos/legend-art';
-import { clsx, TreeView, ContextMenu } from '@finos/legend-art';
+import {
+  type TreeNodeContainerProps,
+  clsx,
+  TreeView,
+  ContextMenu,
+} from '@finos/legend-art';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { useDrop, useDrag } from 'react-dnd';
 import { toSentenceCase } from '@finos/legend-shared';
-import type {
-  MappingElement,
-  MappingExplorerTreeNodeData,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type MappingElement,
+  type MappingExplorerTreeNodeData,
   getAllMappingElements,
   getMappingElementTarget,
   getMappingElementType,
@@ -55,8 +55,8 @@ import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-edito
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { PackageableElement } from '@finos/legend-graph';
 import {
+  type PackageableElement,
   SetImplementation,
   EnumerationMapping,
   PropertyMapping,

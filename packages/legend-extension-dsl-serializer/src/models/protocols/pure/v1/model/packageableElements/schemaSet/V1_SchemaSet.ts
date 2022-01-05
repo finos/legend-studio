@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type { V1_PackageableElementVisitor } from '@finos/legend-graph';
-import { V1_PackageableElement } from '@finos/legend-graph';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
+} from '@finos/legend-graph';
 import type { V1_Schema } from './V1_Schema';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
 

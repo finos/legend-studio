@@ -17,15 +17,16 @@
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   assertErrorThrown,
   LogEvent,
   getNullableFirstElement,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
-import type { NewVersionType } from '@finos/legend-server-sdlc';
 import {
+  type NewVersionType,
   CreateVersionCommand,
   ReviewState,
   Revision,

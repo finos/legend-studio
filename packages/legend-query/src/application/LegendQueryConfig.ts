@@ -18,11 +18,11 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
 } from '@finos/legend-shared';
-import type {
-  LegendApplicationConfigurationData,
-  LegendApplicationVersionData,
+import {
+  LegendApplicationConfig,
+  type LegendApplicationConfigurationData,
+  type LegendApplicationVersionData,
 } from '@finos/legend-application';
-import { LegendApplicationConfig } from '@finos/legend-application';
 
 export interface LegendQueryConfigurationData
   extends LegendApplicationConfigurationData {
