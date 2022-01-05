@@ -172,9 +172,7 @@ export class Class extends Type implements Hashable, Stubable {
 
   getProperty = (name: string): Property =>
     guaranteeNonNullable(
-      this.getAllProperties()
-        .concat(...this._generatedMilestonedProperties)
-        .find((p) => p.name === name),
+      this.getAllProperties().find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );
 
@@ -319,7 +317,6 @@ export class Class extends Type implements Hashable, Stubable {
       CORE_HASH_STRUCTURE.CLASS,
       this.path,
       hashArray(this.properties),
-      //hashArray(this.getAllUnmilestonedDerivedProperties()),
       hashArray(this.derivedProperties),
       hashArray(
         this.generalizations.map((gen) => gen.ownerReference.hashValue),

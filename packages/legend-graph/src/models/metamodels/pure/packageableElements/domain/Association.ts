@@ -136,9 +136,7 @@ export class Association
 
   getProperty = (name: string): Property =>
     guaranteeNonNullable(
-      this.properties
-        .concat(...this._generatedMilestonedProperties)
-        .find((p) => p.name === name),
+      this.properties.find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );
 

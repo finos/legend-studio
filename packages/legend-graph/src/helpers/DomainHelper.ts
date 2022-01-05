@@ -23,6 +23,7 @@ import { GenericType } from '../models/metamodels/pure/packageableElements/domai
 import { Property } from '../models/metamodels/pure/packageableElements/domain/Property';
 import {
   CORE_PURE_PATH,
+  DEFAULT_MILESTONING_PARAMETERS,
   MILESTONING_STEROTYPES,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '../MetaModelConst';
@@ -85,7 +86,7 @@ export const milestoningPropertyGenerator = (
             {
               _type: 'var',
               class: 'Date',
-              name: 'businessDate',
+              name: DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -180,7 +181,7 @@ export const milestoningPropertyGenerator = (
             {
               _type: 'var',
               class: 'Date',
-              name: 'processingDate',
+              name: DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -275,7 +276,7 @@ export const milestoningPropertyGenerator = (
             {
               _type: 'var',
               class: 'Date',
-              name: 'processingDate',
+              name: DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -284,7 +285,7 @@ export const milestoningPropertyGenerator = (
             {
               _type: 'var',
               class: 'Date',
-              name: 'businessDate',
+              name: DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,

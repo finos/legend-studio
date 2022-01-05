@@ -60,6 +60,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   MILESTONING_STEROTYPES,
   VariableExpression,
+  DEFAULT_MILESTONING_PARAMETERS,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -363,16 +364,24 @@ export class QueryBuilderState {
   buildClassMilestoningTemporalValue(stereotype: string): void {
     switch (stereotype) {
       case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-        this.buildMilestoningParameter('businessDate');
+        this.buildMilestoningParameter(
+          DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+        );
         break;
       }
       case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
-        this.buildMilestoningParameter('processingDate');
+        this.buildMilestoningParameter(
+          DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+        );
         break;
       }
       case MILESTONING_STEROTYPES.BITEMPORAL: {
-        this.buildMilestoningParameter('processingDate');
-        this.buildMilestoningParameter('businessDate');
+        this.buildMilestoningParameter(
+          DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+        );
+        this.buildMilestoningParameter(
+          DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+        );
         break;
       }
       default:

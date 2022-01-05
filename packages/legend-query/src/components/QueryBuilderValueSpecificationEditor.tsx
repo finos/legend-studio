@@ -53,9 +53,11 @@ import {
 } from '@finos/legend-graph';
 import { type TooltipProps, Tooltip } from '@material-ui/core';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
-import type { PackageableElementOption } from '@finos/legend-application';
-import { DATE_FORMAT } from '@finos/legend-application';
-import { buildElementOption } from '@finos/legend-application';
+import {
+  type PackageableElementOption,
+  DATE_FORMAT,
+  buildElementOption,
+} from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
 
@@ -500,9 +502,7 @@ export const DateInstanceValueEditor = observer(
     className?: string | undefined;
   }) => {
     const { valueSpecification, graph, className } = props;
-    const latestType = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
-    const variableType =
-      valueSpecification.genericType?.value.rawType ?? latestType;
+    const variableType = valueSpecification.genericType.value.rawType;
     const selectedType = buildElementOption(variableType);
     const typeOptions: PackageableElementOption<Type>[] = graph.primitiveTypes
       .filter(
@@ -515,7 +515,7 @@ export const DateInstanceValueEditor = observer(
 
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
-        valueSpecification.genericType?.value.setRawType(val.value);
+        valueSpecification.genericType.value.setRawType(val.value);
       }
       if (
         valueSpecification.genericType.value.rawType.name !==
@@ -534,10 +534,7 @@ export const DateInstanceValueEditor = observer(
     };
 
     return (
-      <div
-        className="query-builder__parameter-editor__parameter"
-        style={{ height: '3.5rem' }}
-      >
+      <div className="query-builder-value-spec-editor__date">
         {(valueSpecification.genericType.value.rawType.name ===
           PRIMITIVE_TYPE.STRICTDATE ||
           valueSpecification.genericType.value.rawType.name ===
@@ -551,8 +548,7 @@ export const DateInstanceValueEditor = observer(
           PRIMITIVE_TYPE.LATESTDATE && (
           <LatestDatePrimitiveInstanceValueEditor />
         )}
-
-        <div className="query-builder__parameter-editor__parameter">
+        <div style={{ marginTop: '0.5rem' }}>
           <CustomSelectorInput
             placeholder="Choose a type..."
             options={typeOptions}

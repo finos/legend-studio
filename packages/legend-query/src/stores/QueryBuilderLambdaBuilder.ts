@@ -20,8 +20,8 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
-  ValueSpecification,
-  Class,
+  type ValueSpecification,
+  type Class,
   Multiplicity,
   getMilestoneTemporalStereotype,
   INTERNAL__UnknownValueSpecification,

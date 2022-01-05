@@ -34,7 +34,10 @@ import { unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphManagerState } from '../../GraphManagerState';
-import { TEST__buildGraphWithEntities, TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../GraphManagerTestUtils';
 
 let graphManagerState: GraphManagerState;
 

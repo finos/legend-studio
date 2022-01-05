@@ -21,7 +21,7 @@ import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import {
   getPropertyPath,
-  QueryBuilderDerivedPropertyExpressionState,
+  type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
@@ -32,20 +32,21 @@ import {
 } from '../stores/QueryBuilderExplorerState';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
-import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
+import {
+  type QueryBuilderParameterDragSource,
+  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+} from '../stores/QueryParametersState';
 import { MdRefresh } from 'react-icons/md';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type ValueSpecification,
+  type VariableExpression,
   Class,
   Enumeration,
-  VariableExpression,
   PrimitiveType,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
-  DerivedProperty,
 } from '@finos/legend-graph';
 
 const DerivedPropertyParameterEditor = observer(
@@ -149,32 +150,10 @@ const DerivedPropertyParameterEditor = observer(
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
-    // propertyExpressionState: QueryBuilderPropertyExpressionState;
-    // index: number;
   }) => {
     const { derivedPropertyExpressionState } = props;
-
     const parameterValues = derivedPropertyExpressionState.parameterValues;
     const parameters = derivedPropertyExpressionState.parameters;
-    /*const changeToAllVersionsInRange = (): void => {
-      const name = `${derivedPropertyExpressionState.derivedProperty.name}AllVersionsInRange`;
-      derivedPropertyExpressionState.derivedProperty = guaranteeType(
-        derivedPropertyExpressionState.derivedProperty.owner._generatedMilestonedProperties.find(
-          (e) => e.name === name,
-        ),
-        DerivedProperty,
-      );
-      derivedPropertyExpressionState.propertyExpression.func =
-        derivedPropertyExpressionState.derivedProperty;
-      propertyExpressionState.derivedPropertyExpressionStates[index] =
-        new QueryBuilderDerivedPropertyExpressionState(
-          derivedPropertyExpressionState.queryBuilderState,
-          derivedPropertyExpressionState.propertyExpression,
-        );
-      derivedPropertyExpressionState = guaranteeNonNullable(
-        propertyExpressionState.derivedPropertyExpressionStates[index],
-      );
-    };*/
 
     return (
       <div className="query-builder-property-editor__section">
@@ -227,8 +206,6 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 <DerivedPropertyExpressionEditor
                   key={pe.path}
                   derivedPropertyExpressionState={pe}
-                  // propertyExpressionState={propertyExpressionState}
-                  // index={index}
                 />
               ),
             )}

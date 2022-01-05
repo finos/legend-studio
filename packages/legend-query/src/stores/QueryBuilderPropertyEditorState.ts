@@ -42,6 +42,7 @@ import {
   VariableExpression,
   getMilestoneTemporalStereotype,
   MILESTONING_STEROTYPES,
+  DEFAULT_MILESTONING_PARAMETERS,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -91,53 +92,8 @@ const fillDerivedPropertyArguments = (
     if (idx < derivedPropertyExpressionState.parameterValues.length) {
       return;
     }
-    let argument: ValueSpecification | undefined;
-    const genericType = parameter.genericType;
-    if (genericType) {
-      const _type = genericType.value.rawType;
-      if (
-        (
-          [
-            PRIMITIVE_TYPE.STRING,
-            PRIMITIVE_TYPE.BOOLEAN,
-            PRIMITIVE_TYPE.NUMBER,
-            PRIMITIVE_TYPE.FLOAT,
-            PRIMITIVE_TYPE.DECIMAL,
-            PRIMITIVE_TYPE.INTEGER,
-            PRIMITIVE_TYPE.DATE,
-            PRIMITIVE_TYPE.STRICTDATE,
-            PRIMITIVE_TYPE.DATETIME,
-            PRIMITIVE_TYPE.LATESTDATE,
-          ] as string[]
-        ).includes(_type.name)
-      ) {
-        const primitiveInstanceValue = new PrimitiveInstanceValue(
-          genericType,
-          parameter.multiplicity,
-        );
-        if (_type.name !== PRIMITIVE_TYPE.LATESTDATE) {
-          primitiveInstanceValue.values = [
-            generateDefaultValueForPrimitiveType(_type.name as PRIMITIVE_TYPE),
-          ];
-        }
-        argument = primitiveInstanceValue;
-      } else if (_type instanceof Enumeration) {
-        const enumValueInstanceValue = new EnumValueInstanceValue(
-          genericType,
-          parameter.multiplicity,
-        );
-        if (_type.values.length) {
-          const enumValueRef = EnumValueExplicitReference.create(
-            _type.values[0] as Enum,
-          );
-          enumValueInstanceValue.values = [enumValueRef];
-        }
-        argument = enumValueInstanceValue;
-      }
-    }
     const querySetupState =
       derivedPropertyExpressionState.queryBuilderState.querySetupState;
-    let isMilestonedProperty = false;
     let temporalTarget;
     if (
       derivedPropertyExpressionState.propertyExpression.func.genericType.value
@@ -151,24 +107,14 @@ const fillDerivedPropertyArguments = (
         derivedPropertyExpressionState.queryBuilderState.graphManagerState
           .graph,
       );
-      isMilestonedProperty = true;
-      const name = derivedPropertyExpressionState.propertyExpression.func.name;
-      derivedPropertyExpressionState.propertyExpression.func =
-        guaranteeNonNullable(
-          derivedPropertyExpressionState.propertyExpression.func.owner._generatedMilestonedProperties.find(
-            (e) => e.name === name,
-          ),
-        );
-    } else {
-      isMilestonedProperty = false;
     }
-    if (isMilestonedProperty) {
+    if (temporalTarget) {
       switch (temporalTarget) {
         case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
           let parameter;
           if (querySetupState.classMilestoningTemporalValues.length === 0) {
             derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-              'businessDate',
+              DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
             );
             parameter = querySetupState.classMilestoningTemporalValues[0];
           } else if (
@@ -178,12 +124,12 @@ const fillDerivedPropertyArguments = (
               querySetupState.classMilestoningTemporalValues[0] instanceof
                 VariableExpression &&
               querySetupState.classMilestoningTemporalValues[0].name ===
-                'businessDate'
+                DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE
             ) {
               parameter = querySetupState.classMilestoningTemporalValues[0];
             } else {
               derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-                'businessDate',
+                DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
               );
               parameter = querySetupState.classMilestoningTemporalValues[1];
             }
@@ -193,11 +139,51 @@ const fillDerivedPropertyArguments = (
           propertyArguments.push(guaranteeNonNullable(parameter));
           break;
         }
+        case MILESTONING_STEROTYPES.BITEMPORAL: {
+          if (querySetupState.classMilestoningTemporalValues.length === 0) {
+            derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+              DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+            );
+            derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+              DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+            );
+          } else if (
+            querySetupState.classMilestoningTemporalValues.length === 1
+          ) {
+            if (
+              querySetupState.classMilestoningTemporalValues[0] instanceof
+                VariableExpression &&
+              querySetupState.classMilestoningTemporalValues[0].name ===
+                DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE
+            ) {
+              derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+                DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+              );
+            } else {
+              const businessTemporalMilestoningParameter = guaranteeNonNullable(
+                querySetupState.classMilestoningTemporalValues[0],
+              );
+              querySetupState.setClassMilestoningTemporalValues([]);
+              derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+                DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+              );
+              querySetupState.addClassMilestoningTemporalValues(
+                businessTemporalMilestoningParameter,
+              );
+            }
+          }
+          propertyArguments.push(
+            guaranteeNonNullable(
+              querySetupState.classMilestoningTemporalValues[idx],
+            ),
+          );
+          break;
+        }
         case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
           let parameter;
           if (querySetupState.classMilestoningTemporalValues.length === 0) {
             derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-              'processingDate',
+              DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
             );
             parameter = querySetupState.classMilestoningTemporalValues[0];
           } else if (
@@ -207,7 +193,7 @@ const fillDerivedPropertyArguments = (
               querySetupState.classMilestoningTemporalValues[0] instanceof
                 VariableExpression &&
               querySetupState.classMilestoningTemporalValues[0].name ===
-                'processingDate'
+                DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE
             ) {
               parameter = querySetupState.classMilestoningTemporalValues[0];
             } else {
@@ -216,7 +202,7 @@ const fillDerivedPropertyArguments = (
               );
               querySetupState.setClassMilestoningTemporalValues([]);
               derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-                'processingDate',
+                DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
               );
               parameter = querySetupState.classMilestoningTemporalValues[0];
               querySetupState.addClassMilestoningTemporalValues(
@@ -229,52 +215,57 @@ const fillDerivedPropertyArguments = (
           propertyArguments.push(guaranteeNonNullable(parameter));
           break;
         }
-        case MILESTONING_STEROTYPES.BITEMPORAL: {
-          let parameters;
-          if (querySetupState.classMilestoningTemporalValues.length === 0) {
-            derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-              'processingDate',
-            );
-            derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-              'businessDate',
-            );
-            parameters = querySetupState.classMilestoningTemporalValues;
-          } else if (
-            querySetupState.classMilestoningTemporalValues.length === 1
-          ) {
-            if (
-              querySetupState.classMilestoningTemporalValues[0] instanceof
-                VariableExpression &&
-              querySetupState.classMilestoningTemporalValues[0].name ===
-                'processingDate'
-            ) {
-              derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-                'businessDate',
-              );
-              parameters = querySetupState.classMilestoningTemporalValues;
-            } else {
-              const businessTemporalMilestoningParameter = guaranteeNonNullable(
-                querySetupState.classMilestoningTemporalValues[0],
-              );
-              querySetupState.setClassMilestoningTemporalValues([]);
-              derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-                'processingDate',
-              );
-              querySetupState.addClassMilestoningTemporalValues(
-                businessTemporalMilestoningParameter,
-              );
-              parameters = querySetupState.classMilestoningTemporalValues;
-            }
-          } else {
-            parameters = querySetupState.classMilestoningTemporalValues;
-          }
-          propertyArguments.push(guaranteeNonNullable(parameters[0]));
-          propertyArguments.push(guaranteeNonNullable(parameters[1]));
-          break;
-        }
         default:
       }
     } else {
+      let argument: ValueSpecification | undefined;
+      const genericType = parameter.genericType;
+      if (genericType) {
+        const _type = genericType.value.rawType;
+        if (
+          (
+            [
+              PRIMITIVE_TYPE.STRING,
+              PRIMITIVE_TYPE.BOOLEAN,
+              PRIMITIVE_TYPE.NUMBER,
+              PRIMITIVE_TYPE.FLOAT,
+              PRIMITIVE_TYPE.DECIMAL,
+              PRIMITIVE_TYPE.INTEGER,
+              PRIMITIVE_TYPE.DATE,
+              PRIMITIVE_TYPE.STRICTDATE,
+              PRIMITIVE_TYPE.DATETIME,
+              PRIMITIVE_TYPE.LATESTDATE,
+            ] as string[]
+          ).includes(_type.name)
+        ) {
+          const primitiveInstanceValue = new PrimitiveInstanceValue(
+            genericType,
+            parameter.multiplicity,
+          );
+          if (_type.name !== PRIMITIVE_TYPE.LATESTDATE) {
+            primitiveInstanceValue.values = [
+              generateDefaultValueForPrimitiveType(
+                _type.name as PRIMITIVE_TYPE,
+              ),
+            ];
+          }
+          argument = primitiveInstanceValue;
+        } else if (_type instanceof Enumeration) {
+          const enumValueInstanceValue = new EnumValueInstanceValue(
+            genericType,
+            parameter.multiplicity,
+          );
+          if (_type.values.length) {
+            const enumValueRef = EnumValueExplicitReference.create(
+              _type.values[0] as Enum,
+            );
+            enumValueInstanceValue.values = [enumValueRef];
+          }
+          argument = enumValueInstanceValue;
+        }
+      }
+      // for arguments of types we don't support, we will fill them with `[]`
+      // which in Pure is equivalent to `null` in other languages
       propertyArguments.push(
         argument ??
           new CollectionInstanceValue(
@@ -283,8 +274,6 @@ const fillDerivedPropertyArguments = (
       );
     }
   });
-  // for arguments of types we don't support, we will fill them with `[]`
-  // which in Pure is equivalent to `null` in other languages
   derivedPropertyExpressionState.propertyExpression.setParametersValues([
     guaranteeNonNullable(
       derivedPropertyExpressionState.propertyExpression.parametersValues[0],

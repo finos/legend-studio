@@ -315,3 +315,8 @@ export enum MILESTONING_STEROTYPES {
 }
 
 export const LATEST_DATE = '%latest';
+
+export enum DEFAULT_MILESTONING_PARAMETERS {
+  PROCESSING_DATE = 'processingDate',
+  BUSINESS_DATE = 'businessDate',
+}
