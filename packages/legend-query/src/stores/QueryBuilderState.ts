@@ -446,7 +446,9 @@ export class QueryBuilderState {
           // See https://github.com/finos/legend-studio/issues/319
         } else {
           this.applicationStore.notifyWarning(
-            `Compilation failed: ${error.message}`,
+            `Compilation failed: ${
+              error.message === '' ? '(no error message)' : error.message
+            }`,
           );
         }
       } finally {
@@ -470,7 +472,9 @@ export class QueryBuilderState {
             error,
           );
           this.applicationStore.notifyWarning(
-            `Compilaion failed: ${error.message}`,
+            `Compilation failed: ${
+              error.message === '' ? '(no error message)' : error.message
+            }`,
           );
           const errorElementCoordinates = extractSourceInformationCoordinates(
             error.sourceInformation,

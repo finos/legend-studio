@@ -521,7 +521,9 @@ export class EditorGraphState {
         );
       } else {
         this.editorStore.applicationStore.notifyWarning(
-          `Compilation failed: ${error.message}`,
+          `Compilation failed: ${
+            error.message === '' ? '(no error message)' : error.message
+          }`,
         );
       }
     } finally {
@@ -574,7 +576,9 @@ export class EditorGraphState {
         !options?.suppressCompilationFailureMessage
       ) {
         this.editorStore.applicationStore.notifyWarning(
-          `Compilation failed: ${error.message}`,
+          `Compilation failed: ${
+            error.message === '' ? '(no error message)' : error.message
+          }`,
         );
       }
     } finally {
@@ -635,7 +639,9 @@ export class EditorGraphState {
           );
         } else {
           this.editorStore.applicationStore.notifyWarning(
-            `Compilation failed: ${error.message}`,
+            `Compilation failed: ${
+              error.message === '' ? '(no error message)' : error.message
+            }`,
           );
           this.editorStore.setActionAltertInfo({
             message: 'Project is not in a compiled state',

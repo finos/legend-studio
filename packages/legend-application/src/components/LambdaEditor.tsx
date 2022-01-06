@@ -327,7 +327,7 @@ const LambdaEditorInline = observer(
         if (error?.sourceInformation) {
           setErrorMarkers(
             editorModel,
-            error.message,
+            error.message === '' ? '(no error message)' : error.message,
             error.sourceInformation.startLine,
             error.sourceInformation.startColumn,
             error.sourceInformation.endLine,
