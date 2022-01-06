@@ -79,12 +79,12 @@ export class Association
   taggedValues: TaggedValue[] = [];
   derivedProperties: DerivedProperty[] = [];
 
-  //To store the properties generated while processing the milestoning properties. The properties
-  //generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
-  //Engine does the processing differently by adding the derived properties generated to the list
-  // of qualified properties and the actual milestoning properties to the list of _originalMilestonedProperties
-  // and the properties to the list of actual proeprties. We are not doing that here to easy the process of
-  //handling milestoning properties in query builder.
+  /**
+   * To store the properties generated while processing the milestoning properties. The properties
+   * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
+   * We are not doing how engine does that here to easy the process of
+   * handling milestoning properties in query builder.
+   */
   _generatedMilestonedProperties: Property[] = [];
 
   constructor(name: string) {

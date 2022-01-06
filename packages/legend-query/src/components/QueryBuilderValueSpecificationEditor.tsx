@@ -548,7 +548,7 @@ export const DateInstanceValueEditor = observer(
           PRIMITIVE_TYPE.LATESTDATE && (
           <LatestDatePrimitiveInstanceValueEditor />
         )}
-        <div style={{ marginTop: '0.5rem' }}>
+        <div className="query-builder-value-spec-editor__dropdown">
           <CustomSelectorInput
             placeholder="Choose a type..."
             options={typeOptions}

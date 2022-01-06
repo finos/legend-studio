@@ -45,7 +45,7 @@ import {
 } from './helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { V1_buildAssociationMapping } from './helpers/V1_AssociationMappingHelper';
-import { milestoningPropertyGenerator } from '../../../../../../../helpers/DomainHelper';
+import { V1_ProcessMilestoningProperties } from './helpers/V1_MilestoneBuilderHelper';
 
 export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -78,14 +78,14 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
     const _class = this.context.graph.getClass(
       this.context.graph.buildPath(element.package, element.name),
     );
-    milestoningPropertyGenerator(_class, this.context.graph);
+    V1_ProcessMilestoningProperties(_class, this.context.graph);
   }
 
   visit_Association(element: V1_Association): void {
     const association = this.context.graph.getAssociation(
       this.context.graph.buildPath(element.package, element.name),
     );
-    milestoningPropertyGenerator(association, this.context.graph);
+    V1_ProcessMilestoningProperties(association, this.context.graph);
   }
 
   visit_ConcreteFunctionDefinition(
