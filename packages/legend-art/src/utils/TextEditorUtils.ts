@@ -129,7 +129,8 @@ export const setErrorMarkers = (
       startColumn,
       endColumn: endColumn + 1, // add a 1 to endColumn as monaco editor range is not inclusive
       endLineNumber: endLine,
-      message,
+      // NOTE: when the message is empty, no error tooltip is shown, we want to avoid this
+      message: message === '' ? '(no error message)' : message,
       severity: MarkerSeverity.Error,
     },
   ]);

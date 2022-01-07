@@ -51,7 +51,7 @@
     "@types/react-select": "4.0.18",
     "@types/react-window": "1.8.5",
     "clsx": "1.1.1",
-    "mobx": "6.3.10",
+    "mobx": "6.3.12",
     "mobx-react-lite": "3.2.3",
     "monaco-editor": "0.31.1",
     "react": "17.0.2",
@@ -59,18 +59,18 @@
     "react-hotkeys": "2.0.0",
     "react-icons": "4.3.1",
     "react-reflex": "4.0.3",
-    "react-resize-detector": "6.7.7",
+    "react-resize-detector": "7.0.0",
     "react-select": "4.3.1",
     "react-window": "1.8.6"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.5.0",
-    "jest": "27.4.5",
+    "eslint": "8.6.0",
+    "jest": "27.4.7",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.45.1",
+    "sass": "1.46.0",
     "typescript": "4.5.4"
   },
   "peerDependencies": {

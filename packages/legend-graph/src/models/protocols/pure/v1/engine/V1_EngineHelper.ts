@@ -393,8 +393,7 @@ const buildSourceInformation = (
 export const V1_buildCompilationError = (
   protocol: V1_CompilationError,
 ): CompilationError => {
-  const metamodel = new CompilationError();
-  metamodel.message = protocol.message;
+  const metamodel = new CompilationError(protocol.message);
   metamodel.sourceInformation = protocol.sourceInformation
     ? buildSourceInformation(protocol.sourceInformation)
     : undefined;
@@ -402,8 +401,7 @@ export const V1_buildCompilationError = (
 };
 
 export const V1_buildParserError = (protocol: V1_ParserError): ParserError => {
-  const metamodel = new ParserError();
-  metamodel.message = protocol.message;
+  const metamodel = new ParserError(protocol.message);
   metamodel.sourceInformation = protocol.sourceInformation
     ? buildSourceInformation(protocol.sourceInformation)
     : undefined;
@@ -413,8 +411,7 @@ export const V1_buildParserError = (protocol: V1_ParserError): ParserError => {
 export const V1_buildExecutionError = (
   protocol: V1_ExecutionError,
 ): ExecutionError => {
-  const executionError = new ExecutionError();
-  executionError.message = protocol.message;
+  const executionError = new ExecutionError(protocol.message);
   executionError.stack = protocol.trace;
   return executionError;
 };
