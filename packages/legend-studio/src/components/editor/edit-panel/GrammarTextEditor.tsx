@@ -199,7 +199,7 @@ export const GrammarTextEditor = observer(() => {
       if (error?.sourceInformation) {
         setErrorMarkers(
           editorModel,
-          error.message === '' ? '(no error message)' : error.message,
+          error.message,
           error.sourceInformation.startLine,
           error.sourceInformation.startColumn,
           error.sourceInformation.endLine,

@@ -19,6 +19,7 @@ import { EngineError } from './EngineError';
 export class ExecutionError extends EngineError {
   declare stack: string;
 
-  override getFullErrorMessage = (): string =>
-    `${this.message}\n\n${this.stack}`;
+  override get detail(): string {
+    return `${this.message}\n\n${this.stack}`;
+  }
 }
