@@ -29,6 +29,7 @@ import type { V1_ProcessingContext } from './v1/transformation/pureGraph/to/help
 import type { SimpleFunctionExpression } from '../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
 import type { ValueSpecification } from '../../metamodels/pure/valueSpecification/ValueSpecification';
 import type { GraphPluginManager } from '../../../GraphPluginManager';
+import type { Type } from '../../metamodels/pure/packageableElements/domain/Type';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -63,6 +64,10 @@ export type V1_ExecutionInputGetter = (
   runtime: Runtime,
   protocolGraph: V1_PureModelContextData,
 ) => V1_PackageableElement[];
+
+export type V1_TypeInferenceBuilder = (
+  inferredVariable: ValueSpecification | undefined,
+) => Type | undefined;
 
 /**
  * Plugins for protocol processors. Technically, this is a sub-part of `PureGraphManagerPlugin`
@@ -139,4 +144,9 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * This would provide a mechanism to add more elements in this reduced graph.
    */
   V1_getExtraExecutionInputGetters?(): V1_ExecutionInputGetter[];
+
+  /**
+   * Get the type of the inferred variable in property expression.
+   */
+  V1_getExtraPropertyExpressionTypeInferenceProcedures?(): V1_TypeInferenceBuilder[];
 }

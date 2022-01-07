@@ -39,9 +39,12 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   VariableExpression,
+  SimpleFunctionExpression,
+  matchFunctionName,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
+import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
@@ -57,6 +60,24 @@ export const getPropertyChainName = (
     );
     if (currentExpression instanceof AbstractPropertyExpression) {
       propertyNameChain.unshift(currentExpression.func.name);
+    }
+    if (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      propertyNameChain.unshift(
+        `(@${
+          currentExpression.parametersValues.filter(
+            (param) => param instanceof InstanceValue,
+          )[0]?.genericType?.value.rawType.name
+        })`,
+      );
+      currentExpression = getNullableFirstElement(
+        currentExpression.parametersValues,
+      );
     }
   }
   return propertyNameChain.map(prettyPropertyName).join('/');
