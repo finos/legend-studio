@@ -68,13 +68,17 @@ export const getPropertyChainName = (
         SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
-      propertyNameChain.unshift(
-        `(@${
-          currentExpression.parametersValues.filter(
-            (param) => param instanceof InstanceValue,
-          )[0]?.genericType?.value.rawType.name
-        })`,
-      );
+      const propertyName =
+        currentExpression.parametersValues[0] instanceof
+        AbstractPropertyExpression
+          ? currentExpression.parametersValues[0]?.func.name
+          : '';
+      const propertyWithSubtype = `(@${
+        currentExpression.parametersValues.filter(
+          (param) => param instanceof InstanceValue,
+        )[0]?.genericType?.value.rawType.name
+      }) ${propertyName}`;
+      propertyNameChain.unshift(propertyWithSubtype);
       currentExpression = getNullableFirstElement(
         currentExpression.parametersValues,
       );
