@@ -963,6 +963,17 @@ export class QueryBuilderLambdaProcessor
             `Can't process property expression: derived property '${propertyExpression.func.name}' expects number of provided arguments to match number of parameters`,
           );
         }
+        if (
+          currentPropertyExpression instanceof SimpleFunctionExpression &&
+          matchFunctionName(
+            currentPropertyExpression.functionName,
+            SUPPORTED_FUNCTIONS.SUBTYPE,
+          )
+        ) {
+          currentPropertyExpression = guaranteeNonNullable(
+            currentPropertyExpression.parametersValues[0],
+          );
+        }
       }
       assertType(
         currentPropertyExpression,

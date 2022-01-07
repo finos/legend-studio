@@ -113,6 +113,86 @@ export const TEST_DATA__simpleProjection = {
   parameters: [],
 };
 
+export const TEST_DATA__simpleProjectionWithSubtype = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'hackedClass',
+                          fullPath: 'model::pure::tests::model::simple::Person',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'firstName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'string',
+              values: ['(@person)/First Name'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__projectionWithChainedProperty = {
   _type: 'lambda',
   body: [

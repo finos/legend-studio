@@ -30,10 +30,14 @@ import {
   type V1_FunctionExpressionBuilder,
   type V1_ValueSpecification,
   type ValueSpecification,
-  type SimpleFunctionExpression,
+  type Type,
+  type V1_TypeInferenceBuilder,
   PureProtocolProcessorPlugin,
   matchFunctionName,
+  SimpleFunctionExpression,
+  extractElementNameFromPath,
 } from '@finos/legend-graph';
+import { V1_buildSubTypePropertyExpressionTypeInference } from './v1/V1_QueryBuilder_PropertyExpressionTypeInferenceBuilder';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -117,6 +121,26 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           );
         }
         return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraPropertyExpressionTypeInferenceProcedures(): V1_TypeInferenceBuilder[] {
+    return [
+      (inferredVariable: ValueSpecification | undefined): Type | undefined => {
+        let inferredType: Type | undefined =
+          inferredVariable?.genericType?.value.rawType;
+        if (
+          inferredVariable instanceof SimpleFunctionExpression &&
+          matchFunctionName(
+            inferredVariable.functionName,
+            extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+          )
+        ) {
+          inferredType =
+            V1_buildSubTypePropertyExpressionTypeInference(inferredVariable);
+        }
+        return inferredType;
       },
     ];
   }

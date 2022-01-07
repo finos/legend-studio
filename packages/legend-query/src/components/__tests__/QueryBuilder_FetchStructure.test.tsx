@@ -24,6 +24,7 @@ import {
   TEST_DATA__projectWithDerivedProperty,
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
+  TEST_DATA__simpleProjectionWithSubtype,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
@@ -341,6 +342,82 @@ test(
     expect(
       await waitFor(() => dpModal.querySelector(`input[value="Mr."]`)),
     ).not.toBeNull();
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with subtype',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_DATA__ComplexRelationalModel,
+      RawLambda.createStub(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass = mockedQueryStore.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+    const mapping = mockedQueryStore.graphManagerState.graph.getMapping(
+      'model::relational::tests::simpleRelationalMapping',
+    );
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    const treeData = guaranteeNonNullable(
+      queryBuilderState.explorerState.treeData,
+    );
+    const rootNode = guaranteeType(
+      treeData.nodes.get(treeData.rootIds[0] as string),
+      QueryBuilderExplorerTreeRootNodeData,
+    );
+
+    expect(getRootSetImplementation(mapping, _personClass)).toBe(
+      rootNode.mappingData.targetSetImpl,
+    );
+    expect(rootNode.mappingData.mapped).toBe(true);
+    // simpleProjection with subType
+    queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__simpleProjectionWithSubtype),
+    );
+    const projectionColsWihtSubType = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+    );
+    const NAME_ALIAS = '(@person)/First Name';
+    await waitFor(() => getByText(projectionColsWihtSubType, NAME_ALIAS));
+    expect(
+      await waitFor(() =>
+        projectionColsWihtSubType.querySelector(`input[value="${NAME_ALIAS}"]`),
+      ),
+    ).not.toBeNull();
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(1);
+    const nameCol = guaranteeNonNullable(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
+        (e) => e.columnName === NAME_ALIAS,
+      ),
+    );
+    const nameProperty = guaranteeType(
+      nameCol,
+      QueryBuilderSimpleProjectionColumnState,
+    ).propertyExpressionState.propertyExpression.func;
+    expect(nameProperty).toBe(_personClass.getProperty('firstName'));
   },
 );
 
