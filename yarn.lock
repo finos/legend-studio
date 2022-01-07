@@ -2338,7 +2338,7 @@ __metadata:
     "@juggle/resize-observer": 3.3.1
     "@manypkg/get-packages": 1.1.3
     "@pmmmwh/react-refresh-webpack-plugin": 0.5.4
-    autoprefixer: 10.4.1
+    autoprefixer: 10.4.2
     babel-jest: 27.4.6
     babel-loader: 8.2.3
     chalk: 5.0.0
@@ -5194,12 +5194,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:10.4.1":
-  version: 10.4.1
-  resolution: "autoprefixer@npm:10.4.1"
+"autoprefixer@npm:10.4.2":
+  version: 10.4.2
+  resolution: "autoprefixer@npm:10.4.2"
   dependencies:
     browserslist: ^4.19.1
-    caniuse-lite: ^1.0.30001294
+    caniuse-lite: ^1.0.30001297
     fraction.js: ^4.1.2
     normalize-range: ^0.1.2
     picocolors: ^1.0.0
@@ -5208,7 +5208,7 @@ __metadata:
     postcss: ^8.1.0
   bin:
     autoprefixer: bin/autoprefixer
-  checksum: 96527cd62b88e44ad3949fd2dedcc771ece8818d0bfffffdffd9aa87e409e4c5c00cf0cda1ebe1dc75910a62052d33a7628adf3c13a1763ba7677c027250f88c
+  checksum: dbd13e641eaa7d7e3121769c22cc439222f1a9d0371a583d12300849de7287ece1e793767ff9902842dbfd56c4b7c19ed9fe1947c9f343ba2f4f3519dbddfdef
   languageName: node
   linkType: hard
 
@@ -5736,10 +5736,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.30001294":
-  version: 1.0.30001294
-  resolution: "caniuse-lite@npm:1.0.30001294"
-  checksum: 4e22649ef83781afbe6c81d6112ceac23c3ba29f91597ca1c14d323d5bfb646571edeb17436e76a29b07c8e9d75468655a2098a3e13dcc1438db47ff46fbb3ad
+"caniuse-lite@npm:^1.0.30001297":
+  version: 1.0.30001297
+  resolution: "caniuse-lite@npm:1.0.30001297"
+  checksum: 4f0d298cf32c050aa1d8a7bb33ef6ff5f289e6dd6dad48b364bc2db91e03b5f0089ffa9950d6228dbd43446695cecd1990601b432a8d03c1d5b2e945cb67bade
   languageName: node
   linkType: hard
 
@@ -10494,7 +10494,7 @@ __metadata:
     husky: 7.0.4
     inquirer: 8.2.0
     jest: 27.4.7
-    lint-staged: 12.1.5
+    lint-staged: 12.1.6
     micromatch: 4.0.4
     prettier: 2.5.1
     rimraf: 3.0.2
@@ -10560,9 +10560,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:12.1.5":
-  version: 12.1.5
-  resolution: "lint-staged@npm:12.1.5"
+"lint-staged@npm:12.1.6":
+  version: 12.1.6
+  resolution: "lint-staged@npm:12.1.6"
   dependencies:
     cli-truncate: ^3.1.0
     colorette: ^2.0.16
@@ -10579,7 +10579,7 @@ __metadata:
     yaml: ^1.10.2
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: e4d64e97769faf45adad9898c843ed8ef495469fc3edef0b8daff834ddb504ab47e33579763f8d85cbba6db993bd5cd86ac0bcaf92f6fd7486d4fb9a5fe774c6
+  checksum: 429584c6604f0d9dcec9a7f632c9a3046f1e1d06e0e9c017fc59d7998f1baa4f8338aaa1658517b08e39a0320252ca8fc6b194a038024f0c68ac07217b57f2bb
   languageName: node
   linkType: hard
 
