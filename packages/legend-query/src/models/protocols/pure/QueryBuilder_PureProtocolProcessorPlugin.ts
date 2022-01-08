@@ -31,7 +31,7 @@ import {
   type V1_ValueSpecification,
   type ValueSpecification,
   type Type,
-  type V1_TypeInferenceBuilder,
+  type V1_PropertyExpressionTypeInferrer,
   PureProtocolProcessorPlugin,
   matchFunctionName,
   SimpleFunctionExpression,
@@ -125,7 +125,7 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
     ];
   }
 
-  override V1_getExtraPropertyExpressionTypeInferenceProcedures(): V1_TypeInferenceBuilder[] {
+  override V1_getExtraPropertyExpressionTypeInferrers(): V1_PropertyExpressionTypeInferrer[] {
     return [
       (inferredVariable: ValueSpecification | undefined): Type | undefined => {
         let inferredType: Type | undefined =

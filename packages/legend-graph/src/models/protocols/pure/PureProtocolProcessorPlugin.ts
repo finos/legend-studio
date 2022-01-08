@@ -65,8 +65,8 @@ export type V1_ExecutionInputGetter = (
   protocolGraph: V1_PureModelContextData,
 ) => V1_PackageableElement[];
 
-export type V1_TypeInferenceBuilder = (
-  inferredVariable: ValueSpecification | undefined,
+export type V1_PropertyExpressionTypeInferrer = (
+  variable: ValueSpecification | undefined,
 ) => Type | undefined;
 
 /**
@@ -146,7 +146,7 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   V1_getExtraExecutionInputGetters?(): V1_ExecutionInputGetter[];
 
   /**
-   * Get the type of the inferred variable in property expression.
+   * Get the list of type inferrers for property expression.
    */
-  V1_getExtraPropertyExpressionTypeInferenceProcedures?(): V1_TypeInferenceBuilder[];
+  V1_getExtraPropertyExpressionTypeInferrers?(): V1_PropertyExpressionTypeInferrer[];
 }

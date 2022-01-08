@@ -943,17 +943,16 @@ export function V1_resolvePropertyExpressionTypeInference(
   inferredVariable: ValueSpecification | undefined,
   compileContext: V1_GraphBuilderContext,
 ): Type | undefined {
-  const typeInferenceBuilders = compileContext.extensions.plugins.flatMap(
-    (plugin) =>
-      plugin.V1_getExtraPropertyExpressionTypeInferenceProcedures?.() ?? [],
+  const inferrers = compileContext.extensions.plugins.flatMap(
+    (plugin) => plugin.V1_getExtraPropertyExpressionTypeInferrers?.() ?? [],
   );
-  for (const typeInferenceBuilder of typeInferenceBuilders) {
-    const inferredType = typeInferenceBuilder(inferredVariable);
+  for (const inferrer of inferrers) {
+    const inferredType = inferrer(inferredVariable);
     if (inferredType) {
       return inferredType;
     }
   }
   throw new UnsupportedOperationError(
-    `Can't resolve inferred type for inferredVariable '${inferredVariable}': no compatible PropertyExpression-type-inference builder available from plugins`,
+    `Can't infer type for variable '${inferredVariable}': no compatible property expression type inferrer available from plugins`,
   );
 }
