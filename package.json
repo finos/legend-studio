@@ -77,6 +77,9 @@
   "browserslist": [
     "last 2 Chrome versions"
   ],
+  "resolutions": {
+    "glob-parent": "^6.0.1"
+  },
   "devDependencies": {
     "@actions/core": "1.6.0",
     "@actions/github": "5.0.0",
