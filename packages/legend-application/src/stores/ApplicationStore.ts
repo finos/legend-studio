@@ -230,7 +230,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   notifyError(content: Error | string, actions?: NotificationAction[]): void {
     let message: string | undefined;
     if (content instanceof ApplicationError) {
-      message = content.getFullErrorMessage();
+      message = content.detail;
     } else if (content instanceof Error) {
       message = content.message;
     } else {

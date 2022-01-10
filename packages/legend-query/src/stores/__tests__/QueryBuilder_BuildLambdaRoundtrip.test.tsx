@@ -27,6 +27,7 @@ import {
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__graphFetchWithDerivedProperty,
   TEST_DATA__graphFetchWithDerivedPropertyAndParameter,
+  TEST_DATA__simpleProjectionWithSubtype,
 } from './TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
@@ -99,6 +100,12 @@ const m2mFilterCtx = {
 const cases: RoundtripTestCase[] = [
   // projection
   ['Simple projection', projectionCtx, TEST_DATA__simpleProjection, undefined],
+  [
+    'Simple projection with subType',
+    projectionCtx,
+    TEST_DATA__simpleProjectionWithSubtype,
+    undefined,
+  ],
   [
     'Complex filter',
     projectionCtx,

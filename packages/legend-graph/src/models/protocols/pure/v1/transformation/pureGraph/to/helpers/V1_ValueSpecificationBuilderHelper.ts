@@ -870,6 +870,11 @@ export function V1_processProperty(
     inferredVariable?.genericType?.value.rawType;
   if (inferredVariable instanceof AbstractPropertyExpression) {
     inferredType = inferredVariable.func.genericType.value.rawType;
+  } else {
+    inferredType = V1_resolvePropertyExpressionTypeInference(
+      inferredVariable,
+      context,
+    );
   }
   if (inferredType instanceof Class) {
     const processedProperty = new AbstractPropertyExpression(
@@ -931,5 +936,23 @@ export function V1_buildFunctionExpression(
   }
   throw new UnsupportedOperationError(
     `Can't find expression builder for function '${functionName}': no compatible function expression builder available from plugins`,
+  );
+}
+
+export function V1_resolvePropertyExpressionTypeInference(
+  inferredVariable: ValueSpecification | undefined,
+  compileContext: V1_GraphBuilderContext,
+): Type | undefined {
+  const inferrers = compileContext.extensions.plugins.flatMap(
+    (plugin) => plugin.V1_getExtraPropertyExpressionTypeInferrers?.() ?? [],
+  );
+  for (const inferrer of inferrers) {
+    const inferredType = inferrer(inferredVariable);
+    if (inferredType) {
+      return inferredType;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't infer type for variable '${inferredVariable}': no compatible property expression type inferrer available from plugins`,
   );
 }

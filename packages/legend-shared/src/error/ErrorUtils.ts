@@ -29,9 +29,19 @@ import { type SuperGenericFunction, printObject } from '../CommonUtils';
  * See https://github.com/microsoft/TypeScript/issues/13219
  */
 export abstract class ApplicationError extends Error {
-  override message = '';
+  constructor(message: string | undefined) {
+    super();
+    this.message =
+      message === undefined || message === '' ? '(no error message)' : message;
+  }
 
-  getFullErrorMessage = (): string => this.message;
+  /**
+   * This provides more detail (better context) about the error, including the error message
+   * stack trace, etc.
+   */
+  get detail(): string {
+    return this.message;
+  }
 }
 
 // Since Javascript does not fully support rethrowing error, we need to customize and manipulate the stack trace

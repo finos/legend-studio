@@ -145,8 +145,17 @@ const buildProjectionColumnLambda = (
     );
     currentPropertyExpression = currentPropertyExpression
       .parameters[0] as V1_ValueSpecification;
+    if (
+      currentPropertyExpression instanceof V1_AppliedFunction &&
+      matchFunctionName(
+        currentPropertyExpression.function,
+        SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      currentPropertyExpression = currentPropertyExpression
+        .parameters[0] as V1_ValueSpecification;
+    }
   }
-
   // check lambda variable and parameter match
   assertType(
     currentPropertyExpression,

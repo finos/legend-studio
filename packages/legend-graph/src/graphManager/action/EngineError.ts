@@ -21,9 +21,9 @@ import type { SourceInformation } from '../action/SourceInformation';
 export class EngineError extends ApplicationError {
   sourceInformation?: SourceInformation | undefined;
 
-  // TODO: remove this since we should have an MM equivalent
-  constructor() {
-    super();
+  constructor(message: string | undefined) {
+    super(message);
+
     makeObservable(this, {
       message: observable,
       sourceInformation: observable,

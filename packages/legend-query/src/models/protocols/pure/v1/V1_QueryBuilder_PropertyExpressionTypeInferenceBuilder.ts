@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-import { EngineError } from './EngineError';
+import {
+  type SimpleFunctionExpression,
+  type Type,
+  InstanceValue,
+} from '@finos/legend-graph';
 
-export class ExecutionError extends EngineError {
-  declare stack: string;
-
-  override get detail(): string {
-    return `${this.message}\n\n${this.stack}`;
-  }
-}
+export const V1_buildSubTypePropertyExpressionTypeInference = (
+  inferredVariable: SimpleFunctionExpression,
+): Type | undefined =>
+  inferredVariable.parametersValues.filter(
+    (param) => param instanceof InstanceValue,
+  )[0]?.genericType?.value.rawType;

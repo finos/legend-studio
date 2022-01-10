@@ -480,7 +480,7 @@ export class QueryBuilderState {
             error,
           );
           this.applicationStore.notifyWarning(
-            `Compilaion failed: ${error.message}`,
+            `Compilation failed: ${error.message}`,
           );
           const errorElementCoordinates = extractSourceInformationCoordinates(
             error.sourceInformation,

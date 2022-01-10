@@ -34,6 +34,7 @@ import {
   TEST_DATA__graphFetchWithDerivedProperty,
   TEST_DATA__graphFetchWithDerivedPropertyWithParameter,
   TEST_DATA__temporalModel,
+  TEST_DATA__personWithSubType,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
 import {
   simpleDerivationProjection,
@@ -93,6 +94,11 @@ const cases: RoundtripTestCase[] = [
     'Simple project() function with columns',
     relationalCtx,
     TEST_DATA__projectWithCols,
+  ],
+  [
+    'Simple project() with subType()',
+    relationalCtx,
+    TEST_DATA__personWithSubType,
   ],
   [
     'Simple project() and filter()',

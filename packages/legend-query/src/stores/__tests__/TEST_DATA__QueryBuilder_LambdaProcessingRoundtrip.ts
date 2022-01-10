@@ -1342,6 +1342,86 @@ export const TEST_DATA__personWithParameter = {
   ],
 };
 
+export const TEST_DATA__personWithSubType = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'test::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'hackedClass',
+                          fullPath: 'test::Person',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'firstName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'string',
+              values: ['First Name'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__M2MModel = [
   {
     path: 'demo::other::IncType',
