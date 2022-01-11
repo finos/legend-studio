@@ -50,6 +50,7 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@mui/material": "5.2.8",
+    "@mui/styles": "5.2.3",
     "@testing-library/react": "12.1.2",
     "@types/papaparse": "5.3.1",
     "@types/react": "17.0.38",

@@ -25,7 +25,7 @@ import {
   generateViewTaxonomyRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
 } from '../stores/LegendTaxonomyRouter';
-import { ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider';
@@ -146,9 +146,11 @@ export const LegendTaxonomyApplication = observer(
           log={applicationStore.log}
         >
           <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
-            <ThemeProvider theme={LegendMaterialUITheme}>
-              <LegendTaxonomyApplicationRoot />
-            </ThemeProvider>
+            <StyledEngineProvider injectFirst={true}>
+              <ThemeProvider theme={LegendMaterialUITheme}>
+                <LegendTaxonomyApplicationRoot />
+              </ThemeProvider>
+            </StyledEngineProvider>
           </LegendTaxonomyStoreProvider>
         </GraphManagerStateProvider>
       </DepotServerClientProvider>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type TooltipProps, Tooltip } from '@material-ui/core';
+import { type TooltipProps, Tooltip } from '@mui/material';
 import { StubTransition } from '@finos/legend-art';
 import { type AbstractProperty, DerivedProperty } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';

@@ -15,7 +15,7 @@
  */
 
 import { useState, useRef } from 'react';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from '@mui/material/Dialog';
 import { observer } from 'mobx-react-lite';
 import {
   type SelectComponent,

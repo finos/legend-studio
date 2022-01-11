@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { DialogProps } from '@material-ui/core';
-import Dialog, { type DialogClassKey } from '@material-ui/core/Dialog';
-import { makeStyles } from '@material-ui/core/styles';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import type { DialogProps } from '@mui/material';
+import Dialog, { type DialogClassKey } from '@mui/material/Dialog';
+import makeStyles from '@mui/styles/makeStyles';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { action, makeAutoObservable } from 'mobx';
@@ -76,13 +76,13 @@ export const NonBlockingDialog = observer(
     props: Omit<DialogProps, 'open'> & {
       classes?: Partial<Record<DialogClassKey, string>>;
       nonModalDialogState: NonBlockingDialogState;
-      onClickAway: (event: React.MouseEvent<Document>) => void;
+      onClickAway: (event: MouseEvent | TouchEvent) => void;
     },
   ) => {
     const { nonModalDialogState, onClickAway, classes, ...dialogProps } = props;
-    const onClickAwayWhenModalIsOpen: React.MouseEventHandler<Document> = (
-      event,
-    ) => {
+    const onClickAwayWhenModalIsOpen = (
+      event: MouseEvent | TouchEvent,
+    ): void => {
       nonModalDialogState.handleClickaway(() => onClickAway(event));
     };
     const customStyles = useStyles();

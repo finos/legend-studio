@@ -40,7 +40,7 @@ import {
 } from '../../../../stores/shared/DnDUtil';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { MdModeEdit } from 'react-icons/md';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from '@mui/material/Dialog';
 import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,

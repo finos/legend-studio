@@ -15,7 +15,7 @@
  */
 
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from '@mui/material/Dialog';
 import { BlankPanelContent, PanelLoadingIndicator } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';

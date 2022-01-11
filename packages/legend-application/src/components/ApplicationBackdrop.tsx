@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Backdrop } from '@material-ui/core';
+import { Backdrop } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 export const ApplicationBackdrop = observer((props: { open: boolean }) => (

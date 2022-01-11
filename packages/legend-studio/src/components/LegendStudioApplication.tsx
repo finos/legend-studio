@@ -33,7 +33,7 @@ import {
   generateRoutePatternWithSDLCServerKey,
 } from '../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from './editor/header/LegendStudioAppHeaderMenu';
-import { ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
@@ -213,9 +213,11 @@ export const LegendStudioApplication = observer(
             log={applicationStore.log}
           >
             <LegendStudioStoreProvider pluginManager={pluginManager}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendStudioApplicationRoot />
-              </ThemeProvider>
+              <StyledEngineProvider injectFirst={true}>
+                <ThemeProvider theme={LegendMaterialUITheme}>
+                  <LegendStudioApplicationRoot />
+                </ThemeProvider>
+              </StyledEngineProvider>
             </LegendStudioStoreProvider>
           </GraphManagerStateProvider>
         </DepotServerClientProvider>

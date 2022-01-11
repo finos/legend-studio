@@ -35,7 +35,7 @@ import {
 } from 'react-icons/fa';
 import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
 import { clsx, ContextMenu } from '@finos/legend-art';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,

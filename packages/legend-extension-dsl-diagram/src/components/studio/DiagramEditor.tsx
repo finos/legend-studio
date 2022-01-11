@@ -79,7 +79,7 @@ import {
   FiZoomOut,
 } from 'react-icons/fi';
 import { IoResize } from 'react-icons/io5';
-import { Dialog } from '@material-ui/core';
+import { Dialog } from '@mui/material';
 import {
   guaranteeNonNullable,
   isNonNullable,
