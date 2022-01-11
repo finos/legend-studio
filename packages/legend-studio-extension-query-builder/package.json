@@ -51,7 +51,7 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@material-ui/core": "4.12.3",
+    "@mui/material": "5.2.8",
     "@types/react": "17.0.38",
     "mobx": "6.3.12",
     "mobx-react-lite": "3.2.3",
