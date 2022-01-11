@@ -16,7 +16,6 @@
 
 import {
   LogEvent,
-  UnsupportedOperationError,
   assertNonNullable,
   assertNonEmptyString,
   guaranteeType,
@@ -86,6 +85,7 @@ import {
   getClassMappingsByClass,
 } from '../../../../../../../helpers/MappingHelper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
+import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -414,11 +414,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       protocol.relationalOperation,
       `Relational property mapping 'relationalOperation' field is missing`,
     );
-    if (protocol.localMappingProperty) {
-      throw new UnsupportedOperationError(
-        'Local mapping property is not supported',
-      );
-    }
     // NOTE: mapping for derived property is not supported
     let propertyOwner: Class | Association;
     if (this.immediateParent instanceof AssociationImplementation) {
@@ -435,8 +430,40 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
+    let property: AbstractProperty;
+    let localMapping: LocalMappingPropertyInfo | undefined;
+    if (protocol.localMappingProperty) {
+      const localMappingProperty = protocol.localMappingProperty;
+      const mappingClass = new MappingClass(
+        `${this.topParent?.parent.path}_${this.topParent?.id}${protocol.property.property}`,
+      );
+      const _multiplicity = this.context.graph.getMultiplicity(
+        localMappingProperty.multiplicity.lowerBound,
+        localMappingProperty.multiplicity.upperBound,
+      );
+      const _property = new Property(
+        protocol.property.property,
+        _multiplicity,
+        this.context.resolveGenericType(localMappingProperty.type),
+        mappingClass,
+      );
+      property = PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          mappingClass,
+          protocol.property.class,
+        ),
+        _property,
+      ).value;
+      localMapping = new LocalMappingPropertyInfo();
+      localMapping.localMappingProperty = true;
+      localMapping.localMappingPropertyMultiplicity = _multiplicity;
+      localMapping.localMappingPropertyType = this.context.resolveType(
+        localMappingProperty.type,
+      ).value;
+    } else {
+      property = propertyOwner.getProperty(protocol.property.property);
+    }
     // NOTE: mapping for derived property is not supported
-    const property = propertyOwner.getProperty(protocol.property.property);
     // since we are not doing embedded property mappings yet, the target must have already been added to the mapping
     const propertyType = property.genericType.value.rawType;
     let targetSetImplementation: SetImplementation | undefined;
@@ -526,6 +553,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       }
       relationalPropertyMapping.transformer = enumerationMapping;
     }
+    relationalPropertyMapping.localMappingProperty = localMapping;
     return relationalPropertyMapping;
   }
 
