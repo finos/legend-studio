@@ -733,9 +733,9 @@ const SuperTypeEditor = observer(
         // Exclude current class
         classOption.value !== _class &&
         // Exclude super types of the class
-        !_class.allSuperClasses.includes(classOption.value) &&
+        !_class.allSuperclasses.includes(classOption.value) &&
         // Ensure there is no loop (might be expensive)
-        !classOption.value.allSuperClasses.includes(_class),
+        !classOption.value.allSuperclasses.includes(_class),
     );
     const rawType = superType.value.rawType;
     const filterOption = createFilter({
@@ -871,7 +871,7 @@ export const ClassFormEditor = observer(
       (): void => {
         _class.deleteSuperType(superType);
         if (superType.value.rawType instanceof Class) {
-          superType.value.rawType.deleteSubClass(_class);
+          superType.value.rawType.deleteSubclass(_class);
         }
       };
     const possibleSupertypes =
@@ -880,9 +880,9 @@ export const ClassFormEditor = observer(
           // Exclude current class
           superType !== _class &&
           // Exclude super types of the class
-          !_class.allSuperClasses.includes(superType) &&
+          !_class.allSuperclasses.includes(superType) &&
           // Ensure there is no loop (might be expensive)
-          !superType.allSuperClasses.includes(_class),
+          !superType.allSuperclasses.includes(_class),
       );
     // Derived properties
     const indirectDerivedProperties = _class
@@ -952,7 +952,7 @@ export const ClassFormEditor = observer(
               new GenericType(possibleSupertype),
             ),
           );
-          possibleSupertype.addSubClass(_class);
+          possibleSupertype.addSubclass(_class);
         } else if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           _class.addTaggedValue(
             TaggedValue.createStub(Tag.createStub(Profile.createStub())),
@@ -1027,14 +1027,14 @@ export const ClassFormEditor = observer(
           // Must not be the same class
           element !== _class &&
           // Must not be a supertype of the current class
-          !_class.allSuperClasses.includes(element) &&
+          !_class.allSuperclasses.includes(element) &&
           // Must not have the current class as a super type
-          !element.allSuperClasses.includes(_class)
+          !element.allSuperclasses.includes(_class)
         ) {
           _class.addSuperType(
             GenericTypeExplicitReference.create(new GenericType(element)),
           );
-          element.addSubClass(_class);
+          element.addSubclass(_class);
         }
       },
       [_class, isReadOnly],

@@ -714,7 +714,7 @@ export class EditorGraphState {
    * 2. Reusable models, at this point in time, we haven't completed stabilize the logic for handling generated models, as well
    *    as depdendencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
-   *    e.g. when we have a computed value in a immutable class that get all sub-classes, etc.
+   *    e.g. when we have a computed value in a immutable class that get all subclasses, etc.
    * 3. We reprocess editor states to ensure good UX, e.g. find tabs to keep open, find tree nodes to expand, etc.
    *    after updating the graph. These in our experience is the MOST COMMON source of memory leak. It is actually
    *    quite predictable since structures like tabs and tree node embeds graph data, which are references to the old graph
@@ -738,7 +738,7 @@ export class EditorGraphState {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
       /* @MARKER: MEMORY-SENSITIVE */
       // NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
-      // e.g. sub-classes analytics on the immutable class, etc.
+      // e.g. subclass analytics on the immutable class, etc.
       if (
         this.editorStore.graphManagerState.graph.dependencyManager.buildState
           .hasSucceeded

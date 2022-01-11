@@ -123,7 +123,7 @@ export enum CORE_PURE_PATH {
  * These tokens will be used in the definition of the hash as marker for the type of the strucure
  * arguably some of these can be redundant since this information is encoded in the resulting hash
  * code anyway, but sometimes when polymorphism manifests, such as when we have an array of structure
- * which are sub-classes of an abstract stucture, hashing the marker is sometimes the only way to
+ * which are subclasses of an abstract stucture, hashing the marker is sometimes the only way to
  * discern between instances of different sub-structures
  */
 export enum CORE_HASH_STRUCTURE {
