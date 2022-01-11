@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-@forward 'base/variables';
-@forward 'base/normalize';
-@forward 'base/utils';
-@forward 'base/common';
-@forward 'base/button';
-@forward 'base/input';
-@forward 'base/panel';
-@forward 'base/modal';
-@forward 'base/menu';
-@forward 'base/table';
-@forward 'components/icon';
-@forward 'components/panel-loading-indicator';
-@forward 'components/blank-panel-placeholder';
-@forward 'components/selector-input';
-@forward 'components/tree-view';
+.mui-menu__paper {
+  background: var(--color-dark-grey-100);
+}
 
-// Reset (override library styles)
-@forward 'reset/mui';
-@forward 'reset/react-reflex';
-@forward 'reset/monaco-editor';
+.mui-menu__list {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.mui-popover__paper {
+  background: var(--color-dark-grey-100);
+  // NOTE: this is needed in order to have elements display go beyond
+  // the boundary of the popover, e.g. elements shown with `display: relative`
+  // such as validation error for inputs
+  overflow: unset;
+}
+
+.mui-non-blocking-dialog__root {
+  pointer-events: none;
+}
+
+.mui-non-blocking-dialog__paper {
+  pointer-events: auto;
+}

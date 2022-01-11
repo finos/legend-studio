@@ -15,70 +15,46 @@
  */
 
 import {
-  type MenuProps,
-  type PopoverProps,
-  Menu,
-  Popover,
+  type MenuProps as MuiMenuProps,
+  type PopoverProps as MuiPopoverProps,
+  Menu as MuiMenu,
+  Popover as MuiPopover,
 } from '@mui/material';
 
-import makeStyles from '@mui/styles/makeStyles';
-
-const useBaseMenuStyles = makeStyles({
-  listPadding: {
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-  paper: {
-    background: 'var(--color-dark-grey-100)',
-  },
-});
-
-export const BaseMenu: React.FC<MenuProps> = (props) => {
-  const classes = useBaseMenuStyles();
+export const BaseMenu: React.FC<MuiMenuProps> = (props) => {
   const { children, ...otherProps } = props;
 
   return (
-    <Menu
+    <MuiMenu
       classes={{
-        paper: classes.paper,
+        paper: 'mui-menu__paper',
       }}
       MenuListProps={{
         classes: {
-          padding: classes.listPadding,
+          padding: 'mui-menu__list',
         },
       }}
       transitionDuration={0}
       {...otherProps}
     >
       {props.children}
-    </Menu>
+    </MuiMenu>
   );
 };
 
-const useBasePopoverStyles = makeStyles({
-  paper: {
-    background: 'var(--color-dark-grey-100)',
-    // NOTE: this is needed in order to have elements display go beyond
-    // the boundary of the popover, e.g. elements shown with `display: relative`
-    // such as validation error for inputs
-    overflow: 'unset',
-  },
-});
-
-export const BasePopover: React.FC<PopoverProps> = (props) => {
-  const classes = useBasePopoverStyles();
+export const BasePopover: React.FC<MuiPopoverProps> = (props) => {
   const { children, ...otherProps } = props;
 
   return (
-    <Popover
+    <MuiPopover
       classes={{
-        paper: classes.paper,
+        paper: 'mui-popover__paper',
       }}
       transitionDuration={0}
       {...otherProps}
     >
       {props.children}
-    </Popover>
+    </MuiPopover>
   );
 };
 
