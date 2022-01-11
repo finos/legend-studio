@@ -50,7 +50,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import { type TooltipProps, Tooltip } from '@material-ui/core';
+import { type TooltipProps, Tooltip } from '@mui/material';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{

@@ -27,7 +27,7 @@ import type { EntityChange, EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import { Dialog } from '@material-ui/core';
+import { Dialog } from '@mui/material';
 
 const PatchLoader = observer(() => {
   const editorStore = useEditorStore();

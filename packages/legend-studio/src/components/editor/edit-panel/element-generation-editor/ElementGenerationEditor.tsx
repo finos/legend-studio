@@ -15,7 +15,7 @@
  */
 
 import { useRef, useState, useEffect } from 'react';
-import { Dialog } from '@material-ui/core';
+import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import {
   ELEMENT_PATH_DELIMITER,

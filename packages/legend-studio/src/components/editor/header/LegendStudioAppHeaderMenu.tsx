@@ -24,7 +24,7 @@ import {
   MenuContentItem,
 } from '@finos/legend-art';
 import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from '@mui/material/Dialog';
 import { useApplicationStore } from '@finos/legend-application';
 import type {
   SDLCServerOption,

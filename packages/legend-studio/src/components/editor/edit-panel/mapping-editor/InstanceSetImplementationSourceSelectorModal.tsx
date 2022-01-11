@@ -26,7 +26,7 @@ import {
   type MappingEditorState,
   type MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from '@mui/material/Dialog';
 import {
   type InstanceSetImplementation,
   type View,

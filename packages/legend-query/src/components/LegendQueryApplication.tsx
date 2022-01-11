@@ -17,7 +17,7 @@
 import { useEffect } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
 import {
@@ -114,9 +114,11 @@ export const LegendQueryApplication = observer(
           log={applicationStore.log}
         >
           <LegendQueryStoreProvider pluginManager={pluginManager}>
-            <ThemeProvider theme={LegendMaterialUITheme}>
-              <LegendQueryApplicationInner />
-            </ThemeProvider>
+            <StyledEngineProvider injectFirst={true}>
+              <ThemeProvider theme={LegendMaterialUITheme}>
+                <LegendQueryApplicationInner />
+              </ThemeProvider>
+            </StyledEngineProvider>
           </LegendQueryStoreProvider>
         </GraphManagerStateProvider>
       </DepotServerClientProvider>

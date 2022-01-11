@@ -23,7 +23,7 @@ import {
   FaTimes,
 } from 'react-icons/fa';
 import { clsx, CustomSelectorInput } from '@finos/legend-art';
-import { Dialog } from '@material-ui/core';
+import { Dialog } from '@mui/material';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,

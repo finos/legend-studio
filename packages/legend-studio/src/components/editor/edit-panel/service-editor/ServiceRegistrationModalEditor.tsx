@@ -21,7 +21,7 @@ import {
   PanelLoadingIndicator,
   CustomSelectorInput,
 } from '@finos/legend-art';
-import { Dialog } from '@material-ui/core';
+import Dialog from '@mui/material/Dialog';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceExecutionMode } from '@finos/legend-graph';

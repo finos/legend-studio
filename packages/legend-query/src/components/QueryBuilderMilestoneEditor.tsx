@@ -20,7 +20,7 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
-import { Dialog } from '@material-ui/core';
+import { Dialog } from '@mui/material';
 import { useCallback } from 'react';
 import {
   type Type,

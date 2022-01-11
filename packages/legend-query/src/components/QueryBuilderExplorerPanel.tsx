@@ -57,7 +57,7 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil';
 import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState';
 import { flowResult } from 'mobx';
-import { Dialog } from '@material-ui/core';
+import { Dialog } from '@mui/material';
 import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState';
 import {
   type Type,

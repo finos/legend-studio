@@ -15,8 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import Snackbar, { type SnackbarCloseReason } from '@material-ui/core/Snackbar';
-import SnackbarContent from '@material-ui/core/SnackbarContent';
+import Snackbar, { type SnackbarCloseReason } from '@mui/material/Snackbar';
+import SnackbarContent from '@mui/material/SnackbarContent';
 import {
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
@@ -86,7 +86,7 @@ export const NotificationSnackbar = observer(() => {
   const toggleExpansion = (): void => setIsExpanded(!isExpanded);
 
   const onSnackbarAutoHideOrClickAway = (
-    event: React.SyntheticEvent<unknown>,
+    event: React.SyntheticEvent<unknown> | Event,
     reason: SnackbarCloseReason,
   ): void => {
     // NOTE: we only should not allow dismissing the notification on click-away. First of call, this might not be desirable

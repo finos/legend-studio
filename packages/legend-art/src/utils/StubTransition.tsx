@@ -15,7 +15,7 @@
  */
 
 /**
- * This stub transition is used when we need to disable transition for `material-ui` components
+ * This stub transition is used when we need to disable transition for MUI components
  * See https://stackoverflow.com/questions/61139778/react-material-ui-tooltips-disable-animation
  */
 export const StubTransition: React.FC<{

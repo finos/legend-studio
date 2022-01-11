@@ -20,7 +20,7 @@ import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import { Dialog } from '@material-ui/core';
+import Dialog from '@mui/material/Dialog';
 import {
   type SelectComponent,
   BlankPanelContent,

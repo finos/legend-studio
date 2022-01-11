@@ -49,7 +49,7 @@ import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
 } from '../../../../stores/shared/DnDUtil';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from '@mui/material/Dialog';
 import { guaranteeType, uniq } from '@finos/legend-shared';
 import {
   type MappingExecutionState,

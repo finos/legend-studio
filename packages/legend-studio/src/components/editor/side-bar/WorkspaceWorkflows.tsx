@@ -59,7 +59,7 @@ import {
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import { Dialog } from '@material-ui/core';
+import { Dialog } from '@mui/material';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
 
 const getWorkflowStatusIcon = (

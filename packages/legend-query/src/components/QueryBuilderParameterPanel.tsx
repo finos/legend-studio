@@ -29,7 +29,7 @@ import {
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
   QueryParameterState,
 } from '../stores/QueryParametersState';
-import { Dialog } from '@material-ui/core';
+import { Dialog } from '@mui/material';
 import { useEffect, useState } from 'react';
 import {
   type Type,

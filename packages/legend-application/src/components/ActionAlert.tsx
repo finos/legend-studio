@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from '@mui/material/Dialog';
 import {
   ActionAlertActionType,
   ActionAlertType,
