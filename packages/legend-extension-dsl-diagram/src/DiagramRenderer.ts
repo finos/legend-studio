@@ -572,11 +572,11 @@ export class DiagramRenderer {
               // Do not allow creating self-inheritance
               startClassView.class.value !== targetClassView.class.value &&
               // Avoid creating inhertance that already existed
-              !startClassView.class.value.allSuperClasses.includes(
+              !startClassView.class.value.allSuperclasses.includes(
                 targetClassView.class.value,
               ) &&
               // Avoid loop (might be expensive)
-              !targetClassView.class.value.allSuperClasses.includes(
+              !targetClassView.class.value.allSuperclasses.includes(
                 startClassView.class.value,
               )
             ) {
@@ -2293,7 +2293,7 @@ export class DiagramRenderer {
     else if ('ArrowDown' === e.key) {
       const views = uniqBy(
         this.selectedClasses.flatMap((x) =>
-          x.class.value._subClasses.flatMap(
+          x.class.value.subclasses.flatMap(
             (c) =>
               new ClassView(
                 this.diagram,

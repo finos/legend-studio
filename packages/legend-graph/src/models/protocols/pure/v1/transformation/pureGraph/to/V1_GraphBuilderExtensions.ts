@@ -19,7 +19,7 @@ import {
   isClassAssignableFrom,
   isNonNullable,
   getClass,
-  getSuperClass,
+  getSuperclass,
   UnsupportedOperationError,
   IllegalStateError,
 } from '@finos/legend-shared';
@@ -154,9 +154,9 @@ export class V1_GraphBuilderExtensions {
       return undefined;
     }
     // We can ignore interfaces in this search, since V1_PackageableElement is itself a class (not an interface)
-    const superClass = getSuperClass<V1_PackageableElement>(_class);
-    return superClass
-      ? this.getExtraBuilderForProtocolClass_recursive(superClass)
+    const superclass = getSuperclass<V1_PackageableElement>(_class);
+    return superclass
+      ? this.getExtraBuilderForProtocolClass_recursive(superclass)
       : undefined;
   }
 

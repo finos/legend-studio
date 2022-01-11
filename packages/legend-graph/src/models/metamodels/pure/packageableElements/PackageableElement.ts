@@ -148,7 +148,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
       : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
   }
 
-  // NOTE: we don't need `createStub` as the sub-classes will have to implement their own for type narrowing
+  // NOTE: we don't need `createStub` as the subclasses will have to implement their own for type narrowing
   get isStub(): boolean {
     return !this.name && !this.package;
   }
