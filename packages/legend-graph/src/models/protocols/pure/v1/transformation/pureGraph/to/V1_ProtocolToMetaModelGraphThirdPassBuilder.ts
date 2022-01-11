@@ -92,7 +92,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
           const genricTypeReference = this.context.resolveGenericType(type);
           _class.addSuperType(genricTypeReference);
           if (genricTypeReference.ownerReference.value instanceof Class) {
-            genricTypeReference.ownerReference.value.addSubClass(_class);
+            genricTypeReference.ownerReference.value.addSubclass(_class);
           }
         } catch (error) {
           assertErrorThrown(error);
