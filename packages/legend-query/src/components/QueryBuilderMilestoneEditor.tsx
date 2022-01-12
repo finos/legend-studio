@@ -316,6 +316,9 @@ export const MilestoningParametersEditor = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__modal">
           <div className="modal__header">

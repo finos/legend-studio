@@ -147,6 +147,9 @@ const DiagramRendererHotkeyInfosModal = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content--scrollable',
         }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div className="modal modal--dark modal--scrollable diagram-editor__hotkeys__dialog">
           <div className="modal__header">

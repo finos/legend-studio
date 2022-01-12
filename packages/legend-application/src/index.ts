@@ -21,6 +21,7 @@ export * from './application/LegendApplication';
 
 export * from './components/ApplicationStoreProvider';
 export * from './components/WebApplicationNavigatorProvider';
+export * from './components/LegendApplicationThemeProvider';
 
 export * from './components/ApplicationStoreProviderTestUtils';
 export * from './components/WebApplicationNavigatorProviderTestUtils';

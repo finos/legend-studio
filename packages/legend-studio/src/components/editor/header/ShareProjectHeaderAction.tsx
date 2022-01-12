@@ -16,7 +16,7 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import {
   generateViewProjectRoute,
   generateViewVersionRoute,
@@ -72,7 +72,13 @@ const ShareModal = observer(
     ): void => setSelectedVersion(val?.value);
 
     return (
-      <Dialog onClose={closeModal} open={open}>
+      <Dialog
+        onClose={closeModal}
+        open={open}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
+      >
         <div className="modal modal--dark modal--no-padding">
           <PanelLoadingIndicator isLoading={isDispatchingAction} />
           <div className="modal__body">

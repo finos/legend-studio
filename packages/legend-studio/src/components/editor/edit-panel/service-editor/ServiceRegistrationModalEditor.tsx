@@ -21,7 +21,7 @@ import {
   PanelLoadingIndicator,
   CustomSelectorInput,
 } from '@finos/legend-art';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceExecutionMode } from '@finos/legend-graph';
@@ -121,6 +121,9 @@ export const ServiceRegistrationModalEditor = observer(() => {
       onClose={closeModal}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      TransitionProps={{
+        appear: false, // disable transition
+      }}
     >
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL}

@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import {
   type TreeNodeContainerProps,
   ResizablePanelGroup,
@@ -252,6 +252,9 @@ export const DatabaseBuilder = observer(
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div className="modal modal--dark database-builder">
           <div className="database-builder__heading">

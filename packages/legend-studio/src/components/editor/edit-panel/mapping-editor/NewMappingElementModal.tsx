@@ -15,7 +15,7 @@
  */
 
 import { useState, useRef } from 'react';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import {
   type SelectComponent,
@@ -207,6 +207,7 @@ export const NewMappingElementModal = observer(() => {
       open={Boolean(spec)}
       onClose={handleClose}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{

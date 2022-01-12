@@ -32,7 +32,7 @@ import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { observer } from 'mobx-react-lite';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 import {
   type ExecutionPlan,
@@ -339,6 +339,9 @@ export const ExecutionPlanViewer = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal">

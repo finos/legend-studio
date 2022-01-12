@@ -32,7 +32,7 @@ import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { isNumber } from '@finos/legend-shared';
 import { MdModeEdit } from 'react-icons/md';
 import {
@@ -198,6 +198,7 @@ const CreateProjectModal = observer(() => {
       open={setupStore.showCreateProjectModal}
       onClose={closeModal}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}
@@ -553,6 +554,7 @@ const CreateWorkspaceModal = observer(() => {
       open={showCreateWorkspaceModal}
       onClose={closeModal}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}

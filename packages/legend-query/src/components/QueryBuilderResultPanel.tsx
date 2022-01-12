@@ -15,7 +15,7 @@
  */
 
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { BlankPanelContent, PanelLoadingIndicator } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { FaPlay, FaScroll } from 'react-icons/fa';
@@ -185,6 +185,9 @@ export const QueryBuilderResultPanel = observer(
             root: 'editor-modal__root-container',
             container: 'editor-modal__container',
             paper: 'editor-modal__content',
+          }}
+          TransitionProps={{
+            appear: false, // disable transition
           }}
         >
           <div className="modal modal--dark editor-modal">

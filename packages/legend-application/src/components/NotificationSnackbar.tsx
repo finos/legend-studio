@@ -15,8 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import Snackbar, { type SnackbarCloseReason } from '@mui/material/Snackbar';
-import SnackbarContent from '@mui/material/SnackbarContent';
+import {
+  Snackbar,
+  SnackbarContent,
+  type SnackbarCloseReason,
+} from '@mui/material';
 import {
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
@@ -99,6 +102,9 @@ export const NotificationSnackbar = observer(() => {
 
   return (
     <Snackbar
+      TransitionProps={{
+        appear: false,
+      }}
       classes={{
         root: 'notification',
         anchorOriginBottomRight: 'notification__position',

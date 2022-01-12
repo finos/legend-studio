@@ -46,7 +46,13 @@ const PatchLoader = observer(() => {
   const deleteChange = (change: EntityChange): void =>
     patchState.deleteChange(change);
   return (
-    <Dialog onClose={onClose} open={patchState.showModal}>
+    <Dialog
+      onClose={onClose}
+      open={patchState.showModal}
+      TransitionProps={{
+        appear: false, // disable transition
+      }}
+    >
       <div className="modal modal--dark modal--scrollable patch-loader">
         <div className="modal__header">
           <div className="modal__title">

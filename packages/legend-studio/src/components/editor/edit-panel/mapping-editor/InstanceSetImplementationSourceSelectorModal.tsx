@@ -26,7 +26,7 @@ import {
   type MappingEditorState,
   type MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import {
   type InstanceSetImplementation,
   type View,
@@ -185,6 +185,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
         open={true}
         onClose={closeModal}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter: handleEnter,
         }}
         classes={{

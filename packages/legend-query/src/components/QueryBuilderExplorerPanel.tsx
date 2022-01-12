@@ -40,7 +40,6 @@ import {
   InfoCircleIcon,
   ClassIcon,
   CheckIcon,
-  StubTransition,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -94,7 +93,12 @@ const QueryBuilderSubclassInfoTooltip: React.FC<{
         arrow: 'query-builder__tooltip__arrow',
         tooltipPlacementRight: 'query-builder__tooltip--right',
       }}
-      TransitionComponent={StubTransition}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
       title={
         <div className="query-builder__tooltip__content">
           <div className="query-builder__tooltip__item">
@@ -143,6 +147,9 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__explorer__preview-data-modal">

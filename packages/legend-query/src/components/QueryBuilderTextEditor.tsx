@@ -15,7 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { clsx } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
@@ -54,6 +54,9 @@ export const QueryBuilderTextEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div

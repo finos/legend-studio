@@ -17,7 +17,6 @@
 import { useEffect } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
 import {
@@ -26,10 +25,7 @@ import {
   ServiceQueryLoader,
 } from './QueryEditor';
 import { flowResult } from 'mobx';
-import {
-  LegendMaterialUITheme,
-  PanelLoadingIndicator,
-} from '@finos/legend-art';
+import { PanelLoadingIndicator } from '@finos/legend-art';
 import {
   LegendQueryStoreProvider,
   useLegendQueryStore,
@@ -39,6 +35,7 @@ import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
   BlockingAlert,
+  LegendApplicationThemeProvider,
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -114,11 +111,9 @@ export const LegendQueryApplication = observer(
           log={applicationStore.log}
         >
           <LegendQueryStoreProvider pluginManager={pluginManager}>
-            <StyledEngineProvider injectFirst={true}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendQueryApplicationInner />
-              </ThemeProvider>
-            </StyledEngineProvider>
+            <LegendApplicationThemeProvider>
+              <LegendQueryApplicationInner />
+            </LegendApplicationThemeProvider>
           </LegendQueryStoreProvider>
         </GraphManagerStateProvider>
       </DepotServerClientProvider>

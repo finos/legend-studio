@@ -40,7 +40,7 @@ import {
 } from '../../../../stores/shared/DnDUtil';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { MdModeEdit } from 'react-icons/md';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,
@@ -111,6 +111,7 @@ const EnumerationMappingSourceSelectorModal = observer(
         open={open}
         onClose={closeModal}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter: handleEnter,
         }}
         classes={{

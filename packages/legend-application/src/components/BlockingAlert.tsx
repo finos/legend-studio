@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator } from '@finos/legend-art';
 import { noop } from '@finos/legend-shared';
@@ -39,6 +39,9 @@ export const BlockingAlert = observer(() => {
       classes={{
         root: 'blocking-alert__root-container',
         container: 'blocking-alert__container',
+      }}
+      TransitionProps={{
+        appear: false, // disable transition
       }}
     >
       <div className="modal modal--dark blocking-alert">

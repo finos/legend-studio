@@ -21,10 +21,7 @@ import { Editor } from './editor/Editor';
 import { Review } from './review/Review';
 import { Viewer } from './viewer/Viewer';
 import { observer } from 'mobx-react-lite';
-import {
-  LegendMaterialUITheme,
-  PanelLoadingIndicator,
-} from '@finos/legend-art';
+import { PanelLoadingIndicator } from '@finos/legend-art';
 import {
   type SDLCServerKeyPathParams,
   URL_PATH_PLACEHOLDER,
@@ -33,7 +30,6 @@ import {
   generateRoutePatternWithSDLCServerKey,
 } from '../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from './editor/header/LegendStudioAppHeaderMenu';
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
@@ -47,6 +43,7 @@ import {
   ActionAlert,
   AppHeader,
   BlockingAlert,
+  LegendApplicationThemeProvider,
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -213,11 +210,9 @@ export const LegendStudioApplication = observer(
             log={applicationStore.log}
           >
             <LegendStudioStoreProvider pluginManager={pluginManager}>
-              <StyledEngineProvider injectFirst={true}>
-                <ThemeProvider theme={LegendMaterialUITheme}>
-                  <LegendStudioApplicationRoot />
-                </ThemeProvider>
-              </StyledEngineProvider>
+              <LegendApplicationThemeProvider>
+                <LegendStudioApplicationRoot />
+              </LegendApplicationThemeProvider>
             </LegendStudioStoreProvider>
           </GraphManagerStateProvider>
         </DepotServerClientProvider>

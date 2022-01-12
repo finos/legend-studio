@@ -15,7 +15,7 @@
  */
 
 import { Fragment, useState } from 'react';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import {
   FaTimes,
@@ -58,6 +58,9 @@ export const QueryBuilderDialog = observer(() => {
         container: 'editor-modal__container',
         paper:
           'editor-modal__content query-builder__dialog__container__content',
+      }}
+      TransitionProps={{
+        appear: false, // disable transition
       }}
     >
       <div

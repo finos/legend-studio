@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type MenuProps as MuiMenuProps,
-  type PopoverProps as MuiPopoverProps,
-  Menu as MuiMenu,
-  Popover as MuiPopover,
-} from '@mui/material';
+import { type MenuProps as MuiMenuProps, Menu as MuiMenu } from '@mui/material';
 
 export const BaseMenu: React.FC<MuiMenuProps> = (props) => {
   const { children, ...otherProps } = props;
@@ -28,11 +23,7 @@ export const BaseMenu: React.FC<MuiMenuProps> = (props) => {
     <MuiMenu
       classes={{
         paper: 'mui-menu__paper',
-      }}
-      MenuListProps={{
-        classes: {
-          padding: 'mui-menu__list',
-        },
+        list: 'mui-menu__list',
       }}
       transitionDuration={0}
       {...otherProps}
@@ -41,21 +32,3 @@ export const BaseMenu: React.FC<MuiMenuProps> = (props) => {
     </MuiMenu>
   );
 };
-
-export const BasePopover: React.FC<MuiPopoverProps> = (props) => {
-  const { children, ...otherProps } = props;
-
-  return (
-    <MuiPopover
-      classes={{
-        paper: 'mui-popover__paper',
-      }}
-      transitionDuration={0}
-      {...otherProps}
-    >
-      {props.children}
-    </MuiPopover>
-  );
-};
-
-// TODO: create base Mui components for Dialog, MuiTooltip, etc so we can eliminate usage of `ThemeProvider`

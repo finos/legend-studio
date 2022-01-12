@@ -23,7 +23,6 @@ import {
   InfoCircleIcon,
   PencilIcon,
   DollarIcon,
-  StubTransition,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -69,7 +68,12 @@ const QueryBuilderParameterInfoTooltip: React.FC<{
         arrow: 'query-builder__tooltip__arrow',
         tooltipPlacementRight: 'query-builder__tooltip--right',
       }}
-      TransitionComponent={StubTransition}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
       title={
         <div className="query-builder__tooltip__content">
           <div className="query-builder__tooltip__item">

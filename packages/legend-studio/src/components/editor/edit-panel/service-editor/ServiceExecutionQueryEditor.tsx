@@ -20,7 +20,7 @@ import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import {
   type SelectComponent,
   BlankPanelContent,
@@ -59,6 +59,9 @@ const ServiceExecutionResultViewer = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal">
@@ -170,6 +173,7 @@ const ServiceExecutionQueryImporter = observer(
         open={queryState.openQueryImporter}
         onClose={closeQueryImporter}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter: handleEnterQueryImporter,
         }}
         classes={{ container: 'search-modal__container' }}

@@ -14,10 +14,23 @@
  * limitations under the License.
  */
 
-/**
- * This stub transition is used when we need to disable transition for MUI components
- * See https://stackoverflow.com/questions/61139778/react-material-ui-tooltips-disable-animation
- */
-export const StubTransition: React.FC<{
-  children?: React.ReactElement;
-}> = (props) => props.children ?? null;
+import {
+  type PopoverProps as MuiPopoverProps,
+  Popover as MuiPopover,
+} from '@mui/material';
+
+export const BasePopover: React.FC<MuiPopoverProps> = (props) => {
+  const { children, ...otherProps } = props;
+
+  return (
+    <MuiPopover
+      classes={{
+        paper: 'mui-popover__paper',
+      }}
+      transitionDuration={0} // disable transition
+      {...otherProps}
+    >
+      {props.children}
+    </MuiPopover>
+  );
+};

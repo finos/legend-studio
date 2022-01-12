@@ -17,7 +17,6 @@
 import { useEffect } from 'react';
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { LegendMaterialUITheme } from '@finos/legend-art';
 import {
   type LegendTaxonomyPathParams,
   URL_PATH_PLACEHOLDER,
@@ -25,7 +24,6 @@ import {
   generateViewTaxonomyRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
 } from '../stores/LegendTaxonomyRouter';
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider';
@@ -33,6 +31,7 @@ import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   ActionAlert,
   BlockingAlert,
+  LegendApplicationThemeProvider,
   NotificationSnackbar,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -146,11 +145,9 @@ export const LegendTaxonomyApplication = observer(
           log={applicationStore.log}
         >
           <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
-            <StyledEngineProvider injectFirst={true}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendTaxonomyApplicationRoot />
-              </ThemeProvider>
-            </StyledEngineProvider>
+            <LegendApplicationThemeProvider>
+              <LegendTaxonomyApplicationRoot />
+            </LegendApplicationThemeProvider>
           </LegendTaxonomyStoreProvider>
         </GraphManagerStateProvider>
       </DepotServerClientProvider>

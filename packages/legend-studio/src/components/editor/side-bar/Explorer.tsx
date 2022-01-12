@@ -64,7 +64,7 @@ import {
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
 import { toTitleCase } from '@finos/legend-shared';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
@@ -144,6 +144,7 @@ const ElementRenamer = observer(() => {
       open={Boolean(element)}
       onClose={abort}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: onEnter,
       }}
       classes={{ container: 'search-modal__container' }}

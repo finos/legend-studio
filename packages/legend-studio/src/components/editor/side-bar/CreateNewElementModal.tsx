@@ -16,7 +16,7 @@
 
 import { useRef } from 'react';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import {
   NewPackageableRuntimeDriver,
@@ -380,6 +380,7 @@ export const CreateNewElementModal = observer(() => {
       open={newElementState.showModal}
       onClose={closeModal}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}

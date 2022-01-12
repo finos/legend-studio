@@ -24,7 +24,7 @@ import {
   MenuContentItem,
 } from '@finos/legend-art';
 import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@mui/material';
 import { useApplicationStore } from '@finos/legend-application';
 import type {
   SDLCServerOption,
@@ -41,7 +41,13 @@ const AboutModal: React.FC<{
   const config = applicationStore.config;
 
   return (
-    <Dialog onClose={closeModal} open={open}>
+    <Dialog
+      onClose={closeModal}
+      open={open}
+      TransitionProps={{
+        appear: false, // disable transition
+      }}
+    >
       <div className="modal modal--dark about-modal">
         <div className="modal__header">
           <div className="modal__title">
