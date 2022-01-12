@@ -1,5 +1,5 @@
 ---
-"@finos/legend-query": minor
+"@finos/legend-query": patch
 ---
 
-Support editing of milestoning properties in projection and filter.
+Allow drag and drop of parameters in Derived Property editor.

@@ -24,7 +24,6 @@ import {
   prettyCONSTName,
 } from '@finos/legend-shared';
 import {
-  Class,
   type AbstractProperty,
   type Enum,
   type PureModel,
@@ -40,20 +39,12 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   VariableExpression,
-  getMilestoneTemporalStereotype,
-  MILESTONING_STEROTYPES,
-  DEFAULT_MILESTONING_PARAMETERS,
   SimpleFunctionExpression,
   matchFunctionName,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-
-const milestoningParameters = {
-  BUSINESS_TEMPORAL: false,
-  PROCESSING_TEMPORAL: false,
-};
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
@@ -108,100 +99,6 @@ export const getPropertyPath = (
   return propertyNameChain.join('.');
 };
 
-const fillMilestonedDerivedPropertyArguments = (
-  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
-  temporalTarget: MILESTONING_STEROTYPES,
-  idx: number,
-): ValueSpecification | undefined => {
-  const querySetupState =
-    derivedPropertyExpressionState.queryBuilderState.querySetupState;
-  switch (temporalTarget) {
-    case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-      let parameter;
-      if (querySetupState.classMilestoningTemporalValues.length === 0) {
-        derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
-        );
-        parameter = querySetupState.classMilestoningTemporalValues[0];
-      } else if (querySetupState.classMilestoningTemporalValues.length === 1) {
-        if (milestoningParameters.BUSINESS_TEMPORAL) {
-          parameter = querySetupState.classMilestoningTemporalValues[0];
-        } else {
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
-          );
-          parameter = querySetupState.classMilestoningTemporalValues[1];
-        }
-      } else {
-        parameter = querySetupState.classMilestoningTemporalValues[1];
-      }
-      milestoningParameters.BUSINESS_TEMPORAL = true;
-      return parameter;
-    }
-    case MILESTONING_STEROTYPES.BITEMPORAL: {
-      if (querySetupState.classMilestoningTemporalValues.length === 0) {
-        derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
-        );
-        derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
-        );
-      } else if (querySetupState.classMilestoningTemporalValues.length === 1) {
-        if (milestoningParameters.PROCESSING_TEMPORAL) {
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
-          );
-        } else {
-          const businessTemporalMilestoningParameter = guaranteeNonNullable(
-            querySetupState.classMilestoningTemporalValues[0],
-          );
-          querySetupState.setClassMilestoningTemporalValues([]);
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
-          );
-          querySetupState.addClassMilestoningTemporalValues(
-            businessTemporalMilestoningParameter,
-          );
-        }
-      }
-      milestoningParameters.BUSINESS_TEMPORAL = true;
-      milestoningParameters.PROCESSING_TEMPORAL = true;
-      return querySetupState.classMilestoningTemporalValues[idx];
-    }
-    case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
-      let parameter;
-      if (querySetupState.classMilestoningTemporalValues.length === 0) {
-        derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
-        );
-        parameter = querySetupState.classMilestoningTemporalValues[0];
-      } else if (querySetupState.classMilestoningTemporalValues.length === 1) {
-        if (milestoningParameters.PROCESSING_TEMPORAL) {
-          parameter = querySetupState.classMilestoningTemporalValues[0];
-        } else {
-          const businessTemporalMilestoningParameter = guaranteeNonNullable(
-            querySetupState.classMilestoningTemporalValues[0],
-          );
-          querySetupState.setClassMilestoningTemporalValues([]);
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
-          );
-          parameter = querySetupState.classMilestoningTemporalValues[0];
-          querySetupState.addClassMilestoningTemporalValues(
-            businessTemporalMilestoningParameter,
-          );
-        }
-      } else {
-        parameter = querySetupState.classMilestoningTemporalValues[0];
-      }
-      milestoningParameters.PROCESSING_TEMPORAL = true;
-      return parameter;
-    }
-    default:
-      return undefined;
-  }
-};
-
 const fillDerivedPropertyArguments = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
   graph: PureModel,
@@ -212,83 +109,55 @@ const fillDerivedPropertyArguments = (
     if (idx < derivedPropertyExpressionState.parameterValues.length) {
       return;
     }
-    let temporalTarget;
-    if (
-      derivedPropertyExpressionState.propertyExpression.func.genericType.value
-        .rawType instanceof Class &&
-      derivedPropertyExpressionState.propertyExpression.func.owner
-        ._generatedMilestonedProperties.length !== 0
-    ) {
-      temporalTarget = getMilestoneTemporalStereotype(
-        derivedPropertyExpressionState.propertyExpression.func.genericType.value
-          .rawType,
-        derivedPropertyExpressionState.queryBuilderState.graphManagerState
-          .graph,
-      );
-    }
-    if (temporalTarget) {
-      const milestoningParameter = fillMilestonedDerivedPropertyArguments(
-        derivedPropertyExpressionState,
-        temporalTarget,
-        idx,
-      );
-      propertyArguments.push(guaranteeNonNullable(milestoningParameter));
-    } else {
-      let argument: ValueSpecification | undefined;
-      const genericType = parameter.genericType;
-      if (genericType) {
-        const _type = genericType.value.rawType;
-        if (
-          (
-            [
-              PRIMITIVE_TYPE.STRING,
-              PRIMITIVE_TYPE.BOOLEAN,
-              PRIMITIVE_TYPE.NUMBER,
-              PRIMITIVE_TYPE.FLOAT,
-              PRIMITIVE_TYPE.DECIMAL,
-              PRIMITIVE_TYPE.INTEGER,
-              PRIMITIVE_TYPE.DATE,
-              PRIMITIVE_TYPE.STRICTDATE,
-              PRIMITIVE_TYPE.DATETIME,
-              PRIMITIVE_TYPE.LATESTDATE,
-            ] as string[]
-          ).includes(_type.name)
-        ) {
-          const primitiveInstanceValue = new PrimitiveInstanceValue(
-            genericType,
-            parameter.multiplicity,
+    let argument: ValueSpecification | undefined;
+    const genericType = parameter.genericType;
+    if (genericType) {
+      const _type = genericType.value.rawType;
+      if (
+        (
+          [
+            PRIMITIVE_TYPE.STRING,
+            PRIMITIVE_TYPE.BOOLEAN,
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
+          ] as string[]
+        ).includes(_type.name)
+      ) {
+        const primitiveInstanceValue = new PrimitiveInstanceValue(
+          genericType,
+          parameter.multiplicity,
+        );
+        primitiveInstanceValue.values = [
+          generateDefaultValueForPrimitiveType(_type.name as PRIMITIVE_TYPE),
+        ];
+        argument = primitiveInstanceValue;
+      } else if (_type instanceof Enumeration) {
+        const enumValueInstanceValue = new EnumValueInstanceValue(
+          genericType,
+          parameter.multiplicity,
+        );
+        if (_type.values.length) {
+          const enumValueRef = EnumValueExplicitReference.create(
+            _type.values[0] as Enum,
           );
-          if (_type.name !== PRIMITIVE_TYPE.LATESTDATE) {
-            primitiveInstanceValue.values = [
-              generateDefaultValueForPrimitiveType(
-                _type.name as PRIMITIVE_TYPE,
-              ),
-            ];
-          }
-          argument = primitiveInstanceValue;
-        } else if (_type instanceof Enumeration) {
-          const enumValueInstanceValue = new EnumValueInstanceValue(
-            genericType,
-            parameter.multiplicity,
-          );
-          if (_type.values.length) {
-            const enumValueRef = EnumValueExplicitReference.create(
-              _type.values[0] as Enum,
-            );
-            enumValueInstanceValue.values = [enumValueRef];
-          }
-          argument = enumValueInstanceValue;
+          enumValueInstanceValue.values = [enumValueRef];
         }
+        argument = enumValueInstanceValue;
       }
-      // for arguments of types we don't support, we will fill them with `[]`
-      // which in Pure is equivalent to `null` in other languages
-      propertyArguments.push(
-        argument ??
-          new CollectionInstanceValue(
-            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
-          ),
-      );
     }
+    // for arguments of types we don't support, we will fill them with `[]`
+    // which in Pure is equivalent to `null` in other languages
+    propertyArguments.push(
+      argument ??
+        new CollectionInstanceValue(
+          graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
+        ),
+    );
   });
   derivedPropertyExpressionState.propertyExpression.setParametersValues([
     guaranteeNonNullable(
@@ -350,12 +219,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
       if (paramValue instanceof InstanceValue) {
         const isRequired = paramValue.multiplicity.lowerBound >= 1;
         // required and no values provided
-        if (
-          isRequired &&
-          paramValue.genericType?.value.rawType.name !==
-            PRIMITIVE_TYPE.LATESTDATE &&
-          !paramValue.values.length
-        ) {
+        if (isRequired && !paramValue.values.length) {
           return false;
         }
         // more values than allowed
@@ -424,25 +288,6 @@ export class QueryBuilderPropertyExpressionState {
     const result: QueryBuilderDerivedPropertyExpressionState[] = [];
     let currentExpression: ValueSpecification | undefined =
       this.propertyExpression;
-    const milestoningStereotype = getMilestoneTemporalStereotype(
-      guaranteeNonNullable(this.queryBuilderState.querySetupState._class),
-      this.queryBuilderState.graphManagerState.graph,
-    );
-    switch (milestoningStereotype) {
-      case MILESTONING_STEROTYPES.BITEMPORAL:
-        milestoningParameters.BUSINESS_TEMPORAL = true;
-        milestoningParameters.PROCESSING_TEMPORAL = true;
-        break;
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-        milestoningParameters.BUSINESS_TEMPORAL = true;
-        milestoningParameters.PROCESSING_TEMPORAL = false;
-        break;
-      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-        milestoningParameters.PROCESSING_TEMPORAL = true;
-        milestoningParameters.BUSINESS_TEMPORAL = false;
-        break;
-      default:
-    }
     while (currentExpression instanceof AbstractPropertyExpression) {
       // Check if the property chain can results in column that have multiple values
       if (
@@ -451,20 +296,6 @@ export class QueryBuilderPropertyExpressionState {
       ) {
         requiresExistsHandling = true;
       }
-      if (
-        currentExpression.func.genericType.value.rawType instanceof Class &&
-        currentExpression.func.owner._generatedMilestonedProperties.length !== 0
-      ) {
-        const name = currentExpression.func.name;
-        const func =
-          currentExpression.func.owner._generatedMilestonedProperties.find(
-            (e) => e.name === name,
-          );
-        if (func) {
-          currentExpression.func = func;
-        }
-      }
-
       // Create states to hold derived properties' parameters and arguments for editing
       if (currentExpression.func instanceof DerivedProperty) {
         const derivedPropertyExpressionState =
