@@ -40,12 +40,12 @@ import {
   getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
+  VARIABLE_REFERENCE_TOKEN,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor';
 import { useState } from 'react';
 import { FaClock } from 'react-icons/fa';
-import { VARIABLE_REFERENCE_TOKEN } from '../QueryBuilder_Const';
 
 const getParameterValue = (
   parameter: ValueSpecification | undefined,

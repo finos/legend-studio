@@ -41,6 +41,7 @@ import {
   VariableExpression,
   SimpleFunctionExpression,
   matchFunctionName,
+  TYPE_CAST_TOKEN,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -52,14 +53,16 @@ export const prettyPropertyName = (value: string): string =>
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
 ): string => {
-  const propertyNameChain = [propertyExpression.func.name];
+  const propertyNameChain = [prettyPropertyName(propertyExpression.func.name)];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
     currentExpression = getNullableFirstElement(
       currentExpression.parametersValues,
     );
     if (currentExpression instanceof AbstractPropertyExpression) {
-      propertyNameChain.unshift(currentExpression.func.name);
+      propertyNameChain.unshift(
+        prettyPropertyName(currentExpression.func.name),
+      );
     }
     if (
       currentExpression instanceof SimpleFunctionExpression &&
@@ -68,19 +71,23 @@ export const getPropertyChainName = (
         SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
-      propertyNameChain.unshift(
-        `(@${
-          currentExpression.parametersValues.filter(
-            (param) => param instanceof InstanceValue,
-          )[0]?.genericType?.value.rawType.name
-        })`,
-      );
+      const propertyWithSubtype = `(${TYPE_CAST_TOKEN}${prettyPropertyName(
+        currentExpression.parametersValues.filter(
+          (param) => param instanceof InstanceValue,
+        )[0]?.genericType?.value.rawType.name ?? '',
+      )})${prettyPropertyName(
+        currentExpression.parametersValues[0] instanceof
+          AbstractPropertyExpression
+          ? currentExpression.parametersValues[0]?.func.name
+          : '',
+      )}`;
+      propertyNameChain.unshift(propertyWithSubtype);
       currentExpression = getNullableFirstElement(
         currentExpression.parametersValues,
       );
     }
   }
-  return propertyNameChain.map(prettyPropertyName).join('/');
+  return propertyNameChain.join('/');
 };
 
 export const getPropertyPath = (
