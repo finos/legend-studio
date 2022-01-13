@@ -22,6 +22,9 @@ export const LAMBDA_PIPE = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
 export const DEFAULT_DATABASE_SCHEMA_NAME = 'default';
 export const SECTION_INDEX_ELEMENT_PATH = '__internal__::SectionIndex';
+export const VARIABLE_REFERENCE_TOKEN = '$';
+export const TYPE_CAST_TOKEN = '@';
+export const ARROW_FUNCTION_TOKEN = '->';
 
 export enum ROOT_PACKAGE_NAME {
   CORE = 'CORE',

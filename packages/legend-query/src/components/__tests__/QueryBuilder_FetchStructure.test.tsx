@@ -44,7 +44,10 @@ import {
   TEST__setUpQueryEditor,
 } from '../QueryComponentTestUtils';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID';
-import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
+import {
+  QueryBuilderExplorerTreeRootNodeData,
+  QueryBuilderExplorerTreeSubTypeNodeData,
+} from '../../stores/QueryBuilderExplorerState';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
@@ -379,6 +382,8 @@ test(
       getByText(queryBuilderSetup, 'simpleRelationalMapping'),
     );
     await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+
+    //check subclass display in the explorer tree
     const treeData = guaranteeNonNullable(
       queryBuilderState.explorerState.treeData,
     );
@@ -386,23 +391,34 @@ test(
       treeData.nodes.get(treeData.rootIds[0] as string),
       QueryBuilderExplorerTreeRootNodeData,
     );
-
     expect(getRootSetImplementation(mapping, _personClass)).toBe(
       rootNode.mappingData.targetSetImpl,
     );
     expect(rootNode.mappingData.mapped).toBe(true);
+    const subTypeNodes = [...treeData.nodes.values()].filter(
+      (node) => node instanceof QueryBuilderExplorerTreeSubTypeNodeData,
+    );
+    expect(subTypeNodes.length).toBe(2);
+    const queryBuilderExplorerTreeSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    await waitFor(() => getByText(queryBuilderExplorerTreeSetup, '@Person'));
+    await waitFor(() =>
+      getByText(queryBuilderExplorerTreeSetup, '@Person Extension'),
+    );
+
     // simpleProjection with subType
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__simpleProjectionWithSubtype),
     );
-    const projectionColsWihtSubType = await waitFor(() =>
+    const projectionColsWithSubType = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
-    const NAME_ALIAS = '(@person)/First Name';
-    await waitFor(() => getByText(projectionColsWihtSubType, NAME_ALIAS));
+    const NAME_ALIAS = '(@Person)/First Name';
+    await waitFor(() => getByText(projectionColsWithSubType, NAME_ALIAS));
     expect(
       await waitFor(() =>
-        projectionColsWihtSubType.querySelector(`input[value="${NAME_ALIAS}"]`),
+        projectionColsWithSubType.querySelector(`input[value="${NAME_ALIAS}"]`),
       ),
     ).not.toBeNull();
     expect(

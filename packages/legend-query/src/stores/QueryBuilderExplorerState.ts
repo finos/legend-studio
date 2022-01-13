@@ -38,10 +38,22 @@ import {
   Property,
   VariableExpression,
   PureInstanceSetImplementation,
+  GenericType,
+  GenericTypeExplicitReference,
+  SimpleFunctionExpression,
+  InstanceValue,
+  extractElementNameFromPath,
+  matchFunctionName,
+  TYPE_CAST_TOKEN,
+  VARIABLE_REFERENCE_TOKEN,
+  ARROW_FUNCTION_TOKEN,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
-import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
+import {
+  DEFAULT_LAMBDA_VARIABLE_NAME,
+  SUPPORTED_FUNCTIONS,
+} from '../QueryBuilder_Const';
 import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
@@ -122,6 +134,32 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
   }
 }
 
+export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplorerTreeNodeData {
+  subclass: Class;
+  parentId: string;
+
+  constructor(
+    id: string,
+    label: string,
+    dndText: string,
+    subclass: Class,
+    parentId: string,
+    isPartOfDerivedPropertyBranch: boolean,
+    mappingData: QueryBuilderPropertyMappingData,
+  ) {
+    super(
+      id,
+      label,
+      dndText,
+      isPartOfDerivedPropertyBranch,
+      subclass,
+      mappingData,
+    );
+    this.subclass = subclass;
+    this.parentId = parentId;
+  }
+}
+
 export const buildPropertyExpressionFromExplorerTreeNodeData = (
   treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
@@ -139,19 +177,53 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     multiplicityOne,
   );
   propertyExpression.func = guaranteeNonNullable(node.property);
-  let currentExpression = propertyExpression;
+  let currentExpression: AbstractPropertyExpression | SimpleFunctionExpression =
+    propertyExpression;
   let parentNode = treeData.nodes.get(node.parentId);
-  while (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData) {
-    const parentPropertyExpression = new AbstractPropertyExpression(
-      '',
-      multiplicityOne,
-    );
-    parentPropertyExpression.func = guaranteeNonNullable(parentNode.property);
+  let currentNode: QueryBuilderExplorerTreeNodeData = node;
+  while (
+    parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+    parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+  ) {
+    let parentPropertyExpression;
+    if (parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
+      parentPropertyExpression = new SimpleFunctionExpression(
+        extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+        multiplicityOne,
+      );
+    } else {
+      parentPropertyExpression = new AbstractPropertyExpression(
+        '',
+        multiplicityOne,
+      );
+      parentPropertyExpression.func = guaranteeNonNullable(parentNode.property);
+    }
     currentExpression.parametersValues.push(parentPropertyExpression);
+    if (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      const subclass = new InstanceValue(
+        multiplicityOne,
+        GenericTypeExplicitReference.create(new GenericType(currentNode.type)),
+      );
+      currentExpression.parametersValues.push(subclass);
+    }
     currentExpression = parentPropertyExpression;
+    currentNode = parentNode;
     parentNode = treeData.nodes.get(parentNode.parentId);
   }
   currentExpression.parametersValues.push(projectionColumnLambdaVariable);
+  if (currentExpression instanceof SimpleFunctionExpression) {
+    const subclass = new InstanceValue(
+      multiplicityOne,
+      GenericTypeExplicitReference.create(new GenericType(currentNode.type)),
+    );
+    currentExpression.parametersValues.push(subclass);
+  }
   return propertyExpression;
 };
 
@@ -277,6 +349,23 @@ export const getRootMappingData = (
   };
 };
 
+const generateExplorerTreeClassNodeChildrenIDs = (
+  node: QueryBuilderExplorerTreeNodeData,
+): string[] => {
+  const currentClass = node.type as Class;
+  const idsFromProperties = (
+    node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+      ? currentClass.getAllOwnedProperties()
+      : currentClass
+          .getAllProperties()
+          .concat(currentClass.getAllDerivedProperties())
+  ).map((p) => `${node.id}.${p.name}`);
+  const idsFromsubclasses = currentClass.subclasses.map(
+    (subclass) => `${node.id}${TYPE_CAST_TOKEN}${subclass.path}`,
+  );
+  return idsFromProperties.concat(idsFromsubclasses);
+};
+
 export const getQueryBuilderPropertyNodeData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
@@ -301,7 +390,7 @@ export const getQueryBuilderPropertyNodeData = (
     property.name,
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
-        ? '$x'
+        ? `${VARIABLE_REFERENCE_TOKEN}x`
         : parentNode.dndText
     }.${property.name}`,
     property,
@@ -310,12 +399,44 @@ export const getQueryBuilderPropertyNodeData = (
     mappingNodeData,
   );
   if (propertyNode.type instanceof Class) {
-    propertyNode.childrenIds = propertyNode.type
-      .getAllProperties()
-      .concat(propertyNode.type.getAllDerivedProperties())
-      .map((p) => `${propertyNode.id}.${p.name}`);
+    propertyNode.childrenIds =
+      generateExplorerTreeClassNodeChildrenIDs(propertyNode);
   }
   return propertyNode;
+};
+
+export const getQueryBuilderSubTypeNodeData = (
+  subclass: Class,
+  parentNode: QueryBuilderExplorerTreeNodeData,
+): QueryBuilderExplorerTreeSubTypeNodeData => {
+  const subTypeNode = new QueryBuilderExplorerTreeSubTypeNodeData(
+    `${
+      parentNode instanceof QueryBuilderExplorerTreeRootNodeData
+        ? `${TYPE_CAST_TOKEN}${subclass.path}`
+        : `${parentNode.id}${TYPE_CAST_TOKEN}${subclass.path}`
+    }`,
+    subclass.name,
+    `${
+      parentNode instanceof QueryBuilderExplorerTreeRootNodeData
+        ? `${VARIABLE_REFERENCE_TOKEN}${DEFAULT_LAMBDA_VARIABLE_NAME}${ARROW_FUNCTION_TOKEN}${extractElementNameFromPath(
+            SUPPORTED_FUNCTIONS.SUBTYPE,
+          )}(${TYPE_CAST_TOKEN}${subclass.path})`
+        : `${
+            parentNode.dndText
+          }${ARROW_FUNCTION_TOKEN}${extractElementNameFromPath(
+            SUPPORTED_FUNCTIONS.SUBTYPE,
+          )}(${TYPE_CAST_TOKEN}${subclass.path})`
+    }`,
+    subclass,
+    parentNode.id,
+    false,
+    //Display subclasses, anyway.
+    //TODO: Enchance mapping algo to take into account this
+    { mapped: true, skipMappingCheck: true },
+  );
+  subTypeNode.childrenIds =
+    generateExplorerTreeClassNodeChildrenIDs(subTypeNode);
+  return subTypeNode;
 };
 
 const getQueryBuilderTreeData = (
@@ -356,6 +477,14 @@ const getQueryBuilderTreeData = (
       addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
       nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
     });
+  rootClass.subclasses.forEach((subclass) => {
+    const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
+      subclass,
+      treeRootNode,
+    );
+    addUniqueEntry(treeRootNode.childrenIds, subTypeTreeNodeData.id);
+    nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
+  });
   return { rootIds, nodes };
 };
 

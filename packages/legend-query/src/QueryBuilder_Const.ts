@@ -75,5 +75,3 @@ export enum SUPPORTED_FUNCTIONS {
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
-
-export const VARIABLE_REFERENCE_TOKEN = '$';
