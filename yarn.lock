@@ -1970,7 +1970,7 @@ __metadata:
     react-router: 5.2.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     serializr: 2.0.5
     typescript: 4.5.4
   peerDependencies:
@@ -2008,7 +2008,7 @@ __metadata:
     react-select: 4.3.1
     react-window: 1.8.6
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     typescript: 4.5.4
   peerDependencies:
     react: ^17.0.0
@@ -2048,7 +2048,7 @@ __metadata:
     jest-watch-typeahead: 1.0.0
     jsonc-parser: 3.0.0
     micromatch: 4.0.4
-    mini-css-extract-plugin: 2.4.6
+    mini-css-extract-plugin: 2.4.7
     monaco-editor: 0.31.1
     monaco-editor-webpack-plugin: 7.0.1
     postcss: 8.4.5
@@ -2056,10 +2056,10 @@ __metadata:
     react-refresh: 0.11.0
     resolve: 1.21.0
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     sass-loader: 12.4.0
     typescript: 4.5.4
-    webpack: 5.65.0
+    webpack: 5.66.0
   languageName: unknown
   linkType: soft
 
@@ -2092,7 +2092,7 @@ __metadata:
     react-router: 5.2.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     serializr: 2.0.5
     typescript: 4.5.4
   peerDependencies:
@@ -2127,7 +2127,7 @@ __metadata:
     react-icons: 4.3.1
     react-resize-detector: 7.0.0
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     serializr: 2.0.5
     typescript: 4.5.4
   peerDependencies:
@@ -2158,7 +2158,7 @@ __metadata:
     react-dnd: 14.0.5
     react-icons: 4.3.1
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     serializr: 2.0.5
     typescript: 4.5.4
   peerDependencies:
@@ -2187,7 +2187,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     serializr: 2.0.5
     typescript: 4.5.4
   peerDependencies:
@@ -2229,7 +2229,7 @@ __metadata:
     jest: 27.4.7
     npm-run-all: 4.1.5
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     typescript: 4.5.4
   languageName: unknown
   linkType: soft
@@ -2255,7 +2255,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     serializr: 2.0.5
     typescript: 4.5.4
   peerDependencies:
@@ -2386,7 +2386,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     typescript: 4.5.4
   languageName: unknown
   linkType: soft
@@ -2403,10 +2403,10 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.5.4
-    webpack: 5.65.0
+    webpack: 5.66.0
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
-    webpack-dev-server: 4.7.2
+    webpack-dev-server: 4.7.3
   languageName: unknown
   linkType: soft
 
@@ -2450,7 +2450,7 @@ __metadata:
     react-router: 5.2.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     typescript: 4.5.4
   peerDependencies:
     react: ^17.0.0
@@ -2553,7 +2553,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     typescript: 4.5.4
   languageName: unknown
   linkType: soft
@@ -2570,10 +2570,10 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.5.4
-    webpack: 5.65.0
+    webpack: 5.66.0
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
-    webpack-dev-server: 4.7.2
+    webpack-dev-server: 4.7.3
   languageName: unknown
   linkType: soft
 
@@ -2599,7 +2599,7 @@ __metadata:
     react-icons: 4.3.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     typescript: 4.5.4
   peerDependencies:
     react: ^17.0.0
@@ -2634,7 +2634,7 @@ __metadata:
     react-dom: 17.0.2
     react-icons: 4.3.1
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     typescript: 4.5.4
   peerDependencies:
     react: ^17.0.0
@@ -2679,7 +2679,7 @@ __metadata:
     react-router: 5.2.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     serializr: 2.0.5
     sql-formatter: 4.0.2
     typescript: 4.5.4
@@ -2704,7 +2704,7 @@ __metadata:
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     typescript: 4.5.4
   languageName: unknown
   linkType: soft
@@ -2721,10 +2721,10 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.5.4
-    webpack: 5.65.0
+    webpack: 5.66.0
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.9.1
-    webpack-dev-server: 4.7.2
+    webpack-dev-server: 4.7.3
   languageName: unknown
   linkType: soft
 
@@ -2760,7 +2760,7 @@ __metadata:
     react-router: 5.2.1
     react-router-dom: 5.3.0
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     serializr: 2.0.5
     typescript: 4.5.4
   peerDependencies:
@@ -8071,7 +8071,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graceful-fs@npm:^4.1.2, graceful-fs@npm:^4.1.5, graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.0, graceful-fs@npm:^4.2.4, graceful-fs@npm:^4.2.6":
+"graceful-fs@npm:^4.1.2, graceful-fs@npm:^4.1.5, graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.0, graceful-fs@npm:^4.2.4, graceful-fs@npm:^4.2.6, graceful-fs@npm:^4.2.9":
   version: 4.2.9
   resolution: "graceful-fs@npm:4.2.9"
   checksum: 68ea4e07ff2c041ada184f9278b830375f8e0b75154e3f080af6b70f66172fabb4108d19b3863a96b53fc068a310b9b6493d86d1291acc5f3861eb4b79d26ad6
@@ -10004,7 +10004,7 @@ __metadata:
     micromatch: 4.0.4
     prettier: 2.5.1
     rimraf: 3.0.2
-    sass: 1.47.0
+    sass: 1.48.0
     semver: 7.3.5
     sort-package-json: 1.53.1
     stylelint: 14.2.0
@@ -10581,14 +10581,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:2.4.6":
-  version: 2.4.6
-  resolution: "mini-css-extract-plugin@npm:2.4.6"
+"mini-css-extract-plugin@npm:2.4.7":
+  version: 2.4.7
+  resolution: "mini-css-extract-plugin@npm:2.4.7"
   dependencies:
     schema-utils: ^4.0.0
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 7eb3dcbf1e46d5a9cdb6ed1c2b687f6ad5a739e420208511b01f59d45d69328fa7ba57aa44c9b3f7beff8e27cd9fe5188ecd636b4c33f9199ea3bdb9f4a5218e
+  checksum: 2435e128d0ce4f2a93643ee500bb792688d1e5402001c9c5d8b7b66ff60a06316cb7edb1c257f191eed8d3631d6e285c017190813327d5c894bfc82f1e6475ec
   languageName: node
   linkType: hard
 
@@ -13168,16 +13168,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.47.0":
-  version: 1.47.0
-  resolution: "sass@npm:1.47.0"
+"sass@npm:1.48.0":
+  version: 1.48.0
+  resolution: "sass@npm:1.48.0"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
     immutable: ^4.0.0
     source-map-js: ">=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: e725a37eb7360ad5f96e6e6209d81beeb22ecec70c6f01a1acdf237dbbb6e05e50cc0a0851b16ee1dbc63fbdd7a90405cbbd9911f56b2dba3d5f934f7e291f10
+  checksum: 0fa57d17a9ac9eff914719a3c9cf986cb81c6714cc09214ace65e9f1af0bd47f750793dfc39bbd1b199c9b8c12b1e4aba669ba08dfbd649cfb581c55d20a839f
   languageName: node
   linkType: hard
 
@@ -13255,12 +13255,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"selfsigned@npm:^1.10.11":
-  version: 1.10.13
-  resolution: "selfsigned@npm:1.10.13"
+"selfsigned@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "selfsigned@npm:2.0.0"
   dependencies:
     node-forge: ^1.2.0
-  checksum: 155f1f3be6207fa4b380fbaaab8fbbf3e2ccf9cb07cd9de59792fb2d2066940bf4c090cd21e5fbde52836129cedcbfc940db77007511e498ab0ca9ef7d4d8588
+  checksum: 43fca39a5aded2a8e97c1756af74c049a9dde12d47d302820f7d507d25c2ad7da4b04bc439a36620d63b4c0149bcf34ae7a729f978bf3b1bf48859c36ae34cee
   languageName: node
   linkType: hard
 
@@ -15029,9 +15029,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-dev-server@npm:4.7.2":
-  version: 4.7.2
-  resolution: "webpack-dev-server@npm:4.7.2"
+"webpack-dev-server@npm:4.7.3":
+  version: 4.7.3
+  resolution: "webpack-dev-server@npm:4.7.3"
   dependencies:
     "@types/bonjour": ^3.5.9
     "@types/connect-history-api-fallback": ^1.3.5
@@ -15055,7 +15055,7 @@ __metadata:
     p-retry: ^4.5.0
     portfinder: ^1.0.28
     schema-utils: ^4.0.0
-    selfsigned: ^1.10.11
+    selfsigned: ^2.0.0
     serve-index: ^1.9.1
     sockjs: ^0.3.21
     spdy: ^4.0.2
@@ -15069,7 +15069,7 @@ __metadata:
       optional: true
   bin:
     webpack-dev-server: bin/webpack-dev-server.js
-  checksum: d3dd7d61f25a2ac1ac64d4298396043b1b8b46c009afc12c7af4d7c7724b077baa84d4ea353f1956e3f591ab09cde1d15f18d94e8884c1adaa2e1d816c37f814
+  checksum: 6062db1ba62e372ab3bd127f0c1a575a0758ad15338bff56e65f344bfa495d566049752a3e0c18d44469123e2f0cd2ba26cc0cab8d4ca704e8b4ace596871b21
   languageName: node
   linkType: hard
 
@@ -15090,9 +15090,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.65.0":
-  version: 5.65.0
-  resolution: "webpack@npm:5.65.0"
+"webpack@npm:5.66.0":
+  version: 5.66.0
+  resolution: "webpack@npm:5.66.0"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -15108,7 +15108,7 @@ __metadata:
     eslint-scope: 5.1.1
     events: ^3.2.0
     glob-to-regexp: ^0.4.1
-    graceful-fs: ^4.2.4
+    graceful-fs: ^4.2.9
     json-parse-better-errors: ^1.0.2
     loader-runner: ^4.2.0
     mime-types: ^2.1.27
@@ -15123,7 +15123,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 221ab8ccd440cb678269e86689704bbef81cf41393eb266625873e30c6980ffaa055bb1a7d14bf9fc0f5a2e6f03d15d068cbb995bc876757c01a4ca27fd2870c
+  checksum: 5a44664a840fd64c5383aa78847b205ae0b42b607f85ee1d6a568617a210c1b9caab1822bce40a89a3b5eb0f626a83fb5fe2055c638aa230897bf224030d28e8
   languageName: node
   linkType: hard
 
