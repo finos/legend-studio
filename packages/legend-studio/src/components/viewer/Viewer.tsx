@@ -58,11 +58,7 @@ import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import {
-  AppHeader,
-  NotificationSnackbar,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { AppHeader, useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 import type { ActivityDisplay } from '../editor/ActivityBar';
 
@@ -286,7 +282,6 @@ export const ViewerInner = observer(() => {
           <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
             <div className="editor__body">
               <ViewerActivityBar />
-              <NotificationSnackbar />
               <div ref={ref} className="editor__content-container">
                 <div
                   className={clsx('editor__content', {

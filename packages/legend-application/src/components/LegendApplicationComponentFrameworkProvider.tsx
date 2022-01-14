@@ -14,9 +14,22 @@
  * limitations under the License.
  */
 
-import { Backdrop } from '@mui/material';
-import { observer } from 'mobx-react-lite';
+import { LegendStyleProvider } from '@finos/legend-art';
+import { ActionAlert } from './ActionAlert';
+import { BlockingAlert } from './BlockingAlert';
+import { NotificationSnackbar } from './NotificationSnackbar';
 
-export const ApplicationBackdrop = observer((props: { open: boolean }) => (
-  <Backdrop className="backdrop" open={props.open} />
-));
+export const LegendApplicationComponentFrameworkProvider: React.FC<{
+  children: React.ReactNode;
+}> = (props) => {
+  const { children } = props;
+
+  return (
+    <LegendStyleProvider>
+      <BlockingAlert />
+      <ActionAlert />
+      <NotificationSnackbar />
+      {children}
+    </LegendStyleProvider>
+  );
+};

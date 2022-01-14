@@ -35,11 +35,9 @@ import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePan
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
-import {
-  ApplicationBackdrop,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
+import { Backdrop } from '@mui/material';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',
@@ -129,7 +127,7 @@ export const QueryBuilder = observer(
         className="query-builder"
       >
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-          <ApplicationBackdrop open={queryBuilderState.backdrop} />
+          <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
           <div className="query-builder__content">
             <ResizablePanelGroup orientation="horizontal">
               <ResizablePanel minSize={120}>

@@ -33,10 +33,7 @@ import {
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
-  ActionAlert,
-  BlockingAlert,
-  LegendApplicationThemeProvider,
-  NotificationSnackbar,
+  LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
@@ -54,9 +51,6 @@ const LegendQueryApplicationInner = observer(() => {
 
   return (
     <div className="app">
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationSnackbar />
       <PanelLoadingIndicator isLoading={queryStore.initState.isInProgress} />
       {queryStore.initState.hasSucceeded && (
         <Switch>
@@ -111,9 +105,9 @@ export const LegendQueryApplication = observer(
           log={applicationStore.log}
         >
           <LegendQueryStoreProvider pluginManager={pluginManager}>
-            <LegendApplicationThemeProvider>
+            <LegendApplicationComponentFrameworkProvider>
               <LegendQueryApplicationInner />
-            </LegendApplicationThemeProvider>
+            </LegendApplicationComponentFrameworkProvider>
           </LegendQueryStoreProvider>
         </GraphManagerStateProvider>
       </DepotServerClientProvider>

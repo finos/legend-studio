@@ -21,15 +21,12 @@ export * from './application/LegendApplication';
 
 export * from './components/ApplicationStoreProvider';
 export * from './components/WebApplicationNavigatorProvider';
-export * from './components/LegendApplicationThemeProvider';
+export * from './components/LegendApplicationComponentFrameworkProvider';
 
 export * from './components/ApplicationStoreProviderTestUtils';
 export * from './components/WebApplicationNavigatorProviderTestUtils';
+
 export { AppHeader } from './components/AppHeader';
-export { BlockingAlert } from './components/BlockingAlert';
-export { ActionAlert } from './components/ActionAlert';
-export { NotificationSnackbar } from './components/NotificationSnackbar';
-export { ApplicationBackdrop } from './components/ApplicationBackdrop';
 export * from './components/TextInputEditor';
 export * from './components/LambdaEditor';
 

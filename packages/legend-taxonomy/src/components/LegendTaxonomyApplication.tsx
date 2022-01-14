@@ -29,10 +29,7 @@ import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
-  ActionAlert,
-  BlockingAlert,
-  LegendApplicationThemeProvider,
-  NotificationSnackbar,
+  LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
@@ -44,9 +41,6 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
 
   return (
     <div className="app">
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationSnackbar />
       <Switch>
         <Route
           exact={true}
@@ -145,9 +139,9 @@ export const LegendTaxonomyApplication = observer(
           log={applicationStore.log}
         >
           <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
-            <LegendApplicationThemeProvider>
+            <LegendApplicationComponentFrameworkProvider>
               <LegendTaxonomyApplicationRoot />
-            </LegendApplicationThemeProvider>
+            </LegendApplicationComponentFrameworkProvider>
           </LegendTaxonomyStoreProvider>
         </GraphManagerStateProvider>
       </DepotServerClientProvider>

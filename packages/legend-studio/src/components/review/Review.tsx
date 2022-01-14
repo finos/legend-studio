@@ -49,11 +49,7 @@ import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import {
-  AppHeader,
-  NotificationSnackbar,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { AppHeader, useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const ReviewStatusBar = observer(() => {
@@ -253,7 +249,6 @@ const ReviewInner = observer(() => {
                 </div>
               </div>
               <ReviewStatusBar />
-              <NotificationSnackbar />
             </>
           )}
         </div>

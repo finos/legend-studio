@@ -52,11 +52,11 @@ import { EditorStoreProvider, useEditorStore } from './EditorStoreProvider';
 import {
   ActionAlertType,
   ActionAlertActionType,
-  ApplicationBackdrop,
   useApplicationStore,
   AppHeader,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
+import { Backdrop } from '@mui/material';
 
 export const EditorInner = observer(() => {
   const params = useParams<EditorPathParams | GroupEditorPathParams>();
@@ -244,7 +244,7 @@ export const EditorInner = observer(() => {
           >
             <div className="editor__body">
               <ActivityBar />
-              <ApplicationBackdrop open={editorStore.backdrop} />
+              <Backdrop className="backdrop" open={editorStore.backdrop} />
               <div ref={ref} className="editor__content-container">
                 <div
                   className={clsx('editor__content', {

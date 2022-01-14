@@ -43,11 +43,7 @@ import {
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import { ProjectType, WorkspaceType } from '@finos/legend-server-sdlc';
-import {
-  useApplicationStore,
-  NotificationSnackbar,
-  AppHeader,
-} from '@finos/legend-application';
+import { useApplicationStore, AppHeader } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const CreateProjectModal = observer(() => {
@@ -755,7 +751,6 @@ const SetupSelection = observer(() => {
           {/* We do this to reset the initial state of the modals */}
           {setupStore.showCreateProjectModal && <CreateProjectModal />}
           {setupStore.showCreateWorkspaceModal && <CreateWorkspaceModal />}
-          <NotificationSnackbar />
         </div>
       </div>
     </div>

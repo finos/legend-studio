@@ -40,11 +40,8 @@ import {
 } from './LegendStudioStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
-  ActionAlert,
   AppHeader,
-  BlockingAlert,
-  LegendApplicationThemeProvider,
-  NotificationSnackbar,
+  LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
@@ -64,9 +61,6 @@ export const LegendStudioApplicationRoot = observer(() => {
 
   return (
     <div className="app">
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationSnackbar />
       {!studioStore.isSDLCAuthorized && (
         <div className="app__page">
           <AppHeader>
@@ -210,9 +204,9 @@ export const LegendStudioApplication = observer(
             log={applicationStore.log}
           >
             <LegendStudioStoreProvider pluginManager={pluginManager}>
-              <LegendApplicationThemeProvider>
+              <LegendApplicationComponentFrameworkProvider>
                 <LegendStudioApplicationRoot />
-              </LegendApplicationThemeProvider>
+              </LegendApplicationComponentFrameworkProvider>
             </LegendStudioStoreProvider>
           </GraphManagerStateProvider>
         </DepotServerClientProvider>
