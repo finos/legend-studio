@@ -28,39 +28,39 @@ import {
   PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';
 import {
-  ClassIcon,
-  PrimitiveTypeIcon,
-  EnumerationIcon,
-  MeasureIcon,
-  AssociationIcon,
-  ProfileIcon,
-  MappingIcon,
-  RuntimeIcon,
-  ServiceIcon,
-  ConnectionIcon,
-  FunctionIcon,
-  DatabaseIcon,
-  FlatDataStoreIcon,
-  FileGenerationIcon,
-  GenerationSpecificationIcon,
-  UnknownTypeIcon,
-  UnitIcon,
-  PackageIcon,
+  PURE_ClassIcon,
+  PURE_PrimitiveTypeIcon,
+  PURE_EnumerationIcon,
+  PURE_MeasureIcon,
+  PURE_AssociationIcon,
+  PURE_ProfileIcon,
+  PURE_MappingIcon,
+  PURE_RuntimeIcon,
+  PURE_ServiceIcon,
+  PURE_ConnectionIcon,
+  PURE_FunctionIcon,
+  PURE_DatabaseIcon,
+  PURE_FlatDataStoreIcon,
+  PURE_FileGenerationIcon,
+  PURE_GenerationSpecificationIcon,
+  PURE_UnknownElementTypeIcon,
+  PURE_UnitIcon,
+  PURE_PackageIcon,
 } from '@finos/legend-art';
 
 export const getClassPropertyIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {
-    return <PrimitiveTypeIcon />;
+    return <PURE_PrimitiveTypeIcon />;
   } else if (type instanceof Class) {
-    return <ClassIcon />;
+    return <PURE_ClassIcon />;
   } else if (type instanceof Enumeration) {
-    return <EnumerationIcon />;
+    return <PURE_EnumerationIcon />;
   } else if (type instanceof Measure) {
-    return <MeasureIcon />;
+    return <PURE_MeasureIcon />;
   } else if (type instanceof Unit) {
-    return <UnitIcon />;
+    return <PURE_UnitIcon />;
   }
-  return <UnknownTypeIcon />;
+  return <PURE_UnknownElementTypeIcon />;
 };
 
 export const getElementTypeIcon = (
@@ -69,39 +69,39 @@ export const getElementTypeIcon = (
 ): React.ReactNode => {
   switch (type) {
     case PACKAGEABLE_ELEMENT_TYPE.PRIMITIVE:
-      return <PrimitiveTypeIcon />;
+      return <PURE_PrimitiveTypeIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.PACKAGE:
-      return <PackageIcon />;
+      return <PURE_PackageIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.CLASS:
-      return <ClassIcon />;
+      return <PURE_ClassIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.ASSOCIATION:
-      return <AssociationIcon />;
+      return <PURE_AssociationIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.ENUMERATION:
-      return <EnumerationIcon />;
+      return <PURE_EnumerationIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.MEASURE:
-      return <MeasureIcon />;
+      return <PURE_MeasureIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.UNIT:
-      return <UnitIcon />;
+      return <PURE_UnitIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.PROFILE:
-      return <ProfileIcon />;
+      return <PURE_ProfileIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.FUNCTION:
-      return <FunctionIcon />;
+      return <PURE_FunctionIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE:
-      return <FlatDataStoreIcon />;
+      return <PURE_FlatDataStoreIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.DATABASE:
-      return <DatabaseIcon />;
+      return <PURE_DatabaseIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.MAPPING:
-      return <MappingIcon />;
+      return <PURE_MappingIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
-      return <ServiceIcon />;
+      return <PURE_ServiceIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:
-      return <ConnectionIcon />;
+      return <PURE_ConnectionIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
-      return <RuntimeIcon />;
+      return <PURE_RuntimeIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
-      return <FileGenerationIcon />;
+      return <PURE_FileGenerationIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
-      return <GenerationSpecificationIcon />;
+      return <PURE_GenerationSpecificationIcon />;
     default: {
       if (type) {
         const extraElementIconGetters = editorStore.pluginManager
@@ -119,7 +119,7 @@ export const getElementTypeIcon = (
           }
         }
       }
-      return <UnknownTypeIcon />;
+      return <PURE_UnknownElementTypeIcon />;
     }
   }
 };

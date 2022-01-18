@@ -24,112 +24,130 @@ import {
   FaDatabase,
   FaServer,
   FaTable,
-  FaCheck,
 } from 'react-icons/fa';
 import { MdSettingsEthernet, MdLink } from 'react-icons/md';
 import { FiPackage } from 'react-icons/fi';
 import { RiShapeLine } from 'react-icons/ri';
 
-export const PrimitiveTypeIcon: React.FC = () => (
+export const PURE_PrimitiveTypeIcon: React.FC = () => (
   <div className="icon icon--primitive color--primitive">p</div>
 );
-export const PackageIcon: React.FC = () => (
+
+export const PURE_PackageIcon: React.FC = () => (
   <div className="icon color--package">
     <FiPackage />
   </div>
 );
-export const ClassIcon: React.FC = () => (
+
+export const PURE_ClassIcon: React.FC = () => (
   <div className="icon color--class">C</div>
 );
-export const AssociationIcon: React.FC = () => (
+
+export const PURE_AssociationIcon: React.FC = () => (
   <div className="icon color--association">A</div>
 );
-export const EnumValueIcon: React.FC = () => (
+
+export const PURE_EnumValueIcon: React.FC = () => (
   <div className="icon icon--enum-value color--enum-value">e</div>
 );
-export const EnumerationIcon: React.FC = () => (
+
+export const PURE_EnumerationIcon: React.FC = () => (
   <div className="icon color--enumeration">E</div>
 );
-export const MeasureIcon: React.FC = () => (
+
+export const PURE_MeasureIcon: React.FC = () => (
   <div className="icon color--measure">M</div>
 );
-export const UnitIcon: React.FC = () => (
+
+export const PURE_UnitIcon: React.FC = () => (
   <div className="icon color--unit">u</div>
 );
-export const ProfileIcon: React.FC = () => (
+
+export const PURE_ProfileIcon: React.FC = () => (
   <div className="icon color--profile">P</div>
 );
-export const FunctionIcon: React.FC = () => (
+
+export const PURE_FunctionIcon: React.FC = () => (
   <div className="icon icon--function color--function">(x)</div>
 );
-export const FlatDataStoreIcon: React.FC = () => (
+
+export const PURE_FlatDataStoreIcon: React.FC = () => (
   <div className="icon icon--flat-data color--flat-data">
     <FaLayerGroup />
   </div>
 );
-export const DatabaseIcon: React.FC = () => (
+
+export const PURE_DatabaseIcon: React.FC = () => (
   <div className="icon icon--database color--database">
     <FaDatabase />
   </div>
 );
 
-export const SchemaIcon: React.FC = () => (
+export const PURE_DatabaseSchemaIcon: React.FC = () => (
   <div className="icon icon--schema color--schema">
     <FaServer />
   </div>
 );
 
-export const TableIcon: React.FC = () => (
+export const PURE_DatabaseTableIcon: React.FC = () => (
   <div className="icon icon--table color--table">
     <FaTable />
   </div>
 );
 
-export const TableJoinIcon: React.FC = () => (
+export const PURE_DatabaseTableJoinIcon: React.FC = () => (
   <div className="icon icon--table-join color--primitive">@</div>
 );
-export const MappingIcon: React.FC = () => (
+
+export const PURE_MappingIcon: React.FC = () => (
   <div className="icon color--mapping">
     <FaMap />
   </div>
 );
-export const GenerationSpecificationIcon: React.FC = () => (
+
+export const PURE_GenerationSpecificationIcon: React.FC = () => (
   <div className="icon">G</div>
 );
-export const FileGenerationIcon: React.FC = () => (
+
+export const PURE_FileGenerationIcon: React.FC = () => (
   <div className="icon color--file-generation">
     <FaFileCode />
   </div>
 );
-export const ServiceIcon: React.FC = () => (
+
+export const PURE_ServiceIcon: React.FC = () => (
   <div className="icon color--service">
     <FaRobot />
   </div>
 );
-export const ConnectionIcon: React.FC = () => (
+
+export const PURE_ConnectionIcon: React.FC = () => (
   <div className="icon icon--connection color--connection">
     <MdLink />
   </div>
 );
-export const RuntimeIcon: React.FC = () => (
+
+export const PURE_RuntimeIcon: React.FC = () => (
   <div className="icon color--runtime">
     <FaBusinessTime />
   </div>
 );
-export const ProjectConfigurationIcon: React.FC = () => (
-  <div className="icon icon--config color--config">
-    <MdSettingsEthernet />
-  </div>
-);
-export const UnknownTypeIcon: React.FC = () => (
-  <div>
-    <FaQuestion />
-  </div>
-);
-export const ModelStoreIcon: React.FC = () => (
+
+export const PURE_ModelStoreIcon: React.FC = () => (
   <div className="icon color--class">
     <RiShapeLine />
   </div>
 );
 
-export const CheckIcon: React.FC = () => <FaCheck className="icon__check" />;
+export const PURE_UnknownElementTypeIcon: React.FC = () => (
+  <div>
+    <FaQuestion />
+  </div>
+);
+
+// TODO: consider moving this back to `Icon`?
+export const ProjectConfigurationIcon: React.FC = () => (
+  <div className="icon icon--config color--config">
+    <MdSettingsEthernet />
+  </div>
+);

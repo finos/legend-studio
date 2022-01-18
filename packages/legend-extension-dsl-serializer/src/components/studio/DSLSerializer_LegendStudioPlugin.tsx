@@ -35,7 +35,7 @@ import {
   type NewElementState,
   type RuntimeConnectionTooltipTextBuilder,
 } from '@finos/legend-studio';
-import { FaBuffer, FaSitemap } from 'react-icons/fa';
+import { BufferIcon, SitemapIcon } from '@finos/legend-art';
 import { SchemaSetEditor } from './SchemaSetElementEditor';
 import { SchemaSetEditorState } from '../../stores/studio/SchemaSetEditorState';
 import {
@@ -101,13 +101,13 @@ export class DSLSerializer_LegendStudioPlugin
         if (type === SCHEMA_SET_ELEMENT_TYPE) {
           return (
             <div className="icon icon--schema-set">
-              <FaSitemap />
+              <SitemapIcon />
             </div>
           );
         } else if (type === BINDING_ELEMENT_TYPE) {
           return (
             <div className="icon icon--binding">
-              <FaBuffer />
+              <BufferIcon />
             </div>
           );
         }

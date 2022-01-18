@@ -20,8 +20,13 @@ import {
   UML_EDITOR_TAB,
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { observer } from 'mobx-react-lite';
-import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
-import { clsx, InputWithInlineValidation } from '@finos/legend-art';
+import {
+  clsx,
+  InputWithInlineValidation,
+  PlusIcon,
+  TimesIcon,
+  LockIcon,
+} from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { type Profile, Tag, Stereotype } from '@finos/legend-graph';
@@ -57,7 +62,7 @@ const TagBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -104,7 +109,7 @@ const StereotypeBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -160,7 +165,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             )}
             <div className="panel__header__title__label">profile</div>
@@ -192,7 +197,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
               tabIndex={-1}
               title={addButtonTitle}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>

@@ -16,9 +16,15 @@
 
 import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaTimes, FaArrowAltCircleRight, FaPlus } from 'react-icons/fa';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
+import {
+  clsx,
+  CustomSelectorInput,
+  createFilter,
+  TimesIcon,
+  ArrowCircleRightIcon,
+  PlusIcon,
+} from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
   type OperationSetImplementationDropTarget,
@@ -192,7 +198,7 @@ export const OperationSetImplementationEditor = observer(
                 tabIndex={-1}
                 title={'Add parameter'}
               >
-                <FaPlus />
+                <PlusIcon />
               </button>
             </div>
           </div>
@@ -227,7 +233,7 @@ export const OperationSetImplementationEditor = observer(
                   tabIndex={-1}
                   title={'Visit mapping element'}
                 >
-                  <FaArrowAltCircleRight />
+                  <ArrowCircleRightIcon />
                 </button>
                 {!isReadOnly && (
                   <button
@@ -237,7 +243,7 @@ export const OperationSetImplementationEditor = observer(
                     tabIndex={-1}
                     title={'Remove'}
                   >
-                    <FaTimes />
+                    <TimesIcon />
                   </button>
                 )}
               </div>

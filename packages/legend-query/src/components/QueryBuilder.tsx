@@ -16,13 +16,13 @@
 
 import { observer } from 'mobx-react-lite';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { FaUserSecret } from 'react-icons/fa';
 import {
   clsx,
   HammerIcon,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
+  HackerIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
@@ -93,7 +93,7 @@ const QueryBuilderStatusBar = observer(
             tabIndex={-1}
             title="View Pure Query"
           >
-            <FaUserSecret />
+            <HackerIcon />
           </button>
         </div>
       </div>

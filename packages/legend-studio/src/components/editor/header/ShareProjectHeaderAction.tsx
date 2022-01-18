@@ -21,8 +21,11 @@ import {
   generateViewProjectRoute,
   generateViewVersionRoute,
 } from '../../../stores/LegendStudioRouter';
-import { PanelLoadingIndicator, CustomSelectorInput } from '@finos/legend-art';
-import { FiShare } from 'react-icons/fi';
+import {
+  PanelLoadingIndicator,
+  CustomSelectorInput,
+  ShareIcon,
+} from '@finos/legend-art';
 import type { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
@@ -150,7 +153,7 @@ export const ShareProjectHeaderAction = observer(() => {
         title="Share..."
         onClick={showShareModal}
       >
-        <FiShare />
+        <ShareIcon />
       </button>
       {editorStore.sdlcState.currentProject && (
         <ShareModal open={openShareModal} closeModal={hideShareModal} />

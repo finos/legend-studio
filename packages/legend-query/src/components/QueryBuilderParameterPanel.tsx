@@ -22,8 +22,8 @@ import {
   PencilIcon,
   TimesIcon,
   DollarIcon,
+  PlusIcon,
 } from '@finos/legend-art';
-import { FaPlus } from 'react-icons/fa';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
@@ -430,7 +430,7 @@ export const QueryBuilderParameterPanel = observer(
               disabled={parametersDisabled}
               title="Add Parameter"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>

@@ -27,12 +27,12 @@ import {
   RobotIcon,
   SearchIcon,
   UserIcon,
+  QuestionCircleIcon,
 } from '@finos/legend-art';
 import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { FaQuestionCircle } from 'react-icons/fa';
 import {
   generateCreateQueryRoute,
   generateExistingQueryRoute,
@@ -835,7 +835,7 @@ const QuerySetupLandingPage = observer(() => {
     <div className="query-setup__landing-page">
       <div className="query-setup__landing-page__title">
         What do you want to do today
-        <FaQuestionCircle
+        <QuestionCircleIcon
           className="query-setup__landing-page__title__question-mark"
           title="Choose one of the option below to start"
         />

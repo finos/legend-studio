@@ -18,11 +18,11 @@ import { Fragment, useState } from 'react';
 import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import {
-  FaTimes,
-  FaRegWindowMaximize,
-  FaRegWindowRestore,
-} from 'react-icons/fa';
-import { clsx } from '@finos/legend-art';
+  clsx,
+  TimesIcon,
+  WindowMaximizeIcon,
+  EmptyWindowRestoreIcon,
+} from '@finos/legend-art';
 import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { noop } from '@finos/legend-shared';
@@ -79,14 +79,18 @@ export const QueryBuilderDialog = observer(() => {
               tabIndex={-1}
               onClick={toggleMaximize}
             >
-              {isMaximized ? <FaRegWindowRestore /> : <FaRegWindowMaximize />}
+              {isMaximized ? (
+                <EmptyWindowRestoreIcon />
+              ) : (
+                <WindowMaximizeIcon />
+              )}
             </button>
             <button
               className="query-builder__dialog__header__action"
               tabIndex={-1}
               onClick={closeQueryBuilder}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           </div>
         </div>

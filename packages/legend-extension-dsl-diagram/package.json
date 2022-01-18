@@ -53,7 +53,6 @@
     "react": "17.0.2",
     "react-dnd": "14.0.5",
     "react-dom": "17.0.2",
-    "react-icons": "4.3.1",
     "react-resize-detector": "7.0.0",
     "serializr": "2.0.5"
   },

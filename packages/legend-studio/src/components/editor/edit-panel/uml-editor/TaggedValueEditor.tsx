@@ -16,13 +16,15 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { MdMoreVert } from 'react-icons/md';
 import {
-  FaTimes,
-  FaArrowAltCircleRight,
-  FaLongArrowAltUp,
-} from 'react-icons/fa';
-import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
+  clsx,
+  CustomSelectorInput,
+  createFilter,
+  MoreVerticalIcon,
+  TimesIcon,
+  ArrowCircleRightIcon,
+  LongArrowAltUpIcon,
+} from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { Profile, TaggedValue, Tag } from '@finos/legend-graph';
@@ -107,7 +109,7 @@ export const TaggedValueEditor = observer(
             tabIndex={-1}
             title={'Visit profile'}
           >
-            <FaArrowAltCircleRight />
+            <ArrowCircleRightIcon />
           </button>
         </div>
         <CustomSelectorInput
@@ -127,7 +129,7 @@ export const TaggedValueEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
         <div
@@ -161,7 +163,7 @@ export const TaggedValueEditor = observer(
             tabIndex={-1}
             title={'Expand/Collapse'}
           >
-            {isExpanded ? <FaLongArrowAltUp /> : <MdMoreVert />}
+            {isExpanded ? <LongArrowAltUpIcon /> : <MoreVerticalIcon />}
           </button>
         </div>
       </div>

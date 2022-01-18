@@ -36,18 +36,16 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  PlusIcon,
+  TimesIcon,
+  LongArrowRightIcon,
+  LockIcon,
+  FireIcon,
+  StickArrowCircleRightIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
-import {
-  FaPlus,
-  FaTimes,
-  FaLongArrowAltRight,
-  FaLock,
-  FaFire,
-  FaArrowCircleRight,
-} from 'react-icons/fa';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   type Enumeration,
@@ -94,7 +92,7 @@ const EnumBasicEditor = observer(
           tabIndex={-1}
           title={'See detail'}
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
         {!isReadOnly && (
           <button
@@ -104,7 +102,7 @@ const EnumBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -212,7 +210,7 @@ const EnumEditor = observer(
             <div className="panel__header__title">
               {isReadOnly && (
                 <div className="uml-element-editor__header__lock">
-                  <FaLock />
+                  <LockIcon />
                 </div>
               )}
               <div className="panel__header__title__label">enum</div>
@@ -225,7 +223,7 @@ const EnumEditor = observer(
                 tabIndex={-1}
                 title={'Close'}
               >
-                <FaTimes />
+                <TimesIcon />
               </button>
             </div>
           </div>
@@ -254,7 +252,7 @@ const EnumEditor = observer(
                 tabIndex={-1}
                 title={addButtonTitle}
               >
-                <FaPlus />
+                <PlusIcon />
               </button>
             </div>
           </div>
@@ -452,13 +450,13 @@ export const EnumerationEditor = observer(
                       title={`Visit generation parent '${enumeration.generationParentElement.path}'`}
                     >
                       <div className="uml-element-editor__header__generation-origin__label">
-                        <FaFire />
+                        <FireIcon />
                       </div>
                       <div className="uml-element-editor__header__generation-origin__parent-name">
                         {enumeration.generationParentElement.name}
                       </div>
                       <div className="uml-element-editor__header__generation-origin__visit-btn">
-                        <FaArrowCircleRight />
+                        <StickArrowCircleRightIcon />
                       </div>
                     </button>
                   )}
@@ -490,7 +488,7 @@ export const EnumerationEditor = observer(
                     tabIndex={-1}
                     title={addButtonTitle}
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                 </div>
               </div>

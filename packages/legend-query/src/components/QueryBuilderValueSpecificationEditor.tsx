@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -23,6 +22,9 @@ import {
   InfoCircleIcon,
   PencilIcon,
   DollarIcon,
+  CheckSquareIcon,
+  SquareIcon,
+  SaveIcon,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -180,7 +182,7 @@ const BooleanPrimitiveInstanceValueEditor = observer(
           })}
           onClick={toggleValue}
         >
-          {value ? <FaCheckSquare /> : <FaSquare />}
+          {value ? <CheckSquareIcon /> : <SquareIcon />}
         </button>
       </div>
     );
@@ -454,7 +456,7 @@ const CollectionValueInstanceValueEditor = observer(
             className="query-builder-value-spec-editor__list-editor__save-button btn--dark"
             onClick={saveEdit}
           >
-            <FaSave />
+            <SaveIcon />
           </button>
         </div>
       );

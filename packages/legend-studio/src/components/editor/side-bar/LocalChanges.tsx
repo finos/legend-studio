@@ -15,12 +15,18 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, PanelLoadingIndicator, TimesIcon } from '@finos/legend-art';
+import {
+  clsx,
+  PanelLoadingIndicator,
+  TimesIcon,
+  SyncIcon,
+  RefreshIcon,
+  InfoCircleIcon,
+  DownloadIcon,
+  UploadIcon,
+} from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { FaInfoCircle, FaDownload, FaUpload } from 'react-icons/fa';
-import { MdRefresh } from 'react-icons/md';
-import { GoSync } from 'react-icons/go';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import type { EntityChange, EntityDiff } from '@finos/legend-server-sdlc';
@@ -172,7 +178,7 @@ export const LocalChanges = observer(() => {
             tabIndex={-1}
             title="Download local entity changes"
           >
-            <FaDownload />
+            <DownloadIcon />
           </button>
           <button
             className="panel__header__action side-bar__header__action local-changes__download-patch-btn"
@@ -186,7 +192,7 @@ export const LocalChanges = observer(() => {
             tabIndex={-1}
             title="Upload local entity changes"
           >
-            <FaUpload />
+            <UploadIcon />
           </button>
           <button
             className={clsx(
@@ -201,7 +207,7 @@ export const LocalChanges = observer(() => {
             tabIndex={-1}
             title="Refresh"
           >
-            <MdRefresh />
+            <RefreshIcon />
           </button>
           <button
             className={clsx(
@@ -219,7 +225,7 @@ export const LocalChanges = observer(() => {
             tabIndex={-1}
             title="Sync with workspace (Ctrl + S)"
           >
-            <GoSync />
+            <SyncIcon />
           </button>
         </div>
       </div>
@@ -234,7 +240,7 @@ export const LocalChanges = observer(() => {
                 className="side-bar__panel__title__info"
                 title="All local changes that have not been yet synced with the server"
               >
-                <FaInfoCircle />
+                <InfoCircleIcon />
               </div>
             </div>
             <div

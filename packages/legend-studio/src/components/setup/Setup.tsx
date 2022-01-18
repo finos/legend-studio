@@ -15,7 +15,6 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
@@ -24,9 +23,11 @@ import {
   CheckSquareIcon,
   clsx,
   SquareIcon,
+  TimesIcon,
   compareLabelFn,
   CustomSelectorInput,
   PanelLoadingIndicator,
+  PencilIcon,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
@@ -34,7 +35,6 @@ import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { Dialog } from '@mui/material';
 import { isNumber } from '@finos/legend-shared';
-import { MdModeEdit } from 'react-icons/md';
 import {
   type SetupPathParams,
   generateEditorRoute,
@@ -380,14 +380,14 @@ const CreateProjectModal = observer(() => {
                               onClick={showEditItemInput(value, idx)}
                               tabIndex={-1}
                             >
-                              <MdModeEdit />
+                              <PencilIcon />
                             </button>
                             <button
                               className="panel__content__form__section__list__item__remove-btn"
                               onClick={deleteValue(idx)}
                               tabIndex={-1}
                             >
-                              <FaTimes />
+                              <TimesIcon />
                             </button>
                           </div>
                         </>

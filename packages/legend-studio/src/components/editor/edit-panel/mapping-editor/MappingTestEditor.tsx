@@ -25,7 +25,6 @@ import {
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { FaScroll, FaWrench } from 'react-icons/fa';
 import { JsonDiffView } from '../../../shared/DiffView';
 import {
   clsx,
@@ -41,8 +40,11 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
+  ErrorIcon,
+  RefreshIcon,
+  PaperScrollIcon,
+  WrenchIcon,
 } from '@finos/legend-art';
-import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
 import {
   type MappingElementDragSource,
@@ -53,7 +55,6 @@ import {
   guaranteeType,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { VscError } from 'react-icons/vsc';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,
@@ -449,7 +450,7 @@ export const MappingTestInputDataBuilder = observer(
               onClick={showClassMappingSelectorModal}
               title={'Regenerate...'}
             >
-              <MdRefresh className="mapping-test-editor__icon--refresh" />
+              <RefreshIcon className="mapping-test-editor__icon--refresh" />
             </button>
           </div>
         </div>
@@ -505,7 +506,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               tabIndex={-1}
               title={'Regenerate Result'}
             >
-              <MdRefresh className="mapping-test-editor__icon__regenerate-result" />
+              <RefreshIcon className="mapping-test-editor__icon__regenerate-result" />
             </button>
             <button
               className="panel__header__action"
@@ -514,7 +515,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               onClick={formatExpectedResultJSONString}
               title={'Format JSON'}
             >
-              <FaWrench />
+              <WrenchIcon />
             </button>
           </div>
         </div>
@@ -529,7 +530,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               className="panel__content__validation-error"
               title={validationResult.messages.join('\n')}
             >
-              <VscError />
+              <ErrorIcon />
             </div>
           )}
           <StudioTextInputEditor
@@ -691,7 +692,7 @@ export const MappingTestEditor = observer(
               tabIndex={-1}
               title="View Execution Plan"
             >
-              <FaScroll className="mapping-test-editor__icon__generate-plan" />
+              <PaperScrollIcon className="mapping-test-editor__icon__generate-plan" />
             </button>
           </div>
         </div>

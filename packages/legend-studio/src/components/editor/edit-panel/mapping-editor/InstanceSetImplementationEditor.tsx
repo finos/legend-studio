@@ -16,13 +16,15 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaAsterisk, FaLongArrowAltDown, FaEdit } from 'react-icons/fa';
 import {
   clsx,
   BlankPanelPlaceholder,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
+  AsteriskIcon,
+  LongArrowAltDownIcon,
+  PencilEditIcon,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -293,7 +295,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
               tabIndex={-1}
               title="Select Source..."
             >
-              <FaEdit />
+              <PencilEditIcon />
             </button>
           </div>
         </div>
@@ -509,8 +511,8 @@ export const InstanceSetImplementationEditor = observer(
                           }`}
                           onClick={handleSortChange}
                         >
-                          <FaLongArrowAltDown />
-                          <FaAsterisk />
+                          <LongArrowAltDownIcon />
+                          <AsteriskIcon />
                         </div>
                       </div>
                     </div>

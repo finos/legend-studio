@@ -30,12 +30,10 @@ import {
   baseTextEditorSettings,
   getEditorValue,
   normalizeLineEnding,
+  FilledWindowMaximizeIcon,
+  LongArrowAltDownIcon,
+  LongArrowAltUpIcon,
 } from '@finos/legend-art';
-import {
-  FaLongArrowAltDown,
-  FaLongArrowAltUp,
-  FaWindowMaximize,
-} from 'react-icons/fa';
 import type { LambdaEditorState } from '../stores/LambdaEditorState';
 import {
   debounce,
@@ -403,7 +401,7 @@ const LambdaEditorInline = observer(
               tabIndex={-1}
               title="Toggle Expand"
             >
-              {isExpanded ? <FaLongArrowAltUp /> : <FaLongArrowAltDown />}
+              {isExpanded ? <LongArrowAltUpIcon /> : <LongArrowAltDownIcon />}
             </button>
           )}
           {!disablePopUp && (
@@ -414,7 +412,7 @@ const LambdaEditorInline = observer(
               tabIndex={-1}
               title="Open..."
             >
-              <FaWindowMaximize />
+              <FilledWindowMaximizeIcon />
             </button>
           )}
         </div>

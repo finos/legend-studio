@@ -27,17 +27,15 @@ import {
   ContextMenu,
   ChevronDownIcon,
   ChevronRightIcon,
+  RefreshIcon,
+  CircleNotchIcon,
+  QuestionCircleIcon,
+  TimesCircleIcon,
+  CheckCircleIcon,
+  PauseCircleIcon,
+  BanIcon,
 } from '@finos/legend-art';
-import { MdRefresh } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  FaCircleNotch,
-  FaPauseCircle,
-  FaQuestionCircle,
-  FaBan,
-  FaTimesCircle,
-  FaCheckCircle,
-} from 'react-icons/fa';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
@@ -72,7 +70,7 @@ const getWorkflowStatusIcon = (
           title="Pipeline is suspended"
           className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--suspended"
         >
-          <FaPauseCircle />
+          <PauseCircleIcon />
         </div>
       );
     case WorkflowStatus.IN_PROGRESS:
@@ -81,7 +79,7 @@ const getWorkflowStatusIcon = (
           title="Pipeline is running"
           className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--in-progress"
         >
-          <FaCircleNotch />
+          <CircleNotchIcon />
         </div>
       );
     case WorkflowStatus.SUCCEEDED:
@@ -90,7 +88,7 @@ const getWorkflowStatusIcon = (
           title="Pipeline succeeded"
           className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--succeeded"
         >
-          <FaCheckCircle />
+          <CheckCircleIcon />
         </div>
       );
     case WorkflowStatus.FAILED:
@@ -99,7 +97,7 @@ const getWorkflowStatusIcon = (
           title="Pipeline failed"
           className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--failed"
         >
-          <FaTimesCircle />
+          <TimesCircleIcon />
         </div>
       );
     case WorkflowStatus.CANCELED:
@@ -108,7 +106,7 @@ const getWorkflowStatusIcon = (
           title="Pipeline is canceled"
           className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--canceled"
         >
-          <FaBan />
+          <BanIcon />
         </div>
       );
     case WorkflowStatus.UNKNOWN:
@@ -118,7 +116,7 @@ const getWorkflowStatusIcon = (
           title="Pipeline status is unknown"
           className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--unknown"
         >
-          <FaQuestionCircle />
+          <QuestionCircleIcon />
         </div>
       );
   }
@@ -135,7 +133,7 @@ const getWorkflowJobStatusIcon = (
           title="Pipeline is suspended"
           className="workspace-workflow-jobs__item__link__content__status__indicator workspace-workflow-jobs__item__link__content__status__indicator--suspended"
         >
-          <FaPauseCircle />
+          <PauseCircleIcon />
         </div>
       );
     case WorkflowJobStatus.IN_PROGRESS:
@@ -144,7 +142,7 @@ const getWorkflowJobStatusIcon = (
           title="Pipeline is running"
           className="workspace-workflow-jobs__item__link__content__status__indicator workspace-workflow-jobs__item__link__content__status__indicator--in-progress"
         >
-          <FaCircleNotch />
+          <CircleNotchIcon />
         </div>
       );
     case WorkflowJobStatus.SUCCEEDED:
@@ -153,7 +151,7 @@ const getWorkflowJobStatusIcon = (
           title="Pipeline succeeded"
           className="workspace-workflow-jobs__item__link__content__status__indicator workspace-workflow-jobs__item__link__content__status__indicator--succeeded"
         >
-          <FaCheckCircle />
+          <CheckCircleIcon />
         </div>
       );
     case WorkflowJobStatus.FAILED:
@@ -162,7 +160,7 @@ const getWorkflowJobStatusIcon = (
           title="Pipeline failed"
           className="workspace-workflow-jobs__item__link__content__status__indicator workspace-workflow-jobs__item__link__content__status__indicator--failed"
         >
-          <FaTimesCircle />
+          <TimesCircleIcon />
         </div>
       );
     case WorkflowJobStatus.CANCELED:
@@ -171,7 +169,7 @@ const getWorkflowJobStatusIcon = (
           title="Pipeline is canceled"
           className="workspace-workflow-jobs__item__link__content__status__indicator workspace-workflow-jobs__item__link__content__status__indicator--canceled"
         >
-          <FaBan />
+          <BanIcon />
         </div>
       );
     case WorkflowJobStatus.UNKNOWN:
@@ -181,7 +179,7 @@ const getWorkflowJobStatusIcon = (
           title="Pipeline status is unknown"
           className="workspace-workflow-jobs__item__link__content__status__indicator workspace-workflow-jobs__item__link__content__status__indicator--unknown"
         >
-          <FaQuestionCircle />
+          <QuestionCircleIcon />
         </div>
       );
   }
@@ -230,7 +228,7 @@ const WorkflowJobLogsViewer = observer(
                 title="Refresh"
                 onClick={refreshLogs}
               >
-                <MdRefresh />
+                <RefreshIcon />
               </button>
             </div>
           </div>
@@ -463,7 +461,7 @@ export const WorkspaceWorkflows = observer(() => {
             tabIndex={-1}
             title="Refresh"
           >
-            <MdRefresh />
+            <RefreshIcon />
           </button>
         </div>
       </div>

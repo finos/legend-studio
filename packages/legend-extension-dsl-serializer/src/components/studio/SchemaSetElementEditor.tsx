@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { FaLock, FaPlus } from 'react-icons/fa';
 import {
   CaretDownIcon,
   clsx,
@@ -27,6 +26,8 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  LockIcon,
+  PlusIcon,
 } from '@finos/legend-art';
 import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
 import { Schema } from '../../models/metamodels/pure/model/packageableElements/schemaSet/Schema';
@@ -168,7 +169,7 @@ export const SchemaSetEditor = observer(() => {
         <div className="schema-set-panel__header__title">
           {isReadOnly && (
             <div className="schema-set-panel__header__lock">
-              <FaLock />
+              <LockIcon />
             </div>
           )}
           <div className="schema-set-panel__header__title__label">
@@ -195,7 +196,7 @@ export const SchemaSetEditor = observer(() => {
                   tabIndex={-1}
                   title={'Add Schema'}
                 >
-                  <FaPlus />
+                  <PlusIcon />
                 </button>
               </div>
             </div>
@@ -244,7 +245,7 @@ export const SchemaSetEditor = observer(() => {
               <div className="schema-set-panel__header__title">
                 {isReadOnly && (
                   <div className="schema-set-panel__header__lock">
-                    <FaLock />
+                    <LockIcon />
                   </div>
                 )}
                 <div className="schema-set-panel__header__title__label">

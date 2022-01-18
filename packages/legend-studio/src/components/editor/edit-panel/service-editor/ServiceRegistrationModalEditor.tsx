@@ -20,12 +20,13 @@ import {
   clsx,
   PanelLoadingIndicator,
   CustomSelectorInput,
+  CheckSquareIcon,
+  SquareIcon,
 } from '@finos/legend-art';
 import { Dialog } from '@mui/material';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceExecutionMode } from '@finos/legend-graph';
-import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
@@ -160,9 +161,9 @@ export const ServiceRegistrationModalEditor = observer(() => {
                     tabIndex={-1}
                   >
                     {registrationState.activatePostRegistration ? (
-                      <FaCheckSquare />
+                      <CheckSquareIcon />
                     ) : (
-                      <FaSquare />
+                      <SquareIcon />
                     )}
                   </button>
                   <div className="panel__content__form__section__toggler__prompt">

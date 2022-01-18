@@ -26,8 +26,13 @@ import {
   FireIcon,
   clsx,
   TreeView,
-  SchemaIcon,
-  TableIcon,
+  PURE_DatabaseSchemaIcon,
+  PURE_DatabaseTableIcon,
+  CircleIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CheckCircleIcon,
+  EmptyCircleIcon,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
 import {
@@ -38,13 +43,6 @@ import {
   SchemaDatabaseBuilderTreeNodeData,
   TableDatabaseBuilderTreeNodeData,
 } from '../../../../stores/editor-state/element-editor-state/connection/DatabaseBuilderState';
-import {
-  FaCircle,
-  FaCheckCircle,
-  FaChevronDown,
-  FaChevronRight,
-  FaRegCircle,
-} from 'react-icons/fa';
 import { capitalize } from '@finos/legend-shared';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
@@ -56,9 +54,9 @@ import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
-    return <SchemaIcon />;
+    return <PURE_DatabaseSchemaIcon />;
   } else if (node instanceof TableDatabaseBuilderTreeNodeData) {
-    return <TableIcon />;
+    return <PURE_DatabaseTableIcon />;
   } else if (node instanceof ColumnDatabaseBuilderTreeNodeData) {
     return renderColumnTypeIcon(node.column.type);
   }
@@ -81,9 +79,9 @@ const DatabaseBuilderTreeNodeContainer: React.FC<
     !(node instanceof ColumnDatabaseBuilderTreeNodeData);
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (
-      <FaChevronDown />
+      <ChevronDownIcon />
     ) : (
-      <FaChevronRight />
+      <ChevronRightIcon />
     )
   ) : (
     <div />
@@ -103,11 +101,11 @@ const DatabaseBuilderTreeNodeContainer: React.FC<
     if (node instanceof ColumnDatabaseBuilderTreeNodeData) {
       return null;
     } else if (isPartiallySelected(node)) {
-      return <FaCircle />;
+      return <CircleIcon />;
     } else if (node.isChecked) {
-      return <FaCheckCircle />;
+      return <CheckCircleIcon />;
     }
-    return <FaRegCircle />;
+    return <EmptyCircleIcon />;
   };
 
   return (

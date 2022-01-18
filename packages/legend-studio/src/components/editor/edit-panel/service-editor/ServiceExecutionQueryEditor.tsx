@@ -29,7 +29,7 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
   PlayIcon,
-  ScrollIcon,
+  PaperScrollIcon,
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -296,7 +296,7 @@ export const ServiceExecutionQueryEditor = observer(
               tabIndex={-1}
               title="Generate execution plan"
             >
-              <ScrollIcon />
+              <PaperScrollIcon />
             </button>
           </div>
         </div>

@@ -24,16 +24,18 @@ import {
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
 } from '../stores/ApplicationStore';
-import {
-  FaTimes,
-  FaCheckCircle,
-  FaInfoCircle,
-  FaTimesCircle,
-  FaExclamationTriangle,
-  FaBug,
-} from 'react-icons/fa';
 import { useApplicationStore } from './ApplicationStoreProvider';
-import { ChevronDownIcon, ChevronUpIcon, clsx } from '@finos/legend-art';
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  TimesIcon,
+  ExclamationTriangleIcon,
+  TimesCircleIcon,
+  CheckCircleIcon,
+  InfoCircleIcon,
+  BugIcon,
+  clsx,
+} from '@finos/legend-art';
 import { useState } from 'react';
 
 export const NotificationSnackbar = observer(() => {
@@ -45,35 +47,35 @@ export const NotificationSnackbar = observer(() => {
   const [isExpanded, setIsExpanded] = useState(false);
   let notificationIcon = (
     <div className="notification__message__content__icon notification__message__content__icon--info">
-      <FaInfoCircle />
+      <InfoCircleIcon />
     </div>
   );
   switch (severity) {
     case NOTIFCATION_SEVERITY.ILEGAL_STATE:
       notificationIcon = (
         <div className="notification__message__content__icon notification__message__content__icon--error">
-          <FaBug />
+          <BugIcon />
         </div>
       );
       break;
     case NOTIFCATION_SEVERITY.ERROR:
       notificationIcon = (
         <div className="notification__message__content__icon notification__message__content__icon--error">
-          <FaTimesCircle />
+          <TimesCircleIcon />
         </div>
       );
       break;
     case NOTIFCATION_SEVERITY.WARNING:
       notificationIcon = (
         <div className="notification__message__content__icon notification__message__content__icon--warning">
-          <FaExclamationTriangle />
+          <ExclamationTriangleIcon />
         </div>
       );
       break;
     case NOTIFCATION_SEVERITY.SUCCESS:
       notificationIcon = (
         <div className="notification__message__content__icon notification__message__content__icon--success">
-          <FaCheckCircle />
+          <CheckCircleIcon />
         </div>
       );
       break;
@@ -168,7 +170,7 @@ export const NotificationSnackbar = observer(() => {
             tabIndex={-1}
             title={'Dismiss'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>,
         ]}
       />

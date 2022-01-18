@@ -29,16 +29,16 @@ import {
   MenuContentItemIcon,
   MenuContentItemLabel,
   StringTypeIcon,
-  BooleanTypeIcon,
-  NumberTypeIcon,
-  DateTypeIcon,
+  ToggleIcon,
+  HashtagIcon,
+  ClockIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   MoreVerticalIcon,
   CompressIcon,
   EyeIcon,
   InfoCircleIcon,
-  ClassIcon,
+  PURE_ClassIcon,
   CheckIcon,
 } from '@finos/legend-art';
 import {
@@ -364,7 +364,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       );
     } else if (type.name === PRIMITIVE_TYPE.BOOLEAN) {
       return (
-        <BooleanTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__boolean" />
+        <ToggleIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__boolean" />
       );
     } else if (
       type.name === PRIMITIVE_TYPE.NUMBER ||
@@ -373,7 +373,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       type.name === PRIMITIVE_TYPE.DECIMAL
     ) {
       return (
-        <NumberTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
+        <HashtagIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
       );
     } else if (
       type.name === PRIMITIVE_TYPE.DATE ||
@@ -381,7 +381,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       type.name === PRIMITIVE_TYPE.STRICTDATE
     ) {
       return (
-        <DateTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
+        <ClockIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
       );
     }
   }
@@ -524,7 +524,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               </div>
               <div className="tree-view__node__label query-builder-explorer-tree__root-node__label">
                 <div className="query-builder-explorer-tree__root-node__label__icon">
-                  <ClassIcon />
+                  <PURE_ClassIcon />
                 </div>
                 <div className="query-builder-explorer-tree__root-node__label__text">
                   {node.label}

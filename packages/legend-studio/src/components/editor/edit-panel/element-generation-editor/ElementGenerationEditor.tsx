@@ -29,13 +29,13 @@ import {
   GenerationResultViewer,
   FileGenerationConfigurationEditor,
 } from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
-import { FaArrowAltCircleLeft } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  ArrowCircleLeftIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
@@ -156,7 +156,7 @@ export const ElementGenerationEditor = observer(
               onClick={leaveElementGenerationView}
               title={'Leave element generation view mode'}
             >
-              <FaArrowAltCircleLeft /> exit generation view
+              <ArrowCircleLeftIcon /> exit generation view
             </button>
           </div>
         </div>

@@ -22,8 +22,10 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
+  InfoCircleIcon,
+  TimesIcon,
+  BarsIcon,
 } from '@finos/legend-art';
-import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
 import { Dialog } from '@mui/material';
 import { useApplicationStore } from '@finos/legend-application';
 import type {
@@ -52,7 +54,7 @@ const AboutModal: React.FC<{
         <div className="modal__header">
           <div className="modal__title">
             <div className="modal__title__icon">
-              <FaInfoCircle />
+              <InfoCircleIcon />
             </div>
             <div className="modal__title__label">About</div>
           </div>
@@ -62,7 +64,7 @@ const AboutModal: React.FC<{
               tabIndex={-1}
               onClick={closeModal}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           </div>
         </div>
@@ -224,7 +226,7 @@ export const LegendStudioAppHeaderMenu: React.FC = () => {
           title="Show more information about the application..."
           tabIndex={-1}
         >
-          <FaBars />
+          <BarsIcon />
         </button>
       </DropdownMenu>
       <AboutModal open={openAboutModal} closeModal={hideAboutModal} />

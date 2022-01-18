@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { ChevronDownIcon, ChevronRightIcon } from './Icon';
 import { isNonNullable } from '@finos/legend-shared';
 import clsx from 'clsx';
 
@@ -73,7 +73,7 @@ const DefaultTreeNodeContainer = <T extends TreeNodeData, S extends InnerProps>(
         })}
       >
         {Boolean(node.childrenIds?.length) &&
-          (node.isOpen ? <FaChevronDown /> : <FaChevronRight />)}
+          (node.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />)}
       </div>
       <div
         className={clsx('tree-view__node__label', {

@@ -16,9 +16,13 @@
 
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
 import { Dialog } from '@mui/material';
-import { BlankPanelContent, PanelLoadingIndicator } from '@finos/legend-art';
+import {
+  BlankPanelContent,
+  PanelLoadingIndicator,
+  PlayIcon,
+  PaperScrollIcon,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { FaPlay, FaScroll } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import {
@@ -156,7 +160,7 @@ export const QueryBuilderResultPanel = observer(
               tabIndex={-1}
               title="Execute"
             >
-              <FaPlay />
+              <PlayIcon />
             </button>
             <button
               className="panel__header__action"
@@ -164,7 +168,7 @@ export const QueryBuilderResultPanel = observer(
               tabIndex={-1}
               title="View Exection Plan"
             >
-              <FaScroll />
+              <PaperScrollIcon />
             </button>
           </div>
         </div>

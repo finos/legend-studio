@@ -16,7 +16,6 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaTimes, FaPlus } from 'react-icons/fa';
 import {
   type SelectComponent,
   ResizablePanel,
@@ -26,7 +25,10 @@ import {
   CustomSelectorInput,
   BlankPanelPlaceholder,
   createFilter,
-  EnumerationIcon,
+  PURE_EnumerationIcon,
+  PencilIcon,
+  TimesIcon,
+  PlusIcon,
 } from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { TypeTree } from '../../../shared/TypeTree';
@@ -39,7 +41,6 @@ import {
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { MdModeEdit } from 'react-icons/md';
 import { Dialog } from '@mui/material';
 import { noop } from '@finos/legend-shared';
 import {
@@ -237,7 +238,7 @@ export const SourceValueInput = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -275,7 +276,7 @@ const EnumValueMappingEditor = observer(
               tabIndex={-1}
               title={'Add enum value'}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           )}
         </div>
@@ -306,7 +307,7 @@ const EnumValueMappingEditor = observer(
                   className="enumeration-mapping-editor__enum-value__source-value--empty__add-btn"
                   onClick={addSourceValue}
                 >
-                  <FaPlus />
+                  <PlusIcon />
                 </div>{' '}
                 to add one.
               </div>
@@ -393,7 +394,7 @@ export const EnumerationMappingEditor = observer(
               </div>
               <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__target">
                 <div className="mapping-element-editor__metadata__target__type icon">
-                  <EnumerationIcon />
+                  <PURE_EnumerationIcon />
                 </div>
                 <div className="mapping-element-editor__metadata__target__label">
                   {enumeration.value.name}
@@ -478,7 +479,7 @@ export const EnumerationMappingEditor = observer(
                         tabIndex={-1}
                         title={'Select Source...'}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                     </div>
                   </div>

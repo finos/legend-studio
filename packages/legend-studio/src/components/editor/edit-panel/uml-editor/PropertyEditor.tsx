@@ -22,8 +22,7 @@ import {
   type ElementDragSource,
   type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
-import { FaLock, FaPlus, FaTimes } from 'react-icons/fa';
-import { clsx } from '@finos/legend-art';
+import { clsx, LockIcon, PlusIcon, TimesIcon } from '@finos/legend-art';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
@@ -143,7 +142,7 @@ export const PropertyEditor = observer(
             <div className="panel__header__title">
               {isReadOnly && (
                 <div className="uml-element-editor__header__lock">
-                  <FaLock />
+                  <LockIcon />
                 </div>
               )}
               <div className="panel__header__title__label">property</div>
@@ -158,7 +157,7 @@ export const PropertyEditor = observer(
                 tabIndex={-1}
                 title={'Close'}
               >
-                <FaTimes />
+                <TimesIcon />
               </button>
             </div>
           </div>
@@ -184,7 +183,7 @@ export const PropertyEditor = observer(
                 tabIndex={-1}
                 title={addButtonTitle}
               >
-                <FaPlus />
+                <PlusIcon />
               </button>
             </div>
           </div>
