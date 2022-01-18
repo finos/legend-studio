@@ -76,7 +76,7 @@
     "jest-watch-typeahead": "1.0.0",
     "jsonc-parser": "3.0.0",
     "micromatch": "4.0.4",
-    "mini-css-extract-plugin": "2.4.7",
+    "mini-css-extract-plugin": "2.5.2",
     "monaco-editor": "0.31.1",
     "monaco-editor-webpack-plugin": "7.0.1",
     "postcss": "8.4.5",
@@ -90,7 +90,7 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.6.0",
+    "eslint": "8.7.0",
     "rimraf": "3.0.2"
   },
   "publishConfig": {
