@@ -15,25 +15,28 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import Snackbar, { type SnackbarCloseReason } from '@mui/material/Snackbar';
-import SnackbarContent from '@mui/material/SnackbarContent';
 import {
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
 } from '../stores/ApplicationStore';
-import {
-  FaTimes,
-  FaCheckCircle,
-  FaInfoCircle,
-  FaTimesCircle,
-  FaExclamationTriangle,
-  FaBug,
-} from 'react-icons/fa';
 import { useApplicationStore } from './ApplicationStoreProvider';
-import { ChevronDownIcon, ChevronUpIcon, clsx } from '@finos/legend-art';
+import {
+  Notification,
+  NotificationContent,
+  type NotificationCloseReason,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  TimesIcon,
+  ExclamationTriangleIcon,
+  TimesCircleIcon,
+  CheckCircleIcon,
+  InfoCircleIcon,
+  BugIcon,
+  clsx,
+} from '@finos/legend-art';
 import { useState } from 'react';
 
-export const NotificationSnackbar = observer(() => {
+export const NotificationManager = observer(() => {
   const applicationStore = useApplicationStore();
   const notification = applicationStore.notification;
   const isOpen = Boolean(notification);
@@ -42,35 +45,35 @@ export const NotificationSnackbar = observer(() => {
   const [isExpanded, setIsExpanded] = useState(false);
   let notificationIcon = (
     <div className="notification__message__content__icon notification__message__content__icon--info">
-      <FaInfoCircle />
+      <InfoCircleIcon />
     </div>
   );
   switch (severity) {
     case NOTIFCATION_SEVERITY.ILEGAL_STATE:
       notificationIcon = (
         <div className="notification__message__content__icon notification__message__content__icon--error">
-          <FaBug />
+          <BugIcon />
         </div>
       );
       break;
     case NOTIFCATION_SEVERITY.ERROR:
       notificationIcon = (
         <div className="notification__message__content__icon notification__message__content__icon--error">
-          <FaTimesCircle />
+          <TimesCircleIcon />
         </div>
       );
       break;
     case NOTIFCATION_SEVERITY.WARNING:
       notificationIcon = (
         <div className="notification__message__content__icon notification__message__content__icon--warning">
-          <FaExclamationTriangle />
+          <ExclamationTriangleIcon />
         </div>
       );
       break;
     case NOTIFCATION_SEVERITY.SUCCESS:
       notificationIcon = (
         <div className="notification__message__content__icon notification__message__content__icon--success">
-          <FaCheckCircle />
+          <CheckCircleIcon />
         </div>
       );
       break;
@@ -87,18 +90,21 @@ export const NotificationSnackbar = observer(() => {
 
   const onSnackbarAutoHideOrClickAway = (
     event: React.SyntheticEvent<unknown> | Event,
-    reason: SnackbarCloseReason,
+    reason: NotificationCloseReason,
   ): void => {
     // NOTE: we only should not allow dismissing the notification on click-away. First of call, this might not be desirable
     // second, this clashes with modal that traps focus, e.g. when we have another modal open and want to show a notification
-    // the notification focus is stolen by the modal leading to the snackbar immediately gets clicked-away and closed
+    // the notification focus is stolen by the modal leading to the notification immediately gets clicked-away and closed
     if (reason === 'timeout') {
       handleClose();
     }
   };
 
   return (
-    <Snackbar
+    <Notification
+      TransitionProps={{
+        appear: false,
+      }}
       classes={{
         root: 'notification',
         anchorOriginBottomRight: 'notification__position',
@@ -124,7 +130,7 @@ export const NotificationSnackbar = observer(() => {
           : ''
       }
     >
-      <SnackbarContent
+      <NotificationContent
         classes={{
           root: 'notification__content',
           message: 'notification__message',
@@ -162,10 +168,10 @@ export const NotificationSnackbar = observer(() => {
             tabIndex={-1}
             title={'Dismiss'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>,
         ]}
       />
-    </Snackbar>
+    </Notification>
   );
 });

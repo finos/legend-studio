@@ -21,9 +21,7 @@ import {
   DIFF_VIEW_MODE,
 } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { TextDiffView, JsonDiffView } from '../../../shared/DiffView';
-import { MdCompareArrows } from 'react-icons/md';
-import { VscGoToFile } from 'react-icons/vsc';
-import { clsx } from '@finos/legend-art';
+import { clsx, GoToFileIcon, CompareIcon } from '@finos/legend-art';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
@@ -126,7 +124,7 @@ export const EntityDiffView = observer(() => {
               {getPrettyLabelForRevision(fromRevision)}
             </div>
             <div className="entity-diff-view__header__info__revision-summary__icon">
-              <MdCompareArrows />
+              <CompareIcon />
             </div>
             <div className="entity-diff-view__header__info__revision-summary__revision">
               {getPrettyLabelForRevision(toRevision)}
@@ -144,7 +142,7 @@ export const EntityDiffView = observer(() => {
             onClick={goToElement}
             title={'Go to element'}
           >
-            <VscGoToFile />
+            <GoToFileIcon />
           </button>
         </div>
       </div>

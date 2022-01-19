@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { FaAsterisk } from 'react-icons/fa';
+import { AsteriskIcon } from '@finos/legend-art';
 import { MULTIPLICITY_INFINITE, type Multiplicity } from '@finos/legend-graph';
 
 export const MultiplicityBadge: React.FC<{
@@ -33,7 +33,7 @@ export const MultiplicityBadge: React.FC<{
       }`}
       title={tooltipText}
     >
-      {multiplicity.upperBound ? null : <FaAsterisk />}
+      {multiplicity.upperBound ? null : <AsteriskIcon />}
     </div>
   );
 };

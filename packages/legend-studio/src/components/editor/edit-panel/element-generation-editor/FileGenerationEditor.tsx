@@ -43,20 +43,19 @@ import {
   BlankPanelContent,
   PanelLoadingIndicator,
   CustomSelectorInput,
+  PencilIcon,
+  RefreshIcon,
+  TimesIcon,
+  CheckSquareIcon,
+  SquareIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FolderOpenIcon,
+  FolderIcon,
+  FileCodeIcon,
+  LockIcon,
+  SaveIcon,
 } from '@finos/legend-art';
-import {
-  FaTimes,
-  FaCheckSquare,
-  FaSquare,
-  FaChevronDown,
-  FaChevronRight,
-  FaFolderOpen,
-  FaFolder,
-  FaFileCode,
-  FaLock,
-  FaSave,
-} from 'react-icons/fa';
-import { MdModeEdit, MdRefresh } from 'react-icons/md';
 import {
   type FileGenerationSourceDropTarget,
   CORE_DND_TYPE,
@@ -100,24 +99,24 @@ export const FileGenerationTreeNodeContainer: React.FC<
   const expandIcon = !isDirectory ? (
     <div />
   ) : node.isOpen ? (
-    <FaChevronDown />
+    <ChevronDownIcon />
   ) : (
-    <FaChevronRight />
+    <ChevronRightIcon />
   );
   const iconPackageColor = 'color--generated';
   const nodeIcon = isDirectory ? (
     node.isOpen ? (
       <div className={iconPackageColor}>
-        <FaFolderOpen />
+        <FolderOpenIcon />
       </div>
     ) : (
       <div className={iconPackageColor}>
-        <FaFolder />
+        <FolderIcon />
       </div>
     )
   ) : (
     <div className="icon">
-      <FaFileCode />
+      <FileCodeIcon />
     </div>
   );
   const selectNode: React.MouseEventHandler = (event) => onNodeSelect?.(node);
@@ -265,7 +264,7 @@ export const GenerationResultViewer = observer(
                     onClick={regenerate}
                     title={'Re-generate'}
                   >
-                    <MdRefresh />
+                    <RefreshIcon />
                   </button>
                 </div>
               </div>
@@ -496,7 +495,7 @@ const FileGenerationScopeEditor = observer(
                         onClick={showEditItemInput(value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -504,7 +503,7 @@ const FileGenerationScopeEditor = observer(
                         onClick={(): void => deleteScopeElement(value)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -690,7 +689,7 @@ const GenerationBooleanPropertyEditor = observer(
             disabled={isReadOnly}
             tabIndex={-1}
           >
-            {value ? <FaCheckSquare /> : <FaSquare />}
+            {value ? <CheckSquareIcon /> : <SquareIcon />}
           </button>
           <div className="panel__content__form__section__toggler__prompt">
             {property.description}
@@ -883,7 +882,7 @@ const GenerationArrayPropertyEditor = observer(
                         onClick={showEditItemInput(value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -891,7 +890,7 @@ const GenerationArrayPropertyEditor = observer(
                         onClick={deleteValue(idx)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -1108,7 +1107,7 @@ const GenerationMapPropertyEditor = observer(
                         onClick={showEditItemInput(key, value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -1116,7 +1115,7 @@ const GenerationMapPropertyEditor = observer(
                         onClick={deleteValue(key, idx)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -1367,7 +1366,7 @@ export const FileGenerationConfigurationEditor = observer(
               onClick={resetDefaultConfiguration}
               title={'Reset to default configuration'}
             >
-              <MdRefresh />
+              <RefreshIcon />
             </button>
             {Boolean(elementGenerationState) && (
               <button
@@ -1377,7 +1376,7 @@ export const FileGenerationConfigurationEditor = observer(
                 onClick={showFileGenerationModal}
                 title={'Promote File Generation Specification...'}
               >
-                <FaSave />
+                <SaveIcon />
               </button>
             )}
           </div>
@@ -1447,7 +1446,7 @@ export const FileGenerationEditor = observer(() => {
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             )}
             <div className="panel__header__title__label">file generation</div>

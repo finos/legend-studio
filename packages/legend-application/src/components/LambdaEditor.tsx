@@ -30,12 +30,11 @@ import {
   baseTextEditorSettings,
   getEditorValue,
   normalizeLineEnding,
+  FilledWindowMaximizeIcon,
+  LongArrowAltDownIcon,
+  LongArrowAltUpIcon,
+  Dialog,
 } from '@finos/legend-art';
-import {
-  FaLongArrowAltDown,
-  FaLongArrowAltUp,
-  FaWindowMaximize,
-} from 'react-icons/fa';
 import type { LambdaEditorState } from '../stores/LambdaEditorState';
 import {
   debounce,
@@ -48,7 +47,6 @@ import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import { APPLICATION_TEST_ID } from './ApplicationTestID';
 import { useApplicationStore } from './ApplicationStoreProvider';
 import { EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../const';
-import { Dialog } from '@mui/material';
 
 export type LambdaEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;
@@ -403,7 +401,7 @@ const LambdaEditorInline = observer(
               tabIndex={-1}
               title="Toggle Expand"
             >
-              {isExpanded ? <FaLongArrowAltUp /> : <FaLongArrowAltDown />}
+              {isExpanded ? <LongArrowAltUpIcon /> : <LongArrowAltDownIcon />}
             </button>
           )}
           {!disablePopUp && (
@@ -414,7 +412,7 @@ const LambdaEditorInline = observer(
               tabIndex={-1}
               title="Open..."
             >
-              <FaWindowMaximize />
+              <FilledWindowMaximizeIcon />
             </button>
           )}
         </div>
@@ -616,6 +614,7 @@ const LambdaEditorPopUp = observer(
       <Dialog
         open={true}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter,
         }}
         onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop

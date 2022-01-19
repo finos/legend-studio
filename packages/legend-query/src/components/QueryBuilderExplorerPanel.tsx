@@ -19,7 +19,10 @@ import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
+  type TooltipPlacement,
+  Tooltip,
   clsx,
+  Dialog,
   TreeView,
   BlankPanelContent,
   DropdownMenu,
@@ -29,18 +32,17 @@ import {
   MenuContentItemIcon,
   MenuContentItemLabel,
   StringTypeIcon,
-  BooleanTypeIcon,
-  NumberTypeIcon,
-  DateTypeIcon,
+  ToggleIcon,
+  HashtagIcon,
+  ClockIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   MoreVerticalIcon,
   CompressIcon,
   EyeIcon,
   InfoCircleIcon,
-  ClassIcon,
+  PURE_ClassIcon,
   CheckIcon,
-  StubTransition,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -75,26 +77,30 @@ import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
-import { type TooltipProps, Dialog, Tooltip } from '@mui/material';
 
 const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
   path: string;
   isMapped: boolean;
   children: React.ReactElement;
-  placement: NonNullable<TooltipProps['placement']>;
+  placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { subclass, path, isMapped, children, placement } = props;
   return (
     <Tooltip
       arrow={true}
-      placement={placement}
+      {...(placement !== undefined ? { placement } : {})}
       classes={{
         tooltip: 'query-builder__tooltip',
         arrow: 'query-builder__tooltip__arrow',
         tooltipPlacementRight: 'query-builder__tooltip--right',
       }}
-      TransitionComponent={StubTransition}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
       title={
         <div className="query-builder__tooltip__content">
           <div className="query-builder__tooltip__item">
@@ -143,6 +149,9 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__explorer__preview-data-modal">
@@ -357,7 +366,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       );
     } else if (type.name === PRIMITIVE_TYPE.BOOLEAN) {
       return (
-        <BooleanTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__boolean" />
+        <ToggleIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__boolean" />
       );
     } else if (
       type.name === PRIMITIVE_TYPE.NUMBER ||
@@ -366,7 +375,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       type.name === PRIMITIVE_TYPE.DECIMAL
     ) {
       return (
-        <NumberTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
+        <HashtagIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
       );
     } else if (
       type.name === PRIMITIVE_TYPE.DATE ||
@@ -374,7 +383,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       type.name === PRIMITIVE_TYPE.STRICTDATE
     ) {
       return (
-        <DateTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
+        <ClockIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
       );
     }
   }
@@ -517,7 +526,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               </div>
               <div className="tree-view__node__label query-builder-explorer-tree__root-node__label">
                 <div className="query-builder-explorer-tree__root-node__label__icon">
-                  <ClassIcon />
+                  <PURE_ClassIcon />
                 </div>
                 <div className="query-builder-explorer-tree__root-node__label__text">
                   {node.label}
@@ -588,7 +597,6 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     property={node.property}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
-                    placement="bottom"
                   >
                     <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
                       <InfoCircleIcon />
@@ -600,7 +608,6 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     subclass={node.subclass}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
-                    placement="bottom"
                   >
                     <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
                       <InfoCircleIcon />

@@ -26,12 +26,13 @@ import {
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
 import {
+  clsx,
+  Dialog,
   type TreeNodeContainerProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  clsx,
   TreeView,
   ContextMenu,
   CustomSelectorInput,
@@ -40,21 +41,19 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
-  RuntimeIcon,
-  ConnectionIcon,
-  ModelStoreIcon,
-  ClassIcon,
-  MappingIcon,
+  PURE_RuntimeIcon,
+  PURE_ConnectionIcon,
+  PURE_ModelStoreIcon,
+  PURE_ClassIcon,
+  PURE_MappingIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  TimesIcon,
+  LongArrowRightIcon,
+  CogIcon,
+  CaretRightIcon,
 } from '@finos/legend-art';
-import {
-  FaChevronDown,
-  FaChevronRight,
-  FaPlus,
-  FaTimes,
-  FaLongArrowAltRight,
-  FaCog,
-  FaCaretRight,
-} from 'react-icons/fa';
 import { getElementIcon } from '../../shared/ElementIconUtils';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor';
@@ -70,7 +69,6 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import { Dialog } from '@mui/material';
 import {
   buildElementOption,
   type PackageableElementOption,
@@ -227,7 +225,7 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
           )}
         >
           <div className="runtime-explorer__item__label__icon">
-            <ConnectionIcon />
+            <PURE_ConnectionIcon />
           </div>
           {/* TODO: we might want to add connection type label here */}
           <div className="runtime-explorer__item__label__text">
@@ -244,11 +242,11 @@ const getRuntimeExplorerTreeNodeIcon = (
   node: RuntimeExplorerTreeNodeData,
 ): React.ReactNode => {
   if (node.data instanceof Runtime) {
-    return <RuntimeIcon />;
+    return <PURE_RuntimeIcon />;
   } else if (node.data instanceof ModelStore) {
-    return <ModelStoreIcon />;
+    return <PURE_ModelStoreIcon />;
   } else if (node.data instanceof Connection) {
-    return <ConnectionIcon />;
+    return <PURE_ConnectionIcon />;
   }
   return getElementIcon(editorStore, node.data);
 };
@@ -285,9 +283,9 @@ const RuntimeExplorerTreeNodeContainer = observer(
     const isExpandable = Boolean(node.childrenIds?.length);
     const nodeExpandIcon = isExpandable ? (
       node.isOpen ? (
-        <FaChevronDown />
+        <ChevronDownIcon />
       ) : (
-        <FaChevronRight />
+        <ChevronRightIcon />
       )
     ) : (
       <div />
@@ -326,7 +324,7 @@ const RuntimeExplorerTreeNodeContainer = observer(
                 {node.label} ~
               </div>
               <div className="runtime-explorer__item__label__runtime__mapping__icon">
-                <MappingIcon />
+                <PURE_MappingIcon />
               </div>
               {/* TODO: handle when there are multiple mappings */}
               <div className="runtime-explorer__item__label__runtime__mapping__text">
@@ -480,7 +478,7 @@ const IdentifiedConnectionEditor = observer(
     );
     const embeddedConnectionLabel = (
       <div className="runtime-connection-editor__connection-option--custom">
-        <FaCog />
+        <CogIcon />
         <div className="runtime-connection-editor__connection-option--custom__label">
           (custom)
         </div>
@@ -573,7 +571,7 @@ const IdentifiedConnectionEditor = observer(
           <div className="panel__content">
             <div className="runtime-connection-editor__connection-option">
               <div className="runtime-connection-editor__connection-option__label">
-                <ConnectionIcon />
+                <PURE_ConnectionIcon />
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown"
@@ -590,7 +588,7 @@ const IdentifiedConnectionEditor = observer(
                   tabIndex={-1}
                   title={'See connection'}
                 >
-                  <FaLongArrowAltRight />
+                  <LongArrowRightIcon />
                 </button>
               )}
             </div>
@@ -683,10 +681,10 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                       ModelStore
                     </div>
                     <div className="runtime-store-connections-editor__model-store__arrow-icon">
-                      <FaCaretRight />
+                      <CaretRightIcon />
                     </div>
                     <div className="runtime-store-connections-editor__model-store__class-icon">
-                      <ClassIcon />
+                      <PURE_ClassIcon />
                     </div>
                     <div className="runtime-store-connections-editor__model-store__class-name">
                       {currentRuntimeEditorTabState.class.name}
@@ -701,7 +699,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                     onClick={addNewConnection}
                     title="Add Connection..."
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                 </div>
               </div>
@@ -848,7 +846,7 @@ const RuntimeMappingEditor = observer(
           tabIndex={-1}
           title="Visit Mapping"
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
         {!isReadOnly && (
           <button
@@ -858,7 +856,7 @@ const RuntimeMappingEditor = observer(
             tabIndex={-1}
             title="Remove"
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -1056,12 +1054,15 @@ export const EmbeddedRuntimeEditor = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div className="modal modal--dark editor-modal embedded-runtime-editor">
           <div className="modal__header">
             <div className="modal__title">
               <div className="modal__title__icon">
-                <FaCog />
+                <CogIcon />
               </div>
               <div className="modal__title__label">custom runtime</div>
             </div>
@@ -1071,7 +1072,7 @@ export const EmbeddedRuntimeEditor = observer(
                 tabIndex={-1}
                 onClick={closeEditor}
               >
-                <FaTimes />
+                <TimesIcon />
               </button>
             </div>
           </div>

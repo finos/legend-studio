@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * This stub transition is used when we need to disable transition for MUI components
- * See https://stackoverflow.com/questions/61139778/react-material-ui-tooltips-disable-animation
- */
-export const StubTransition: React.FC<{
-  children?: React.ReactElement;
-}> = (props) => props.children ?? null;
+export { ClickAwayListener } from '@mui/material';

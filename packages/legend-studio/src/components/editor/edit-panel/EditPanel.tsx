@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useState } from 'react';
-import { FaTimes, FaPlus, FaArrowsAltH } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -23,6 +22,9 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
+  TimesIcon,
+  PlusIcon,
+  ArrowsAltHIcon,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor';
 import { UMLEditor } from './uml-editor/UMLEditor';
@@ -93,7 +95,7 @@ export const ViewerEditPanelSplashScreen: React.FC = () => {
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>
             <div className="hotkey__plus">
-              <FaPlus />
+              <PlusIcon />
             </div>
             <div className="hotkey__key">P</div>
           </div>
@@ -129,7 +131,7 @@ export const EditPanelSplashScreen: React.FC = () => {
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>
             <div className="hotkey__plus">
-              <FaPlus />
+              <PlusIcon />
             </div>
             <div className="hotkey__key">P</div>
           </div>
@@ -141,7 +143,7 @@ export const EditPanelSplashScreen: React.FC = () => {
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>
             <div className="hotkey__plus">
-              <FaPlus />
+              <PlusIcon />
             </div>
             <div className="hotkey__key">S</div>
           </div>
@@ -325,7 +327,7 @@ export const EditPanel = observer(() => {
             ({getPrettyLabelForRevision(editorState.fromRevision)}
           </div>
           <div className="edit-panel__header__tab__label__diff__icon">
-            <FaArrowsAltH />
+            <ArrowsAltHIcon />
           </div>
           <div className="edit-panel__header__tab__label__diff__text">
             {getPrettyLabelForRevision(editorState.toRevision)})
@@ -416,7 +418,7 @@ export const EditPanel = observer(() => {
                   tabIndex={-1}
                   title={'Close'}
                 >
-                  <FaTimes />
+                  <TimesIcon />
                 </button>
               </ContextMenu>
             </div>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Dialog from '@mui/material/Dialog';
+import { Dialog } from '@finos/legend-art';
 import {
   ActionAlertActionType,
   ActionAlertType,
@@ -58,6 +58,7 @@ const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
       open={Boolean(applicationStore.actionAlertInfo)}
       onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
     >

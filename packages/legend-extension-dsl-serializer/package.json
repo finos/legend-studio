@@ -54,17 +54,16 @@
     "monaco-editor": "0.31.1",
     "react": "17.0.2",
     "react-dnd": "14.0.5",
-    "react-icons": "4.3.1",
     "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.6.0",
+    "eslint": "8.7.0",
     "jest": "27.4.7",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.47.0",
+    "sass": "1.49.0",
     "typescript": "4.5.4"
   },
   "peerDependencies": {

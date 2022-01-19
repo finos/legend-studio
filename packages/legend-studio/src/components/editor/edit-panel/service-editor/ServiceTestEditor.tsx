@@ -18,16 +18,6 @@ import { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { ServiceExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
 import {
-  FaPlay,
-  FaPlus,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaRegCircle,
-  FaCircleNotch,
-  FaInfoCircle,
-  FaWrench,
-} from 'react-icons/fa';
-import {
   isValidJSONString,
   prettyCONSTName,
   UnsupportedOperationError,
@@ -36,6 +26,7 @@ import {
 import {
   clsx,
   ContextMenu,
+  ProgressBar,
   BlankPanelContent,
   BlankPanelPlaceholder,
   PanelLoadingIndicator,
@@ -43,6 +34,17 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  ErrorIcon,
+  RefreshIcon,
+  CompareIcon,
+  PlayIcon,
+  PlusIcon,
+  CheckCircleIcon,
+  EmptyCircleIcon,
+  WrenchIcon,
+  TimesCircleIcon,
+  CircleNotchIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import {
   type TestContainerState,
@@ -50,9 +52,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
-import { MdRefresh, MdCompareArrows } from 'react-icons/md';
-import { LinearProgress } from '@mui/material';
-import { VscError } from 'react-icons/vsc';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { flowResult } from 'mobx';
@@ -128,7 +127,7 @@ export const TestContainerItem = observer(
         title="Test did not run"
         className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--none"
       >
-        <FaRegCircle />
+        <EmptyCircleIcon />
       </div>
     );
     if (testResult) {
@@ -137,14 +136,14 @@ export const TestContainerItem = observer(
           title="Test passed"
           className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--passed"
         >
-          <FaCheckCircle />
+          <CheckCircleIcon />
         </div>
       ) : (
         <div
           title="Test failed assertion"
           className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--failed"
         >
-          <FaTimesCircle />
+          <TimesCircleIcon />
         </div>
       );
     }
@@ -153,7 +152,7 @@ export const TestContainerItem = observer(
         title="Test is running"
         className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--in-progress"
       >
-        <FaCircleNotch />
+        <CircleNotchIcon />
       </div>
     ) : (
       testStatusIcon
@@ -362,7 +361,7 @@ export const ServiceTestEditorEditPanel = observer(
                           expected
                         </div>
                         <div className="service-test-editor__test__diff__header__info__icon">
-                          <MdCompareArrows />
+                          <CompareIcon />
                         </div>
                         <div className="service-test-editor__test__diff__header__info__label">
                           actual
@@ -372,7 +371,7 @@ export const ServiceTestEditorEditPanel = observer(
                         className="service-editor__header__hint"
                         title="Actual result is computed by running execution against the test case"
                       >
-                        <FaInfoCircle />
+                        <InfoCircleIcon />
                       </div>
                     </div>
                     <div className="panel__header__actions">
@@ -386,7 +385,7 @@ export const ServiceTestEditorEditPanel = observer(
                         tabIndex={-1}
                         title={'Fetch diff'}
                       >
-                        <MdRefresh />
+                        <RefreshIcon />
                       </button>
                     </div>
                   </div>
@@ -451,7 +450,7 @@ export const ServiceTestEditorEditPanel = observer(
                         className="service-editor__header__hint"
                         title="Specifies the expected execution result JSON"
                       >
-                        <FaInfoCircle />
+                        <InfoCircleIcon />
                       </div>
                     </div>
                     <div className="panel__header__actions">
@@ -465,7 +464,7 @@ export const ServiceTestEditorEditPanel = observer(
                         }
                         title={'Generate expected result'}
                       >
-                        <MdRefresh />
+                        <RefreshIcon />
                       </button>
                       <button
                         className="panel__header__action"
@@ -474,7 +473,7 @@ export const ServiceTestEditorEditPanel = observer(
                         onClick={formatExpectedResultJSONString}
                         title={'Format JSON (Alt + Shift + F)'}
                       >
-                        <FaWrench />
+                        <WrenchIcon />
                       </button>
                     </div>
                   </div>
@@ -489,7 +488,7 @@ export const ServiceTestEditorEditPanel = observer(
                         className="panel__content__validation-error"
                         title={'Expected result must be a valid JSON'}
                       >
-                        <VscError />
+                        <ErrorIcon />
                       </div>
                     )}
                     {expectedResult && (
@@ -579,10 +578,10 @@ export const ServiceTestAssertEditor = observer(
                         {numberOfTests} total
                       </div>
                       <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--passed">
-                        {numberOfTestsPassed} <FaCheckCircle />
+                        {numberOfTestsPassed} <CheckCircleIcon />
                       </div>
                       <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--failed">
-                        {numberOfTestsFailed} <FaTimesCircle />
+                        {numberOfTestsFailed} <TimesCircleIcon />
                       </div>
                     </div>
                     {testState.testSuiteResult !== TEST_RESULT.NONE && (
@@ -600,7 +599,7 @@ export const ServiceTestAssertEditor = observer(
                     onClick={addTestContainer}
                     title="Add Test"
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                   <button
                     className="panel__header__action"
@@ -609,12 +608,12 @@ export const ServiceTestAssertEditor = observer(
                     onClick={runAsserts}
                     title="Run All Tests"
                   >
-                    <FaPlay />
+                    <PlayIcon />
                   </button>
                 </div>
               </div>
               <div className="service-test-editor__header__status">
-                <LinearProgress
+                <ProgressBar
                   className={`service-test-editor__progress-bar service-test-editor__progress-bar--${testState.testSuiteResult.toLowerCase()}`}
                   classes={{
                     bar: `service-test-editor__progress-bar__bar service-test-editor__progress-bar__bar--${testState.testSuiteResult.toLowerCase()}`,
@@ -686,7 +685,7 @@ export const ServiceTestEditor = observer(
                     className="service-editor__header__hint"
                     title="Test data is shared between all test cases"
                   >
-                    <FaInfoCircle />
+                    <InfoCircleIcon />
                   </div>
                 </div>
                 <div className="panel__header__actions">
@@ -696,7 +695,7 @@ export const ServiceTestEditor = observer(
                     tabIndex={-1}
                     title={'Generate test data'}
                   >
-                    <MdRefresh />
+                    <RefreshIcon />
                   </button>
                 </div>
               </div>

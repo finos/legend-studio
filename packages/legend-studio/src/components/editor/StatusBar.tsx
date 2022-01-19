@@ -15,17 +15,18 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  FaFire,
-  FaCodeBranch,
-  FaRegWindowMaximize,
-  FaTerminal,
-  FaUserSecret,
-  FaBrush,
-} from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
-import { clsx, HammerIcon } from '@finos/legend-art';
-import { GoSync } from 'react-icons/go';
+import {
+  clsx,
+  HammerIcon,
+  SyncIcon,
+  FireIcon,
+  CodeBranchIcon,
+  WindowMaximizeIcon,
+  TerminalIcon,
+  HackerIcon,
+  BrushIcon,
+} from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import {
@@ -143,7 +144,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       <div className="editor__status-bar__left">
         <div className="editor__status-bar__workspace">
           <div className="editor__status-bar__workspace__icon">
-            <FaCodeBranch />
+            <CodeBranchIcon />
           </div>
           <div className="editor__status-bar__workspace__project">
             <Link
@@ -214,7 +215,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               tabIndex={-1}
               title={'Accept conflict resolution'}
             >
-              <GoSync />
+              <SyncIcon />
             </button>
           </div>
         )}
@@ -241,7 +242,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               tabIndex={-1}
               title={'Sync with workspace (Ctrl + S)'}
             >
-              <GoSync />
+              <SyncIcon />
             </button>
           </div>
         )}
@@ -264,7 +265,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Generate (F10)'}
         >
-          <FaFire />
+          <FireIcon />
         </button>
         <button
           className={clsx(
@@ -283,7 +284,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Clear generation entities'}
         >
-          <FaBrush />
+          <BrushIcon />
         </button>
         <button
           className={clsx(
@@ -315,7 +316,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Maximize/Minimize'}
         >
-          <FaRegWindowMaximize />
+          <WindowMaximizeIcon />
         </button>
         <button
           className={clsx(
@@ -329,7 +330,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Toggle auxiliary panel (Ctrl + `)'}
         >
-          <FaTerminal />
+          <TerminalIcon />
         </button>
         <button
           className={clsx(
@@ -344,7 +345,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Toggle text mode (F8)'}
         >
-          <FaUserSecret />
+          <HackerIcon />
         </button>
       </div>
     </div>

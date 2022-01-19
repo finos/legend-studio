@@ -15,15 +15,18 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
+  type TooltipPlacement,
+  Tooltip,
   CustomSelectorInput,
   InfoCircleIcon,
   PencilIcon,
   DollarIcon,
-  StubTransition,
+  CheckSquareIcon,
+  SquareIcon,
+  SaveIcon,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -50,26 +53,30 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import { type TooltipProps, Tooltip } from '@mui/material';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
   children: React.ReactElement;
-  placement: NonNullable<TooltipProps['placement']>;
+  placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { variable, children, placement } = props;
   const type = variable.genericType?.value.rawType;
   return (
     <Tooltip
       arrow={true}
-      placement={placement}
+      {...(placement !== undefined ? { placement } : {})}
       classes={{
         tooltip: 'query-builder__tooltip',
         arrow: 'query-builder__tooltip__arrow',
         tooltipPlacementRight: 'query-builder__tooltip--right',
       }}
-      TransitionComponent={StubTransition}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
       title={
         <div className="query-builder__tooltip__content">
           <div className="query-builder__tooltip__item">
@@ -121,10 +128,7 @@ export const VariableExpressionParameterEditor = observer(
           <div className="query-builder-value-spec-editor__parameter__text">
             {varName}
           </div>
-          <QueryBuilderParameterInfoTooltip
-            variable={valueSpecification}
-            placement={'bottom'}
-          >
+          <QueryBuilderParameterInfoTooltip variable={valueSpecification}>
             <div className="query-builder-value-spec-editor__parameter__info">
               <InfoCircleIcon />
             </div>
@@ -176,7 +180,7 @@ const BooleanPrimitiveInstanceValueEditor = observer(
           })}
           onClick={toggleValue}
         >
-          {value ? <FaCheckSquare /> : <FaSquare />}
+          {value ? <CheckSquareIcon /> : <SquareIcon />}
         </button>
       </div>
     );
@@ -450,7 +454,7 @@ const CollectionValueInstanceValueEditor = observer(
             className="query-builder-value-spec-editor__list-editor__save-button btn--dark"
             onClick={saveEdit}
           >
-            <FaSave />
+            <SaveIcon />
           </button>
         </div>
       );

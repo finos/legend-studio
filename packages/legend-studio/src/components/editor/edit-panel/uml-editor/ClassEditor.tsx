@@ -24,15 +24,6 @@ import {
   type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
 import {
-  FaLock,
-  FaPlus,
-  FaTimes,
-  FaLongArrowAltRight,
-  FaArrowAltCircleRight,
-  FaFire,
-  FaArrowCircleRight,
-} from 'react-icons/fa';
-import {
   clsx,
   CustomSelectorInput,
   createFilter,
@@ -43,6 +34,13 @@ import {
   BlankPanelContent,
   getControlledResizablePanelProps,
   InputWithInlineValidation,
+  LockIcon,
+  PlusIcon,
+  TimesIcon,
+  LongArrowRightIcon,
+  ArrowCircleRightIcon,
+  FireIcon,
+  StickArrowCircleRightIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { PropertyEditor } from './PropertyEditor';
@@ -174,7 +172,7 @@ const PropertyBasicEditor = observer(
         {isIndirectProperty && (
           <div className="property-basic-editor__name--with-lock">
             <div className="property-basic-editor__name--with-lock__icon">
-              <FaLock />
+              <LockIcon />
             </div>
             <span className="property-basic-editor__name--with-lock__name">
               {property.name}
@@ -246,7 +244,7 @@ const PropertyBasicEditor = observer(
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -278,7 +276,7 @@ const PropertyBasicEditor = observer(
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -309,7 +307,7 @@ const PropertyBasicEditor = observer(
             tabIndex={-1}
             title={'See detail'}
           >
-            <FaLongArrowAltRight />
+            <LongArrowRightIcon />
           </button>
         )}
         {isIndirectProperty && (
@@ -321,7 +319,7 @@ const PropertyBasicEditor = observer(
               isInheritedProperty ? 'super type class' : 'association'
             } '${property.owner.path}'`}
           >
-            <FaArrowAltCircleRight />
+            <ArrowCircleRightIcon />
           </button>
         )}
         {isIndirectProperty && (
@@ -336,7 +334,7 @@ const PropertyBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -451,7 +449,7 @@ const DerivedPropertyBasicEditor = observer(
           {isInheritedProperty && (
             <div className="property-basic-editor__name--with-lock">
               <div className="property-basic-editor__name--with-lock__icon">
-                <FaLock />
+                <LockIcon />
               </div>
               <span className="property-basic-editor__name--with-lock__name">
                 {derivedProperty.name}
@@ -516,7 +514,7 @@ const DerivedPropertyBasicEditor = observer(
                   tabIndex={-1}
                   title={'Visit element'}
                 >
-                  <FaArrowAltCircleRight />
+                  <ArrowCircleRightIcon />
                 </button>
               )}
             </div>
@@ -548,7 +546,7 @@ const DerivedPropertyBasicEditor = observer(
                   tabIndex={-1}
                   title={'Visit element'}
                 >
-                  <FaArrowAltCircleRight />
+                  <ArrowCircleRightIcon />
                 </button>
               )}
             </div>
@@ -579,7 +577,7 @@ const DerivedPropertyBasicEditor = observer(
               tabIndex={-1}
               title={'See detail'}
             >
-              <FaLongArrowAltRight />
+              <LongArrowRightIcon />
             </button>
           )}
           {isInheritedProperty && (
@@ -589,7 +587,7 @@ const DerivedPropertyBasicEditor = observer(
               tabIndex={-1}
               title={`Visit super type class ${derivedProperty.owner.path}`}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           )}
           {!isInheritedProperty && !isReadOnly && (
@@ -601,7 +599,7 @@ const DerivedPropertyBasicEditor = observer(
               tabIndex={-1}
               title={'Remove'}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           )}
         </div>
@@ -660,7 +658,7 @@ const ConstraintEditor = observer(
           {isInheritedConstraint && (
             <div className="constraint-editor__content__name--with-lock">
               <div className="constraint-editor__content__name--with-lock__icon">
-                <FaLock />
+                <LockIcon />
               </div>
               <span className="constraint-editor__content__name--with-lock__name">
                 {constraint.name}
@@ -685,7 +683,7 @@ const ConstraintEditor = observer(
               tabIndex={-1}
               title={`Visit super type class ${constraint.owner.path}`}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           )}
           {!isInheritedConstraint && !isReadOnly && (
@@ -696,7 +694,7 @@ const ConstraintEditor = observer(
               tabIndex={-1}
               title={'Remove'}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           )}
         </div>
@@ -766,7 +764,7 @@ const SuperTypeEditor = observer(
           tabIndex={-1}
           title={'Visit super type'}
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
         {!isReadOnly && (
           <button
@@ -776,7 +774,7 @@ const SuperTypeEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -1129,7 +1127,7 @@ export const ClassFormEditor = observer(
                 <div className="panel__header__title">
                   {isReadOnly && (
                     <div className="uml-element-editor__header__lock">
-                      <FaLock />
+                      <LockIcon />
                     </div>
                   )}
                   <div className="panel__header__title__label">class</div>
@@ -1146,13 +1144,13 @@ export const ClassFormEditor = observer(
                       title={`Visit generation parent '${_class.generationParentElement.path}'`}
                     >
                       <div className="uml-element-editor__header__generation-origin__label">
-                        <FaFire />
+                        <FireIcon />
                       </div>
                       <div className="uml-element-editor__header__generation-origin__parent-name">
                         {_class.generationParentElement.name}
                       </div>
                       <div className="uml-element-editor__header__generation-origin__visit-btn">
-                        <FaArrowCircleRight />
+                        <StickArrowCircleRightIcon />
                       </div>
                     </button>
                   )}
@@ -1185,7 +1183,7 @@ export const ClassFormEditor = observer(
                     tabIndex={-1}
                     title={addButtonTitle}
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                 </div>
               </div>

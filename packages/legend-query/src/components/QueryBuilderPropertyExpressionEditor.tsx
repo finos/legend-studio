@@ -15,8 +15,7 @@
  */
 
 import { useCallback } from 'react';
-import Dialog from '@mui/material/Dialog';
-import { clsx, InfoCircleIcon } from '@finos/legend-art';
+import { clsx, Dialog, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import {
@@ -99,6 +98,9 @@ export const QueryBuilderPropertyExpressionEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder-property-editor">

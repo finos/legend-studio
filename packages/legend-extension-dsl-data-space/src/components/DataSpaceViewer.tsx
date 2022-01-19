@@ -25,8 +25,8 @@ import {
   EnvelopIcon,
   clsx,
   CustomSelectorInput,
-  MappingIcon,
-  RuntimeIcon,
+  PURE_MappingIcon,
+  PURE_RuntimeIcon,
   CogIcon,
   KeyIcon,
   FlaskIcon,
@@ -297,7 +297,7 @@ const DataSpaceExecutionViewer = observer(
         </div>
         <div className="data-space__viewer__execution__entry data-space__viewer__execution__mapping">
           <div className="data-space__viewer__execution__entry__icon">
-            <MappingIcon />
+            <PURE_MappingIcon />
           </div>
           <div className="data-space__viewer__execution__entry__content data-space__viewer__execution__entry__content__text">
             {dataSpaceViewerState.currentExecutionContext.mapping.value.path}
@@ -305,7 +305,7 @@ const DataSpaceExecutionViewer = observer(
         </div>
         <div className="data-space__viewer__execution__entry">
           <div className="data-space__viewer__execution__entry__icon">
-            <RuntimeIcon />
+            <PURE_RuntimeIcon />
           </div>
           <div className="data-space__viewer__execution__entry__content data-space__viewer__execution__entry__content__dropdown__container">
             <CustomSelectorInput

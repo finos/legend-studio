@@ -22,12 +22,6 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
-  FaPlus,
-  FaTimes,
-  FaCheckCircle,
-  FaExclamationCircle,
-} from 'react-icons/fa';
-import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
 } from '../../../../stores/editor-state/ProjectConfigurationEditorState';
@@ -36,6 +30,10 @@ import {
   compareLabelFn,
   clsx,
   CustomSelectorInput,
+  PlusIcon,
+  TimesIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -105,12 +103,12 @@ const ProjectStructureEditor = observer(
           <div className="project-configuration-editor__project__structure__version__label">
             <div className="project-configuration-editor__project__structure__version__label__status">
               {isVersionOutdated ? (
-                <FaExclamationCircle
+                <ExclamationCircleIcon
                   className="project-configuration-editor__project__structure__version__label__status--outdated"
                   title="Project structure is outdated"
                 />
               ) : (
-                <FaCheckCircle
+                <CheckCircleIcon
                   className="project-configuration-editor__project__structure__version__label__status--up-to-date"
                   title="Project structure is up to date"
                 />
@@ -302,7 +300,7 @@ const ProjectDependencyEditor = observer(
           tabIndex={-1}
           title={'Close'}
         >
-          <FaTimes />
+          <TimesIcon />
         </button>
       </div>
     );
@@ -457,7 +455,7 @@ export const ProjectConfigurationEditor = observer(() => {
               onClick={addValue}
               title={addButtonTitle}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>

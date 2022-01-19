@@ -27,8 +27,8 @@ import {
   GripVerticalIcon,
   ContextMenu,
   InputWithInlineValidation,
+  SigmaIcon,
 } from '@finos/legend-art';
-import { MdFunctions } from 'react-icons/md';
 import {
   type QueryBuilderExplorerTreeDragSource,
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -458,7 +458,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                     tabIndex={-1}
                     title="Choose Aggregate Operator..."
                   >
-                    <MdFunctions />
+                    <SigmaIcon />
                   </button>
                   <button
                     className="query-builder__projection__column__aggregate__operator__dropdown__trigger"

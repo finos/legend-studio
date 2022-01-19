@@ -20,8 +20,8 @@ import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import Dialog from '@mui/material/Dialog';
 import {
+  Dialog,
   type SelectComponent,
   BlankPanelContent,
   ArrowCircleDownIcon,
@@ -29,7 +29,7 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
   PlayIcon,
-  ScrollIcon,
+  PaperScrollIcon,
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -59,6 +59,9 @@ const ServiceExecutionResultViewer = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal">
@@ -170,6 +173,7 @@ const ServiceExecutionQueryImporter = observer(
         open={queryState.openQueryImporter}
         onClose={closeQueryImporter}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter: handleEnterQueryImporter,
         }}
         classes={{ container: 'search-modal__container' }}
@@ -292,7 +296,7 @@ export const ServiceExecutionQueryEditor = observer(
               tabIndex={-1}
               title="Generate execution plan"
             >
-              <ScrollIcon />
+              <PaperScrollIcon />
             </button>
           </div>
         </div>

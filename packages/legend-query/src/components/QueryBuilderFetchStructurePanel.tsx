@@ -15,11 +15,15 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, BlankPanelContent, PlusIcon } from '@finos/legend-art';
+import {
+  clsx,
+  BlankPanelContent,
+  PlusIcon,
+  OptionsIcon,
+} from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
-import { CgOptions } from 'react-icons/cg';
 import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel';
 import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState';
 
@@ -98,7 +102,7 @@ export const QueryBuilderFetchStructurePanel = observer(
                   tabIndex={-1}
                   title="Configure result set modifiers..."
                 >
-                  <CgOptions className="query-builder__icon query-builder__icon__query-option" />
+                  <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
                 </button>
                 <button
                   className="panel__header__action"

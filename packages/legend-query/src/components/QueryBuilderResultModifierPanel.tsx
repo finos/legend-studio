@@ -16,14 +16,15 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  FaCheckSquare,
-  FaSortAlphaDown,
-  FaSortAlphaDownAlt,
-  FaSquare,
-  FaTimes,
-} from 'react-icons/fa';
-import { clsx, CustomSelectorInput } from '@finos/legend-art';
-import { Dialog } from '@mui/material';
+  clsx,
+  Dialog,
+  CustomSelectorInput,
+  CheckSquareIcon,
+  SortDownIcon,
+  SortDownAltIcon,
+  SquareIcon,
+  TimesIcon,
+} from '@finos/legend-art';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
@@ -88,9 +89,9 @@ const ColumnSortEditor = observer(
           onClick={toggleSortType}
         >
           {sortType === COLUMN_SORT_TYPE.ASC ? (
-            <FaSortAlphaDown />
+            <SortDownIcon />
           ) : (
-            <FaSortAlphaDownAlt />
+            <SortDownAltIcon />
           )}
         </button>
         <button
@@ -99,7 +100,7 @@ const ColumnSortEditor = observer(
           tabIndex={-1}
           title={'Remove'}
         >
-          <FaTimes />
+          <TimesIcon />
         </button>
       </div>
     );
@@ -188,6 +189,9 @@ export const QueryResultModifierModal = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div className="modal modal--dark editor-modal">
           <div className="modal__header">
@@ -214,7 +218,7 @@ export const QueryResultModifierModal = observer(
                     )}
                     tabIndex={-1}
                   >
-                    {distinct ? <FaCheckSquare /> : <FaSquare />}
+                    {distinct ? <CheckSquareIcon /> : <SquareIcon />}
                   </button>
                   <div className="panel__content__form__section__toggler__prompt">
                     Remove duplicate rows from the results

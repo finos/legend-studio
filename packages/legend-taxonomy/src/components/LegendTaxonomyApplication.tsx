@@ -17,7 +17,6 @@
 import { useEffect } from 'react';
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { LegendMaterialUITheme } from '@finos/legend-art';
 import {
   type LegendTaxonomyPathParams,
   URL_PATH_PLACEHOLDER,
@@ -25,15 +24,12 @@ import {
   generateViewTaxonomyRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
 } from '../stores/LegendTaxonomyRouter';
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
-  ActionAlert,
-  BlockingAlert,
-  NotificationSnackbar,
+  LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
@@ -45,9 +41,6 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
 
   return (
     <div className="app">
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationSnackbar />
       <Switch>
         <Route
           exact={true}
@@ -146,11 +139,9 @@ export const LegendTaxonomyApplication = observer(
           log={applicationStore.log}
         >
           <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
-            <StyledEngineProvider injectFirst={true}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendTaxonomyApplicationRoot />
-              </ThemeProvider>
-            </StyledEngineProvider>
+            <LegendApplicationComponentFrameworkProvider>
+              <LegendTaxonomyApplicationRoot />
+            </LegendApplicationComponentFrameworkProvider>
           </LegendTaxonomyStoreProvider>
         </GraphManagerStateProvider>
       </DepotServerClientProvider>

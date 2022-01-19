@@ -22,8 +22,10 @@ import {
   type SelectComponent,
   compareLabelFn,
   CustomSelectorInput,
+  PlusIcon,
+  UserIcon,
+  UsersIcon,
 } from '@finos/legend-art';
-import { FaPlus, FaUserFriends, FaUser } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
@@ -33,9 +35,9 @@ const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
   <div className="setup__workspace__label">
     <div className="setup__workspace__label-icon">
       {option.value.workspaceType === WorkspaceType.GROUP ? (
-        <FaUserFriends />
+        <UsersIcon />
       ) : (
-        <FaUser />
+        <UserIcon />
       )}
     </div>
     <div className="setup__workspace__label__name">{option.label}</div>
@@ -111,7 +113,7 @@ export const WorkspaceSelector = observer(
           tabIndex={-1}
           title={'Create a Workspace'}
         >
-          <FaPlus />
+          <PlusIcon />
         </button>
         <CustomSelectorInput
           className="setup-selector__input"

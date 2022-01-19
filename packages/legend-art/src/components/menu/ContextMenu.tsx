@@ -15,11 +15,11 @@
  */
 
 import { useState, useRef } from 'react';
-import type { MenuProps } from '@mui/material/Menu';
-import { BaseMenu } from '../BaseMuiComponents';
+import type { MenuProps as MuiMenuProps } from '@mui/material';
+import { BaseMenu } from './BaseMenu';
 
 export const ContextMenu: React.FC<{
-  menuProps?: Partial<MenuProps>;
+  menuProps?: Partial<MuiMenuProps>;
   content?: React.ReactNode;
   onClose?: () => void;
   onOpen?: () => void;

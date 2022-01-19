@@ -15,10 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import {
-  NotificationSnackbar,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
 import type { LegendTaxonomyStandaloneDataSpaceViewerParams } from '../stores/LegendTaxonomyRouter';
@@ -57,7 +54,6 @@ export const StandaloneDataSpaceViewer = observer(() => {
           taxonomyStore.initStandaloneDataSpaceViewerState.isInProgress
         }
       />
-      <NotificationSnackbar />
       <div className="panel__header standalone-data-space-viewer__header">
         <div className="panel__header__title"></div>
         <div className="panel__header__actions standalone-data-space-viewer__header__actions">

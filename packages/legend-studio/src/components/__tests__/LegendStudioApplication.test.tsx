@@ -26,6 +26,7 @@ import {
   TEST__provideMockedApplicationStore,
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
+  LegendApplicationComponentFrameworkProvider,
 } from '@finos/legend-application';
 import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils';
 import { render } from '@testing-library/react';
@@ -64,7 +65,9 @@ test(integrationTest('App header is displayed properly'), async () => {
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__LegendStudioStoreProvider>
-              <LegendStudioApplicationRoot />
+              <LegendApplicationComponentFrameworkProvider>
+                <LegendStudioApplicationRoot />
+              </LegendApplicationComponentFrameworkProvider>
             </TEST__LegendStudioStoreProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>
@@ -108,7 +111,9 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__LegendStudioStoreProvider>
-              <LegendStudioApplicationRoot />
+              <LegendApplicationComponentFrameworkProvider>
+                <LegendStudioApplicationRoot />
+              </LegendApplicationComponentFrameworkProvider>
             </TEST__LegendStudioStoreProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>
@@ -152,7 +157,9 @@ test(
           <TEST__SDLCServerClientProvider>
             <TEST__DepotServerClientProvider>
               <TEST__LegendStudioStoreProvider>
-                <LegendStudioApplicationRoot />
+                <LegendApplicationComponentFrameworkProvider>
+                  <LegendStudioApplicationRoot />
+                </LegendApplicationComponentFrameworkProvider>
               </TEST__LegendStudioStoreProvider>
             </TEST__DepotServerClientProvider>
           </TEST__SDLCServerClientProvider>

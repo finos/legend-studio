@@ -16,15 +16,17 @@
 
 import { useState } from 'react';
 import {
+  clsx,
+  Dialog,
   ChevronDownIcon,
   ChevronUpIcon,
-  clsx,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
+  InfoCircleIcon,
+  TimesIcon,
+  BarsIcon,
 } from '@finos/legend-art';
-import { FaBars, FaInfoCircle, FaTimes } from 'react-icons/fa';
-import Dialog from '@mui/material/Dialog';
 import { useApplicationStore } from '@finos/legend-application';
 import type {
   SDLCServerOption,
@@ -41,12 +43,18 @@ const AboutModal: React.FC<{
   const config = applicationStore.config;
 
   return (
-    <Dialog onClose={closeModal} open={open}>
+    <Dialog
+      onClose={closeModal}
+      open={open}
+      TransitionProps={{
+        appear: false, // disable transition
+      }}
+    >
       <div className="modal modal--dark about-modal">
         <div className="modal__header">
           <div className="modal__title">
             <div className="modal__title__icon">
-              <FaInfoCircle />
+              <InfoCircleIcon />
             </div>
             <div className="modal__title__label">About</div>
           </div>
@@ -56,7 +64,7 @@ const AboutModal: React.FC<{
               tabIndex={-1}
               onClick={closeModal}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           </div>
         </div>
@@ -218,7 +226,7 @@ export const LegendStudioAppHeaderMenu: React.FC = () => {
           title="Show more information about the application..."
           tabIndex={-1}
         >
-          <FaBars />
+          <BarsIcon />
         </button>
       </DropdownMenu>
       <AboutModal open={openAboutModal} closeModal={hideAboutModal} />

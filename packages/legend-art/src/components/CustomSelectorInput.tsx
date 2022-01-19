@@ -15,7 +15,7 @@
  */
 
 import { type CSSProperties, useRef, useEffect, forwardRef } from 'react';
-import { FaCaretDown, FaCircleNotch, FaTimes } from 'react-icons/fa';
+import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './Icon';
 import CreatableSelect, { type Props } from 'react-select/creatable';
 import Select from 'react-select';
 import { FixedSizeList } from 'react-window';
@@ -99,7 +99,7 @@ const LoadingIndicator: React.FC = () => (
   <div
     className={`${STYLE_PREFIX}__indicator ${STYLE_PREFIX}__loading-indicator ${STYLE_PREFIX__DARK}__loading-indicator`}
   >
-    <FaCircleNotch />
+    <CircleNotchIcon />
   </div>
 );
 
@@ -107,7 +107,7 @@ const DropdownIndicator: React.FC = () => (
   <div
     className={`${STYLE_PREFIX}__indicator ${STYLE_PREFIX}__dropdown-indicator`}
   >
-    <FaCaretDown />
+    <CaretDownIcon />
   </div>
 );
 
@@ -124,7 +124,7 @@ const ClearIndicator: React.FC<{
       <div
         className={`${STYLE_PREFIX}__indicator ${STYLE_PREFIX}__clear-indicator`}
       >
-        <FaTimes />
+        <TimesIcon />
       </div>
     </div>
   );

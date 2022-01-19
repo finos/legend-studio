@@ -30,8 +30,15 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
-import { FaLock, FaPlus, FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
-import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
+import {
+  clsx,
+  CustomSelectorInput,
+  createFilter,
+  LockIcon,
+  PlusIcon,
+  TimesIcon,
+  ArrowCircleRightIcon,
+} from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
@@ -154,7 +161,7 @@ const ParameterBasicEditor = observer(
       <div className="property-basic-editor">
         {isReadOnly && (
           <div className="property-basic-editor__lock">
-            <FaLock />
+            <LockIcon />
           </div>
         )}
         <input
@@ -209,7 +216,7 @@ const ParameterBasicEditor = observer(
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -241,7 +248,7 @@ const ParameterBasicEditor = observer(
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -271,7 +278,7 @@ const ParameterBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -392,7 +399,7 @@ const ReturnTypeEditor = observer(
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -424,7 +431,7 @@ const ReturnTypeEditor = observer(
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -451,7 +458,7 @@ const ReturnTypeEditor = observer(
           disabled={true}
           tabIndex={-1}
         >
-          <FaTimes />
+          <TimesIcon />
         </button>
       </div>
     );
@@ -519,7 +526,7 @@ export const FunctionMainEditor = observer(
               tabIndex={-1}
               title={'Add Parameter'}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
           <div
@@ -680,7 +687,7 @@ export const FunctionEditor = observer(() => {
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             )}
             <div className="panel__header__title__label">function</div>
@@ -711,7 +718,7 @@ export const FunctionEditor = observer(() => {
               tabIndex={-1}
               title={addButtonTitle}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>

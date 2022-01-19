@@ -16,10 +16,16 @@
 
 import { observer } from 'mobx-react-lite';
 import { EntityDiffSideBarItem } from '../editor/edit-panel/diff-editor/EntityDiffView';
-import { FaInfoCircle, FaTimes, FaArrowUp, FaCheck } from 'react-icons/fa';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
+import {
+  clsx,
+  PanelLoadingIndicator,
+  TruncatedGitMergeIcon,
+  TimesIcon,
+  ArrowUpIcon,
+  CheckIcon,
+  InfoCircleIcon,
+} from '@finos/legend-art';
 import { formatDistanceToNow } from 'date-fns';
-import { FiGitMerge } from 'react-icons/fi';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { flowResult } from 'mobx';
@@ -120,7 +126,7 @@ export const ReviewSideBar = observer(() => {
               tabIndex={-1}
               title="Close review"
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           )}
         </div>
@@ -156,7 +162,7 @@ export const ReviewSideBar = observer(() => {
                 tabIndex={-1}
                 title={'Re-open review'}
               >
-                <FaArrowUp />
+                <ArrowUpIcon />
               </button>
             )}
             {review.state === ReviewState.OPEN && (
@@ -172,7 +178,7 @@ export const ReviewSideBar = observer(() => {
                   tabIndex={-1}
                   title={'Approve review'}
                 >
-                  <FaCheck />
+                  <CheckIcon />
                 </button>
                 <button
                   className="btn--dark btn--sm review__side-bar__merge-btn"
@@ -182,7 +188,7 @@ export const ReviewSideBar = observer(() => {
                   tabIndex={-1}
                   title={'Commit review'}
                 >
-                  <FiGitMerge />
+                  <TruncatedGitMergeIcon />
                 </button>
               </>
             )}
@@ -198,7 +204,7 @@ export const ReviewSideBar = observer(() => {
                   className="side-bar__panel__title__info"
                   title="All changes made in the workspace since the revision the workspace is created"
                 >
-                  <FaInfoCircle />
+                  <InfoCircleIcon />
                 </div>
               </div>
               <div

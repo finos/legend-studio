@@ -17,7 +17,6 @@
 import { useRef, useState, useEffect, useCallback, Fragment } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
-import { FaRegKeyboard } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
   DiagramRenderer,
@@ -44,6 +43,7 @@ import {
   clsx,
   createFilter,
   CustomSelectorInput,
+  KeyboardIcon,
   DropdownMenu,
   MenuContent,
   MenuContentDivider,
@@ -53,6 +53,16 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanel,
+  ResizeIcon,
+  MinusIcon,
+  MousePointerIcon,
+  MoveIcon,
+  PlusCircleIcon,
+  SidebarIcon,
+  TriangleIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+  Dialog,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -68,18 +78,6 @@ import {
   isValidPathIdentifier,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
-import {
-  FiMinus,
-  FiMousePointer,
-  FiMove,
-  FiPlusCircle,
-  FiSidebar,
-  FiTriangle,
-  FiZoomIn,
-  FiZoomOut,
-} from 'react-icons/fi';
-import { IoResize } from 'react-icons/io5';
-import { Dialog } from '@mui/material';
 import {
   guaranteeNonNullable,
   isNonNullable,
@@ -146,6 +144,9 @@ const DiagramRendererHotkeyInfosModal = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content--scrollable',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark modal--scrollable diagram-editor__hotkeys__dialog">
@@ -346,7 +347,7 @@ const DiagramEditorToolPanel = observer(
           )}
           title="View Tool (V)"
         >
-          <FiMousePointer className="diagram-editor__icon--layout" />
+          <MousePointerIcon className="diagram-editor__icon--layout" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -360,7 +361,7 @@ const DiagramEditorToolPanel = observer(
           )}
           title="Pan Tool (M)"
         >
-          <FiMove className="diagram-editor__icon--pan" />
+          <MoveIcon className="diagram-editor__icon--pan" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -374,7 +375,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
         >
-          <FiZoomIn className="diagram-editor__icon--zoom-in" />
+          <ZoomInIcon className="diagram-editor__icon--zoom-in" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -388,7 +389,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
         >
-          <FiZoomOut className="diagram-editor__icon--zoom-out" />
+          <ZoomOutIcon className="diagram-editor__icon--zoom-out" />
         </button>
         <div className="diagram-editor__tools__divider" />
         <button
@@ -407,7 +408,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
           )}
         >
-          <FiMinus className="diagram-editor__icon--property" />
+          <MinusIcon className="diagram-editor__icon--property" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -425,7 +426,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
           )}
         >
-          <FiTriangle className="diagram-editor__icon--inheritance" />
+          <TriangleIcon className="diagram-editor__icon--inheritance" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -442,7 +443,7 @@ const DiagramEditorToolPanel = observer(
           //   DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
           // )}
         >
-          <IoResize className="diagram-editor__icon--association" />
+          <ResizeIcon className="diagram-editor__icon--association" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -457,7 +458,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
         >
-          <FiPlusCircle className="diagram-editor__icon--add-class" />
+          <PlusCircleIcon className="diagram-editor__icon--add-class" />
         </button>
         <div className="diagram-editor__tools__divider" />
         <button
@@ -466,7 +467,7 @@ const DiagramEditorToolPanel = observer(
           title="Show Hotkeys"
           onClick={showDiagramRendererHokeysModal}
         >
-          <FaRegKeyboard className="diagram-editor__icon--hotkey-info" />
+          <KeyboardIcon className="diagram-editor__icon--hotkey-info" />
         </button>
         <DiagramRendererHotkeyInfosModal
           open={diagramEditorState.showHotkeyInfosModal}
@@ -1296,7 +1297,7 @@ const DiagramEditorHeader = observer(
             tabIndex={-1}
             onClick={toggleSidePanel}
           >
-            <FiSidebar className="diagram-editor__icon--sidebar" />
+            <SidebarIcon className="diagram-editor__icon--sidebar" />
           </button>
         </div>
       </>

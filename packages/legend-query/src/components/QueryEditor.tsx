@@ -15,15 +15,15 @@
  */
 
 import {
-  ArrowLeftIcon,
   clsx,
+  Dialog,
+  ArrowLeftIcon,
   ExternalLinkSquareIcon,
   PanelLoadingIndicator,
   RobotIcon,
   SaveIcon,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
-import { Dialog } from '@mui/material';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
@@ -122,6 +122,9 @@ const QueryExport = observer(() => {
         root: 'editor-modal__root-container',
         container: 'editor-modal__container',
         paper: 'editor-modal__content',
+      }}
+      TransitionProps={{
+        appear: false, // disable transition
       }}
     >
       <div className="modal modal--dark query-export">

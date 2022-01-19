@@ -16,13 +16,14 @@
 
 import { observer } from 'mobx-react-lite';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { FaUserSecret } from 'react-icons/fa';
 import {
   clsx,
+  Backdrop,
   HammerIcon,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
+  HackerIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
@@ -35,10 +36,7 @@ import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePan
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
-import {
-  ApplicationBackdrop,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
 
 enum QUERY_BUILDER_HOTKEY {
@@ -95,7 +93,7 @@ const QueryBuilderStatusBar = observer(
             tabIndex={-1}
             title="View Pure Query"
           >
-            <FaUserSecret />
+            <HackerIcon />
           </button>
         </div>
       </div>
@@ -129,7 +127,7 @@ export const QueryBuilder = observer(
         className="query-builder"
       >
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-          <ApplicationBackdrop open={queryBuilderState.backdrop} />
+          <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
           <div className="query-builder__content">
             <ResizablePanelGroup orientation="horizontal">
               <ResizablePanel minSize={120}>
