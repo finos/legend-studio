@@ -499,9 +499,10 @@ export const DateInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     graph: PureModel;
+    expectedType: Type;
     className?: string | undefined;
   }) => {
-    const { valueSpecification, graph, className } = props;
+    const { valueSpecification, graph, expectedType, className } = props;
     const variableType = valueSpecification.genericType.value.rawType;
     const selectedType = buildElementOption(variableType);
     const typeOptions: PackageableElementOption<Type>[] = graph.primitiveTypes
@@ -513,6 +514,10 @@ export const DateInstanceValueEditor = observer(
       )
       .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
 
+    const strictDate = graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
+    const date = graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
+    const dateTime = graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
+    const latestDate = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
         valueSpecification.genericType.value.setRawType(val.value);
@@ -535,28 +540,27 @@ export const DateInstanceValueEditor = observer(
 
     return (
       <div className="query-builder-value-spec-editor__date">
-        {(valueSpecification.genericType.value.rawType.name ===
-          PRIMITIVE_TYPE.STRICTDATE ||
-          valueSpecification.genericType.value.rawType.name ===
-            PRIMITIVE_TYPE.DATETIME) && (
+        {(valueSpecification.genericType.value.rawType === strictDate ||
+          valueSpecification.genericType.value.rawType === dateTime) && (
           <DatePrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
             className={className}
           />
         )}
-        {valueSpecification.genericType.value.rawType.name ===
-          PRIMITIVE_TYPE.LATESTDATE && (
+        {valueSpecification.genericType.value.rawType === latestDate && (
           <LatestDatePrimitiveInstanceValueEditor />
         )}
-        <div className="query-builder-value-spec-editor__dropdown">
-          <CustomSelectorInput
-            placeholder="Choose a type..."
-            options={typeOptions}
-            onChange={changeType}
-            value={selectedType}
-            darkMode={true}
-          />
-        </div>
+        {expectedType === date && (
+          <div className="query-builder-value-spec-editor__dropdown">
+            <CustomSelectorInput
+              placeholder="Choose a type..."
+              options={typeOptions}
+              onChange={changeType}
+              value={selectedType}
+              darkMode={true}
+            />
+          </div>
+        )}
       </div>
     );
   },
@@ -605,6 +609,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
             graph={graph}
+            expectedType={expectedType}
             className={className}
           />
         );
