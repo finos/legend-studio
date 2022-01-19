@@ -16,12 +16,12 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Dialog } from '@mui/material';
 import {
   generateViewProjectRoute,
   generateViewVersionRoute,
 } from '../../../stores/LegendStudioRouter';
 import {
+  Dialog,
   PanelLoadingIndicator,
   CustomSelectorInput,
   ShareIcon,

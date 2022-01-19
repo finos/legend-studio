@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import {
+  Dialog,
   BlankPanelContent,
   CustomSelectorInput,
   PencilIcon,
@@ -29,7 +30,6 @@ import {
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
   QueryParameterState,
 } from '../stores/QueryParametersState';
-import { Dialog } from '@mui/material';
 import { useEffect, useState } from 'react';
 import {
   type Type,

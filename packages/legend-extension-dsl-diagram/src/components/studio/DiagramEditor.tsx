@@ -62,6 +62,7 @@ import {
   TriangleIcon,
   ZoomInIcon,
   ZoomOutIcon,
+  Dialog,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -77,7 +78,6 @@ import {
   isValidPathIdentifier,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
-import { Dialog } from '@mui/material';
 import {
   guaranteeNonNullable,
   isNonNullable,

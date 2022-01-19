@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { GlobalHotKeys } from 'react-hotkeys';
 import {
   clsx,
+  Backdrop,
   HammerIcon,
   ResizablePanelGroup,
   ResizablePanel,
@@ -37,7 +38,6 @@ import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
 import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
-import { Backdrop } from '@mui/material';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',

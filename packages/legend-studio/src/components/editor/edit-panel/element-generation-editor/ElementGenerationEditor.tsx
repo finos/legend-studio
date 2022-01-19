@@ -15,7 +15,6 @@
  */
 
 import { useRef, useState, useEffect } from 'react';
-import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import {
   ELEMENT_PATH_DELIMITER,
@@ -31,6 +30,7 @@ import {
 } from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { flowResult } from 'mobx';
 import {
+  Dialog,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,

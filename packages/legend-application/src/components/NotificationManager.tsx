@@ -16,16 +16,14 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  Snackbar,
-  SnackbarContent,
-  type SnackbarCloseReason,
-} from '@mui/material';
-import {
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
 } from '../stores/ApplicationStore';
 import { useApplicationStore } from './ApplicationStoreProvider';
 import {
+  Notification,
+  NotificationContent,
+  type NotificationCloseReason,
   ChevronDownIcon,
   ChevronUpIcon,
   TimesIcon,
@@ -38,7 +36,7 @@ import {
 } from '@finos/legend-art';
 import { useState } from 'react';
 
-export const NotificationSnackbar = observer(() => {
+export const NotificationManager = observer(() => {
   const applicationStore = useApplicationStore();
   const notification = applicationStore.notification;
   const isOpen = Boolean(notification);
@@ -92,18 +90,18 @@ export const NotificationSnackbar = observer(() => {
 
   const onSnackbarAutoHideOrClickAway = (
     event: React.SyntheticEvent<unknown> | Event,
-    reason: SnackbarCloseReason,
+    reason: NotificationCloseReason,
   ): void => {
     // NOTE: we only should not allow dismissing the notification on click-away. First of call, this might not be desirable
     // second, this clashes with modal that traps focus, e.g. when we have another modal open and want to show a notification
-    // the notification focus is stolen by the modal leading to the snackbar immediately gets clicked-away and closed
+    // the notification focus is stolen by the modal leading to the notification immediately gets clicked-away and closed
     if (reason === 'timeout') {
       handleClose();
     }
   };
 
   return (
-    <Snackbar
+    <Notification
       TransitionProps={{
         appear: false,
       }}
@@ -132,7 +130,7 @@ export const NotificationSnackbar = observer(() => {
           : ''
       }
     >
-      <SnackbarContent
+      <NotificationContent
         classes={{
           root: 'notification__content',
           message: 'notification__message',
@@ -174,6 +172,6 @@ export const NotificationSnackbar = observer(() => {
           </button>,
         ]}
       />
-    </Snackbar>
+    </Notification>
   );
 });

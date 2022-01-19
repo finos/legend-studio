@@ -15,8 +15,7 @@
  */
 
 import { useCallback } from 'react';
-import { Dialog } from '@mui/material';
-import { clsx, InfoCircleIcon } from '@finos/legend-art';
+import { clsx, Dialog, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import {

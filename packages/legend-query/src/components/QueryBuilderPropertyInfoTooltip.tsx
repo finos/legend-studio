@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type TooltipProps, Tooltip } from '@mui/material';
+import { type TooltipPlacement, Tooltip } from '@finos/legend-art';
 import { type AbstractProperty, DerivedProperty } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
@@ -23,13 +23,13 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
   path: string;
   isMapped: boolean;
   children: React.ReactElement;
-  placement: NonNullable<TooltipProps['placement']>;
+  placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { property, path, isMapped, children, placement } = props;
   return (
     <Tooltip
       arrow={true}
-      placement={placement}
+      {...(placement !== undefined ? { placement } : {})}
       classes={{
         tooltip: 'query-builder__tooltip',
         arrow: 'query-builder__tooltip__arrow',

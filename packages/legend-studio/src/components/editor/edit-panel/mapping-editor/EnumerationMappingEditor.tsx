@@ -17,6 +17,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  Dialog,
   type SelectComponent,
   ResizablePanel,
   ResizablePanelGroup,
@@ -41,7 +42,6 @@ import {
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { Dialog } from '@mui/material';
 import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,

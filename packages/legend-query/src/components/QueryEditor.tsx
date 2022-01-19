@@ -15,15 +15,15 @@
  */
 
 import {
-  ArrowLeftIcon,
   clsx,
+  Dialog,
+  ArrowLeftIcon,
   ExternalLinkSquareIcon,
   PanelLoadingIndicator,
   RobotIcon,
   SaveIcon,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
-import { Dialog } from '@mui/material';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';

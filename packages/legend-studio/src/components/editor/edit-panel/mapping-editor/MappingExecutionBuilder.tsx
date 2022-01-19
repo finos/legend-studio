@@ -17,6 +17,7 @@
 import { Fragment, useState, useRef, useCallback } from 'react';
 import { flowResult } from 'mobx';
 import {
+  Dialog,
   type SelectComponent,
   ResizablePanelGroup,
   ResizablePanel,
@@ -50,7 +51,6 @@ import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
 } from '../../../../stores/shared/DnDUtil';
-import { Dialog } from '@mui/material';
 import { guaranteeType, uniq } from '@finos/legend-shared';
 import {
   type MappingExecutionState,

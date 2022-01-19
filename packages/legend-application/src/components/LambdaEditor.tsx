@@ -33,6 +33,7 @@ import {
   FilledWindowMaximizeIcon,
   LongArrowAltDownIcon,
   LongArrowAltUpIcon,
+  Dialog,
 } from '@finos/legend-art';
 import type { LambdaEditorState } from '../stores/LambdaEditorState';
 import {
@@ -46,7 +47,6 @@ import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import { APPLICATION_TEST_ID } from './ApplicationTestID';
 import { useApplicationStore } from './ApplicationStoreProvider';
 import { EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../const';
-import { Dialog } from '@mui/material';
 
 export type LambdaEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;

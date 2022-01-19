@@ -46,7 +46,6 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@mui/material": "5.3.0",
     "@types/react": "17.0.38",
     "mobx": "6.3.12",
     "mobx-react-lite": "3.2.3",

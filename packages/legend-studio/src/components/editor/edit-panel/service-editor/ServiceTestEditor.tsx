@@ -26,6 +26,7 @@ import {
 import {
   clsx,
   ContextMenu,
+  ProgressBar,
   BlankPanelContent,
   BlankPanelPlaceholder,
   PanelLoadingIndicator,
@@ -51,7 +52,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
-import { LinearProgress } from '@mui/material';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { flowResult } from 'mobx';
@@ -613,7 +613,7 @@ export const ServiceTestAssertEditor = observer(
                 </div>
               </div>
               <div className="service-test-editor__header__status">
-                <LinearProgress
+                <ProgressBar
                   className={`service-test-editor__progress-bar service-test-editor__progress-bar--${testState.testSuiteResult.toLowerCase()}`}
                   classes={{
                     bar: `service-test-editor__progress-bar__bar service-test-editor__progress-bar__bar--${testState.testSuiteResult.toLowerCase()}`,

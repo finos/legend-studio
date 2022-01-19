@@ -15,8 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { Dialog } from '@mui/material';
 import {
+  Dialog,
   type TreeNodeContainerProps,
   ResizablePanelGroup,
   ResizablePanel,

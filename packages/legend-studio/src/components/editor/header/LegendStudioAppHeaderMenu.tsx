@@ -16,9 +16,10 @@
 
 import { useState } from 'react';
 import {
+  clsx,
+  Dialog,
   ChevronDownIcon,
   ChevronUpIcon,
-  clsx,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
@@ -26,7 +27,6 @@ import {
   TimesIcon,
   BarsIcon,
 } from '@finos/legend-art';
-import { Dialog } from '@mui/material';
 import { useApplicationStore } from '@finos/legend-application';
 import type {
   SDLCServerOption,

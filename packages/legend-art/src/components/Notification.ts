@@ -14,22 +14,9 @@
  * limitations under the License.
  */
 
-import { LegendStyleProvider } from '@finos/legend-art';
-import { ActionAlert } from './ActionAlert';
-import { BlockingAlert } from './BlockingAlert';
-import { NotificationManager } from './NotificationManager';
-
-export const LegendApplicationComponentFrameworkProvider: React.FC<{
-  children: React.ReactNode;
-}> = (props) => {
-  const { children } = props;
-
-  return (
-    <LegendStyleProvider>
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationManager />
-      {children}
-    </LegendStyleProvider>
-  );
-};
+export {
+  Snackbar as Notification,
+  SnackbarContent as NotificationContent,
+  // TODO: do not expose this, only expose method like onDismiss, onClickaway, etc.
+  type SnackbarCloseReason as NotificationCloseReason,
+} from '@mui/material';

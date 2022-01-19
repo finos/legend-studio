@@ -15,10 +15,10 @@
  */
 
 import { Fragment, useState } from 'react';
-import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
+  Dialog,
   TimesIcon,
   WindowMaximizeIcon,
   EmptyWindowRestoreIcon,

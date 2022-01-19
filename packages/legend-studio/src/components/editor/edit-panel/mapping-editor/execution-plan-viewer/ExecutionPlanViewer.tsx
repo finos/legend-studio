@@ -16,6 +16,7 @@
 
 import { useState } from 'react';
 import {
+  Dialog,
   type TreeNodeContainerProps,
   type TreeData,
   type TreeNodeData,
@@ -32,7 +33,6 @@ import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { observer } from 'mobx-react-lite';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
-import { Dialog } from '@mui/material';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 import {
   type ExecutionPlan,

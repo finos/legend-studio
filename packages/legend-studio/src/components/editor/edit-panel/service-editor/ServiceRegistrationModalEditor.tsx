@@ -18,12 +18,12 @@ import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import {
   clsx,
+  Dialog,
   PanelLoadingIndicator,
   CustomSelectorInput,
   CheckSquareIcon,
   SquareIcon,
 } from '@finos/legend-art';
-import { Dialog } from '@mui/material';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceExecutionMode } from '@finos/legend-graph';

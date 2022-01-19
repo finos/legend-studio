@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
+  Dialog,
   CustomSelectorInput,
   CheckSquareIcon,
   SortDownIcon,
@@ -24,7 +25,6 @@ import {
   SquareIcon,
   TimesIcon,
 } from '@finos/legend-art';
-import { Dialog } from '@mui/material';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,

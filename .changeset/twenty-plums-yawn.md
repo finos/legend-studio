@@ -2,4 +2,4 @@
 '@finos/legend-application': minor
 ---
 
-Bundle `notification snackbar`, `blocking alert`, and `action alert` as well as `LegendStyleProvider` into `LegendApplicationComponentFrameworkProvider`.
+Rename `notification snackbar` to `notification manager`. Bundle `notification manager`, `blocking alert`, and `action alert` as well as `LegendStyleProvider` into `LegendApplicationComponentFrameworkProvider`.

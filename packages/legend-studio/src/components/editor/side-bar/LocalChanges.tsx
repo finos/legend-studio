@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
+  Dialog,
   PanelLoadingIndicator,
   TimesIcon,
   SyncIcon,
@@ -33,7 +34,6 @@ import type { EntityChange, EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import { Dialog } from '@mui/material';
 
 const PatchLoader = observer(() => {
   const editorStore = useEditorStore();

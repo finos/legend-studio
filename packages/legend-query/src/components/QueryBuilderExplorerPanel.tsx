@@ -19,7 +19,10 @@ import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
+  type TooltipPlacement,
+  Tooltip,
   clsx,
+  Dialog,
   TreeView,
   BlankPanelContent,
   DropdownMenu,
@@ -74,20 +77,19 @@ import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
-import { type TooltipProps, Dialog, Tooltip } from '@mui/material';
 
 const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
   path: string;
   isMapped: boolean;
   children: React.ReactElement;
-  placement: NonNullable<TooltipProps['placement']>;
+  placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { subclass, path, isMapped, children, placement } = props;
   return (
     <Tooltip
       arrow={true}
-      placement={placement}
+      {...(placement !== undefined ? { placement } : {})}
       classes={{
         tooltip: 'query-builder__tooltip',
         arrow: 'query-builder__tooltip__arrow',
@@ -595,7 +597,6 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     property={node.property}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
-                    placement="bottom"
                   >
                     <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
                       <InfoCircleIcon />
@@ -607,7 +608,6 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     subclass={node.subclass}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
-                    placement="bottom"
                   >
                     <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
                       <InfoCircleIcon />

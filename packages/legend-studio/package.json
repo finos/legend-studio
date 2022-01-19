@@ -47,7 +47,6 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@mui/material": "5.3.0",
     "@testing-library/react": "12.1.2",
     "@types/react": "17.0.38",
     "@types/react-dom": "17.0.11",

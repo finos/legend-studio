@@ -15,9 +15,8 @@
  */
 
 import { useEffect } from 'react';
-import { Dialog } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-art';
+import { clsx, Dialog } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
 import { flowResult } from 'mobx';

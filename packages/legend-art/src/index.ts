@@ -28,6 +28,7 @@ export * from './components/CustomSelectorInput';
 export * from './components/ComponentsConfiguration';
 export * from './components/ResizablePanel';
 
+export * from './components/dialog/Dialog';
 export * from './components/dialog/NonBlockingDialog';
 
 export * from './components/menu/MenuContent';
@@ -39,6 +40,16 @@ export * from './components/popover/BasePopoever';
 export * from './components/panel/BlankPanelContent';
 export * from './components/panel/BlankPanelPlaceholder';
 export * from './components/panel/PanelLoadingIndicator';
+
+export * from './components/ProgressBar';
+
+export * from './components/Tooltip';
+
+export * from './components/Notification';
+
+export * from './components/Backdrop';
+
+export * from './components/ClickAwayListener';
 
 export * from './components/LegendStyleProvider';
 

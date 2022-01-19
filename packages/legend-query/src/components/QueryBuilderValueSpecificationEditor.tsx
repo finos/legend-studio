@@ -18,6 +18,8 @@ import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
+  type TooltipPlacement,
+  Tooltip,
   CustomSelectorInput,
   InfoCircleIcon,
   PencilIcon,
@@ -51,20 +53,19 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import { type TooltipProps, Tooltip } from '@mui/material';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
   children: React.ReactElement;
-  placement: NonNullable<TooltipProps['placement']>;
+  placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { variable, children, placement } = props;
   const type = variable.genericType?.value.rawType;
   return (
     <Tooltip
       arrow={true}
-      placement={placement}
+      {...(placement !== undefined ? { placement } : {})}
       classes={{
         tooltip: 'query-builder__tooltip',
         arrow: 'query-builder__tooltip__arrow',
@@ -127,10 +128,7 @@ export const VariableExpressionParameterEditor = observer(
           <div className="query-builder-value-spec-editor__parameter__text">
             {varName}
           </div>
-          <QueryBuilderParameterInfoTooltip
-            variable={valueSpecification}
-            placement={'bottom'}
-          >
+          <QueryBuilderParameterInfoTooltip variable={valueSpecification}>
             <div className="query-builder-value-spec-editor__parameter__info">
               <InfoCircleIcon />
             </div>

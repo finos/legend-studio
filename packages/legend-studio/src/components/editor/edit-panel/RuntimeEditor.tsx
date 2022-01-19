@@ -26,12 +26,13 @@ import {
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
 import {
+  clsx,
+  Dialog,
   type TreeNodeContainerProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  clsx,
   TreeView,
   ContextMenu,
   CustomSelectorInput,
@@ -68,7 +69,6 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import { Dialog } from '@mui/material';
 import {
   buildElementOption,
   type PackageableElementOption,

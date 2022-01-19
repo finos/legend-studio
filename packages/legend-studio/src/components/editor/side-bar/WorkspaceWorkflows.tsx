@@ -19,9 +19,10 @@ import { observer } from 'mobx-react-lite';
 import {
   type TreeData,
   type TreeNodeContainerProps,
+  clsx,
+  Dialog,
   MenuContent,
   MenuContentItem,
-  clsx,
   PanelLoadingIndicator,
   TreeView,
   ContextMenu,
@@ -57,7 +58,6 @@ import {
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import { Dialog } from '@mui/material';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
 
 const getWorkflowStatusIcon = (

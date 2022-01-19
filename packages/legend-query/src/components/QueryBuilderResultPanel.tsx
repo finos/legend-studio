@@ -15,8 +15,8 @@
  */
 
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
-import { Dialog } from '@mui/material';
 import {
+  Dialog,
   BlankPanelContent,
   PanelLoadingIndicator,
   PlayIcon,

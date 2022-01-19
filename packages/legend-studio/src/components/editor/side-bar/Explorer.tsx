@@ -19,6 +19,7 @@ import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
   clsx,
+  Dialog,
   MenuContent,
   MenuContentItem,
   MenuContentItemBlankIcon,
@@ -62,7 +63,6 @@ import {
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
 import { toTitleCase } from '@finos/legend-shared';
-import { Dialog } from '@mui/material';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import {

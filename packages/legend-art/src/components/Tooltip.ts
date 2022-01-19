@@ -13,23 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { TooltipProps } from '@mui/material';
 
-import { LegendStyleProvider } from '@finos/legend-art';
-import { ActionAlert } from './ActionAlert';
-import { BlockingAlert } from './BlockingAlert';
-import { NotificationManager } from './NotificationManager';
-
-export const LegendApplicationComponentFrameworkProvider: React.FC<{
-  children: React.ReactNode;
-}> = (props) => {
-  const { children } = props;
-
-  return (
-    <LegendStyleProvider>
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationManager />
-      {children}
-    </LegendStyleProvider>
-  );
-};
+export type TooltipPlacement = NonNullable<TooltipProps['placement']>;
+export { Tooltip } from '@mui/material';

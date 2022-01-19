@@ -22,9 +22,10 @@ import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
 import {
   type ResizablePanelHandlerProps,
+  clsx,
+  Backdrop,
   buildReactHotkeysConfiguration,
   getControlledResizablePanelProps,
-  clsx,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -56,7 +57,6 @@ import {
   AppHeader,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
-import { Backdrop } from '@mui/material';
 
 export const EditorInner = observer(() => {
   const params = useParams<EditorPathParams | GroupEditorPathParams>();

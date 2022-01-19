@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Dialog } from '@mui/material';
+import { Dialog } from '@finos/legend-art';
 import {
   ActionAlertActionType,
   ActionAlertType,

@@ -20,7 +20,6 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
-import { Dialog } from '@mui/material';
 import { useCallback } from 'react';
 import {
   type Type,
@@ -49,7 +48,7 @@ import {
   buildElementOption,
   DATE_FORMAT,
 } from '@finos/legend-application';
-import { CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
+import { Dialog, CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
 

@@ -20,6 +20,7 @@ import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
   clsx,
+  ClickAwayListener,
   ContextMenu,
   DropdownMenu,
   MenuContent,
@@ -51,7 +52,6 @@ import {
   QueryBuilderFilterTreeBlankConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
 } from '../stores/QueryBuilderFilterState';
-import { ClickAwayListener } from '@mui/material';
 import {
   type DropTargetMonitor,
   useDragLayer,

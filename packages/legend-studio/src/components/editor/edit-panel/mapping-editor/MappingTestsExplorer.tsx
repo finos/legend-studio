@@ -26,6 +26,7 @@ import { MappingEditorState } from '../../../../stores/editor-state/element-edit
 import {
   clsx,
   ContextMenu,
+  ProgressBar,
   MdVerticalAlignBottom,
   AddIcon,
   PlayIcon,
@@ -37,7 +38,6 @@ import {
   EmptyStopCircleIcon,
   ExclamationCircleIcon,
 } from '@finos/legend-art';
-import { LinearProgress } from '@mui/material';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
@@ -444,7 +444,7 @@ export const MappingTestsExplorer = observer(
             </div>
           </div>
           <div className="mapping-test-explorer__header__status">
-            <LinearProgress
+            <ProgressBar
               className={`mapping-test-explorer__header__progress-bar mapping-test-explorer__header__progress-bar--${mappingEditorState.testSuiteResult.toLowerCase()}`}
               classes={{
                 bar: `mapping-test-explorer__header__progress-bar__bar mapping-test-explorer__header__progress-bar__bar--${mappingEditorState.testSuiteResult.toLowerCase()}`,

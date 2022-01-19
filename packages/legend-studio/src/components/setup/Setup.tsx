@@ -20,20 +20,20 @@ import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
 import {
   type SelectComponent,
-  CheckSquareIcon,
   clsx,
+  Dialog,
   SquareIcon,
   TimesIcon,
   compareLabelFn,
   CustomSelectorInput,
   PanelLoadingIndicator,
+  CheckSquareIcon,
   PencilIcon,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
-import { Dialog } from '@mui/material';
 import { isNumber } from '@finos/legend-shared';
 import {
   type SetupPathParams,

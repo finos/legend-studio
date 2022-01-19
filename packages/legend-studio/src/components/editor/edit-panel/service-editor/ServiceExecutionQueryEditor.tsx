@@ -20,8 +20,8 @@ import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import { Dialog } from '@mui/material';
 import {
+  Dialog,
   type SelectComponent,
   BlankPanelContent,
   ArrowCircleDownIcon,
