@@ -321,7 +321,7 @@ export const TEST__setUpEditor = async (
     .mockResolvedValue(availableImportDescriptions);
 
   // mock change detections (since we do not test them now)
-  mockedEditorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex =
+  mockedEditorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex =
     jest.fn();
   mockedEditorStore.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex =
     jest.fn();

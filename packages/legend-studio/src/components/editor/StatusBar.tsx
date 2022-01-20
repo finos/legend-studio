@@ -63,9 +63,11 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         ? ACTIVITY_MODE.CONFLICT_RESOLUTION
         : ACTIVITY_MODE.WORKSPACE_UPDATER,
     );
+  const goToLocalChanges = (): void =>
+    editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
   // Change Detection
   const changes =
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length;
   const configurationState = editorStore.projectConfigurationEditorState;
   const syncWithWorkspace = applicationStore.guaranteeSafeAction(() =>
@@ -79,7 +81,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       ? !editorStore.changeDetectionState.hasChangeDetectionStarted
         ? 'starting change detection...'
         : 'restarting change detection...'
-      : editorStore.changeDetectionState.workspaceLatestRevisionState
+      : editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .isBuildingEntityHashesIndex
       ? 'building indexes...'
       : editorStore.localChangesState.isSyncingWithWorkspace
@@ -102,7 +104,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       ? !editorStore.changeDetectionState.hasChangeDetectionStarted
         ? 'starting change detection...'
         : 'restarting change detection...'
-      : editorStore.changeDetectionState.workspaceLatestRevisionState
+      : editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .isBuildingEntityHashesIndex
       ? 'building indexes...'
       : editorStore.conflictResolutionState.isAcceptingConflictResolution
@@ -169,18 +171,31 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               {workspaceId}
             </Link>
           </div>
-          {editorStore.sdlcState.isWorkspaceOutdated && (
+          {editorStore.sdlcState.isWorkspaceOutOfSync && (
             <button
               className="editor__status-bar__workspace__status"
               tabIndex={-1}
-              onClick={goToWorkspaceUpdater}
+              onClick={goToLocalChanges}
               title={
-                'Workspace is outdated. Click to see project latest changes'
+                'Local workspace out of sync. Click to see incoming changes to your workspace.'
               }
             >
-              OUTDATED
+              OUT-OF-SYNC
             </button>
           )}
+          {editorStore.sdlcState.isWorkspaceOutdated &&
+            !editorStore.sdlcState.isWorkspaceOutOfSync && (
+              <button
+                className="editor__status-bar__workspace__status"
+                tabIndex={-1}
+                onClick={goToWorkspaceUpdater}
+                title={
+                  'Workspace is outdated. Click to see latest changes of the project'
+                }
+              >
+                WORKSPACE OUTDATED
+              </button>
+            )}
         </div>
       </div>
       <div
@@ -235,7 +250,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                 !changes ||
                 configurationState.isUpdatingConfiguration ||
                 editorStore.localChangesState.isSyncingWithWorkspace ||
-                editorStore.changeDetectionState.workspaceLatestRevisionState
+                editorStore.changeDetectionState
+                  .workspaceLocalLatestRevisionState
                   .isBuildingEntityHashesIndex ||
                 actionsDisabled
               }

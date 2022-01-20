@@ -73,7 +73,7 @@ export const ActivityBar = observer(() => {
       editorStore.setActiveActivity(activity);
   // local changes
   const localChanges =
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length;
   const localChangesDisplayLabel = localChanges > 99 ? '99+' : localChanges;
   const localChangesIndicatorStatusIcon =
@@ -81,7 +81,7 @@ export const ActivityBar = observer(() => {
     editorStore.changeDetectionState.forcedStop ? (
       <div />
     ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
-      editorStore.changeDetectionState.workspaceLatestRevisionState
+      editorStore.changeDetectionState.workspaceLocalLatestRevisionState
         .isBuildingEntityHashesIndex ||
       editorStore.localChangesState.isSyncingWithWorkspace ? (
       <div
@@ -138,7 +138,7 @@ export const ActivityBar = observer(() => {
   ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
     editorStore.changeDetectionState.workspaceBaseRevisionState
       .isBuildingEntityHashesIndex ||
-    editorStore.changeDetectionState.workspaceLatestRevisionState
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState
       .isBuildingEntityHashesIndex ? (
     <div />
   ) : (
@@ -178,7 +178,7 @@ export const ActivityBar = observer(() => {
       icon: <ListIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.CHANGES,
+      mode: ACTIVITY_MODE.LOCAL_CHANGES,
       title: 'Local Changes (Ctrl + Shift + G)',
       info: localChanges ? `${localChanges} unsynced changes` : undefined,
       icon: (

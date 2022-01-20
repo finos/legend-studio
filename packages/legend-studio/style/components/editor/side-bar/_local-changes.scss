@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@use 'mixins' as *;
+
 .local-changes {
   &__header__title {
     width: calc(100% - 8.9rem);
@@ -33,5 +35,22 @@
 
   &__sync-btn--loading svg {
     animation: spin 1s infinite ease;
+  }
+
+  &__revision {
+    @include ellipsisTextOverflow;
+
+    color: var(--color-dark-grey-500);
+    text-decoration: none;
+  }
+
+  &__revision__name {
+    color: var(--color-light-grey-400);
+  }
+
+  &__revision__info {
+    margin-left: 1rem;
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-500);
   }
 }

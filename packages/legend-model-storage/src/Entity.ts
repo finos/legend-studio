@@ -18,4 +18,14 @@ export class Entity {
   classifierPath!: string;
   path!: string;
   content!: Record<PropertyKey, unknown>;
+
+  constructor(
+    classifierPath: string,
+    path: string,
+    content: Record<PropertyKey, unknown>,
+  ) {
+    this.classifierPath = classifierPath;
+    this.path = path;
+    this.content = content;
+  }
 }

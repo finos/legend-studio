@@ -44,6 +44,8 @@ import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state
 import type { Entity } from '@finos/legend-model-storage';
 import { EntityDiff, EntityChange, Revision } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { WorkspaceSyncState } from './WorkspaceSyncState';
+import { ACTIVITY_MODE } from '../EditorConfig';
 
 class PatchLoaderState {
   editorStore: EditorStore;
@@ -132,8 +134,21 @@ class PatchLoaderState {
 
   *applyChanges(): GeneratorFn<void> {
     if (this.changes?.length) {
-      this.editorStore.graphState.loadEntityChangesToGraph(this.changes);
-      this.closeModal();
+      try {
+        const changes = this.changes;
+        this.closeModal();
+        yield flowResult(
+          this.editorStore.graphState.loadEntityChangesToGraph(
+            changes,
+            undefined,
+          ),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.editorStore.applicationStore.notifyError(
+          `Can't apply patch changes: Error: ${error.message}`,
+        );
+      }
     }
   }
 }
@@ -142,6 +157,7 @@ export class LocalChangesState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
   isSyncingWithWorkspace = false;
+  workspaceSyncState: WorkspaceSyncState;
   isRefreshingLocalChangesDetector = false;
   patchLoaderState: PatchLoaderState;
 
@@ -155,6 +171,7 @@ export class LocalChangesState {
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
     this.patchLoaderState = new PatchLoaderState(editorStore, sdlcState);
+    this.workspaceSyncState = new WorkspaceSyncState(editorStore, sdlcState);
   }
 
   openLocalChange(diff: EntityDiff): void {
@@ -162,7 +179,7 @@ export class LocalChangesState {
       entityPath: string | undefined,
     ): Entity | undefined =>
       entityPath
-        ? this.editorStore.changeDetectionState.workspaceLatestRevisionState.entities.find(
+        ? this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
             (e) => e.path === entityPath,
           )
         : undefined;
@@ -187,13 +204,13 @@ export class LocalChangesState {
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)
       ? guaranteeNonNullable(
           fromEntityGetter(diff.getValidatedOldPath()),
-          `Can't find element entity '${diff.oldPath}'`,
+          `Can't find entity with path '${diff.oldPath}'`,
         )
       : undefined;
     const toEntity = EntityDiff.shouldNewEntityExist(diff)
       ? guaranteeNonNullable(
           toEntityGetter(diff.getValidatedNewPath()),
-          `Can't find element entity '${diff.newPath}'`,
+          `Can't find entity with path  '${diff.newPath}'`,
         )
       : undefined;
     this.editorStore.openEntityDiff(
@@ -293,6 +310,42 @@ export class LocalChangesState {
     if (!localChanges.length) {
       return;
     }
+    yield flowResult(
+      this.sdlcState.fetchWorkspaceLatestRevision(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
+      ),
+    );
+    if (this.sdlcState.isWorkspaceOutOfSync) {
+      this.editorStore.setActionAltertInfo({
+        message: 'Local workspace is out-of-sync',
+        prompt:
+          'Please update your local workspace to workspace HEAD revision before syncing.',
+        type: ActionAlertType.CAUTION,
+        onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
+        onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
+        actions: [
+          {
+            label: 'Update',
+            type: ActionAlertActionType.STANDARD,
+            default: true,
+            handler: (): void => {
+              this.editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
+              flowResult(
+                this.editorStore.localChangesState.workspaceSyncState.updateToWorkspaceLatestRevision(),
+              ).catch(
+                this.editorStore.applicationStore.alertIllegalUnhandledError,
+              );
+            },
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          },
+        ],
+      });
+      return;
+    }
     this.isSyncingWithWorkspace = true;
     const currentHashesIndex =
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
@@ -317,6 +370,7 @@ export class LocalChangesState {
         )) as PlainObject<Revision>,
       );
       this.sdlcState.setCurrentRevision(latestRevision); // update current revision to the latest
+      this.sdlcState.setWorkspaceLatestRevision(latestRevision);
       const syncFinishedTime = Date.now();
 
       this.editorStore.applicationStore.log.info(
@@ -338,11 +392,11 @@ export class LocalChangesState {
             this.sdlcState.activeWorkspace,
             latestRevision.id,
           )) as Entity[];
-        this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
+        this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
           entities,
         );
         yield flowResult(
-          this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+          this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
             entities,
             LogEvent.create(
               CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
@@ -381,10 +435,10 @@ export class LocalChangesState {
                 label: 'Use local hashes index',
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void => {
-                  this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
+                  this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntityHashesIndex(
                     currentHashesIndex,
                   );
-                  this.editorStore.changeDetectionState.workspaceLatestRevisionState.setIsBuildingEntityHashesIndex(
+                  this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setIsBuildingEntityHashesIndex(
                     false,
                   );
                 },

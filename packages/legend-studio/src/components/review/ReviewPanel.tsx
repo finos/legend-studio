@@ -178,7 +178,7 @@ export const ReviewPanel = observer(() => {
         </div>
       </ContextMenu>
       <div className="panel__content review-panel__content">
-        <EntityDiffView />
+        <EntityDiffView entityDiffViewState={currentEditorState} />
       </div>
     </div>
   );

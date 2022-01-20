@@ -147,7 +147,12 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Grammar -------------------------------------------
 
   abstract graphToPureCode(graph: PureModel): Promise<string>;
-  abstract pureCodeToEntities(code: string): Promise<Entity[]>;
+  abstract pureCodeToEntities(
+    code: string,
+    options?: {
+      TEMPORARY__keepSectionIndex?: boolean;
+    },
+  ): Promise<Entity[]>;
   abstract entitiesToPureCode(entities: Entity[]): Promise<string>;
   abstract pureCodeToLambda(
     lambda: string,

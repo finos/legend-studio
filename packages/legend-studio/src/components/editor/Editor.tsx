@@ -57,6 +57,7 @@ import {
   AppHeader,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
+import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver';
 
 export const EditorInner = observer(() => {
   const params = useParams<EditorPathParams | GroupEditorPathParams>();
@@ -174,7 +175,7 @@ export const EditorInner = observer(() => {
   const [confirmedAllowNavigation, setConfirmedAllowNavigation] =
     useStateWithCallback<boolean>(false, retryBlockedLocation);
   const onNavigationChangeIndicator = Boolean(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length,
   );
   const handleRouteNavigationBlocking = (nextLocation: Location): boolean => {
@@ -310,6 +311,10 @@ export const EditorInner = observer(() => {
             {extraEditorExtensionComponents}
             <StatusBar actionsDisabled={!editable} />
             {editable && <ProjectSearchCommand />}
+            {editorStore.localChangesState.workspaceSyncState
+              .workspaceSyncConflictResolutionState.showModal && (
+              <WorkspaceSyncConflictResolver />
+            )}
           </GlobalHotKeys>
         </div>
       </div>

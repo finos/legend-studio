@@ -16,6 +16,7 @@
 
 import { Entity } from '@finos/legend-model-storage';
 import { UnsupportedOperationError } from '@finos/legend-shared';
+import type { EntityDiff } from '../comparison/EntityDiff';
 import { type EntityChange, EntityChangeType } from './EntityChange';
 
 export const applyEntityChanges = (
@@ -44,10 +45,11 @@ export const applyEntityChanges = (
         case EntityChangeType.CREATE:
           {
             if (!entities.find((e) => e.path === change.entityPath)) {
-              const entity = new Entity();
-              entity.content = change.content ?? {};
-              entity.path = change.entityPath;
-              entity.classifierPath = change.classifierPath ?? '';
+              const entity = new Entity(
+                change.classifierPath ?? '',
+                change.entityPath,
+                change.content ?? {},
+              );
               entities.push(entity);
             }
           }
@@ -68,4 +70,56 @@ export const applyEntityChanges = (
       }
     });
   return entities;
+};
+
+export const convertEntityDiffsToEntityChanges = (
+  diffs: EntityDiff[],
+  toEntityGetter: (entityPath: string | undefined) => Entity | undefined,
+): EntityChange[] => {
+  const entityChanges: EntityChange[] = [];
+  diffs.forEach((diff) => {
+    switch (diff.entityChangeType) {
+      case EntityChangeType.DELETE:
+        entityChanges.push({
+          type: diff.entityChangeType,
+          entityPath: diff.entityPath,
+        });
+        break;
+      case EntityChangeType.CREATE:
+      case EntityChangeType.MODIFY:
+        {
+          const entity = toEntityGetter(diff.entityPath);
+          if (entity) {
+            entityChanges.push({
+              type: diff.entityChangeType,
+              entityPath: entity.path,
+              content: entity.content,
+            });
+          }
+        }
+        break;
+      case EntityChangeType.RENAME:
+        {
+          const entity = toEntityGetter(diff.entityPath);
+          if (entity) {
+            entityChanges.push({
+              type: EntityChangeType.DELETE,
+              entityPath: diff.oldPath ?? '',
+            });
+            entityChanges.push({
+              type: EntityChangeType.CREATE,
+              entityPath: entity.path,
+              content: entity.content,
+            });
+          }
+        }
+        break;
+      default:
+        throw new UnsupportedOperationError(
+          `Can't convert entity diff to entity change`,
+          diff,
+        );
+    }
+  });
+  return entityChanges;
 };

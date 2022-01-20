@@ -303,9 +303,19 @@ export const EditPanel = observer(() => {
           return null;
       }
     } else if (currentEditorState instanceof EntityDiffViewState) {
-      return <EntityDiffView key={currentEditorState.uuid} />;
+      return (
+        <EntityDiffView
+          key={currentEditorState.uuid}
+          entityDiffViewState={currentEditorState}
+        />
+      );
     } else if (currentEditorState instanceof EntityChangeConflictEditorState) {
-      return <EntityChangeConflictEditor key={currentEditorState.uuid} />;
+      return (
+        <EntityChangeConflictEditor
+          key={currentEditorState.uuid}
+          conflictEditorState={currentEditorState}
+        />
+      );
     } else if (currentEditorState instanceof FileGenerationViewerState) {
       return <FileGenerationViewer key={currentEditorState.uuid} />;
     } else if (currentEditorState instanceof ModelLoaderState) {

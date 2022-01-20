@@ -275,8 +275,15 @@ export class SDLCServerClient extends AbstractServerClient {
   getRevisions = (
     projectId: string,
     workspace: Workspace | undefined,
+    since: Date | undefined,
+    until: Date | undefined,
   ): Promise<PlainObject<Revision>[]> =>
-    this.get(this._revisions(projectId, workspace));
+    this.get(
+      this._revisions(projectId, workspace),
+      {},
+      {},
+      { since: since?.toISOString(), until: until?.toISOString() },
+    );
   getRevision = (
     projectId: string,
     workspace: Workspace | undefined,

@@ -55,6 +55,7 @@ export class EditorSDLCState {
   editorStore: EditorStore;
   currentProject?: Project | undefined;
   currentWorkspace?: Workspace | undefined;
+  workspaceLatestRevision?: Revision | undefined;
   currentRevision?: Revision | undefined;
   isWorkspaceOutdated = false;
   workspaceWorkflows: Workflow[] = [];
@@ -69,6 +70,7 @@ export class EditorSDLCState {
       setCurrentProject: action,
       setCurrentWorkspace: action,
       setCurrentRevision: action,
+      setWorkspaceLatestRevision: action,
     });
 
     this.editorStore = editorStore;
@@ -99,6 +101,20 @@ export class EditorSDLCState {
     );
   }
 
+  get activeWorkspaceLatestRevision(): Revision {
+    return guaranteeNonNullable(
+      this.workspaceLatestRevision,
+      `Active workspace latest revision has not been properly set`,
+    );
+  }
+
+  get isWorkspaceOutOfSync(): boolean {
+    return Boolean(
+      this.workspaceLatestRevision &&
+        this.activeWorkspaceLatestRevision.id !== this.activeRevision.id,
+    );
+  }
+
   setCurrentProject = (val: Project): void => {
     this.currentProject = val;
   };
@@ -107,6 +123,10 @@ export class EditorSDLCState {
   };
   setCurrentRevision = (val: Revision): void => {
     this.currentRevision = val;
+  };
+
+  setWorkspaceLatestRevision = (val: Revision): void => {
+    this.workspaceLatestRevision = val;
   };
 
   *fetchCurrentProject(
@@ -195,12 +215,15 @@ export class EditorSDLCState {
     )) as boolean;
   }
 
-  *fetchCurrentRevision(
+  *fetchWorkspaceLatestRevision(
     projectId: string,
     workspace: Workspace,
   ): GeneratorFn<void> {
     try {
-      this.currentRevision = Revision.serialization.fromJson(
+      this.editorStore.localChangesState.workspaceSyncState.setIncomingRevisions(
+        [],
+      );
+      const latestRevision = Revision.serialization.fromJson(
         this.editorStore.isInConflictResolutionMode
           ? ((yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
               projectId,
@@ -213,6 +236,40 @@ export class EditorSDLCState {
               RevisionAlias.CURRENT,
             )) as PlainObject<Revision>),
       );
+      this.setWorkspaceLatestRevision(latestRevision);
+      if (this.isWorkspaceOutOfSync) {
+        this.editorStore.localChangesState.workspaceSyncState.fetchIncomingRevisions();
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+    }
+  }
+
+  *fetchCurrentRevision(
+    projectId: string,
+    workspace: Workspace,
+  ): GeneratorFn<void> {
+    try {
+      const currentRevision = Revision.serialization.fromJson(
+        this.editorStore.isInConflictResolutionMode
+          ? ((yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
+              projectId,
+              workspace,
+              RevisionAlias.CURRENT,
+            )) as PlainObject<Revision>)
+          : ((yield this.editorStore.sdlcServerClient.getRevision(
+              projectId,
+              workspace,
+              RevisionAlias.CURRENT,
+            )) as PlainObject<Revision>),
+      );
+      this.setCurrentRevision(currentRevision);
+      this.setWorkspaceLatestRevision(currentRevision);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -295,11 +352,11 @@ export class EditorSDLCState {
             RevisionAlias.CURRENT,
           )) as Entity[];
       }
-      this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
+      this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
         entities,
       );
       yield flowResult(
-        this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+        this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
             CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,

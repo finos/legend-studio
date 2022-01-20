@@ -136,6 +136,7 @@ import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import type { EditorMode } from './editor/EditorMode';
 import { StandardEditorMode } from './editor/StandardEditorMode';
+import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -181,7 +182,7 @@ export class EditorStore {
   workspaceUpdaterState: WorkspaceUpdaterState;
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
-  conflictResolutionState: ConflictResolutionState;
+  conflictResolutionState: WorkspaceUpdateConflictResolutionState;
   devToolState: DevToolState;
 
   private _isDisposed = false;
@@ -293,7 +294,7 @@ export class EditorStore {
     );
     this.workspaceReviewState = new WorkspaceReviewState(this, this.sdlcState);
     this.localChangesState = new LocalChangesState(this, this.sdlcState);
-    this.conflictResolutionState = new ConflictResolutionState(
+    this.conflictResolutionState = new WorkspaceUpdateConflictResolutionState(
       this,
       this.sdlcState,
     );
@@ -389,7 +390,7 @@ export class EditorStore {
         LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
         [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
         this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.CHANGES),
+          this.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES),
         ),
       ),
       new HotkeyConfiguration(
@@ -415,7 +416,8 @@ export class EditorStore {
       Boolean(
         this.sdlcState.currentProject &&
           this.sdlcState.currentWorkspace &&
-          this.sdlcState.currentRevision,
+          this.sdlcState.currentRevision &&
+          this.sdlcState.workspaceLatestRevision,
       ) && this.graphManagerState.systemModel.buildState.hasSucceeded
     );
   }
@@ -427,7 +429,8 @@ export class EditorStore {
   }
   get hasUnsyncedChanges(): boolean {
     return Boolean(
-      this.changeDetectionState.workspaceLatestRevisionState.changes.length,
+      this.changeDetectionState.workspaceLocalLatestRevisionState.changes
+        .length,
     );
   }
 
@@ -778,7 +781,7 @@ export class EditorStore {
     ]);
   }
 
-  *buildGraph(): GeneratorFn<void> {
+  *buildGraph(graphEntities?: Entity[]): GeneratorFn<void> {
     const startTime = Date.now();
     let entities: Entity[];
     let projectConfiguration: PlainObject<ProjectConfiguration>;
@@ -796,6 +799,10 @@ export class EditorStore {
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];
+      // NOTE: if graph entities are provided, we will use that to build the graph.
+      // We use this method as a way to fully reset the application with the entities, but we still use
+      // the workspace entities for hashing as those are the base entities.
+      entities = result[0];
       projectConfiguration = result[1];
       this.projectConfigurationEditorState.setProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(projectConfiguration),
@@ -804,7 +811,7 @@ export class EditorStore {
       this.projectConfigurationEditorState.setOriginalProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(projectConfiguration),
       );
-      this.changeDetectionState.workspaceLatestRevisionState.setEntities(
+      this.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
         entities,
       );
       this.applicationStore.log.info(
@@ -818,7 +825,7 @@ export class EditorStore {
 
     try {
       const graphBuilderReport = (yield flowResult(
-        this.graphState.buildGraph(entities),
+        this.graphState.buildGraph(graphEntities ?? entities),
       )) as GraphBuilderReport;
 
       if (graphBuilderReport.error) {
@@ -827,7 +834,7 @@ export class EditorStore {
           GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE
         ) {
           yield flowResult(
-            this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+            this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
               entities,
               LogEvent.create(
                 CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
@@ -842,7 +849,7 @@ export class EditorStore {
       this.changeDetectionState.stop();
       yield Promise.all([
         this.graphManagerState.precomputeHashes(), // for local changes detection
-        this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+        this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
             CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
