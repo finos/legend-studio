@@ -24,7 +24,7 @@ import {
 } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
-import { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-model-storage';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -77,8 +77,10 @@ class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionSta
       currentDiffEditorState: observable,
       openMergedEditorStates: observable,
       openConflict: action,
+      openConflictState: action,
       closeConflict: action,
       resolveConflict: action,
+      openState: action,
       markConflictAsResolved: flow,
       showModal: observable,
       setShowModal: action,
@@ -172,7 +174,7 @@ class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionSta
       (state) => state.entityPath === conflict.entityPath,
     );
     if (existingMergeEditorState) {
-      this.editorStore.openEntityChangeConflict(existingMergeEditorState);
+      this.openEntityChangeConflict(existingMergeEditorState);
       return;
     }
     const baseEntityGetter = (
@@ -416,7 +418,7 @@ export class WorkspaceSyncState {
           this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
           this.sdlcState.activeRevision.committedAt,
-          this.sdlcState.activeWorkspaceLatestRevision.committedAt,
+          this.sdlcState.activeRemoteWorkspaceRevision.committedAt,
         )) as PlainObject<Revision>[]
       ).map((e) => Revision.serialization.fromJson(e));
       this.setIncomingRevisions(
@@ -441,7 +443,7 @@ export class WorkspaceSyncState {
           .changes;
       let conflicts: EntityChangeConflict[] = [];
       const workspaceLatestRevision =
-        this.sdlcState.activeWorkspaceLatestRevision;
+        this.sdlcState.activeRemoteWorkspaceRevision;
       const workspaceLatestEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
           this.sdlcState.activeProject.projectId,
@@ -511,7 +513,7 @@ export class WorkspaceSyncState {
               type: ActionAlertActionType.STANDARD,
             },
             {
-              label: 'Force update',
+              label: 'Force push',
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void => {
                 flowResult(this.forceUpdateRevision()).catch(
@@ -538,7 +540,7 @@ export class WorkspaceSyncState {
 
   *synWithHeadAndLoadChanges(changes: EntityChange[]): GeneratorFn<void> {
     this.editorStore.sdlcState.setCurrentRevision(
-      this.sdlcState.activeWorkspaceLatestRevision,
+      this.sdlcState.activeRemoteWorkspaceRevision,
     );
     const entities =
       this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState
@@ -560,7 +562,11 @@ export class WorkspaceSyncState {
       this.editorStore.graphState.loadEntityChangesToGraph(
         changes,
         // we create new entities to not override the initial entities on `workspaceLatestRevisionState` used for change detection
-        entities.map((e) => new Entity(e.classifierPath, e.path, e.content)),
+        entities.map((e) => ({
+          classifierPath: e.classifierPath,
+          path: e.path,
+          content: e.content,
+        })),
       ),
     );
   }

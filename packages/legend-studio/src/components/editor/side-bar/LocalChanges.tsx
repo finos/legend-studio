@@ -20,7 +20,6 @@ import {
   Dialog,
   PanelLoadingIndicator,
   TimesIcon,
-  SyncIcon,
   RefreshIcon,
   InfoCircleIcon,
   DownloadIcon,
@@ -30,6 +29,7 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  CloudUploadIcon,
 } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
@@ -243,16 +243,16 @@ export const LocalChanges = observer(() => {
               editorStore.workspaceUpdaterState.isUpdatingWorkspace
             }
             tabIndex={-1}
-            title="Sync with workspace (Ctrl + S)"
+            title="Push local changes (Ctrl + S)"
           >
-            <SyncIcon />
+            <CloudUploadIcon />
           </button>
           <button
             className="panel__header__action side-bar__header__action workspace-updater__update-btn"
             onClick={pullRemoteWorkspace}
             disabled={
               isDispatchingAction ||
-              !sdlcState.workspaceLatestRevision ||
+              !sdlcState.remoteWorkspaceRevision ||
               !sdlcState.isWorkspaceOutOfSync
             }
             tabIndex={-1}

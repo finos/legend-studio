@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.workspace-revision-updater {
+.workspace-sync-conflict-resolver {
   height: 100%;
   width: 100%;
 
@@ -85,6 +85,32 @@
     color: var(--color-light-grey-400);
     background: var(--color-dark-grey-80);
     border-right: 0.1rem solid var(--color-dark-grey-80);
+  }
+
+  &__header__tab__label {
+    color: inherit;
+    padding: 0 0.5rem;
+    white-space: nowrap;
+  }
+
+  &__header__tab__close-btn {
+    visibility: hidden;
+
+    @include flexVCenter;
+
+    svg {
+      color: var(--color-light-grey-200);
+      font-size: 1.2rem;
+    }
+  }
+
+  &__header__tab--active svg {
+    color: var(--color-light-grey-100);
+  }
+
+  &__header__tab--active &__header__tab__close-btn,
+  &__header__tab:hover &__header__tab__close-btn {
+    visibility: visible;
   }
 
   &__header__tab--active {

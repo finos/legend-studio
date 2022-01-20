@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-export class Entity {
-  classifierPath!: string;
-  path!: string;
-  content!: Record<PropertyKey, unknown>;
-
-  constructor(
-    classifierPath: string,
-    path: string,
-    content: Record<PropertyKey, unknown>,
-  ) {
-    this.classifierPath = classifierPath;
-    this.path = path;
-    this.content = content;
-  }
+export interface Entity {
+  classifierPath: string;
+  path: string;
+  content: Record<PropertyKey, unknown>;
 }

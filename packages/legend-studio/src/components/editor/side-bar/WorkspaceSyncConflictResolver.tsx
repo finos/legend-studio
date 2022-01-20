@@ -25,6 +25,7 @@ import {
   ResizablePanelSplitterLine,
   InfoCircleIcon,
   TimesIcon,
+  Dialog,
 } from '@finos/legend-art';
 import type {
   EntityChangeConflict,
@@ -43,15 +44,12 @@ import {
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { flowResult } from 'mobx';
-import { Dialog } from '@mui/material';
 
 export const WorkspaceSyncConflictResolver = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = editorStore.applicationStore;
-  const updateState =
-    editorStore.localChangesState.workspaceSyncState;
-  const updateConflictState =
-    updateState.workspaceSyncConflictResolutionState;
+  const updateState = editorStore.localChangesState.workspaceSyncState;
+  const updateConflictState = updateState.workspaceSyncConflictResolutionState;
   const currentDiffEditorState = updateConflictState.currentDiffEditorState;
   const openMergedEditorStates = updateConflictState.openMergedEditorStates;
   const conflicts = updateConflictState.pendingConflicts;
@@ -111,9 +109,9 @@ export const WorkspaceSyncConflictResolver = observer(() => {
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={350} minSize={350}>
               <div className="panel explorer">
-                <div className="panel__header workspace-revision-updater__changes__header">
+                <div className="panel__header workspace-sync-conflict-resolver__changes__header">
                   <div className="panel__header__title">
-                    <div className="panel__header__title__content workspace-revision-updater__changes__header__title__content">
+                    <div className="panel__header__title__content workspace-sync-conflict-resolver__changes__header__title__content">
                       All Changes
                     </div>
                   </div>
@@ -121,20 +119,20 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                 <div className="panel__content explorer__content__container">
                   <ResizablePanelGroup orientation="horizontal">
                     <ResizablePanel size={600} minSize={28}>
-                      <div className="panel workspace-revision-updater__changes__panel">
+                      <div className="panel workspace-sync-conflict-resolver__changes__panel">
                         <div className="panel__header">
                           <div className="panel__header__title">
                             <div className="panel__header__title__content">
                               PENDING CONFLICTS
                             </div>
                             <div
-                              className="workspace-revision-updater__changes__panel__title__info"
+                              className="workspace-sync-conflict-resolver__changes__panel__title__info"
                               title="All local changes that have not been yet synced with the server"
                             >
                               <InfoCircleIcon />
                             </div>
                           </div>
-                          <div className="workspace-revision-updater__changes__panel__header__changes-count">
+                          <div className="workspace-sync-conflict-resolver__changes__panel__header__changes-count">
                             {conflicts.length}
                           </div>
                         </div>
@@ -159,20 +157,20 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                       <ResizablePanelSplitterLine color="var(--color-dark-grey-100)" />
                     </ResizablePanelSplitter>
                     <ResizablePanel minSize={20}>
-                      <div className="panel workspace-revision-updater__changes__panel">
+                      <div className="panel workspace-sync-conflict-resolver__changes__panel">
                         <div className="panel__header">
                           <div className="panel__header__title">
                             <div className="panel__header__title__content">
                               RESOLVED CHANGES
                             </div>
                             <div
-                              className="workspace-revision-updater__changes__panel__title__info"
+                              className="workspace-sync-conflict-resolver__changes__panel__title__info"
                               title="All committed reviews in the project since the revision the workspace is created"
                             >
                               <InfoCircleIcon />
                             </div>
                           </div>
-                          <div className="workspace-revision-updater__changes__panel__header__changes-count">
+                          <div className="workspace-sync-conflict-resolver__changes__panel__header__changes-count">
                             {changes.length}
                           </div>
                         </div>
@@ -199,37 +197,39 @@ export const WorkspaceSyncConflictResolver = observer(() => {
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel>
-              <div className="workspace-revision-updater">
-                <div className="panel__header workspace-revision-updater__header">
-                  <div className="workspace-revision-updater__header__tabs">
-                    {openMergedEditorStates.map((editorState) => (
+              <div className="workspace-sync-conflict-resolver">
+                <div className="workspace-sync-conflict-resolver__header">
+                  <div className="workspace-sync-conflict-resolver__header__tabs">
+                    {openMergedEditorStates.map((mergedState) => (
                       <div
-                        key={editorState.uuid}
+                        key={mergedState.uuid}
                         className={clsx(
-                          'workspace-revision-updater__header__tab',
+                          'workspace-sync-conflict-resolver__header__tab',
                           {
-                            'workspace-revision-updaterl__header__tab--active':
-                              editorState === currentDiffEditorState,
+                            'workspace-sync-conflict-resolver__header__tab--active':
+                              mergedState === currentDiffEditorState,
                           },
                         )}
-                        onMouseUp={closeTabOnMiddleClick(editorState)}
+                        onMouseUp={closeTabOnMiddleClick(mergedState)}
                       >
-                        <button
-                          className="workspace-revision-updater__header__tab__label"
-                          tabIndex={-1}
-                          onClick={openTab(editorState)}
-                          title={editorState.headerName}
-                        >
-                          {editorState.headerName}
-                        </button>
-                        <button
-                          className="workspace-revision-updater__header__tab__close-btn"
-                          onClick={closeTab(editorState)}
-                          tabIndex={-1}
-                          title={'Close'}
-                        >
-                          <TimesIcon />
-                        </button>
+                        <div className="edit-panel__header__tab__content">
+                          <button
+                            className="workspace-sync-conflict-resolver__header__tab__label"
+                            tabIndex={-1}
+                            onClick={openTab(mergedState)}
+                            title={mergedState.headerName}
+                          >
+                            {mergedState.headerName}
+                          </button>
+                          <button
+                            className="workspace-sync-conflict-resolver__header__tab__close-btn"
+                            onClick={closeTab(mergedState)}
+                            tabIndex={-1}
+                            title={'Close'}
+                          >
+                            <TimesIcon />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -26,6 +26,7 @@ import {
   TerminalIcon,
   HackerIcon,
   BrushIcon,
+  CloudUploadIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
@@ -70,7 +71,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length;
   const configurationState = editorStore.projectConfigurationEditorState;
-  const syncWithWorkspace = applicationStore.guaranteeSafeAction(() =>
+  const pushLocalChanges = applicationStore.guaranteeSafeAction(() =>
     flowResult(editorStore.localChangesState.syncWithWorkspace()),
   );
   const syncStatusText =
@@ -91,6 +92,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       : changes
       ? `${changes} unsynced changes`
       : 'synced with workspace';
+  const workspaceOutOfSync =
+    !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
   // Conflict resolution
   const conflicts = editorStore.conflictResolutionState.conflicts.length;
   const acceptConflictResolution = applicationStore.guaranteeSafeAction(() =>
@@ -171,7 +174,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               {workspaceId}
             </Link>
           </div>
-          {editorStore.sdlcState.isWorkspaceOutOfSync && (
+          {workspaceOutOfSync && (
             <button
               className="editor__status-bar__workspace__status"
               tabIndex={-1}
@@ -183,19 +186,18 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               OUT-OF-SYNC
             </button>
           )}
-          {editorStore.sdlcState.isWorkspaceOutdated &&
-            !editorStore.sdlcState.isWorkspaceOutOfSync && (
-              <button
-                className="editor__status-bar__workspace__status"
-                tabIndex={-1}
-                onClick={goToWorkspaceUpdater}
-                title={
-                  'Workspace is outdated. Click to see latest changes of the project'
-                }
-              >
-                WORKSPACE OUTDATED
-              </button>
-            )}
+          {editorStore.sdlcState.isWorkspaceOutdated && !workspaceOutOfSync && (
+            <button
+              className="editor__status-bar__workspace__status"
+              tabIndex={-1}
+              onClick={goToWorkspaceUpdater}
+              title={
+                'Workspace is outdated. Click to see latest changes of the project'
+              }
+            >
+              WORKSPACE OUTDATED
+            </button>
+          )}
         </div>
       </div>
       <div
@@ -245,7 +247,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                   editorStore.localChangesState.isSyncingWithWorkspace ||
                   configurationState.isUpdatingConfiguration,
               })}
-              onClick={syncWithWorkspace}
+              onClick={pushLocalChanges}
               disabled={
                 !changes ||
                 configurationState.isUpdatingConfiguration ||
@@ -256,9 +258,9 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                 actionsDisabled
               }
               tabIndex={-1}
-              title={'Sync with workspace (Ctrl + S)'}
+              title={'Push local changes (Ctrl + S)'}
             >
-              <SyncIcon />
+              <CloudUploadIcon />
             </button>
           </div>
         )}

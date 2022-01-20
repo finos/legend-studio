@@ -228,7 +228,6 @@ export const EditorInner = observer(() => {
       message={handleRouteNavigationBlocking}
     />
   );
-
   return (
     <div className="app__page">
       <AppHeader>

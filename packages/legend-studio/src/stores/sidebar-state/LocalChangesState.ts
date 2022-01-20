@@ -318,15 +318,14 @@ export class LocalChangesState {
     );
     if (this.sdlcState.isWorkspaceOutOfSync) {
       this.editorStore.setActionAltertInfo({
-        message: 'Local workspace is out-of-sync',
-        prompt:
-          'Please update your local workspace to workspace HEAD revision before syncing.',
+        message: 'Local workspace out-of-sync',
+        prompt: 'Please pull remote changes before pushing your local changes.',
         type: ActionAlertType.CAUTION,
         onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
         onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
         actions: [
           {
-            label: 'Update',
+            label: 'Pull Remote Changes',
             type: ActionAlertActionType.STANDARD,
             default: true,
             handler: (): void => {

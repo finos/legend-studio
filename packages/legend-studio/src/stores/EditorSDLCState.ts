@@ -55,7 +55,7 @@ export class EditorSDLCState {
   editorStore: EditorStore;
   currentProject?: Project | undefined;
   currentWorkspace?: Workspace | undefined;
-  workspaceLatestRevision?: Revision | undefined;
+  remoteWorkspaceRevision?: Revision | undefined;
   currentRevision?: Revision | undefined;
   isWorkspaceOutdated = false;
   workspaceWorkflows: Workflow[] = [];
@@ -101,18 +101,15 @@ export class EditorSDLCState {
     );
   }
 
-  get activeWorkspaceLatestRevision(): Revision {
+  get activeRemoteWorkspaceRevision(): Revision {
     return guaranteeNonNullable(
-      this.workspaceLatestRevision,
+      this.remoteWorkspaceRevision,
       `Active workspace latest revision has not been properly set`,
     );
   }
 
   get isWorkspaceOutOfSync(): boolean {
-    return Boolean(
-      this.workspaceLatestRevision &&
-        this.activeWorkspaceLatestRevision.id !== this.activeRevision.id,
-    );
+    return this.activeRemoteWorkspaceRevision.id !== this.activeRevision.id;
   }
 
   setCurrentProject = (val: Project): void => {
@@ -126,7 +123,7 @@ export class EditorSDLCState {
   };
 
   setWorkspaceLatestRevision = (val: Revision): void => {
-    this.workspaceLatestRevision = val;
+    this.remoteWorkspaceRevision = val;
   };
 
   *fetchCurrentProject(

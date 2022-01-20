@@ -417,7 +417,7 @@ export class EditorStore {
         this.sdlcState.currentProject &&
           this.sdlcState.currentWorkspace &&
           this.sdlcState.currentRevision &&
-          this.sdlcState.workspaceLatestRevision,
+          this.sdlcState.remoteWorkspaceRevision,
       ) && this.graphManagerState.systemModel.buildState.hasSucceeded
     );
   }

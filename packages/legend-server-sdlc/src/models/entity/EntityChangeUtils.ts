@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-model-storage';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { EntityDiff } from '../comparison/EntityDiff';
 import { type EntityChange, EntityChangeType } from './EntityChange';
@@ -45,11 +45,11 @@ export const applyEntityChanges = (
         case EntityChangeType.CREATE:
           {
             if (!entities.find((e) => e.path === change.entityPath)) {
-              const entity = new Entity(
-                change.classifierPath ?? '',
-                change.entityPath,
-                change.content ?? {},
-              );
+              const entity = {
+                classifierPath: change.classifierPath ?? '',
+                path: change.entityPath,
+                content: change.content ?? {},
+              };
               entities.push(entity);
             }
           }
