@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
-import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
 import { useParams, Link } from 'react-router-dom';
@@ -41,6 +40,7 @@ import {
   CodeBranchIcon,
   WindowMaximizeIcon,
   HackerIcon,
+  WrenchIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -59,6 +59,9 @@ import {
 import { AppHeader, useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 import type { ActivityDisplay } from '../editor/ActivityBar';
+import { Explorer } from '../editor/side-bar/Explorer';
+import { ProjectOverview } from '../editor/side-bar/ProjectOverview';
+import { WorkflowManager } from '../editor/side-bar/WorkflowManager';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
@@ -157,8 +160,35 @@ const ViewerStatusBar = observer(() => {
   );
 });
 
+const ViewerSideBar = observer(() => {
+  const viewerStore = useViewerStore();
+  const editorStore = viewerStore.editorStore;
+  const renderSideBar = (): React.ReactNode => {
+    switch (editorStore.activeActivity) {
+      case ACTIVITY_MODE.EXPLORER:
+        return <Explorer />;
+      case ACTIVITY_MODE.PROJECT_OVERVIEW:
+        return <ProjectOverview />;
+      case ACTIVITY_MODE.WORKFLOW_MANAGER:
+        return viewerStore.workflowManagerState ? (
+          <WorkflowManager
+            workflowManagerState={viewerStore.workflowManagerState}
+          />
+        ) : null;
+      default:
+        return null;
+    }
+  };
+  return (
+    <div className="side-bar">
+      <div className="side-bar__view">{renderSideBar()}</div>
+    </div>
+  );
+});
+
 const ViewerActivityBar = observer(() => {
-  const editorStore = useEditorStore();
+  const viewerStore = useViewerStore();
+  const editorStore = viewerStore.editorStore;
   const changeActivity =
     (activity: ACTIVITY_MODE): (() => void) =>
     (): void =>
@@ -178,6 +208,11 @@ const ViewerActivityBar = observer(() => {
           <EyeIcon />
         </div>
       ),
+    },
+    viewerStore.workflowManagerState && {
+      mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
+      title: 'WORKFLOW MANAGER',
+      icon: <WrenchIcon />,
     },
   ].filter((activity): activity is ActivityDisplay => Boolean(activity));
 
@@ -297,7 +332,7 @@ export const ViewerInner = observer(() => {
                       direction={1}
                       size={editorStore.sideBarDisplayState.size}
                     >
-                      <SideBar />
+                      <ViewerSideBar />
                     </ResizablePanel>
                     <ResizablePanelSplitter />
                     <ResizablePanel minSize={300}>

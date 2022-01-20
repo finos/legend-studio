@@ -15,7 +15,14 @@
  */
 
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import { makeAutoObservable, observable, action, flowResult } from 'mobx';
+import {
+  makeAutoObservable,
+  observable,
+  action,
+  flowResult,
+  makeObservable,
+  flow,
+} from 'mobx';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
@@ -27,7 +34,12 @@ import {
   LogEvent,
   ActionState,
 } from '@finos/legend-shared';
-import { WorkflowJob, Workflow } from '@finos/legend-server-sdlc';
+import {
+  type Workspace,
+  type Version,
+  WorkflowJob,
+  Workflow,
+} from '@finos/legend-server-sdlc';
 
 export abstract class WorkflowExplorerTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;
@@ -91,14 +103,14 @@ const updateWorkflowJobData = (
 
 export class WorkflowLogState {
   editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  workflowManagerState: WorkflowManagerState;
   job: WorkflowJob | undefined;
   logs: string;
   fetchJobLogState = ActionState.create();
 
   constructor(
     editorStore: EditorStore,
-    sdlcState: EditorSDLCState,
+    workflowManagerState: WorkflowManagerState,
     job: WorkflowJob | undefined,
     logs: string | undefined,
   ) {
@@ -111,7 +123,7 @@ export class WorkflowLogState {
     });
 
     this.editorStore = editorStore;
-    this.sdlcState = sdlcState;
+    this.workflowManagerState = workflowManagerState;
     this.job = job;
     this.logs = logs ?? '';
   }
@@ -133,18 +145,30 @@ export class WorkflowLogState {
     try {
       this.fetchJobLogState.inProgress();
       const job = WorkflowJob.serialization.fromJson(
-        (yield this.editorStore.sdlcServerClient.getWorkflowJob(
-          this.editorStore.sdlcState.activeProject.projectId,
-          this.editorStore.sdlcState.activeWorkspace,
-          workflowJob,
-        )) as PlainObject<WorkflowJob>,
+        this.workflowManagerState.versionId
+          ? ((yield this.editorStore.sdlcServerClient.getWorkflowJobByVersion(
+              this.workflowManagerState.sdlcState.activeProject.projectId,
+              this.workflowManagerState.versionId,
+              workflowJob,
+            )) as PlainObject<WorkflowJob>)
+          : ((yield this.editorStore.sdlcServerClient.getWorkflowJob(
+              this.workflowManagerState.sdlcState.activeProject.projectId,
+              this.workflowManagerState.workspace,
+              workflowJob,
+            )) as PlainObject<WorkflowJob>),
       );
       this.setJob(job);
-      const logs = (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
-        this.editorStore.sdlcState.activeProject.projectId,
-        this.editorStore.sdlcState.activeWorkspace,
-        job,
-      )) as string;
+      const logs = this.workflowManagerState.versionId
+        ? ((yield this.editorStore.sdlcServerClient.getWorkflowJobLogsByVersion(
+            this.workflowManagerState.sdlcState.activeProject.projectId,
+            this.workflowManagerState.versionId,
+            job,
+          )) as string)
+        : ((yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
+            this.workflowManagerState.sdlcState.activeProject.projectId,
+            this.workflowManagerState.workspace,
+            job,
+          )) as string);
       this.setLogs(logs);
       this.fetchJobLogState.pass();
     } catch (error) {
@@ -162,11 +186,17 @@ export class WorkflowLogState {
     try {
       this.setJob(workflowJob);
       this.fetchJobLogState.inProgress();
-      const logs = (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
-        this.sdlcState.activeProject.projectId,
-        this.sdlcState.activeWorkspace,
-        workflowJob,
-      )) as string;
+      const logs = this.workflowManagerState.versionId
+        ? ((yield this.editorStore.sdlcServerClient.getWorkflowJobLogsByVersion(
+            this.workflowManagerState.sdlcState.activeProject.projectId,
+            this.workflowManagerState.versionId,
+            workflowJob,
+          )) as string)
+        : ((yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
+            this.workflowManagerState.sdlcState.activeProject.projectId,
+            this.workflowManagerState.workspace,
+            workflowJob,
+          )) as string);
       this.setLogs(logs);
       this.fetchJobLogState.pass();
     } catch (error) {
@@ -181,16 +211,16 @@ export class WorkflowLogState {
   }
 }
 
-export class WorkspaceWorkflowState {
+export class WorkflowState {
   uuid = uuid();
   editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  workflowManagerState: WorkflowManagerState;
   treeData: TreeData<WorkflowExplorerTreeNodeData>;
   isExecutingWorkflowRequest = false;
 
   constructor(
     editorStore: EditorStore,
-    sdlcState: EditorSDLCState,
+    WorkflowManagerState: WorkflowManagerState,
     workflow: Workflow,
     jobs: WorkflowJob[] | undefined,
   ) {
@@ -201,7 +231,7 @@ export class WorkspaceWorkflowState {
     });
 
     this.editorStore = editorStore;
-    this.sdlcState = sdlcState;
+    this.workflowManagerState = WorkflowManagerState;
     this.treeData = this.buildTreeData(workflow, jobs);
   }
 
@@ -233,14 +263,23 @@ export class WorkspaceWorkflowState {
     try {
       this.isExecutingWorkflowRequest = true;
       const workflowJobs = (
-        (yield this.editorStore.sdlcServerClient.getWorkflowJobs(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          workflowId,
-          undefined,
-          undefined,
-          undefined,
-        )) as PlainObject<WorkflowJob>[]
+        this.workflowManagerState.versionId
+          ? ((yield this.editorStore.sdlcServerClient.getWorkflowJobsByVersion(
+              this.workflowManagerState.sdlcState.activeProject.projectId,
+              this.workflowManagerState.versionId,
+              workflowId,
+              undefined,
+              undefined,
+              undefined,
+            )) as PlainObject<WorkflowJob>[])
+          : ((yield this.editorStore.sdlcServerClient.getWorkflowJobs(
+              this.workflowManagerState.sdlcState.activeProject.projectId,
+              this.workflowManagerState.workspace,
+              workflowId,
+              undefined,
+              undefined,
+              undefined,
+            )) as PlainObject<WorkflowJob>[])
       )
         .map((job) => WorkflowJob.serialization.fromJson(job))
         .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
@@ -264,9 +303,7 @@ export class WorkspaceWorkflowState {
   ): GeneratorFn<void> {
     if (node instanceof WorkflowTreeNodeData) {
       if (!node.childrenIds) {
-        yield flowResult(
-          this.fetchAllWorkspaceWorkJobs(node.workflow.id, treeData),
-        );
+        yield flowResult(this.fetchAllWorkspaceWorkJobs(node.workflow.id, treeData));
       }
       node.isOpen = !node.isOpen;
     }
@@ -279,11 +316,20 @@ export class WorkspaceWorkflowState {
   ): GeneratorFn<void> {
     try {
       this.isExecutingWorkflowRequest = true;
-      (yield this.editorStore.sdlcServerClient.cancelWorkflowJob(
-        this.sdlcState.activeProject.projectId,
-        this.sdlcState.activeWorkspace,
-        workflowJob,
-      )) as PlainObject<WorkflowJob>[];
+      if (this.workflowManagerState.versionId) {
+        (yield this.editorStore.sdlcServerClient.cancelWorkflowJobByVersion(
+          this.workflowManagerState.sdlcState.activeProject.projectId,
+          this.workflowManagerState.versionId,
+          workflowJob,
+        )) as PlainObject<WorkflowJob>[];
+      } else {
+        (yield this.editorStore.sdlcServerClient.cancelWorkflowJob(
+          this.workflowManagerState.sdlcState.activeProject.projectId,
+          this.workflowManagerState.workspace,
+          workflowJob,
+        )) as PlainObject<WorkflowJob>[];
+      }
+
       yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
     } catch (error) {
       assertErrorThrown(error);
@@ -304,11 +350,17 @@ export class WorkspaceWorkflowState {
     const node = treeData.nodes.get(getWorkflowNodeId(workflowId));
     if (node instanceof WorkflowTreeNodeData) {
       const workflow = Workflow.serialization.fromJson(
-        (yield this.editorStore.sdlcServerClient.getWorkflow(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          workflowId,
-        )) as PlainObject<Workflow>,
+        this.workflowManagerState.versionId
+          ? ((yield this.editorStore.sdlcServerClient.getWorkflowByVersion(
+              this.workflowManagerState.sdlcState.activeProject.projectId,
+              this.workflowManagerState.versionId,
+              workflowId,
+            )) as PlainObject<Workflow>)
+          : ((yield this.editorStore.sdlcServerClient.getWorkflow(
+              this.workflowManagerState.sdlcState.activeProject.projectId,
+              this.workflowManagerState.workspace,
+              workflowId,
+            )) as PlainObject<Workflow>),
       );
       node.workflow = workflow;
     }
@@ -321,11 +373,19 @@ export class WorkspaceWorkflowState {
   ): GeneratorFn<void> {
     try {
       this.isExecutingWorkflowRequest = true;
-      (yield this.editorStore.sdlcServerClient.retryWorkflowJob(
-        this.sdlcState.activeProject.projectId,
-        this.sdlcState.activeWorkspace,
-        workflowJob,
-      )) as PlainObject<WorkflowJob>[];
+      if (this.workflowManagerState.versionId) {
+        (yield this.editorStore.sdlcServerClient.retryWorkflowJobByVersion(
+          this.workflowManagerState.sdlcState.activeProject.projectId,
+          this.workflowManagerState.versionId,
+          workflowJob,
+        )) as PlainObject<WorkflowJob>[];
+      } else {
+        (yield this.editorStore.sdlcServerClient.retryWorkflowJob(
+          this.workflowManagerState.sdlcState.activeProject.projectId,
+          this.workflowManagerState.workspace,
+          workflowJob,
+        )) as PlainObject<WorkflowJob>[];
+      }
       yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
     } catch (error) {
       assertErrorThrown(error);
@@ -340,44 +400,58 @@ export class WorkspaceWorkflowState {
   }
 }
 
-export class WorkspaceWorkflowsState {
+export abstract class WorkflowManagerState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
   fetchWorkflowsState = ActionState.create();
   logState: WorkflowLogState;
-  workflowStates: WorkspaceWorkflowState[] = [];
+  workflowStates: WorkflowState[] = [];
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
-      fetchWorkflowsState: observable,
-      logState: observable,
-    });
-
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
     this.logState = new WorkflowLogState(
       this.editorStore,
-      this.sdlcState,
+      this,
       undefined,
       undefined,
     );
   }
 
-  *fetchAllWorkspaceWorkflows(): GeneratorFn<void> {
+  get workspace(): Workspace | undefined {
+    return undefined;
+  }
+
+  get versionId(): string | undefined {
+    return undefined;
+  }
+
+  *fetchAllWorkflows(): GeneratorFn<void> {
     try {
       this.fetchWorkflowsState.inProgress();
       // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
-      const workflows = (
-        (yield this.editorStore.sdlcServerClient.getWorkflows(
+      let workflowsJson: PlainObject<Workflow>[] = [];
+      if (this.versionId) {
+        workflowsJson =
+          (yield this.editorStore.sdlcServerClient.getWorkflowsByVersion(
+            this.sdlcState.activeProject.projectId,
+            this.versionId,
+            undefined,
+            undefined,
+            undefined,
+          )) as PlainObject<Workflow>[];
+      } else {
+        workflowsJson = (yield this.editorStore.sdlcServerClient.getWorkflows(
           this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
+          this.workspace,
           undefined,
           undefined,
           undefined,
-        )) as PlainObject<Workflow>[]
-      ).map((workflow) => Workflow.serialization.fromJson(workflow));
+        )) as PlainObject<Workflow>[];
+      }
+      const workflows = workflowsJson.map((workflow) =>
+        Workflow.serialization.fromJson(workflow),
+      );
       const openWorkflowIds = this.workflowStates
         .map((workflowState) =>
           Array.from(workflowState.treeData.nodes.values()),
@@ -395,32 +469,40 @@ export class WorkspaceWorkflowsState {
           .filter((workflow) => openWorkflowIds.includes(workflow.id))
           // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
           .map((workflow) =>
-            this.editorStore.sdlcServerClient
-              .getWorkflowJobs(
-                this.sdlcState.activeProject.projectId,
-                this.sdlcState.activeWorkspace,
-                workflow.id,
-                undefined,
-                undefined,
-                undefined,
-              )
-              .then((jobs: PlainObject<WorkflowJob>[]) =>
-                workflowToJobsMap.set(
+            (this.versionId
+              ? this.editorStore.sdlcServerClient.getWorkflowJobsByVersion(
+                  this.sdlcState.activeProject.projectId,
+                  this.versionId,
                   workflow.id,
-                  jobs
-                    .map((x) => WorkflowJob.serialization.fromJson(x))
-                    .sort(
-                      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-                    ),
-                ),
+                  undefined,
+                  undefined,
+                  undefined,
+                )
+              : this.editorStore.sdlcServerClient.getWorkflowJobs(
+                  this.sdlcState.activeProject.projectId,
+                  this.workspace,
+                  workflow.id,
+                  undefined,
+                  undefined,
+                  undefined,
+                )
+            ).then((jobs: PlainObject<WorkflowJob>[]) =>
+              workflowToJobsMap.set(
+                workflow.id,
+                jobs
+                  .map((x) => WorkflowJob.serialization.fromJson(x))
+                  .sort(
+                    (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+                  ),
               ),
+            ),
           ),
       );
       this.workflowStates = workflows.map(
         (workflow) =>
-          new WorkspaceWorkflowState(
+          new WorkflowState(
             this.editorStore,
-            this.sdlcState,
+            this,
             workflow,
             workflowToJobsMap.get(workflow.id),
           ),
@@ -435,5 +517,47 @@ export class WorkspaceWorkflowsState {
       this.editorStore.applicationStore.notifyError(error);
       this.fetchWorkflowsState.fail();
     }
+  }
+}
+
+export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
+    super(editorStore, sdlcState);
+    makeObservable(this, {
+      editorStore: false,
+      sdlcState: false,
+      fetchWorkflowsState: observable,
+      logState: observable,
+      workflowStates: observable,
+      fetchAllWorkflows: flow,
+    });
+  }
+
+  override get workspace(): Workspace {
+    return this.editorStore.sdlcState.activeWorkspace;
+  }
+}
+
+export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
+  version: Version | undefined;
+  constructor(
+    editorStore: EditorStore,
+    sdlcState: EditorSDLCState,
+    version: Version | undefined,
+  ) {
+    super(editorStore, sdlcState);
+    makeObservable(this, {
+      editorStore: false,
+      sdlcState: false,
+      fetchWorkflowsState: observable,
+      logState: observable,
+      workflowStates: observable,
+      fetchAllWorkflows: flow,
+    });
+    this.version = version;
+  }
+
+  override get versionId(): string | undefined {
+    return this.version?.id.id;
   }
 }
