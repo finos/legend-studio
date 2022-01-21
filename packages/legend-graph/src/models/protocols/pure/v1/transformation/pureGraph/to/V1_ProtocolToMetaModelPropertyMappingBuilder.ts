@@ -147,10 +147,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       `Pure instance property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
-      protocol.property.class,
-      `Pure instance property mapping 'property.class' field is missing or empty`,
-    );
-    assertNonEmptyString(
       protocol.property.property,
       `Pure instance property mapping 'property.property' field is missing or empty`,
     );
@@ -190,6 +186,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         localMappingProperty.type,
       ).value;
     } else {
+      assertNonEmptyString(
+        protocol.property.class,
+        `Pure instance property mapping 'property.class' field is missing or empty`,
+      );
       property = this.context.resolveProperty(protocol.property);
     }
     const propertyType = property.value.genericType.value.rawType;
@@ -416,20 +416,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     );
     // NOTE: mapping for derived property is not supported
     let propertyOwner: Class | Association;
-    if (this.immediateParent instanceof AssociationImplementation) {
-      propertyOwner = this.immediateParent.association.value;
-    } else if (protocol.property.class) {
-      propertyOwner = this.context.resolveClass(protocol.property.class).value;
-    } else if (
-      this.immediateParent instanceof
-      EmbeddedRelationalInstanceSetImplementation
-    ) {
-      propertyOwner = this.immediateParent.class.value;
-    } else {
-      throw new GraphBuilderError(
-        `Can't find property owner class for property '${protocol.property.property}'`,
-      );
-    }
     let property: AbstractProperty;
     let localMapping: LocalMappingPropertyInfo | undefined;
     if (protocol.localMappingProperty) {
@@ -460,7 +446,24 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       localMapping.localMappingPropertyType = this.context.resolveType(
         localMappingProperty.type,
       ).value;
+      propertyOwner = property.owner;
     } else {
+      if (this.immediateParent instanceof AssociationImplementation) {
+        propertyOwner = this.immediateParent.association.value;
+      } else if (protocol.property.class) {
+        propertyOwner = this.context.resolveClass(
+          protocol.property.class,
+        ).value;
+      } else if (
+        this.immediateParent instanceof
+        EmbeddedRelationalInstanceSetImplementation
+      ) {
+        propertyOwner = this.immediateParent.class.value;
+      } else {
+        throw new GraphBuilderError(
+          `Can't find property owner class for property '${protocol.property.property}'`,
+        );
+      }
       property = propertyOwner.getProperty(protocol.property.property);
     }
     // NOTE: mapping for derived property is not supported
