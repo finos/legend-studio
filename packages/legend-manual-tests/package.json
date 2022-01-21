@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-manual-tests",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "private": true,
   "description": "Legend manual tests",
   "keywords": [

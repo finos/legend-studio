@@ -1,5 +1,21 @@
 # @finos/legend-query
 
+## 0.4.0
+
+### Minor Changes
+
+- [#740](https://github.com/finos/legend-studio/pull/740) [`947e10e4`](https://github.com/finos/legend-studio/commit/947e10e4fabb0a18c31222aa76166c04763f085d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add processing support for subtype in projection fetch structure.
+
+* [#784](https://github.com/finos/legend-studio/pull/784) [`18b60b42`](https://github.com/finos/legend-studio/commit/18b60b42d2a9b2d2c195e80bb6d80be192e7a605) ([@gayathrir11](https://github.com/gayathrir11)) - Support relational operations in filter panel for properties of type `Date`.
+
+- [#737](https://github.com/finos/legend-studio/pull/737) [`81f87eb3`](https://github.com/finos/legend-studio/commit/81f87eb38083981bce556b4c5a3a143beb59e9f6) ([@gayathrir11](https://github.com/gayathrir11)) - Allow configuring query parameters in `unsupported` mode.
+
+* [#741](https://github.com/finos/legend-studio/pull/741) [`eaa1650b`](https://github.com/finos/legend-studio/commit/eaa1650bc33d9d5283502d4e5bfb514c2272854a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display subclasses in explorer tree and add DnD support for these nodes to help build fetch structure.
+
+### Patch Changes
+
+- [#768](https://github.com/finos/legend-studio/pull/768) [`f2927570`](https://github.com/finos/legend-studio/commit/f2927570b2afdc2954912bdbb20058606d2cf8bc) ([@gayathrir11](https://github.com/gayathrir11)) - Handle empty error messages from Engine.
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,23 @@
 # @finos/legend-studio
 
+## 2.3.0
+
+### Minor Changes
+
+- [#755](https://github.com/finos/legend-studio/pull/755) [`61821cd6`](https://github.com/finos/legend-studio/commit/61821cd62c3b8b1a16124a092038ab963311de17) ([@akphi](https://github.com/akphi)) - Allow configuring base headers for SDLC server client to facillitate configuring private-access token for end-to-end testing.
+
+* [#748](https://github.com/finos/legend-studio/pull/748) [`f4930597`](https://github.com/finos/legend-studio/commit/f49305970ad17c64030daa2171ec8b7c92c37472) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support upload and load patch.
+
+### Patch Changes
+
+- [#767](https://github.com/finos/legend-studio/pull/767) [`a6ebbc41`](https://github.com/finos/legend-studio/commit/a6ebbc410e275c9b01b1b05a26415c50efdce76e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show schemas, tables and columns in alphabetical order in `database builder`.
+
+* [#747](https://github.com/finos/legend-studio/pull/747) [`d67ae629`](https://github.com/finos/legend-studio/commit/d67ae629ca5284be03096425c9c546fcf9dfd776) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix relational connection editor for `UsernamePassword` AuthenticationStrategy.
+
+- [#753](https://github.com/finos/legend-studio/pull/753) [`1bc5f698`](https://github.com/finos/legend-studio/commit/1bc5f6983c8020a9e07071cce2c901d01af53940) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show `ProjectOverview` in viewer mode.
+
+* [#768](https://github.com/finos/legend-studio/pull/768) [`f2927570`](https://github.com/finos/legend-studio/commit/f2927570b2afdc2954912bdbb20058606d2cf8bc) ([@gayathrir11](https://github.com/gayathrir11)) - Handle empty error messages from Engine.
+
 ## 2.2.1
 
 ## 2.2.0
