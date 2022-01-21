@@ -296,6 +296,7 @@ export const getWebAppBaseWebpackConfig = (
         // Ignore usage of Node module `os` in `zipkin`
         // See https://github.com/openzipkin/zipkin-js/issues/465
         os: false,
+        url: false,
       },
       alias: {
         ...baseConfig.resolve.alias,
