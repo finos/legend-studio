@@ -15,6 +15,7 @@
  */
 
 import { observable, computed, makeObservable, action } from 'mobx';
+import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 import {
   addUniqueEntry,
   deleteEntry,
@@ -30,6 +31,7 @@ export class ServiceMapping implements Hashable {
   owner!: RootServiceInstanceSetImplementation;
   service!: ServiceStoreService;
   parameterMappings: ServiceParameterMapping[] = [];
+  path: object | undefined;
 
   constructor() {
     makeObservable(this, {
@@ -59,6 +61,7 @@ export class ServiceMapping implements Hashable {
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_MAPPING,
       this.service.id,
       hashArray(this.parameterMappings),
+      this.path ? hashObjectWithoutSourceInformation(this.path) : '',
     ]);
   }
 }
