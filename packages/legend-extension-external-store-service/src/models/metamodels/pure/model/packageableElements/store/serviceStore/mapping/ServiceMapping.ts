@@ -31,7 +31,7 @@ export class ServiceMapping implements Hashable {
   owner!: RootServiceInstanceSetImplementation;
   service!: ServiceStoreService;
   parameterMappings: ServiceParameterMapping[] = [];
-  path: object | undefined;
+  path: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor() {
     makeObservable(this, {

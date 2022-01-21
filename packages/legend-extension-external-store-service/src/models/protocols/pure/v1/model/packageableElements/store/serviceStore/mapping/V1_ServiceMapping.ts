@@ -23,7 +23,7 @@ import type { V1_ServiceParameterMapping } from './V1_ServiceParameterMapping';
 export class V1_ServiceMapping implements Hashable {
   service!: V1_ServiceStoreServicePtr;
   parameterMappings: V1_ServiceParameterMapping[] = [];
-  pathOffset: object | undefined;
+  pathOffset: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
     return hashArray([
