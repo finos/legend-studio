@@ -1,5 +1,11 @@
 # @finos/legend-extension-external-store-service
 
+## 1.0.8
+
+### Patch Changes
+
+- [#790](https://github.com/finos/legend-studio/pull/790) [`37dda241`](https://github.com/finos/legend-studio/commit/37dda2415330b7488d7309cb0ea38c9b748bc544) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Added support for specifying pathOffset for service store mapping.
+
 ## 1.0.7
 
 ## 1.0.6
