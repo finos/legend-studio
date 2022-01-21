@@ -45,7 +45,6 @@ import {
   type V1_PackageableElement,
   type V1_ClassMapping,
   type V1_ClassMappingFirstPassBuilder,
-  type V1_ClassMappingSecondPassBuilder,
   type V1_ClassMappingTransformer,
   type V1_ClassMappingDeserializer,
   type V1_ClassMappingSerializer,
@@ -62,7 +61,6 @@ import {
   type DSLMapping_PureProtocolProcessorPlugin_Extension,
   PureProtocolProcessorPlugin,
   fromElementPathToMappingElementId,
-  getClassMappingById,
   InferableMappingElementIdImplicitValue,
   InferableMappingElementRootExplicitValue,
   Multiplicity,
@@ -263,6 +261,7 @@ export class ESService_PureProtocolProcessorPlugin
                 serviceMapping.service,
                 context,
               );
+              mapping.path = serviceMapping.pathOffset;
               mapping.parameterMappings = serviceMapping.parameterMappings.map(
                 (parameter) => {
                   const parameterMapping = V1_buildServiceParameterMapping(
@@ -277,71 +276,6 @@ export class ESService_PureProtocolProcessorPlugin
           return rootServiceInstanceSetImplementation;
         }
         return undefined;
-      },
-    ];
-  }
-
-  V1_getExtraClassMappingSecondPassBuilders(): V1_ClassMappingSecondPassBuilder[] {
-    return [
-      (
-        classMapping: V1_ClassMapping,
-        context: V1_GraphBuilderContext,
-        parent: Mapping,
-      ): void => {
-        if (classMapping instanceof V1_RootServiceStoreClassMapping) {
-          assertNonEmptyString(
-            classMapping.class,
-            'ServiceStore class mapping class is missing',
-          );
-          const id = InferableMappingElementIdImplicitValue.create(
-            classMapping.id ??
-              fromElementPathToMappingElementId(
-                context.resolveClass(classMapping.class).value.path,
-              ),
-            context.resolveClass(classMapping.class).value.path,
-            classMapping.id,
-          ).value;
-          const rootServiceInstanceSetImplementation = getClassMappingById(
-            parent,
-            id,
-          );
-          assertType(
-            rootServiceInstanceSetImplementation,
-            RootServiceInstanceSetImplementation,
-            `Class mapping with ID '${id}' is not of type serviceStore set implementation`,
-          );
-          rootServiceInstanceSetImplementation.localMappingProperties =
-            classMapping.localMappingProperties.map((localMappingProperty) => {
-              const property = new LocalMappingProperty();
-              property.name = localMappingProperty.name;
-              property.type = localMappingProperty.type;
-              const multiplicity = new Multiplicity(
-                localMappingProperty.multiplicity.lowerBound,
-                localMappingProperty.multiplicity.upperBound,
-              );
-              property.multiplicity = multiplicity;
-              return property;
-            });
-          rootServiceInstanceSetImplementation.servicesMapping =
-            classMapping.servicesMapping.map((serviceMapping) => {
-              const mapping = new ServiceMapping();
-              mapping.owner = rootServiceInstanceSetImplementation;
-              mapping.service = V1_resolveService(
-                serviceMapping.service,
-                context,
-              );
-              mapping.parameterMappings = serviceMapping.parameterMappings.map(
-                (parameter) => {
-                  const parameterMapping = V1_buildServiceParameterMapping(
-                    parameter,
-                    mapping.service,
-                  );
-                  return parameterMapping;
-                },
-              );
-              return mapping;
-            });
-        }
       },
     ];
   }
@@ -389,6 +323,7 @@ export class ESService_PureProtocolProcessorPlugin
               mapping.service = V1_transformServiceToServicePtr(
                 serviceMapping.service,
               );
+              mapping.pathOffset = serviceMapping.path;
               mapping.parameterMappings = serviceMapping.parameterMappings.map(
                 (parameter) => {
                   const parameterMapping =
