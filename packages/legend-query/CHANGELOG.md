@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 0.4.1
+
+### Patch Changes
+
+- [#800](https://github.com/finos/legend-studio/pull/800) [`2eba0b37`](https://github.com/finos/legend-studio/commit/2eba0b370ece84968ddde6e236f2f9f9a639f733) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix loading of dependencies for project with version `HEAD` ([#798](https://github.com/finos/legend-studio/issues/798)).
+
 ## 0.4.0
 
 ### Minor Changes
