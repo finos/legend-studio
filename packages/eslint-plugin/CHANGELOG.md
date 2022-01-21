@@ -1,5 +1,11 @@
 # @finos/eslint-plugin-legend-studio
 
+## 0.1.8
+
+### Patch Changes
+
+- [#751](https://github.com/finos/legend-studio/pull/751) [`017f9c60`](https://github.com/finos/legend-studio/commit/017f9c60fef1426521c8feca5d314a9880d1a1a2) ([@akphi](https://github.com/akphi)) - Prefer usage of inline type import `import { type ... }` over `import type`; as a result, we have enabled `no-duplicate-imports` rule. Also, we created rule `no-duplicate-exports` to enforce the usage on export side.
+
 ## 0.1.7
 
 ## 0.1.6

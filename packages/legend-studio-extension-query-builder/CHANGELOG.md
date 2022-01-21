@@ -1,5 +1,11 @@
 # @finos/legend-studio-extension-query-builder
 
+## 0.2.4
+
+### Patch Changes
+
+- [#753](https://github.com/finos/legend-studio/pull/753) [`1bc5f698`](https://github.com/finos/legend-studio/commit/1bc5f6983c8020a9e07071cce2c901d01af53940) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable opening query builder in read-only mode for mapping test and service.
+
 ## 0.2.3
 
 ## 0.2.2
