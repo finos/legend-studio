@@ -47,7 +47,7 @@
     "lint:style": "stylelint --cache --cache-location ./build/.stylelintcache \"packages/*/style/**/*.{scss,css}\" \"packages/*/scss/**/*.scss\"",
     "publish:prepare": "cross-env FORCE_COLOR=1 yarn build && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:prepare",
     "publish:snapshot": "yarn publish:prepare && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --no-private --topological-dev --parallel --verbose run publish:snapshot",
-    "release": "yarn publish:prepare && changeset publish --no-git-tag",
+    "release": "yarn publish:prepare && changeset publish",
     "release:bump": "node ./scripts/release/createVersionBumpChangeset.js",
     "release:version": "changeset version && yarn install && yarn fix:format",
     "setup": "yarn install && node ./scripts/workflow/checkNodeVersion.js && yarn git:install-hooks && yarn workspaces foreach --topological-dev --verbose run setup && yarn build",
