@@ -54,6 +54,7 @@ import { GRAPH_MANAGER_LOG_EVENT } from '@finos/legend-graph';
 import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,
+  ProjectWorkflowManagerState,
 } from './sidebar-state/WorkflowManagerState';
 
 export class ViewerStore {
@@ -521,11 +522,16 @@ export class ViewerStore {
     // NOTE: We will not show workflow viewer when `GAV` coordinates are provided
     // as we don't know which sdlc instance to fetch from.
     // Revision will be supported once `SDLC` adds the workflow apis.
-    if (!this.projectGAVCoordinates && !this.revision) {
+    if (this.version) {
       this.workflowManagerState = new ProjectVersionWorkflowManagerState(
         this.editorStore,
         this.editorStore.sdlcState,
         this.version,
+      );
+    } else if (!this.projectGAVCoordinates && !this.revision) {
+      this.workflowManagerState = new ProjectWorkflowManagerState(
+        this.editorStore,
+        this.editorStore.sdlcState,
       );
     }
   }
