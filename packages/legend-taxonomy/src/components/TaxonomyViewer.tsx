@@ -15,11 +15,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  AppHeader,
-  NotificationSnackbar,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { AppHeader, useApplicationStore } from '@finos/legend-application';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
@@ -444,7 +440,6 @@ export const TaxonomyViewer = observer(() => {
           >
             <div className="taxonomy-viewer__body">
               <TaxonomyViewerActivityBar />
-              <NotificationSnackbar />
               <div className="taxonomy-viewer__content-container">
                 <div
                   className={clsx('taxonomy-viewer__content', {

@@ -51,6 +51,9 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
         PRIMITIVE_TYPE.INTEGER,
         PRIMITIVE_TYPE.DECIMAL,
         PRIMITIVE_TYPE.FLOAT,
+        PRIMITIVE_TYPE.DATE,
+        PRIMITIVE_TYPE.STRICTDATE,
+        PRIMITIVE_TYPE.DATETIME,
       ] as string[]
     ).includes(propertyType.path);
   }
@@ -69,6 +72,9 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
           PRIMITIVE_TYPE.INTEGER,
           PRIMITIVE_TYPE.DECIMAL,
           PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
         ] as string[]
       ).includes(type.path)
     );
@@ -84,7 +90,10 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL:
       case PRIMITIVE_TYPE.FLOAT:
-      case PRIMITIVE_TYPE.INTEGER: {
+      case PRIMITIVE_TYPE.INTEGER:
+      case PRIMITIVE_TYPE.DATE:
+      case PRIMITIVE_TYPE.STRICTDATE:
+      case PRIMITIVE_TYPE.DATETIME: {
         return buildPrimitiveInstanceValue(
           filterConditionState,
           propertyType.path,

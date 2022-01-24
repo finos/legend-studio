@@ -20,7 +20,6 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
-import { Dialog } from '@material-ui/core';
 import { useCallback } from 'react';
 import {
   type Type,
@@ -42,7 +41,6 @@ import {
   guaranteeType,
   Randomizer,
 } from '@finos/legend-shared';
-import { MdRefresh } from 'react-icons/md';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
 import {
@@ -50,7 +48,7 @@ import {
   buildElementOption,
   DATE_FORMAT,
 } from '@finos/legend-application';
-import { CustomSelectorInput } from '@finos/legend-art';
+import { Dialog, CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
 
@@ -196,7 +194,7 @@ const MilestoningParameterEditor = observer(
           title="Reset Milestoning Parameter Value"
           onClick={resetMilestoningParameter}
         >
-          <MdRefresh style={{ fontSize: '1.6rem' }} />
+          <RefreshIcon style={{ fontSize: '1.6rem' }} />
         </button>
       </div>
     );
@@ -314,6 +312,9 @@ export const MilestoningParametersEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__modal">

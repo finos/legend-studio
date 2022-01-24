@@ -221,6 +221,43 @@ export const roundtripTestData = [
                 serviceStore: 'anything::ServiceStore1',
               },
             },
+            {
+              parameterMappings: [
+                {
+                  _type: 'parameter',
+                  serviceParameter: 'serializationFormat',
+                  transform: {
+                    _type: 'lambda',
+                    body: [
+                      {
+                        _type: 'string',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        values: ['CSV'],
+                      },
+                    ],
+                    parameters: [],
+                  },
+                },
+              ],
+              pathOffset: {
+                _type: 'path',
+                path: [
+                  {
+                    _type: 'propertyPath',
+                    parameters: [],
+                    property: 'employees',
+                  },
+                ],
+                startType: '$service.response',
+              },
+              service: {
+                service: 'TestService',
+                serviceStore: 'anything::ServiceStore1',
+              },
+            },
           ],
         },
       ],

@@ -24,6 +24,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
+  LockIcon,
 } from '@finos/legend-art';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import {
@@ -37,7 +38,6 @@ import {
   BINDING_TAB_TYPE,
   BindingEditorState,
 } from '../../stores/studio/BindingEditorState';
-import { FaLock } from 'react-icons/fa';
 import { SchemaSet } from '../../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
 import {
   PackageableElementExplicitReference,
@@ -361,7 +361,7 @@ export const BindingEditor = observer(() => {
         <div className="binding-editor__header__title">
           {isReadOnly && (
             <div className="binding-editor__header__lock">
-              <FaLock />
+              <LockIcon />
             </div>
           )}
           <div className="binding-editor__header__title__label">Binding</div>
@@ -390,7 +390,7 @@ export const BindingEditor = observer(() => {
               <div className="binding-editor__header__title">
                 {isReadOnly && (
                   <div className="element-editor__header__lock">
-                    <FaLock />
+                    <LockIcon />
                   </div>
                 )}
                 <div className="binding-editor__header__title__label">

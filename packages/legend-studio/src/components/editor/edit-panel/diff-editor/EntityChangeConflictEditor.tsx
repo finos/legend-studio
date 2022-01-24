@@ -42,7 +42,6 @@ import {
   isNonNullable,
   hashObject,
 } from '@finos/legend-shared';
-import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
 import {
   clsx,
   CustomSelectorInput,
@@ -55,9 +54,11 @@ import {
   resetLineNumberGutterWidth,
   getEditorValue,
   normalizeLineEnding,
+  CompareIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView';
-import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
@@ -615,7 +616,7 @@ const getMergeEditorViewModeOption = (
             {getPrettyLabelForRevision(modeComparisonViewInfo.fromRevision)}
           </div>
           <div className="entity-change-conflict-editor__header__action__view-dropdown__option__summary__icon">
-            <MdCompareArrows />
+            <CompareIcon />
           </div>
           <div className="entity-change-conflict-editor__header__action__view-dropdown__option__summary__revision">
             {getPrettyLabelForRevision(modeComparisonViewInfo.toRevision)}
@@ -723,7 +724,7 @@ export const EntityChangeConflictEditor = observer(() => {
             onClick={goToPreviousConflict}
             title={'Previous conflict'}
           >
-            <FaArrowUp />
+            <ArrowUpIcon />
           </button>
           <button
             className="btn--dark btn--sm entity-change-conflict-editor__header__action"
@@ -731,7 +732,7 @@ export const EntityChangeConflictEditor = observer(() => {
             onClick={goToNextConflict}
             title={'Next conflict'}
           >
-            <FaArrowDown />
+            <ArrowDownIcon />
           </button>
           <CustomSelectorInput
             className="entity-change-conflict-editor__header__action__view-dropdown"

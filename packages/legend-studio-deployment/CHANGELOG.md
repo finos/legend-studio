@@ -1,5 +1,11 @@
 # @finos/legend-studio-deployment
 
+## 2.6.0
+
+## 2.5.0
+
+## 2.4.0
+
 ## 2.3.0
 
 ## 2.2.0

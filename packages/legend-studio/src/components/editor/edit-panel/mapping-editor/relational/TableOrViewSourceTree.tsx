@@ -20,7 +20,7 @@ import {
   type TreeNodeContainerProps,
   type TreeData,
   type TreeNodeData,
-  TableJoinIcon,
+  PURE_DatabaseTableJoinIcon,
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -258,7 +258,7 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
     node instanceof ColumnNodeData ? (
       renderColumnTypeIcon(node.column.type)
     ) : (
-      <TableJoinIcon />
+      <PURE_DatabaseTableJoinIcon />
     );
   const selectNode = (): void => onNodeSelect?.(node);
   const nodeExpandIcon = isExpandable ? (

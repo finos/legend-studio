@@ -15,8 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { BlankPanelContent } from '@finos/legend-art';
-import { FaLock } from 'react-icons/fa';
+import { BlankPanelContent, LockIcon } from '@finos/legend-art';
 import { UnsupportedElementEditorState } from '../../../stores/editor-state/UnsupportedElementEditorState';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
@@ -65,7 +64,7 @@ export const UnsupportedElementEditor = observer(() => {
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             )}
             <div className="panel__header__title__label">element</div>

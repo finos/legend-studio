@@ -21,12 +21,6 @@ import {
   UML_EDITOR_TAB,
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import {
-  FaLock,
-  FaPlus,
-  FaArrowAltCircleRight,
-  FaLongArrowAltRight,
-} from 'react-icons/fa';
-import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
@@ -43,6 +37,10 @@ import {
   BlankPanelContent,
   getControlledResizablePanelProps,
   InputWithInlineValidation,
+  LockIcon,
+  PlusIcon,
+  ArrowCircleRightIcon,
+  LongArrowRightIcon,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
@@ -225,7 +223,7 @@ const AssociationPropertyBasicEditor = observer(
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -257,7 +255,7 @@ const AssociationPropertyBasicEditor = observer(
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -285,7 +283,7 @@ const AssociationPropertyBasicEditor = observer(
           tabIndex={-1}
           title={'See detail'}
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
       </div>
     );
@@ -413,7 +411,7 @@ export const AssociationEditor = observer(
                 <div className="panel__header__title">
                   {isReadOnly && (
                     <div className="uml-element-editor__header__lock">
-                      <FaLock />
+                      <LockIcon />
                     </div>
                   )}
                   <div className="panel__header__title__label">association</div>
@@ -446,7 +444,7 @@ export const AssociationEditor = observer(
                     tabIndex={-1}
                     title={addButtonTitle}
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                 </div>
               </div>

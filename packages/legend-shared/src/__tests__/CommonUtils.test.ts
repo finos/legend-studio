@@ -18,7 +18,7 @@ import {
   recursiveOmit,
   mergeObjects,
   getClass,
-  getSuperClass,
+  getSuperclass,
 } from '../CommonUtils';
 import { unitTest } from '../application/TestUtils';
 
@@ -67,12 +67,12 @@ test(unitTest('Merge objects'), () => {
 class A {}
 class B extends A {}
 
-test(unitTest('Get Class and Super Class'), () => {
+test(unitTest('Get Class and Superclass'), () => {
   expect(getClass(new A()).name).toEqual('A');
   expect(getClass(new B()).name).toEqual('B');
   expect(getClass(A).name).toEqual('Function');
   expect(getClass({}).name).toEqual('Object');
 
-  expect(getSuperClass(A)).toEqual(undefined);
-  expect(getSuperClass(B)?.name).toEqual('A');
+  expect(getSuperclass(A)).toEqual(undefined);
+  expect(getSuperclass(B)?.name).toEqual('A');
 });

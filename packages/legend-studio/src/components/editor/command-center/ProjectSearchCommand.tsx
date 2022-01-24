@@ -16,8 +16,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaCaretDown } from 'react-icons/fa';
-import { MdMoreHoriz } from 'react-icons/md';
 import {
   type SelectComponent,
   compareLabelFn,
@@ -25,6 +23,8 @@ import {
   NonBlockingDialog,
   createFilter,
   CustomSelectorInput,
+  MoreHorizontalIcon,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../shared/ElementIconUtils';
 import type { PackageableElement } from '@finos/legend-graph';
@@ -97,7 +97,7 @@ export const ProjectSearchCommand = observer(() => {
                   className="project-search-command__option"
                   onClick={changeType(undefined)}
                 >
-                  <MdMoreHoriz />
+                  <MoreHorizontalIcon />
                 </div>
                 {types.map((type) => (
                   <div
@@ -120,11 +120,11 @@ export const ProjectSearchCommand = observer(() => {
                 {elementType ? (
                   getElementTypeIcon(editorStore, elementType)
                 ) : (
-                  <MdMoreHoriz />
+                  <MoreHorizontalIcon />
                 )}
               </div>
               <div className="project-search-command__type__selector">
-                <FaCaretDown />
+                <CaretDownIcon />
               </div>
             </button>
           </DropdownMenu>

@@ -17,20 +17,9 @@
 import React, { Fragment, useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  FaChevronDown,
-  FaChevronRight,
-  FaCompress,
-  FaFolder,
-  FaFolderOpen,
-  FaPlus,
-  FaSearch,
-  FaLock,
-  FaExclamationTriangle,
-  FaFileImport,
-} from 'react-icons/fa';
-import {
   type TreeNodeContainerProps,
   clsx,
+  Dialog,
   MenuContent,
   MenuContentItem,
   MenuContentItemBlankIcon,
@@ -42,6 +31,16 @@ import {
   BlankPanelContent,
   TreeView,
   ProjectConfigurationIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CompressIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  PlusIcon,
+  LockIcon,
+  ExclamationTriangleIcon,
+  SearchIcon,
+  FileImportIcon,
 } from '@finos/legend-art';
 import {
   getElementIcon,
@@ -64,7 +63,6 @@ import {
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
 import { toTitleCase } from '@finos/legend-shared';
-import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
@@ -144,6 +142,7 @@ const ElementRenamer = observer(() => {
       open={Boolean(element)}
       onClose={abort}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: onEnter,
       }}
       classes={{ container: 'search-modal__container' }}
@@ -374,9 +373,9 @@ const PackageTreeNodeContainer = observer(
     const expandIcon = !isPackage ? (
       <div />
     ) : node.isOpen ? (
-      <FaChevronDown />
+      <ChevronDownIcon />
     ) : (
-      <FaChevronRight />
+      <ChevronRightIcon />
     );
     const iconPackageColor = isGeneratedPackageTreeNode(node)
       ? 'color--generated'
@@ -388,11 +387,11 @@ const PackageTreeNodeContainer = observer(
     const nodeIcon = isPackage ? (
       node.isOpen ? (
         <div className={iconPackageColor}>
-          <FaFolderOpen />
+          <FolderOpenIcon />
         </div>
       ) : (
         <div className={iconPackageColor}>
-          <FaFolder />
+          <FolderIcon />
         </div>
       )
     ) : (
@@ -715,7 +714,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           title="Open Model Loader (F2)"
           onClick={showModelLoader}
         >
-          <FaFileImport />
+          <FileImportIcon />
         </button>
       )}
       <DropdownMenu
@@ -742,7 +741,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
             tabIndex={-1}
             title="New Element... (Ctrl + Shift + N)"
           >
-            <FaPlus />
+            <PlusIcon />
           </button>
         )}
       </DropdownMenu>
@@ -753,7 +752,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         tabIndex={-1}
         title="Collapse All"
       >
-        <FaCompress />
+        <CompressIcon />
       </button>
       <button
         className="panel__header__action"
@@ -762,7 +761,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         onClick={showSearchModal}
         title="Open Element... (Ctrl + P)"
       >
-        <FaSearch />
+        <SearchIcon />
       </button>
     </div>
   );
@@ -803,7 +802,7 @@ export const Explorer = observer(() => {
         </div>
         {editorStore.isInViewerMode && (
           <div className="panel__header__title side-bar__header__title__viewer-mode-badge">
-            <FaLock />
+            <LockIcon />
             READ-ONLY
           </div>
         )}
@@ -880,7 +879,7 @@ export const Explorer = observer(() => {
                     <BlankPanelContent>
                       <div className="explorer__content__failure-notice">
                         <div className="explorer__content__failure-notice__icon">
-                          <FaExclamationTriangle />
+                          <ExclamationTriangleIcon />
                         </div>
                         <div className="explorer__content__failure-notice__text">
                           Failed to build graph

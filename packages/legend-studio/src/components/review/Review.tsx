@@ -20,14 +20,7 @@ import { ReviewStoreProvider, useReviewStore } from './ReviewStoreProvider';
 import { useParams } from 'react-router';
 import { ReviewSideBar } from './ReviewSideBar';
 import { ReviewPanel } from './ReviewPanel';
-import {
-  FaCodeBranch,
-  FaCog,
-  FaUser,
-  FaRegWindowMaximize,
-} from 'react-icons/fa';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import {
   type ResizablePanelHandlerProps,
@@ -37,6 +30,11 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
+  CheckListIcon,
+  CodeBranchIcon,
+  CogIcon,
+  WindowMaximizeIcon,
+  UserIcon,
 } from '@finos/legend-art';
 import {
   type ReviewPathParams,
@@ -49,11 +47,7 @@ import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import {
-  AppHeader,
-  NotificationSnackbar,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { AppHeader, useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const ReviewStatusBar = observer(() => {
@@ -86,7 +80,7 @@ const ReviewStatusBar = observer(() => {
       <div className="review__status-bar__left">
         <div className="review__status-bar__workspace">
           <div className="review__status-bar__workspace__icon">
-            <FaCodeBranch />
+            <CodeBranchIcon />
           </div>
           <div className="review__status-bar__workspace__project">
             <Link
@@ -122,7 +116,7 @@ const ReviewStatusBar = observer(() => {
         <div className="review__status-bar__status">{reviewStatus}</div>
         <div className="review__status-bar__user">
           <div className="review__status-bar__user__icon">
-            <FaUser />
+            <UserIcon />
           </div>
           <div className="review__status-bar__user__name">{currentUserId}</div>
         </div>
@@ -138,7 +132,7 @@ const ReviewStatusBar = observer(() => {
           tabIndex={-1}
           title={'Maximize/Minimize'}
         >
-          <FaRegWindowMaximize />
+          <WindowMaximizeIcon />
         </button>
       </div>
     </div>
@@ -229,7 +223,7 @@ const ReviewInner = observer(() => {
                       title={'Review'}
                       onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
                     >
-                      <MdPlaylistAddCheck />
+                      <CheckListIcon />
                     </button>
                   </div>
                   <div className="activity-bar__setting">
@@ -238,7 +232,7 @@ const ReviewInner = observer(() => {
                       tabIndex={-1}
                       title={'Settings...'}
                     >
-                      <FaCog />
+                      <CogIcon />
                     </button>
                   </div>
                 </div>
@@ -253,7 +247,6 @@ const ReviewInner = observer(() => {
                 </div>
               </div>
               <ReviewStatusBar />
-              <NotificationSnackbar />
             </>
           )}
         </div>

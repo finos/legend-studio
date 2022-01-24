@@ -24,18 +24,20 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
-  FaPlay,
-  FaRegCircle,
-  FaTimesCircle,
-  FaExclamationCircle,
-  FaCheckCircle,
-  FaCircleNotch,
-  FaRegStopCircle,
-  FaPlus,
-} from 'react-icons/fa';
-import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
-import { clsx, ContextMenu } from '@finos/legend-art';
-import LinearProgress from '@material-ui/core/LinearProgress';
+  clsx,
+  ContextMenu,
+  ProgressBar,
+  MdVerticalAlignBottom,
+  AddIcon,
+  PlayIcon,
+  EmptyCircleIcon,
+  TimesCircleIcon,
+  CheckCircleIcon,
+  CircleNotchIcon,
+  PlusIcon,
+  EmptyStopCircleIcon,
+  ExclamationCircleIcon,
+} from '@finos/legend-art';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
@@ -161,7 +163,7 @@ export const MappingTestStatusIndicator: React.FC<{
         title="Test is skipped"
         className="mapping-test-status-indicator mapping-test-status-indicator--skipped"
       >
-        <FaRegStopCircle />
+        <EmptyStopCircleIcon />
       </div>
     );
   }
@@ -171,7 +173,7 @@ export const MappingTestStatusIndicator: React.FC<{
         title="Test is running"
         className="mapping-test-status-indicator mapping-test-status-indicator--in-progress"
       >
-        <FaCircleNotch />
+        <CircleNotchIcon />
       </div>
     );
   }
@@ -182,7 +184,7 @@ export const MappingTestStatusIndicator: React.FC<{
           title="Test did not run"
           className="mapping-test-status-indicator mapping-test-status-indicator--none"
         >
-          <FaRegCircle />
+          <EmptyCircleIcon />
         </div>
       )}
       {testState.result === TEST_RESULT.ERROR && (
@@ -190,7 +192,7 @@ export const MappingTestStatusIndicator: React.FC<{
           title="Test failed due to error"
           className="mapping-test-status-indicator mapping-test-status-indicator--error"
         >
-          <FaTimesCircle />
+          <TimesCircleIcon />
         </div>
       )}
       {testState.result === TEST_RESULT.FAILED && (
@@ -198,7 +200,7 @@ export const MappingTestStatusIndicator: React.FC<{
           title="Test failed assertion"
           className="mapping-test-status-indicator mapping-test-status-indicator--failed"
         >
-          <FaExclamationCircle />
+          <ExclamationCircleIcon />
         </div>
       )}
       {testState.result === TEST_RESULT.PASSED && (
@@ -206,7 +208,7 @@ export const MappingTestStatusIndicator: React.FC<{
           title="Test passed"
           className="mapping-test-status-indicator mapping-test-status-indicator--passed"
         >
-          <FaCheckCircle />
+          <CheckCircleIcon />
         </div>
       )}
     </>
@@ -282,7 +284,7 @@ export const MappingTestExplorer = observer(
               tabIndex={-1}
               title={`Run ${testState.test.name}`}
             >
-              <FaPlay />
+              <PlayIcon />
             </button>
           </div>
         </div>
@@ -425,7 +427,7 @@ export const MappingTestsExplorer = observer(
                 tabIndex={-1}
                 title="Add Test"
               >
-                <FaPlus />
+                <PlusIcon />
               </button>
               <button
                 className="panel__header__action"
@@ -437,12 +439,12 @@ export const MappingTestsExplorer = observer(
                 tabIndex={-1}
                 title="Run All Tests"
               >
-                <FaPlay />
+                <PlayIcon />
               </button>
             </div>
           </div>
           <div className="mapping-test-explorer__header__status">
-            <LinearProgress
+            <ProgressBar
               className={`mapping-test-explorer__header__progress-bar mapping-test-explorer__header__progress-bar--${mappingEditorState.testSuiteResult.toLowerCase()}`}
               classes={{
                 bar: `mapping-test-explorer__header__progress-bar__bar mapping-test-explorer__header__progress-bar__bar--${mappingEditorState.testSuiteResult.toLowerCase()}`,
@@ -493,7 +495,7 @@ export const MappingTestsExplorer = observer(
                 </div>
                 <div className="mapping-test-explorer__content__adder__action">
                   <MdVerticalAlignBottom className="mapping-test-explorer__content__adder__action__dnd-icon" />
-                  <MdAdd className="mapping-test-explorer__content__adder__action__add-icon" />
+                  <AddIcon className="mapping-test-explorer__content__adder__action__add-icon" />
                 </div>
               </div>
             )}

@@ -1,6 +1,6 @@
 {
   "name": "@finos/stylelint-config-legend-studio",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Legend Studio Stylelint config",
   "keywords": [
     "legend",
@@ -31,14 +31,14 @@
   },
   "dependencies": {
     "postcss": "8.4.5",
-    "postcss-scss": "4.0.2",
+    "postcss-scss": "4.0.3",
     "stylelint-config-prettier": "9.0.3",
     "stylelint-config-standard": "24.0.0",
     "stylelint-scss": "4.1.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.6.0",
+    "eslint": "8.7.0",
     "rimraf": "3.0.2"
   },
   "peerDependencies": {

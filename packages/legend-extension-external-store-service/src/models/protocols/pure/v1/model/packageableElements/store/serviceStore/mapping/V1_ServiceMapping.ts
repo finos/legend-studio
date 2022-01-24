@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 import type { V1_ServiceStoreServicePtr } from '../model/V1_ServiceStoreServicePtr';
@@ -22,12 +23,16 @@ import type { V1_ServiceParameterMapping } from './V1_ServiceParameterMapping';
 export class V1_ServiceMapping implements Hashable {
   service!: V1_ServiceStoreServicePtr;
   parameterMappings: V1_ServiceParameterMapping[] = [];
+  pathOffset: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_MAPPING,
       this.service.service,
       hashArray(this.parameterMappings),
+      this.pathOffset
+        ? hashObjectWithoutSourceInformation(this.pathOffset)
+        : '',
     ]);
   }
 }

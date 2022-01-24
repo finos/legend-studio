@@ -19,12 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
-import {
-  FaList,
-  FaCodeBranch,
-  FaRegWindowMaximize,
-  FaUserSecret,
-} from 'react-icons/fa';
 import { SideBar } from '../editor/side-bar/SideBar';
 import { EditPanel } from '../editor/edit-panel/EditPanel';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
@@ -43,6 +37,10 @@ import {
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
   EyeIcon,
+  ListIcon,
+  CodeBranchIcon,
+  WindowMaximizeIcon,
+  HackerIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -58,11 +56,7 @@ import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import {
-  AppHeader,
-  NotificationSnackbar,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { AppHeader, useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 import type { ActivityDisplay } from '../editor/ActivityBar';
 
@@ -105,7 +99,7 @@ const ViewerStatusBar = observer(() => {
         {currentProject && (
           <div className="editor__status-bar__workspace">
             <div className="editor__status-bar__workspace__icon">
-              <FaCodeBranch />
+              <CodeBranchIcon />
             </div>
             <div className="editor__status-bar__workspace__project">
               <Link
@@ -142,7 +136,7 @@ const ViewerStatusBar = observer(() => {
           tabIndex={-1}
           title={'Maximize/Minimize'}
         >
-          <FaRegWindowMaximize />
+          <WindowMaximizeIcon />
         </button>
         <button
           className={clsx(
@@ -156,7 +150,7 @@ const ViewerStatusBar = observer(() => {
           tabIndex={-1}
           title={'Toggle text mode (F8)'}
         >
-          <FaUserSecret />
+          <HackerIcon />
         </button>
       </div>
     </div>
@@ -174,7 +168,7 @@ const ViewerActivityBar = observer(() => {
     {
       mode: ACTIVITY_MODE.EXPLORER,
       title: 'Explorer (Ctrl + Shift + X)',
-      icon: <FaList />,
+      icon: <ListIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
@@ -286,7 +280,6 @@ export const ViewerInner = observer(() => {
           <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
             <div className="editor__body">
               <ViewerActivityBar />
-              <NotificationSnackbar />
               <div ref={ref} className="editor__content-container">
                 <div
                   className={clsx('editor__content', {

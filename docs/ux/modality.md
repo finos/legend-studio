@@ -69,7 +69,7 @@ A popup (or pop-up) is a modal view that can either take form as a pop-up menu o
 
 ### Banner
 
-(prominent, medium priority) Banners remain until dismissed by the user, or if the state that caused the banner is resolved (note that banner can appear in various location, e.g. below header, above footer). The key difference between this and `notification/snackbar` is that it is persistent and does not track a process, but rather some state of the app (i.e. `connectivity`, `authorization`, `system announcement`)
+(prominent, medium priority) Banners remain until dismissed by the user, or if the state that caused the banner is resolved (note that banner can appear in various location, e.g. below header, above footer). The key difference between this and `notification` is that it is persistent and does not track a process, but rather some state of the app (i.e. `connectivity`, `authorization`, `system announcement`)
 
 ### Tooltip
 
@@ -79,7 +79,7 @@ For `tooltip`, only use a customized `<Tooltip>` component when the information 
 
 ### Notification
 
-(temporary, low-priority) Notifications (or `snackbars`) provide brief messages about app processes at the bottom of the screen. They tend to be temporarily but it's good to use snackbar/notification to in form users about process or outcome of processes like failure or success (majorly for the former).
+(temporary, low-priority) `Notifications` provide brief messages about app processes at the bottom of the screen. They tend to be temporarily but it's good to use notification to in form users about process or outcome of processes like failure or success (majorly for the former).
 
 ### Popover
 

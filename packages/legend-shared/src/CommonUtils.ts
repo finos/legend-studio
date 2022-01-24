@@ -57,16 +57,16 @@ export type SuperGenericFunction = (...args: any) => any;
 export const getClass = <T>(obj: object): Clazz<T> =>
   obj.constructor as Clazz<T>;
 
-export const getSuperClass = <V>(
+export const getSuperclass = <V>(
   _class: GenericClazz<unknown>,
 ): GenericClazz<V> | undefined => {
   if (!_class.name) {
     throw new UnsupportedOperationError(
-      `Cannot get super class for non user-defined classes`,
+      `Cannot get superclass for non user-defined classes`,
     );
   }
   // eslint-disable-next-line @typescript-eslint/ban-types
-  const superClass = Object.getPrototypeOf(_class) as Function | null;
+  const superclass = Object.getPrototypeOf(_class) as Function | null;
   /**
    * When it comes to inheritance, JavaScript only has one construct: objects.
    * Each object has a private property which holds a link to another object called its prototype.
@@ -76,7 +76,7 @@ export const getSuperClass = <V>(
    *
    * NOTE: when the prototype name is `empty` we know it's not user-defined classes, so we can return undefined
    */
-  return superClass?.name ? (superClass as GenericClazz<V>) : undefined;
+  return superclass?.name ? (superclass as GenericClazz<V>) : undefined;
 };
 
 /**
@@ -91,7 +91,7 @@ export const isClassAssignableFrom = (
     if (currentPrototype === cls1) {
       return true;
     }
-    currentPrototype = getSuperClass(currentPrototype);
+    currentPrototype = getSuperclass(currentPrototype);
   }
   return false;
 };

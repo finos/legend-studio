@@ -22,8 +22,6 @@ import {
   RELATIONAL_DATABASE_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { useState } from 'react';
-import { MdModeEdit } from 'react-icons/md';
-import { VscError } from 'react-icons/vsc';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -33,6 +31,8 @@ import {
   CheckSquareIcon,
   SquareIcon,
   TimesIcon,
+  ErrorIcon,
+  PencilIcon,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 import {
@@ -303,7 +303,7 @@ export const ConnectionEditor_ArrayEditor = observer(
                         onClick={showEditItemInput(value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -832,7 +832,7 @@ const RelationalConnectionStoreEditor = observer(
         <div className="relational-connection-editor__store-option--empty__label">
           (none)
         </div>
-        <VscError />
+        <ErrorIcon />
       </div>
     );
     const stores =

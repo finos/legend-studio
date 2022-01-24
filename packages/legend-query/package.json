@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-query",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Legend Query core",
   "keywords": [
     "legend",
@@ -49,7 +49,6 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@material-ui/core": "4.12.3",
     "@testing-library/react": "12.1.2",
     "@types/papaparse": "5.3.1",
     "@types/react": "17.0.38",
@@ -66,19 +65,18 @@
     "react-dnd-html5-backend": "14.1.0",
     "react-dom": "17.0.2",
     "react-hotkeys": "2.0.0",
-    "react-icons": "4.3.1",
     "react-router": "5.2.1",
     "react-router-dom": "5.3.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.11.1",
+    "@testing-library/dom": "8.11.2",
     "cross-env": "7.0.3",
-    "eslint": "8.6.0",
+    "eslint": "8.7.0",
     "jest": "27.4.7",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.47.0",
+    "sass": "1.49.0",
     "typescript": "4.5.4"
   },
   "peerDependencies": {

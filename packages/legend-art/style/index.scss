@@ -31,5 +31,6 @@
 @forward 'components/tree-view';
 
 // Reset (override library styles)
+@forward 'reset/mui';
 @forward 'reset/react-reflex';
 @forward 'reset/monaco-editor';

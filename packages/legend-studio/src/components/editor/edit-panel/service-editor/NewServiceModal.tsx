@@ -17,7 +17,7 @@
 import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { guaranteeType } from '@finos/legend-shared';
-import Dialog from '@material-ui/core/Dialog';
+import { Dialog } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import {

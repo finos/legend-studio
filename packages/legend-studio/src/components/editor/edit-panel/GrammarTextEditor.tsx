@@ -29,6 +29,8 @@ import {
   WordWrapIcon,
   getEditorValue,
   normalizeLineEnding,
+  MoreHorizontalIcon,
+  HackerIcon,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -37,8 +39,6 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
-import { FaUserSecret } from 'react-icons/fa';
-import { MdMoreHoriz } from 'react-icons/md';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,
@@ -292,7 +292,7 @@ export const GrammarTextEditor = observer(() => {
               tabIndex={-1}
               title="Click to exit text mode and go back to form mode"
             >
-              <MdMoreHoriz />
+              <MoreHorizontalIcon />
             </button>
           </div>
           <ContextMenu
@@ -300,7 +300,7 @@ export const GrammarTextEditor = observer(() => {
             content={<GrammarTextEditorHeaderTabContextMenu />}
           >
             <div className="edit-panel__header__tab__icon">
-              <FaUserSecret />
+              <HackerIcon />
             </div>
             <div className="edit-panel__header__tab__label">Text Mode</div>
           </ContextMenu>

@@ -1,5 +1,15 @@
 # @finos/legend-shared
 
+## 1.1.0
+
+### Minor Changes
+
+- [#755](https://github.com/finos/legend-studio/pull/755) [`61821cd6`](https://github.com/finos/legend-studio/commit/61821cd62c3b8b1a16124a092038ab963311de17) ([@akphi](https://github.com/akphi)) - Allow configuring base headers for `AbstractServerClient`.
+
+### Patch Changes
+
+- [#769](https://github.com/finos/legend-studio/pull/769) [`57b9d9c9`](https://github.com/finos/legend-studio/commit/57b9d9c9915b7d7707c7f15568ee3620a1e309d7) ([@akphi](https://github.com/akphi)) - Fix a problem with text-editor not showing tooltip for error with empty message ([#708](https://github.com/finos/legend-studio/issues/708)).
+
 ## 1.0.2
 
 ## 1.0.1

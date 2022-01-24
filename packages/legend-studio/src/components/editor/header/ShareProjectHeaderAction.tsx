@@ -16,13 +16,16 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import Dialog from '@material-ui/core/Dialog';
 import {
   generateViewProjectRoute,
   generateViewVersionRoute,
 } from '../../../stores/LegendStudioRouter';
-import { PanelLoadingIndicator, CustomSelectorInput } from '@finos/legend-art';
-import { FiShare } from 'react-icons/fi';
+import {
+  Dialog,
+  PanelLoadingIndicator,
+  CustomSelectorInput,
+  ShareIcon,
+} from '@finos/legend-art';
 import type { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
@@ -72,7 +75,13 @@ const ShareModal = observer(
     ): void => setSelectedVersion(val?.value);
 
     return (
-      <Dialog onClose={closeModal} open={open}>
+      <Dialog
+        onClose={closeModal}
+        open={open}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
+      >
         <div className="modal modal--dark modal--no-padding">
           <PanelLoadingIndicator isLoading={isDispatchingAction} />
           <div className="modal__body">
@@ -144,7 +153,7 @@ export const ShareProjectHeaderAction = observer(() => {
         title="Share..."
         onClick={showShareModal}
       >
-        <FiShare />
+        <ShareIcon />
       </button>
       {editorStore.sdlcState.currentProject && (
         <ShareModal open={openShareModal} closeModal={hideShareModal} />

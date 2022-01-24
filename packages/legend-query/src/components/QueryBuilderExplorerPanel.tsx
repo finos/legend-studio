@@ -19,7 +19,10 @@ import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
+  type TooltipPlacement,
+  Tooltip,
   clsx,
+  Dialog,
   TreeView,
   BlankPanelContent,
   DropdownMenu,
@@ -29,16 +32,16 @@ import {
   MenuContentItemIcon,
   MenuContentItemLabel,
   StringTypeIcon,
-  BooleanTypeIcon,
-  NumberTypeIcon,
-  DateTypeIcon,
+  ToggleIcon,
+  HashtagIcon,
+  ClockIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   MoreVerticalIcon,
   CompressIcon,
   EyeIcon,
   InfoCircleIcon,
-  ClassIcon,
+  PURE_ClassIcon,
   CheckIcon,
 } from '@finos/legend-art';
 import {
@@ -49,6 +52,8 @@ import {
   QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   getQueryBuilderPropertyNodeData,
+  QueryBuilderExplorerTreeSubTypeNodeData,
+  getQueryBuilderSubTypeNodeData,
 } from '../stores/QueryBuilderExplorerState';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
@@ -57,7 +62,6 @@ import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil';
 import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState';
 import { flowResult } from 'mobx';
-import { Dialog } from '@material-ui/core';
 import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState';
 import {
   type Type,
@@ -66,9 +70,70 @@ import {
   PrimitiveType,
   PRIMITIVE_TYPE,
   Enumeration,
+  Multiplicity,
+  TYPE_CAST_TOKEN,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
+import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+
+const QueryBuilderSubclassInfoTooltip: React.FC<{
+  subclass: Class;
+  path: string;
+  isMapped: boolean;
+  children: React.ReactElement;
+  placement?: TooltipPlacement | undefined;
+}> = (props) => {
+  const { subclass, path, isMapped, children, placement } = props;
+  return (
+    <Tooltip
+      arrow={true}
+      {...(placement !== undefined ? { placement } : {})}
+      classes={{
+        tooltip: 'query-builder__tooltip',
+        arrow: 'query-builder__tooltip__arrow',
+        tooltipPlacementRight: 'query-builder__tooltip--right',
+      }}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
+      title={
+        <div className="query-builder__tooltip__content">
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">Type</div>
+            <div className="query-builder__tooltip__item__value">
+              {subclass.path}
+            </div>
+          </div>
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">Path</div>
+            <div className="query-builder__tooltip__item__value">{path}</div>
+          </div>
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">
+              Multiplicity
+            </div>
+            <div className="query-builder__tooltip__item__value">
+              {getMultiplicityDescription(new Multiplicity(1, 1))}
+            </div>
+          </div>
+          <div className="query-builder__tooltip__item">
+            <div className="query-builder__tooltip__item__label">Mapped</div>
+            <div className="query-builder__tooltip__item__value">
+              {isMapped ? 'Yes' : 'No'}
+            </div>
+          </div>
+        </div>
+      }
+    >
+      {children}
+    </Tooltip>
+  );
+};
 
 const QueryBuilderExplorerPreviewDataModal = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -84,6 +149,9 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__explorer__preview-data-modal">
@@ -298,7 +366,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       );
     } else if (type.name === PRIMITIVE_TYPE.BOOLEAN) {
       return (
-        <BooleanTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__boolean" />
+        <ToggleIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__boolean" />
       );
     } else if (
       type.name === PRIMITIVE_TYPE.NUMBER ||
@@ -307,7 +375,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       type.name === PRIMITIVE_TYPE.DECIMAL
     ) {
       return (
-        <NumberTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
+        <HashtagIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__number" />
       );
     } else if (
       type.name === PRIMITIVE_TYPE.DATE ||
@@ -315,7 +383,7 @@ const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
       type.name === PRIMITIVE_TYPE.STRICTDATE
     ) {
       return (
-        <DateTypeIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
+        <ClockIcon className="query-builder-explorer-tree__icon query-builder-explorer-tree__icon__time" />
       );
     }
   }
@@ -458,7 +526,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               </div>
               <div className="tree-view__node__label query-builder-explorer-tree__root-node__label">
                 <div className="query-builder-explorer-tree__root-node__label__icon">
-                  <ClassIcon />
+                  <PURE_ClassIcon />
                 </div>
                 <div className="query-builder-explorer-tree__root-node__label__text">
                   {node.label}
@@ -466,7 +534,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               </div>
             </>
           )}
-          {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
+          {(node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+            node instanceof QueryBuilderExplorerTreeSubTypeNodeData) && (
             <>
               <div className="tree-view__node__icon query-builder-explorer-tree__node__icon">
                 <div className="query-builder-explorer-tree__expand-icon">
@@ -486,7 +555,11 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 )}
               >
                 {explorerState.humanizePropertyName
-                  ? prettyPropertyName(node.label)
+                  ? node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                    ? TYPE_CAST_TOKEN + prettyPropertyName(node.label)
+                    : prettyPropertyName(node.label)
+                  : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                  ? TYPE_CAST_TOKEN + node.label
                   : node.label}
                 {isDerivedProperty && (
                   <div
@@ -519,16 +592,28 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     <EyeIcon />
                   </button>
                 )}
-                <QueryBuilderPropertyInfoTooltip
-                  property={node.property}
-                  path={node.id}
-                  isMapped={node.mappingData.mapped}
-                  placement="bottom"
-                >
-                  <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
-                    <InfoCircleIcon />
-                  </div>
-                </QueryBuilderPropertyInfoTooltip>
+                {node instanceof QueryBuilderExplorerTreePropertyNodeData && (
+                  <QueryBuilderPropertyInfoTooltip
+                    property={node.property}
+                    path={node.id}
+                    isMapped={node.mappingData.mapped}
+                  >
+                    <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
+                      <InfoCircleIcon />
+                    </div>
+                  </QueryBuilderPropertyInfoTooltip>
+                )}
+                {node instanceof QueryBuilderExplorerTreeSubTypeNodeData && (
+                  <QueryBuilderSubclassInfoTooltip
+                    subclass={node.subclass}
+                    path={node.id}
+                    isMapped={node.mappingData.mapped}
+                  >
+                    <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
+                      <InfoCircleIcon />
+                    </div>
+                  </QueryBuilderSubclassInfoTooltip>
+                )}
               </div>
             </>
           )}
@@ -599,20 +684,30 @@ const QueryBuilderExplorerTree = observer(
         node.isOpen = !node.isOpen;
         if (
           node.isOpen &&
-          node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+          (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+            node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
           node.type instanceof Class
         ) {
-          node.type
-            .getAllProperties()
-            .concat(node.type.getAllDerivedProperties())
-            .forEach((property) => {
-              const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-                queryBuilderState.graphManagerState,
-                property,
-                node,
-              );
-              treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
-            });
+          (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+            ? node.type.getAllOwnedProperties()
+            : node.type
+                .getAllProperties()
+                .concat(node.type.getAllDerivedProperties())
+          ).forEach((property) => {
+            const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
+              queryBuilderState.graphManagerState,
+              property,
+              node,
+            );
+            treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+          });
+          node.type.subclasses.forEach((subclass) => {
+            const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
+              subclass,
+              node,
+            );
+            treeData.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
+          });
         }
       }
       explorerState.refreshTree();
@@ -620,11 +715,16 @@ const QueryBuilderExplorerTree = observer(
 
     const getChildNodes = (
       node: QueryBuilderExplorerTreeNodeData,
-    ): QueryBuilderExplorerTreePropertyNodeData[] =>
+    ): QueryBuilderExplorerTreeNodeData[] =>
       node.childrenIds
         .map((id) => treeData.nodes.get(id))
         .filter(
-          (childNode): childNode is QueryBuilderExplorerTreePropertyNodeData =>
+          (
+            childNode,
+          ): childNode is
+            | QueryBuilderExplorerTreePropertyNodeData
+            | QueryBuilderExplorerTreeSubTypeNodeData =>
+            childNode instanceof QueryBuilderExplorerTreeSubTypeNodeData ||
             childNode instanceof QueryBuilderExplorerTreePropertyNodeData,
         )
         // simple properties come first
@@ -684,6 +784,7 @@ export const QueryBuilderExplorerPanel = observer(
 
     return (
       <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER}
         className={clsx('panel query-builder__explorer', {
           // NOTE: this might make it hard to modularize
           backdrop__element:

@@ -16,9 +16,9 @@
 
 import {
   BinaryTypeIcon,
-  BooleanTypeIcon,
-  DateTypeIcon,
-  NumberTypeIcon,
+  ToggleIcon,
+  ClockIcon,
+  HashtagIcon,
   QuestionCircleIcon,
   StringTypeIcon,
 } from '@finos/legend-art';
@@ -98,7 +98,7 @@ export const renderColumnTypeIcon = (
     );
   } else if (type instanceof Bit) {
     return (
-      <BooleanTypeIcon className="relation-source-tree__icon relation-source-tree__icon__boolean" />
+      <ToggleIcon className="relation-source-tree__icon relation-source-tree__icon__boolean" />
     );
   } else if (
     type instanceof Numeric ||
@@ -112,11 +112,11 @@ export const renderColumnTypeIcon = (
     type instanceof TinyInt
   ) {
     return (
-      <NumberTypeIcon className="relation-source-tree__icon relation-source-tree__icon__number" />
+      <HashtagIcon className="relation-source-tree__icon relation-source-tree__icon__number" />
     );
   } else if (type instanceof Date || type instanceof Timestamp) {
     return (
-      <DateTypeIcon className="relation-source-tree__icon relation-source-tree__icon__time" />
+      <ClockIcon className="relation-source-tree__icon relation-source-tree__icon__time" />
     );
   } else if (type instanceof Other) {
     return (

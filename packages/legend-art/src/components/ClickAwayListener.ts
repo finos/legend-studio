@@ -14,9 +14,4 @@
  * limitations under the License.
  */
 
-import { Backdrop } from '@material-ui/core';
-import { observer } from 'mobx-react-lite';
-
-export const ApplicationBackdrop = observer((props: { open: boolean }) => (
-  <Backdrop className="backdrop" open={props.open} />
-));
+export { ClickAwayListener } from '@mui/material';

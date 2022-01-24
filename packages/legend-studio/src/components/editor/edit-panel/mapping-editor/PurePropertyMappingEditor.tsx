@@ -29,8 +29,11 @@ import type {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { clsx, CustomSelectorInput } from '@finos/legend-art';
-import { FaArrowAltCircleRight } from 'react-icons/fa';
+import {
+  clsx,
+  CustomSelectorInput,
+  ArrowCircleRightIcon,
+} from '@finos/legend-art';
 import { type ConnectDropTarget, useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
@@ -180,7 +183,7 @@ const EnumerationPropertyMappingEditor = observer(
               tabIndex={-1}
               title={'Visit enumeration mapping'}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           </div>
           <StudioLambdaEditor
@@ -272,7 +275,7 @@ const ClassPropertyMappingEditor = observer(
               tabIndex={-1}
               title={'Visit class mapping'}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           </div>
           <StudioLambdaEditor

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application",
-  "version": "1.0.3",
+  "version": "1.1.1",
   "description": "Legend application core",
   "keywords": [
     "legend",
@@ -43,8 +43,6 @@
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@material-ui/core": "4.12.3",
-    "@testing-library/react": "12.1.2",
     "@types/css-font-loading-module": "0.0.7",
     "@types/react": "17.0.38",
     "@types/react-dom": "17.0.11",
@@ -55,7 +53,6 @@
     "monaco-editor": "0.31.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-icons": "4.3.1",
     "react-resize-detector": "7.0.0",
     "react-router": "5.2.1",
     "react-router-dom": "5.3.0",
@@ -63,13 +60,12 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.11.1",
     "cross-env": "7.0.3",
-    "eslint": "8.6.0",
+    "eslint": "8.7.0",
     "jest": "27.4.7",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.47.0",
+    "sass": "1.49.0",
     "typescript": "4.5.4"
   },
   "peerDependencies": {

@@ -17,19 +17,19 @@
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import {
+  Dialog,
   BlankPanelContent,
   CustomSelectorInput,
   PencilIcon,
   TimesIcon,
   DollarIcon,
+  PlusIcon,
 } from '@finos/legend-art';
-import { FaPlus } from 'react-icons/fa';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
   QueryParameterState,
 } from '../stores/QueryParametersState';
-import { Dialog } from '@material-ui/core';
 import { useEffect, useState } from 'react';
 import {
   type Type,
@@ -66,6 +66,9 @@ const ParameterValuesEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__values__editor__modal">
@@ -205,6 +208,9 @@ const VariableExpressionEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__modal">
@@ -424,7 +430,7 @@ export const QueryBuilderParameterPanel = observer(
               disabled={parametersDisabled}
               title="Add Parameter"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>

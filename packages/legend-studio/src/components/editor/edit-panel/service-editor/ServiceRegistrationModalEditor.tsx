@@ -18,14 +18,15 @@ import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import {
   clsx,
+  Dialog,
   PanelLoadingIndicator,
   CustomSelectorInput,
+  CheckSquareIcon,
+  SquareIcon,
 } from '@finos/legend-art';
-import { Dialog } from '@material-ui/core';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceExecutionMode } from '@finos/legend-graph';
-import { FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
@@ -121,6 +122,9 @@ export const ServiceRegistrationModalEditor = observer(() => {
       onClose={closeModal}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      TransitionProps={{
+        appear: false, // disable transition
+      }}
     >
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL}
@@ -157,9 +161,9 @@ export const ServiceRegistrationModalEditor = observer(() => {
                     tabIndex={-1}
                   >
                     {registrationState.activatePostRegistration ? (
-                      <FaCheckSquare />
+                      <CheckSquareIcon />
                     ) : (
-                      <FaSquare />
+                      <SquareIcon />
                     )}
                   </button>
                   <div className="panel__content__form__section__toggler__prompt">

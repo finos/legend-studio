@@ -798,15 +798,12 @@ export class LegendQueryStore {
             true,
             false,
           )) as PlainObject<ProjectVersionEntities>[];
-        dependencyEntitiesJson
-          .map((e) => ProjectVersionEntities.serialization.fromJson(e))
-          .forEach((dependencyInfo) => {
-            dependencyEntitiesMap.set(
-              dependencyInfo.id,
-              dependencyInfo.entities,
-            );
-          });
       }
+      dependencyEntitiesJson
+        .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+        .forEach((dependencyInfo) => {
+          dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
+        });
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
