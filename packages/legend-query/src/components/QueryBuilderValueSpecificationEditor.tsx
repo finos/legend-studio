@@ -31,6 +31,7 @@ import {
 import {
   guaranteeNonNullable,
   isNonNullable,
+  Randomizer,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
@@ -54,6 +55,13 @@ import {
   VariableExpression,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import {
+  type PackageableElementOption,
+  DATE_FORMAT,
+  buildElementOption,
+} from '@finos/legend-application';
+import format from 'date-fns/format/index';
+import { addDays } from 'date-fns';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -491,6 +499,77 @@ export const LatestDatePrimitiveInstanceValueEditor: React.FC = () => (
   </div>
 );
 
+export const DateInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    graph: PureModel;
+    expectedType: Type;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, graph, expectedType, className } = props;
+    const variableType = valueSpecification.genericType.value.rawType;
+    const selectedType = buildElementOption(variableType);
+    const typeOptions: PackageableElementOption<Type>[] = graph.primitiveTypes
+      .filter(
+        (p) =>
+          p.name === PRIMITIVE_TYPE.STRICTDATE ||
+          p.name === PRIMITIVE_TYPE.DATETIME ||
+          p.name === PRIMITIVE_TYPE.LATESTDATE,
+      )
+      .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
+
+    const strictDate = graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
+    const date = graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
+    const dateTime = graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
+    const latestDate = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
+    const changeType = (val: PackageableElementOption<Type>): void => {
+      if (variableType !== val.value) {
+        valueSpecification.genericType.value.setRawType(val.value);
+      }
+      if (
+        valueSpecification.genericType.value.rawType.name !==
+        PRIMITIVE_TYPE.LATESTDATE
+      ) {
+        valueSpecification.values = [
+          format(
+            new Randomizer().getRandomDate(
+              new Date(Date.now()),
+              addDays(Date.now(), 100),
+            ),
+            DATE_FORMAT,
+          ),
+        ];
+      }
+    };
+
+    return (
+      <div className="query-builder-value-spec-editor__date">
+        {(valueSpecification.genericType.value.rawType === strictDate ||
+          valueSpecification.genericType.value.rawType === dateTime) && (
+          <DatePrimitiveInstanceValueEditor
+            valueSpecification={valueSpecification}
+            className={className}
+          />
+        )}
+        {valueSpecification.genericType.value.rawType === latestDate && (
+          <LatestDatePrimitiveInstanceValueEditor />
+        )}
+        {expectedType === date && (
+          <div className="query-builder-value-spec-editor__dropdown">
+            <CustomSelectorInput
+              placeholder="Choose a type..."
+              options={typeOptions}
+              onChange={changeType}
+              value={selectedType}
+              darkMode={true}
+            />
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
@@ -529,14 +608,15 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
+      case PRIMITIVE_TYPE.LATESTDATE:
         return (
-          <DatePrimitiveInstanceValueEditor
+          <DateInstanceValueEditor
             valueSpecification={valueSpecification}
+            graph={graph}
+            expectedType={expectedType}
             className={className}
           />
         );
-      case PRIMITIVE_TYPE.LATESTDATE:
-        return <LatestDatePrimitiveInstanceValueEditor />;
       default:
         return <QueryBuilderUnsupportedValueSpecificationEditor />;
     }

@@ -133,10 +133,7 @@ export class QueryBuilderSetupState {
       );
       this.setClassMilestoningTemporalValues([]);
       if (stereotype) {
-        this.queryBuilderState.buildClassMilestoningTemporalValue(
-          val,
-          stereotype,
-        );
+        this.queryBuilderState.buildClassMilestoningTemporalValue(stereotype);
       }
     }
   }

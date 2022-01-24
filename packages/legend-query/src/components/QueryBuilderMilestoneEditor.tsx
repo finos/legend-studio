@@ -119,8 +119,7 @@ const MilestoningParameterEditor = observer(
             p.name === PRIMITIVE_TYPE.STRICTDATE ||
             p.name === PRIMITIVE_TYPE.LATESTDATE,
         )
-        .map((p) => buildElementOption(p) as PackageableElementOption<Type>)
-        .concat(queryBuilderState.enumerationOptions);
+        .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
         milestoningParameter?.genericType?.value.setRawType(val.value);

@@ -327,7 +327,7 @@ export class QueryBuilderState {
     );
   }
 
-  buildClassMilestoningTemporalValue(element: Class, stereotype: string): void {
+  buildClassMilestoningTemporalValue(stereotype: string): void {
     const milestoningParameter = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
         new GenericType(
