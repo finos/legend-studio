@@ -44,23 +44,19 @@ jobs:
         run: node ./scripts/release/createNewReleasePRTitle.js
       - name: Create new release pull request or Publish to NPM
         id: changesets
-        uses: changesets/action@v1.1.0
+        uses: changesets/action@v1.2.0
         with:
           version: yarn release:version
           commit: 'chore: bump versions and release'
           title: ${{ steps.generate-new-release-pr-title.outputs.title }}
           publish: yarn release
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        # NOTE: `changeset` is currently creating tags and Github release, which is fine
-        # except for the fact that it might be creating way too many tags
-        # and releases in our repository. This requires substantial changes on `changesets`
-        # side and thus, we cannot rely on them doing that any time soon. Meanwhile
-        # we will do the following cleanup step and manually create a release on Github
-        # See https://github.com/changesets/action/issues/87
+        # Prevent `changeset`'s default behavior to create Git tags and publish Github release
         #
-        # This also includes a few other extra steps we do to conclude a release
+        # Conclude the release with the following actions:
         # 1. Create a tag for the release and publish a Github release for that tag
         # 2. Create the release branch for the latest release tag
         # 3. Create a new release milestone and move over open issues in the current milestone and close the current milestone.

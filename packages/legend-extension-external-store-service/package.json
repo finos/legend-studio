@@ -46,7 +46,7 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@types/react": "17.0.38",
-    "mobx": "6.3.12",
+    "mobx": "6.3.13",
     "mobx-react-lite": "3.2.3",
     "monaco-editor": "0.31.1",
     "react": "17.0.2",
@@ -60,7 +60,7 @@
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.49.0",
-    "typescript": "4.5.4"
+    "typescript": "4.5.5"
   },
   "peerDependencies": {
     "react": "^17.0.0"
