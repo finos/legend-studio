@@ -145,7 +145,7 @@ export const EditorInner = observer(() => {
        */
       const showAlert =
         editorStore.isInConflictResolutionMode ||
-        editorStore.hasUnsyncedChanges;
+        editorStore.hasUnpushedChanges;
       if (!editorStore.ignoreNavigationBlocking && showAlert) {
         event.returnValue = '';
       }
@@ -181,7 +181,7 @@ export const EditorInner = observer(() => {
   const handleRouteNavigationBlocking = (nextLocation: Location): boolean => {
     // NOTE: as long as we're in conflict resolution, we want this block to be present
     const showAlert =
-      editorStore.isInConflictResolutionMode || editorStore.hasUnsyncedChanges;
+      editorStore.isInConflictResolutionMode || editorStore.hasUnpushedChanges;
     if (
       !editorStore.ignoreNavigationBlocking &&
       !confirmedAllowNavigation &&
@@ -190,7 +190,7 @@ export const EditorInner = observer(() => {
       editorStore.setActionAltertInfo({
         message: editorStore.isInConflictResolutionMode
           ? 'You have not accepted the conflict resolution, the current resolution will be discarded. Leave anyway?'
-          : 'You have unsynced changes. Leave anyway?',
+          : 'You have unpushed changes. Leave anyway?',
         type: ActionAlertType.CAUTION,
         onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
         onClose: (): void => editorStore.setBlockGlobalHotkeys(false),

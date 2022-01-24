@@ -359,9 +359,9 @@ export const ProjectConfigurationEditor = observer(() => {
   const disableAddButton =
     selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE || isReadOnly;
   const updateConfigs = (): void => {
-    if (editorStore.hasUnsyncedChanges) {
+    if (editorStore.hasUnpushedChanges) {
       editorStore.setActionAltertInfo({
-        message: 'You have unsynced changes',
+        message: 'You have unpushed changes',
         prompt:
           'This action will discard these changes and refresh the application',
         type: ActionAlertType.CAUTION,

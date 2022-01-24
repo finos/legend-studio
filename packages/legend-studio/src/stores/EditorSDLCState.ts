@@ -212,7 +212,7 @@ export class EditorSDLCState {
     )) as boolean;
   }
 
-  *fetchWorkspaceLatestRevision(
+  *fetchRemoteWorkspaceRevision(
     projectId: string,
     workspace: Workspace,
   ): GeneratorFn<void> {

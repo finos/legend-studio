@@ -138,7 +138,7 @@ export const EditPanelSplashScreen: React.FC = () => {
         </div>
         <div className="edit-panel__splash-screen__content__item">
           <div className="edit-panel__splash-screen__content__item__label">
-            Sync with Workspace
+            Push Local Changes
           </div>
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>

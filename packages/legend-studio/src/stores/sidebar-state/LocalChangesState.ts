@@ -42,10 +42,16 @@ import {
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import type { Entity } from '@finos/legend-model-storage';
-import { EntityDiff, EntityChange, Revision } from '@finos/legend-server-sdlc';
+import {
+  type EntityChangeConflict,
+  EntityDiff,
+  EntityChange,
+  Revision,
+} from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import { WorkspaceSyncState } from './WorkspaceSyncState';
 import { ACTIVITY_MODE } from '../EditorConfig';
+import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 
 class PatchLoaderState {
   editorStore: EditorStore;
@@ -156,7 +162,7 @@ class PatchLoaderState {
 export class LocalChangesState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
-  isSyncingWithWorkspace = false;
+  isPushingToWorkspace = false;
   workspaceSyncState: WorkspaceSyncState;
   isRefreshingLocalChangesDetector = false;
   patchLoaderState: PatchLoaderState;
@@ -166,6 +172,7 @@ export class LocalChangesState {
       editorStore: false,
       sdlcState: false,
       openLocalChange: action,
+      refreshWorkspaceSyncStatus: flow,
     });
 
     this.editorStore = editorStore;
@@ -228,6 +235,60 @@ export class LocalChangesState {
     );
   }
 
+  openWorkspacePullChange(diff: EntityDiff): void {
+    const fromEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined => {
+      if (!entityPath) {
+        return undefined;
+      }
+      const element =
+        this.editorStore.graphManagerState.graph.getNullableElement(entityPath);
+      if (!element) {
+        return undefined;
+      }
+      const entity =
+        this.editorStore.graphManagerState.graphManager.elementToEntity(
+          element,
+          true,
+        );
+      return entity;
+    };
+    const toEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath
+        ? this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.entities.find(
+            (e) => e.path === entityPath,
+          )
+        : undefined;
+    const fromEntity = EntityDiff.shouldOldEntityExist(diff)
+      ? guaranteeNonNullable(
+          fromEntityGetter(diff.getValidatedOldPath()),
+          `Can't find entity with path '${diff.oldPath}'`,
+        )
+      : undefined;
+    const toEntity = EntityDiff.shouldNewEntityExist(diff)
+      ? guaranteeNonNullable(
+          toEntityGetter(diff.getValidatedNewPath()),
+          `Can't find entity with path  '${diff.newPath}'`,
+        )
+      : undefined;
+    this.editorStore.openEntityDiff(
+      new EntityDiffViewState(
+        this.editorStore,
+        SPECIAL_REVISION_ALIAS.LOCAL,
+        SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,
+        diff.oldPath,
+        diff.newPath,
+        fromEntity,
+        toEntity,
+        fromEntityGetter,
+        toEntityGetter,
+      ),
+    );
+  }
+
   *refreshLocalChanges(): GeneratorFn<void> {
     const startTime = Date.now();
     this.isRefreshingLocalChangesDetector = true;
@@ -261,6 +322,102 @@ export class LocalChangesState {
     }
   }
 
+  *refreshWorkspaceSyncStatus(): GeneratorFn<void> {
+    try {
+      yield flowResult(
+        this.sdlcState.fetchRemoteWorkspaceRevision(
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+        ),
+      );
+      if (this.sdlcState.isWorkspaceOutOfSync) {
+        const remoteWorkspaceEntities =
+          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+            this.sdlcState.activeProject.projectId,
+            this.sdlcState.activeWorkspace,
+            this.sdlcState.activeRemoteWorkspaceRevision.id,
+          )) as Entity[];
+        this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
+          remoteWorkspaceEntities,
+        );
+        yield flowResult(
+          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
+            remoteWorkspaceEntities,
+            LogEvent.create(
+              CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            ),
+          ),
+        );
+        yield flowResult(
+          this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
+        );
+      } else {
+        this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
+          [],
+        );
+        this.editorStore.changeDetectionState.setpotentialWorkspacePullConflicts(
+          [],
+        );
+        this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(
+          [],
+        );
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        error,
+      );
+    }
+  }
+
+  openPotentialWorkspacePullConflict(conflict: EntityChangeConflict): void {
+    const baseEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath
+        ? this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
+            (e) => e.path === entityPath,
+          )
+        : undefined;
+    const currentChangeEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath
+        ? this.editorStore.graphManagerState.graph.allOwnElements
+            .map((element) =>
+              this.editorStore.graphManagerState.graphManager.elementToEntity(
+                element,
+              ),
+            )
+            .find((e) => e.path === entityPath)
+        : undefined;
+    const incomingChangeEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath
+        ? this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.entities.find(
+            (e) => e.path === entityPath,
+          )
+        : undefined;
+    const conflictEditorState = new EntityChangeConflictEditorState(
+      this.editorStore,
+      this.editorStore.conflictResolutionState,
+      conflict.entityPath,
+      SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,
+      SPECIAL_REVISION_ALIAS.LOCAL,
+      SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,
+      baseEntityGetter(conflict.entityPath),
+      currentChangeEntityGetter(conflict.entityPath),
+      incomingChangeEntityGetter(conflict.entityPath),
+      baseEntityGetter,
+      currentChangeEntityGetter,
+      incomingChangeEntityGetter,
+    );
+    conflictEditorState.setReadOnly(true);
+    this.editorStore.openEntityChangeConflict(conflictEditorState);
+  }
+
   downloadLocalChanges = (): void => {
     const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
       this.sdlcState.activeWorkspace.workspaceId
@@ -277,9 +434,9 @@ export class LocalChangesState {
     downloadFileUsingDataURI(fileName, content, ContentType.APPLICATION_JSON);
   };
 
-  *syncWithWorkspace(syncMessage?: string): GeneratorFn<void> {
+  *pushLocalChanges(pushMessage?: string): GeneratorFn<void> {
     if (
-      this.isSyncingWithWorkspace ||
+      this.isPushingToWorkspace ||
       this.editorStore.workspaceUpdaterState.isUpdatingWorkspace
     ) {
       return;
@@ -311,27 +468,27 @@ export class LocalChangesState {
       return;
     }
     yield flowResult(
-      this.sdlcState.fetchWorkspaceLatestRevision(
+      this.sdlcState.fetchRemoteWorkspaceRevision(
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       ),
     );
     if (this.sdlcState.isWorkspaceOutOfSync) {
       this.editorStore.setActionAltertInfo({
-        message: 'Local workspace out-of-sync',
+        message: 'Local workspace is out-of-sync',
         prompt: 'Please pull remote changes before pushing your local changes.',
         type: ActionAlertType.CAUTION,
         onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
         onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
         actions: [
           {
-            label: 'Pull Remote Changes',
+            label: 'Pull remote Changes',
             type: ActionAlertActionType.STANDARD,
             default: true,
             handler: (): void => {
               this.editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
               flowResult(
-                this.editorStore.localChangesState.workspaceSyncState.updateToWorkspaceLatestRevision(),
+                this.editorStore.localChangesState.workspaceSyncState.pullChanges(),
               ).catch(
                 this.editorStore.applicationStore.alertIllegalUnhandledError,
               );
@@ -345,7 +502,7 @@ export class LocalChangesState {
       });
       return;
     }
-    this.isSyncingWithWorkspace = true;
+    this.isPushingToWorkspace = true;
     const currentHashesIndex =
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
@@ -355,8 +512,8 @@ export class LocalChangesState {
           this.sdlcState.activeWorkspace,
           {
             message:
-              syncMessage ??
-              `syncing with workspace from ${
+              pushMessage ??
+              `pushed new changes from ${
                 this.editorStore.applicationStore.config.appName
               } [potentially affected ${
                 localChanges.length === 1
@@ -373,7 +530,9 @@ export class LocalChangesState {
       const syncFinishedTime = Date.now();
 
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SYNCED),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_LOCAL_CHANGES_PUSHED,
+        ),
         syncFinishedTime - startTime,
         'ms',
       );
@@ -489,7 +648,7 @@ export class LocalChangesState {
         this.editorStore.applicationStore.notifyError(error);
       }
     } finally {
-      this.isSyncingWithWorkspace = false;
+      this.isPushingToWorkspace = false;
     }
   }
 }

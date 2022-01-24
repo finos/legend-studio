@@ -234,13 +234,13 @@ export class ChangeDetectionState {
    */
   workspaceBaseRevisionState: RevisionChangeDetectionState;
   /**
-   * [6. WSH] Store the entities from local workspace HEAD revision.
+   * [6. WSH] Store the entities from LOCAL workspace HEAD revision.
    * This can be used for computing local changes/live diffs (i.e. changes between local graph and workspace HEAD)
    */
   workspaceLocalLatestRevisionState: RevisionChangeDetectionState;
 
   /**
-   * [7. WSH] Store the entities from remote workspace HEAD revision.
+   * Store the entities from remote workspace HEAD revision.
    * This can be used for computing the diffs between local workspace and remote workspace to check if the local workspace is out-of-sync
    */
   workspaceRemoteLatestRevisionState: RevisionChangeDetectionState;
@@ -249,7 +249,7 @@ export class ChangeDetectionState {
   aggregatedProjectLatestChanges: EntityDiff[] = []; // project latest changes - used for updating workspace
   aggregatedWorkspaceRemoteChanges: EntityDiff[] = []; // review/merge-request changes
   potentialWorkspaceUpdateConflicts: EntityChangeConflict[] = []; // potential conflicts when updating workspace (derived from aggregated workspace changes and project latest changes)
-
+  potentialWorkspacePullConflicts: EntityChangeConflict[] = [];
   /**
    * For conflict resolution, the procedure is split into 2 steps:
    * 1. The user resolves conflicts (no graph is built at this point)
@@ -277,6 +277,7 @@ export class ChangeDetectionState {
       aggregatedWorkspaceChanges: observable.ref,
       aggregatedProjectLatestChanges: observable.ref,
       aggregatedWorkspaceRemoteChanges: observable.ref,
+      potentialWorkspacePullConflicts: observable.ref,
       potentialWorkspaceUpdateConflicts: observable.ref,
       aggregatedConflictResolutionChanges: observable.ref,
       conflicts: observable.ref,
@@ -326,10 +327,19 @@ export class ChangeDetectionState {
   setAggregatedProjectLatestChanges(diffs: EntityDiff[]): void {
     this.aggregatedProjectLatestChanges = diffs;
   }
+
+  setAggregatedWorkspaceRemoteChanges(diffs: EntityDiff[]): void {
+    this.aggregatedWorkspaceRemoteChanges = diffs;
+  }
+
   setPotentialWorkspaceUpdateConflicts(
     conflicts: EntityChangeConflict[],
   ): void {
     this.potentialWorkspaceUpdateConflicts = conflicts;
+  }
+
+  setpotentialWorkspacePullConflicts(conflicts: EntityChangeConflict[]): void {
+    this.potentialWorkspacePullConflicts = conflicts;
   }
 
   stop(force = false): void {
@@ -504,6 +514,15 @@ export class ChangeDetectionState {
         this.workspaceRemoteLatestRevisionState,
         quiet,
       )) as EntityDiff[];
+    const conflicts = (yield flowResult(
+      this.computeEntityChangeConflicts(
+        this.workspaceLocalLatestRevisionState.changes,
+        this.aggregatedWorkspaceRemoteChanges,
+        this.snapshotLocalEntityHashesIndex(),
+        this.workspaceRemoteLatestRevisionState.entityHashesIndex,
+      ),
+    )) as EntityChangeConflict[];
+    this.setpotentialWorkspacePullConflicts(conflicts);
   }
 
   *computeAggregatedProjectLatestChanges(quiet?: boolean): GeneratorFn<void> {

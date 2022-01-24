@@ -375,7 +375,7 @@ export class WorkspaceSyncState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
 
-  isUpdatingToWorkspaceLatestRevision = false;
+  isPullingWorkspace = false;
   incomingRevisions: Revision[] = [];
   workspaceSyncConflictResolutionState: WorkspaceSyncConflictResolutionState;
 
@@ -385,10 +385,10 @@ export class WorkspaceSyncState {
       sdlcState: false,
       fetchIncomingRevisions: flow,
       setIncomingRevisions: action,
-      updateToWorkspaceLatestRevision: flow,
+      pullChanges: flow,
       resetConflictState: action,
-      forceUpdateRevision: flow,
-      synWithHeadAndLoadChanges: flow,
+      forcePull: flow,
+      loadChanges: flow,
     });
 
     this.editorStore = editorStore;
@@ -430,73 +430,35 @@ export class WorkspaceSyncState {
     }
   }
 
-  *updateToWorkspaceLatestRevision(): GeneratorFn<void> {
+  *pullChanges(): GeneratorFn<void> {
     try {
       assertTrue(this.sdlcState.isWorkspaceOutOfSync);
       this.editorStore.setBlockingAlert({
-        message: `Syncing workspace...`,
+        message: `Pulling latest changes...`,
         showLoading: true,
       });
-      this.isUpdatingToWorkspaceLatestRevision = true;
+      this.isPullingWorkspace = true;
       const changes =
         this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .changes;
       let conflicts: EntityChangeConflict[] = [];
-      const workspaceLatestRevision =
-        this.sdlcState.activeRemoteWorkspaceRevision;
-      const workspaceLatestEntities =
-        (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          workspaceLatestRevision.id,
-        )) as Entity[];
-      this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
-        workspaceLatestEntities,
-      );
       if (changes.length) {
         // Base revision <-> Local
         yield flowResult(
           this.editorStore.changeDetectionState.computeLocalChanges(),
         );
-        const activeRevisionToLocalChanges =
-          this.editorStore.changeDetectionState
-            .workspaceLocalLatestRevisionState.changes;
-        // Base revision <-> workspace head Revision
-        this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
-          workspaceLatestEntities,
-        );
-        yield flowResult(
-          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
-            workspaceLatestEntities,
-            LogEvent.create(
-              CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
-            ),
-          ),
-        );
         yield flowResult(
           this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
         );
-        const activeRevisionToWorkspaceLatestRevisionChanges =
-          this.editorStore.changeDetectionState
-            .aggregatedWorkspaceRemoteChanges;
-        // compute conflicts
-        conflicts = (yield flowResult(
-          this.editorStore.changeDetectionState.computeEntityChangeConflicts(
-            activeRevisionToLocalChanges,
-            activeRevisionToWorkspaceLatestRevisionChanges,
-            this.editorStore.changeDetectionState
-              .workspaceLocalLatestRevisionState.entityHashesIndex,
-            this.editorStore.changeDetectionState
-              .workspaceRemoteLatestRevisionState.entityHashesIndex,
-          ),
-        )) as EntityChangeConflict[];
+        conflicts =
+          this.editorStore.changeDetectionState.potentialWorkspacePullConflicts;
       }
       if (conflicts.length) {
         this.editorStore.setBlockingAlert(undefined);
         this.editorStore.setActionAltertInfo({
-          message: 'Conflicts found while syncing workspace',
+          message: 'Conflicts found while pulling changes',
           prompt:
-            'You can either force upgrade (override incoming changes) or resolve these conflicts manually.',
+            'You can either force-pull (override local changes) or resolve these conflicts manually.',
           type: ActionAlertType.CAUTION,
           onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
           onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
@@ -513,10 +475,10 @@ export class WorkspaceSyncState {
               type: ActionAlertActionType.STANDARD,
             },
             {
-              label: 'Force push',
+              label: 'Force pull',
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void => {
-                flowResult(this.forceUpdateRevision()).catch(
+                flowResult(this.forcePull()).catch(
                   this.editorStore.applicationStore.alertIllegalUnhandledError,
                 );
               },
@@ -527,18 +489,18 @@ export class WorkspaceSyncState {
       }
       const localChanges =
         this.editorStore.graphState.computeLocalEntityChanges();
-      yield flowResult(this.synWithHeadAndLoadChanges(localChanges));
+      yield flowResult(this.loadChanges(localChanges));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(
-        `Can't sync workspace. Error: ${error.message}`,
+        `Can't pull changes. Error: ${error.message}`,
       );
     } finally {
-      this.isUpdatingToWorkspaceLatestRevision = false;
+      this.isPullingWorkspace = false;
     }
   }
 
-  *synWithHeadAndLoadChanges(changes: EntityChange[]): GeneratorFn<void> {
+  *loadChanges(changes: EntityChange[]): GeneratorFn<void> {
     this.editorStore.sdlcState.setCurrentRevision(
       this.sdlcState.activeRemoteWorkspaceRevision,
     );
@@ -558,6 +520,12 @@ export class WorkspaceSyncState {
       ),
     );
     this.setIncomingRevisions([]);
+    this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(
+      [],
+    );
+    this.editorStore.changeDetectionState.setpotentialWorkspacePullConflicts(
+      [],
+    );
     yield flowResult(
       this.editorStore.graphState.loadEntityChangesToGraph(
         changes,
@@ -571,18 +539,18 @@ export class WorkspaceSyncState {
     );
   }
 
-  *forceUpdateRevision(): GeneratorFn<void> {
+  *forcePull(): GeneratorFn<void> {
     try {
       const changes = this.editorStore.graphState.computeLocalEntityChanges();
-      yield flowResult(this.synWithHeadAndLoadChanges(changes));
+      yield flowResult(this.loadChanges(changes));
       this.editorStore.applicationStore.notifySuccess(
-        'Remote workspace changes were pulled',
+        'Workspace changes were force-pulled',
       );
     } catch (error) {
       assertErrorThrown(error);
       this.resetConflictState();
       this.editorStore.applicationStore.notifyError(
-        `Can't pull remote workspace changes. Error: ${error.message}`,
+        `Can't force-pull remote workspace changes. Error: ${error.message}`,
       );
     } finally {
       this.editorStore.setBlockingAlert(undefined);
@@ -599,15 +567,12 @@ export class WorkspaceSyncState {
         this.workspaceSyncConflictResolutionState.changes,
         this.workspaceSyncConflictResolutionState.toEntityGetter,
       );
-      yield flowResult(this.synWithHeadAndLoadChanges(changes));
-      this.editorStore.applicationStore.notifySuccess(
-        'Current revision updated to workspace head',
-      );
+      yield flowResult(this.loadChanges(changes));
     } catch (error) {
       assertErrorThrown(error);
       this.resetConflictState();
       this.editorStore.applicationStore.notifyError(
-        `Can't update to workspace head revision. Error: ${error.message}`,
+        `Can't apply resolutions to local workspace. Error: ${error.message}`,
       );
     } finally {
       this.editorStore.setBlockingAlert(undefined);

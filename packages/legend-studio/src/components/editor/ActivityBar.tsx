@@ -83,7 +83,7 @@ export const ActivityBar = observer(() => {
     ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
       editorStore.changeDetectionState.workspaceLocalLatestRevisionState
         .isBuildingEntityHashesIndex ||
-      editorStore.localChangesState.isSyncingWithWorkspace ? (
+      editorStore.localChangesState.isPushingToWorkspace ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__local-change-counter activity-bar__local-change-counter--waiting"
         data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
@@ -180,7 +180,7 @@ export const ActivityBar = observer(() => {
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.LOCAL_CHANGES,
       title: 'Local Changes (Ctrl + Shift + G)',
-      info: localChanges ? `${localChanges} unsynced changes` : undefined,
+      info: localChanges ? `${localChanges} unpushed changes` : undefined,
       icon: (
         <div className="activity-bar__local-change-icon activity-bar__item__icon-with-indicator">
           <CodeBranchIcon />

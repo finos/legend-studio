@@ -72,9 +72,9 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       .length;
   const configurationState = editorStore.projectConfigurationEditorState;
   const pushLocalChanges = applicationStore.guaranteeSafeAction(() =>
-    flowResult(editorStore.localChangesState.syncWithWorkspace()),
+    flowResult(editorStore.localChangesState.pushLocalChanges()),
   );
-  const syncStatusText =
+  const pushStatusText =
     editorStore.graphManagerState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
@@ -85,13 +85,13 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       : editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .isBuildingEntityHashesIndex
       ? 'building indexes...'
-      : editorStore.localChangesState.isSyncingWithWorkspace
-      ? 'syncing with workspace...'
+      : editorStore.localChangesState.isPushingToWorkspace
+      ? 'pushing local changes...'
       : configurationState.isUpdatingConfiguration
       ? 'updating configuration...'
       : changes
-      ? `${changes} unsynced changes`
-      : 'synced with workspace';
+      ? `${changes} unpushed changes`
+      : 'changes pushed';
   const workspaceOutOfSync =
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
   // Conflict resolution
@@ -180,7 +180,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               tabIndex={-1}
               onClick={goToLocalChanges}
               title={
-                'Local workspace out of sync. Click to see incoming changes to your workspace.'
+                'Local workspace is out-of-sync. Click to see incoming changes to your workspace.'
               }
             >
               OUT-OF-SYNC
@@ -195,7 +195,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                 'Workspace is outdated. Click to see latest changes of the project'
               }
             >
-              WORKSPACE OUTDATED
+              OUTDATED
             </button>
           )}
         </div>
@@ -219,7 +219,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               disabled={
                 Boolean(conflicts) ||
                 !editorStore.conflictResolutionState.hasResolvedAllConflicts ||
-                editorStore.localChangesState.isSyncingWithWorkspace ||
+                editorStore.localChangesState.isPushingToWorkspace ||
                 editorStore.workspaceUpdaterState.isUpdatingWorkspace ||
                 editorStore.conflictResolutionState
                   .isInitializingConflictResolution ||
@@ -239,19 +239,19 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         {!isInConflictResolutionMode && (
           <div className="editor__status-bar__sync">
             <div className="editor__status-bar__sync__status">
-              {syncStatusText}
+              {pushStatusText}
             </div>
             <button
               className={clsx('editor__status-bar__sync__btn', {
                 'editor__status-bar__sync__btn--spinning':
-                  editorStore.localChangesState.isSyncingWithWorkspace ||
+                  editorStore.localChangesState.isPushingToWorkspace ||
                   configurationState.isUpdatingConfiguration,
               })}
               onClick={pushLocalChanges}
               disabled={
                 !changes ||
                 configurationState.isUpdatingConfiguration ||
-                editorStore.localChangesState.isSyncingWithWorkspace ||
+                editorStore.localChangesState.isPushingToWorkspace ||
                 editorStore.changeDetectionState
                   .workspaceLocalLatestRevisionState
                   .isBuildingEntityHashesIndex ||

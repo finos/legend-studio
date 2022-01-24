@@ -38,7 +38,6 @@ import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState';
 import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState';
 import { LocalChangesState } from './sidebar-state/LocalChangesState';
-import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState';
 import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import {
@@ -368,7 +367,7 @@ export class EditorStore {
         LEGEND_STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
         [LEGEND_STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
-          flowResult(this.localChangesState.syncWithWorkspace()).catch(
+          flowResult(this.localChangesState.pushLocalChanges()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
         }),
@@ -427,7 +426,7 @@ export class EditorStore {
   get isInFormMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.FORM;
   }
-  get hasUnsyncedChanges(): boolean {
+  get hasUnpushedChanges(): boolean {
     return Boolean(
       this.changeDetectionState.workspaceLocalLatestRevisionState.changes
         .length,
@@ -799,10 +798,6 @@ export class EditorStore {
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];
-      // NOTE: if graph entities are provided, we will use that to build the graph.
-      // We use this method as a way to fully reset the application with the entities, but we still use
-      // the workspace entities for hashing as those are the base entities.
-      entities = result[0];
       projectConfiguration = result[1];
       this.projectConfigurationEditorState.setProjectConfiguration(
         ProjectConfiguration.serialization.fromJson(projectConfiguration),
@@ -825,6 +820,9 @@ export class EditorStore {
 
     try {
       const graphBuilderReport = (yield flowResult(
+        // NOTE: if graph entities are provided, we will use that to build the graph.
+        // We use this method as a way to fully reset the application with the entities, but we still use
+        // the workspace entities for hashing as those are the base entities.
         this.graphState.buildGraph(graphEntities ?? entities),
       )) as GraphBuilderReport;
 

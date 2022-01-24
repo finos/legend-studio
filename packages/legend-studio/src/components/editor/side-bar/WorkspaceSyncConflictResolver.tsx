@@ -53,6 +53,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
   const currentDiffEditorState = updateConflictState.currentDiffEditorState;
   const openMergedEditorStates = updateConflictState.openMergedEditorStates;
   const conflicts = updateConflictState.pendingConflicts;
+  const hadResolvedAllConflicts = !conflicts.length;
   const changes = updateConflictState.changes;
   const openConflict =
     (conflict: EntityChangeConflict): (() => void) =>
@@ -118,64 +119,58 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                 </div>
                 <div className="panel__content explorer__content__container">
                   <ResizablePanelGroup orientation="horizontal">
-                    <ResizablePanel size={600} minSize={28}>
-                      <div className="panel workspace-sync-conflict-resolver__changes__panel">
-                        <div className="panel__header">
-                          <div className="panel__header__title">
-                            <div className="panel__header__title__content">
-                              PENDING CONFLICTS
-                            </div>
-                            <div
-                              className="workspace-sync-conflict-resolver__changes__panel__title__info"
-                              title="All local changes that have not been yet synced with the server"
-                            >
-                              <InfoCircleIcon />
-                            </div>
+                    <div className="panel workspace-sync-conflict-resolver__changes__panel">
+                      <div className="panel__header">
+                        <div className="panel__header__title">
+                          <div className="panel__header__title__content">
+                            CHANGES
                           </div>
-                          <div className="workspace-sync-conflict-resolver__changes__panel__header__changes-count">
-                            {conflicts.length}
+                          <div
+                            className="workspace-sync-conflict-resolver__changes__panel__title__info"
+                            title="All local changes that have not been yet pushed with the server"
+                          >
+                            <InfoCircleIcon />
                           </div>
                         </div>
-                        <div className="panel__content">
-                          {conflicts
-                            .slice()
-                            .sort((a, b) =>
-                              a.entityName.localeCompare(b.entityName),
-                            )
-                            .map((conflict) => (
-                              <EntityChangeConflictSideBarItem
-                                key={`conflict-${conflict.entityPath}`}
-                                conflict={conflict}
-                                isSelected={isSelectedConflict(conflict)}
-                                openConflict={openConflict(conflict)}
-                              />
-                            ))}
+                        <div className="workspace-sync-conflict-resolver__changes__panel__header__changes-count">
+                          {changes.length + conflicts.length}
                         </div>
                       </div>
-                    </ResizablePanel>
-                    <ResizablePanelSplitter>
-                      <ResizablePanelSplitterLine color="var(--color-dark-grey-100)" />
-                    </ResizablePanelSplitter>
-                    <ResizablePanel minSize={20}>
-                      <div className="panel workspace-sync-conflict-resolver__changes__panel">
-                        <div className="panel__header">
-                          <div className="panel__header__title">
-                            <div className="panel__header__title__content">
-                              RESOLVED CHANGES
-                            </div>
-                            <div
-                              className="workspace-sync-conflict-resolver__changes__panel__title__info"
-                              title="All committed reviews in the project since the revision the workspace is created"
-                            >
-                              <InfoCircleIcon />
-                            </div>
-                          </div>
-                          <div className="workspace-sync-conflict-resolver__changes__panel__header__changes-count">
-                            {changes.length}
-                          </div>
-                        </div>
-                        <div className="panel__content">
-                          {changes
+                      <div className="panel__content">
+                        {!hadResolvedAllConflicts && (
+                          <>
+                            {conflicts
+                              .slice()
+                              .sort((a, b) =>
+                                a.entityName.localeCompare(b.entityName),
+                              )
+                              .map((conflict) => (
+                                <EntityChangeConflictSideBarItem
+                                  key={`conflict-${conflict.entityPath}`}
+                                  conflict={conflict}
+                                  isSelected={isSelectedConflict(conflict)}
+                                  openConflict={openConflict(conflict)}
+                                />
+                              ))}
+                            {Boolean(conflicts.length) &&
+                              Boolean(changes.length) && (
+                                <div className="diff-panel__item-section-separator" />
+                              )}
+                            {changes
+                              .slice()
+                              .sort(entityDiffSorter)
+                              .map((diff) => (
+                                <EntityDiffSideBarItem
+                                  key={diff.key}
+                                  diff={diff}
+                                  isSelected={isSelectedDiff(diff)}
+                                  openDiff={openChange(diff)}
+                                />
+                              ))}
+                          </>
+                        )}
+                        {hadResolvedAllConflicts &&
+                          changes
                             .slice()
                             .sort(entityDiffSorter)
                             .map((diff) => (
@@ -186,9 +181,8 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                                 openDiff={openChange(diff)}
                               />
                             ))}
-                        </div>
                       </div>
-                    </ResizablePanel>
+                    </div>
                   </ResizablePanelGroup>
                 </div>
               </div>
