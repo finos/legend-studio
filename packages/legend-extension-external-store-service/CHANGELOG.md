@@ -1,5 +1,7 @@
 # @finos/legend-extension-external-store-service
 
+## 1.0.9
+
 ## 1.0.8
 
 ### Patch Changes

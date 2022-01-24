@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 0.5.0
+
+### Minor Changes
+
+- [#766](https://github.com/finos/legend-studio/pull/766) [`ab7ae357`](https://github.com/finos/legend-studio/commit/ab7ae357be8dbbb8d72a727ccaa18d7d2b140f68) ([@gayathrir11](https://github.com/gayathrir11)) - Allow drag and drop of parameters in Derived Property editor.
+
 ## 0.4.1
 
 ### Patch Changes
