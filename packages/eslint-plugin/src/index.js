@@ -28,7 +28,6 @@ module.exports = {
     'no-cross-protocol-version-import': require('./rules/no-cross-protocol-version-import'),
     'no-cross-workspace-non-export-usage': require('./rules/no-cross-workspace-non-export-usage'),
     'no-cross-workspace-source-usage': require('./rules/no-cross-workspace-source-usage'),
-    'no-duplicate-exports': require('./rules/no-duplicate-exports'),
     'no-same-workspace-absolute-import': require('./rules/no-same-workspace-absolute-import'),
     'no-same-workspace-index-import': require('./rules/no-same-workspace-index-import'),
   },
