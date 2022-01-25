@@ -149,12 +149,13 @@ export const TEST_DATA__simpleProjectionWithSubtype = {
                         },
                         {
                           _type: 'hackedClass',
-                          fullPath: 'model::pure::tests::model::simple::Person',
+                          fullPath:
+                            'model::pure::tests::model::simple::PersonExtension',
                         },
                       ],
                     },
                   ],
-                  property: 'firstName',
+                  property: 'birthdate',
                 },
               ],
               parameters: [
@@ -175,7 +176,7 @@ export const TEST_DATA__simpleProjectionWithSubtype = {
           values: [
             {
               _type: 'string',
-              values: ['(@Person)/First Name'],
+              values: ['(@Person Extension)/Birthdate'],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,

@@ -341,6 +341,24 @@ export const getPropertyNodeMappingData = (
   return { mapped: false, skipMappingCheck: false };
 };
 
+export const getSubTypeNodeMappingData = (
+  subclass: Class,
+  parentMappingData: QueryBuilderPropertyMappingData,
+  mapping: Mapping | undefined,
+): QueryBuilderPropertyMappingData => {
+  const rootSetImpl = mapping
+    ? getRootSetImplementation(mapping, subclass)
+    : undefined;
+  return {
+    mapped: parentMappingData.mapped && rootSetImpl !== undefined,
+    skipMappingCheck: rootSetImpl instanceof OperationSetImplementation,
+    targetSetImpl:
+      parentMappingData.mapped && rootSetImpl !== undefined
+        ? rootSetImpl
+        : undefined,
+  };
+};
+
 export const getRootMappingData = (
   mapping: Mapping,
   _class: Class,
@@ -412,6 +430,7 @@ export const getQueryBuilderPropertyNodeData = (
 export const getQueryBuilderSubTypeNodeData = (
   subclass: Class,
   parentNode: QueryBuilderExplorerTreeNodeData,
+  mapping: Mapping | undefined,
 ): QueryBuilderExplorerTreeSubTypeNodeData => {
   const subTypeNode = new QueryBuilderExplorerTreeSubTypeNodeData(
     `${
@@ -434,9 +453,7 @@ export const getQueryBuilderSubTypeNodeData = (
     subclass,
     parentNode.id,
     false,
-    //Display subclasses, anyway.
-    //TODO: Enchance mapping algo to take into account this
-    { mapped: true, skipMappingCheck: true },
+    getSubTypeNodeMappingData(subclass, parentNode.mappingData, mapping),
     parentNode instanceof QueryBuilderExplorerTreePropertyNodeData
       ? parentNode.property.multiplicity
       : parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
@@ -490,6 +507,7 @@ const getQueryBuilderTreeData = (
     const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
       subclass,
       treeRootNode,
+      mapping,
     );
     addUniqueEntry(treeRootNode.childrenIds, subTypeTreeNodeData.id);
     nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);

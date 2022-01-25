@@ -370,6 +370,10 @@ test(
     const _personClass = mockedQueryStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Person',
     );
+    const _personExtensionClass =
+      mockedQueryStore.graphManagerState.graph.getClass(
+        'model::pure::tests::model::simple::PersonExtension',
+      );
     const mapping = mockedQueryStore.graphManagerState.graph.getMapping(
       'model::relational::tests::simpleRelationalMapping',
     );
@@ -402,7 +406,6 @@ test(
     const queryBuilderExplorerTreeSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
     );
-    await waitFor(() => getByText(queryBuilderExplorerTreeSetup, '@Person'));
     await waitFor(() =>
       getByText(queryBuilderExplorerTreeSetup, '@Person Extension'),
     );
@@ -414,7 +417,7 @@ test(
     const projectionColsWithSubType = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
-    const NAME_ALIAS = '(@Person)/First Name';
+    const NAME_ALIAS = '(@Person Extension)/Birthdate';
     await waitFor(() => getByText(projectionColsWithSubType, NAME_ALIAS));
     expect(
       await waitFor(() =>
@@ -433,7 +436,7 @@ test(
       nameCol,
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func;
-    expect(nameProperty).toBe(_personClass.getProperty('firstName'));
+    expect(nameProperty).toBe(_personExtensionClass.getProperty('birthdate'));
   },
 );
 

@@ -711,6 +711,7 @@ const QueryBuilderExplorerTree = observer(
             const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
               subclass,
               node,
+              queryBuilderState.querySetupState.mapping,
             );
             treeData.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
           });
