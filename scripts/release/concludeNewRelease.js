@@ -42,6 +42,54 @@ const concludeNewRelease = async () => {
     (pkg) => pkg.name === mainPackageName,
   )?.version;
 
+  console.log(
+    `Removing Github releases and tags created by changesets/action...`,
+  );
+  const tagsToCleanup = publishedPackages.map(
+    (pkg) => `${pkg.name}@${pkg.version}`,
+  );
+  const tagsNotRemoved = [];
+  await Promise.all(
+    tagsToCleanup.map(async (tag) => {
+      try {
+        // Delete the tags pushed by `changesets/action`
+        // Workaround until we can use `pushGitTags` tags to turn off pushing Git tags
+        // See https://github.com/changesets/action/pull/143
+        let tagRef;
+        try {
+          tagRef = (
+            await octokit.rest.git.getRef({
+              ref: `tags/${tag}`,
+              ...github.context.repo,
+            })
+          ).data;
+        } catch {
+          tagRef = undefined;
+        }
+        if (tagRef) {
+          await octokit.rest.git.deleteRef({
+            ref: `tags/${tag}`,
+            ...github.context.repo,
+          });
+        }
+
+        console.log(`\u2713 Removed release and tag ${tag}`);
+      } catch (error) {
+        tagsNotRemoved.push(tag);
+        console.log(
+          `\u2A2F Can't remove release and tag ${tag}. Error:\n${error.message}`,
+        );
+      }
+    }),
+  );
+  if (tagsNotRemoved.length) {
+    githubActionCore.error(
+      `The following tags and/or their respective releases are not removed from Github. Please manually remove them on Github:\n${tagsNotRemoved
+        .map((tag) => `- ${tag}`)
+        .join('\n')}`,
+    );
+  }
+
   /**
    * NOTE: only run this if the release version is a major bump, i.e. a standard release
    * This kicks off a sequence of post-release operations:
