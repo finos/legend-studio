@@ -21,18 +21,16 @@ import {
 } from './MappingElementState';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   isNonNullable,
 } from '@finos/legend-shared';
 import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
-import type {
-  PurePropertyMapping,
-  PureInstanceSetImplementation,
-} from '@finos/legend-graph';
 import {
+  type PurePropertyMapping,
+  type PureInstanceSetImplementation,
   LAMBDA_PIPE,
   GRAPH_MANAGER_LOG_EVENT,
   ParserError,
@@ -269,7 +267,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
    */
   decorate(): void {
     this.mappingElement.accept_SetImplementationVisitor(
-      new MappingElementDecorator(),
+      new MappingElementDecorator(this.editorStore),
     );
     const newPropertyMappingStates: PurePropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration =

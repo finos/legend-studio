@@ -21,23 +21,25 @@ export {
   Runtime,
   EngineRuntime,
   RuntimePointer,
+  IdentifiedConnection,
 } from './models/metamodels/pure/packageableElements/runtime/Runtime';
 export { PackageableRuntime } from './models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
-export { SetImplementation } from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
 export { PureInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-export { OperationSetImplementation } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+export {
+  OperationSetImplementation,
+  OperationType,
+} from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
 export { PropertyMapping } from './models/metamodels/pure/packageableElements/mapping/PropertyMapping';
 export {
   Connection,
   ConnectionPointer,
+  type ConnectionVisitor,
 } from './models/metamodels/pure/packageableElements/connection/Connection';
-export type { ConnectionVisitor } from './models/metamodels/pure/packageableElements/connection/Connection';
 export { PackageableConnection } from './models/metamodels/pure/packageableElements/connection/PackageableConnection';
 export { ModelStore } from './models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
 export { PureModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/PureModelConnection';
 export { JsonModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
 export { XmlModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
-export { IdentifiedConnection } from './models/metamodels/pure/packageableElements/runtime/Runtime';
 export * from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
 export { PurePropertyMapping } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 export { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
@@ -46,7 +48,6 @@ export {
   EnumValueMapping,
   SourceValue,
 } from './models/metamodels/pure/packageableElements/mapping/EnumValueMapping';
-export { OperationType } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
 export { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
 export { SetImplementationContainer } from './models/metamodels/pure/packageableElements/mapping/SetImplementationContainer';
 export { AggregationAwareSetImplementation } from './models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
@@ -63,8 +64,10 @@ export {
 } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
 
 // protocols
-export { V1_Connection } from './models/protocols/pure/v1/model/packageableElements/connection/V1_Connection';
-export type { V1_ConnectionVisitor } from './models/protocols/pure/v1/model/packageableElements/connection/V1_Connection';
+export {
+  V1_Connection,
+  type V1_ConnectionVisitor,
+} from './models/protocols/pure/v1/model/packageableElements/connection/V1_Connection';
 export { V1_Mapping } from './models/protocols/pure/v1/model/packageableElements/mapping/V1_Mapping';
 export { V1_PackageableRuntime } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_PackageableRuntime';
 export { V1_Store } from './models/protocols/pure/v1/model/packageableElements/store/V1_Store';
@@ -72,4 +75,8 @@ export {
   V1_EngineRuntime,
   V1_Runtime,
 } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
+export {
+  V1_ClassMapping,
+  type V1_ClassMappingVisitor,
+} from './models/protocols/pure/v1/model/packageableElements/mapping/V1_ClassMapping';
 export * from './models/protocols/pure/DSLMapping_PureProtocolProcessorPlugin_Extension';

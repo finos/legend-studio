@@ -21,8 +21,10 @@ import type { SetImplementation } from '../../../../../../../metamodels/pure/pac
 import type { RelationalPropertyMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { EnumerationMapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import type { TableAlias } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import { TableAliasColumn } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
+import {
+  type TableAlias,
+  TableAliasColumn,
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import type { Column } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Column';
 import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table';
 import { View } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/View';
@@ -77,7 +79,7 @@ export const V1_buildRelationalPrimaryKey = (
   if (rootRelational.groupBy) {
     rootRelational.primaryKey = rootRelational.groupBy.columns;
   } else if (!rootRelational.primaryKey.length) {
-    const relation = rootRelational.mainTableAlias.relation.value;
+    const relation = rootRelational.mainTableAlias?.relation.value;
     const mainTable = rootRelational.mainTableAlias;
     let columns: Column[] = [];
     if (relation instanceof Table || relation instanceof View) {
@@ -90,7 +92,9 @@ export const V1_buildRelationalPrimaryKey = (
       // This might cause bugs in the future.
       // We need more (manual) tests for confidence
       mainTableAlias.column = ColumnExplicitReference.create(col);
-      mainTableAlias.alias = mainTable;
+      if (mainTable) {
+        mainTableAlias.alias = mainTable;
+      }
       return mainTableAlias;
     });
   }

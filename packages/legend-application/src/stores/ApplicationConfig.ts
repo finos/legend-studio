@@ -51,25 +51,25 @@ export abstract class LegendApplicationConfig {
     this.baseUrl = baseUrl;
     this.appName = guaranteeNonEmptyString(
       configData.appName,
-      `Legend Application configuration failure: 'appName' field is missing or empty`,
+      `Can't configure application: 'appName' field is missing or empty`,
     );
     this.env = guaranteeNonEmptyString(
       configData.env,
-      `Legend Application configuration failure: 'env' field is missing or empty`,
+      `Can't configure application: 'env' field is missing or empty`,
     );
 
     // Version
     this.appVersion = guaranteeNonNullable(
       versionData.version,
-      'Application version is missing',
+      `Can't collect application version: 'version' field is missing`,
     );
     this.appVersionBuildTime = guaranteeNonNullable(
       versionData.buildTime,
-      'Application build time is missing',
+      `Can't collect application version: 'buildTime' field is missing`,
     );
     this.appVersionCommitId = guaranteeNonNullable(
       versionData.commitSHA,
-      'Application build source commit SHA is mising',
+      `Can't collect application version: 'commitSHA' field is missing`,
     );
   }
 }

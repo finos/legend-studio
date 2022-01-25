@@ -15,9 +15,12 @@
  */
 
 import { observable, computed, makeObservable } from 'mobx';
-import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  UnsupportedOperationError,
+  type Hashable,
+} from '@finos/legend-shared';
 import type { GroupByMapping } from '../mapping/GroupByMapping';
 import type { FilterMapping } from '../mapping/FilterMapping';
 import type { JoinReference } from './JoinReference';
@@ -167,7 +170,9 @@ export class JoinTreeNode {
  */
 export const extractLine = (joinTreeNode: JoinTreeNode): JoinTreeNode[] =>
   [joinTreeNode].concat(
-    joinTreeNode.children.length ? extractLine(joinTreeNode.children[0]) : [],
+    joinTreeNode.children.length
+      ? extractLine(joinTreeNode.children[0] as JoinTreeNode)
+      : [],
   );
 
 export class RelationalOperationElementWithJoin extends RelationalOperationElement {

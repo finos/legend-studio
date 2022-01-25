@@ -27,6 +27,7 @@ export enum SUPPORTED_FUNCTIONS {
   NOT = 'meta::pure::functions::boolean::not',
   OR = 'meta::pure::functions::boolean::or',
   TAKE = 'meta::pure::functions::collection::take',
+  SUBTYPE = 'meta::pure::functions::lang::subType',
 
   // graph-fetch
   GRAPH_FETCH = 'meta::pure::graphFetch::execution::graphFetch',

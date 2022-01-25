@@ -15,9 +15,8 @@
  */
 
 import { useEffect } from 'react';
-import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-art';
+import { clsx, Dialog } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
 import { flowResult } from 'mobx';
@@ -55,6 +54,9 @@ export const QueryBuilderTextEditor = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div
           className={clsx(
@@ -90,6 +92,7 @@ export const QueryBuilderTextEditor = observer(
                   forceExpansion={true}
                   useBaseTextEditorSettings={true}
                   hideErrorBar={true}
+                  disablePopUp={true}
                 />
               )}
               {mode === QueryTextEditorMode.JSON && (

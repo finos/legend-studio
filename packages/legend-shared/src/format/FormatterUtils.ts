@@ -19,7 +19,9 @@ import {
 } from 'lossless-json';
 
 export const capitalize = (value: string): string =>
-  `${value[0].toUpperCase()}${value.substring(1, value.length)}`;
+  value.length >= 1
+    ? `${(value[0] as string).toUpperCase()}${value.substring(1, value.length)}`
+    : value;
 
 export const toSentenceCase = (value: string | undefined): string =>
   (value ?? '').trim().replace(/^(?:\w+)\b/u, (val) => capitalize(val));

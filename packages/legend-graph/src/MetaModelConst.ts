@@ -22,6 +22,9 @@ export const LAMBDA_PIPE = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
 export const DEFAULT_DATABASE_SCHEMA_NAME = 'default';
 export const SECTION_INDEX_ELEMENT_PATH = '__internal__::SectionIndex';
+export const VARIABLE_REFERENCE_TOKEN = '$';
+export const TYPE_CAST_TOKEN = '@';
+export const ARROW_FUNCTION_TOKEN = '->';
 
 export enum ROOT_PACKAGE_NAME {
   CORE = 'CORE',
@@ -92,10 +95,11 @@ export const AUTO_IMPORTS = [
   'meta::pure::profiles',
 ];
 
-export enum CORE_ELEMENT_PATH {
+export enum CORE_PURE_PATH {
   ANY = 'meta::pure::metamodel::type::Any',
 
   PROFILE_DOC = 'meta::pure::profiles::doc',
+  PROFILE_TEMPORAL = 'meta::pure::profiles::temporal',
 
   // classifier paths
   PROFILE = 'meta::pure::metamodel::extension::Profile',
@@ -106,7 +110,6 @@ export enum CORE_ELEMENT_PATH {
   FUNCTION = 'meta::pure::metamodel::function::ConcreteFunctionDefinition',
   FLAT_DATA = 'meta::flatData::metamodel::FlatData',
   DATABASE = 'meta::relational::metamodel::Database',
-  SERVICE_STORE = 'meta::servicestore::metamodel::ServiceStore',
   MAPPING = 'meta::pure::mapping::Mapping',
   SERVICE = 'meta::legend::service::metamodel::Service',
   CONNECTION = 'meta::pure::runtime::PackageableConnection',
@@ -123,7 +126,7 @@ export enum CORE_ELEMENT_PATH {
  * These tokens will be used in the definition of the hash as marker for the type of the strucure
  * arguably some of these can be redundant since this information is encoded in the resulting hash
  * code anyway, but sometimes when polymorphism manifests, such as when we have an array of structure
- * which are sub-classes of an abstract stucture, hashing the marker is sometimes the only way to
+ * which are subclasses of an abstract stucture, hashing the marker is sometimes the only way to
  * discern between instances of different sub-structures
  */
 export enum CORE_HASH_STRUCTURE {
@@ -183,8 +186,6 @@ export enum CORE_HASH_STRUCTURE {
   FLAT_DATA_PROPERTY_MAPPING = 'FLAT_DATA_PROPERTY_MAPPING',
   EMBEDDED_FLAT_DATA_PROPERTY_MAPPING = 'EMBEDDED_FLAT_DATA_PROPERTY_MAPPING',
   FLAT_DATA_SECTION_POINTER = 'FLAT_DATA_SECTION_POINTER',
-  // serviceStore
-  SERVICE_STORE = 'SERVICE_STORE',
   // database
   DATABASE = 'DATABASE',
   DATABASE_SCHEMA = 'DATABASE_SCHEMA',
@@ -226,6 +227,7 @@ export enum CORE_HASH_STRUCTURE {
   RELATIONAL_INSTANCE_SET_IMPLEMENTATION = 'RELATIONAL_INSTANCE_SET_IMPLEMENTATION',
   REALTIONAL_PROPERTY_MAPPING = 'REALTIONAL_PROPERTY_MAPPING',
   EMBEDDED_REALTIONAL_PROPERTY_MAPPING = 'EMBEDDED_REALTIONAL_PROPERTY_MAPPING',
+  INLINE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING = 'INLINE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING',
   OTHERWISE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING = 'OTHERWISE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING',
   // aggregation aware mapping
   AGGREGATION_AWARE_MAPPING = 'AGGREGATION_AWARE_MAPPING',
@@ -251,6 +253,7 @@ export enum CORE_HASH_STRUCTURE {
   SNOWFLAKE_PUBLIC_AUTHENTICATION_STRATEGY = 'SNOWFLAKE_PUBLIC_AUTHENTICATION_STRATEGY',
   API_TOKEN_AUTHENTICATION_STRATEGY = 'API_TOKEN_AUTHENTICATION_STRATEGY',
   GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY = 'GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY',
+  USERNAME_PASSWORD_AUTHENTICATION_STRATEGY = 'USERNAME_PASSWORD_AUTHENTICATION_STRATEGY',
   TEST_DATABASE_AUTHENTICATION_STRATEGY = 'TEST_DATABASE_AUTHENTICATION_STRATEGY',
   OAUTH_AUTHENTICATION_STRATEGY = 'OAUTH_AUTHENTICATION_STRATEGY',
   USER_PASSWORD_AUTHENTICATION_STRATEGY = 'USER_PASSWORD_AUTHENTICATION_STRATEGY',
@@ -309,3 +312,11 @@ export enum CORE_HASH_STRUCTURE {
   RAW_VARIABLE = 'RAW_VARIABLE',
   RAW_INSTANCE_VALUE = 'RAW_INSTANCE_VALUE',
 }
+
+export enum MILESTONING_STEROTYPES {
+  BUSINESS_TEMPORAL = 'businesstemporal',
+  PROCESSING_TEMPORAL = 'processingtemporal',
+  BITEMPORAL = 'bitemporal',
+}
+
+export const LATEST_DATE = '%latest';

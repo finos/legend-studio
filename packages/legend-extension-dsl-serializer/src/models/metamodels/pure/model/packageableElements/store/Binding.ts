@@ -15,18 +15,27 @@
  */
 
 import { observable, action, makeObservable, override } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type { PackageableElementVisitor } from '@finos/legend-graph';
-import { Store } from '@finos/legend-graph';
-import { ModelUnit } from './ModelUnit';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  Store,
+  type OptionalPackageableElementReference,
+  type PackageableElementVisitor,
+} from '@finos/legend-graph';
+import type { ModelUnit } from './ModelUnit';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
+import type { SchemaSet } from '../schemaSet/SchemaSet';
+
+export enum BINDING_CONTENT_TYPE {
+  FLAT_DATA = 'application/x.flatdata',
+  XSD = 'application/xml',
+  JSON = 'application/json',
+}
 
 export class Binding extends Store implements Hashable {
-  schemaSet?: string | undefined;
+  schemaSet!: OptionalPackageableElementReference<SchemaSet>;
   schemaId?: string | undefined;
-  contentType: string;
-  modelUnit: ModelUnit;
+  contentType!: BINDING_CONTENT_TYPE;
+  modelUnit!: ModelUnit;
 
   constructor(name: string) {
     super(name);
@@ -42,20 +51,17 @@ export class Binding extends Store implements Hashable {
       setModelUnit: action,
       _elementHashCode: override,
     });
-
-    this.contentType = '';
-    this.modelUnit = new ModelUnit([], []);
   }
 
-  setSchemaSet(value: string): void {
-    this.schemaSet = value;
+  setSchemaSet(value: SchemaSet | undefined): void {
+    this.schemaSet.setValue(value);
   }
 
-  setSchemaId(value: string): void {
+  setSchemaId(value: string | undefined): void {
     this.schemaId = value;
   }
 
-  setContentType(value: string): void {
+  setContentType(value: BINDING_CONTENT_TYPE): void {
     this.contentType = value;
   }
 
@@ -67,7 +73,7 @@ export class Binding extends Store implements Hashable {
     return hashArray([
       DSL_SERIALIZER_HASH_STRUCTURE.BINDING,
       this.path,
-      this.schemaSet ?? '',
+      this.schemaSet.valueForSerialization ?? '',
       this.schemaId ?? '',
       this.contentType,
       this.modelUnit,

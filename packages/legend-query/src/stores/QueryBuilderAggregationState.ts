@@ -24,11 +24,11 @@ import type {
   VariableExpression,
 } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
-import type {
-  QueryBuilderProjectionColumnState,
-  QueryBuilderProjectionState,
+import {
+  QueryBuilderSimpleProjectionColumnState,
+  type QueryBuilderProjectionColumnState,
+  type QueryBuilderProjectionState,
 } from './QueryBuilderProjectionState';
-import { QueryBuilderSimpleProjectionColumnState } from './QueryBuilderProjectionState';
 
 export abstract class QueryBuilderAggregateOperator {
   uuid = uuid();

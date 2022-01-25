@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../../DSLSerializer_ModelUtils';
 
 export class V1_UrlStream implements Hashable {

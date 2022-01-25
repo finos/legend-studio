@@ -42,16 +42,20 @@ import { FlatDataInputData } from '../../../../../../../metamodels/pure/packagea
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId';
-import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { toOptionalPackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+import {
+  type PackageableElementImplicitReference,
+  toOptionalPackageableElementReference,
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { EnumValueImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference';
 import { MappingInclude } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingInclude';
 import { SubstituteStore } from '../../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
 import type { SetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import { InferableMappingElementRootImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementRoot';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_EnumValueMapping } from '../../../../model/packageableElements/mapping/V1_EnumValueMapping';
-import { V1_getEnumValueMappingSourceValueType } from '../../../../model/packageableElements/mapping/V1_EnumValueMapping';
+import {
+  type V1_EnumValueMapping,
+  V1_getEnumValueMappingSourceValueType,
+} from '../../../../model/packageableElements/mapping/V1_EnumValueMapping';
 import type { V1_EnumerationMapping } from '../../../../model/packageableElements/mapping/V1_EnumerationMapping';
 import type { V1_MappingTest } from '../../../../model/packageableElements/mapping/V1_MappingTest';
 import { V1_ExpectedOutputMappingTestAssert } from '../../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert';
@@ -66,6 +70,7 @@ import {
   getRelationalInputType,
   RelationalInputData,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
+import { getAllClassMappings } from '../../../../../../../../helpers/MappingHelper';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -84,7 +89,7 @@ const buildEnumValueMapping = (
 ): EnumValueMapping => {
   assertNonNullable(
     srcEnumValueMapping.enumValue,
-    `Enum value mapping enum value name is missing`,
+    `Enum value mapping 'enumValue' field is missing`,
   );
   const enumValueMapping = new EnumValueMapping(
     EnumValueImplicitReference.create(
@@ -131,7 +136,7 @@ export const V1_buildEnumerationMapping = (
 ): EnumerationMapping => {
   assertNonEmptyString(
     srcEnumerationMapping.enumeration,
-    'Enumeration mapping enumeration is missing',
+    `Enumeration mapping 'enumeration' field is missing or empty`,
   );
   const targetEnumeration = context.resolveEnumeration(
     srcEnumerationMapping.enumeration,
@@ -143,7 +148,7 @@ export const V1_buildEnumerationMapping = (
   );
   assertTrue(
     possibleSourceTypes.size <= 1,
-    'Enumeration mapping contains mixed type source values',
+    `Enumeration mapping contains mixed type source values`,
   );
   const sourceTypeInput =
     possibleSourceTypes.size !== 0
@@ -202,15 +207,15 @@ const V1_buildMappingTestInputData = (
   if (inputData instanceof V1_ObjectInputData) {
     assertNonNullable(
       inputData.sourceClass,
-      'Mapping test object input data source class is missing',
+      `Object input data 'sourceClass' field is missing`,
     );
     assertNonNullable(
       inputData.inputType,
-      'Mapping test object input data input type is missing',
+      `Object input data 'inputType' field is missing`,
     );
     assertNonNullable(
       inputData.data,
-      'Mapping test object input data data is missing',
+      `Object input data 'data' field is missing`,
     );
     return new ObjectInputData(
       context.resolveClass(inputData.sourceClass),
@@ -220,11 +225,11 @@ const V1_buildMappingTestInputData = (
   } else if (inputData instanceof V1_FlatDataInputData) {
     assertNonNullable(
       inputData.sourceFlatData,
-      'Mapping test flat-data input data source flat-data is missing',
+      `Flat-data input data 'sourceFlatData' field is missing`,
     );
     assertNonNullable(
       inputData.data,
-      'Mapping test flat-data input data data is missing',
+      `Flat-data input data 'data' field is missing`,
     );
     return new FlatDataInputData(
       context.resolveFlatDataStore(inputData.sourceFlatData.path),
@@ -233,15 +238,15 @@ const V1_buildMappingTestInputData = (
   } else if (inputData instanceof V1_RelationalInputData) {
     assertNonNullable(
       inputData.database,
-      'Mapping test relational input data database is missing',
+      `Relational input data 'database' field is missing`,
     );
     assertNonNullable(
       inputData.inputType,
-      'Mapping test relational input data input type is missing',
+      `Relational input data 'inputType' field is missing`,
     );
     assertNonNullable(
       inputData.data,
-      'Mapping test relational input data data is missing',
+      `Relational input data 'data' field is missing`,
     );
     return new RelationalInputData(
       context.resolveDatabase(inputData.database),
@@ -259,8 +264,11 @@ export const V1_buildMappingTest = (
   mappingTest: V1_MappingTest,
   context: V1_GraphBuilderContext,
 ): MappingTest => {
-  assertNonEmptyString(mappingTest.name, 'Mapping test name is missing');
-  assertNonNullable(mappingTest.query);
+  assertNonEmptyString(
+    mappingTest.name,
+    `Mapping test 'name' field is missing or empty`,
+  );
+  assertNonNullable(mappingTest.query, `Mapping test 'query' field is missing`);
   const query = V1_resolvePathsInRawLambda(
     context,
     mappingTest.query.parameters,
@@ -285,7 +293,7 @@ export const V1_buildMappingTest = (
 
 export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
   const classToSetImplMap = new Map<Class, Set<SetImplementation>>();
-  mapping.allClassMappings.forEach((setImpl) => {
+  getAllClassMappings(mapping).forEach((setImpl) => {
     const targetClass = guaranteeNonNullable(setImpl.class.value);
     const setImplsWithTargetClass = classToSetImplMap.get(targetClass);
     if (setImplsWithTargetClass) {
@@ -299,8 +307,14 @@ export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
   Array.from(classToSetImplMap.entries()).forEach((entries) => {
     const _classMappings = entries[1];
     if (_classMappings.size === 1) {
-      const classMapping = Array.from(_classMappings.values())[0];
-      if (classMapping.root.value === false) {
+      const classMapping = Array.from(
+        _classMappings.values(),
+      )[0] as SetImplementation;
+      // ensure you are only altering current mapping
+      if (
+        classMapping.root.value === false &&
+        classMapping.parent === mapping
+      ) {
         classMapping.root = InferableMappingElementRootImplicitValue.create(
           true,
           classMapping.root.value,

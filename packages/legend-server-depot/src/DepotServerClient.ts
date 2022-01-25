@@ -15,28 +15,35 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import type { PlainObject } from '@finos/legend-shared';
-import { AbstractServerClient } from '@finos/legend-shared';
+import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
+import type { DepotScope } from './models/DepotScope';
 import type { ProjectData } from './models/ProjectData';
 import type {
   ProjectDependencyCoordinates,
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities';
+import type { StoredEntity } from './models/StoredEntity';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
+  TEMP__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 }
 
 export class DepotServerClient extends AbstractServerClient {
+  private TEMP__useLegacyDepotServerAPIRoutes = false;
+
   constructor(config: DepotServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
     });
+    this.TEMP__useLegacyDepotServerAPIRoutes = Boolean(
+      config.TEMP__useLegacyDepotServerAPIRoutes,
+    );
   }
 
   // ------------------------------------------- Projects -------------------------------------------
 
-  private _projects = (): string => `${this.networkClient.baseUrl}/projects`;
+  private _projects = (): string => `${this.baseUrl}/projects`;
   private _project = (groupId: string, artifactId: string): string =>
     `${this._projects()}/${encodeURIComponent(groupId)}/${encodeURIComponent(
       artifactId,
@@ -74,13 +81,71 @@ export class DepotServerClient extends AbstractServerClient {
   ): Promise<PlainObject<Entity>[]> =>
     this.get(this._version(groupId, artifactId, versionId));
 
+  getVersionEntity = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>[]> =>
+    this.get(
+      `${this._version(
+        groupId,
+        artifactId,
+        versionId,
+      )}/entities/${encodeURIComponent(entityPath)}`,
+    );
+
   getLatestRevisionEntities = (
     groupId: string,
     artifactId: string,
   ): Promise<PlainObject<Entity>[]> =>
     this.get(`${this._revisions(groupId, artifactId)}/latest`);
 
+  getLatestRevisionEntity = (
+    groupId: string,
+    artifactId: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> =>
+    this.get(
+      `${this._revisions(
+        groupId,
+        artifactId,
+      )}/latest/entities/${encodeURIComponent(entityPath)}`,
+    );
+
+  // NOTE: this is experimental API to get elements by classifier path
+  getEntitiesByClassifierPath = (
+    classifierPath: string,
+    options?: {
+      search?: string | undefined;
+      scope?: DepotScope | undefined;
+      limit?: number | undefined;
+    },
+  ): Promise<PlainObject<StoredEntity>[]> =>
+    this.TEMP__useLegacyDepotServerAPIRoutes
+      ? this.get(
+          `${this.baseUrl}/classifiers/${encodeURIComponent(classifierPath)}`,
+          undefined,
+          undefined,
+          {
+            scope: options?.scope,
+          },
+        )
+      : this.get(
+          `${this.baseUrl}/entitiesByClassifierPath/${encodeURIComponent(
+            classifierPath,
+          )}`,
+          undefined,
+          undefined,
+          {
+            search: options?.search,
+            scope: options?.scope,
+            limit: options?.limit,
+          },
+        );
+
   // ------------------------------------------- Dependencies -------------------------------------------
+
   getDependencyEntities = (
     groupId: string,
     artifactId: string,

@@ -18,9 +18,9 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { ApplicationStore } from '../stores/ApplicationStore';
 import type { LegendApplicationConfig } from '../stores/ApplicationConfig';
-import type { Log } from '@finos/legend-shared';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
+import { useWebApplicationNavigator } from './WebApplicationNavigatorProvider';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 
 const ApplicationStoreContext = createContext<
   ApplicationStore<LegendApplicationConfig> | undefined
@@ -29,16 +29,15 @@ const ApplicationStoreContext = createContext<
 export const ApplicationStoreProvider = <T extends LegendApplicationConfig>({
   children,
   config,
-  navigator,
-  log,
+  pluginManager,
 }: {
   children: React.ReactNode;
   config: T;
-  navigator: WebApplicationNavigator;
-  log: Log;
+  pluginManager: LegendApplicationPluginManager;
 }): React.ReactElement => {
+  const navigator = useWebApplicationNavigator();
   const applicationStore = useLocalObservable(
-    () => new ApplicationStore(config, navigator, log),
+    () => new ApplicationStore(config, navigator, pluginManager),
   );
   return (
     <ApplicationStoreContext.Provider value={applicationStore}>

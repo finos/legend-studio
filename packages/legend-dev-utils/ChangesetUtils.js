@@ -16,6 +16,7 @@
 
 import { resolve } from 'path';
 import chalk from 'chalk';
+import micromatch from 'micromatch';
 import { getChangedPackagesSinceRef } from '@changesets/git';
 import readChangesets from '@changesets/read';
 import getReleasePlan from '@changesets/get-release-plan';
@@ -23,6 +24,7 @@ import { error, warn, info, log } from '@changesets/logger';
 import { getPackages } from '@manypkg/get-packages';
 import { read } from '@changesets/config';
 import writeChangeset from '@changesets/write';
+import assembleReleasePlan from '@changesets/assemble-release-plan';
 
 /**
  * Ref `master` does not seem to be available in github-actions pipeline when using with action/checkout
@@ -48,6 +50,7 @@ const DEFAULT_SINCE_REF = 'origin/master';
 export async function validateChangesets(cwd, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
+  const ignorePackageNames = config.ignore;
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
   const changesetPackageNames = (
     await getReleasePlan.default(cwd, sinceBranch, config)
@@ -102,7 +105,11 @@ export async function validateChangesets(cwd, sinceRef) {
   // Check for packages that have been modified but does not have a changeset entry
   const packagesWithoutChangeset = new Set();
   changedPackageNames.forEach((pkgName) => {
-    if (!changesetPackageNames.includes(pkgName)) {
+    if (
+      !changesetPackageNames.includes(pkgName) &&
+      // avoid counting ignored packages
+      !micromatch.isMatch(pkgName, ignorePackageNames)
+    ) {
       packagesWithoutChangeset.add(pkgName);
     }
   });
@@ -152,6 +159,7 @@ export async function generateChangeset(cwd, message, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
+  const ignorePackageNames = config.ignore;
   const changedPackages = new Set(
     (
       await getChangedPackagesSinceRef({
@@ -164,10 +172,12 @@ export async function generateChangeset(cwd, message, sinceRef) {
     info(chalk.blue(`No changeset is needed as you haven't made any changes!`));
   }
   const newChangeset = {
-    releases: Array.from(changedPackages.values()).map((pkg) => ({
-      name: pkg,
-      type: 'patch',
-    })),
+    releases: Array.from(changedPackages.values())
+      .filter((pkgName) => !micromatch.isMatch(pkgName, ignorePackageNames))
+      .map((pkgName) => ({
+        name: pkgName,
+        type: 'patch',
+      })),
     summary: message,
   };
   const changesetID = await writeChangeset.default(newChangeset, cwd);
@@ -177,4 +187,18 @@ export async function generateChangeset(cwd, message, sinceRef) {
     ),
   );
   info(chalk.blue(resolve(resolve(cwd, '.changeset'), `${changesetID}.md`)));
+}
+
+export async function getNextReleasePlan(cwd) {
+  const packages = await getPackages(cwd);
+  const config = await read(cwd, packages);
+
+  const releasePlan = assembleReleasePlan.default(
+    await readChangesets.default(cwd),
+    packages,
+    config,
+    undefined,
+  );
+
+  return releasePlan.releases;
 }

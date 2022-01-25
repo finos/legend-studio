@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import type { DialogProps } from '@material-ui/core';
-import type { DialogClassKey } from '@material-ui/core/Dialog';
-import Dialog from '@material-ui/core/Dialog';
-import { makeStyles } from '@material-ui/core/styles';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import {
+  ClickAwayListener as MuiClickAwayListener,
+  Dialog as MuiDialog,
+  type DialogProps as MuiDialogProps,
+  type DialogClassKey as MuiDialogClassKey,
+} from '@mui/material';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { action, makeAutoObservable } from 'mobx';
@@ -58,11 +59,6 @@ export class NonBlockingDialogState {
   }
 }
 
-const useStyles = makeStyles({
-  root: { pointerEvents: 'none' },
-  paper: { pointerEvents: 'auto' },
-});
-
 /**
  * Non-blocking Dialog
  *
@@ -74,36 +70,38 @@ const useStyles = makeStyles({
  */
 export const NonBlockingDialog = observer(
   (
-    props: Omit<DialogProps, 'open'> & {
-      classes?: Partial<Record<DialogClassKey, string>>;
+    props: Omit<MuiDialogProps, 'open'> & {
+      classes?: Partial<Record<MuiDialogClassKey, string>>;
       nonModalDialogState: NonBlockingDialogState;
-      onClickAway: (event: React.MouseEvent<Document>) => void;
+      onClickAway: (event: MouseEvent | TouchEvent) => void;
     },
   ) => {
     const { nonModalDialogState, onClickAway, classes, ...dialogProps } = props;
-    const onClickAwayWhenModalIsOpen: React.MouseEventHandler<Document> = (
-      event,
-    ) => {
+    const onClickAwayWhenModalIsOpen = (
+      event: MouseEvent | TouchEvent,
+    ): void => {
       nonModalDialogState.handleClickaway(() => onClickAway(event));
     };
-    const customStyles = useStyles();
     if (!nonModalDialogState.isOpen) {
       return null;
     }
     return (
-      <ClickAwayListener onClickAway={onClickAwayWhenModalIsOpen}>
-        <Dialog
+      <MuiClickAwayListener onClickAway={onClickAwayWhenModalIsOpen}>
+        <MuiDialog
           hideBackdrop={true}
           disableEscapeKeyDown={false}
           open={nonModalDialogState.isOpen}
           classes={{
             ...classes,
-            root: clsx([customStyles.root, classes?.root ?? '']),
-            paper: clsx([customStyles.paper, classes?.paper ?? '']),
+            root: clsx(['mui-non-blocking-dialog__root', classes?.root ?? '']),
+            paper: clsx([
+              'mui-non-blocking-dialog__paper',
+              classes?.paper ?? '',
+            ]),
           }}
           {...dialogProps}
         />
-      </ClickAwayListener>
+      </MuiClickAwayListener>
     );
   },
 );

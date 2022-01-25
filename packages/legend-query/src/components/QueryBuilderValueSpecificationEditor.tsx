@@ -15,30 +15,33 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { FaCheckSquare, FaSquare, FaSave } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
+  type TooltipPlacement,
+  Tooltip,
   CustomSelectorInput,
   InfoCircleIcon,
   PencilIcon,
   DollarIcon,
-  StubTransition,
+  CheckSquareIcon,
+  SquareIcon,
+  SaveIcon,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
   isNonNullable,
+  Randomizer,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
 import CSVParser from 'papaparse';
-import type {
-  Enum,
-  PureModel,
-  Type,
-  ValueSpecification,
-} from '@finos/legend-graph';
 import {
+  type Enum,
+  type PureModel,
+  type Type,
+  type ValueSpecification,
+  LATEST_DATE,
   Enumeration,
   GenericType,
   GenericTypeExplicitReference,
@@ -51,27 +54,37 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-import type { TooltipProps } from '@material-ui/core';
-import { Tooltip } from '@material-ui/core';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import {
+  type PackageableElementOption,
+  DATE_FORMAT,
+  buildElementOption,
+} from '@finos/legend-application';
+import format from 'date-fns/format/index';
+import { addDays } from 'date-fns';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
   children: React.ReactElement;
-  placement: NonNullable<TooltipProps['placement']>;
+  placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { variable, children, placement } = props;
   const type = variable.genericType?.value.rawType;
   return (
     <Tooltip
       arrow={true}
-      placement={placement}
+      {...(placement !== undefined ? { placement } : {})}
       classes={{
         tooltip: 'query-builder__tooltip',
         arrow: 'query-builder__tooltip__arrow',
         tooltipPlacementRight: 'query-builder__tooltip--right',
       }}
-      TransitionComponent={StubTransition}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
       title={
         <div className="query-builder__tooltip__content">
           <div className="query-builder__tooltip__item">
@@ -102,7 +115,7 @@ const QueryBuilderParameterInfoTooltip: React.FC<{
   );
 };
 
-const VariableExpressionEditor = observer(
+export const VariableExpressionParameterEditor = observer(
   (props: {
     valueSpecification: VariableExpression;
     className?: string | undefined;
@@ -123,10 +136,7 @@ const VariableExpressionEditor = observer(
           <div className="query-builder-value-spec-editor__parameter__text">
             {varName}
           </div>
-          <QueryBuilderParameterInfoTooltip
-            variable={valueSpecification}
-            placement={'bottom'}
-          >
+          <QueryBuilderParameterInfoTooltip variable={valueSpecification}>
             <div className="query-builder-value-spec-editor__parameter__info">
               <InfoCircleIcon />
             </div>
@@ -178,7 +188,7 @@ const BooleanPrimitiveInstanceValueEditor = observer(
           })}
           onClick={toggleValue}
         >
-          {value ? <FaCheckSquare /> : <FaSquare />}
+          {value ? <CheckSquareIcon /> : <SquareIcon />}
         </button>
       </div>
     );
@@ -215,15 +225,16 @@ const NumberPrimitiveInstanceValueEditor = observer(
   },
 );
 
-const DatePrimitiveInstanceValueEditor = observer(
+export const DatePrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
   }) => {
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       valueSpecification.changeValue(event.target.value, 0);
+    };
 
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
@@ -313,10 +324,10 @@ const setCollectionValue = (
   const parseResult = CSVParser.parse<string[]>(value.trim(), {
     delimiter: ',',
   });
-  const parseData = parseResult.data[0]; // only take the first line
+  const parseData = parseResult.data[0] as string[]; // only take the first line
   if (parseResult.errors.length) {
     if (
-      parseResult.errors.length === 1 &&
+      parseResult.errors[0] &&
       parseResult.errors[0].code === 'UndetectableDelimiter' &&
       parseResult.errors[0].type === 'Delimiter' &&
       parseResult.data.length === 1
@@ -451,7 +462,7 @@ const CollectionValueInstanceValueEditor = observer(
             className="query-builder-value-spec-editor__list-editor__save-button btn--dark"
             onClick={saveEdit}
           >
-            <FaSave />
+            <SaveIcon />
           </button>
         </div>
       );
@@ -476,12 +487,88 @@ const CollectionValueInstanceValueEditor = observer(
   },
 );
 
-export const QueryBuilderUnsupportedValueSpecificationEditor: React.FC<{}> =
-  () => (
-    <div className="query-builder-value-spec-editor--unsupported">
-      unsupported
-    </div>
-  );
+export const QueryBuilderUnsupportedValueSpecificationEditor: React.FC = () => (
+  <div className="query-builder-value-spec-editor--unsupported">
+    unsupported
+  </div>
+);
+
+export const LatestDatePrimitiveInstanceValueEditor: React.FC = () => (
+  <div className="query-builder-value-spec-editor__latest-date">
+    {LATEST_DATE}
+  </div>
+);
+
+export const DateInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    graph: PureModel;
+    expectedType: Type;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, graph, expectedType, className } = props;
+    const variableType = valueSpecification.genericType.value.rawType;
+    const selectedType = buildElementOption(variableType);
+    const typeOptions: PackageableElementOption<Type>[] = graph.primitiveTypes
+      .filter(
+        (p) =>
+          p.name === PRIMITIVE_TYPE.STRICTDATE ||
+          p.name === PRIMITIVE_TYPE.DATETIME ||
+          p.name === PRIMITIVE_TYPE.LATESTDATE,
+      )
+      .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
+
+    const strictDate = graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
+    const date = graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
+    const dateTime = graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
+    const latestDate = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
+    const changeType = (val: PackageableElementOption<Type>): void => {
+      if (variableType !== val.value) {
+        valueSpecification.genericType.value.setRawType(val.value);
+      }
+      if (
+        valueSpecification.genericType.value.rawType.name !==
+        PRIMITIVE_TYPE.LATESTDATE
+      ) {
+        valueSpecification.values = [
+          format(
+            new Randomizer().getRandomDate(
+              new Date(Date.now()),
+              addDays(Date.now(), 100),
+            ),
+            DATE_FORMAT,
+          ),
+        ];
+      }
+    };
+
+    return (
+      <div className="query-builder-value-spec-editor__date">
+        {(valueSpecification.genericType.value.rawType === strictDate ||
+          valueSpecification.genericType.value.rawType === dateTime) && (
+          <DatePrimitiveInstanceValueEditor
+            valueSpecification={valueSpecification}
+            className={className}
+          />
+        )}
+        {valueSpecification.genericType.value.rawType === latestDate && (
+          <LatestDatePrimitiveInstanceValueEditor />
+        )}
+        {expectedType === date && (
+          <div className="query-builder-value-spec-editor__dropdown">
+            <CustomSelectorInput
+              placeholder="Choose a type..."
+              options={typeOptions}
+              onChange={changeType}
+              value={selectedType}
+              darkMode={true}
+            />
+          </div>
+        )}
+      </div>
+    );
+  },
+);
 
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
@@ -521,9 +608,12 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
+      case PRIMITIVE_TYPE.LATESTDATE:
         return (
-          <DatePrimitiveInstanceValueEditor
+          <DateInstanceValueEditor
             valueSpecification={valueSpecification}
+            graph={graph}
+            expectedType={expectedType}
             className={className}
           />
         );
@@ -556,7 +646,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   // property expression
   else if (valueSpecification instanceof VariableExpression) {
     return (
-      <VariableExpressionEditor
+      <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}
         className={className}
       />

@@ -5,7 +5,7 @@ on:
     branches:
       # Default branch is meant for standard releases, i.e. minor version bumps (e.g. 1.6.0, 1.7.0)
       - master
-      # Release branches are meant for patch releases, i.e. patch version bumps (e.g. 1.6.1, 1.7.1)
+      # Release branches are meant for recovery releases, i.e. patch version bumps (e.g. 1.6.1, 1.7.1)
       - 'release/**'
 
 # This job is meant for both standard and path release process
@@ -17,7 +17,7 @@ jobs:
     if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           # fetch all Git history so that `changesets` can generate changelogs with the correct commits
           fetch-depth: 0
@@ -25,44 +25,49 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.1
         with:
           node-version: 14.x
       - name: Install dependencies
         run: yarn
+      - name: Generate new release PR title
+        id: generate-new-release-pr-title
+        env:
+          MAIN_PACKAGE: '@finos/legend-studio-app'
+        run: node ./scripts/release/createNewReleasePRTitle.js
       - name: Create new release pull request or Publish to NPM
         id: changesets
-        uses: changesets/action@master
+        uses: changesets/action@v1.2.0
         with:
-          version: yarn version
+          version: yarn release:version
           commit: 'chore: bump versions and release'
-          title: ${{ github.ref == 'refs/heads/master' && 'New Release' || 'New Patch Release' }}
+          title: ${{ steps.generate-new-release-pr-title.outputs.title }}
           publish: yarn release
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # NOTE: this is currently creating tags on Github and creating release note.
-      # This is proper except for the fact that it might be creating a lot of tags
-      # and release on our repository. This requires substantial changes on `changesets`
-      # side and thus, we cannot rely on them doing that any time soon. Meanwhile
-      # we will do the following cleanup step and manually create a release on Github
-      # See https://github.com/changesets/action/issues/87
-      - name: Create Github release
-        # If publish never happened, there's no point in uploading this content
+        # Prevent `changeset`'s default behavior to create Git tags and publish Github release
+        #
+        # Conclude the release with the following actions:
+        # 1. Create a tag for the release and publish a Github release for that tag
+        # 2. Create the release branch for the latest release tag
+        # 3. Create a new release milestone and move over open issues in the current milestone and close the current milestone.
+        # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md
+      - name: Conclude new release
         if: steps.changesets.outputs.published == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAIN_PACKAGE: '@finos/legend-studio-app'
           PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
-        run: yarn release:github
+        run: node ./scripts/release/concludeNewRelease.js
       - name: Login to Docker Hub
         if: steps.changesets.outputs.published == 'true'
         uses: docker/login-action@v1
@@ -78,9 +83,10 @@ jobs:
         # no quick way to rerun this step, but to do a bump in a dependent modules (e.g.
         # `@finos/legend-studio` in order to trigger a version bump in `@finos/legend-studio-deployment`
         if: steps.changesets.outputs.published == 'true'
-        run: >
-          yarn workspace @finos/legend-studio-deployment publish:docker &&
+        run: |
+          yarn workspace @finos/legend-studio-deployment publish:docker
           yarn workspace @finos/legend-query-deployment publish:docker
+          yarn workspace @finos/legend-taxonomy-deployment publish:docker
         env:
           # TODO: After https://github.com/finos/legend-studio/pull/227 it seems like due to either
           # the upgrade of Webpack/Typescript that we start seeing some OOM when building Webpack

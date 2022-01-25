@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../../mixins' as *;
+@use 'mixins' as *;
 
 .mapping-test-editor,
 .mapping-execution-builder {
@@ -106,6 +106,8 @@
     }
 
     &__header__actions {
+      @include flexVCenter;
+
       margin-right: 0.5rem;
     }
 
@@ -131,17 +133,39 @@
     height: 100%;
   }
 
-  &__query-panel__query-editor {
-    @include flexHCenter;
-
-    height: 100%;
-    border-left: 0.1rem solid var(--color-dark-grey-200);
-    padding: 1rem;
-  }
-
   &__input-data-panel__content {
     padding: 0 !important;
     position: relative;
+  }
+
+  &__input-data-panel__type-selector {
+    @include flexVCenter;
+
+    padding: 0 1rem;
+    cursor: pointer;
+    color: var(--color-light-grey-400);
+    background: var(--color-dark-grey-80);
+    margin-right: 0.5rem;
+
+    &__option {
+      @include flexCenter;
+
+      width: 6.2rem;
+      height: 2.6rem;
+    }
+
+    &__value {
+      @include flexVCenter;
+
+      height: 100%;
+      width: 100%;
+    }
+
+    &__value__label {
+      color: inherit;
+      padding: 0 0.5rem;
+      white-space: nowrap;
+    }
   }
 
   &__result-panel__content {
@@ -232,5 +256,9 @@
       top: 0;
       left: 0;
     }
+  }
+
+  &__icon--refresh {
+    font-size: 1.8rem;
   }
 }

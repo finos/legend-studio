@@ -15,12 +15,11 @@
  */
 
 import { useState } from 'react';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-art';
 import {
+  Dialog,
+  type TreeNodeContainerProps,
+  type TreeData,
+  type TreeNodeData,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanel,
@@ -34,10 +33,9 @@ import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import { observer } from 'mobx-react-lite';
 import { ExecutionNodesViewer } from './ExecutionNodesViewer';
-import Dialog from '@material-ui/core/Dialog';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
-import type { ExecutionPlan } from '@finos/legend-graph';
 import {
+  type ExecutionPlan,
   ExecutionNode,
   SQLExecutionNode,
   RelationalTDSInstantiationExecutionNode,
@@ -242,10 +240,7 @@ const ExecutionNodeElementTreeNodeContainer: React.FC<
 export const ExecutionPlanTree: React.FC<{
   executionPlanState: ExecutionPlanState;
   executionPlan: ExecutionPlan;
-}> = (props: {
-  executionPlanState: ExecutionPlanState;
-  executionPlan: ExecutionPlan;
-}) => {
+}> = (props) => {
   const { executionPlanState, executionPlan } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax
   // See https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
@@ -345,6 +340,9 @@ export const ExecutionPlanViewer = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div className="modal modal--dark editor-modal">
           <div className="modal__header">
@@ -353,11 +351,7 @@ export const ExecutionPlanViewer = observer(
           {plan ? (
             <div className="modal__body">
               <ResizablePanelGroup orientation="vertical">
-                <ResizablePanel
-                  size={350}
-                  minSize={350}
-                  className="review-explorer__content"
-                >
+                <ResizablePanel size={350} minSize={350}>
                   <div className="panel explorer">
                     <div className="panel__header side-bar__header">
                       <div className="panel__header__title">

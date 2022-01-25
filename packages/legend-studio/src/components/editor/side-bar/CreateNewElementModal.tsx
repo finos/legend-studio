@@ -15,8 +15,7 @@
  */
 
 import { useRef } from 'react';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
-import Dialog from '@material-ui/core/Dialog';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { observer } from 'mobx-react-lite';
 import {
   NewPackageableRuntimeDriver,
@@ -26,14 +25,16 @@ import {
   resolvePackageAndElementName,
   CONNECTION_TYPE,
 } from '../../../stores/NewElementState';
-import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
+import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';
-import type { Mapping, Store, Class } from '@finos/legend-graph';
 import {
+  type Mapping,
+  type Store,
+  type Class,
   ELEMENT_PATH_DELIMITER,
   PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';
@@ -44,7 +45,6 @@ export const getElementTypeLabel = (
   type: string | undefined,
 ): string | undefined => {
   switch (type) {
-    /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     case PACKAGEABLE_ELEMENT_TYPE.PACKAGE:
     case PACKAGEABLE_ELEMENT_TYPE.CLASS:
     case PACKAGEABLE_ELEMENT_TYPE.ENUMERATION:
@@ -74,7 +74,7 @@ export const getElementTypeLabel = (
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_StudioPlugin_Extension
+                plugin as DSL_LegendStudioPlugin_Extension
               ).getExtraElementTypeLabelGetters?.() ?? [],
           );
         for (const typeLabelGetter of extraElementTypeLabelGetters) {
@@ -208,7 +208,6 @@ const NewConnectionValueDriverEditor = observer(() => {
     NewPackageableConnectionDriver,
   );
   const newConnectionValueDriver = newConnectionDriver.newConnectionValueDriver;
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   if (newConnectionValueDriver instanceof NewPureModelConnectionDriver) {
     return (
       <NewPureModelConnectionDriverEditor
@@ -308,7 +307,7 @@ const renderNewElementDriver = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_StudioPlugin_Extension
+              plugin as DSL_LegendStudioPlugin_Extension
             ).getExtraNewElementDriverEditorRenderers?.() ?? [],
         );
       for (const creator of extraNewElementDriverEditorCreators) {
@@ -372,21 +371,22 @@ export const CreateNewElementModal = observer(() => {
     save();
   };
 
-  if (!newElementState.modal) {
+  if (!newElementState.showModal) {
     return null;
   }
   return (
     <Dialog
-      open={newElementState.modal}
+      open={newElementState.showModal}
       onClose={closeModal}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <form
-        data-testid={STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
+        data-testid={LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
         onSubmit={handleSubmit}
         className="modal search-modal"
       >

@@ -15,7 +15,11 @@
  */
 
 import { TEST_DATA__relationalCompleteGraphEntities } from './TEST_DATA__RelationalEntities';
-import { unitTest, guaranteeType } from '@finos/legend-shared';
+import {
+  unitTest,
+  guaranteeType,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphManagerState } from '../../../GraphManagerState';
 import {
@@ -24,7 +28,7 @@ import {
 } from '../../../GraphManagerTestUtils';
 import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { PRIMITIVE_TYPE } from '../../../MetaModelConst';
@@ -41,7 +45,7 @@ beforeEach(async () => {
 
 test(unitTest('Relational database is loaded properly'), () => {
   const graph = graphManagerState.graph;
-  expect(graph.ownStores).toHaveLength(3);
+  expect(graph.ownStores).toHaveLength(2);
   expect(graph.ownDatabases).toHaveLength(2);
   // db
   const db = graph.getDatabase('meta::relational::tests::db');
@@ -53,14 +57,13 @@ test(unitTest('Relational database is loaded properly'), () => {
   expect(defaultSchema.views).toHaveLength(7);
   const interactionTable = defaultSchema.getTable('interactionTable');
   expect(interactionTable.columns).toHaveLength(5);
-  const primaryCol = interactionTable.primaryKey[0];
-  expect(primaryCol.name).toBe('ID');
+  expect(interactionTable.primaryKey[0]?.name).toBe('ID');
   const productSchema = db.getSchema('productSchema');
   expect(productSchema.tables).toHaveLength(1);
   expect(productSchema.views).toHaveLength(0);
   expect(db.includes).toHaveLength(1);
   // dbInc
-  const dbInc = guaranteeType(db.includes[0].value, Database);
+  const dbInc = guaranteeType(db.includes[0]?.value, Database);
   expect(dbInc.path).toBe('meta::relational::tests::dbInc');
   const dbIncDefaultSchema = dbInc.getSchema('default');
   expect(dbIncDefaultSchema.tables).toHaveLength(9);
@@ -84,8 +87,9 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
     ).toBeDefined();
   });
   expect(simpleRelationalMapping.includes).toHaveLength(1);
-  const simpleRelationalMappingInc =
-    simpleRelationalMapping.includes[0].included.value;
+  const simpleRelationalMappingInc = guaranteeNonNullable(
+    simpleRelationalMapping.includes[0]?.included.value,
+  );
   expect(simpleRelationalMappingInc.path).toBe(
     'meta::relational::tests::simpleRelationalMappingInc',
   );
@@ -93,7 +97,7 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
     'meta::pure::tests::model::simple::FirmExtension',
   );
   const firmExtensionSetImpl = guaranteeType(
-    getClassMappingsByClass(simpleRelationalMappingInc, _class)[0],
+    getOwnClassMappingsByClass(simpleRelationalMappingInc, _class)[0],
     RootRelationalInstanceSetImplementation,
   );
   expect(firmExtensionSetImpl.propertyMappings).toHaveLength(3);

@@ -15,35 +15,47 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  FaFire,
-  FaCodeBranch,
-  FaRegWindowMaximize,
-  FaTerminal,
-  FaUserSecret,
-  FaBrush,
-} from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
-import { clsx, HammerIcon } from '@finos/legend-art';
-import { GoSync } from 'react-icons/go';
-import { STUDIO_TEST_ID } from '../StudioTestID';
+import {
+  clsx,
+  HammerIcon,
+  SyncIcon,
+  FireIcon,
+  CodeBranchIcon,
+  WindowMaximizeIcon,
+  TerminalIcon,
+  HackerIcon,
+  BrushIcon,
+} from '@finos/legend-art';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import type { EditorPathParams } from '../../stores/LegendStudioRouter';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
+import {
+  generateSetupRoute,
+  type EditorPathParams,
+  type GroupEditorPathParams,
+} from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
-  const params = useParams<EditorPathParams>();
+  const params = useParams<EditorPathParams | GroupEditorPathParams>();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const isInConflictResolutionMode = editorStore.isInConflictResolutionMode;
   // SDLC
   const projectId = params.projectId;
-  const workspaceId = params.workspaceId;
+  const workspaceType = (params as { groupWorkspaceId: string | undefined })
+    .groupWorkspaceId
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
+  const workspaceId =
+    workspaceType === WorkspaceType.GROUP
+      ? (params as GroupEditorPathParams).groupWorkspaceId
+      : (params as EditorPathParams).workspaceId;
   const currentProject = editorStore.sdlcState.currentProject;
   const goToWorkspaceUpdater = (): void =>
     editorStore.setActiveActivity(
@@ -124,7 +136,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
 
   return (
     <div
-      data-testid={STUDIO_TEST_ID.STATUS_BAR}
+      data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
       className={clsx('editor__status-bar', {
         'editor__status-bar--conflict-resolution': isInConflictResolutionMode,
       })}
@@ -132,12 +144,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       <div className="editor__status-bar__left">
         <div className="editor__status-bar__workspace">
           <div className="editor__status-bar__workspace__icon">
-            <FaCodeBranch />
+            <CodeBranchIcon />
           </div>
           <div className="editor__status-bar__workspace__project">
             <Link
               to={generateSetupRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 projectId,
               )}
             >
@@ -148,9 +160,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           <div className="editor__status-bar__workspace__workspace">
             <Link
               to={generateSetupRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 projectId,
                 workspaceId,
+                workspaceType,
               )}
             >
               {workspaceId}
@@ -171,7 +184,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         </div>
       </div>
       <div
-        data-testid={STUDIO_TEST_ID.EDITOR__STATUS_BAR__RIGHT}
+        data-testid={LEGEND_STUDIO_TEST_ID.EDITOR__STATUS_BAR__RIGHT}
         className="editor__status-bar__right"
       >
         {isInConflictResolutionMode && (
@@ -202,7 +215,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               tabIndex={-1}
               title={'Accept conflict resolution'}
             >
-              <GoSync />
+              <SyncIcon />
             </button>
           </div>
         )}
@@ -229,7 +242,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               tabIndex={-1}
               title={'Sync with workspace (Ctrl + S)'}
             >
-              <GoSync />
+              <SyncIcon />
             </button>
           </div>
         )}
@@ -252,7 +265,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Generate (F10)'}
         >
-          <FaFire />
+          <FireIcon />
         </button>
         <button
           className={clsx(
@@ -271,7 +284,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Clear generation entities'}
         >
-          <FaBrush />
+          <BrushIcon />
         </button>
         <button
           className={clsx(
@@ -303,7 +316,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Maximize/Minimize'}
         >
-          <FaRegWindowMaximize />
+          <WindowMaximizeIcon />
         </button>
         <button
           className={clsx(
@@ -317,7 +330,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Toggle auxiliary panel (Ctrl + `)'}
         >
-          <FaTerminal />
+          <TerminalIcon />
         </button>
         <button
           className={clsx(
@@ -332,7 +345,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Toggle text mode (F8)'}
         >
-          <FaUserSecret />
+          <HackerIcon />
         </button>
       </div>
     </div>

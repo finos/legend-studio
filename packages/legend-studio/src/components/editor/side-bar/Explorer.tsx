@@ -17,19 +17,9 @@
 import React, { Fragment, useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  FaChevronDown,
-  FaChevronRight,
-  FaCompress,
-  FaFolder,
-  FaFolderOpen,
-  FaPlus,
-  FaSearch,
-  FaLock,
-  FaExclamationTriangle,
-  FaFileImport,
-} from 'react-icons/fa';
-import {
+  type TreeNodeContainerProps,
   clsx,
+  Dialog,
   MenuContent,
   MenuContentItem,
   MenuContentItemBlankIcon,
@@ -41,8 +31,17 @@ import {
   BlankPanelContent,
   TreeView,
   ProjectConfigurationIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CompressIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  PlusIcon,
+  LockIcon,
+  ExclamationTriangleIcon,
+  SearchIcon,
+  FileImportIcon,
 } from '@finos/legend-art';
-import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
   getElementIcon,
   getElementTypeIcon,
@@ -53,16 +52,17 @@ import {
 } from './CreateNewElementModal';
 import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtil';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
-import type { GenerationTreeNodeData } from '../../../stores/shared/FileGenerationTreeUtil';
-import { getFileGenerationChildNodes } from '../../../stores/shared/FileGenerationTreeUtil';
+import {
+  type GenerationTreeNodeData,
+  getFileGenerationChildNodes,
+} from '../../../stores/shared/FileGenerationTreeUtil';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
-import { isNonNullable, toTitleCase } from '@finos/legend-shared';
-import { Dialog } from '@material-ui/core';
+import { toTitleCase } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
@@ -74,7 +74,7 @@ import {
   isValidPath,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;
@@ -142,6 +142,7 @@ const ElementRenamer = observer(() => {
       open={Boolean(element)}
       onClose={abort}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: onEnter,
       }}
       classes={{ container: 'search-modal__container' }}
@@ -182,7 +183,7 @@ const ExplorerContextMenu = observer(
   ) => {
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore<StudioConfig>();
+    const applicationStore = useApplicationStore<LegendStudioConfig>();
     const extraExplorerContextMenuItems = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
@@ -190,13 +191,12 @@ const ExplorerContextMenu = observer(
           plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??
           [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>
           {config.renderer(editorStore, node?.packageableElement)}
         </Fragment>
       ));
-    const projectId = editorStore.sdlcState.currentProjectId;
+    const projectId = editorStore.sdlcState.currentProject?.projectId;
     const isReadOnly = editorStore.isInViewerMode || Boolean(nodeIsImmutable);
     const _package = node
       ? node.packageableElement instanceof Package
@@ -218,11 +218,11 @@ const ExplorerContextMenu = observer(
       }
     };
     const openElementInViewerMode = (): void => {
-      if (node) {
+      if (node && projectId) {
         applicationStore.navigator.openNewWindow(
           applicationStore.navigator.generateLocation(
             generateViewEntityRoute(
-              applicationStore.config.sdlcServerKey,
+              applicationStore.config.currentSDLCServerOption,
               projectId,
               node.packageableElement.path,
             ),
@@ -230,14 +230,12 @@ const ExplorerContextMenu = observer(
         );
       }
     };
-    const getElementLinkInViewerMode = (): void => {
+    const copyLinkToElementInViewerMode = (): void => {
       if (node) {
         applicationStore
           .copyTextToClipboard(
             applicationStore.navigator.generateLocation(
-              generateViewEntityRoute(
-                applicationStore.config.sdlcServerKey,
-                projectId,
+              editorStore.editorMode.generateElementLink(
                 node.packageableElement.path,
               ),
             ),
@@ -265,7 +263,7 @@ const ExplorerContextMenu = observer(
 
     if (_package && !isReadOnly) {
       return (
-        <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+        <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
           {elementTypes.map((type) => (
             <MenuContentItem key={type} onClick={createNewElement(type)}>
               <MenuContentItemIcon>
@@ -290,7 +288,7 @@ const ExplorerContextMenu = observer(
       );
     }
     return (
-      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {extraExplorerContextMenuItems}
         {!isReadOnly && node && (
           <>
@@ -300,10 +298,12 @@ const ExplorerContextMenu = observer(
         )}
         {node && (
           <>
-            <MenuContentItem onClick={openElementInViewerMode}>
-              View in Project
-            </MenuContentItem>
-            <MenuContentItem onClick={getElementLinkInViewerMode}>
+            {!editorStore.isInViewerMode && (
+              <MenuContentItem onClick={openElementInViewerMode}>
+                View in Project
+              </MenuContentItem>
+            )}
+            <MenuContentItem onClick={copyLinkToElementInViewerMode}>
               Copy Link
             </MenuContentItem>
           </>
@@ -350,13 +350,13 @@ const ProjectConfig = observer(() => {
   );
 });
 
-type PackageTreeNodeContainerProps = TreeNodeContainerProps<
-  PackageTreeNodeData,
-  { disableContextMenu: boolean; isContextImmutable?: boolean }
->;
-
 const PackageTreeNodeContainer = observer(
-  (props: PackageTreeNodeContainerProps) => {
+  (
+    props: TreeNodeContainerProps<
+      PackageTreeNodeData,
+      { disableContextMenu: boolean; isContextImmutable?: boolean }
+    >,
+  ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const editorStore = useEditorStore();
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
@@ -373,9 +373,9 @@ const PackageTreeNodeContainer = observer(
     const expandIcon = !isPackage ? (
       <div />
     ) : node.isOpen ? (
-      <FaChevronDown />
+      <ChevronDownIcon />
     ) : (
-      <FaChevronRight />
+      <ChevronRightIcon />
     );
     const iconPackageColor = isGeneratedPackageTreeNode(node)
       ? 'color--generated'
@@ -387,11 +387,11 @@ const PackageTreeNodeContainer = observer(
     const nodeIcon = isPackage ? (
       node.isOpen ? (
         <div className={iconPackageColor}>
-          <FaFolderOpen />
+          <FolderOpenIcon />
         </div>
       ) : (
         <div className={iconPackageColor}>
-          <FaFolder />
+          <FolderIcon />
         </div>
       )
     ) : (
@@ -455,7 +455,7 @@ const PackageTreeNodeContainer = observer(
 );
 
 const ExplorerDropdownMenu = observer(
-  (props: {}, ref: React.Ref<HTMLDivElement>) => {
+  () => {
     const editorStore = useEditorStore();
     const _package = editorStore.explorerTreeState.getSelectedNodePackage();
     const createNewElement =
@@ -473,7 +473,7 @@ const ExplorerDropdownMenu = observer(
       );
 
     return (
-      <MenuContent data-testid={STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {elementTypes.map((type) => (
           <MenuContentItem key={type} onClick={createNewElement(type)}>
             <MenuContentItemIcon>
@@ -577,7 +577,7 @@ const ExplorerTrees = observer(() => {
       content={<ExplorerContextMenu />}
       menuProps={{ elevation: 7 }}
     >
-      <div data-testid={STUDIO_TEST_ID.EXPLORER_TREES}>
+      <div data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_TREES}>
         {editorStore.explorerTreeState.buildState.hasCompleted &&
           showPackageTrees && (
             <>
@@ -594,7 +594,8 @@ const ExplorerTrees = observer(() => {
                 }}
               />
               <ElementRenamer />
-              <ProjectConfig />
+              {editorStore.projectConfigurationEditorState
+                .projectConfiguration && <ProjectConfig />}
               {/* SYSTEM TREE */}
               {Boolean(
                 editorStore.graphManagerState.systemModel.allOwnElements.length,
@@ -713,7 +714,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           title="Open Model Loader (F2)"
           onClick={showModelLoader}
         >
-          <FaFileImport />
+          <FileImportIcon />
         </button>
       )}
       <DropdownMenu
@@ -740,7 +741,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
             tabIndex={-1}
             title="New Element... (Ctrl + Shift + N)"
           >
-            <FaPlus />
+            <PlusIcon />
           </button>
         )}
       </DropdownMenu>
@@ -751,7 +752,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         tabIndex={-1}
         title="Collapse All"
       >
-        <FaCompress />
+        <CompressIcon />
       </button>
       <button
         className="panel__header__action"
@@ -760,7 +761,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         onClick={showSearchModal}
         title="Open Element... (Ctrl + P)"
       >
-        <FaSearch />
+        <SearchIcon />
       </button>
     </div>
   );
@@ -776,8 +777,6 @@ export const Explorer = observer(() => {
       editorStore.graphState.isUpdatingGraph) &&
     !editorStore.graphManagerState.graph.buildState.hasFailed;
   const showExplorerTrees =
-    sdlcState.currentProject &&
-    sdlcState.currentWorkspace &&
     editorStore.graphManagerState.graph.buildState.hasSucceeded &&
     editorStore.explorerTreeState.buildState.hasCompleted;
   // conflict resolution
@@ -803,7 +802,7 @@ export const Explorer = observer(() => {
         </div>
         {editorStore.isInViewerMode && (
           <div className="panel__header__title side-bar__header__title__viewer-mode-badge">
-            <FaLock />
+            <LockIcon />
             READ-ONLY
           </div>
         )}
@@ -812,17 +811,21 @@ export const Explorer = observer(() => {
         <div className="panel explorer">
           <div className="panel__header explorer__header">
             <div className="panel__header__title">
-              <div className="panel__header__title__label">
-                {sdlcState.currentWorkspace && !editorStore.isInViewerMode
-                  ? 'workspace'
-                  : 'project'}
-              </div>
-              <div className="panel__header__title__content">
-                {editorStore.isInViewerMode &&
-                  (sdlcState.currentProject?.name ?? '(unknown) ')}
-                {!editorStore.isInViewerMode &&
-                  (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
-              </div>
+              {sdlcState.currentProject && (
+                <>
+                  <div className="panel__header__title__label">
+                    {sdlcState.currentWorkspace && !editorStore.isInViewerMode
+                      ? 'workspace'
+                      : 'project'}
+                  </div>
+                  <div className="panel__header__title__content">
+                    {editorStore.isInViewerMode &&
+                      sdlcState.currentProject.name}
+                    {!editorStore.isInViewerMode &&
+                      (sdlcState.currentWorkspace?.workspaceId ?? '(unknown) ')}
+                  </div>
+                </>
+              )}
             </div>
             <ProjectExplorerActionPanel
               disabled={!editorStore.explorerTreeState.buildState.hasCompleted}
@@ -876,7 +879,7 @@ export const Explorer = observer(() => {
                     <BlankPanelContent>
                       <div className="explorer__content__failure-notice">
                         <div className="explorer__content__failure-notice__icon">
-                          <FaExclamationTriangle />
+                          <ExclamationTriangleIcon />
                         </div>
                         <div className="explorer__content__failure-notice__text">
                           Failed to build graph

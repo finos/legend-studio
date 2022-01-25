@@ -17,11 +17,11 @@
 import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { guaranteeType } from '@finos/legend-shared';
-import Dialog from '@material-ui/core/Dialog';
+import { Dialog } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import type { Mapping } from '@finos/legend-graph';
 import {
+  type Mapping,
   ELEMENT_PATH_DELIMITER,
   resolvePackagePathAndElementName,
   Package,
@@ -49,21 +49,24 @@ export const NewServiceModal = observer(
       servicePath,
       mappingPackage.path,
     );
+    const elementAlreadyExists =
+      editorStore.graphManagerState.graph.allOwnElements
+        .map((s) => s.path)
+        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
     const handleEnter = (): void => nameRef.current?.focus();
-    const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      if (servicePath && !isReadOnly) {
+    const create = (): void => {
+      if (servicePath && !isReadOnly && !elementAlreadyExists) {
         promoteToService(packagePath, serviceName)
           .then(() => close())
           .catch(applicationStore.alertIllegalUnhandledError);
       }
     };
+    const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+      event.preventDefault();
+      create();
+    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
-    const elementAlreadyExists =
-      editorStore.graphManagerState.graph.allOwnElements
-        .map((s) => s.path)
-        .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
     return (
       <Dialog
         open={showModal}
@@ -79,22 +82,27 @@ export const NewServiceModal = observer(
       >
         <form onSubmit={onSubmit} className="modal search-modal modal--dark">
           <div className="modal__title">Promote to Service</div>
-          <input
-            ref={nameRef}
-            className="input mapping-execution-panel__service__modal__service-path"
-            disabled={isReadOnly}
-            value={servicePath}
-            spellCheck={false}
-            onChange={changeValue}
-            placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
-          />
-          {elementAlreadyExists && (
-            <div>Element with same path already exists</div>
-          )}
+          <div className="input-group">
+            <input
+              ref={nameRef}
+              className="modal--simple__input input--dark input-group__input"
+              disabled={isReadOnly}
+              value={servicePath}
+              spellCheck={false}
+              onChange={changeValue}
+              placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
+            />
+            {elementAlreadyExists && (
+              <div className="input-group__error-message">
+                Element with same path already exists
+              </div>
+            )}
+          </div>
           <button
-            className="btn btn--primary u-pull-right"
-            disabled={isReadOnly ?? elementAlreadyExists}
+            className="modal--simple__btn btn btn--dark btn--primary u-pull-right"
+            disabled={Boolean(isReadOnly) || elementAlreadyExists}
             color="primary"
+            onClick={create}
           >
             Create
           </button>

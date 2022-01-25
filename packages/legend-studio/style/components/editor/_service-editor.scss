@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../mixins' as *;
+@use 'mixins' as *;
 
 .service-editor {
   height: 100%;
@@ -294,7 +294,7 @@
   &__configuration__item {
     @include flexVCenter;
 
-    margin: 0 0 1rem 0;
+    margin: 0 0 1rem;
   }
 
   &__configuration__item__dropdown {
@@ -419,11 +419,6 @@
     height: 100%;
     background: var(--color-dark-grey-50);
   }
-
-  &__editor-trigger {
-    height: 100%;
-    width: 100%;
-  }
 }
 
 .service-test-editor {
@@ -463,7 +458,7 @@
   &__explorer,
   &__parameters {
     .panel__content {
-      padding: 0.5rem 0 0.5rem 0;
+      padding: 0.5rem 0;
     }
   }
 

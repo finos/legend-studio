@@ -30,16 +30,14 @@ import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
 import type { TreeData } from '@finos/legend-art';
 import { ConnectionEditorState } from './connection/ConnectionEditorState';
 import { getMappingElementSource } from './mapping/MappingEditorState';
-import type {
-  PackageableElement,
-  Mapping,
-  Connection,
-  PackageableConnection,
-  SetImplementation,
-  PureModel,
-  PackageableElementReference,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type Mapping,
+  type Connection,
+  type PackageableConnection,
+  type SetImplementation,
+  type PackageableElementReference,
+  getAllClassMappings,
   PackageableRuntime,
   Runtime,
   EngineRuntime,
@@ -56,40 +54,43 @@ import {
   FlatData,
   FlatDataConnection,
   PackageableElementExplicitReference,
-  Table,
-  View,
   Database,
+  TableAlias,
   DatabaseType,
   RelationalDatabaseConnection,
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
 } from '@finos/legend-graph';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
   setImplementation: SetImplementation,
-  graph: PureModel,
+  editorStore: EditorStore,
 ): Store | undefined => {
-  const sourceElement = getMappingElementSource(setImplementation);
+  const sourceElement = getMappingElementSource(
+    setImplementation,
+    editorStore.pluginManager.getStudioPlugins(),
+  );
   if (sourceElement instanceof Class) {
-    return graph.modelStore;
+    return editorStore.graphManagerState.graph.modelStore;
   } else if (sourceElement instanceof RootFlatDataRecordType) {
     return sourceElement.owner.owner;
-  } else if (sourceElement instanceof Table || sourceElement instanceof View) {
-    return sourceElement.schema.owner;
+  } else if (sourceElement instanceof TableAlias) {
+    return sourceElement.relation.ownerReference.value;
   }
   return undefined;
 };
 
 const getStoresFromMappings = (
   mappings: Mapping[],
-  graph: PureModel,
+  editorStore: EditorStore,
 ): Store[] =>
   uniq(
     mappings.flatMap((mapping) =>
-      mapping.allClassMappings
+      getAllClassMappings(mapping)
         .map((setImplementation) =>
-          getClassMappingStore(setImplementation, graph),
+          getClassMappingStore(setImplementation, editorStore),
         )
         .filter(isNonNullable),
     ),
@@ -104,17 +105,22 @@ const getStoresFromMappings = (
 export const decorateRuntimeWithNewMapping = (
   runtime: Runtime,
   mapping: Mapping,
-  graph: PureModel,
+  editorStore: EditorStore,
 ): void => {
   const runtimeValue =
     runtime instanceof RuntimePointer
       ? runtime.packageableRuntime.value.runtimeValue
       : guaranteeType(runtime, EngineRuntime);
-  getStoresFromMappings([mapping], graph).forEach((store) =>
+  getStoresFromMappings([mapping], editorStore).forEach((store) =>
     runtimeValue.addUniqueStoreConnectionsForStore(store),
   );
   const sourceClasses = mapping.classMappings
-    .map((classMapping) => getMappingElementSource(classMapping))
+    .map((classMapping) =>
+      getMappingElementSource(
+        classMapping,
+        editorStore.pluginManager.getStudioPlugins(),
+      ),
+    )
     .filter(
       (sourceElement): sourceElement is Class => sourceElement instanceof Class,
     );
@@ -144,7 +150,9 @@ export const decorateRuntimeWithNewMapping = (
         new IdentifiedConnection(
           runtimeValue.generateIdentifiedConnectionId(),
           new JsonModelConnection(
-            PackageableElementExplicitReference.create(graph.modelStore),
+            PackageableElementExplicitReference.create(
+              editorStore.graphManagerState.graph.modelStore,
+            ),
             PackageableElementExplicitReference.create(_class),
           ),
         ),
@@ -198,6 +206,7 @@ export const getConnectionsForModelStoreWithClass = (
  */
 export const getRuntimeExplorerTreeData = (
   runtime: Runtime,
+  editorStore: EditorStore,
 ): TreeData<RuntimeExplorerTreeNodeData> => {
   const runtimeValue =
     runtime instanceof RuntimePointer
@@ -207,8 +216,13 @@ export const getRuntimeExplorerTreeData = (
   const nodes = new Map<string, RuntimeExplorerTreeNodeData>();
   const allSourceClassesFromMappings = uniq(
     runtimeValue.mappings.flatMap((mapping) =>
-      mapping.value.allClassMappings
-        .map((setImplementation) => getMappingElementSource(setImplementation))
+      getAllClassMappings(mapping.value)
+        .map((setImplementation) =>
+          getMappingElementSource(
+            setImplementation,
+            editorStore.pluginManager.getStudioPlugins(),
+          ),
+        )
         .filter((source): source is Class => source instanceof Class),
     ),
   );
@@ -347,12 +361,12 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
     } else if (this.packageableConnections.length) {
       newConnection = new ConnectionPointer(
         PackageableElementExplicitReference.create(
-          this.packageableConnections[0],
+          this.packageableConnections[0] as PackageableConnection,
         ),
       );
     } else {
       try {
-        newConnection = this.createNewCustomConnection();
+        newConnection = this.createDefaultConnection();
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.notifyWarning(error.message);
@@ -381,7 +395,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
 
   abstract get identifiedConnections(): IdentifiedConnection[];
   abstract get packageableConnections(): PackageableConnection[];
-  abstract createNewCustomConnection(): Connection;
+  abstract createDefaultConnection(): Connection;
   abstract deleteIdentifiedConnection(
     identifiedConnection: IdentifiedConnection,
   ): void;
@@ -406,7 +420,9 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
 
     this.store = store;
     if (this.identifiedConnections.length) {
-      this.openIdentifiedConnection(this.identifiedConnections[0]);
+      this.openIdentifiedConnection(
+        this.identifiedConnections[0] as IdentifiedConnection,
+      );
     }
   }
 
@@ -425,8 +441,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
     );
   }
 
-  /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
-  createNewCustomConnection(): Connection {
+  createDefaultConnection(): Connection {
     if (this.store instanceof FlatData) {
       return new FlatDataConnection(
         PackageableElementExplicitReference.create(this.store),
@@ -439,8 +454,24 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
         new DefaultH2AuthenticationStrategy(),
       );
     }
+    const extraDefaultConnectionValueBuilders = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraDefaultConnectionValueBuilders?.() ?? [],
+      );
+
+    for (const builder of extraDefaultConnectionValueBuilders) {
+      const defaultConnection = builder(this.store);
+      if (defaultConnection) {
+        return defaultConnection;
+      }
+    }
+
     throw new UnsupportedOperationError(
-      `Can't create custom connection for the specified store`,
+      `Can't build default connection for the specified store: no compatible builder available from plugins`,
       this.store,
     );
   }
@@ -461,7 +492,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
         this.runtimeEditorState.runtimeValue.mappings.map(
           (mapping) => mapping.value,
         ),
-        this.editorStore.graphManagerState.graph,
+        this.editorStore,
       );
       if (!stores.includes(this.store)) {
         this.runtimeEditorState.openTabFor(
@@ -491,7 +522,9 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
 
     this.class = _class;
     if (this.identifiedConnections.length) {
-      this.openIdentifiedConnection(this.identifiedConnections[0]);
+      this.openIdentifiedConnection(
+        this.identifiedConnections[0] as IdentifiedConnection,
+      );
     }
   }
 
@@ -515,7 +548,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
     );
   }
 
-  createNewCustomConnection(): Connection {
+  createDefaultConnection(): Connection {
     return new JsonModelConnection(
       PackageableElementExplicitReference.create(
         this.editorStore.graphManagerState.graph.modelStore,
@@ -538,9 +571,12 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
     if (!this.identifiedConnections.length) {
       const allSourceClassesFromMappings = uniq(
         this.runtimeEditorState.runtimeValue.mappings.flatMap((mapping) =>
-          mapping.value.allClassMappings
+          getAllClassMappings(mapping.value)
             .map((setImplementation) =>
-              getMappingElementSource(setImplementation),
+              getMappingElementSource(
+                setImplementation,
+                this.editorStore.pluginManager.getStudioPlugins(),
+              ),
             )
             .filter((source): source is Class => source instanceof Class),
         ),
@@ -592,7 +628,10 @@ export class RuntimeEditorState {
       runtime instanceof RuntimePointer
         ? runtime.packageableRuntime.value.runtimeValue
         : guaranteeType(runtime, EngineRuntime);
-    this.explorerTreeData = getRuntimeExplorerTreeData(this.runtime);
+    this.explorerTreeData = getRuntimeExplorerTreeData(
+      this.runtime,
+      this.editorStore,
+    );
     this.openTabFor(this.runtimeValue); // open runtime tab on init
   }
 
@@ -608,7 +647,7 @@ export class RuntimeEditorState {
       decorateRuntimeWithNewMapping(
         this.runtimeValue,
         mapping,
-        this.editorStore.graphManagerState.graph,
+        this.editorStore,
       );
       this.reprocessRuntimeExplorerTree();
     }
@@ -624,11 +663,7 @@ export class RuntimeEditorState {
     newVal: Mapping,
   ): void {
     mappingRef.setValue(newVal);
-    decorateRuntimeWithNewMapping(
-      this.runtimeValue,
-      newVal,
-      this.editorStore.graphManagerState.graph,
-    );
+    decorateRuntimeWithNewMapping(this.runtimeValue, newVal, this.editorStore);
     this.reprocessRuntimeExplorerTree();
   }
 
@@ -695,7 +730,7 @@ export class RuntimeEditorState {
   decorateRuntimeConnections(): void {
     getStoresFromMappings(
       this.runtimeValue.mappings.map((mapping) => mapping.value),
-      this.editorStore.graphManagerState.graph,
+      this.editorStore,
     ).forEach((store) =>
       this.runtimeValue.addUniqueStoreConnectionsForStore(store),
     );
@@ -756,7 +791,7 @@ export class RuntimeEditorState {
     const openedTreeNodeIds = Array.from(this.explorerTreeData.nodes.values())
       .filter((node) => node.isOpen)
       .map((node) => node.id);
-    const treeData = getRuntimeExplorerTreeData(this.runtime);
+    const treeData = getRuntimeExplorerTreeData(this.runtime, this.editorStore);
     openedTreeNodeIds.forEach((nodeId) => {
       const node = treeData.nodes.get(nodeId);
       if (node && !node.isOpen) {

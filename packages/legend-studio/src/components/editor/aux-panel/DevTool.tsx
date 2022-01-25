@@ -15,8 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx } from '@finos/legend-art';
-import { FaCheckSquare, FaSquare } from 'react-icons/fa';
+import { clsx, CheckSquareIcon, SquareIcon } from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider';
 
@@ -25,11 +24,12 @@ export const DevTool = observer(() => {
   // Engine
   const engineConfig =
     editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
-  const changeEngineClientBaseUrl: React.ChangeEventHandler<HTMLInputElement> =
-    (event) =>
-      engineConfig.setBaseUrl(
-        event.target.value === '' ? undefined : event.target.value,
-      );
+  const changeEngineClientBaseUrl: React.ChangeEventHandler<
+    HTMLInputElement
+  > = (event) =>
+    engineConfig.setBaseUrl(
+      event.target.value === '' ? undefined : event.target.value,
+    );
   const toggleEngineClientRequestPayloadCompression = (): void =>
     engineConfig.setUseClientRequestPayloadCompression(
       !engineConfig.useClientRequestPayloadCompression,
@@ -58,9 +58,9 @@ export const DevTool = observer(() => {
                 })}
               >
                 {engineConfig.useClientRequestPayloadCompression ? (
-                  <FaCheckSquare />
+                  <CheckSquareIcon />
                 ) : (
-                  <FaSquare />
+                  <SquareIcon />
                 )}
               </button>
               <div className="panel__content__form__section__toggler__prompt">
@@ -99,9 +99,9 @@ export const DevTool = observer(() => {
                 })}
               >
                 {engineConfig.useBase64ForAdhocConnectionDataUrls ? (
-                  <FaCheckSquare />
+                  <CheckSquareIcon />
                 ) : (
-                  <FaSquare />
+                  <SquareIcon />
                 )}
               </button>
               <div className="panel__content__form__section__toggler__prompt">

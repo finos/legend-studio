@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import Dialog from '@material-ui/core/Dialog';
-import type { ActionAlertInfo } from '../stores/ApplicationStore';
+import { Dialog } from '@finos/legend-art';
 import {
   ActionAlertActionType,
   ActionAlertType,
+  type ActionAlertInfo,
 } from '../stores/ApplicationStore';
 import { observer } from 'mobx-react-lite';
 import { noop } from '@finos/legend-shared';
@@ -45,10 +45,7 @@ const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
   };
   const handleEnter = (): void => onEnter?.();
   const handleSubmit = (): void => {
-    const proceedActions = actions.filter((action) => action.default);
-    if (proceedActions.length) {
-      proceedActions[0].handler?.();
-    }
+    actions.find((action) => action.default)?.handler?.();
     handleClose();
   };
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -61,6 +58,7 @@ const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
       open={Boolean(applicationStore.actionAlertInfo)}
       onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
     >

@@ -15,7 +15,6 @@
  */
 
 :root {
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   --color-primitive: var(--color-light-blue-200); // blue-200
   --color-enum-value: var(--color-green-100);
   // #7fb537 -> darker: #6da025
@@ -42,7 +41,6 @@
   --color-connection: var(--color-yellow-100);
 }
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 .color {
   &--class {
     color: var(--color-class);
@@ -133,7 +131,6 @@
   }
 }
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 .background {
   &--pureinstance,
   &--class {

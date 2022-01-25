@@ -21,7 +21,7 @@ import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PurePr
 
 export interface GraphPluginManager extends AbstractPluginManager {
   getPureGraphPlugins(): PureGraphPlugin[];
-  registerPureGraphPlugins(plugin: PureGraphPlugin): void;
+  registerPureGraphPlugin(plugin: PureGraphPlugin): void;
 
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[];
   registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void;

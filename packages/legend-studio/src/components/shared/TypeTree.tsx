@@ -22,15 +22,23 @@ import {
   addUniqueEntry,
   printObject,
 } from '@finos/legend-shared';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import type { TreeNodeContainerProps, TreeData } from '@finos/legend-art';
-import { EnumValueIcon, clsx, TreeView } from '@finos/legend-art';
+import {
+  type TreeNodeContainerProps,
+  type TreeData,
+  PURE_EnumValueIcon,
+  clsx,
+  TreeView,
+  ChevronDownIcon,
+  ChevronRightIcon,
+} from '@finos/legend-art';
 import { useDrag } from 'react-dnd';
 import { TypeDragSource, CORE_DND_TYPE } from '../../stores/shared/DnDUtil';
 import { getClassPropertyIcon } from './ElementIconUtils';
 import type { TypeTreeNodeData } from '../../stores/shared/TreeUtil';
-import type { Type, Enum, AbstractProperty } from '@finos/legend-graph';
 import {
+  type Type,
+  type Enum,
+  type AbstractProperty,
   Enumeration,
   Class,
   CLASS_PROPERTY_TYPE,
@@ -151,13 +159,13 @@ const TypeTreeNodeContainer: React.FC<
   const nodeTypeIcon = node.type ? (
     getClassPropertyIcon(node.type)
   ) : (
-    <EnumValueIcon />
+    <PURE_EnumValueIcon />
   );
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (
-      <FaChevronDown />
+      <ChevronDownIcon />
     ) : (
-      <FaChevronRight />
+      <ChevronRightIcon />
     )
   ) : (
     <div />

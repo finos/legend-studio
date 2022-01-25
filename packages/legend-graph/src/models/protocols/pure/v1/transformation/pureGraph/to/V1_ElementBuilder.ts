@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-import type { GenericClazz } from '@finos/legend-shared';
-import { assertNonEmptyString, assertTrue } from '@finos/legend-shared';
+import {
+  type GenericClazz,
+  assertNonEmptyString,
+  assertTrue,
+} from '@finos/legend-shared';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
@@ -101,8 +104,14 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
     elementProtocol: T,
     context: V1_GraphBuilderContext,
   ): PackageableElement {
-    assertNonEmptyString(elementProtocol.package, 'Element package is missing');
-    assertNonEmptyString(elementProtocol.name, 'Element index is missing');
+    assertNonEmptyString(
+      elementProtocol.package,
+      `Element 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      elementProtocol.name,
+      `Element 'name' field is missing or empty`,
+    );
     const path = context.currentSubGraph.buildPath(
       elementProtocol.package,
       elementProtocol.name,

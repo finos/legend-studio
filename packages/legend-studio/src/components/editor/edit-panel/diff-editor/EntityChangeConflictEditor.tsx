@@ -16,8 +16,8 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { IDisposable } from 'monaco-editor';
 import {
+  type IDisposable,
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
   Range,
@@ -29,11 +29,9 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
-import type {
-  MergeEditorComparisonViewInfo,
-  MergeConflict,
-} from '../../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import {
+  type MergeEditorComparisonViewInfo,
+  type MergeConflict,
   EntityChangeConflictEditorState,
   ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE,
 } from '../../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
@@ -44,7 +42,6 @@ import {
   isNonNullable,
   hashObject,
 } from '@finos/legend-shared';
-import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
 import {
   clsx,
   CustomSelectorInput,
@@ -55,9 +52,13 @@ import {
   setErrorMarkers,
   revealError,
   resetLineNumberGutterWidth,
+  getEditorValue,
+  normalizeLineEnding,
+  CompareIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView';
-import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
@@ -157,8 +158,9 @@ const MergeConflictEditor = observer(
       monacoEditorAPI.IStandaloneCodeEditor | undefined
     >();
     const [hasInitializedTextValue, setInitializedTextValue] = useState(false);
-    const value = conflictEditorState.mergedText;
-    const currentValue = editor?.getValue() ?? '';
+    const value = conflictEditorState.mergedText
+      ? normalizeLineEnding(conflictEditorState.mergedText)
+      : undefined;
     const error = conflictEditorState.mergeEditorParserError;
     const decorations = useRef<string[]>([]);
     const mergeConflictResolutionCodeLensDisposer = useRef<
@@ -211,7 +213,7 @@ const MergeConflictEditor = observer(
       onDidChangeModelContentEventDisposer.current?.dispose();
       onDidChangeModelContentEventDisposer.current =
         editor.onDidChangeModelContent(() => {
-          conflictEditorState.setMergedText(editor.getValue());
+          conflictEditorState.setMergedText(getEditorValue(editor));
           conflictEditorState.clearMergeEditorError();
         });
 
@@ -523,6 +525,7 @@ const MergeConflictEditor = observer(
     useEffect(() => {
       if (editor) {
         const editorModel = editor.getModel();
+        const currentValue = getEditorValue(editor);
         if (editorModel && value !== undefined && currentValue !== value) {
           if (!hasInitializedTextValue) {
             editor.setValue(value);
@@ -543,7 +546,7 @@ const MergeConflictEditor = observer(
           }
         }
       }
-    }, [editor, currentValue, value, hasInitializedTextValue]);
+    }, [editor, value, hasInitializedTextValue]);
 
     useEffect(() => {
       if (editor) {
@@ -613,7 +616,7 @@ const getMergeEditorViewModeOption = (
             {getPrettyLabelForRevision(modeComparisonViewInfo.fromRevision)}
           </div>
           <div className="entity-change-conflict-editor__header__action__view-dropdown__option__summary__icon">
-            <MdCompareArrows />
+            <CompareIcon />
           </div>
           <div className="entity-change-conflict-editor__header__action__view-dropdown__option__summary__revision">
             {getPrettyLabelForRevision(modeComparisonViewInfo.toRevision)}
@@ -721,7 +724,7 @@ export const EntityChangeConflictEditor = observer(() => {
             onClick={goToPreviousConflict}
             title={'Previous conflict'}
           >
-            <FaArrowUp />
+            <ArrowUpIcon />
           </button>
           <button
             className="btn--dark btn--sm entity-change-conflict-editor__header__action"
@@ -729,7 +732,7 @@ export const EntityChangeConflictEditor = observer(() => {
             onClick={goToNextConflict}
             title={'Next conflict'}
           >
-            <FaArrowDown />
+            <ArrowDownIcon />
           </button>
           <CustomSelectorInput
             className="entity-change-conflict-editor__header__action__view-dropdown"

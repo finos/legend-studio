@@ -1,0 +1,467 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.data-space__viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-80);
+
+  &__header {
+    @include flexCenter;
+
+    flex-direction: column;
+    padding: 2rem;
+    height: 17rem;
+  }
+
+  &__path {
+    @include flexCenter;
+
+    height: 3.4rem;
+    background: var(--color-blue-150);
+
+    &__label {
+      @include flexCenter;
+
+      height: 100%;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.6rem;
+      padding: 0 1rem;
+      user-select: none;
+      color: var(--color-light-grey-0);
+    }
+
+    &__link {
+      @include flexCenter;
+
+      height: 3.4rem;
+      width: 3.4rem;
+      border-left: 0.1rem solid var(--color-dark-shade-230);
+
+      svg {
+        font-size: 1.6rem;
+        color: var(--color-light-grey-0);
+      }
+    }
+  }
+
+  &__gav {
+    @include flexCenter;
+
+    user-select: none;
+    height: 2.8rem;
+    font-size: 1.4rem;
+    color: var(--color-dark-grey-400);
+    border: 0.1rem solid var(--color-dark-grey-85);
+    padding: 0.5rem 1rem;
+    margin: 1rem;
+    font-family: 'Roboto Mono', monospace;
+
+    &__artifact-id {
+      color: var(--color-light-grey-400);
+      white-space: nowrap;
+    }
+
+    &__version-id {
+      color: var(--color-blue-50);
+      font-weight: 700;
+    }
+
+    &__link {
+      @include flexCenter;
+
+      margin-left: 0.5rem;
+
+      svg {
+        color: var(--color-blue-50);
+      }
+    }
+  }
+
+  &__description {
+    cursor: default;
+    user-select: none;
+    padding: 1rem;
+    height: 5rem;
+    width: 100%;
+    background: var(--color-dark-grey-100);
+    overflow: auto;
+    line-height: 1.6rem;
+    color: var(--color-dark-grey-500);
+    font-family: Roboto, sans-serif;
+    font-size: 1.2rem;
+
+    &--empty {
+      @include flexCenter;
+
+      font-weight: 500;
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__content {
+    @include flexCenter;
+
+    height: calc(100% - 17rem);
+    padding: 0 2rem 2rem;
+  }
+
+  &__body {
+    @include flexCenter;
+
+    width: 100%;
+    height: 100%;
+  }
+
+  &__activity-bar {
+    width: 5rem;
+    background: var(--color-dark-grey-100);
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+    &__items {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    &__item {
+      @include flexCenter;
+
+      height: 5rem;
+      width: 5rem;
+      color: var(--color-dark-grey-400);
+      cursor: pointer;
+    }
+
+    &__item svg {
+      font-size: 2rem;
+    }
+
+    &__item:hover {
+      color: var(--color-light-grey-250);
+      cursor: pointer;
+    }
+
+    &__item--active {
+      color: var(--color-light-grey-250);
+    }
+  }
+
+  &__main-panel {
+    height: 100%;
+    width: calc(100% - 5rem);
+    border: 0.1rem solid var(--color-dark-grey-100);
+    overflow: auto;
+
+    &__content {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  &__diagrams {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      @include flexVCenter;
+
+      height: 3.4rem;
+      width: 100%;
+    }
+
+    &__footer {
+      @include flexVCenter;
+
+      height: 2rem;
+      background: var(--color-dark-grey-250);
+      color: var(--color-light-grey-400);
+      padding: 0 0.5rem;
+      user-select: none;
+      cursor: default;
+
+      &__icon {
+        @include flexCenter;
+
+        height: 100%;
+
+        svg {
+          font-size: 1.2rem;
+        }
+      }
+
+      &__text {
+        margin-left: 0.5rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+    }
+
+    &__diagram-selector {
+      width: 100%;
+    }
+
+    &__content {
+      height: calc(100% - 5.4rem);
+      width: 100%;
+    }
+
+    &__dropdown {
+      width: 100%;
+
+      &__container {
+        padding: 0.3rem;
+      }
+
+      &__option {
+        @include flexVCenter;
+      }
+
+      &__option__tag {
+        @include flexVCenter;
+
+        background: var(--color-blue-200);
+        height: 1.8rem;
+        padding: 0 0.5rem;
+        margin-left: 0.5rem;
+        border-radius: 0.2rem;
+        font-size: 1.2rem;
+        color: var(--color-light-grey-100);
+      }
+    }
+  }
+
+  &__execution {
+    padding: 2rem;
+
+    &__context-icon {
+      color: var(--color-light-grey-200);
+    }
+
+    &__entry {
+      @include flexVCenter;
+
+      height: 3.4rem;
+      width: 100%;
+
+      &__icon {
+        @include flexCenter;
+
+        height: 3.4rem;
+        width: 3.4rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+        background: var(--color-dark-grey-100);
+
+        svg {
+          font-size: 1.6rem;
+        }
+      }
+
+      &__content {
+        @include flexVCenter;
+
+        height: 3.4rem;
+        width: calc(100% - 3.4rem);
+        border-radius: 0 0.2rem 0.2rem 0;
+        border: 0.1rem solid var(--color-dark-grey-100);
+        color: var(--color-light-grey-400);
+        padding: 0 1rem;
+        background: var(--color-dark-grey-100);
+        border-left: 0.1rem solid var(--color-dark-grey-50);
+        user-select: none;
+
+        &__dropdown {
+          width: 100%;
+
+          &__container {
+            padding: 0.3rem;
+          }
+
+          &__option {
+            @include flexVCenter;
+          }
+
+          &__option__tag {
+            @include flexVCenter;
+
+            background: var(--color-blue-200);
+            height: 1.8rem;
+            padding: 0 0.5rem;
+            margin-left: 0.5rem;
+            border-radius: 0.2rem;
+            font-size: 1.2rem;
+            color: var(--color-light-grey-100);
+          }
+        }
+
+        &__text {
+          font-family: 'Roboto Mono', monospace;
+        }
+      }
+    }
+
+    &__description {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      cursor: default;
+      user-select: none;
+      padding: 1rem;
+      height: 5rem;
+      width: 100%;
+      background: var(--color-dark-grey-100);
+      overflow: auto;
+      line-height: 1.6rem;
+      color: var(--color-dark-grey-500);
+      font-family: Roboto, sans-serif;
+      font-size: 1.2rem;
+
+      &--empty {
+        @include flexCenter;
+
+        font-weight: 500;
+        color: var(--color-dark-grey-300);
+      }
+    }
+
+    &__mapping {
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  &__tags {
+    padding: 2rem;
+
+    &__section {
+      cursor: default;
+      margin: 0.5rem 0 3rem;
+    }
+
+    &__section__title {
+      @include flexVCenter;
+
+      font-weight: 500;
+      color: var(--color-dark-grey-500);
+      margin-bottom: 1rem;
+      line-height: 2rem;
+      cursor: default;
+    }
+
+    &__section__entry {
+      @include flexVCenter;
+
+      height: 2.8rem;
+      margin: 0.5rem 0;
+      width: 100%;
+    }
+
+    &__tagged-value__tag {
+      @include ellipsisTextOverflow;
+
+      height: 100%;
+      width: 15rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      padding: 0 1rem;
+      line-height: 2.8rem;
+      background: var(--color-purple-400);
+      color: var(--color-light-grey-400);
+      font-weight: 500;
+    }
+
+    &__tagged-value__value {
+      @include ellipsisTextOverflow;
+
+      height: 100%;
+      width: calc(100% - 15rem);
+      border-radius: 0 0.2rem 0.2rem 0;
+      padding: 0 1rem;
+      line-height: 2.8rem;
+      background: var(--color-dark-grey-100);
+      color: var(--color-light-grey-400);
+    }
+
+    &__steoreotype {
+      @include flexVCenter;
+
+      height: 100%;
+      border-radius: 0.2rem;
+      padding: 0 1rem;
+      line-height: 2.8rem;
+      background: var(--color-purple-400);
+      color: var(--color-light-grey-400);
+      font-weight: 500;
+    }
+
+    &__section__placeholder {
+      @include flexCenter;
+
+      height: 4rem;
+      width: 100%;
+      color: var(--color-dark-grey-300);
+      font-weight: 500;
+      border: 0.2rem dashed var(--color-dark-grey-200);
+    }
+  }
+
+  &__support-info {
+    padding: 2rem;
+  }
+
+  &__support-email {
+    &__entry {
+      @include flexVCenter;
+
+      height: 3.4rem;
+      width: 100%;
+
+      &__icon {
+        @include flexCenter;
+
+        height: 3.4rem;
+        width: 3.4rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+        background: var(--color-dark-grey-100);
+
+        svg {
+          font-size: 1.6rem;
+          color: var(--color-light-grey-200);
+        }
+      }
+
+      &__content {
+        @include flexVCenter;
+
+        height: 3.4rem;
+        width: calc(100% - 3.4rem);
+        border-radius: 0 0.2rem 0.2rem 0;
+        border: 0.1rem solid var(--color-dark-grey-100);
+        color: var(--color-light-grey-400);
+        padding: 0 1rem;
+        font-family: 'Roboto Mono', monospace;
+        background: var(--color-dark-grey-100);
+        border-left: 0.1rem solid var(--color-dark-grey-50);
+        user-select: none;
+      }
+    }
+  }
+}

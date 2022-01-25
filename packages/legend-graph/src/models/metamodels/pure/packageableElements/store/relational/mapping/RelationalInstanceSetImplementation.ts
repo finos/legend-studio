@@ -15,8 +15,7 @@
  */
 
 import { observable, makeObservable } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';

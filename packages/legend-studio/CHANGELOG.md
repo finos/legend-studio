@@ -1,5 +1,169 @@
 # @finos/legend-studio
 
+## 2.3.2
+
+## 2.3.1
+
+## 2.3.0
+
+### Minor Changes
+
+- [#755](https://github.com/finos/legend-studio/pull/755) [`61821cd6`](https://github.com/finos/legend-studio/commit/61821cd62c3b8b1a16124a092038ab963311de17) ([@akphi](https://github.com/akphi)) - Allow configuring base headers for SDLC server client to facillitate configuring private-access token for end-to-end testing.
+
+* [#748](https://github.com/finos/legend-studio/pull/748) [`f4930597`](https://github.com/finos/legend-studio/commit/f49305970ad17c64030daa2171ec8b7c92c37472) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support upload and load patch.
+
+### Patch Changes
+
+- [#767](https://github.com/finos/legend-studio/pull/767) [`a6ebbc41`](https://github.com/finos/legend-studio/commit/a6ebbc410e275c9b01b1b05a26415c50efdce76e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show schemas, tables and columns in alphabetical order in `database builder`.
+
+* [#747](https://github.com/finos/legend-studio/pull/747) [`d67ae629`](https://github.com/finos/legend-studio/commit/d67ae629ca5284be03096425c9c546fcf9dfd776) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix relational connection editor for `UsernamePassword` AuthenticationStrategy.
+
+- [#753](https://github.com/finos/legend-studio/pull/753) [`1bc5f698`](https://github.com/finos/legend-studio/commit/1bc5f6983c8020a9e07071cce2c901d01af53940) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show `ProjectOverview` in viewer mode.
+
+* [#768](https://github.com/finos/legend-studio/pull/768) [`f2927570`](https://github.com/finos/legend-studio/commit/f2927570b2afdc2954912bdbb20058606d2cf8bc) ([@gayathrir11](https://github.com/gayathrir11)) - Handle empty error messages from Engine.
+
+## 2.2.1
+
+## 2.2.0
+
+### Minor Changes
+
+- [#742](https://github.com/finos/legend-studio/pull/742) [`42ea0ed9`](https://github.com/finos/legend-studio/commit/42ea0ed977608804b41fb8272daeb2130a4f6143) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `UsernamePasswordAuthenticationStrategy`.
+
+### Patch Changes
+
+- [#680](https://github.com/finos/legend-studio/pull/680) [`69c607e6`](https://github.com/finos/legend-studio/commit/69c607e641beb4827b2a9c17baa6b699c9384d14) ([@gayathrir11](https://github.com/gayathrir11)) - Show warning about duplicated attributes in UML editors.
+
+## 2.1.1
+
+## 2.1.0
+
+### Minor Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - The abstract plugin now has a default generic `install` method which just registers the plugin to the compatible plugin manager, this saves plugin author some time and code when implementing plugins.
+
+* [#640](https://github.com/finos/legend-studio/pull/640) [`b5ce0f99`](https://github.com/finos/legend-studio/commit/b5ce0f995b0e512b5cc3e19aebc75654ff9c24b0) ([@CptTeddy](https://github.com/CptTeddy)) - Added extension mechanism for actions in file generation output viewer. Also added an extension mechanism for file generation type vs. element type matrix (i.e. which element types work with which generation type); \_previously, we only allow `Class` and `Enumeration`.
+
+### Patch Changes
+
+- [#716](https://github.com/finos/legend-studio/pull/716) [`79176bcf`](https://github.com/finos/legend-studio/commit/79176bcfd614d580e15ec1b16abfceb02a1a03e1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `Join` owner as the database owner when dragging join into `RelationalPropertyMappingEditor` ([#651](https://github.com/finos/legend-studio/issues/651)).
+
+* [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - Rework file generation scope filter: the filter will only be activated if the generation type matches. We now also show all generation types in viewer mode dropdown and disable the ones that are not applicable to the currently viewed element.
+
+- [#706](https://github.com/finos/legend-studio/pull/706) [`1c421e43`](https://github.com/finos/legend-studio/commit/1c421e4373a2d8258ac35d0c330487f63f3e6d15) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Sort workflow `jobs` by creation date.
+
+* [#712](https://github.com/finos/legend-studio/pull/712) [`02fbbcf8`](https://github.com/finos/legend-studio/commit/02fbbcf810554addbbc47c1d29b11af00a134db7) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for role in `Snowflake` connection
+
+## 2.0.2
+
+### Patch Changes
+
+- [#700](https://github.com/finos/legend-studio/pull/700) [`2063cc76`](https://github.com/finos/legend-studio/commit/2063cc76fb27d65f4e287041014ab347a80b4663) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering generated file with no content in file generation editor.
+
+* [#701](https://github.com/finos/legend-studio/pull/701) [`c4039cfc`](https://github.com/finos/legend-studio/commit/c4039cfc3efe33d720da040d96dbf4564b8c5a26) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fetch depot projects for dependencies only in dependency tab in the config editor.
+
+## 2.0.1
+
+## 2.0.0
+
+### Major Changes
+
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - Moved `AppHeader` component to `@finos/legend-application`, renamed `AppHeaderMenu` to `LegendStudioAppHeaderMenu`.
+
+* [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename the enum `STUDIO_LOG_EVENT` to `LEGEND_STUDIO_LOG_EVENT_TYPE`, `STUDIO_HOTKEY` to `LEGEND_STUDIO_HOTKEY`, and `STUDIO_TEST_ID` to `LEGEND_STUDIO_TEST_ID`.
+
+### Patch Changes
+
+- [#663](https://github.com/finos/legend-studio/pull/663) [`44115178`](https://github.com/finos/legend-studio/commit/44115178fa3bad5d3f2225aa8b1330e89f721993) ([@gayathrir11](https://github.com/gayathrir11)) - Fix bug in `FileGenerationEditor` not resetting while changing elements ([#142](https://github.com/finos/legend-studio/issues/142)]).
+
+* [#685](https://github.com/finos/legend-studio/pull/685) [`1ae0553b`](https://github.com/finos/legend-studio/commit/1ae0553b7af88217a8642492cab2252a589ab091) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `StudioPlugin` to `LegendStudioPlugin`. This change applies for other extension-related classes as well, e.g. `LegendStudioPluginManager`, `*_LegendStudioPreset`, `*_LegendStudioPlugin`, etc.
+
+## 1.0.0
+
+### Major Changes
+
+- [#642](https://github.com/finos/legend-studio/pull/642) [`729e248`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** The handling of multiple SDLC instances has been reworked, to target a specific server option in the config, the URL must now include an additional prefix `sdlc-` to the server key, for example, `/studio/myServer/...` now becomes `/studio/sdlc-myServer/...`. On the config side, when `sdlc` field is configured with a list of option, we expect exactly one option to declare `default: true` and this would be used to the default option - _the old behavior is that the default option is the one with key of value `-`_.
+
+* [#659](https://github.com/finos/legend-studio/pull/659) [`caf3d4aa`](https://github.com/finos/legend-studio/commit/caf3d4aa3a98ca109cabb525eeb7d8615def7343) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Generalize `Studio` plugin methods to generate `Edit Query` buttons to generate any query editor action: i.e. `MappingExecutionQueryEditorRendererConfiguration -> MappingExecutionQueryEditorActionConfiguration`, etc.
+
+- [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update the shape of `ApplicationPageRenderEntry` to take a unique `key` and multiple `urlPatterns`. Also, we nolonger automatically decorate the pattern to pick up the SDLC instance anymore, so plugin authors who need this will need to manually modify their URL patterns with the function `generateRoutePatternWithSDLCServerKey()` that we now expose.
+
+### Minor Changes
+
+- [#654](https://github.com/finos/legend-studio/pull/654) [`c22549e8`](https://github.com/finos/legend-studio/commit/c22549e8a1cfc567669255a862449819f19894dd) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for `class mapping` decorators in form mode
+
+* [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - Allow getting link to element in a particular version, revision, and project (via `SDLC` or via `Depot`) in viewer mode.
+
+- [#639](https://github.com/finos/legend-studio/pull/639) [`62985e59`](https://github.com/finos/legend-studio/commit/62985e59627b5be2cb75e15f30c13d029014c030) ([@akphi](https://github.com/akphi)) - Allow accessing viewer mode using [GAV coordinates] (i.e. `groupId`, `artifactId`, and `versionId`). As this fetches model data from `Depot` server, in this mode, certain `SDLC` [features will not be supported](https://github.com/finos/legend-studio/issues/638). The URL pattern for this is `/view/${groupId}:${artifactId}:${versionId}`, e.g. `/view/legend.org.test:legend-test-project:latest`.
+
+* [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - Introduce `EditorMode` as an extension mechanism for `EditorStore` to accomondate for differentiating behaviors between `viewer`, `review`, `conflict-resolution` modes, etc. (for more details, see [#317](https://github.com/finos/legend-studio/issues/317)).
+
+### Patch Changes
+
+- [#629](https://github.com/finos/legend-studio/pull/629) [`2d855dc`](https://github.com/finos/legend-studio/commit/2d855dc1e74f3d3cbfedbdf9750730ffe52d4cdd) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix a problem with escaping of single quote character which causes service tests created in Studio fail ([#586](https://github.com/finos/legend-studio/issues/586)), this can be considered a workaround until we figure out a strategy for the discrepancies in mapping test and service test runners in `Engine` (see [finos/legend-engine#429](https://github.com/finos/legend-engine/issues/429))
+
+* [#661](https://github.com/finos/legend-studio/pull/661) [`5124f7b6`](https://github.com/finos/legend-studio/commit/5124f7b63ab9a7b7224df28b50c4f0f9fec753cd) ([@gayathrir11](https://github.com/gayathrir11)) - Add form support for proxy in `Snowflake` connection.
+
+- [#662](https://github.com/finos/legend-studio/pull/662) [`fb8bd11c`](https://github.com/finos/legend-studio/commit/fb8bd11cb958b2d92e6f68e22db974569832bccf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Properly process enumeration mappings in includes mapping ([#658](https://github.com/finos/legend-studio/issues/658)).
+
+* [#632](https://github.com/finos/legend-studio/pull/632) [`a7ade917`](https://github.com/finos/legend-studio/commit/a7ade917da293d4efe062a2a8e569c6f8d4c54d7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add workflow jobs viewer with the ability to retry/run/cancel individual jobs.
+
+- [#642](https://github.com/finos/legend-studio/pull/642) [`729e2486`](https://github.com/finos/legend-studio/commit/729e248634a3710d94257ead28c7a0c9307798cb) ([@akphi](https://github.com/akphi)) - Allow user to select the instances of SDLC server via a dropdown menu on the header. Note that this only shows when there are multiple SDLC servers available in the config.
+
+* [#645](https://github.com/finos/legend-studio/pull/645) [`dc50b13a`](https://github.com/finos/legend-studio/commit/dc50b13a845916b21fa3146aff730bfee9f37df1) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Replace `Table|View` with `TableAlias` as the relational mapping source, i.e `MappingElementSource`. Fixes generating mapping test with nested databases (see [#651](https://github.com/finos/legend-studio/issues/651)] for more details).
+
+## 0.4.1
+
+## 0.4.0
+
+### Minor Changes
+
+- [#580](https://github.com/finos/legend-studio/pull/580) [`7318c222`](https://github.com/finos/legend-studio/commit/7318c2223d5653be18f00a489aa00b3143a600fe) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for `class mapping` in form mode
+
+### Patch Changes
+
+- [#584](https://github.com/finos/legend-studio/pull/584) [`b32e834b`](https://github.com/finos/legend-studio/commit/b32e834ba037658de53632403c79aa0f0f651971) ([@akphi](https://github.com/akphi)) - Support word-wraping for text-mode.
+
+## 0.3.4
+
+### Patch Changes
+
+- [#568](https://github.com/finos/legend-studio/pull/568) [`46ccd87d`](https://github.com/finos/legend-studio/commit/46ccd87d3bd7c65ab26cb5b1c58d9ed007e5cc78) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `group` workspaces where multiple users can collaborate.
+
+* [#534](https://github.com/finos/legend-studio/pull/534) [`a116f644`](https://github.com/finos/legend-studio/commit/a116f6449cedf810aa13ec1e45e271b3c38fa69c) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for connection
+
+- [#568](https://github.com/finos/legend-studio/pull/568) [`46ccd87d`](https://github.com/finos/legend-studio/commit/46ccd87d3bd7c65ab26cb5b1c58d9ed007e5cc78) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use `Workflow API` instead of the _deprecated_ `Build API`.
+
+* [#543](https://github.com/finos/legend-studio/pull/543) [`68f777ba`](https://github.com/finos/legend-studio/commit/68f777ba740244cb8f88f6455263316548b03cfd) ([@gs-gunjan](https://github.com/gs-gunjan)) - CSV support for input data of relational mapping tests
+
+## 0.3.3
+
+### Patch Changes
+
+- [#566](https://github.com/finos/legend-studio/pull/566) [`373dcf8b`](https://github.com/finos/legend-studio/commit/373dcf8b214510ceda72212d484f179869900514) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use maven coordinates for service registration.
+
+## 0.3.2
+
+### Patch Changes
+
+- [#554](https://github.com/finos/legend-studio/pull/554) [`f1d15408`](https://github.com/finos/legend-studio/commit/f1d15408b905fb96efa8da714421a827ab396709) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revert service registration using project coordinates.
+
+## 0.3.1
+
+## 0.3.0
+
+### Minor Changes
+
+- [#537](https://github.com/finos/legend-studio/pull/537) [`c3ee3029`](https://github.com/finos/legend-studio/commit/c3ee3029307ae0987c4346d09871cf22f6007f01) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for class mapping `extends`.
+
+### Patch Changes
+
+- [#532](https://github.com/finos/legend-studio/pull/532) [`0ec098d2`](https://github.com/finos/legend-studio/commit/0ec098d20f607fd1fc848a1ce51432791e7ec717) ([@akphi](https://github.com/akphi)) - Fix the problem with Studio change detection engine where after fixing compilation issue for a project that was never properly initialized, all elements are shown as `New` instead of `Modified` ([#533](https://github.com/finos/legend-studio/issues/533))
+
+* [#535](https://github.com/finos/legend-studio/pull/535) [`ebe69b6a`](https://github.com/finos/legend-studio/commit/ebe69b6a8c33237fd11c3522e20130d9c4aa2026) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use maven coordinates for service registration.
+
+- [#537](https://github.com/finos/legend-studio/pull/537) [`c3ee3029`](https://github.com/finos/legend-studio/commit/c3ee3029307ae0987c4346d09871cf22f6007f01) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `include` mappings.
+
 ## 0.2.21
 
 ### Patch Changes
@@ -96,7 +260,7 @@
 
 ### Patch Changes
 
-- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) ([@akphi](https://github.com/akphi)) - Genericize `LambdaEditor` so it nolonger depends on `EditorStore` and can be used between different Legend applications.
+- [#390](https://github.com/finos/legend-studio/pull/390) [`bbba2e3`](https://github.com/finos/legend-studio/commit/bbba2e34487c32a4bd41033d485fc8dbf22d32fb) ([@akphi](https://github.com/akphi)) - Generalize `LambdaEditor` so it nolonger depends on `EditorStore` and can be used between different Legend applications.
 
 ## 0.2.6
 

@@ -16,47 +16,46 @@
 
 import { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type {
-  MappingExplorerDropTarget,
-  ElementDragSource,
-} from '../../../../stores/shared/DnDUtil';
 import {
+  type MappingExplorerDropTarget,
+  type ElementDragSource,
   CORE_DND_TYPE,
   MappingElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { TreeNodeContainerProps } from '@finos/legend-art';
-import { clsx, TreeView, ContextMenu } from '@finos/legend-art';
+import {
+  type TreeNodeContainerProps,
+  clsx,
+  TreeView,
+  ContextMenu,
+  MdVerticalAlignBottom,
+  AddIcon,
+  PlusIcon,
+  LockIcon,
+  FireIcon,
+  StickArrowCircleRightIcon,
+  ChevronRightIcon,
+  ChevronDownIcon,
+  FilterIcon,
+} from '@finos/legend-art';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { useDrop, useDrag } from 'react-dnd';
 import { toSentenceCase } from '@finos/legend-shared';
-import type {
-  MappingElement,
-  MappingExplorerTreeNodeData,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type MappingElement,
+  type MappingExplorerTreeNodeData,
   getAllMappingElements,
   getMappingElementTarget,
   getMappingElementType,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MdVerticalAlignBottom, MdAdd } from 'react-icons/md';
-import {
-  FaPlus,
-  FaLock,
-  FaFire,
-  FaArrowCircleRight,
-  FaChevronRight,
-  FaChevronDown,
-  FaFilter,
-} from 'react-icons/fa';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
 import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { PackageableElement } from '@finos/legend-graph';
 import {
+  type PackageableElement,
   SetImplementation,
   EnumerationMapping,
   PropertyMapping,
@@ -93,12 +92,16 @@ export const MappingExplorerContextMenu = observer(
         ).catch(applicationStore.alertIllegalUnhandledError);
       }
       if (currentMappingElement instanceof EnumerationMapping) {
-        new MappingElementDecorator().visitEnumerationMapping(
+        new MappingElementDecorator(editorStore).visitEnumerationMapping(
           currentMappingElement,
         );
       } else if (currentMappingElement instanceof SetImplementation) {
+        const mappingElementDecorator = new MappingElementDecorator(
+          editorStore,
+        );
+        mappingElementDecorator.editorStore = editorStore;
         currentMappingElement.accept_SetImplementationVisitor(
-          new MappingElementDecorator(),
+          new MappingElementDecorator(editorStore),
         );
       }
       mappingEditorState.reprocessMappingExplorerTree();
@@ -302,16 +305,16 @@ export const MappingElementExplorer = observer(
   },
 );
 
-type MappingElementTreeNodeContainerProps = TreeNodeContainerProps<
-  MappingExplorerTreeNodeData,
-  {
-    isReadOnly: boolean;
-    onNodeExpand: (node: MappingExplorerTreeNodeData) => void;
-  }
->;
-
 const MappingElementTreeNodeContainer = observer(
-  (props: MappingElementTreeNodeContainerProps) => {
+  (
+    props: TreeNodeContainerProps<
+      MappingExplorerTreeNodeData,
+      {
+        isReadOnly: boolean;
+        onNodeExpand: (node: MappingExplorerTreeNodeData) => void;
+      }
+    >,
+  ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
     const { isReadOnly, onNodeExpand } = innerProps;
     const mappingElement = node.mappingElement;
@@ -325,9 +328,9 @@ const MappingElementTreeNodeContainer = observer(
     const isExpandable = Boolean(node.childrenIds?.length);
     const nodeExpandIcon = isExpandable ? (
       node.isOpen ? (
-        <FaChevronDown />
+        <ChevronDownIcon />
       ) : (
-        <FaChevronRight />
+        <ChevronRightIcon />
       )
     ) : (
       <div />
@@ -403,7 +406,7 @@ const MappingElementTreeNodeContainer = observer(
             {mappingElement instanceof PureInstanceSetImplementation &&
               !!mappingElement.filter && (
                 <div className="mapping-explorer__item__label__filter-icon">
-                  <FaFilter />
+                  <FilterIcon />
                 </div>
               )}
           </button>
@@ -479,7 +482,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
 
   return (
     <div
-      data-testid={STUDIO_TEST_ID.MAPPING_EXPLORER}
+      data-testid={LEGEND_STUDIO_TEST_ID.MAPPING_EXPLORER}
       className="panel mapping-explorer"
     >
       <div className="panel__header">
@@ -491,7 +494,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
         >
           {isReadOnly && (
             <div title="Read Only" className="mapping-explorer__header__lock">
-              <FaLock />
+              <LockIcon />
             </div>
           )}
           <div className="panel__header__title__label">mapping</div>
@@ -506,7 +509,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
               tabIndex={-1}
               title={'Create new mapping element'}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           )}
           {mapping.generationParentElement && (
@@ -517,13 +520,13 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
               title={`Visit generation parent '${mapping.generationParentElement.path}'`}
             >
               <div className="mapping-explorer__header__generation-origin__label">
-                <FaFire />
+                <FireIcon />
               </div>
               <div className="mapping-explorer__header__generation-origin__parent-name">
                 {mapping.generationParentElement.name}
               </div>
               <div className="mapping-explorer__header__generation-origin__visit-btn">
-                <FaArrowCircleRight />
+                <StickArrowCircleRightIcon />
               </div>
             </button>
           )}
@@ -566,7 +569,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
               </div>
               <div className="mapping-explorer__content__adder__action">
                 <MdVerticalAlignBottom className="mapping-explorer__content__adder__action__dnd-icon" />
-                <MdAdd className="mapping-explorer__content__adder__action__add-icon" />
+                <AddIcon className="mapping-explorer__content__adder__action__add-icon" />
               </div>
             </div>
           )}

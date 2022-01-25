@@ -30,7 +30,7 @@ import {
   DynaFunction,
   TableAliasColumn,
 } from '../../../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 
@@ -51,13 +51,13 @@ test(unitTest('Relational Mapping with property from association'), () => {
     'apps::pure::studio::model::simple::dbInc',
   );
   expect(database.schemas).toHaveLength(1);
-  const defaultSchema = database.schemas[0];
+  const defaultSchema = guaranteeNonNullable(database.schemas[0]);
   expect(defaultSchema.tables).toHaveLength(2);
   defaultSchema.getTable('personTable');
   defaultSchema.getTable('firmTable');
   // join
   expect(database.joins).toHaveLength(1);
-  const firmPersonJoin = database.joins[0];
+  const firmPersonJoin = guaranteeNonNullable(database.joins[0]);
   expect(firmPersonJoin.name).toBe('Firm_Person');
   const operation = guaranteeType(firmPersonJoin.operation, DynaFunction);
   expect(operation.name).toBe('equal');
@@ -82,7 +82,7 @@ test(unitTest('Relational Mapping with property from association'), () => {
   expect(mapping.classMappings).toHaveLength(2);
   const personClassMapping = guaranteeType(
     guaranteeNonNullable(
-      getClassMappingsByClass(
+      getOwnClassMappingsByClass(
         mapping,
         graph.getClass('apps::pure::studio::model::simple::Person'),
       )[0],
@@ -100,7 +100,7 @@ test(unitTest('Relational Mapping with property from association'), () => {
   expect(primaryKey.column.value.name).toBe('ID');
   const firmClassMapping = guaranteeType(
     guaranteeNonNullable(
-      getClassMappingsByClass(
+      getOwnClassMappingsByClass(
         mapping,
         graph.getClass('apps::pure::studio::model::simple::Firm'),
       )[0],

@@ -24,19 +24,20 @@ import {
   V1_buildGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
 } from './v1/V1_QueryBuilder_FunctionExpressionBuilder';
-import type {
-  V1_GraphBuilderContext,
-  V1_ProcessingContext,
-  V1_FunctionExpressionBuilder,
-  V1_ValueSpecification,
-  ValueSpecification,
-  SimpleFunctionExpression,
-  GraphPluginManager,
-} from '@finos/legend-graph';
 import {
+  type V1_GraphBuilderContext,
+  type V1_ProcessingContext,
+  type V1_FunctionExpressionBuilder,
+  type V1_ValueSpecification,
+  type ValueSpecification,
+  type Type,
+  type V1_PropertyExpressionTypeInferrer,
   PureProtocolProcessorPlugin,
   matchFunctionName,
+  SimpleFunctionExpression,
+  extractElementNameFromPath,
 } from '@finos/legend-graph';
+import { V1_buildSubTypePropertyExpressionTypeInference } from './v1/V1_QueryBuilder_PropertyExpressionTypeInferenceBuilder';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -44,10 +45,6 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraFunctionExpressionBuilders(): V1_FunctionExpressionBuilder[] {
@@ -124,6 +121,26 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           );
         }
         return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraPropertyExpressionTypeInferrers(): V1_PropertyExpressionTypeInferrer[] {
+    return [
+      (inferredVariable: ValueSpecification | undefined): Type | undefined => {
+        let inferredType: Type | undefined =
+          inferredVariable?.genericType?.value.rawType;
+        if (
+          inferredVariable instanceof SimpleFunctionExpression &&
+          matchFunctionName(
+            inferredVariable.functionName,
+            extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+          )
+        ) {
+          inferredType =
+            V1_buildSubTypePropertyExpressionTypeInference(inferredVariable);
+        }
+        return inferredType;
       },
     ];
   }

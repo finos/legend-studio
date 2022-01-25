@@ -15,8 +15,9 @@
  */
 
 import { observable, computed, action, flow, makeObservable } from 'mobx';
-import type { Clazz, GeneratorFn } from '@finos/legend-shared';
 import {
+  type Clazz,
+  type GeneratorFn,
   ActionState,
   assertNonEmptyString,
   UnsupportedOperationError,
@@ -25,8 +26,10 @@ import {
   IllegalStateError,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import type { ROOT_PACKAGE_NAME } from '../MetaModelConst';
-import { ELEMENT_PATH_DELIMITER } from '../MetaModelConst';
+import {
+  type ROOT_PACKAGE_NAME,
+  ELEMENT_PATH_DELIMITER,
+} from '../MetaModelConst';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
 import { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
@@ -50,7 +53,6 @@ import {
 import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
 import type { Section } from '../models/metamodels/pure/packageableElements/section/Section';
-import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import { PureGraphExtension } from './PureGraphExtension';
 import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
 import { DataType } from '../models/metamodels/pure/packageableElements/domain/DataType';
@@ -97,7 +99,6 @@ export abstract class BasicModel {
   private readonly extensions: PureGraphExtension<PackageableElement>[] = [];
   private elementSectionMap = new Map<string, Section>();
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private sectionIndicesIndex = new Map<string, SectionIndex>();
   private readonly profilesIndex = new Map<string, Profile>();
   private readonly typesIndex = new Map<string, Type>();
@@ -168,7 +169,6 @@ export abstract class BasicModel {
       ownStores: computed,
       ownFlatDatas: computed,
       ownDatabases: computed,
-      ownServiceStores: computed,
       ownMappings: computed,
       ownServices: computed,
       ownRuntimes: computed,
@@ -214,7 +214,6 @@ export abstract class BasicModel {
     });
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   get ownSectionIndices(): SectionIndex[] {
     return Array.from(this.sectionIndicesIndex.values());
   }
@@ -263,11 +262,6 @@ export abstract class BasicModel {
       (store: Store): store is Database => store instanceof Database,
     );
   }
-  get ownServiceStores(): ServiceStore[] {
-    return Array.from(this.storesIndex.values()).filter(
-      (store: Store): store is ServiceStore => store instanceof ServiceStore,
-    );
-  }
   get ownMappings(): Mapping[] {
     return Array.from(this.mappingsIndex.values());
   }
@@ -285,6 +279,12 @@ export abstract class BasicModel {
   }
   get ownGenerationSpecifications(): GenerationSpecification[] {
     return Array.from(this.generationSpecificationsIndex.values());
+  }
+
+  getExtensionElements<T extends PackageableElement>(
+    extensionElementClass: Clazz<T>,
+  ): T[] {
+    return this.getExtensionForElementClass(extensionElementClass).elements;
   }
 
   getExtensionForElementClass<T extends PackageableElement>(
@@ -307,7 +307,6 @@ export abstract class BasicModel {
 
   getOwnSection = (path: string): Section | undefined =>
     this.elementSectionMap.get(path);
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getOwnSectionIndex = (path: string): SectionIndex | undefined =>
     this.sectionIndicesIndex.get(path);
   getOwnProfile = (path: string): Profile | undefined =>
@@ -362,7 +361,6 @@ export abstract class BasicModel {
   setOwnSection(path: string, val: Section): void {
     this.elementSectionMap.set(path, val);
   }
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   setOwnSectionIndex(path: string, val: SectionIndex): void {
     this.sectionIndicesIndex.set(path, val);
   }
@@ -412,7 +410,6 @@ export abstract class BasicModel {
     extension.setElement(path, val);
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   get allOwnElements(): PackageableElement[] {
     this.extensions.flatMap((extension) => extension.elements);
     return [
@@ -477,7 +474,6 @@ export abstract class BasicModel {
           Package.getOrCreatePackage(this.root, path, false),
         );
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getOwnNullableElement(
     path: string,
     includePackage?: boolean,
@@ -510,7 +506,6 @@ export abstract class BasicModel {
     return element;
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
       element.package.deleteElement(element);
@@ -555,7 +550,6 @@ export abstract class BasicModel {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   renameOwnElement(element: PackageableElement, newPath: string): void {
     const elementCurrentPath = element.path;
     // validation before renaming

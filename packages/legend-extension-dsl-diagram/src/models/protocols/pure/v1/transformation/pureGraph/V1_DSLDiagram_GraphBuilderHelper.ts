@@ -38,19 +38,19 @@ import type { V1_GeneralizationView } from '../../model/packageableElements/diag
 import { getClassView } from '../../../../../../helpers/DiagramHelper';
 
 const buildPoint = (point: V1_Point): Point => {
-  const x = guaranteeNonNullable(point.x, 'x coordinate of point is missing');
-  const y = guaranteeNonNullable(point.y, 'y coordinate of point is missing');
+  const x = guaranteeNonNullable(point.x, `Point 'x' coordinate is missing`);
+  const y = guaranteeNonNullable(point.y, `Point 'y' coordinate is missing`);
   return new Point(x, y);
 };
 
 const buildRectangle = (rectangle: V1_Rectangle): Rectangle => {
   const width = guaranteeNonNullable(
     rectangle.width,
-    'rectangle width is missing',
+    `Rectangle 'width' is missing`,
   );
   const height = guaranteeNonNullable(
     rectangle.height,
-    'rectangle height is missing',
+    `Rectangle 'height' is missing`,
   );
   return new Rectangle(width, height);
 };
@@ -60,24 +60,30 @@ export const V1_buildClassView = (
   context: V1_GraphBuilderContext,
   diagram: Diagram,
 ): ClassView => {
-  assertNonEmptyString(classView.class, 'Diagram class view class is missing');
-  assertNonEmptyString(classView.id, 'Diagram class view ID is missing');
+  assertNonEmptyString(
+    classView.class,
+    `Class view 'class' field is missing or empty`,
+  );
+  assertNonEmptyString(
+    classView.id,
+    `Class view 'id' field is missing or empty`,
+  );
   assertNonNullable(
     classView.rectangle,
-    'Diagram class view rectangle is missing',
+    `Class view 'rectangle' field is missing`,
   );
   assertNonNullable(
     classView.position,
-    'Diagram class view position is missing',
+    `Class view 'position' field is missing`,
   );
   const view = new ClassView(
     diagram,
     classView.id,
     context.resolveClass(classView.class),
   );
-  view.hideProperties = Boolean(classView.hideProperties);
-  view.hideTaggedValues = Boolean(classView.hideTaggedValues);
-  view.hideStereotypes = Boolean(classView.hideStereotypes);
+  view.hideProperties = classView.hideProperties;
+  view.hideTaggedValues = classView.hideTaggedValues;
+  view.hideStereotypes = classView.hideStereotypes;
   view.rectangle = buildRectangle(classView.rectangle);
   view.position = buildPoint(classView.position);
   return view;
@@ -90,16 +96,16 @@ export const V1_buildPropertyView = (
 ): PropertyView => {
   assertNonNullable(
     propertyView.property,
-    'Diagram property view property is missing',
+    `Property view 'property' field is missing`,
   );
-  assertNonNullable(propertyView.line, 'Diagram property view line is missing');
+  assertNonNullable(propertyView.line, `Property view 'line' field is missing`);
   const sourceClassView = guaranteeNonNullable(
     getClassView(diagram, guaranteeNonNullable(propertyView.sourceView)),
-    'Diagram property view source class line is missing',
+    `Property view 'sourceView' field is missing`,
   );
   const targetClassView = guaranteeNonNullable(
     getClassView(diagram, guaranteeNonNullable(propertyView.targetView)),
-    'Diagram property view target class is missing',
+    `Property view 'targetView' field is missing`,
   );
   const property = context.resolveOwnedProperty(propertyView.property);
   const view = new PropertyView(
@@ -117,13 +123,17 @@ export const V1_buildGeneralizationView = (
   generalizationView: V1_GeneralizationView,
   diagram: Diagram,
 ): GeneralizationView => {
+  assertNonNullable(
+    generalizationView.line,
+    `Generalization view 'line' field is missing`,
+  );
   const sourceClassView = guaranteeNonNullable(
     getClassView(diagram, guaranteeNonNullable(generalizationView.sourceView)),
-    'Diagram property view source class line is missing',
+    `Generalization view 'sourceView' field is missing`,
   );
   const targetClassView = guaranteeNonNullable(
     getClassView(diagram, guaranteeNonNullable(generalizationView.targetView)),
-    'Diagram property view target class is missing',
+    `Generalization view 'targetView' field is missing`,
   );
   const view = new GeneralizationView(
     diagram,

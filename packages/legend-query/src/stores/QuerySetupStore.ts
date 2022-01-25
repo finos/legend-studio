@@ -23,28 +23,33 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type {
-  LightQuery,
-  Mapping,
-  PackageableRuntime,
-  Service,
+import {
+  type LightQuery,
+  type Mapping,
+  type PackageableRuntime,
+  type Service,
+  QuerySearchSpecification,
+  PureSingleExecution,
+  PureMultiExecution,
 } from '@finos/legend-graph';
-import { PureSingleExecution, PureMultiExecution } from '@finos/legend-graph';
-import type { QueryStore } from './QueryStore';
+import type { LegendQueryStore } from './LegendQueryStore';
 import { ProjectData } from '@finos/legend-server-depot';
 import type { PackageableElementOption } from '@finos/legend-application';
 
 export abstract class QuerySetupState {
-  queryStore: QueryStore;
+  setupStore: QuerySetupStore;
+  queryStore: LegendQueryStore;
 
-  constructor(queryStore: QueryStore) {
-    this.queryStore = queryStore;
+  constructor(setupStore: QuerySetupStore) {
+    this.setupStore = setupStore;
+    this.queryStore = setupStore.queryStore;
   }
 }
 
@@ -55,8 +60,8 @@ export class ExistingQuerySetupState extends QuerySetupState {
   currentQuery?: LightQuery | undefined;
   showCurrentUserQueriesOnly = false;
 
-  constructor(queryStore: QueryStore) {
-    super(queryStore);
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
 
     makeObservable(this, {
       queries: observable,
@@ -100,12 +105,17 @@ export class ExistingQuerySetupState extends QuerySetupState {
     const isValidSearchString = searchText.length >= 3;
     this.loadQueriesState.inProgress();
     try {
+      const searchSpecification = new QuerySearchSpecification();
+      searchSpecification.searchTerm = isValidSearchString
+        ? searchText
+        : undefined;
+      searchSpecification.limit = 10;
+      searchSpecification.showCurrentUserQueriesOnly =
+        this.showCurrentUserQueriesOnly;
       this.queries =
-        (yield this.queryStore.graphManagerState.graphManager.getQueries({
-          search: isValidSearchString ? searchText : undefined,
-          showCurrentUserQueriesOnly: this.showCurrentUserQueriesOnly,
-          limit: 10,
-        })) as LightQuery[];
+        (yield this.queryStore.graphManagerState.graphManager.searchQueries(
+          searchSpecification,
+        )) as LightQuery[];
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -123,8 +133,8 @@ export class CreateQuerySetupState extends QuerySetupState {
   currentMapping?: Mapping | undefined;
   currentRuntime?: PackageableRuntime | undefined;
 
-  constructor(queryStore: QueryStore) {
-    super(queryStore);
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
 
     makeObservable(this, {
       projects: observable,
@@ -195,8 +205,8 @@ export class ServiceQuerySetupState extends QuerySetupState {
   currentService?: Service | undefined;
   currentServiceExecutionKey?: string | undefined;
 
-  constructor(queryStore: QueryStore) {
-    super(queryStore);
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
 
     makeObservable(this, {
       projects: observable,
@@ -269,10 +279,10 @@ export class ServiceQuerySetupState extends QuerySetupState {
 }
 
 export class QuerySetupStore {
-  queryStore: QueryStore;
+  queryStore: LegendQueryStore;
   querySetupState?: QuerySetupState | undefined;
 
-  constructor(queryStore: QueryStore) {
+  constructor(queryStore: LegendQueryStore) {
     makeAutoObservable(this, {
       queryStore: false,
       setSetupState: action,

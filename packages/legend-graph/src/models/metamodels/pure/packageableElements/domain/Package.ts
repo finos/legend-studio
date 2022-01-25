@@ -20,14 +20,16 @@ import {
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../MetaModelConst';
 import {
+  type Hashable,
   hashArray,
   assertTrue,
   addUniqueEntry,
   AssertionError,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import { PackageableElement } from '../PackageableElement';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '../PackageableElement';
 
 export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 

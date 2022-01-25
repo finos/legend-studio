@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../mixins' as *;
+@use 'mixins' as *;
 
 .activity-bar {
   width: 5rem;
@@ -139,7 +139,7 @@
   &__setting__menu {
     min-width: 20rem;
 
-    .icon__check {
+    svg {
       font-size: 1rem;
     }
   }

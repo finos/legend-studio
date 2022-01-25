@@ -19,8 +19,6 @@ import { AbstractPreset } from '@finos/legend-shared';
 import { DSLText_PureGraphManagerPlugin } from './graphManager/DSLText_PureGraphManagerPlugin';
 import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin';
 import type { GraphPluginManager } from '@finos/legend-graph';
-import type { StudioPluginManager } from '@finos/legend-studio';
-import { DSLText_StudioPlugin } from './components/studio/DSLText_StudioPlugin';
 import { DSLText_PureGraphPlugin } from './graph/DSLText_PureGraphPlugin';
 
 export class DSLText_GraphPreset extends AbstractPreset {
@@ -29,19 +27,6 @@ export class DSLText_GraphPreset extends AbstractPreset {
   }
 
   install(pluginManager: GraphPluginManager): void {
-    new DSLText_PureGraphPlugin().install(pluginManager);
-    new DSLText_PureGraphManagerPlugin().install(pluginManager);
-    new DSLText_PureProtocolProcessorPlugin().install(pluginManager);
-  }
-}
-
-export class DSLText_StudioPreset extends AbstractPreset {
-  constructor() {
-    super(packageJson.extensions.studioPreset, packageJson.version);
-  }
-
-  install(pluginManager: StudioPluginManager): void {
-    new DSLText_StudioPlugin().install(pluginManager);
     new DSLText_PureGraphPlugin().install(pluginManager);
     new DSLText_PureGraphManagerPlugin().install(pluginManager);
     new DSLText_PureProtocolProcessorPlugin().install(pluginManager);

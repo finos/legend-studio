@@ -18,8 +18,13 @@ import packageJson from '../../../../package.json';
 import { V1_Binding } from './v1/model/packageableElements/store/V1_Binding';
 import { V1_SchemaSet } from './v1/model/packageableElements/schemaSet/V1_SchemaSet';
 import { V1_ExternalFormatConnection } from './v1/model/packageableElements/connection/V1_ExternalFormatConnection';
-import type { PlainObject } from '@finos/legend-shared';
-import { assertType, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  assertType,
+  guaranteeNonEmptyString,
+  assertNonNullable,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_bindingModelSchema,
@@ -33,51 +38,69 @@ import {
   getBinding,
   getSchemaSet,
 } from '../../../graphManager/DSLSerializer_GraphManagerHelper';
-import { V1_resolveBinding } from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';
-import { Binding } from '../../metamodels/pure/model/packageableElements/store/Binding';
-import { SchemaSet } from '../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import { ExternalFormatConnection } from '../../metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
-import type {
-  GraphPluginManager,
-  PackageableElement,
-  Connection,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_ConnectionBuilder,
-  V1_ConnectionTransformer,
-  V1_ConnectionProtocolSerializer,
-  V1_ConnectionProtocolDeserializer,
-  V1_GraphBuilderContext,
-  V1_GraphTransformerContext,
-  V1_Connection,
-  V1_PackageableElement,
-  PackageableElementReference,
-  Store,
-} from '@finos/legend-graph';
 import {
+  V1_resolveBinding,
+  V1_resolveSchemaSet,
+} from '../pure/v1/transformation/pureGraph/V1_DSLSerializer_GraphBuilderHelper';
+import {
+  Binding,
+  BINDING_CONTENT_TYPE,
+} from '../../metamodels/pure/model/packageableElements/store/Binding';
+import {
+  FORMAT_TYPE,
+  SchemaSet,
+} from '../../metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
+import { Schema } from '../../metamodels/pure/model/packageableElements/schemaSet/Schema';
+import { ExternalFormatConnection } from '../../metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
+import {
+  type PackageableElement,
+  type Connection,
+  type V1_ElementProtocolClassifierPathGetter,
+  type V1_ElementProtocolDeserializer,
+  type V1_ElementProtocolSerializer,
+  type V1_ElementTransformer,
+  type V1_ConnectionBuilder,
+  type V1_ConnectionTransformer,
+  type V1_ConnectionProtocolSerializer,
+  type V1_ConnectionProtocolDeserializer,
+  type V1_GraphBuilderContext,
+  type V1_GraphTransformerContext,
+  type V1_Connection,
+  type V1_PackageableElement,
+  type Store,
+  type V1_ExecutionInputGetter,
+  type PureModel,
+  type Mapping,
+  type Runtime,
+  type V1_PureModelContextData,
+  type DSLMapping_PureProtocolProcessorPlugin_Extension,
+  PureProtocolProcessorPlugin,
   V1_transformElementReference,
-  DSLMapping_PureProtocolProcessorPlugin_Extension,
   V1_ElementBuilder,
   V1_initPackageableElement,
+  PackageableElementReference,
+  toOptionalPackageableElementReference,
 } from '@finos/legend-graph';
+import { V1_Schema } from './v1/model/packageableElements/schemaSet/V1_Schema';
+import { ModelUnit } from '../../metamodels/pure/model/packageableElements/store/ModelUnit';
+import { V1_ModelUnit } from './v1/model/packageableElements/store/V1_ModelUnit';
+import { UrlStream } from '../../metamodels/pure/model/packageableElements/connection/UrlStream';
+import { V1_UrlStream } from './v1/model/packageableElements/connection/V1_UrlStream';
 
 const BINDING_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::binding::Binding';
 const SCHEMA_SET_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::metamodel::SchemaSet';
 
-export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PureProtocolProcessorPlugin_Extension {
+export class DSLSerializer_PureProtocolProcessorPlugin
+  extends PureProtocolProcessorPlugin
+  implements DSLMapping_PureProtocolProcessorPlugin_Extension
+{
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
@@ -111,10 +134,32 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             elementProtocol.name,
           );
           const element = getBinding(path, context.graph);
+          const schemaSet = elementProtocol.schemaSet
+            ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
+            : undefined;
           element.schemaId = elementProtocol.schemaId;
-          element.schemaSet = elementProtocol.schemaSet;
-          element.contentType = elementProtocol.contentType;
-          element.modelUnit = elementProtocol.modelUnit;
+          element.schemaSet = toOptionalPackageableElementReference(schemaSet);
+
+          element.contentType = guaranteeNonNullable(
+            Object.values(BINDING_CONTENT_TYPE).find(
+              (type) => type === elementProtocol.contentType,
+            ),
+            `Binding 'contentType' '${elementProtocol.contentType}' is not supported`,
+          );
+          assertNonNullable(
+            elementProtocol.modelUnit,
+            `Binding 'modelUnit' field is missing`,
+          );
+          const modelUnit = new ModelUnit();
+          modelUnit.packageableElementIncludes =
+            elementProtocol.modelUnit.packageableElementIncludes.map(
+              (element) => context.resolveElement(element, true),
+            );
+          modelUnit.packageableElementExcludes =
+            elementProtocol.modelUnit.packageableElementExcludes.map(
+              (element) => context.resolveElement(element, true),
+            );
+          element.modelUnit = modelUnit;
         },
       }),
       new V1_ElementBuilder<V1_SchemaSet>({
@@ -147,8 +192,24 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             elementProtocol.name,
           );
           const element = getSchemaSet(path, context.graph);
-          element.format = elementProtocol.format;
-          element.schemas = elementProtocol.schemas;
+          element.format = guaranteeNonNullable(
+            Object.values(FORMAT_TYPE).find(
+              (type) => type === elementProtocol.format,
+            ),
+            `Schema format '${elementProtocol.format}' is not supported`,
+          );
+          element.schemas = elementProtocol.schemas.map((schema) => {
+            const schemaElement = new Schema();
+            schemaElement.setContent(
+              guaranteeNonEmptyString(
+                schema.content,
+                `Schema 'content' field is missing or empty`,
+              ),
+            );
+            schemaElement.id = schema.id;
+            schemaElement.location = schema.location;
+            return schemaElement;
+          });
         },
       }),
     ];
@@ -171,6 +232,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
     return [
       (
         elementProtocol: V1_PackageableElement,
+        plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_Binding) {
           return serialize(V1_bindingModelSchema, elementProtocol);
@@ -186,6 +248,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
     return [
       (
         json: PlainObject<V1_PackageableElement>,
+        plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_BINDING_ELEMENT_PROTOCOL_TYPE) {
           return deserialize(V1_bindingModelSchema, json);
@@ -209,9 +272,23 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           protocol.name = metamodel.name;
           protocol.package = metamodel.package?.fullPath ?? '';
           protocol.schemaId = metamodel.schemaId;
-          protocol.schemaSet = metamodel.schemaSet;
+          protocol.schemaSet = metamodel.schemaSet.valueForSerialization;
           protocol.contentType = metamodel.contentType;
-          protocol.modelUnit = metamodel.modelUnit;
+          const modelUnit = new V1_ModelUnit();
+          modelUnit.packageableElementExcludes =
+            metamodel.modelUnit.packageableElementExcludes.map((path) =>
+              path instanceof PackageableElementReference
+                ? path.valueForSerialization ?? ''
+                : path,
+            );
+          modelUnit.packageableElementIncludes =
+            metamodel.modelUnit.packageableElementIncludes.map((path) =>
+              path instanceof PackageableElementReference
+                ? path.valueForSerialization ?? ''
+                : path,
+            );
+          protocol.modelUnit = modelUnit;
+          protocol.includedStores = [];
           return protocol;
         } else if (metamodel instanceof SchemaSet) {
           const protocol = new V1_SchemaSet();
@@ -219,14 +296,39 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
           protocol.name = metamodel.name;
           protocol.package = metamodel.package?.fullPath ?? '';
           protocol.format = metamodel.format;
-          protocol.schemas = metamodel.schemas;
+          protocol.schemas = metamodel.schemas.map((schema) => {
+            const schemaProtocol = new V1_Schema();
+            schemaProtocol.content = schema.content;
+            schemaProtocol.id = schema.id;
+            schemaProtocol.location = schema.location;
+            return schemaProtocol;
+          });
           return protocol;
         }
         return undefined;
       },
     ];
   }
-  override V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
+
+  override V1_getExtraExecutionInputGetters(): V1_ExecutionInputGetter[] {
+    return [
+      (
+        graph: PureModel,
+        mapping: Mapping,
+        runtime: Runtime,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter(
+          (element) => element instanceof V1_SchemaSet,
+        ),
+    ];
+  }
+
+  override V1_getExtraSourceInformationKeys(): string[] {
+    return ['contentSourceInformation'];
+  }
+
+  V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
     return [
       (
         connection: V1_Connection,
@@ -238,7 +340,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
             ? V1_resolveBinding(
                 guaranteeNonNullable(
                   connection.store,
-                  'External format connection binding is missing',
+                  `External format connection 'store' field is missing`,
                 ),
                 context,
               )
@@ -248,12 +350,23 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
                 assertType(
                   store.value,
                   Binding,
-                  'External format connection store must have a Binding as its store',
+                  `External format connection store must be a Binding`,
                 );
                 return store as PackageableElementReference<Binding>;
               })();
           const externalFormatConnection = new ExternalFormatConnection(Store);
-          externalFormatConnection.externalSource = connection.externalSource;
+          assertNonNullable(
+            connection.externalSource,
+            `External format connection 'externalSource' field is missing`,
+          );
+          const urlStream = new UrlStream();
+          urlStream.setUrl(
+            guaranteeNonEmptyString(
+              connection.externalSource.url,
+              `URL stream 'url' field is missing or empty`,
+            ),
+          );
+          externalFormatConnection.externalSource = urlStream;
           return externalFormatConnection;
         }
         return undefined;
@@ -261,7 +374,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
     ];
   }
 
-  override V1_getExtraConnectionTransformers(): V1_ConnectionTransformer[] {
+  V1_getExtraConnectionTransformers(): V1_ConnectionTransformer[] {
     return [
       (
         metamodel: Connection,
@@ -270,7 +383,9 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
         if (metamodel instanceof ExternalFormatConnection) {
           const connection = new V1_ExternalFormatConnection();
           connection.store = V1_transformElementReference(metamodel.store);
-          connection.externalSource = metamodel.externalSource;
+          const urlStream = new V1_UrlStream();
+          urlStream.url = metamodel.externalSource.url;
+          connection.externalSource = urlStream;
           return connection;
         }
         return undefined;
@@ -278,7 +393,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
     ];
   }
 
-  override V1_getExtraConnectionProtocolSerializers(): V1_ConnectionProtocolSerializer[] {
+  V1_getExtraConnectionProtocolSerializers(): V1_ConnectionProtocolSerializer[] {
     return [
       (
         connectionProtocol: V1_Connection,
@@ -294,7 +409,7 @@ export class DSLSerializer_PureProtocolProcessorPlugin extends DSLMapping_PurePr
     ];
   }
 
-  override V1_getExtraConnectionProtocolDeserializers(): V1_ConnectionProtocolDeserializer[] {
+  V1_getExtraConnectionProtocolDeserializers(): V1_ConnectionProtocolDeserializer[] {
     return [
       (json: PlainObject<V1_Connection>): V1_Connection | undefined => {
         if (

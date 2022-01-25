@@ -15,8 +15,7 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
@@ -33,8 +32,10 @@ import type { RootRelationalInstanceSetImplementation } from '../store/relationa
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
+import type { InstanceSetImplementation } from './InstanceSetImplementation';
 
 export interface SetImplementationVisitor<T> {
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): T;
@@ -133,7 +134,6 @@ export enum BASIC_SET_IMPLEMENTATION_TYPE {
   INSTANCE = 'instance',
 }
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export enum SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
   PUREINSTANCE = 'pureInstance',

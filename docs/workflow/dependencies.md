@@ -6,7 +6,7 @@ This details considerations to take when introducing or updating dependencies in
 
 There could be [a fair number of downsides](https://github.com/artsy/README/blob/master/playbooks/dependencies.md) to adding a new dependency, such as larger bundle size, upgrade chores, less flexibility, slower migration, and the risk of the dependency becoming vulnerable or abandoned. On the other hand, if we choose to opt out and build the exact implementation that addresses just our needs, there is the cost of development and maintenance.
 
-When consider adding a new dependency, you need to communicate with the team in forms of an RFC (or a detailed explanation in PRs). Following is a list of points to consider - if you answer `yes` to most of these questions, then you probably don’t need to write an RFC:
+When consider adding a new dependency, please communicate with the team and provide detailed explanation in the PR. Following is a list of points to consider - if you answer `yes` to most of these questions, then you probably don’t need much explanation:
 
 - Could you fit this codebase in your head after reading the source?
 - Is this obviously being used in production by the maintainers, and thus battle-tested?
@@ -31,6 +31,6 @@ We can seem quiet _conservative_ about adding a new dependency, but when we alre
 Throughout the codebase, we have a few different `shared` packages which hold shared utilities, helpers, components, constructs, etc. As such, when a new dependency is added, we should check if it already belonged to one of these `shared` packages, if not, we need to decide whether to add it to these or to the consumer package. This is often harder to decide than it seems, but generally, if a dependency fits in both of these categories, it's very likely that we can move it in `shared` (and re-exported potentially under a different name/alias).
 
 - The dependency offers many utilities which are useful for and potentially have already been used in many packages (e.g. `clsx`, `lodash`).
-- The dependency includes many small pieces of which we are only interested in using a limitted subset (and potentially would like to restrict the usage of other pieces for certain reasons - i.e. `lodash`, `@material-ui`, `react-icons`)
+- The dependency includes many small pieces of which we are only interested in using a limitted subset (and potentially would like to restrict the usage of other pieces for certain reasons - i.e. `lodash`, `@mui`, `react-icons`)
 
 A good example here is `lodash` where we don't want to expose all the utilities in `lodash` but still want to reuse common functions, such as `throttle` and `debounce`, we would re-export this in the `shared` package. Another fairly good candidate to consider is `react-icons` where we would want to use a fair number of icons from that library, but we want to formulate our own set of icons and only allow other packages to use these icons as we anticipate that we would potentially create our own set of icons later in the future (similar to [vscode-icons](https://github.com/microsoft/vscode-icons)).

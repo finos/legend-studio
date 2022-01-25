@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../mixins' as *;
+@use 'mixins' as *;
 
 .edit-panel {
   &__header {
@@ -159,6 +159,22 @@
     height: 100%;
   }
 
+  &__header__action {
+    @include flexConstantDimension;
+
+    height: 3.4rem;
+    width: 3.4rem;
+    color: var(--color-dark-grey-400);
+
+    &--active {
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  &__icon__word-wrap {
+    font-size: 2.2rem;
+  }
+
   &__element-view {
     display: flex;
 
@@ -203,6 +219,7 @@
       transform: rotate(180deg);
       font-size: 1.1rem;
       width: 2.2rem;
+      padding: 0.5rem 0;
     }
 
     &__option__group {

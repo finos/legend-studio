@@ -24,7 +24,14 @@
     { "path": "packages/legend-query" },
     { "path": "packages/legend-query-app" },
     { "path": "packages/legend-query-deployment" },
+    // taxonomy
+    { "path": "packages/legend-taxonomy" },
+    { "path": "packages/legend-taxonomy-app" },
+    { "path": "packages/legend-taxonomy-deployment" },
     // extension
+    {
+      "path": "packages/legend-graph-extension-collection"
+    },
     {
       "path": "packages/legend-extension-dsl-text"
     },
@@ -39,6 +46,16 @@
     },
     {
       "path": "packages/legend-extension-external-format-json-schema"
+    },
+    {
+      "path": "packages/legend-extension-external-store-service"
+    },
+    {
+      "path": "packages/legend-extension-external-language-morphir"
+    },
+    // fixtures
+    {
+      "path": "fixtures/legend-mock-server"
     }
   ]
 }

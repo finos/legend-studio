@@ -14,26 +14,21 @@
  * limitations under the License.
  */
 
-import {
-  assertType,
-  addUniqueEntry,
-  guaranteeNonNullable,
-  deleteEntry,
-} from '@finos/legend-shared';
+import { assertType, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import type {
-  AbstractProperty,
-  GraphFetchTree,
-  Type,
-  RootGraphFetchTree,
-} from '@finos/legend-graph';
 import {
+  type AbstractProperty,
+  type GraphFetchTree,
+  type Type,
+  type RootGraphFetchTree,
   PropertyExplicitReference,
   Class,
   PropertyGraphFetchTree,
 } from '@finos/legend-graph';
-import type { QueryBuilderExplorerTreeNodeData } from './QueryBuilderExplorerState';
-import { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
+import {
+  type QueryBuilderExplorerTreeNodeData,
+  QueryBuilderExplorerTreePropertyNodeData,
+} from './QueryBuilderExplorerState';
 
 export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;
@@ -129,9 +124,15 @@ const getPrunableNodes = (
 ): QueryBuilderGraphFetchTreeNodeData[] =>
   Array.from(treeData.nodes.values()).filter(
     (node) =>
-      node.tree instanceof PropertyGraphFetchTree &&
-      node.type instanceof Class &&
-      node.childrenIds.length === 0,
+      // childless class nodes
+      (node.tree instanceof PropertyGraphFetchTree &&
+        node.type instanceof Class &&
+        node.childrenIds.length === 0) ||
+      // orphan node
+      (node.tree instanceof PropertyGraphFetchTree &&
+        !(node.type instanceof Class) &&
+        node.parentId &&
+        !treeData.nodes.has(node.parentId)),
   );
 
 const removeNode = (
@@ -139,7 +140,7 @@ const removeNode = (
   node: QueryBuilderGraphFetchTreeNodeData,
 ): void => {
   const parentNode = node.parentId
-    ? guaranteeNonNullable(treeData.nodes.get(node.parentId))
+    ? treeData.nodes.get(node.parentId)
     : undefined;
   if (parentNode) {
     deleteEntry(parentNode.childrenIds, node.id);
@@ -187,7 +188,9 @@ export const addQueryBuilderPropertyNode = (
     const propertyGraphFetchTree = new PropertyGraphFetchTree(
       PropertyExplicitReference.create(parentExplorerTreeNode.property),
     );
-    propertyGraphFetchTree.subTrees.push(propertyGraphFetchTrees[0]);
+    propertyGraphFetchTree.subTrees.push(
+      propertyGraphFetchTrees[0] as PropertyGraphFetchTree,
+    );
     propertyGraphFetchTrees.unshift(propertyGraphFetchTree);
     parentExplorerTreeNode = explorerTreeData.nodes.get(
       parentExplorerTreeNode.parentId,

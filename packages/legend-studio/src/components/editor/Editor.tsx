@@ -20,10 +20,12 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
-import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
-  getControlledResizablePanelProps,
+  type ResizablePanelHandlerProps,
   clsx,
+  Backdrop,
+  buildReactHotkeysConfiguration,
+  getControlledResizablePanelProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -33,16 +35,16 @@ import {
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel';
 import { SideBar } from './side-bar/SideBar';
 import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel';
-import type { KeyMap } from 'react-hotkeys';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { GrammarTextEditor } from './edit-panel/GrammarTextEditor';
 import { StatusBar } from './StatusBar';
 import { ActivityBar } from './ActivityBar';
 import { useParams, Prompt } from 'react-router-dom';
-import type { EditorHotkey } from '../../stores/EditorStore';
-import type { EditorPathParams } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import type {
+  EditorPathParams,
+  GroupEditorPathParams,
+} from '../../stores/LegendStudioRouter';
+import { LegendStudioAppHeaderMenu } from './header/LegendStudioAppHeaderMenu';
 import { ShareProjectHeaderAction } from '../editor/header/ShareProjectHeaderAction';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { isNonNullable } from '@finos/legend-shared';
@@ -51,28 +53,22 @@ import { EditorStoreProvider, useEditorStore } from './EditorStoreProvider';
 import {
   ActionAlertType,
   ActionAlertActionType,
-  ApplicationBackdrop,
   useApplicationStore,
+  AppHeader,
 } from '@finos/legend-application';
-
-const buildHotkeySupport = (
-  hotkeys: EditorHotkey[],
-): [KeyMap, { [key: string]: (keyEvent?: KeyboardEvent) => void }] => {
-  const keyMap: Record<PropertyKey, string[]> = {};
-  hotkeys.forEach((hotkey) => {
-    keyMap[hotkey.name] = hotkey.keyBinds;
-  });
-  const handlers: Record<PropertyKey, (keyEvent?: KeyboardEvent) => void> = {};
-  hotkeys.forEach((hotkey) => {
-    handlers[hotkey.name] = hotkey.handler;
-  });
-  return [keyMap, handlers];
-};
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 
 export const EditorInner = observer(() => {
-  const params = useParams<EditorPathParams>();
+  const params = useParams<EditorPathParams | GroupEditorPathParams>();
   const projectId = params.projectId;
-  const workspaceId = params.workspaceId;
+  const workspaceType = (params as { groupWorkspaceId: string | undefined })
+    .groupWorkspaceId
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
+  const workspaceId =
+    workspaceType === WorkspaceType.GROUP
+      ? (params as GroupEditorPathParams).groupWorkspaceId
+      : (params as EditorPathParams).workspaceId;
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
 
@@ -108,7 +104,7 @@ export const EditorInner = observer(() => {
   }, [editorStore, ref, height, width]);
 
   // Hotkeys
-  const [hotkeyMapping, hotkeyHandlers] = buildHotkeySupport(
+  const [hotkeyMapping, hotkeyHandlers] = buildReactHotkeysConfiguration(
     editorStore.hotkeys,
   );
 
@@ -122,10 +118,10 @@ export const EditorInner = observer(() => {
 
   // Initialize the app
   useEffect(() => {
-    flowResult(editorStore.initialize(projectId, workspaceId)).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
-  }, [editorStore, applicationStore, projectId, workspaceId]);
+    flowResult(
+      editorStore.initialize(projectId, workspaceId, workspaceType),
+    ).catch(applicationStore.alertIllegalUnhandledError);
+  }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
 
   // Browser Navigation Blocking (reload, close tab, go to another URL)
   // NOTE: there is no way to customize the alert message for now since Chrome removed support for it
@@ -236,7 +232,7 @@ export const EditorInner = observer(() => {
     <div className="app__page">
       <AppHeader>
         <ShareProjectHeaderAction />
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="editor">
@@ -248,7 +244,7 @@ export const EditorInner = observer(() => {
           >
             <div className="editor__body">
               <ActivityBar />
-              <ApplicationBackdrop open={editorStore.backdrop} />
+              <Backdrop className="backdrop" open={editorStore.backdrop} />
               <div ref={ref} className="editor__content-container">
                 <div
                   className={clsx('editor__content', {

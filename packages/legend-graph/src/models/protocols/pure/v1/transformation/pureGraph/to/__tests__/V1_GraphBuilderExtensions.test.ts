@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-import type { AbstractPluginManager, Clazz } from '@finos/legend-shared';
-import { UnsupportedOperationError, unitTest } from '@finos/legend-shared';
-import type { PackageableElementVisitor } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
-import { PackageableElement } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
+import {
+  type Clazz,
+  UnsupportedOperationError,
+  unitTest,
+} from '@finos/legend-shared';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin';
-import type { V1_PackageableElementVisitor } from '../../../../model/packageableElements/V1_PackageableElement';
-import { V1_PackageableElement } from '../../../../model/packageableElements/V1_PackageableElement';
+import {
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
+} from '../../../../model/packageableElements/V1_PackageableElement';
 import { V1_ElementBuilder } from '../V1_ElementBuilder';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
 import { V1_GraphBuilderExtensions } from '../V1_GraphBuilderExtensions';
@@ -55,10 +62,6 @@ class StubGraphManagerPlugin extends PureProtocolProcessorPlugin {
   constructor(builders: V1_ElementBuilder<V1_PackageableElement>[]) {
     super('stub-graph-manager-plugin', '0.0.0');
     this.builders = builders;
-  }
-
-  install(pluginManager: AbstractPluginManager): void {
-    throw new UnsupportedOperationError();
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {

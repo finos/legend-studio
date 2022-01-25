@@ -18,17 +18,17 @@ import { observer } from 'mobx-react-lite';
 import { FlatDataConnectionEditor } from './FlatDataConnectionEditor';
 import { RelationalDatabaseConnectionEditor } from './RelationalDatabaseConnectionEditor';
 import {
+  type ConnectionEditorState,
   RelationalDatabaseConnectionValueState,
   JsonModelConnectionValueState,
   FlatDataConnectionValueState,
   PackageableConnectionEditorState,
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import type { ConnectionEditorState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import type { Class } from '@finos/legend-graph';
-import { FaLock } from 'react-icons/fa';
-import { CustomSelectorInput } from '@finos/legend-art';
+import { CustomSelectorInput, LockIcon } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 const ModelConnectionEditor = observer(
   (props: {
@@ -58,7 +58,7 @@ const ModelConnectionEditor = observer(
             </div>
             {disableChangingClass && (
               <div className="panel__content__form__section__header__label__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             )}
           </div>
@@ -102,8 +102,9 @@ export const ConnectionEditor = observer(
   }) => {
     const { connectionEditorState, isReadOnly, disableChangingStore } = props;
     const connectionValueState = connectionEditorState.connectionValueState;
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getStudioPlugins();
 
-    /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
     const renderConnectionValueEditor = (): React.ReactNode => {
       if (connectionValueState instanceof JsonModelConnectionValueState) {
         return (
@@ -130,9 +131,22 @@ export const ConnectionEditor = observer(
           />
         );
       } else {
+        const extraConnectionEditorRenderers = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraConnectionEditorRenderers?.() ?? [],
+        );
+        for (const editorRenderer of extraConnectionEditorRenderers) {
+          const editor = editorRenderer(connectionValueState, isReadOnly);
+          if (editor) {
+            return editor;
+          }
+        }
+
         return (
           <UnsupportedEditorPanel
-            text={`Can't display this connection in form-mode`}
+            text="Can't display this connection in form-mode"
             isReadOnly={isReadOnly}
           />
         );

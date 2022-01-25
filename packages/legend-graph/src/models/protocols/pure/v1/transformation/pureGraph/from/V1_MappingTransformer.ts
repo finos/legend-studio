@@ -44,8 +44,10 @@ import { extractLine } from '../../../../../../metamodels/pure/packageableElemen
 import type { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { OperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation';
-import { OperationType } from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+import {
+  type OperationSetImplementation,
+  OperationType,
+} from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation';
 import type { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import type { RelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
 import type { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
@@ -139,6 +141,9 @@ import { V1_RelationalInputData } from '../../../model/packageableElements/store
 import { SOURCE_INFORMATION_KEY } from '../../../../../../../MetaModelConst';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import { toJS } from 'mobx';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
+import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
+import type { SubstituteStore } from '../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -306,7 +311,7 @@ const transformMappingTest = (
   return test;
 };
 
-// Include V1_Mapping
+// Include Mapping
 
 const transformMappingInclude = (
   element: MappingInclude,
@@ -314,15 +319,17 @@ const transformMappingInclude = (
   const mappingInclude = new V1_MappingInclude();
   mappingInclude.includedMapping = element.included.valueForSerialization ?? '';
   mappingInclude.sourceDatabasePath = element.storeSubstitutions.length
-    ? element.storeSubstitutions[0].original.valueForSerialization ?? ''
+    ? (element.storeSubstitutions[0] as SubstituteStore).original
+        .valueForSerialization ?? ''
     : undefined;
   mappingInclude.targetDatabasePath = element.storeSubstitutions.length
-    ? element.storeSubstitutions[0].substitute.valueForSerialization ?? ''
+    ? (element.storeSubstitutions[0] as SubstituteStore).substitute
+        .valueForSerialization ?? ''
     : undefined;
   return mappingInclude;
 };
 
-// Class V1_Mapping
+// Class Mapping
 
 const transformOptionalPropertyMappingTransformer = (
   value: EnumerationMapping | undefined,
@@ -534,10 +541,6 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
-  const id = mappingElementIdSerializer(element.id);
-  if (id) {
-    embedded.id = id;
-  }
   embedded.setImplementationId = element.inlineSetImplementation.id.value;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
@@ -583,6 +586,8 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     context,
     false,
   ) as V1_RelationalPropertyMapping;
+  // use the same property as the parent otherwise
+  embedded.otherwisePropertyMapping.property = embedded.property;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
       element.localMappingProperty,
@@ -825,9 +830,12 @@ const transformRootRelationalSetImpl = (
   classMapping.class = V1_transformElementReference(element.class);
   classMapping.distinct = element.distinct ?? false;
   classMapping.id = mappingElementIdSerializer(element.id);
-  classMapping.mainTable = V1_transformTableAliasToTablePointer(
-    element.mainTableAlias,
-  );
+  if (element.mainTableAlias) {
+    classMapping.mainTable = V1_transformTableAliasToTablePointer(
+      element.mainTableAlias,
+    );
+  }
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.primaryKey = element.primaryKey.map((pk) =>
     V1_transformRelationalOperationElement(pk, context),
   );
@@ -1005,6 +1013,27 @@ export class V1_SetImplementationTransformer
 
   constructor(context: V1_GraphTransformerContext) {
     this.context = context;
+  }
+
+  visit_SetImplementation(
+    setImplementation: InstanceSetImplementation,
+  ): V1_ClassMapping | undefined {
+    const extraClassMappingTransformers = this.context.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraClassMappingTransformers?.() ?? [],
+    );
+    for (const transformer of extraClassMappingTransformers) {
+      const classMapping = transformer(setImplementation, this.context);
+      if (classMapping) {
+        return classMapping;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't transform class mapping: no compatible transformer available from plugins`,
+      setImplementation,
+    );
   }
 
   visit_OperationSetImplementation(

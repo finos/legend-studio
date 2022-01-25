@@ -16,12 +16,11 @@
 
 import packageJson from '../../package.json';
 import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import type {
-  GraphPluginManager,
-  PackageableElement,
-  PureGrammarElementLabeler,
+import {
+  PureGraphManagerPlugin,
+  type PackageableElement,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
 
 const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
 const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
@@ -29,10 +28,6 @@ const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
 export class DSLDataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
   }
 
   override getExtraPureGrammarParserNames(): string[] {

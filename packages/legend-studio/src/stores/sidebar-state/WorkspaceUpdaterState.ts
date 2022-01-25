@@ -15,11 +15,12 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import type { EditorSdlcState } from '../EditorSdlcState';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -31,11 +32,9 @@ import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/En
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  EntityChangeConflict,
-  WorkspaceUpdateReport,
-} from '@finos/legend-server-sdlc';
 import {
+  type EntityChangeConflict,
+  type WorkspaceUpdateReport,
   WorkspaceUpdateReportStatus,
   EntityDiff,
   Review,
@@ -43,16 +42,16 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   isUpdatingWorkspace = false;
   isRefreshingWorkspaceUpdater = false;
   committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
       editorStore: false,
       sdlcState: false,
@@ -185,8 +184,8 @@ export class WorkspaceUpdaterState {
       this.isRefreshingWorkspaceUpdater = true;
       this.sdlcState.isWorkspaceOutdated =
         (yield this.editorStore.sdlcServerClient.isWorkspaceOutdated(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
         )) as boolean;
 
       if (!this.sdlcState.isWorkspaceOutdated) {
@@ -225,7 +224,7 @@ export class WorkspaceUpdaterState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -271,11 +270,11 @@ export class WorkspaceUpdaterState {
       });
       const workspaceUpdateReport =
         (yield this.editorStore.sdlcServerClient.updateWorkspace(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_UPDATED),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_UPDATED),
         Date.now() - startTime,
         'ms',
       );
@@ -293,7 +292,7 @@ export class WorkspaceUpdaterState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -314,14 +313,14 @@ export class WorkspaceUpdaterState {
       // in those case, we will get the time from the base revision
       const workspaceBaseRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
           RevisionAlias.BASE,
         )) as PlainObject<Revision>,
       );
       const baseReviewObj = getNullableFirstElement(
         (yield this.editorStore.sdlcServerClient.getReviews(
-          this.sdlcState.currentProjectId,
+          this.sdlcState.activeProject.projectId,
           ReviewState.COMMITTED,
           [workspaceBaseRevision.id],
           undefined,
@@ -334,7 +333,7 @@ export class WorkspaceUpdaterState {
         : undefined;
       this.committedReviewsBetweenWorkspaceBaseAndProjectLatest = (
         (yield this.editorStore.sdlcServerClient.getReviews(
-          this.sdlcState.currentProjectId,
+          this.sdlcState.activeProject.projectId,
           ReviewState.COMMITTED,
           undefined,
           baseReview
@@ -349,7 +348,7 @@ export class WorkspaceUpdaterState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

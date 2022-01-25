@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../../mixins' as *;
+@use 'mixins' as *;
 
 .class-form-editor {
   .panel {
@@ -93,6 +93,21 @@
     margin-right: 0.5rem;
     width: calc(100% - 36rem);
     min-width: calc(100% - 36rem);
+  }
+
+  &__input--with-validation {
+    @include flexVCenter;
+
+    flex: auto;
+    height: 2.8rem;
+    background: var(--color-dark-grey-300);
+    color: var(--color-light-grey-100);
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+  }
+
+  &__input {
+    margin-right: 0.5rem;
   }
 
   &__name::placeholder {

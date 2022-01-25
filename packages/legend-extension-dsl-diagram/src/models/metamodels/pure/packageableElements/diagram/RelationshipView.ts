@@ -15,8 +15,7 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, changeEntry } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, changeEntry, type Hashable } from '@finos/legend-shared';
 import { RelationShipEdgeView as RelationshipEdgeView } from './RelationshipEdgeView';
 import { Point } from './geometry/Point';
 import type { ClassView } from './ClassView';
@@ -33,20 +32,24 @@ export const manageInsidePointsDynamically = (
   from: ClassView,
   to: ClassView,
 ): Point[] => {
+  if (!path.length) {
+    return [];
+  }
+
   let start = 0;
-  let startPoint = path[start];
+  let startPoint = path[start] as Point;
 
   while (start < path.length - 1 && from.contains(startPoint.x, startPoint.y)) {
     start++;
-    startPoint = path[start];
+    startPoint = path[start] as Point;
   }
 
   let end = path.length - 1;
-  let endPoint = path[end];
+  let endPoint = path[end] as Point;
 
   while (end > 0 && to.contains(endPoint.x, endPoint.y)) {
     end--;
-    endPoint = path[end];
+    endPoint = path[end] as Point;
   }
 
   return path.slice(start - 1, end + 2);
@@ -123,25 +126,31 @@ export class RelationshipView implements Hashable {
     // if it does we will update the offset
     if (newPath[0] !== fullPath[0]) {
       const center = this.from.classView.value.center();
-      this.from.setOffsetX(newPath[0].x - center.x);
-      this.from.setOffsetY(newPath[0].y - center.y);
+      this.from.setOffsetX((newPath[0] as Point).x - center.x);
+      this.from.setOffsetY((newPath[0] as Point).y - center.y);
     }
 
     if (newPath[newPath.length - 1] !== fullPath[fullPath.length - 1]) {
       const center = this.to.classView.value.center();
-      this.to.setOffsetX(newPath[newPath.length - 1].x - center.x);
-      this.to.setOffsetY(newPath[newPath.length - 1].y - center.y);
+      this.to.setOffsetX((newPath[newPath.length - 1] as Point).x - center.x);
+      this.to.setOffsetY((newPath[newPath.length - 1] as Point).y - center.y);
     }
 
     // find the point which can be flattened due to its wide angle
     const result = [];
     for (let i = 0; i < newPath.length - 2; i++) {
-      const v1 = Vector.fromPoints(newPath[i + 1], newPath[i]).norm();
-      const v2 = Vector.fromPoints(newPath[i + 1], newPath[i + 2]).norm();
+      const v1 = Vector.fromPoints(
+        newPath[i + 1] as Point,
+        newPath[i] as Point,
+      ).norm();
+      const v2 = Vector.fromPoints(
+        newPath[i + 1] as Point,
+        newPath[i + 2] as Point,
+      ).norm();
       const dot = v1.dotProduct(v2);
       const angle = (Math.acos(dot) * 180) / Math.PI;
       if (Math.abs(angle - 180) > 5) {
-        result.push(newPath[i + 1]);
+        result.push(newPath[i + 1] as Point);
       }
     }
     // here's where we will modify the path, i.e. swallow inside points if we have to
@@ -173,8 +182,8 @@ export class RelationshipView implements Hashable {
     let point;
 
     for (let i = 0; i < fullPath.length - 1; i++) {
-      const a = fullPath[i];
-      const b = fullPath[i + 1];
+      const a = fullPath[i] as Point;
+      const b = fullPath[i + 1] as Point;
       const n = new Vector(a.x, a.y).normal(new Vector(b.x, b.y)).norm();
       const v = Vector.fromPoints(a, new Point(x, y));
 
@@ -191,7 +200,7 @@ export class RelationshipView implements Hashable {
       }
 
       if (i < fullPath.length - 2) {
-        newPath.push(fullPath[i + 1]);
+        newPath.push(fullPath[i + 1] as Point);
       }
     }
     if (point && allowChange) {

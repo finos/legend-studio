@@ -1,0 +1,27 @@
+###Pure
+Class my::models::Trade
+{
+  tradeId: Integer[1];
+  traderKerb: String[0..1];
+  quantity: Integer[1];
+}
+
+Class my::models::S_Trade
+{
+  s_tradeId: Integer[1];
+  s_traderDetails: String[1];
+  s_tradeDetails: String[1];
+}
+
+
+###Mapping
+Mapping my::mappings::InMemoryAndRelationalCrossStoreMapping1
+(
+  my::models::Trade[trade_set]: Pure
+  {
+    ~src my::models::S_Trade
+    tradeId: $src.s_tradeId,
+    +prodId: String[1]: $src.s_tradeDetails->split(':')->at(0),
+    quantity: $src.s_tradeDetails->split(':')->at(1)->parseInteger()
+  }
+)

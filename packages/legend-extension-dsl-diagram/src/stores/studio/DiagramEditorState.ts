@@ -20,15 +20,15 @@ import {
   guaranteeType,
   uuid,
 } from '@finos/legend-shared';
-import type { DiagramRenderer } from '../../DiagramRenderer';
-import { DIAGRAM_INTERACTION_MODE } from '../../DiagramRenderer';
-import { PanelDisplayState } from '@finos/legend-art';
-import type {
-  PackageableElement,
-  AbstractProperty,
-  PropertyReference,
-} from '@finos/legend-graph';
 import {
+  type DiagramRenderer,
+  DIAGRAM_INTERACTION_MODE,
+} from '../../DiagramRenderer';
+import { HotkeyConfiguration, PanelDisplayState } from '@finos/legend-art';
+import {
+  type PackageableElement,
+  type AbstractProperty,
+  type PropertyReference,
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -36,10 +36,9 @@ import {
   GenericType,
   PropertyExplicitReference,
 } from '@finos/legend-graph';
-import type { EditorStore } from '@finos/legend-studio';
 import {
+  type EditorStore,
   ClassEditorState,
-  EditorHotkey,
   ElementEditorState,
 } from '@finos/legend-studio';
 import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/ClassView';
@@ -180,6 +179,8 @@ export class DiagramEditorState extends ElementEditorState {
     | undefined;
   inlineClassCreatorState?: DiagramEditorInlineClassCreatorState | undefined;
   inlineClassRenamerState?: DiagramEditorInlineClassRenamerState | undefined;
+  showContextMenu = false;
+  contextMenuClassView?: ClassView | undefined;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -192,6 +193,8 @@ export class DiagramEditorState extends ElementEditorState {
       inlinePropertyEditorState: observable,
       inlineClassCreatorState: observable,
       inlineClassRenamerState: observable,
+      showContextMenu: observable,
+      contextMenuClassView: observable,
       renderer: computed,
       diagram: computed,
       isDiagramRendererInitialized: computed,
@@ -201,6 +204,8 @@ export class DiagramEditorState extends ElementEditorState {
       setInlinePropertyEditorState: action,
       setInlineClassCreatorState: action,
       setInlineClassRenamerState: action,
+      setShowContextMenu: action,
+      setContextMenuClassView: action,
       reprocess: action,
     });
   }
@@ -323,9 +328,21 @@ export class DiagramEditorState extends ElementEditorState {
     this.inlineClassCreatorState = val;
   }
 
+  setShowContextMenu(val: boolean): void {
+    this.showContextMenu = val;
+  }
+
+  setContextMenuClassView(val: ClassView | undefined): void {
+    this.contextMenuClassView = val;
+  }
+
+  closeContextMenu(): void {
+    this.setShowContextMenu(false);
+  }
+
   setupRenderer(): void {
     this.renderer.setIsReadOnly(this.isReadOnly);
-    this.renderer.editClassView = (classView: ClassView): void => {
+    const handleEditClassView = (classView: ClassView): void => {
       this.setSidePanelState(
         new DiagramEditorClassViewEditorSidePanelState(
           this.editorStore,
@@ -335,6 +352,8 @@ export class DiagramEditorState extends ElementEditorState {
       );
       this.sidePanelDisplayState.open();
     };
+    this.renderer.onClassViewDoubleClick = handleEditClassView;
+    this.renderer.handleEditClassView = handleEditClassView;
     const createNewClassView = (point: Point): void => {
       if (!this.isReadOnly) {
         this.setInlineClassCreatorState(
@@ -344,7 +363,14 @@ export class DiagramEditorState extends ElementEditorState {
     };
     this.renderer.onBackgroundDoubleClick = createNewClassView;
     this.renderer.onAddClassViewClick = createNewClassView;
-    this.renderer.editClassName = (
+    this.renderer.onClassViewRightClick = (
+      classView: ClassView,
+      point: Point,
+    ): void => {
+      this.setShowContextMenu(true);
+      this.setContextMenuClassView(classView);
+    };
+    this.renderer.onClassNameDoubleClick = (
       classView: ClassView,
       point: Point,
     ): void => {
@@ -354,7 +380,7 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
-    this.renderer.editProperty = (
+    const editProperty = (
       property: AbstractProperty,
       point: Point,
       propertyHolderView: PropertyHolderView | undefined,
@@ -370,7 +396,9 @@ export class DiagramEditorState extends ElementEditorState {
         );
       }
     };
-    this.renderer.addSimpleProperty = (classView: ClassView): void => {
+    this.renderer.onClassPropertyDoubleClick = editProperty;
+    this.renderer.handleEditProperty = editProperty;
+    this.renderer.handleAddSimpleProperty = (classView: ClassView): void => {
       if (!this.isReadOnly && !classView.class.value.isReadOnly) {
         const _class = classView.class.value;
         _class.addProperty(
@@ -414,7 +442,7 @@ export class DiagramEditorState extends ElementEditorState {
       DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY,
     ].forEach((key) => {
       this.editorStore.addHotKey(
-        new EditorHotkey(
+        new HotkeyConfiguration(
           key,
           [DIAGRAM_EDITOR_HOTKEY_MAP[key]],
           this.createDiagramHotKeyAction((event?: KeyboardEvent) => {

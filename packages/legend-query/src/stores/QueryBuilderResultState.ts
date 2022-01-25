@@ -15,19 +15,17 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type {
-  RawExecutionPlan,
-  ExecutionResult,
-  RawLambda,
-} from '@finos/legend-graph';
 import {
+  type RawExecutionPlan,
+  type ExecutionResult,
+  type RawLambda,
   GRAPH_MANAGER_LOG_EVENT,
   PureClientVersion,
 } from '@finos/legend-graph';
@@ -110,11 +108,7 @@ export class QueryBuilderResultState {
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.queryBuilderState.applicationStore.notifyError(
-        error,
-        undefined,
-        null,
-      );
+      this.queryBuilderState.applicationStore.notifyError(error);
     } finally {
       this.isExecutingQuery = false;
     }
@@ -143,6 +137,7 @@ export class QueryBuilderResultState {
       this.setExecutionPlan(result);
       this.isGeneratingPlan = false;
     } catch (error) {
+      assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
         error,

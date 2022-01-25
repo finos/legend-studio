@@ -16,13 +16,11 @@
 
 import { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-art';
 import {
-  TableJoinIcon,
+  type TreeNodeContainerProps,
+  type TreeData,
+  type TreeNodeData,
+  PURE_DatabaseTableJoinIcon,
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -37,8 +35,13 @@ import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
 } from '../../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper';
-import type { Type, Table, Join, View } from '@finos/legend-graph';
-import { Column } from '@finos/legend-graph';
+import {
+  type Type,
+  type Table,
+  type Join,
+  type View,
+  Column,
+} from '@finos/legend-graph';
 
 export const TABLE_ELEMENT_DND_TYPE = 'TABLE_ELEMENT_DND_TYPE';
 
@@ -125,14 +128,13 @@ const getColumnTreeNodeData = (
 // TODO: support more complex join feature (with operation, direction, etc.)
 const generateJoinTreeNodeId = (
   join: Join,
-  relation: Table | View,
   parentNode: TableOrViewTreeNodeData | undefined,
 ): string =>
   parentNode
     ? `${parentNode.id} ${JOIN_OPERATOR} ${JOIN_AT_SYMBOL}${join.name}`
-    : `${generateDatabasePointerText(
-        relation.schema.owner.path,
-      )}${JOIN_AT_SYMBOL}${join.name}`;
+    : `${generateDatabasePointerText(join.owner.path)}${JOIN_AT_SYMBOL}${
+        join.name
+      }`;
 
 const resolveJoinTargetRelation = (
   join: Join,
@@ -153,7 +155,7 @@ const resolveJoinTargetRelation = (
   );
   return potentialTargetRelations.size === 0
     ? sourceRelation
-    : Array.from(potentialTargetRelations.values())[0];
+    : (Array.from(potentialTargetRelations.values())[0] as Table | View);
 };
 
 const getJoinTreeNodeData = (
@@ -162,7 +164,7 @@ const getJoinTreeNodeData = (
   parentNode: TableOrViewTreeNodeData | undefined,
 ): TableOrViewTreeNodeData => {
   const joinNode = new JoinNodeData(
-    generateJoinTreeNodeId(join, relation, parentNode),
+    generateJoinTreeNodeId(join, parentNode),
     join.name,
     relation,
     join,
@@ -192,14 +194,7 @@ const getJoinTreeNodeData = (
     )
     .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
     .forEach((childJoin) => {
-      addUniqueEntry(
-        childrenIds,
-        generateJoinTreeNodeId(
-          childJoin,
-          resolveJoinTargetRelation(childJoin, relation),
-          joinNode,
-        ),
-      );
+      addUniqueEntry(childrenIds, generateJoinTreeNodeId(childJoin, joinNode));
     });
   joinNode.childrenIds = childrenIds;
   return joinNode;
@@ -263,7 +258,7 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
     node instanceof ColumnNodeData ? (
       renderColumnTypeIcon(node.column.type)
     ) : (
-      <TableJoinIcon />
+      <PURE_DatabaseTableJoinIcon />
     );
   const selectNode = (): void => onNodeSelect?.(node);
   const nodeExpandIcon = isExpandable ? (

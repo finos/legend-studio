@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  Log,
-  PlainObject,
-  ServerClientConfig,
-} from '@finos/legend-shared';
 import {
+  type Log,
+  type PlainObject,
+  type ServerClientConfig,
   LogEvent,
   losslessParse,
   assertErrorThrown,
@@ -29,11 +27,15 @@ import {
   NetworkClientError,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../graphManager/GraphManagerLogEvent';
-import type { ImportConfigurationDescription } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
-import { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
+import {
+  type ImportConfigurationDescription,
+  ImportMode,
+} from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { RawLambda } from '../../../../metamodels/pure/rawValueSpecification/RawLambda';
-import { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import type { GenerationConfigurationDescription } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
+import {
+  GenerationMode,
+  type GenerationConfigurationDescription,
+} from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
 import { TEMP__AbstractEngineConfig } from '../../../../../graphManager/action/TEMP__AbstractEngineConfig';
 import { V1_EngineServerClient } from './V1_EngineServerClient';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
@@ -66,6 +68,7 @@ import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/f
 import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin';
 import {
   V1_buildCompilationError,
+  V1_buildExecutionError,
   V1_buildGenerationConfigurationDescription,
   V1_buildImportConfigurationDescription,
   V1_buildParserError,
@@ -75,12 +78,18 @@ import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
 import { V1_ExecuteInput } from './execution/V1_ExecuteInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
-import type { V1_ExecutionResult } from './execution/V1_ExecutionResult';
-import { V1_serializeExecutionResult } from './execution/V1_ExecutionResult';
+import {
+  type V1_ExecutionResult,
+  V1_serializeExecutionResult,
+} from './execution/V1_ExecutionResult';
 import { V1_ServiceStorage } from './service/V1_ServiceStorage';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
+import { serialize } from 'serializr';
+import { V1_ExecutionError } from './execution/V1_ExecutionError';
+import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText';
+import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -396,17 +405,29 @@ export class V1_Engine {
     input: V1_ExecuteInput,
     useLosslessParse: boolean,
   ): Promise<V1_ExecutionResult> {
-    const executionResultInText = await (
-      (await this.engineServerClient.execute(
-        V1_ExecuteInput.serialization.toJson(input),
-        true,
-      )) as Response
-    ).text();
-    return V1_serializeExecutionResult(
-      useLosslessParse
-        ? losslessParse(executionResultInText)
-        : JSON.parse(executionResultInText),
-    );
+    try {
+      const executionResultInText = await (
+        (await this.engineServerClient.execute(
+          V1_ExecuteInput.serialization.toJson(input),
+          true,
+        )) as Response
+      ).text();
+      return V1_serializeExecutionResult(
+        useLosslessParse
+          ? losslessParse(executionResultInText)
+          : JSON.parse(executionResultInText),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (error instanceof NetworkClientError) {
+        throw V1_buildExecutionError(
+          V1_ExecutionError.serialization.fromJson(
+            error.payload as PlainObject<V1_ExecutionError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   generateExecutionPlan(
@@ -456,12 +477,19 @@ export class V1_Engine {
     generationMode: GenerationMode,
     model: V1_PureModelContextData,
   ): Promise<V1_GenerationOutput[]> {
+    // NOTE: here instead of sending PureModelContextData, we send PureModelContextText so
+    // engine can convert that back to PureModelContextData to obtain source information
+    // as some generator uses that info. Sending PureModelContextData with source information
+    // from the front end to engine would take up a lot of bandwidth.
+    const textModel = new V1_PureModelContextText();
+    textModel.serializer = model.serializer;
+    textModel.code = await this.pureModelContextDataToPureCode(model);
     return (
       await this.engineServerClient.generateFile(
         generationMode,
         type,
         V1_GenerateFileInput.serialization.toJson(
-          new V1_GenerateFileInput(model, configs),
+          new V1_GenerateFileInput(textModel, configs),
         ),
       )
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
@@ -558,15 +586,14 @@ export class V1_Engine {
 
   // ------------------------------------------- Query -------------------------------------------
 
-  async getQueries(options?: {
-    search?: string | undefined;
-    projectCoordinates?: string[] | undefined;
-    showCurrentUserQueriesOnly?: boolean | undefined;
-    limit?: number | undefined;
-  }): Promise<V1_LightQuery[]> {
-    return (await this.engineServerClient.getQueries(options)).map((query) =>
-      V1_LightQuery.serialization.fromJson(query),
-    );
+  async searchQueries(
+    searchSpecification: V1_QuerySearchSpecification,
+  ): Promise<V1_LightQuery[]> {
+    return (
+      await this.engineServerClient.searchQueries(
+        V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
+      )
+    ).map((query) => V1_LightQuery.serialization.fromJson(query));
   }
 
   async getQuery(queryId: string): Promise<V1_Query> {
@@ -577,13 +604,18 @@ export class V1_Engine {
 
   async createQuery(query: V1_Query): Promise<V1_Query> {
     return V1_Query.serialization.fromJson(
-      await this.engineServerClient.createQuery(query),
+      await this.engineServerClient.createQuery(
+        V1_Query.serialization.toJson(query),
+      ),
     );
   }
 
   async updateQuery(query: V1_Query): Promise<V1_Query> {
     return V1_Query.serialization.fromJson(
-      await this.engineServerClient.updateQuery(query.id, query),
+      await this.engineServerClient.updateQuery(
+        query.id,
+        V1_Query.serialization.toJson(query),
+      ),
     );
   }
 
@@ -598,7 +630,7 @@ export class V1_Engine {
   ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
       await this.engineServerClient.buildDatabase(
-        V1_DatabaseBuilderInput.serialization.toJson(input),
+        serialize(V1_DatabaseBuilderInput, input),
       ),
     );
   }

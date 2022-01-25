@@ -20,16 +20,14 @@ import {
   addUniqueEntry,
   uniq,
 } from '@finos/legend-shared';
-import type {
-  AbstractProperty,
-  GraphManagerState,
-  Mapping,
-  PropertyMapping,
-  PureModel,
-  SetImplementation,
-  Type,
-} from '@finos/legend-graph';
 import {
+  type AbstractProperty,
+  type GraphManagerState,
+  type Mapping,
+  type PropertyMapping,
+  type PureModel,
+  type SetImplementation,
+  type Type,
   getRootSetImplementation,
   TYPICAL_MULTIPLICITY_TYPE,
   OperationSetImplementation,
@@ -40,10 +38,22 @@ import {
   Property,
   VariableExpression,
   PureInstanceSetImplementation,
+  GenericType,
+  GenericTypeExplicitReference,
+  SimpleFunctionExpression,
+  InstanceValue,
+  extractElementNameFromPath,
+  matchFunctionName,
+  TYPE_CAST_TOKEN,
+  VARIABLE_REFERENCE_TOKEN,
+  ARROW_FUNCTION_TOKEN,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
-import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
+import {
+  DEFAULT_LAMBDA_VARIABLE_NAME,
+  SUPPORTED_FUNCTIONS,
+} from '../QueryBuilder_Const';
 import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
@@ -63,6 +73,28 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   label: string;
   dndText: string;
   childrenIds: string[] = [];
+  isPartOfDerivedPropertyBranch: boolean;
+  type: Type;
+  mappingData: QueryBuilderPropertyMappingData;
+
+  constructor(
+    id: string,
+    label: string,
+    dndText: string,
+    isPartOfDerivedPropertyBranch: boolean,
+    type: Type,
+    mappingData: QueryBuilderPropertyMappingData,
+  ) {
+    this.id = id;
+    this.label = label;
+    this.dndText = dndText;
+    this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
+    this.type = type;
+    this.mappingData = mappingData;
+  }
+}
+
+export type QueryBuilderPropertyMappingData = {
   mapped: boolean;
   /**
    * This flag is used to skip mappedness checking for the whole branch (i.e. every children of
@@ -71,30 +103,8 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
    * e.g. derived properties, operation class mappings, etc.
    */
   skipMappingCheck: boolean;
-  isPartOfDerivedPropertyBranch: boolean;
-  type: Type;
-  setImpl?: SetImplementation | undefined;
-
-  constructor(
-    id: string,
-    label: string,
-    dndText: string,
-    mapped: boolean,
-    skipMappingCheck: boolean,
-    isPartOfDerivedPropertyBranch: boolean,
-    type: Type,
-    setImpl: SetImplementation | undefined,
-  ) {
-    this.id = id;
-    this.label = label;
-    this.dndText = dndText;
-    this.mapped = mapped;
-    this.skipMappingCheck = skipMappingCheck;
-    this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
-    this.type = type;
-    this.setImpl = setImpl;
-  }
-}
+  targetSetImpl?: SetImplementation | undefined;
+};
 
 export class QueryBuilderExplorerTreeRootNodeData extends QueryBuilderExplorerTreeNodeData {}
 
@@ -108,24 +118,45 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     dndText: string,
     property: AbstractProperty,
     parentId: string,
-    mapped: boolean,
-    skipMappingCheck: boolean,
     isPartOfDerivedPropertyBranch: boolean,
-    setImpl: SetImplementation | undefined,
+    mappingData: QueryBuilderPropertyMappingData,
   ) {
     super(
       id,
       label,
       dndText,
-      mapped,
-      skipMappingCheck,
       isPartOfDerivedPropertyBranch,
       property.genericType.value.rawType,
-      setImpl,
+      mappingData,
     );
     this.property = property;
     this.parentId = parentId;
-    this.mapped = mapped;
+  }
+}
+
+export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplorerTreeNodeData {
+  subclass: Class;
+  parentId: string;
+
+  constructor(
+    id: string,
+    label: string,
+    dndText: string,
+    subclass: Class,
+    parentId: string,
+    isPartOfDerivedPropertyBranch: boolean,
+    mappingData: QueryBuilderPropertyMappingData,
+  ) {
+    super(
+      id,
+      label,
+      dndText,
+      isPartOfDerivedPropertyBranch,
+      subclass,
+      mappingData,
+    );
+    this.subclass = subclass;
+    this.parentId = parentId;
   }
 }
 
@@ -146,23 +177,57 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     multiplicityOne,
   );
   propertyExpression.func = guaranteeNonNullable(node.property);
-  let currentExpression = propertyExpression;
+  let currentExpression: AbstractPropertyExpression | SimpleFunctionExpression =
+    propertyExpression;
   let parentNode = treeData.nodes.get(node.parentId);
-  while (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData) {
-    const parentPropertyExpression = new AbstractPropertyExpression(
-      '',
-      multiplicityOne,
-    );
-    parentPropertyExpression.func = guaranteeNonNullable(parentNode.property);
+  let currentNode: QueryBuilderExplorerTreeNodeData = node;
+  while (
+    parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+    parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+  ) {
+    let parentPropertyExpression;
+    if (parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
+      parentPropertyExpression = new SimpleFunctionExpression(
+        extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+        multiplicityOne,
+      );
+    } else {
+      parentPropertyExpression = new AbstractPropertyExpression(
+        '',
+        multiplicityOne,
+      );
+      parentPropertyExpression.func = guaranteeNonNullable(parentNode.property);
+    }
     currentExpression.parametersValues.push(parentPropertyExpression);
+    if (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      const subclass = new InstanceValue(
+        multiplicityOne,
+        GenericTypeExplicitReference.create(new GenericType(currentNode.type)),
+      );
+      currentExpression.parametersValues.push(subclass);
+    }
     currentExpression = parentPropertyExpression;
+    currentNode = parentNode;
     parentNode = treeData.nodes.get(parentNode.parentId);
   }
   currentExpression.parametersValues.push(projectionColumnLambdaVariable);
+  if (currentExpression instanceof SimpleFunctionExpression) {
+    const subclass = new InstanceValue(
+      multiplicityOne,
+      GenericTypeExplicitReference.create(new GenericType(currentNode.type)),
+    );
+    currentExpression.parametersValues.push(subclass);
+  }
   return propertyExpression;
 };
 
-const resolveSetImplementationForPropertyMapping = (
+const resolveTargetSetImplementationForPropertyMapping = (
   propertyMapping: PropertyMapping,
 ): SetImplementation | undefined => {
   if (propertyMapping.isEmbedded) {
@@ -213,32 +278,28 @@ const isAutoMappedProperty = (
   return false;
 };
 
-const getPropertyMappedData = (
+export const getPropertyNodeMappingData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
-  parentNode: QueryBuilderExplorerTreeNodeData,
-): {
-  mapped: boolean;
-  skipMappingCheck: boolean;
-  setImpl?: SetImplementation | undefined;
-} => {
-  const parentSetImpl = parentNode.setImpl;
+  parentMappingData: QueryBuilderPropertyMappingData,
+): QueryBuilderPropertyMappingData => {
+  const parentTargetSetImpl = parentMappingData.targetSetImpl;
   // For now, derived properties will be considered mapped if its parent class is mapped.
   // NOTE: we don't want to do complex analytics such as to drill down into the body
   // of the derived properties to see if each properties being used are mapped to determine
   // if the dervied property itself is considered mapped.
   if (property instanceof DerivedProperty) {
     return {
-      mapped: parentNode.mapped,
+      mapped: parentMappingData.mapped,
       skipMappingCheck: true,
     };
   } else if (property instanceof Property) {
-    if (parentNode.skipMappingCheck) {
+    if (parentMappingData.skipMappingCheck) {
       return { mapped: true, skipMappingCheck: true };
-    } else if (parentSetImpl) {
+    } else if (parentTargetSetImpl) {
       const propertyMappings = resolvePropertyMappingsForSetImpl(
         graphManagerState,
-        parentSetImpl,
+        parentTargetSetImpl,
       );
       const mappedProperties = propertyMappings
         .filter((p) => !p.isStub)
@@ -251,23 +312,24 @@ const getPropertyMappedData = (
             (p) => p.property.value === property,
           );
           if (propertyMapping) {
-            const setImpl =
-              resolveSetImplementationForPropertyMapping(propertyMapping);
+            const targetSetImpl =
+              resolveTargetSetImplementationForPropertyMapping(propertyMapping);
             return {
               mapped: true,
               // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
               // help identifying the mapped properties. However, we would not do that here
               // as opertion mapping can support more complicated branching logic (right now we just assume
               // it's always simple union), that Studio should not try to analyze.
-              skipMappingCheck: setImpl instanceof OperationSetImplementation,
-              setImpl,
+              skipMappingCheck:
+                targetSetImpl instanceof OperationSetImplementation,
+              targetSetImpl,
             };
           }
         }
         return { mapped: true, skipMappingCheck: false };
       }
       // check if property is auto mapped
-      if (isAutoMappedProperty(property, parentSetImpl)) {
+      if (isAutoMappedProperty(property, parentTargetSetImpl)) {
         return { mapped: true, skipMappingCheck: false };
       }
     }
@@ -275,16 +337,50 @@ const getPropertyMappedData = (
   return { mapped: false, skipMappingCheck: false };
 };
 
+export const getRootMappingData = (
+  mapping: Mapping,
+  _class: Class,
+): QueryBuilderPropertyMappingData => {
+  const rootSetImpl = getRootSetImplementation(mapping, _class);
+  return {
+    mapped: true,
+    skipMappingCheck: rootSetImpl instanceof OperationSetImplementation,
+    targetSetImpl: rootSetImpl,
+  };
+};
+
+const generateExplorerTreeClassNodeChildrenIDs = (
+  node: QueryBuilderExplorerTreeNodeData,
+): string[] => {
+  const currentClass = node.type as Class;
+  const idsFromProperties = (
+    node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+      ? currentClass.getAllOwnedProperties()
+      : currentClass
+          .getAllProperties()
+          .concat(currentClass.getAllDerivedProperties())
+  ).map((p) => `${node.id}.${p.name}`);
+  const idsFromsubclasses = currentClass.subclasses.map(
+    (subclass) => `${node.id}${TYPE_CAST_TOKEN}${subclass.path}`,
+  );
+  return idsFromProperties.concat(idsFromsubclasses);
+};
+
 export const getQueryBuilderPropertyNodeData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
 ): QueryBuilderExplorerTreePropertyNodeData => {
-  const mappingData = getPropertyMappedData(
+  const mappingNodeData = getPropertyNodeMappingData(
     graphManagerState,
     property,
-    parentNode,
+    parentNode.mappingData,
   );
+  const isPartOfDerivedPropertyBranch =
+    property instanceof DerivedProperty ||
+    parentNode.isPartOfDerivedPropertyBranch ||
+    (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+      parentNode.property instanceof DerivedProperty);
   const propertyNode = new QueryBuilderExplorerTreePropertyNodeData(
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
@@ -294,26 +390,53 @@ export const getQueryBuilderPropertyNodeData = (
     property.name,
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
-        ? '$x'
+        ? `${VARIABLE_REFERENCE_TOKEN}x`
         : parentNode.dndText
     }.${property.name}`,
     property,
     parentNode.id,
-    mappingData.mapped,
-    property instanceof DerivedProperty ||
-      parentNode.isPartOfDerivedPropertyBranch ||
-      (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
-        parentNode.property instanceof DerivedProperty),
-    mappingData.skipMappingCheck,
-    mappingData.setImpl,
+    isPartOfDerivedPropertyBranch,
+    mappingNodeData,
   );
   if (propertyNode.type instanceof Class) {
-    propertyNode.childrenIds = propertyNode.type
-      .getAllProperties()
-      .concat(propertyNode.type.getAllDerivedProperties())
-      .map((p) => `${propertyNode.id}.${p.name}`);
+    propertyNode.childrenIds =
+      generateExplorerTreeClassNodeChildrenIDs(propertyNode);
   }
   return propertyNode;
+};
+
+export const getQueryBuilderSubTypeNodeData = (
+  subclass: Class,
+  parentNode: QueryBuilderExplorerTreeNodeData,
+): QueryBuilderExplorerTreeSubTypeNodeData => {
+  const subTypeNode = new QueryBuilderExplorerTreeSubTypeNodeData(
+    `${
+      parentNode instanceof QueryBuilderExplorerTreeRootNodeData
+        ? `${TYPE_CAST_TOKEN}${subclass.path}`
+        : `${parentNode.id}${TYPE_CAST_TOKEN}${subclass.path}`
+    }`,
+    subclass.name,
+    `${
+      parentNode instanceof QueryBuilderExplorerTreeRootNodeData
+        ? `${VARIABLE_REFERENCE_TOKEN}${DEFAULT_LAMBDA_VARIABLE_NAME}${ARROW_FUNCTION_TOKEN}${extractElementNameFromPath(
+            SUPPORTED_FUNCTIONS.SUBTYPE,
+          )}(${TYPE_CAST_TOKEN}${subclass.path})`
+        : `${
+            parentNode.dndText
+          }${ARROW_FUNCTION_TOKEN}${extractElementNameFromPath(
+            SUPPORTED_FUNCTIONS.SUBTYPE,
+          )}(${TYPE_CAST_TOKEN}${subclass.path})`
+    }`,
+    subclass,
+    parentNode.id,
+    false,
+    //Display subclasses, anyway.
+    //TODO: Enchance mapping algo to take into account this
+    { mapped: true, skipMappingCheck: true },
+  );
+  subTypeNode.childrenIds =
+    generateExplorerTreeClassNodeChildrenIDs(subTypeNode);
+  return subTypeNode;
 };
 
 const getQueryBuilderTreeData = (
@@ -323,17 +446,15 @@ const getQueryBuilderTreeData = (
 ): TreeData<QueryBuilderExplorerTreeNodeData> => {
   const rootIds = [];
   const nodes = new Map<string, QueryBuilderExplorerTreeNodeData>();
-  const rootSetImpl = getRootSetImplementation(mapping, rootClass);
+  const mappingData = getRootMappingData(mapping, rootClass);
   const treeRootNode = new QueryBuilderExplorerTreeRootNodeData(
     '@dummy_rootNode',
     rootClass.name,
     rootClass.path,
-    true,
-    // NOTE: we will not try to analyze property mappedness for operation class mapping
-    rootSetImpl instanceof OperationSetImplementation,
+
     false,
     rootClass,
-    rootSetImpl,
+    mappingData,
   );
   treeRootNode.isOpen = true;
   nodes.set(treeRootNode.id, treeRootNode);
@@ -356,6 +477,14 @@ const getQueryBuilderTreeData = (
       addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
       nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
     });
+  rootClass.subclasses.forEach((subclass) => {
+    const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
+      subclass,
+      treeRootNode,
+    );
+    addUniqueEntry(treeRootNode.childrenIds, subTypeTreeNodeData.id);
+    nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
+  });
   return { rootIds, nodes };
 };
 

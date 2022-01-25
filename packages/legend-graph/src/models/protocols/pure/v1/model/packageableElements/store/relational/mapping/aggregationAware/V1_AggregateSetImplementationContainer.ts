@@ -16,8 +16,7 @@
 
 import type { V1_ClassMapping } from '../../../../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_AggregateSpecification } from './V1_AggregateSpecification';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst';
 
 export class V1_AggregateSetImplementationContainer implements Hashable {

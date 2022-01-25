@@ -20,21 +20,21 @@ import {
   assertType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type {
-  SetImplementationVisitor,
-  SetImplementation,
-  OperationSetImplementation,
-  PureInstanceSetImplementation,
-  FlatDataInstanceSetImplementation,
-  EnumerationMapping,
-  Property,
-  AbstractFlatDataPropertyMapping,
-  RelationalInstanceSetImplementation,
-  RootRelationalInstanceSetImplementation,
-  AggregationAwareSetImplementation,
-  PropertyMapping,
-} from '@finos/legend-graph';
 import {
+  type SetImplementationVisitor,
+  type SetImplementation,
+  type OperationSetImplementation,
+  type PureInstanceSetImplementation,
+  type FlatDataInstanceSetImplementation,
+  type EnumerationMapping,
+  type Property,
+  type AbstractFlatDataPropertyMapping,
+  type RelationalInstanceSetImplementation,
+  type RootRelationalInstanceSetImplementation,
+  type AggregationAwareSetImplementation,
+  type PropertyMapping,
+  type InstanceSetImplementation,
+  getAllClassMappings,
   getDecoratedSetImplementationPropertyMappings,
   getLeafSetImplementations,
   PurePropertyMapping,
@@ -54,6 +54,8 @@ import {
   EmbeddedRelationalInstanceSetImplementation,
   getEnumerationMappingsByEnumeration,
 } from '@finos/legend-graph';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
+import type { EditorStore } from '../../../EditorStore';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -65,6 +67,11 @@ import {
  * changes in the graph.
  */
 export class MappingElementDecorator implements SetImplementationVisitor<void> {
+  editorStore: EditorStore;
+
+  constructor(editorStore: EditorStore) {
+    this.editorStore = editorStore;
+  }
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     const enumValueMappingsToAdd: EnumValueMapping[] = [];
     enumerationMapping.enumeration.value.values.forEach((enumValue) => {
@@ -92,7 +99,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   ): void {
     setImplementation.setParameters(
       setImplementation.parameters.filter((param) =>
-        setImplementation.parent.allClassMappings.find(
+        getAllClassMappings(setImplementation.parent).find(
           (setImp) => setImp === param.setImplementation.value,
         ),
       ),
@@ -124,7 +131,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
         );
         return existingPropertyMappings.length
-          ? [existingPropertyMappings[0]]
+          ? [existingPropertyMappings[0] as PurePropertyMapping]
           : [
               new PurePropertyMapping(
                 setImplementation,
@@ -141,7 +148,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           'Only one property mapping should exist per enumeration type property',
         );
         const enumerationPropertyMapping = existingPropertyMappings.length
-          ? [existingPropertyMappings[0]]
+          ? [existingPropertyMappings[0] as PurePropertyMapping]
           : [
               new PurePropertyMapping(
                 setImplementation,
@@ -153,9 +160,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation.parent,
-          enumerationPropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
+          (
+            enumerationPropertyMapping[0] as PurePropertyMapping
+          ).property.value.genericType.value.getRawType(Enumeration),
         );
         enumerationPropertyMapping.forEach((epm) => {
           // If there are no enumeration mappings, delete the transformer of the property mapping
@@ -249,7 +256,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
         );
         return existingPropertyMappings.length
-          ? [existingPropertyMappings[0]]
+          ? [existingPropertyMappings[0] as FlatDataPropertyMapping]
           : [
               new FlatDataPropertyMapping(
                 setImplementation,
@@ -266,7 +273,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           'Only one property mapping should exist per enumeration type property',
         );
         const ePropertyMapping = existingPropertyMappings.length
-          ? [existingPropertyMappings[0]]
+          ? [existingPropertyMappings[0] as FlatDataPropertyMapping]
           : [
               new FlatDataPropertyMapping(
                 setImplementation,
@@ -278,9 +285,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation.parent,
-          ePropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
+          (
+            ePropertyMapping[0] as FlatDataPropertyMapping
+          ).property.value.genericType.value.getRawType(Enumeration),
         );
         ePropertyMapping.forEach((epm) => {
           assertType(
@@ -358,7 +365,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         );
         if (existingPropertyMappings.length) {
           // TODO?: do we want to check the type of the property mapping here?
-          return [existingPropertyMappings[0]];
+          return [existingPropertyMappings[0] as PropertyMapping];
         }
         const newPropertyMapping = new RelationalPropertyMapping(
           setImplementation,
@@ -378,7 +385,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         let ePropertyMapping: PropertyMapping[] = [];
         if (existingPropertyMappings.length) {
           // TODO?: do we want to check the type of the property mapping here?
-          ePropertyMapping = [existingPropertyMappings[0]];
+          ePropertyMapping = [existingPropertyMappings[0] as PropertyMapping];
         } else {
           const newPropertyMapping = new RelationalPropertyMapping(
             setImplementation,
@@ -392,9 +399,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation.parent,
-          ePropertyMapping[0].property.value.genericType.value.getRawType(
-            Enumeration,
-          ),
+          (
+            ePropertyMapping[0] as PropertyMapping
+          ).property.value.genericType.value.getRawType(Enumeration),
         );
         ePropertyMapping.forEach((epm) => {
           assertType(
@@ -476,7 +483,21 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new UnsupportedOperationError();
+    return;
+  }
+
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+    const extraSetImplementationDecorators = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraSetImplementationDecorators?.() ?? [],
+      );
+    for (const decorator of extraSetImplementationDecorators) {
+      decorator(setImplementation);
+    }
   }
 }
 
@@ -487,6 +508,11 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
 export class MappingElementDecorationCleaner
   implements SetImplementationVisitor<void>
 {
+  editorStore: EditorStore;
+
+  constructor(editorStore: EditorStore) {
+    this.editorStore = editorStore;
+  }
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     // Remove the enum value mapping if all of its source values are empty
     const nonEmptyEnumValueMappings =
@@ -565,6 +591,21 @@ export class MappingElementDecorationCleaner
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
   ): void {
-    throw new UnsupportedOperationError();
+    return;
+  }
+
+  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+    const extraSetImplementationDecorationCleaners =
+      this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraSetImplementationDecorationCleaners?.() ?? [],
+        );
+    for (const decorationCleaner of extraSetImplementationDecorationCleaners) {
+      decorationCleaner(setImplementation);
+    }
   }
 }

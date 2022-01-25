@@ -22,6 +22,9 @@ yarn-error.log*
 /packages/*/build/
 /packages/*/dist/
 /packages/*/lib/
+/fixtures/*/build/
+/fixtures/*/dist/
+/fixtures/*/lib/
 
 # Dependencies
 **/node_modules
@@ -32,6 +35,7 @@ package-lock.json
 # Development
 /temp
 /packages/*/dev/
+/fixtures/*/dev/
 
 # Yarn
 # See https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored

@@ -18,11 +18,6 @@ import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import {
-  FaCog,
-  FaExclamationTriangle,
-  FaLongArrowAltRight,
-} from 'react-icons/fa';
-import {
   SERVICE_EXECUTION_TAB,
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
@@ -32,13 +27,12 @@ import {
 } from '@finos/legend-shared';
 import type { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
-import { VscError } from 'react-icons/vsc';
 import { useDrop } from 'react-dnd';
-import type {
-  ElementDragSource,
-  UMLEditorElementDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
 import {
   clsx,
@@ -49,16 +43,21 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  MappingIcon,
-  RuntimeIcon,
+  PURE_MappingIcon,
+  PURE_RuntimeIcon,
+  ErrorIcon,
+  CogIcon,
+  LongArrowRightIcon,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
 import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { KeyedExecutionParameter, Runtime } from '@finos/legend-graph';
 import {
+  type KeyedExecutionParameter,
+  type Runtime,
   PureSingleExecution,
   PureMultiExecution,
   Mapping,
@@ -91,7 +90,7 @@ const PureSingleExecutionConfigurationEditor = observer(
         <div className="service-execution-editor__configuration__mapping-option--empty__label">
           (none)
         </div>
-        <VscError />
+        <ErrorIcon />
       </div>
     );
     const selectedMappingOption = {
@@ -115,7 +114,7 @@ const PureSingleExecutionConfigurationEditor = observer(
     const isRuntimePointer = runtime instanceof RuntimePointer;
     const customRuntimeLabel = (
       <div className="service-execution-editor__configuration__runtime-option--custom">
-        <FaCog />
+        <CogIcon />
         <div className="service-execution-editor__configuration__runtime-option--custom__label">
           (custom)
         </div>
@@ -168,7 +167,7 @@ const PureSingleExecutionConfigurationEditor = observer(
                 className="service-execution-editor__configuration__runtime-option__pointer__warning"
                 title={runtimePointerWarning}
               >
-                <FaExclamationTriangle />
+                <ExclamationTriangleIcon />
               </div>
             )}
           </div>
@@ -257,7 +256,7 @@ const PureSingleExecutionConfigurationEditor = observer(
         <div className="service-execution-editor__configuration__items">
           <div className="service-execution-editor__configuration__item">
             <div className="btn--sm service-execution-editor__configuration__item__label">
-              <MappingIcon />
+              <PURE_MappingIcon />
             </div>
             <CustomSelectorInput
               className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
@@ -274,12 +273,12 @@ const PureSingleExecutionConfigurationEditor = observer(
               tabIndex={-1}
               title={'See mapping'}
             >
-              <FaLongArrowAltRight />
+              <LongArrowRightIcon />
             </button>
           </div>
           <div className="service-execution-editor__configuration__item">
             <div className="btn--sm service-execution-editor__configuration__item__label">
-              <RuntimeIcon />
+              <PURE_RuntimeIcon />
             </div>
             <CustomSelectorInput
               className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
@@ -297,7 +296,7 @@ const PureSingleExecutionConfigurationEditor = observer(
                 tabIndex={-1}
                 title={isReadOnly ? 'See runtime' : 'Configure custom runtime'}
               >
-                <FaCog />
+                <CogIcon />
               </button>
             )}
             {isRuntimePointer && (
@@ -307,7 +306,7 @@ const PureSingleExecutionConfigurationEditor = observer(
                 tabIndex={-1}
                 title={'See runtime'}
               >
-                <FaLongArrowAltRight />
+                <LongArrowRightIcon />
               </button>
             )}
             <EmbeddedRuntimeEditor

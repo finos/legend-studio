@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-import type { AbstractPluginManager } from '../application/AbstractPluginManager';
-import { AbstractPlugin } from '../application/AbstractPluginManager';
+import {
+  AbstractPlugin,
+  type AbstractPluginManager,
+  type PluginConsumer,
+} from '../application/AbstractPluginManager';
 
 export interface TraceData {
   spanName: string;
@@ -42,6 +45,10 @@ export interface TracerServicePluginInfo {
 }
 
 export abstract class TracerServicePlugin<T> extends AbstractPlugin {
+  install(pluginManager: TracerServicePluginManager): void {
+    pluginManager.registerTracerServicePlugin(this);
+  }
+
   abstract bootstrap(clientSpan: T | undefined, response: Response): void;
   abstract createClientSpan(traceData: TraceData): T;
   abstract createServerSpan(
@@ -95,8 +102,8 @@ export class Trace {
   }
 }
 
-export class TracerService {
-  plugins: TracerServicePlugin<unknown>[] = [];
+export class TracerService implements PluginConsumer {
+  private plugins: TracerServicePlugin<unknown>[] = [];
 
   registerPlugins(plugins: TracerServicePlugin<unknown>[]): void {
     this.plugins = plugins;

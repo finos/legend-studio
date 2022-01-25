@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-export const SKIP_LOGGING_INFO = Symbol('SKIP_LOGGING_INFO');
+import {
+  AbstractPlugin,
+  type AbstractPluginManager,
+  type PluginConsumer,
+} from '../application/AbstractPluginManager';
 
 // We use numeric enum here for because we want to do comparison
 // In order to retrieve the name of the enum we can do reverse mapping, for example: LogLevel[LogLevel.INFO] -> INFO
@@ -44,11 +48,20 @@ export class LogEvent {
   }
 }
 
-export abstract class Logger {
+export interface LoggerPluginManager extends AbstractPluginManager {
+  getLoggerPlugins(): LoggerPlugin[];
+  registerLoggerPlugin(plugin: LoggerPlugin): void;
+}
+
+export abstract class LoggerPlugin extends AbstractPlugin {
   private level: LOG_LEVEL = LOG_LEVEL.DEBUG;
 
   setLevel(level: LOG_LEVEL): void {
     this.level = level;
+  }
+
+  install(pluginManager: LoggerPluginManager): void {
+    pluginManager.registerLoggerPlugin(this);
   }
 
   protected abstract _debug(event: LogEvent, ...data: unknown[]): void;
@@ -73,11 +86,11 @@ export abstract class Logger {
   }
 }
 
-export class Log {
-  private loggers: Logger[] = [];
+export class Log implements PluginConsumer {
+  private loggers: LoggerPlugin[] = [];
 
-  registerLogger(logger: Logger): void {
-    this.loggers.push(logger);
+  registerPlugins(loggerPlugins: LoggerPlugin[]): void {
+    this.loggers = loggerPlugins;
   }
 
   debug(event: LogEvent, ...data: unknown[]): void {

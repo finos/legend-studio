@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+import { createModelSchema, optional, primitive } from 'serializr';
+import { NullphobicSerializationFactory } from '@finos/legend-shared';
 
 export enum WorkspaceAccessType {
   WORKSPACE = 'WORKSPACE',
@@ -27,18 +27,22 @@ export enum WorkspaceType {
   USER = 'USER',
   GROUP = 'GROUP',
 }
-
 export class Workspace {
   projectId!: string;
   workspaceId!: string;
-  userId!: string;
-  type = WorkspaceAccessType.WORKSPACE;
+  userId?: string | undefined;
 
-  static readonly serialization = new SerializationFactory(
+  accessType = WorkspaceAccessType.WORKSPACE;
+
+  static readonly serialization = new NullphobicSerializationFactory(
     createModelSchema(Workspace, {
       projectId: primitive(),
-      userId: primitive(),
+      userId: optional(primitive()),
       workspaceId: primitive(),
     }),
   );
+
+  get workspaceType(): WorkspaceType {
+    return this.userId ? WorkspaceType.USER : WorkspaceType.GROUP;
+  }
 }

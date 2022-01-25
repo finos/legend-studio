@@ -20,8 +20,11 @@ import {
   ParserError,
   RawLambda,
 } from '@finos/legend-graph';
-import type { GeneratorFn } from '@finos/legend-shared';
-import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
+import {
+  type GeneratorFn,
+  assertErrorThrown,
+  LogEvent,
+} from '@finos/legend-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';

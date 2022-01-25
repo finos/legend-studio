@@ -20,7 +20,11 @@ import {
   getTextContent,
   getEditorLanguageFromFormat,
 } from '../../../stores/editor-state/FileGenerationViewerState';
-import { FaLock, FaFire, FaArrowCircleRight } from 'react-icons/fa';
+import {
+  LockIcon,
+  FireIcon,
+  StickArrowCircleRightIcon,
+} from '@finos/legend-art';
 import type { FileGenerationSpecification } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
@@ -46,7 +50,7 @@ export const FileGenerationViewer = observer(() => {
           <div className="panel__header__title">
             {
               <div className="uml-element-editor__header__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             }
             <div className="panel__header__title__label">generated-file</div>
@@ -71,13 +75,13 @@ export const FileGenerationViewer = observer(() => {
                   title={`Visit generation parent '${fileGeneration.path}'`}
                 >
                   <div className="uml-element-editor__header__generation-origin__label">
-                    <FaFire />
+                    <FireIcon />
                   </div>
                   <div className="uml-element-editor__header__generation-origin__parent-name">
                     {fileGeneration.name}
                   </div>
                   <div className="uml-element-editor__header__generation-origin__visit-btn">
-                    <FaArrowCircleRight />
+                    <StickArrowCircleRightIcon />
                   </div>
                 </button>
               )}

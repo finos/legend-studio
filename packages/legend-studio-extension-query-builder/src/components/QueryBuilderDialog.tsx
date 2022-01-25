@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
-import Dialog from '@material-ui/core/Dialog';
+import { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  FaTimes,
-  FaRegWindowMaximize,
-  FaRegWindowRestore,
-} from 'react-icons/fa';
-import { clsx } from '@finos/legend-art';
+  clsx,
+  Dialog,
+  TimesIcon,
+  WindowMaximizeIcon,
+  EmptyWindowRestoreIcon,
+} from '@finos/legend-art';
 import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { noop } from '@finos/legend-shared';
@@ -43,21 +43,24 @@ export const QueryBuilderDialog = observer(() => {
   const [isMaximized, setIsMaximized] = useState(false);
   const toggleMaximize = (): void => setIsMaximized(!isMaximized);
   const closeQueryBuilder = (): void => {
-    flowResult(queryBuilderExtensionState.setOpenQueryBuilder(false)).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
+    flowResult(
+      queryBuilderExtensionState.setEmbeddedQueryBuilderMode(undefined),
+    ).catch(applicationStore.alertIllegalUnhandledError);
     queryBuilderExtensionState.reset();
   };
 
   return (
     <Dialog
-      open={Boolean(queryBuilderExtensionState.openQueryBuilder)}
+      open={Boolean(queryBuilderExtensionState.mode)}
       onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
       classes={{
         root: 'editor-modal__root-container',
         container: 'editor-modal__container',
         paper:
           'editor-modal__content query-builder__dialog__container__content',
+      }}
+      TransitionProps={{
+        appear: false, // disable transition
       }}
     >
       <div
@@ -68,19 +71,26 @@ export const QueryBuilderDialog = observer(() => {
       >
         <div className="query-builder__dialog__header">
           <div className="query-builder__dialog__header__actions">
+            {queryBuilderExtensionState.mode?.actionConfigs.map((config) => (
+              <Fragment key={config.key}>{config.renderer()}</Fragment>
+            ))}
             <button
               className="query-builder__dialog__header__action"
               tabIndex={-1}
               onClick={toggleMaximize}
             >
-              {isMaximized ? <FaRegWindowRestore /> : <FaRegWindowMaximize />}
+              {isMaximized ? (
+                <EmptyWindowRestoreIcon />
+              ) : (
+                <WindowMaximizeIcon />
+              )}
             </button>
             <button
               className="query-builder__dialog__header__action"
               tabIndex={-1}
               onClick={closeQueryBuilder}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           </div>
         </div>

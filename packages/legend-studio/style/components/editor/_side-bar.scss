@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-@use '../../mixins' as *;
+@use 'mixins' as *;
 
 @forward 'side-bar/explorer';
 @forward 'side-bar/workspace-review';
-@forward 'side-bar/workspace-builds';
+@forward 'side-bar/workspace-workflows';
 @forward 'side-bar/workspace-updater';
 @forward 'side-bar/local-changes';
+@forward 'side-bar/patch-loader';
 @forward 'side-bar/diff-panel';
 @forward 'side-bar/conflict-resolution';
 @forward 'side-bar/project-overview';
@@ -82,11 +83,6 @@
 
   &__view {
     height: 100%;
-    display: none;
-  }
-
-  &__view--active {
-    display: block;
   }
 
   &__panel {

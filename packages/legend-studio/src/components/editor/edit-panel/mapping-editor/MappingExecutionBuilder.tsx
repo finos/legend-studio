@@ -16,8 +16,9 @@
 
 import { Fragment, useState, useRef, useCallback } from 'react';
 import { flowResult } from 'mobx';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  Dialog,
+  type SelectComponent,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
@@ -25,28 +26,34 @@ import {
   CustomSelectorInput,
   BlankPanelPlaceholder,
   PanelLoadingIndicator,
-  PencilIcon,
   TimesIcon,
   PlayIcon,
   FlaskIcon,
   ResizablePanelSplitterLine,
   compareLabelFn,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
+  RefreshIcon,
+  PaperScrollIcon,
+  RobotIcon,
 } from '@finos/legend-art';
-import { FaScroll, FaRobot } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import type { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type MappingEditorState,
   getMappingElementSource,
   getMappingElementTarget,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useDrop } from 'react-dnd';
-import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
 import { NewServiceModal } from '../service-editor/NewServiceModal';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import Dialog from '@material-ui/core/Dialog';
-import { guaranteeType, uniq, isNonNullable } from '@finos/legend-shared';
-import type { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import {
+  type MappingElementDragSource,
+  CORE_DND_TYPE,
+} from '../../../../stores/shared/DnDUtil';
+import { guaranteeType, uniq } from '@finos/legend-shared';
+import {
+  type MappingExecutionState,
   MappingExecutionEmptyInputDataState,
   MappingExecutionObjectInputDataState,
   MappingExecutionFlatDataInputDataState,
@@ -65,8 +72,11 @@ import {
   RawLambda,
   SetImplementation,
   OperationSetImplementation,
+  getAllClassMappings,
+  RelationalInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -98,7 +108,7 @@ export const ClassMappingSelectorModal = observer(
         option.value.label.value,
     });
     const classMappingOptions = uniq(
-      mappingEditorState.mapping.allClassMappings
+      getAllClassMappings(mappingEditorState.mapping)
         .filter(
           (classMapping) =>
             !classMappingFilterFn || classMappingFilterFn(classMapping),
@@ -119,6 +129,7 @@ export const ClassMappingSelectorModal = observer(
         open={true}
         onClose={hideClassMappingSelectorModal}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter: handleEnterClassMappingSelectorModal,
         }}
         classes={{ container: 'search-modal__container' }}
@@ -141,6 +152,17 @@ export const ClassMappingSelectorModal = observer(
   },
 );
 
+export const getRelationalInputTestDataEditorLanguage = (
+  type: RelationalInputType,
+): EDITOR_LANGUAGE => {
+  switch (type) {
+    case RelationalInputType.SQL:
+      return EDITOR_LANGUAGE.SQL;
+    default:
+      return EDITOR_LANGUAGE.TEXT;
+  }
+};
+
 const MappingExecutionQueryEditor = observer(
   (props: { executionState: MappingExecutionState }) => {
     const { executionState } = props;
@@ -149,24 +171,17 @@ const MappingExecutionQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = editorStore.pluginManager
+    const extraQueryEditorActions = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
-          plugin.getExtraMappingExecutionQueryEditorRendererConfigurations?.() ??
-          [],
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraMappingExecutionQueryEditorActionConfigurations?.() ?? [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>{config.renderer(executionState)}</Fragment>
       ));
-    if (extraQueryEditors.length === 0) {
-      extraQueryEditors.push(
-        <Fragment key={'unsupported-query-editor'}>
-          <div>{`No query editor available`}</div>
-        </Fragment>,
-      );
-    }
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -210,7 +225,10 @@ const MappingExecutionQueryEditor = observer(
               );
             } else {
               executionState.setInputDataStateBasedOnSource(
-                getMappingElementSource(setImplementation),
+                getMappingElementSource(
+                  setImplementation,
+                  editorStore.pluginManager.getStudioPlugins(),
+                ),
                 true,
               );
             }
@@ -227,7 +245,10 @@ const MappingExecutionQueryEditor = observer(
                   type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                   handler: (): void =>
                     executionState.setInputDataStateBasedOnSource(
-                      getMappingElementSource(setImplementation),
+                      getMappingElementSource(
+                        setImplementation,
+                        editorStore.pluginManager.getStudioPlugins(),
+                      ),
                       true,
                     ),
                 },
@@ -277,6 +298,7 @@ const MappingExecutionQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
+            {extraQueryEditorActions}
             <button
               className="panel__header__action"
               tabIndex={-1}
@@ -285,38 +307,18 @@ const MappingExecutionQueryEditor = observer(
             >
               <TimesIcon />
             </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={showClassMappingSelectorModal}
-              title={'Choose target...'}
-            >
-              <PencilIcon />
-            </button>
           </div>
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={250}>
-                <div className="mapping-execution-builder__query-panel__query">
-                  <StudioTextInputEditor
-                    inputValue={queryState.lambdaString}
-                    isReadOnly={true}
-                    language={EDITOR_LANGUAGE.PURE}
-                    showMiniMap={false}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
-              </ResizablePanelSplitter>
-              <ResizablePanel size={250} minSize={250}>
-                <div className="mapping-execution-builder__query-panel__query-editor">
-                  {extraQueryEditors}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+            <div className="mapping-execution-builder__query-panel__query">
+              <StudioTextInputEditor
+                inputValue={queryState.lambdaString}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.PURE}
+                showMiniMap={false}
+              />
+            </div>
           </div>
         )}
         {queryState.query.isStub && (
@@ -398,12 +400,12 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
     const updateInput = (val: string): void =>
       inputDataState.inputData.setData(val);
 
-    // TODO: handle CSV input type
-
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
         <StudioTextInputEditor
-          language={EDITOR_LANGUAGE.SQL}
+          language={getRelationalInputTestDataEditorLanguage(
+            inputDataState.inputData.inputType,
+          )}
           inputValue={inputDataState.inputData.data}
           updateInput={updateInput}
         />
@@ -458,9 +460,51 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
   },
 );
 
+const RelationalMappingExecutionInputDataTypeSelector = observer(
+  (props: { inputDataState: MappingExecutionRelationalInputDataState }) => {
+    const { inputDataState } = props;
+
+    const changeInputType =
+      (val: string): (() => void) =>
+      (): void => {
+        inputDataState.inputData.setInputType(val);
+      };
+
+    return (
+      <DropdownMenu
+        className="mapping-execution-builder__input-data-panel__type-selector"
+        content={
+          <MenuContent>
+            {Object.keys(RelationalInputType).map((mode) => (
+              <MenuContentItem
+                key={mode}
+                className="mapping-execution-builder__input-data-panel__type-selector__option"
+                onClick={changeInputType(mode)}
+              >
+                {mode}
+              </MenuContentItem>
+            ))}
+          </MenuContent>
+        }
+      >
+        <div
+          className="mapping-execution-builder__input-data-panel__type-selector__value"
+          title="Choose input data type..."
+        >
+          <div className="mapping-execution-builder__input-data-panel__type-selector__value__label">
+            {inputDataState.inputData.inputType}
+          </div>
+          <CaretDownIcon />
+        </div>
+      </DropdownMenu>
+    );
+  },
+);
+
 export const MappingExecutionInputDataBuilder = observer(
   (props: { executionState: MappingExecutionState }) => {
     const { executionState } = props;
+    const editorStore = useEditorStore();
     const mappingEditorState = executionState.mappingEditorState;
     const inputDataState = executionState.inputDataState;
 
@@ -475,14 +519,17 @@ export const MappingExecutionInputDataBuilder = observer(
       (setImplementation: SetImplementation | undefined): void => {
         executionState.setInputDataStateBasedOnSource(
           setImplementation
-            ? getMappingElementSource(setImplementation)
+            ? getMappingElementSource(
+                setImplementation,
+                editorStore.pluginManager.getStudioPlugins(),
+              )
             : undefined,
           true,
         );
         executionState.setExecutionResultText(undefined);
         hideClassMappingSelectorModal();
       },
-      [executionState],
+      [executionState, editorStore],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);
@@ -523,6 +570,18 @@ export const MappingExecutionInputDataBuilder = observer(
       inputDataBuilder = null;
     }
 
+    // input type builder
+    let inputTypeSelector: React.ReactNode;
+    if (inputDataState instanceof MappingExecutionRelationalInputDataState) {
+      inputTypeSelector = (
+        <RelationalMappingExecutionInputDataTypeSelector
+          inputDataState={inputDataState}
+        />
+      );
+    } else {
+      inputTypeSelector = null;
+    }
+
     const clearInputData = (): void =>
       executionState.setInputDataState(
         new MappingExecutionEmptyInputDataState(
@@ -539,6 +598,15 @@ export const MappingExecutionInputDataBuilder = observer(
             <div className="panel__header__title__label">input data</div>
           </div>
           <div className="panel__header__actions">
+            {inputTypeSelector}
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              onClick={showClassMappingSelectorModal}
+              title={'Regenerate...'}
+            >
+              <RefreshIcon className="mapping-execution-builder__icon--refresh" />
+            </button>
             <button
               className="panel__header__action"
               tabIndex={-1}
@@ -546,14 +614,6 @@ export const MappingExecutionInputDataBuilder = observer(
               title={'Clear input data'}
             >
               <TimesIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={showClassMappingSelectorModal}
-              title={'Choose a class mapping...'}
-            >
-              <PencilIcon />
             </button>
           </div>
         </div>
@@ -626,7 +686,7 @@ export const MappingExecutionBuilder = observer(
               tabIndex={-1}
               title="View Execution Plan"
             >
-              <FaScroll className="mapping-execution-builder__icon__generate-plan" />
+              <PaperScrollIcon className="mapping-execution-builder__icon__generate-plan" />
             </button>
             {!mappingEditorState.isReadOnly && (
               <button
@@ -641,7 +701,7 @@ export const MappingExecutionBuilder = observer(
                 tabIndex={-1}
                 title="Promote to Service..."
               >
-                <FaRobot />
+                <RobotIcon />
               </button>
             )}
             {!mappingEditorState.isReadOnly && (
@@ -709,10 +769,10 @@ export const MappingExecutionBuilder = observer(
           close={(): void => executionState.setShowServicePathModal(false)}
           showModal={executionState.showServicePathModal}
           promoteToService={(
-            name: string,
             packagePath: string,
+            name: string,
           ): Promise<void> =>
-            flowResult(executionState.promoteToService(name, packagePath))
+            flowResult(executionState.promoteToService(packagePath, name))
           }
           isReadOnly={mappingEditorState.isReadOnly}
         />

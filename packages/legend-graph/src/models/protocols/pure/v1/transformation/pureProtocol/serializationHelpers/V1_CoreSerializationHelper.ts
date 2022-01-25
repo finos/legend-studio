@@ -30,11 +30,13 @@ export const V1_sourceInformationSerialization = new SerializationFactory(
   }),
 );
 
-export const V1_packageableElementPointerDeserrializerSchema =
-  createModelSchema(V1_PackageableElementPointer, {
+export const V1_packageableElementPointerDeserializerSchema = createModelSchema(
+  V1_PackageableElementPointer,
+  {
     path: primitive(),
     type: primitive(),
-  });
+  },
+);
 
 export const V1_multiplicitySchema = createModelSchema(V1_Multiplicity, {
   lowerBound: primitive(),

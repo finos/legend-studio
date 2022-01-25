@@ -15,6 +15,7 @@
  */
 
 import {
+  type ModelSchema,
   alias,
   createModelSchema,
   deserialize,
@@ -24,9 +25,8 @@ import {
   list,
   optional,
 } from 'serializr';
-import type { ModelSchema } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   usingConstantValueSchema,
   IllegalStateError,
   UnsupportedOperationError,
@@ -37,10 +37,12 @@ import type { V1_Connection } from '../../../model/packageableElements/connectio
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
 import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
-import type { V1_DatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import type { V1_DatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
+  type V1_DatabaseConnection,
+  V1_RelationalDatabaseConnection,
+} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
+import {
+  type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
   V1_DatabricksDatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
@@ -49,8 +51,8 @@ import {
   V1_EmbeddedH2DatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
-import type { V1_AuthenticationStrategy } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
+  type V1_AuthenticationStrategy,
   V1_ApiTokenAuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
@@ -59,6 +61,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
+  V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
@@ -168,7 +171,7 @@ const databricksDatasourceSpecificationModelSchema = createModelSchema(
   V1_DatabricksDatasourceSpecification,
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.DATABRICKS),
-    hostname: primitive(),
+    host: primitive(),
     port: primitive(),
     protocol: primitive(),
     httpPath: primitive(),
@@ -180,10 +183,16 @@ const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.SNOWFLAKE),
     accountName: primitive(),
+    accountType: optional(primitive()),
     cloudType: optional(primitive()),
     databaseName: primitive(),
+    nonProxyHosts: optional(primitive()),
+    organization: optional(primitive()),
+    proxyHost: optional(primitive()),
+    proxyPort: optional(primitive()),
     quotedIdentifiersIgnoreCase: optional(primitive()),
     region: primitive(),
+    role: optional(primitive()),
     warehouseName: primitive(),
   },
 );
@@ -298,6 +307,7 @@ enum V1_AuthenticationStrategyType {
   TEST = 'test',
   OAUTH = 'oauth',
   USER_PASSWORD = 'userPassword',
+  USERNAME_PASSWORD = 'userNamePassword',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -358,6 +368,18 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     ),
   });
 
+const V1_UsernamePasswordAuthenticationStrategyModelSchema = createModelSchema(
+  V1_UsernamePasswordAuthenticationStrategy,
+  {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.USERNAME_PASSWORD,
+    ),
+    baseVaultReference: optional(primitive()),
+    userNameVaultReference: primitive(),
+    passwordVaultReference: primitive(),
+  },
+);
+
 const V1_oAuthAuthenticationStrategyModelSchema = createModelSchema(
   V1_OAuthAuthenticationStrategy,
   {
@@ -403,6 +425,11 @@ export const V1_serializeAuthenticationStrategy = (
   } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
     return serialize(
       V1_userPasswordAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
+    return serialize(
+      V1_UsernamePasswordAuthenticationStrategyModelSchema,
       protocol,
     );
   }
@@ -462,6 +489,11 @@ export const V1_deserializeAuthenticationStrategy = (
       );
     case V1_AuthenticationStrategyType.OAUTH:
       return deserialize(V1_oAuthAuthenticationStrategyModelSchema, json);
+    case V1_AuthenticationStrategyType.USERNAME_PASSWORD:
+      return deserialize(
+        V1_UsernamePasswordAuthenticationStrategyModelSchema,
+        json,
+      );
     default: {
       const extraConnectionAuthenticationStrategyProtocolDeserializers =
         plugins.flatMap(
@@ -487,9 +519,8 @@ export const V1_deserializeAuthenticationStrategy = (
 export const V1_serializeConnectionValue = (
   protocol: V1_Connection,
   allowPointer: boolean,
-  plugins?: PureProtocolProcessorPlugin[] | undefined,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_Connection> => {
-  /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
   if (protocol instanceof V1_JsonModelConnection) {
     return serialize(V1_jsonModelConnectionModelSchema, protocol);
   } else if (protocol instanceof V1_ModelChainConnection) {
@@ -508,30 +539,30 @@ export const V1_serializeConnectionValue = (
       `Serializing connection pointer is not allowed here`,
     );
   }
-  if (plugins !== undefined) {
-    const extraConnectionProtocolSerializers = plugins.flatMap(
-      (plugin) =>
-        (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
-        ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
-    );
-    for (const serializer of extraConnectionProtocolSerializers) {
-      const json = serializer(protocol);
-      if (json) {
-        return json;
-      }
+  const extraConnectionProtocolSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraConnectionProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraConnectionProtocolSerializers) {
+    const json = serializer(protocol);
+    if (json) {
+      return json;
     }
   }
-  throw new UnsupportedOperationError(`Can't serialize connection`, protocol);
+  throw new UnsupportedOperationError(
+    `Can't serialize connection: no compatible serializer available from plugins`,
+    protocol,
+  );
 };
 
 export const V1_deserializeConnectionValue = (
   json: PlainObject<V1_Connection>,
   allowPointer: boolean,
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_Connection => {
   switch (json._type) {
-    /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
     case V1_ConnectionType.JSON_MODEL_CONNECTION:
       return deserialize(V1_jsonModelConnectionModelSchema, json);
     case V1_ConnectionType.MODEL_CHAIN_CONNECTION:
@@ -550,22 +581,20 @@ export const V1_deserializeConnectionValue = (
         `Deserializing connection pointer is not allowed here`,
       );
     default: {
-      if (plugins !== undefined) {
-        const extraConnectionProtocolDeserializers = plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
-            ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
-        );
-        for (const deserializer of extraConnectionProtocolDeserializers) {
-          const protocol = deserializer(json);
-          if (protocol) {
-            return protocol;
-          }
+      const extraConnectionProtocolDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraConnectionProtocolDeserializers?.() ?? [],
+      );
+      for (const deserializer of extraConnectionProtocolDeserializers) {
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
         }
       }
       throw new UnsupportedOperationError(
-        `Can't deserialize connection of type '${json._type}'`,
+        `Can't deserialize connection of type '${json._type}': no compatible deserializer available from plugins`,
       );
     }
   }
@@ -597,25 +626,15 @@ export const V1_deserializeDatabaseConnectionValue = (
 };
 
 export const V1_packageableConnectionModelSchema = (
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_PackageableConnection> =>
   createModelSchema(V1_PackageableConnection, {
     _type: usingConstantValueSchema(
       V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE,
     ),
     connectionValue: custom(
-      (val) => {
-        if (plugins !== undefined) {
-          return V1_serializeConnectionValue(val, false, plugins);
-        }
-        return V1_serializeConnectionValue(val, false);
-      },
-      (val) => {
-        if (plugins !== undefined) {
-          return V1_deserializeConnectionValue(val, false, plugins);
-        }
-        return V1_deserializeConnectionValue(val, false);
-      },
+      (val) => V1_serializeConnectionValue(val, false, plugins),
+      (val) => V1_deserializeConnectionValue(val, false, plugins),
     ),
     name: primitive(),
     package: primitive(),

@@ -15,15 +15,18 @@ NC='\033[0m' # No color
 
 # ----------------------------------------- MAIN ------------------------------------------------
 
-DOCKER_IMAGE_VERSION=$(cat ./package.json | jq .version | jq -r)
 DOCKER_IMAGE_NAME="$1"
-echo "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION" # to be removed
-
 ALREADY_PUBLISHED=true
 
-docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION >/dev/null 2>&1 || {
+if [[ -z "$2" ]]; then
+  DOCKER_IMAGE_VERSION=$(cat ./package.json | jq .version | jq -r)
+  docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION >/dev/null 2>&1 || {
+    ALREADY_PUBLISHED=false
+  }
+else
+  DOCKER_IMAGE_VERSION="$2"
   ALREADY_PUBLISHED=false
-}
+fi
 
 if [[ $ALREADY_PUBLISHED = true ]]; then
   echo -e "${YELLOW}Image $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION already existed. Aborting...${NC}"

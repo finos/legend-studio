@@ -15,12 +15,17 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { uuid, isNumber, hashArray } from '@finos/legend-shared';
+import {
+  type Hashable,
+  uuid,
+  isNumber,
+  hashArray,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   PRIMITIVE_TYPE,
 } from '../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
 import { Enum } from '../domain/Enum';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import { Type } from '../domain/Type';
@@ -82,7 +87,7 @@ export class EnumValueMapping implements Hashable, Stubable {
     val: Enum | string | undefined,
     sourceType: Type | undefined,
   ): void {
-    const sourceValue = this.sourceValues[idx];
+    const sourceValue = guaranteeNonNullable(this.sourceValues[idx]);
     // If the source type is an enumeration but the value does NOT match an enum value (most likely user is mid typing an enum value)
     // we move on to update the source value with the string value
     if (

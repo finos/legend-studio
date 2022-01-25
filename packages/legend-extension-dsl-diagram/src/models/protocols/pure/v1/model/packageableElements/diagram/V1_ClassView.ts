@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { V1_PositionedRectangle } from './geometry/V1_PositionedRectangle';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils';
 
@@ -32,9 +31,9 @@ export class V1_ClassView extends V1_PositionedRectangle implements Hashable {
       super.hashCode,
       this.id,
       this.class,
-      Boolean(this.hideProperties).toString(),
-      Boolean(this.hideTaggedValues).toString(),
-      Boolean(this.hideStereotypes).toString(),
+      this.hideProperties?.toString() ?? '',
+      this.hideTaggedValues?.toString() ?? '',
+      this.hideStereotypes?.toString() ?? '',
     ]);
   }
 }

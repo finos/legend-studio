@@ -18,8 +18,8 @@ import type {
   MappingEditorState,
   MappingElementSource,
 } from './MappingEditorState';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   hashObject,
   UnsupportedOperationError,
@@ -48,16 +48,14 @@ import {
 } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type {
-  MappingTest,
-  RawLambda,
-  Runtime,
-  InputData,
-  MappingTestAssert,
-  Mapping,
-  ExecutionResult,
-} from '@finos/legend-graph';
 import {
+  type MappingTest,
+  type RawLambda,
+  type Runtime,
+  type InputData,
+  type MappingTestAssert,
+  type Mapping,
+  type ExecutionResult,
   extractExecutionResultValues,
   GRAPH_MANAGER_LOG_EVENT,
   LAMBDA_PIPE,
@@ -78,10 +76,9 @@ import {
   RelationalDatabaseConnection,
   LocalH2DatasourceSpecification,
   DefaultH2AuthenticationStrategy,
-  Table,
-  View,
   buildSourceInformationSourceId,
   PureClientVersion,
+  TableAlias,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
@@ -274,10 +271,19 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
 
   get runtime(): Runtime {
     const datasourceSpecification = new LocalH2DatasourceSpecification();
-    datasourceSpecification.setTestDataSetupSqls(
-      // NOTE: this is a gross simplification of handling the input for relational input data
-      [this.inputData.data],
-    );
+    switch (this.inputData.inputType) {
+      case RelationalInputType.SQL:
+        datasourceSpecification.setTestDataSetupSqls(
+          // NOTE: this is a gross simplification of handling the input for relational input data
+          [this.inputData.data],
+        );
+        break;
+      case RelationalInputType.CSV:
+        datasourceSpecification.setTestDataSetupCsv(this.inputData.data);
+        break;
+      default:
+        throw new UnsupportedOperationError(`Invalid input data type`);
+    }
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -511,13 +517,13 @@ export class MappingTestState {
         );
       }
       this.setInputDataState(newInputDataState);
-    } else if (source instanceof Table || source instanceof View) {
+    } else if (source instanceof TableAlias) {
       const newInputDataState = new MappingTestRelationalInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
         new RelationalInputData(
           PackageableElementExplicitReference.create(
-            guaranteeNonNullable(source.schema.owner),
+            source.relation.ownerReference.value,
           ),
           '',
           RelationalInputType.SQL,

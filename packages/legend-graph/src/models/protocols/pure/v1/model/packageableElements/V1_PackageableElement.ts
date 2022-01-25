@@ -18,8 +18,7 @@ import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
 } from '../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_Profile } from './domain/V1_Profile';
 import type { V1_Class } from './domain/V1_Class';
 import type { V1_Enumeration } from './domain/V1_Enumeration';
@@ -35,9 +34,7 @@ import type { V1_FileGenerationSpecification } from './fileGeneration/V1_FileGen
 import type { V1_GenerationSpecification } from './generationSpecification/V1_GenerationSpecification';
 import type { V1_Measure } from './domain/V1_Measure';
 import type { V1_SectionIndex } from './section/V1_SectionIndex';
-import type { V1_ServiceStore } from './store/relational/V1_ServiceStore';
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
   visit_SectionIndex(element: V1_SectionIndex): T;
@@ -53,7 +50,6 @@ export interface V1_PackageableElementVisitor<T> {
 
   visit_FlatData(element: V1_FlatData): T;
   visit_Database(element: V1_Database): T;
-  visit_ServiceStore(element: V1_ServiceStore): T;
   visit_Service(element: V1_Service): T;
   visit_GenerationSpecification(element: V1_GenerationSpecification): T;
   visit_FileGeneration(element: V1_FileGenerationSpecification): T;
@@ -80,15 +76,16 @@ export abstract class V1_PackageableElement implements Hashable {
 export enum V1_PackageableElementPointerType {
   STORE = 'STORE',
   MAPPING = 'MAPPING',
+  RUNTIME = 'RUNTIME',
   FILE_GENERATION = 'FILE_GENERATION',
   SERVICE = 'SERVICE',
 }
 
 export class V1_PackageableElementPointer implements Hashable {
-  type!: V1_PackageableElementPointerType;
+  type!: string;
   path!: string;
 
-  constructor(type: V1_PackageableElementPointerType, path: string) {
+  constructor(type: string, path: string) {
     this.type = type;
     this.path = path;
   }

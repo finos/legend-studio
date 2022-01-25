@@ -16,29 +16,33 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaAsterisk, FaLongArrowAltDown, FaEdit } from 'react-icons/fa';
 import {
   clsx,
   BlankPanelPlaceholder,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
+  AsteriskIcon,
+  LongArrowAltDownIcon,
+  PencilEditIcon,
 } from '@finos/legend-art';
-import type {
-  ElementDragSource,
-  MappingElementSourceDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type MappingElementSourceDropTarget,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import {
   InstanceSetImplementationState,
   MappingElementState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
-import type { PureInstanceSetImplementationFilterState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { PureInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { guaranteeNonNullable, noop } from '@finos/legend-shared';
-import type { MappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type PureInstanceSetImplementationFilterState,
+  PureInstanceSetImplementationState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
+import { guaranteeNonNullable, noop } from '@finos/legend-shared';
+import {
+  type MappingElementSource,
   getMappingElementSource,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
@@ -61,20 +65,21 @@ import {
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type {
-  InstanceSetImplementation,
-  Property,
-  PackageableElement,
-} from '@finos/legend-graph';
 import {
+  type InstanceSetImplementation,
+  type Property,
+  type PackageableElement,
+  type View,
   Class,
   Type,
   FlatData,
   RootFlatDataRecordType,
-  View,
   Table,
   Database,
   PRIMITIVE_TYPE,
+  TableAlias,
+  TableExplicitReference,
+  ViewExplicitReference,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import type { EditorStore } from '../../../../stores/EditorStore';
@@ -93,7 +98,10 @@ export const InstanceSetImplementationSourceExplorer = observer(
       mappingEditorState.currentTabState instanceof MappingElementState
         ? mappingEditorState.currentTabState
         : undefined;
-    const srcElement = getMappingElementSource(setImplementation);
+    const srcElement = getMappingElementSource(
+      setImplementation,
+      editorStore.pluginManager.getStudioPlugins(),
+    );
     const sourceLabel = getSourceElementLabel(srcElement);
     // `null` is when we want to open the modal using the existing source
     // `undefined` is to close the source modal
@@ -180,15 +188,21 @@ export const InstanceSetImplementationSourceExplorer = observer(
             );
             return;
           }
+          const mainTableAlias = new TableAlias();
+          mainTableAlias.relation =
+            relations[0] instanceof Table
+              ? TableExplicitReference.create(relations[0])
+              : ViewExplicitReference.create(relations[0] as View);
+          mainTableAlias.name = mainTableAlias.relation.value.name;
           if (relations.length === 1) {
             flowResult(
               mappingEditorState.changeClassMappingSourceDriver(
                 setImplementation,
-                relations[0],
+                mainTableAlias,
               ),
             ).catch(applicationStore.alertIllegalUnhandledError);
           } else {
-            setSourceElementForSourceSelectorModal(relations[0]);
+            setSourceElementForSourceSelectorModal(mainTableAlias);
           }
         }
       },
@@ -252,7 +266,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     }
     return (
       <div
-        data-testid={STUDIO_TEST_ID.SOURCE_PANEL}
+        data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
         className={clsx('panel source-panel', {
           /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
           backdrop__element:
@@ -281,7 +295,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
               tabIndex={-1}
               title="Select Source..."
             >
-              <FaEdit />
+              <PencilEditIcon />
             </button>
           </div>
         </div>
@@ -303,9 +317,9 @@ export const InstanceSetImplementationSourceExplorer = observer(
                   selectedType={instanceSetImplementationState.selectedType}
                 />
               )}
-              {(srcElement instanceof Table || srcElement instanceof View) && (
+              {srcElement instanceof TableAlias && (
                 <TableOrViewSourceTree
-                  relation={srcElement}
+                  relation={srcElement.relation.value}
                   selectedType={instanceSetImplementationState.selectedType}
                 />
               )}
@@ -460,13 +474,14 @@ export const InstanceSetImplementationEditor = observer(
         ? noop()
         : (): void =>
             setImplementation.accept_SetImplementationVisitor(
-              new MappingElementDecorationCleaner(),
+              new MappingElementDecorationCleaner(editorStore),
             );
     }, [
       applicationStore,
       setImplementation,
       isReadOnly,
       instanceSetImplementationState,
+      editorStore,
     ]);
 
     useEffect(() => {
@@ -496,8 +511,8 @@ export const InstanceSetImplementationEditor = observer(
                           }`}
                           onClick={handleSortChange}
                         >
-                          <FaLongArrowAltDown />
-                          <FaAsterisk />
+                          <LongArrowAltDownIcon />
+                          <AsteriskIcon />
                         </div>
                       </div>
                     </div>

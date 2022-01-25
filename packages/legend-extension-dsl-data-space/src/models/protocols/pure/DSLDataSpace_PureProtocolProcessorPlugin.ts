@@ -15,37 +15,66 @@
  */
 
 import packageJson from '../../../../package.json';
-import { V1_DataSpace } from './v1/model/packageableElements/dataSpace/V1_DataSpace';
-import type { PlainObject } from '@finos/legend-shared';
-import { isNonNullable, assertType } from '@finos/legend-shared';
+import V1_SYSTEM_MODELS from './v1/V1_DSLDataSpace_SystemModels.json';
+import {
+  V1_DataSpace,
+  V1_DataSpaceExecutionContext,
+  V1_DataSpaceSupportEmail,
+} from './v1/model/packageableElements/dataSpace/V1_DataSpace';
+import {
+  type PlainObject,
+  uuid,
+  guaranteeNonEmptyString,
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+  isNonNullable,
+  assertType,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_dataSpaceModelSchema,
   V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper';
 import { getDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper';
-import { DataSpace } from '../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
-import type {
-  GraphPluginManager,
-  PackageableElement,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_GraphBuilderContext,
-  V1_GraphTransformerContext,
-  V1_PackageableElement,
-} from '@finos/legend-graph';
 import {
+  type DataSpaceSupportInfo,
+  DataSpace,
+  DataSpaceExecutionContext,
+  DataSpaceSupportEmail,
+} from '../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import {
+  type Mapping,
+  type PackageableElement,
+  type PackageableElementReference,
+  type PackageableRuntime,
+  type PureModel,
+  type V1_ElementProtocolClassifierPathGetter,
+  type V1_ElementProtocolDeserializer,
+  type V1_ElementProtocolSerializer,
+  type V1_ElementTransformer,
+  type V1_GraphBuilderContext,
+  type V1_GraphTransformerContext,
+  type V1_PackageableElement,
+  type V1_PureModelContextData,
+  type V1_TaggedValue,
+  V1_taggedValueSchema,
+  PackageableElementExplicitReference,
+  V1_PackageableElementPointer,
+  V1_PackageableElementPointerType,
   V1_buildTaggedValue,
   V1_transformStereotype,
   V1_transformTaggedValue,
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
+  V1_StereotypePtr,
 } from '@finos/legend-graph';
+import {
+  Diagram,
+  V1_DSLDiagram_PackageableElementPointerType,
+} from '@finos/legend-extension-dsl-diagram';
 
-const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
+export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
 
 export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
@@ -54,10 +83,6 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
@@ -98,17 +123,79 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           element.taggedValues = elementProtocol.taggedValues
             .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
             .filter(isNonNullable);
-          element.groupId = elementProtocol.groupId;
-          element.artifactId = elementProtocol.artifactId;
-          element.versionId = elementProtocol.versionId;
-          element.mapping = elementProtocol.mapping;
-          element.runtime = elementProtocol.runtime;
+          element.groupId = guaranteeNonEmptyString(
+            elementProtocol.groupId,
+            `Data space 'groupId' field is missing or empty`,
+          );
+          element.artifactId = guaranteeNonEmptyString(
+            elementProtocol.artifactId,
+            `Data space 'artifactId' field is missing or empty`,
+          );
+          element.versionId = guaranteeNonEmptyString(
+            elementProtocol.versionId,
+            `Data space 'versionId' field is missing or empty`,
+          );
+          element.executionContexts = guaranteeNonNullable(
+            elementProtocol.executionContexts,
+            `Data space 'executionContexts' field is missing`,
+          ).map((contextProtocol) => {
+            const context = new DataSpaceExecutionContext();
+            context.name = guaranteeNonEmptyString(
+              contextProtocol.name,
+              `Data space execution context 'name' field is missing or empty`,
+            );
+            context.description = contextProtocol.description;
+            context.mapping = guaranteeNonNullable(
+              contextProtocol.mapping,
+              `Data space execution context 'mapping' field is missing or empty`,
+            ).path;
+            context.defaultRuntime = guaranteeNonNullable(
+              contextProtocol.defaultRuntime,
+              `Data space execution context 'defaultRuntime' field is missing or empty`,
+            ).path;
+            return context;
+          });
+          element.defaultExecutionContext = guaranteeNonNullable(
+            element.executionContexts.find(
+              (context) =>
+                context.name ===
+                guaranteeNonEmptyString(
+                  elementProtocol.defaultExecutionContext,
+                  `Data space 'defaultExecutionContext' field is missing or empty`,
+                ),
+            ),
+            `Can't find default execution context '${elementProtocol.defaultExecutionContext}'`,
+          );
           element.description = elementProtocol.description;
-          element.supportEmail = elementProtocol.supportEmail;
-          element.diagrams = elementProtocol.diagrams ?? [];
+          if (elementProtocol.featuredDiagrams) {
+            element.featuredDiagrams = elementProtocol.featuredDiagrams.map(
+              (pointer) => pointer.path,
+            );
+          }
+          if (elementProtocol.supportInfo) {
+            if (
+              elementProtocol.supportInfo instanceof V1_DataSpaceSupportEmail
+            ) {
+              const supportEmail = new DataSpaceSupportEmail();
+              supportEmail.address = guaranteeNonEmptyString(
+                elementProtocol.supportInfo.address,
+                `Data space support email 'address' field is missing or empty`,
+              );
+              element.supportInfo = supportEmail;
+            } else {
+              throw new UnsupportedOperationError(
+                `Can't build data space support info`,
+                elementProtocol.supportInfo,
+              );
+            }
+          }
         },
       }),
     ];
+  }
+
+  override V1_getExtraSystemModels(): PlainObject<V1_PureModelContextData>[] {
+    return [V1_SYSTEM_MODELS];
   }
 
   override V1_getExtraElementClassifierPathGetters(): V1_ElementProtocolClassifierPathGetter[] {
@@ -126,6 +213,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
     return [
       (
         elementProtocol: V1_PackageableElement,
+        plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_DataSpace) {
           return serialize(V1_dataSpaceModelSchema, elementProtocol);
@@ -139,6 +227,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
     return [
       (
         json: PlainObject<V1_PackageableElement>,
+        plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
           return deserialize(V1_dataSpaceModelSchema, json);
@@ -166,11 +255,45 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           protocol.groupId = metamodel.groupId;
           protocol.artifactId = metamodel.artifactId;
           protocol.versionId = metamodel.versionId;
-          protocol.mapping = metamodel.mapping;
-          protocol.runtime = metamodel.runtime;
+          protocol.executionContexts = metamodel.executionContexts.map(
+            (context) => {
+              const contextProtocol = new V1_DataSpaceExecutionContext();
+              contextProtocol.name = context.name;
+              contextProtocol.description = context.description;
+              contextProtocol.mapping = new V1_PackageableElementPointer(
+                V1_PackageableElementPointerType.MAPPING,
+                context.mapping,
+              );
+              contextProtocol.defaultRuntime = new V1_PackageableElementPointer(
+                V1_PackageableElementPointerType.RUNTIME,
+                context.defaultRuntime,
+              );
+              return contextProtocol;
+            },
+          );
+          protocol.defaultExecutionContext =
+            metamodel.defaultExecutionContext.name;
           protocol.description = metamodel.description;
-          protocol.supportEmail = metamodel.supportEmail;
-          protocol.diagrams = metamodel.diagrams;
+          protocol.featuredDiagrams = metamodel.featuredDiagrams.map(
+            (diagramPath) =>
+              new V1_PackageableElementPointer(
+                V1_DSLDiagram_PackageableElementPointerType,
+                diagramPath,
+              ),
+          );
+          if (metamodel.supportInfo) {
+            if (metamodel.supportInfo instanceof DataSpaceSupportEmail) {
+              const supportEmail = new V1_DataSpaceSupportEmail();
+              supportEmail.address = metamodel.supportInfo.address;
+              protocol.supportInfo = supportEmail;
+            } else {
+              throw new UnsupportedOperationError(
+                `Can't transform data space support info`,
+                metamodel.supportInfo,
+              );
+            }
+          }
+          // protocol.supportInfo = metamodel.supportInfo;
           return protocol;
         }
         return undefined;
@@ -178,3 +301,169 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
     ];
   }
 }
+
+export class ResolvedDataSpaceExecutionContext {
+  name!: string;
+  description?: string | undefined;
+  mapping!: PackageableElementReference<Mapping>;
+  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
+}
+
+/**
+ * When we actually need to use the data space, we want to resolve all of its
+ * element pointers to actual reference, hence this model.
+ */
+export class ResolvedDataSpace {
+  taggedValues: {
+    uuid: string;
+    profile: string;
+    tag: string;
+    value: string;
+  }[] = [];
+  stereotypes: { uuid: string; profile: string; stereotype: string }[] = [];
+  path!: string;
+  groupId!: string;
+  artifactId!: string;
+  versionId!: string;
+  executionContexts: ResolvedDataSpaceExecutionContext[] = [];
+  defaultExecutionContext!: ResolvedDataSpaceExecutionContext;
+  featuredDiagrams: PackageableElementReference<Diagram>[] = [];
+  description?: string | undefined;
+  supportInfo?: DataSpaceSupportInfo | undefined;
+}
+
+export const getResolvedDataSpace = (
+  json: PlainObject<V1_DataSpace>,
+  graph: PureModel,
+): ResolvedDataSpace => {
+  const dataSpace = new ResolvedDataSpace();
+  if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
+    const protocol = deserialize(V1_dataSpaceModelSchema, json);
+    dataSpace.path = protocol.path;
+    if (Array.isArray(json.taggedValues)) {
+      dataSpace.taggedValues = (
+        json.taggedValues as PlainObject<V1_TaggedValue>[]
+      )
+        .map((taggedValueJson) =>
+          deserialize(V1_taggedValueSchema, taggedValueJson),
+        )
+        .map((taggedValue) => ({
+          uuid: uuid(),
+          profile: taggedValue.tag.profile,
+          tag: taggedValue.tag.value,
+          value: taggedValue.value,
+        }));
+    }
+    if (Array.isArray(json.stereotypes)) {
+      dataSpace.stereotypes = (
+        json.stereotypes as PlainObject<V1_StereotypePtr>[]
+      )
+        .map((stereotypePtrJson) =>
+          deserialize(V1_StereotypePtr, stereotypePtrJson),
+        )
+        .map((stereotypePtr) => ({
+          uuid: uuid(),
+          profile: stereotypePtr.profile,
+          stereotype: stereotypePtr.value,
+        }));
+    }
+    dataSpace.groupId = guaranteeNonEmptyString(
+      protocol.groupId,
+      `Data space 'groupId' field is missing or empty`,
+    );
+    dataSpace.artifactId = guaranteeNonEmptyString(
+      protocol.artifactId,
+      `Data space 'artifactId' field is missing or empty`,
+    );
+    dataSpace.versionId = guaranteeNonEmptyString(
+      protocol.versionId,
+      `Data space 'versionId' field is missing or empty`,
+    );
+    dataSpace.executionContexts = protocol.executionContexts.map(
+      (contextProtocol) => {
+        const context = new ResolvedDataSpaceExecutionContext();
+        context.name = guaranteeNonEmptyString(
+          contextProtocol.name,
+          `Data space execution context 'name' field is missing or empty`,
+        );
+        context.description = contextProtocol.description;
+        context.mapping = PackageableElementExplicitReference.create(
+          graph.getMapping(contextProtocol.mapping.path),
+        );
+        context.defaultRuntime = PackageableElementExplicitReference.create(
+          graph.getRuntime(contextProtocol.defaultRuntime.path),
+        );
+        return context;
+      },
+    );
+    dataSpace.defaultExecutionContext = guaranteeNonNullable(
+      dataSpace.executionContexts.find(
+        (context) =>
+          context.name ===
+          guaranteeNonEmptyString(
+            protocol.defaultExecutionContext,
+            `Data space 'defaultExecutionContext' field is missing or empty`,
+          ),
+      ),
+      `Can't find default execution context '${protocol.defaultExecutionContext}'`,
+    );
+    dataSpace.description = protocol.description;
+    if (protocol.featuredDiagrams) {
+      dataSpace.featuredDiagrams = protocol.featuredDiagrams.map((pointer) =>
+        PackageableElementExplicitReference.create(
+          graph.getExtensionElement(pointer.path, Diagram),
+        ),
+      );
+    }
+    if (protocol.supportInfo) {
+      if (protocol.supportInfo instanceof V1_DataSpaceSupportEmail) {
+        const supportEmail = new DataSpaceSupportEmail();
+        supportEmail.address = guaranteeNonEmptyString(
+          protocol.supportInfo.address,
+          `Data space support email 'address' field is missing or empty`,
+        );
+        dataSpace.supportInfo = supportEmail;
+      } else {
+        throw new UnsupportedOperationError(
+          `Can't build data space support info`,
+          protocol.supportInfo,
+        );
+      }
+    }
+    return dataSpace;
+  }
+  throw new UnsupportedOperationError(`Can't resolve data space`, json);
+};
+
+export const extractDataSpaceTaxonomyNodes = (
+  json: PlainObject<V1_DataSpace>,
+): string[] => {
+  const ENTERPRISE_PROFILE_PATH = `meta::pure::profiles::enterprise`;
+  const TAXONOMY_NODES_TAG = `taxonomyNodes`;
+  const TAXONOMY_NODES_TAG_VALUE_DELIMITER = `,`;
+
+  const taxonomyNodes = new Set<string>();
+  if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
+    if (Array.isArray(json.taggedValues)) {
+      const taggedValues = (
+        json.taggedValues as PlainObject<V1_TaggedValue>[]
+      ).map((taggedValueJson) =>
+        deserialize(V1_taggedValueSchema, taggedValueJson),
+      );
+      taggedValues
+        .filter(
+          (taggedValue) =>
+            taggedValue.tag.profile === ENTERPRISE_PROFILE_PATH &&
+            taggedValue.tag.value === TAXONOMY_NODES_TAG,
+        )
+        .forEach((taggedValue) => {
+          taggedValue.value
+            .split(TAXONOMY_NODES_TAG_VALUE_DELIMITER)
+            .map((value) => value.trim())
+            .filter((value) => Boolean(value))
+            .forEach((value) => taxonomyNodes.add(value));
+        });
+    }
+  }
+  return Array.from(taxonomyNodes.values());
+};

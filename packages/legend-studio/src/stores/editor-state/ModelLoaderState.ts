@@ -16,18 +16,20 @@
 
 import { observable, action, flow, makeObservable } from 'mobx';
 import { EditorState } from '../editor-state/EditorState';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   UnsupportedOperationError,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { Entity } from '@finos/legend-model-storage';
-import type { ImportConfigurationDescription } from '@finos/legend-graph';
-import { ImportMode } from '@finos/legend-graph';
+import {
+  type ImportConfigurationDescription,
+  ImportMode,
+} from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 
 export enum MODEL_UPDATER_INPUT_TYPE {
@@ -187,15 +189,15 @@ export class ModelLoaderState extends EditorState {
         entities.length
       } entities]`;
       yield this.editorStore.sdlcServerClient.updateEntities(
-        this.editorStore.sdlcState.currentProjectId,
-        this.editorStore.sdlcState.currentWorkspaceId,
+        this.editorStore.sdlcState.activeProject.projectId,
+        this.editorStore.sdlcState.activeWorkspace,
         { replace: this.replace, entities, message },
       );
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -219,7 +221,7 @@ export class ModelLoaderState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.MODEL_LOADER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

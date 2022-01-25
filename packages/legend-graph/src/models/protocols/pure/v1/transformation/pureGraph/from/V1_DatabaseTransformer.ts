@@ -16,8 +16,8 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
-import type { RelationalDataType } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import {
+  type RelationalDataType,
   Real,
   Binary,
   Bit,
@@ -36,8 +36,8 @@ import {
   SmallInt,
   BigInt,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
-import type { TableAlias } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import {
+  type TableAlias,
   RelationalOperationElement,
   TableAliasColumn,
   DynaFunction,
@@ -50,16 +50,16 @@ import type { Table } from '../../../../../../metamodels/pure/packageableElement
 import type { Column } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Column';
 import type { Filter } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Filter';
 import type { GroupByMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/GroupByMapping';
-import type { Join } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Join';
 import {
+  type Join,
   SELF_JOIN_SCHEMA_NAME,
   SELF_JOIN_TABLE_NAME,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Join';
 import type { ColumnMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnMapping';
 import type { View } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/View';
 import type { Schema } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Schema';
-import type { V1_RelationalDataType } from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
 import {
+  type V1_RelationalDataType,
   V1_VarChar,
   V1_SmallInt,
   V1_Integer,
@@ -83,8 +83,8 @@ import {
   V1_initPackageableElement,
   V1_transformElementReference,
 } from './V1_CoreTransformerHelper';
-import type { V1_RelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
 import {
+  type V1_RelationalOperationElement,
   V1_ElementWithJoins,
   V1_LiteralList,
   V1_Literal,
@@ -174,7 +174,8 @@ export const V1_transformTableAliasToTablePointer = (
   tablePtr.database = options?.TEMPORARY__resolveToFullPath
     ? tableAlias.relation.ownerReference.value.path
     : tableAlias.relation.ownerReference.valueForSerialization ?? '';
-  /* @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph */
+  // FIXME: Sometimes, we interpret this, so to maintain roundtrip stability, we need to handle this differrently
+  // See https://github.com/finos/legend-studio/issues/295
   tablePtr.mainTableDb = tablePtr.database;
   tablePtr.schema = tableAlias.isSelfJoinTarget
     ? SELF_JOIN_SCHEMA_NAME
@@ -188,7 +189,8 @@ export const V1_transformTableAliasToTablePointer = (
 export const V1_transformTableToTablePointer = (table: Table): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
   tablePtr.database = table.schema.owner.path;
-  /* @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph */
+  // FIXME: Sometimes, we interpret this, so to maintain roundtrip stability, we need to handle this differrently
+  // See https://github.com/finos/legend-studio/issues/295
   tablePtr.mainTableDb = tablePtr.database;
   tablePtr.schema = table.schema.name;
   tablePtr.table = table.name;

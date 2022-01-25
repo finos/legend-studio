@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
@@ -24,18 +24,16 @@ import {
   getEditorLanguageFromFormat,
 } from '../../../../stores/editor-state/FileGenerationViewerState';
 import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
-import type { DebouncedFunc } from '@finos/legend-shared';
 import {
+  type DebouncedFunc,
   UnsupportedOperationError,
   debounce,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
+  type TreeData,
+  type TreeNodeData,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
@@ -45,38 +43,37 @@ import {
   BlankPanelContent,
   PanelLoadingIndicator,
   CustomSelectorInput,
+  PencilIcon,
+  RefreshIcon,
+  TimesIcon,
+  CheckSquareIcon,
+  SquareIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FolderOpenIcon,
+  FolderIcon,
+  FileCodeIcon,
+  LockIcon,
+  SaveIcon,
 } from '@finos/legend-art';
 import {
-  FaTimes,
-  FaCheckSquare,
-  FaSquare,
-  FaChevronDown,
-  FaChevronRight,
-  FaFolderOpen,
-  FaFolder,
-  FaFileCode,
-  FaLock,
-  FaSave,
-} from 'react-icons/fa';
-import { MdModeEdit, MdRefresh } from 'react-icons/md';
-import type { FileGenerationSourceDropTarget } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
+  type FileGenerationSourceDropTarget,
+  CORE_DND_TYPE,
+} from '../../../../stores/shared/DnDUtil';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
-import type { GenerationTreeNodeData } from '../../../../stores/shared/FileGenerationTreeUtil';
 import {
+  type GenerationTreeNodeData,
   GenerationDirectory,
   GenerationFile,
   getFileGenerationChildNodes,
 } from '../../../../stores/shared/FileGenerationTreeUtil';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  GenerationProperty,
-  PackageableElement,
-  FileGenerationSpecification,
-} from '@finos/legend-graph';
 import {
+  type GenerationProperty,
+  type PackageableElement,
+  type FileGenerationSpecification,
   GenerationPropertyItemType,
   PackageableElementReference,
   PackageableElementExplicitReference,
@@ -85,6 +82,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -101,24 +99,24 @@ export const FileGenerationTreeNodeContainer: React.FC<
   const expandIcon = !isDirectory ? (
     <div />
   ) : node.isOpen ? (
-    <FaChevronDown />
+    <ChevronDownIcon />
   ) : (
-    <FaChevronRight />
+    <ChevronRightIcon />
   );
   const iconPackageColor = 'color--generated';
   const nodeIcon = isDirectory ? (
     node.isOpen ? (
       <div className={iconPackageColor}>
-        <FaFolderOpen />
+        <FolderOpenIcon />
       </div>
     ) : (
       <div className={iconPackageColor}>
-        <FaFolder />
+        <FolderIcon />
       </div>
     )
   ) : (
     <div className="icon">
-      <FaFileCode />
+      <FileCodeIcon />
     </div>
   );
   const selectNode: React.MouseEventHandler = (event) => onNodeSelect?.(node);
@@ -226,7 +224,23 @@ export const GenerationResultViewer = observer(
     const regenerate = applicationStore.guaranteeSafeAction(() =>
       flowResult(fileGenerationState.generate()),
     );
-
+    const extraFileGenerationResultViewerActions =
+      fileNode instanceof GenerationFile
+        ? fileGenerationState.editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+                ).getExtraFileGenerationResultViewerActionConfigurations?.() ??
+                [],
+            )
+            .map((config) => (
+              <Fragment key={config.key}>
+                {config.renderer(fileGenerationState)}
+              </Fragment>
+            ))
+        : null;
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={250} minSize={250}>
@@ -250,7 +264,7 @@ export const GenerationResultViewer = observer(
                     onClick={regenerate}
                     title={'Re-generate'}
                   >
-                    <MdRefresh />
+                    <RefreshIcon />
                   </button>
                 </div>
               </div>
@@ -281,11 +295,14 @@ export const GenerationResultViewer = observer(
               {fileNode && !(fileNode instanceof GenerationDirectory) && (
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">file</div>
-                  <div className="panel__header__title__content generation-result-viewer__file__header-name">
+                  <div className="panel__header__title__content generation-result-viewer__file__header__name">
                     {fileNode.name}
                   </div>
                 </div>
               )}
+              <div className="panel__header__actions">
+                {extraFileGenerationResultViewerActions}
+              </div>
             </div>
             <div className="panel__content">
               {fileNode instanceof GenerationFile && (
@@ -412,7 +429,9 @@ const FileGenerationScopeEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {scopeElements.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -476,7 +495,7 @@ const FileGenerationScopeEditor = observer(
                         onClick={showEditItemInput(value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -484,7 +503,7 @@ const FileGenerationScopeEditor = observer(
                         onClick={(): void => deleteScopeElement(value)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -670,7 +689,7 @@ const GenerationBooleanPropertyEditor = observer(
             disabled={isReadOnly}
             tabIndex={-1}
           >
-            {value ? <FaCheckSquare /> : <FaSquare />}
+            {value ? <CheckSquareIcon /> : <SquareIcon />}
           </button>
           <div className="panel__content__form__section__toggler__prompt">
             {property.description}
@@ -809,7 +828,9 @@ const GenerationArrayPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {arrayValues.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
@@ -861,7 +882,7 @@ const GenerationArrayPropertyEditor = observer(
                         onClick={showEditItemInput(value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -869,7 +890,7 @@ const GenerationArrayPropertyEditor = observer(
                         onClick={deleteValue(idx)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -1017,7 +1038,9 @@ const GenerationMapPropertyEditor = observer(
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {Array.from(Object.entries(mapValues)).map(([key, value], idx) => (
               // NOTE: since the key must be unique, we will use it to generate the key
@@ -1084,7 +1107,7 @@ const GenerationMapPropertyEditor = observer(
                         onClick={showEditItemInput(key, value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -1092,7 +1115,7 @@ const GenerationMapPropertyEditor = observer(
                         onClick={deleteValue(key, idx)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -1343,7 +1366,7 @@ export const FileGenerationConfigurationEditor = observer(
               onClick={resetDefaultConfiguration}
               title={'Reset to default configuration'}
             >
-              <MdRefresh />
+              <RefreshIcon />
             </button>
             {Boolean(elementGenerationState) && (
               <button
@@ -1353,7 +1376,7 @@ export const FileGenerationConfigurationEditor = observer(
                 onClick={showFileGenerationModal}
                 title={'Promote File Generation Specification...'}
               >
-                <FaSave />
+                <SaveIcon />
               </button>
             )}
           </div>
@@ -1423,7 +1446,7 @@ export const FileGenerationEditor = observer(() => {
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             )}
             <div className="panel__header__title__label">file generation</div>

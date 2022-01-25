@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import type { V1_PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
-import { V1_PropertyMapping } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
+import { hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import {
+  type V1_PropertyMappingVisitor,
+  V1_PropertyMapping,
+} from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
 
 export class V1_InlineEmbeddedPropertyMapping extends V1_PropertyMapping {
   id!: string;
@@ -23,5 +27,13 @@ export class V1_InlineEmbeddedPropertyMapping extends V1_PropertyMapping {
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {
     return visitor.visit_InlineEmbeddedPropertyMapping(this);
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INLINE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
+      this.property,
+      this.setImplementationId,
+    ]);
   }
 }

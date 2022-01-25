@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-import type { Log, SuperGenericFunction } from '@finos/legend-shared';
 import {
+  type SuperGenericFunction,
+  EventNotifierService,
+  TracerService,
+  TelemetryService,
+  assertTrue,
+  Log,
   LogEvent,
   assertErrorThrown,
   isString,
@@ -25,6 +30,7 @@ import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from './ApplicationLogEvent';
 import type { LegendApplicationConfig } from './ApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -96,12 +102,20 @@ export class Notification {
 export class ApplicationStore<T extends LegendApplicationConfig> {
   navigator: WebApplicationNavigator;
   notification?: Notification | undefined;
-  log: Log;
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
   config: T;
 
-  constructor(config: T, navigator: WebApplicationNavigator, log: Log) {
+  log: Log = new Log();
+  telemetryService = new TelemetryService();
+  tracerService = new TracerService();
+  eventNotifierService = new EventNotifierService();
+
+  constructor(
+    config: T,
+    navigator: WebApplicationNavigator,
+    pluginManager: LegendApplicationPluginManager,
+  ) {
     makeAutoObservable(this, {
       navigator: false,
       setBlockingAlert: action,
@@ -116,7 +130,16 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
 
     this.config = config;
     this.navigator = navigator;
-    this.log = log;
+
+    // Register plugins
+    this.log.registerPlugins(pluginManager.getLoggerPlugins());
+    this.telemetryService.registerPlugins(
+      pluginManager.getTelemetryServicePlugins(),
+    );
+    this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
+    this.eventNotifierService.registerPlugins(
+      pluginManager.getEventNotifierPlugins(),
+    );
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
@@ -204,26 +227,15 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     );
   }
 
-  notifyError(
-    content: unknown,
-    actions?: NotificationAction[],
-    autoHideDuration?: number | null,
-  ): void {
+  notifyError(content: Error | string, actions?: NotificationAction[]): void {
     let message: string | undefined;
-    if (content instanceof Error || content instanceof ApplicationError) {
+    if (content instanceof ApplicationError) {
+      message = content.detail;
+    } else if (content instanceof Error) {
       message = content.message;
-    } else if (isString(content)) {
-      message = content;
     } else {
-      message = undefined;
-      this.log.error(
-        LogEvent.create(
-          APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
-        ),
-        'Unable to display error in notification',
-        message,
-      );
-      this.notifyIllegalState('Unable to display error');
+      assertTrue(isString(content), `Can't display error`);
+      message = content;
     }
     if (message) {
       this.setNotification(
@@ -231,9 +243,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
           NOTIFCATION_SEVERITY.ERROR,
           message,
           actions ?? [],
-          autoHideDuration === null
-            ? undefined
-            : autoHideDuration ?? DEFAULT_NOTIFICATION_HIDE_TIME,
+          undefined,
         ),
       );
     }

@@ -15,29 +15,25 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  FaList,
-  FaCog,
-  FaCodeBranch,
-  FaRegClock,
-  FaWrench,
-} from 'react-icons/fa';
-import {
-  GoGitPullRequest,
-  GoGitMerge,
-  GoEye,
-  GoCloudDownload,
-} from 'react-icons/go';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import { STUDIO_TEST_ID } from '../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import {
   CheckIcon,
   clsx,
   DropdownMenu,
+  EyeIcon,
   MenuContent,
   MenuContentItem,
   MenuContentItemIcon,
   MenuContentItemLabel,
+  GitPullRequestIcon,
+  GitMergeIcon,
+  CloudDownloadIcon,
+  ListIcon,
+  CogIcon,
+  CodeBranchIcon,
+  EmptyClockIcon,
+  WrenchIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider';
 
@@ -62,7 +58,7 @@ const SettingsMenu = observer(
   { forwardRef: true },
 );
 
-interface ActivityDisplay {
+export interface ActivityDisplay {
   mode: ACTIVITY_MODE;
   title: string;
   info?: string;
@@ -90,14 +86,14 @@ export const ActivityBar = observer(() => {
       editorStore.localChangesState.isSyncingWithWorkspace ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__local-change-counter activity-bar__local-change-counter--waiting"
-        data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
       >
-        <FaRegClock />
+        <EmptyClockIcon />
       </div>
     ) : localChanges ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__local-change-counter"
-        data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
       >
         {localChangesDisplayLabel}
       </div>
@@ -120,14 +116,14 @@ export const ActivityBar = observer(() => {
         .isBuildingEntityHashesIndex ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__conflict-resolution-change-counter activity-bar__conflict-resolution-change-counter--waiting"
-        data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
       >
-        <FaRegClock />
+        <EmptyClockIcon />
       </div>
     ) : conflictResolutionChanges ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__conflict-resolution-change-counter"
-        data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
       >
         {conflictResolutionChangesDisplayLabel}
       </div>
@@ -148,7 +144,7 @@ export const ActivityBar = observer(() => {
   ) : (
     <div
       className="activity-bar__item__icon__indicator activity-bar__item__icon__indicator__dot activity-bar__item__icon__review-changes__indicator"
-      data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+      data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
     ></div>
   );
   // project latest changes
@@ -171,7 +167,7 @@ export const ActivityBar = observer(() => {
           ? 'activity-bar__item__icon__project-latest-changes__indicator--has-conflicts'
           : ''
       }`}
-      data-testid={STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
+      data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
     ></div>
   );
   // tabs
@@ -179,7 +175,7 @@ export const ActivityBar = observer(() => {
     {
       mode: ACTIVITY_MODE.EXPLORER,
       title: 'Explorer (Ctrl + Shift + X)',
-      icon: <FaList />,
+      icon: <ListIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.CHANGES,
@@ -187,7 +183,7 @@ export const ActivityBar = observer(() => {
       info: localChanges ? `${localChanges} unsynced changes` : undefined,
       icon: (
         <div className="activity-bar__local-change-icon activity-bar__item__icon-with-indicator">
-          <FaCodeBranch />
+          <CodeBranchIcon />
           {localChangesIndicatorStatusIcon}
         </div>
       ),
@@ -202,7 +198,7 @@ export const ActivityBar = observer(() => {
         : undefined,
       icon: (
         <div className="activity-bar__workspace-updater-icon activity-bar__item__icon-with-indicator">
-          <GoCloudDownload />
+          <CloudDownloadIcon />
           {projectLatestChangesIndicatorStatusIcon}
         </div>
       ),
@@ -213,7 +209,7 @@ export const ActivityBar = observer(() => {
       info: reviewChanges ? `${reviewChanges} changes` : undefined,
       icon: (
         <div className="activity-bar__review-icon activity-bar__item__icon-with-indicator">
-          <GoGitPullRequest />
+          <GitPullRequestIcon />
           {reviewChangesIndicatorStatusIcon}
         </div>
       ),
@@ -230,7 +226,7 @@ export const ActivityBar = observer(() => {
         : conflictResolutionChanges,
       icon: (
         <div className="activity-bar__conflict-resolution-icon activity-bar__item__icon-with-indicator">
-          <GoGitMerge />
+          <GitMergeIcon />
           {conflictResolutionChangesIndicatorStatusIcon}
         </div>
       ),
@@ -240,14 +236,14 @@ export const ActivityBar = observer(() => {
       title: 'Project',
       icon: (
         <div className="activity-bar__project-overview-icon">
-          <GoEye />
+          <EyeIcon />
         </div>
       ),
     },
     !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.WORKSPACE_BUILDS,
+      mode: ACTIVITY_MODE.WORKSPACE_WORKFLOWS,
       title: 'Workspace Builds',
-      icon: <FaWrench />,
+      icon: <WrenchIcon />,
     },
   ].filter((activity): activity is ActivityDisplay => Boolean(activity));
 
@@ -286,7 +282,7 @@ export const ActivityBar = observer(() => {
           tabIndex={-1}
           title="Settings..."
         >
-          <FaCog />
+          <CogIcon />
         </button>
       </DropdownMenu>
     </div>

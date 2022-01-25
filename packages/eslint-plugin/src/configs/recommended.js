@@ -50,6 +50,11 @@ const ES_RULES = {
   'no-console': WARN,
   'no-const-assign': ERROR,
   'no-debugger': WARN,
+  // NOTE: this rule is useful for us to enforce usage of inline type imports
+  // e.g. `import { type A, B } from ...` over `import type { A } from ...; import { B } from ...;`
+  // We would not need to enable rule `import/no-duplicates` anymore
+  // See https://github.com/typescript-eslint/typescript-eslint/issues/4338
+  'no-duplicate-imports': WARN,
   'no-fallthrough': ERROR,
   'no-global-assign': ERROR,
   'no-invalid-regexp': ERROR,
@@ -89,7 +94,7 @@ const ES_RULES = {
   'no-void': ERROR,
   'no-whitespace-before-property': ERROR,
   'object-curly-spacing': [WARN, 'always'],
-  'prefer-arrow-callback': ERROR,
+  'prefer-arrow-callback': [ERROR, { allowNamedFunctions: true }],
   'prefer-const': WARN,
   'prefer-named-capture-group': WARN,
   'prefer-template': WARN,
@@ -123,29 +128,12 @@ const IMPORT_RULES = {
 };
 
 const TYPESCRIPT_RULES = {
-  '@typescript-eslint/ban-types': [
-    WARN,
-    {
-      // the default config disallows the use of 'object' and `Function` (which happen to be one of our element type) so we have to customize it
-      // See https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/ban-types.md
-      types: {
-        String: { message: `Use 'string' instead`, fixWith: 'string' },
-        Boolean: { message: `Use 'boolean' instead`, fixWith: 'boolean' },
-        Number: { message: `Use 'number' instead`, fixWith: 'number' },
-        Symbol: { message: `Use 'symbol' instead`, fixWith: 'symbol' },
-        Object: { message: `Use 'object' instead`, fixWith: 'object' },
-      },
-      extendDefaults: false,
-    },
-  ],
-  '@typescript-eslint/camelcase': OFF,
-  '@typescript-eslint/class-name-casing': OFF,
+  '@typescript-eslint/ban-types': WARN,
   '@typescript-eslint/consistent-type-imports': WARN,
   '@typescript-eslint/explicit-function-return-type': [
     WARN,
     { allowTypedFunctionExpressions: true },
   ],
-  '@typescript-eslint/explicit-member-accessibility': OFF,
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],
   '@typescript-eslint/no-var-requires': OFF,
   '@typescript-eslint/no-unused-vars': [
@@ -205,6 +193,7 @@ const STUDIO_RULES = {
   '@finos/legend-studio/no-cross-protocol-version-import': ERROR,
   '@finos/legend-studio/no-cross-workspace-non-export-usage': ERROR,
   '@finos/legend-studio/no-cross-workspace-source-usage': ERROR,
+  '@finos/legend-studio/no-duplicate-exports': ERROR,
   '@finos/legend-studio/no-same-workspace-absolute-import': ERROR,
   '@finos/legend-studio/no-same-workspace-index-import': ERROR,
 };

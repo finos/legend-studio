@@ -15,8 +15,7 @@
  */
 
 import { observable, computed, makeObservable, action } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
 import type {
@@ -42,7 +41,8 @@ export class RootRelationalInstanceSetImplementation
   filter?: FilterMapping | undefined;
   distinct?: boolean | undefined;
   groupBy?: GroupByMapping | undefined;
-  mainTableAlias!: TableAlias;
+  mainTableAlias?: TableAlias;
+  superSetImplementationId?: string | undefined;
 
   constructor(
     id: InferableMappingElementIdValue,
@@ -58,6 +58,7 @@ export class RootRelationalInstanceSetImplementation
       distinct: observable,
       groupBy: observable,
       mainTableAlias: observable,
+      superSetImplementationId: observable,
       setPropertyMappings: action,
       hashCode: computed,
     });
@@ -77,10 +78,11 @@ export class RootRelationalInstanceSetImplementation
     return hashArray([
       CORE_HASH_STRUCTURE.ROOT_RELATIONAL_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,
-      this.mainTableAlias.relation.pointerHashCode,
+      this.mainTableAlias?.relation.pointerHashCode ?? '',
       this.distinct?.toString() ?? '',
       hashArray(this.groupBy?.columns ?? []),
       this.filter ?? '',
+      this.superSetImplementationId ?? '',
     ]);
   }
 }

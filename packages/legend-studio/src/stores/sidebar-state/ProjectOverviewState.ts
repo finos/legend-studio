@@ -15,17 +15,18 @@
  */
 
 import type { EditorStore } from '../EditorStore';
-import type { EditorSdlcState } from '../EditorSdlcState';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   assertErrorThrown,
   LogEvent,
   getNullableFirstElement,
 } from '@finos/legend-shared';
 import { generateSetupRoute } from '../LegendStudioRouter';
-import type { NewVersionType } from '@finos/legend-server-sdlc';
 import {
+  type NewVersionType,
   CreateVersionCommand,
   ReviewState,
   Revision,
@@ -33,8 +34,9 @@ import {
   Version,
   Workspace,
   Review,
+  areWorkspacesEquivalent,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',
@@ -45,7 +47,7 @@ export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
 
 export class ProjectOverviewState {
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   activityMode = PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW;
   releaseVersion: CreateVersionCommand;
   committedReviewsBetweenMostRecentVersionAndProjectLatest: Review[] = [];
@@ -59,7 +61,7 @@ export class ProjectOverviewState {
   isFetchingLatestVersion = false;
   isFetchingCurrentProjectRevision = false;
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
       editorStore: false,
       sdlcState: false,
@@ -80,13 +82,13 @@ export class ProjectOverviewState {
       this.isFetchingProjectWorkspaces = true;
       this.projectWorkspaces = (
         (yield this.editorStore.sdlcServerClient.getWorkspaces(
-          this.sdlcState.currentProjectId,
+          this.sdlcState.activeProject.projectId,
         )) as PlainObject<Workspace>[]
       ).map((workspace) => Workspace.serialization.fromJson(workspace));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -94,33 +96,38 @@ export class ProjectOverviewState {
     }
   }
 
-  *deleteWorkspace(workspaceId: string): GeneratorFn<void> {
+  *deleteWorkspace(workspace: Workspace): GeneratorFn<void> {
     try {
       this.isDeletingWorkspace = true;
       yield this.editorStore.sdlcServerClient.deleteWorkspace(
-        this.sdlcState.currentProjectId,
-        workspaceId,
+        this.sdlcState.activeProject.projectId,
+        workspace,
       );
       this.projectWorkspaces = this.projectWorkspaces.filter(
-        (workspace) => workspace.workspaceId !== workspaceId,
+        (w) => !areWorkspacesEquivalent(workspace, w),
       );
       // redirect to home page if current workspace is deleted
-      if (this.editorStore.sdlcState.currentWorkspaceId === workspaceId) {
+      if (
+        areWorkspacesEquivalent(
+          this.editorStore.sdlcState.activeWorkspace,
+          workspace,
+        )
+      ) {
         this.editorStore.applicationStore.notifyWarning(
           'Current workspace is deleted. Redirecting to home page',
         );
         this.editorStore.setIgnoreNavigationBlocking(true);
         this.editorStore.applicationStore.navigator.goTo(
           generateSetupRoute(
-            this.editorStore.applicationStore.config.sdlcServerKey,
-            this.editorStore.sdlcState.currentProjectId,
+            this.editorStore.applicationStore.config.currentSDLCServerOption,
+            this.editorStore.sdlcState.activeProject.projectId,
           ),
         );
       }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -136,7 +143,7 @@ export class ProjectOverviewState {
     try {
       this.isUpdatingProject = true;
       yield this.editorStore.sdlcServerClient.updateProject(
-        this.sdlcState.currentProjectId,
+        this.sdlcState.activeProject.projectId,
         {
           name,
           description,
@@ -147,7 +154,9 @@ export class ProjectOverviewState {
         `Project '${name}' is succesfully updated`,
       );
       yield flowResult(
-        this.sdlcState.fetchCurrentProject(this.sdlcState.currentProjectId),
+        this.sdlcState.fetchCurrentProject(
+          this.sdlcState.activeProject.projectId,
+        ),
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -162,7 +171,7 @@ export class ProjectOverviewState {
       this.isFetchingLatestVersion = true;
       // fetch latest version
       const version = (yield this.editorStore.sdlcServerClient.getLatestVersion(
-        this.sdlcState.currentProjectId,
+        this.sdlcState.activeProject.projectId,
       )) as PlainObject<Version> | undefined;
       this.latestProjectVersion = version
         ? Version.serialization.fromJson(version)
@@ -170,7 +179,7 @@ export class ProjectOverviewState {
       // fetch current project revision and set release revision ID
       this.currentProjectRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(
-          this.sdlcState.currentProjectId,
+          this.sdlcState.activeProject.projectId,
           undefined,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
@@ -181,7 +190,7 @@ export class ProjectOverviewState {
       if (this.latestProjectVersion) {
         const latestProjectVersionRevision = Revision.serialization.fromJson(
           (yield this.editorStore.sdlcServerClient.getRevision(
-            this.sdlcState.currentProjectId,
+            this.sdlcState.activeProject.projectId,
             undefined,
             this.latestProjectVersion.revisionId,
           )) as PlainObject<Revision>,
@@ -192,7 +201,7 @@ export class ProjectOverviewState {
         // in those case, we will get the time from the revision
         const latestProjectVersionRevisionReviewObj = getNullableFirstElement(
           (yield this.editorStore.sdlcServerClient.getReviews(
-            this.sdlcState.currentProjectId,
+            this.sdlcState.activeProject.projectId,
             ReviewState.COMMITTED,
             [latestProjectVersionRevision.id],
             undefined,
@@ -208,7 +217,7 @@ export class ProjectOverviewState {
             : undefined;
         this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
           (yield this.editorStore.sdlcServerClient.getReviews(
-            this.sdlcState.currentProjectId,
+            this.sdlcState.activeProject.projectId,
             ReviewState.COMMITTED,
             undefined,
             latestProjectVersionRevisionReview?.committedAt ??
@@ -226,7 +235,7 @@ export class ProjectOverviewState {
       } else {
         this.committedReviewsBetweenMostRecentVersionAndProjectLatest = (
           (yield this.editorStore.sdlcServerClient.getReviews(
-            this.sdlcState.currentProjectId,
+            this.sdlcState.activeProject.projectId,
             ReviewState.COMMITTED,
             undefined,
             undefined,
@@ -238,7 +247,7 @@ export class ProjectOverviewState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -253,7 +262,7 @@ export class ProjectOverviewState {
       this.releaseVersion.validate();
       this.latestProjectVersion = Version.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.createVersion(
-          this.sdlcState.currentProjectId,
+          this.sdlcState.activeProject.projectId,
           CreateVersionCommand.serialization.toJson(this.releaseVersion),
         )) as PlainObject<Version>,
       );
@@ -261,7 +270,7 @@ export class ProjectOverviewState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

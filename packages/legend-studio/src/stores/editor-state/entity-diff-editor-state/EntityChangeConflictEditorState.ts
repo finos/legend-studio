@@ -23,16 +23,20 @@ import {
   flowResult,
 } from 'mobx';
 import type { EditorStore } from '../../EditorStore';
-import type { SPECIAL_REVISION_ALIAS } from './EntityDiffEditorState';
-import { EntityDiffEditorState } from './EntityDiffEditorState';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type SPECIAL_REVISION_ALIAS,
+  EntityDiffEditorState,
+} from './EntityDiffEditorState';
+import {
+  type GeneratorFn,
   assertErrorThrown,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { mergeDiff3 } from 'node-diff3';
-import type { Entity } from '@finos/legend-model-storage';
-import { extractEntityNameFromPath } from '@finos/legend-model-storage';
+import {
+  type Entity,
+  extractEntityNameFromPath,
+} from '@finos/legend-model-storage';
 import { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import { ParserError } from '@finos/legend-graph';
 
@@ -422,7 +426,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
           new EntityChangeConflictResolution(this.entityPath, undefined),
         );
       } else if (entities.length === 1) {
-        const resolvedEntity = entities[0];
+        const resolvedEntity = entities[0] as Entity;
         // cleanup the source information since we are using this entity to compute diff
         resolvedEntity.content =
           this.editorStore.graphManagerState.graphManager.pruneSourceInformation(

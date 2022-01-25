@@ -22,12 +22,16 @@ import {
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
-  STUDIO_HOTKEY,
-  STUDIO_HOTKEY_MAP,
+  LEGEND_STUDIO_HOTKEY,
+  LEGEND_STUDIO_HOTKEY_MAP,
 } from './EditorConfig';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
-import { EditorGraphState } from './EditorGraphState';
+import {
+  type GraphBuilderReport,
+  EditorGraphState,
+  GraphBuilderStatus,
+} from './EditorGraphState';
 import { ChangeDetectionState } from './ChangeDetectionState';
 import { NewElementState } from './NewElementState';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState';
@@ -35,10 +39,12 @@ import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState';
 import { LocalChangesState } from './sidebar-state/LocalChangesState';
 import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState';
-import { WorkspaceBuildsState } from './sidebar-state/WorkspaceBuildsState';
+import { WorkspaceWorkflowsState } from './sidebar-state/WorkspaceWorkflowsState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
-import type { Clazz, GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type Clazz,
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   addUniqueEntry,
   isNonNullable,
@@ -52,7 +58,7 @@ import {
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
-import { EditorSdlcState } from './EditorSdlcState';
+import { EditorSDLCState } from './EditorSDLCState';
 import { ModelLoaderState } from './editor-state/ModelLoaderState';
 import type { EditorState } from './editor-state/EditorState';
 import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/EntityDiffViewState';
@@ -74,20 +80,27 @@ import {
   generateSetupRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter';
-import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
-import type { PackageableElementOption } from './shared/PackageableElementOptionUtil';
-import { buildElementOption } from './shared/PackageableElementOptionUtil';
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
-import type { Entity } from '@finos/legend-model-storage';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
-import { ProjectConfiguration } from '@finos/legend-server-sdlc';
-import type {
-  PackageableElement,
-  Type,
-  Store,
-  GraphManagerState,
-} from '@finos/legend-graph';
 import {
+  HotkeyConfiguration,
+  NonBlockingDialogState,
+  PanelDisplayState,
+} from '@finos/legend-art';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+} from './shared/PackageableElementOptionUtil';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+import type { Entity } from '@finos/legend-model-storage';
+import {
+  ProjectConfiguration,
+  type SDLCServerClient,
+  type WorkspaceType,
+} from '@finos/legend-server-sdlc';
+import {
+  type PackageableElement,
+  type Type,
+  type Store,
+  type GraphManagerState,
   GRAPH_MANAGER_LOG_EVENT,
   PACKAGEABLE_ELEMENT_TYPE,
   PrimitiveType,
@@ -98,7 +111,6 @@ import {
   ConcreteFunctionDefinition,
   Measure,
   Database,
-  ServiceStore,
   FlatData,
   Mapping,
   Service,
@@ -110,50 +122,54 @@ import {
   Package,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import type { StudioPluginManager } from '../application/StudioPluginManager';
-import type {
-  ActionAlertInfo,
-  ApplicationStore,
-  BlockingAlertInfo,
-} from '@finos/legend-application';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import {
+  type ActionAlertInfo,
+  type ApplicationStore,
+  type BlockingAlertInfo,
   ActionAlertActionType,
   ActionAlertType,
   APPLICATION_LOG_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { STUDIO_LOG_EVENT } from './StudioLogEvent';
-import type { StudioConfig } from '../application/StudioConfig';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
+import type { EditorMode } from './editor/EditorMode';
+import { StandardEditorMode } from './editor/StandardEditorMode';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 
-export class EditorHotkey {
-  name: string;
-  keyBinds: string[];
-  handler: (event?: KeyboardEvent) => void;
-
-  constructor(
-    name: string,
-    keyBinds: string[],
-    handler: (event?: KeyboardEvent) => void,
-  ) {
-    this.name = name;
-    this.keyBinds = keyBinds;
-    this.handler = handler;
-  }
-}
-
 export class EditorStore {
-  applicationStore: ApplicationStore<StudioConfig>;
+  applicationStore: ApplicationStore<LegendStudioConfig>;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
-  pluginManager: StudioPluginManager;
+  pluginManager: LegendStudioPluginManager;
+
+  editorMode: EditorMode;
+  setEditorMode(val: EditorMode): void {
+    this.editorMode = val;
+  }
+  // NOTE: once we clear up the editor store to make modes more separated
+  // we should remove these sets of functions. They are basically hacks to
+  // ensure hiding parts of the UI based on the editing mode.
+  // Instead, we will gradually move these `boolean` flags into `EditorMode`
+  // See https://github.com/finos/legend-studio/issues/317
+  mode = EDITOR_MODE.STANDARD;
+  setMode(val: EDITOR_MODE): void {
+    this.mode = val;
+  }
+  get isInViewerMode(): boolean {
+    return this.mode === EDITOR_MODE.VIEWER;
+  }
+  get isInConflictResolutionMode(): boolean {
+    return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
+  }
 
   editorExtensionStates: EditorExtensionState[] = [];
   explorerTreeState: ExplorerTreeState;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
   changeDetectionState: ChangeDetectionState;
@@ -161,7 +177,7 @@ export class EditorStore {
   modelLoaderState: ModelLoaderState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
-  workspaceBuildsState: WorkspaceBuildsState;
+  workspaceWorkflowsState: WorkspaceWorkflowsState;
   workspaceUpdaterState: WorkspaceUpdaterState;
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
@@ -170,7 +186,6 @@ export class EditorStore {
 
   private _isDisposed = false;
   initState = ActionState.create();
-  mode = EDITOR_MODE.STANDARD;
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
 
   // Aux Panel
@@ -190,8 +205,8 @@ export class EditorStore {
 
   // Hot keys
   blockGlobalHotkeys = false;
-  defaultHotkeys: EditorHotkey[] = [];
-  hotkeys: EditorHotkey[] = [];
+  defaultHotkeys: HotkeyConfiguration[] = [];
+  hotkeys: HotkeyConfiguration[] = [];
 
   // Tabs
   currentEditorState?: EditorState | undefined;
@@ -209,11 +224,11 @@ export class EditorStore {
   isDevToolEnabled = true;
 
   constructor(
-    applicationStore: ApplicationStore<StudioConfig>,
+    applicationStore: ApplicationStore<LegendStudioConfig>,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
-    pluginManager: StudioPluginManager,
+    pluginManager: LegendStudioPluginManager,
   ) {
     makeAutoObservable(this, {
       applicationStore: false,
@@ -221,6 +236,7 @@ export class EditorStore {
       depotServerClient: false,
       graphState: false,
       graphManagerState: false,
+      setEditorMode: action,
       setMode: action,
       setDevTool: action,
       setHotkeys: action,
@@ -257,7 +273,9 @@ export class EditorStore {
     this.depotServerClient = depotServerClient;
     this.pluginManager = pluginManager;
 
-    this.sdlcState = new EditorSdlcState(this);
+    this.editorMode = new StandardEditorMode(this);
+
+    this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
     this.graphManagerState = graphManagerState;
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
@@ -265,7 +283,10 @@ export class EditorStore {
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);
-    this.workspaceBuildsState = new WorkspaceBuildsState(this, this.sdlcState);
+    this.workspaceWorkflowsState = new WorkspaceWorkflowsState(
+      this,
+      this.sdlcState,
+    );
     this.workspaceUpdaterState = new WorkspaceUpdaterState(
       this,
       this.sdlcState,
@@ -296,55 +317,55 @@ export class EditorStore {
     // hotkeys
     this.defaultHotkeys = [
       // actions that need blocking
-      new EditorHotkey(
-        STUDIO_HOTKEY.COMPILE,
-        [STUDIO_HOTKEY_MAP.COMPILE],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.COMPILE,
+        [LEGEND_STUDIO_HOTKEY_MAP.COMPILE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.graphState.globalCompileInFormMode()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
         }),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.GENERATE,
-        [STUDIO_HOTKEY_MAP.GENERATE],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.GENERATE,
+        [LEGEND_STUDIO_HOTKEY_MAP.GENERATE],
         this.createGlobalHotKeyAction(() => {
           flowResult(
             this.graphState.graphGenerationState.globalGenerate(),
           ).catch(applicationStore.alertIllegalUnhandledError);
         }),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.CREATE_ELEMENT,
-        [STUDIO_HOTKEY_MAP.CREATE_ELEMENT],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.CREATE_ELEMENT,
+        [LEGEND_STUDIO_HOTKEY_MAP.CREATE_ELEMENT],
         this.createGlobalHotKeyAction(() => this.newElementState.openModal()),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.OPEN_ELEMENT,
-        [STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT,
+        [LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
         this.createGlobalHotKeyAction(() =>
           this.searchElementCommandState.open(),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_TEXT_MODE,
-        [STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.toggleTextMode()).catch(
             applicationStore.alertIllegalUnhandledError,
           );
         }),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
-        [STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
         this.createGlobalHotKeyAction(() =>
           this.openState(this.modelLoaderState),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
-        [STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
+        [LEGEND_STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.localChangesState.syncWithWorkspace()).catch(
             applicationStore.alertIllegalUnhandledError,
@@ -352,35 +373,35 @@ export class EditorStore {
         }),
       ),
       // simple actions (no blocking is needed)
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_AUX_PANEL,
-        [STUDIO_HOTKEY_MAP.TOGGLE_AUX_PANEL],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_AUX_PANEL,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_AUX_PANEL],
         this.createGlobalHotKeyAction(() => this.auxPanelDisplayState.toggle()),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
-        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
-        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.CHANGES),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
-        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
         ),
       ),
-      new EditorHotkey(
-        STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
-        [STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
+      new HotkeyConfiguration(
+        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
         this.createGlobalHotKeyAction(() =>
           this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
         ),
@@ -389,20 +410,6 @@ export class EditorStore {
     this.hotkeys = this.defaultHotkeys;
   }
 
-  // NOTE: once we clear up the editor store to make modes more separated
-  // we should remove these sets of functions. They are basically hacks to
-  // ensure hiding parts of the UI based on the editing mode.
-  // Instead, perhaps, we should think of separating the modes out and if
-  // it is needed that they share `EditorStore`, we should make them pass in
-  // a set of config for the feature of the store instead of using
-  // flags like this
-  // See https://github.com/finos/legend-studio/issues/317
-  get isInViewerMode(): boolean {
-    return this.mode === EDITOR_MODE.VIEWER;
-  }
-  get isInConflictResolutionMode(): boolean {
-    return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
-  }
   get isInitialized(): boolean {
     return (
       Boolean(
@@ -424,19 +431,15 @@ export class EditorStore {
     );
   }
 
-  setMode(val: EDITOR_MODE): void {
-    this.mode = val;
-  }
-
   setDevTool(val: boolean): void {
     this.isDevToolEnabled = val;
   }
 
-  setHotkeys(val: EditorHotkey[]): void {
+  setHotkeys(val: HotkeyConfiguration[]): void {
     this.hotkeys = val;
   }
 
-  addHotKey(val: EditorHotkey): void {
+  addHotKey(val: HotkeyConfiguration): void {
     addUniqueEntry(this.hotkeys, val);
   }
 
@@ -516,7 +519,11 @@ export class EditorStore {
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */
-  *initialize(projectId: string, workspaceId: string): GeneratorFn<void> {
+  *initialize(
+    projectId: string,
+    workspaceId: string,
+    workspaceType: WorkspaceType,
+  ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       /**
        * Since React `fast-refresh` will sometimes cause `Editor` to rerender, this method will be called again
@@ -576,7 +583,7 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateSetupRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   undefined,
                 ),
               );
@@ -588,9 +595,14 @@ export class EditorStore {
       return;
     }
     yield flowResult(
-      this.sdlcState.fetchCurrentWorkspace(projectId, workspaceId, {
-        suppressNotification: true,
-      }),
+      this.sdlcState.fetchCurrentWorkspace(
+        projectId,
+        workspaceId,
+        workspaceType,
+        {
+          suppressNotification: true,
+        },
+      ),
     );
     if (!this.sdlcState.currentWorkspace) {
       // If the workspace is not found,
@@ -608,6 +620,7 @@ export class EditorStore {
           const workspace = await this.sdlcServerClient.createWorkspace(
             projectId,
             workspaceId,
+            workspaceType,
           );
           this.applicationStore.setBlockingAlert(undefined);
           this.applicationStore.notifySuccess(
@@ -617,7 +630,9 @@ export class EditorStore {
         } catch (error) {
           assertErrorThrown(error);
           this.applicationStore.log.error(
-            LogEvent.create(STUDIO_LOG_EVENT.WORKSPACE_SETUP_FAILURE),
+            LogEvent.create(
+              LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE,
+            ),
             error,
           );
           this.applicationStore.notifyError(error);
@@ -637,7 +652,7 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateViewProjectRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   projectId,
                 ),
               );
@@ -658,9 +673,10 @@ export class EditorStore {
             handler: (): void => {
               this.applicationStore.navigator.goTo(
                 generateSetupRoute(
-                  this.applicationStore.config.sdlcServerKey,
+                  this.applicationStore.config.currentSDLCServerOption,
                   projectId,
                   workspaceId,
+                  workspaceType,
                 ),
               );
             },
@@ -671,7 +687,10 @@ export class EditorStore {
       return;
     }
     yield Promise.all([
-      this.sdlcState.fetchCurrentRevision(projectId, workspaceId),
+      this.sdlcState.fetchCurrentRevision(
+        projectId,
+        this.sdlcState.activeWorkspace,
+      ),
       this.graphManagerState.initializeSystem(), // this can be moved inside of `setupEngine`
       this.graphManagerState.graphManager.initialize(
         {
@@ -684,7 +703,7 @@ export class EditorStore {
           },
         },
         {
-          tracerServicePlugins: this.pluginManager.getTracerServicePlugins(),
+          tracerService: this.applicationStore.tracerService,
         },
       ),
     ]);
@@ -768,12 +787,12 @@ export class EditorStore {
       // fetch workspace entities and config at the same time
       const result = (yield Promise.all([
         this.sdlcServerClient.getEntities(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
         ),
         this.sdlcServerClient.getConfiguration(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];
@@ -798,7 +817,26 @@ export class EditorStore {
     }
 
     try {
-      yield flowResult(this.graphState.buildGraph(entities));
+      const graphBuilderReport = (yield flowResult(
+        this.graphState.buildGraph(entities),
+      )) as GraphBuilderReport;
+
+      if (graphBuilderReport.error) {
+        if (
+          graphBuilderReport.status ===
+          GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE
+        ) {
+          yield flowResult(
+            this.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+              entities,
+              LogEvent.create(
+                CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+              ),
+            ),
+          );
+        }
+        return;
+      }
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
@@ -974,7 +1012,6 @@ export class EditorStore {
     this.setCurrentEditorState(editorState);
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   createElementState(
     element: PackageableElement,
   ): ElementEditorState | undefined {
@@ -995,7 +1032,6 @@ export class EditorStore {
     } else if (
       element instanceof Measure ||
       element instanceof Database ||
-      element instanceof ServiceStore ||
       element instanceof FlatData
     ) {
       return new UnsupportedElementEditorState(this, element);
@@ -1017,7 +1053,7 @@ export class EditorStore {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorStateCreators?.() ?? [],
       );
     for (const creator of extraElementEditorStateCreators) {
@@ -1085,7 +1121,7 @@ export class EditorStore {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostDeleteActions?.() ?? [],
       );
     for (const action of extraElementEditorPostDeleteActions) {
@@ -1116,7 +1152,7 @@ export class EditorStore {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostRenameActions?.() ?? [],
       );
     for (const action of extraElementEditorPostRenameActions) {
@@ -1348,7 +1384,6 @@ export class EditorStore {
   getSupportedElementTypes(): string[] {
     return (
       [
-        /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
         PACKAGEABLE_ELEMENT_TYPE.CLASS,
         PACKAGEABLE_ELEMENT_TYPE.ENUMERATION,
         PACKAGEABLE_ELEMENT_TYPE.PROFILE,
@@ -1370,7 +1405,7 @@ export class EditorStore {
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_StudioPlugin_Extension
+              plugin as DSL_LegendStudioPlugin_Extension
             ).getExtraSupportedElementTypes?.() ?? [],
         ),
     );

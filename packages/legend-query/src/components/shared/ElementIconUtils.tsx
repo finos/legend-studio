@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Type } from '@finos/legend-graph';
 import {
+  type Type,
   Class,
   Enumeration,
   Measure,
@@ -23,25 +23,25 @@ import {
   PrimitiveType,
 } from '@finos/legend-graph';
 import {
-  ClassIcon,
-  PrimitiveTypeIcon,
-  EnumerationIcon,
-  MeasureIcon,
-  UnknownTypeIcon,
-  UnitIcon,
+  PURE_ClassIcon,
+  PURE_PrimitiveTypeIcon,
+  PURE_EnumerationIcon,
+  PURE_MeasureIcon,
+  PURE_UnknownElementTypeIcon,
+  PURE_UnitIcon,
 } from '@finos/legend-art';
 
 export const getClassPropertyIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {
-    return <PrimitiveTypeIcon />;
+    return <PURE_PrimitiveTypeIcon />;
   } else if (type instanceof Class) {
-    return <ClassIcon />;
+    return <PURE_ClassIcon />;
   } else if (type instanceof Enumeration) {
-    return <EnumerationIcon />;
+    return <PURE_EnumerationIcon />;
   } else if (type instanceof Measure) {
-    return <MeasureIcon />;
+    return <PURE_MeasureIcon />;
   } else if (type instanceof Unit) {
-    return <UnitIcon />;
+    return <PURE_UnitIcon />;
   }
-  return <UnknownTypeIcon />;
+  return <PURE_UnknownElementTypeIcon />;
 };

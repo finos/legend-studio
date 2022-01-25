@@ -33,6 +33,27 @@ export const disposeEditor = (
   editor.getModel()?.dispose();
 };
 
+/**
+ * This method eliminates CR '\r' character(s) in the provided text value.
+ */
+export const normalizeLineEnding = (val: string): string =>
+  val.replace(/\r/g, '');
+
+/**
+ * Get the text value with LF line ending.
+ * This is needed since if there are CR `\r` characters in the text input
+ * (e.g. users of Windows doing copy/paste)
+ * the default mode of `monaco-editor` is `TextDefined` which means if the text
+ * contains CR character(s), it will automatically be treated as CRLF. As such, we want
+ * an utility method to extract the text value with line ending option LF
+ * to force omission of CR characters
+ * See https://github.com/finos/legend-studio/issues/608
+ */
+export const getEditorValue = (
+  editor: monacoEditorAPI.IStandaloneCodeEditor,
+): string =>
+  editor.getModel()?.getValue(monacoEditorAPI.EndOfLinePreference.LF) ?? '';
+
 export const disposeDiffEditor = (
   editor: monacoEditorAPI.IStandaloneDiffEditor,
 ): void => {
@@ -108,7 +129,8 @@ export const setErrorMarkers = (
       startColumn,
       endColumn: endColumn + 1, // add a 1 to endColumn as monaco editor range is not inclusive
       endLineNumber: endLine,
-      message,
+      // NOTE: when the message is empty, no error tooltip is shown, we want to avoid this
+      message: message === '' ? '(no error message)' : message,
       severity: MarkerSeverity.Error,
     },
   ]);

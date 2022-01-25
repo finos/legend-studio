@@ -28,19 +28,17 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-  UnknownTypeIcon,
-  ClassIcon,
-  EnumerationIcon,
-  AssociationIcon,
+  PURE_UnknownElementTypeIcon,
+  PURE_ClassIcon,
+  PURE_EnumerationIcon,
+  PURE_AssociationIcon,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor';
 import { useResizeDetector } from 'react-resize-detector';
-import type {
-  MappingEditorTabState,
-  MappingElement,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type MappingEditorTabState,
+  type MappingElement,
   MappingEditorState,
   getMappingElementTarget,
   getMappingElementType,
@@ -51,16 +49,18 @@ import { MappingExplorer } from './MappingExplorer';
 import { MappingTestEditor } from './MappingTestEditor';
 import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { MappingTestsExplorer } from './MappingTestsExplorer';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
 import { MappingExecutionBuilder } from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  SetImplementation,
-  EnumerationMapping,
+import {
+  Class,
+  Enumeration,
+  Association,
+  type SetImplementation,
+  type EnumerationMapping,
 } from '@finos/legend-graph';
-import { Class, Enumeration, Association } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 
 export const MappingEditorSplashScreen: React.FC = () => {
@@ -138,13 +138,13 @@ const getMappingElementTargetIcon = (
 ): React.ReactNode => {
   const target = getMappingElementTarget(mappingElement);
   if (target instanceof Class) {
-    return <ClassIcon />;
+    return <PURE_ClassIcon />;
   } else if (target instanceof Enumeration) {
-    return <EnumerationIcon />;
+    return <PURE_EnumerationIcon />;
   } else if (target instanceof Association) {
-    return <AssociationIcon />;
+    return <PURE_AssociationIcon />;
   }
-  return <UnknownTypeIcon />;
+  return <PURE_UnknownElementTypeIcon />;
 };
 
 export const MappingEditor = observer(() => {
@@ -240,7 +240,7 @@ export const MappingEditor = observer(() => {
               disabled={true}
             >
               <div
-                data-testid={STUDIO_TEST_ID.EDITOR__TABS__HEADER}
+                data-testid={LEGEND_STUDIO_TEST_ID.EDITOR__TABS__HEADER}
                 className="mapping-editor__header__tabs"
               >
                 {mappingEditorState.openedTabStates.map((tabState) => (

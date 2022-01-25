@@ -19,8 +19,8 @@ import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from './MappingElementState';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   UnsupportedOperationError,
@@ -29,15 +29,13 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import { MappingElementDecorator } from './MappingElementDecorator';
-import type {
-  SourceInformation,
-  CompilationError,
-  FlatDataInstanceSetImplementation,
-  AbstractFlatDataPropertyMapping,
-  PropertyMapping,
-  Property,
-} from '@finos/legend-graph';
 import {
+  type SourceInformation,
+  type CompilationError,
+  type FlatDataInstanceSetImplementation,
+  type AbstractFlatDataPropertyMapping,
+  type PropertyMapping,
+  type Property,
   LAMBDA_PIPE,
   GRAPH_MANAGER_LOG_EVENT,
   ParserError,
@@ -185,7 +183,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
    */
   decorate(): void {
     this.mappingElement.accept_SetImplementationVisitor(
-      new MappingElementDecorator(),
+      new MappingElementDecorator(this.editorStore),
     );
     const newPropertyMappingStates: FlatDataPropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(

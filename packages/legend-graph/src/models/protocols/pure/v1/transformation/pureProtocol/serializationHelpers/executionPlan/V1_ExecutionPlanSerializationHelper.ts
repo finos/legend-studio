@@ -22,10 +22,10 @@ import {
   primitive,
   list,
   optional,
-  SKIP,
 } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
+  optionalCustom,
   deserializeArray,
   serializeArray,
   deseralizeMap,
@@ -64,9 +64,9 @@ const dataTypeResultTypeModelSchema = createModelSchema(V1_DataTypeResultType, {
 
 const TDSColumnModelSchema = createModelSchema(V1_TDSColumn, {
   doc: optional(primitive()),
-  enumMapping: custom(
-    (val) => (val ? serializeMap(val) : SKIP),
-    (val) => (val ? deseralizeMap(val) : undefined),
+  enumMapping: optionalCustom(
+    (val: Map<string, unknown>) => serializeMap(val),
+    deseralizeMap,
   ),
   name: primitive(),
   relationalType: optional(primitive()),

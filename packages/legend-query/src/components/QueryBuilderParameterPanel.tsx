@@ -17,24 +17,29 @@
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import {
+  Dialog,
   BlankPanelContent,
   CustomSelectorInput,
   PencilIcon,
   TimesIcon,
   DollarIcon,
+  PlusIcon,
 } from '@finos/legend-art';
-import { FaPlus } from 'react-icons/fa';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
 import {
+  type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
   QueryParameterState,
 } from '../stores/QueryParametersState';
-import { Dialog } from '@material-ui/core';
 import { useEffect, useState } from 'react';
-import type { Type } from '@finos/legend-graph';
-import { MULTIPLICITY_INFINITE, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import type { PackageableElementOption } from '@finos/legend-application';
-import { buildElementOption } from '@finos/legend-application';
+import {
+  type Type,
+  MULTIPLICITY_INFINITE,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+} from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
@@ -61,6 +66,9 @@ const ParameterValuesEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__values__editor__modal">
@@ -201,6 +209,9 @@ const VariableExpressionEditor = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__modal">
           <div className="modal__header">
@@ -322,7 +333,7 @@ const QueryBuilderParameterDragLayer = observer(
   },
 );
 
-const VariableExpressionViewer = observer(
+export const VariableExpressionViewer = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
     variableExpressionState: QueryParameterState;
@@ -394,7 +405,7 @@ export const QueryBuilderParameterPanel = observer(
     const { queryBuilderState } = props;
     const queryParameterState = queryBuilderState.queryParametersState;
     const parametersDisabled = Boolean(
-      queryBuilderState.config.parametersDisabled,
+      queryBuilderState.mode.isParametersDisabled,
     );
     const addParameter = (): void => {
       if (!parametersDisabled) {
@@ -419,7 +430,7 @@ export const QueryBuilderParameterPanel = observer(
               disabled={parametersDisabled}
               title="Add Parameter"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>
@@ -434,9 +445,7 @@ export const QueryBuilderParameterPanel = observer(
             ))}
           {parametersDisabled && (
             <BlankPanelContent>
-              <div className="unsupported-element-editor__main">
-                <div className="unsupported-element-editor__summary">{`Parameters not supported in this mode`}</div>
-              </div>
+              Parameters not supported in this mode
             </BlankPanelContent>
           )}
         </div>

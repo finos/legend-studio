@@ -16,8 +16,11 @@
 
 import packageJson from '../../../../package.json';
 import { V1_Text } from './v1/model/packageableElements/text/V1_Text';
-import type { PlainObject } from '@finos/legend-shared';
-import { assertType } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  guaranteeNonNullable,
+  assertType,
+} from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_textModelSchema,
@@ -28,18 +31,15 @@ import {
   Text,
   TEXT_TYPE,
 } from '../../metamodels/pure/model/packageableElements/text/Text';
-import type {
-  GraphPluginManager,
-  PackageableElement,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_GraphBuilderContext,
-  V1_GraphTransformerContext,
-  V1_PackageableElement,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type V1_ElementProtocolClassifierPathGetter,
+  type V1_ElementProtocolDeserializer,
+  type V1_ElementProtocolSerializer,
+  type V1_ElementTransformer,
+  type V1_GraphBuilderContext,
+  type V1_GraphTransformerContext,
+  type V1_PackageableElement,
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
@@ -53,10 +53,6 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 
   override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
@@ -91,7 +87,10 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
             Object.values(TEXT_TYPE).find(
               (type) => type === elementProtocol.type,
             ) ?? TEXT_TYPE.PLAIN_TEXT;
-          element.content = elementProtocol.content;
+          element.content = guaranteeNonNullable(
+            elementProtocol.content,
+            `Text element 'content' field is missing`,
+          );
         },
       }),
     ];
@@ -112,6 +111,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     return [
       (
         elementProtocol: V1_PackageableElement,
+        plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_Text) {
           return serialize(V1_textModelSchema, elementProtocol);
@@ -125,6 +125,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
     return [
       (
         json: PlainObject<V1_PackageableElement>,
+        plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_TEXT_ELEMENT_PROTOCOL_TYPE) {
           return deserialize(V1_textModelSchema, json);

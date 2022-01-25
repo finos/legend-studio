@@ -22,14 +22,12 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState';
-import type { StoreRelational_StudioPlugin_Extension } from '../../../StoreRelational_StudioPlugin_Extension';
+import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../StoreRelational_LegendStudioPlugin_Extension';
 import { DatabaseBuilderState } from './DatabaseBuilderState';
-import type {
-  PackageableElement,
-  Connection,
-  ValidationIssue,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type Connection,
+  type ValidationIssue,
   PackageableConnection,
   JsonModelConnection,
   FlatDataConnection,
@@ -37,6 +35,7 @@ import {
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
   ApiTokenAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
@@ -51,6 +50,7 @@ import {
   RedshiftDatasourceSpecification,
   createValidationError,
 } from '@finos/legend-graph';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -88,6 +88,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   TEST = 'TEST',
   OAUTH = 'OAUTH',
   USER_PASSWORD = 'USER_PASSWORD',
+  USERNAME_PASSWORD = 'USERNAME_PASSWORD',
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
@@ -149,7 +150,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_StudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioPlugin_Extension
             ).getExtraDatasourceSpecificationTypeGetters?.() ?? [],
         );
     for (const typeGetter of extraDatasourceSpecificationTypeGetters) {
@@ -215,7 +216,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_StudioPlugin_Extension
+                  plugin as StoreRelational_LegendStudioPlugin_Extension
                 ).getExtraDatasourceSpecificationCreators?.() ?? [],
             );
         for (const creator of extraDatasourceSpecificationCreators) {
@@ -247,6 +248,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
     } else if (auth instanceof UserPasswordAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD;
+    } else if (auth instanceof UsernamePasswordAuthenticationStrategy) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD;
     } else if (
       auth instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
     ) {
@@ -259,7 +262,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_StudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioPlugin_Extension
             ).getExtraAuthenticationStrategyTypeGetters?.() ?? [],
         );
     for (const typeGetter of extraAuthenticationStrategyTypeGetters) {
@@ -312,6 +315,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD: {
+        this.connection.setAuthenticationStrategy(
+          new UsernamePasswordAuthenticationStrategy('', ''),
+        );
+        return;
+      }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.TEST: {
         this.connection.setAuthenticationStrategy(
           new TestDatabaseAuthenticationStrategy(),
@@ -330,7 +339,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_StudioPlugin_Extension
+                  plugin as StoreRelational_LegendStudioPlugin_Extension
                 ).getExtraAuthenticationStrategyCreators?.() ?? [],
             );
         for (const creator of extraAuthenticationStrategyCreators) {
@@ -404,6 +413,21 @@ export class ConnectionEditorState {
         connection,
       );
     } else {
+      const extraConnectionValueEditorStateBuilders =
+        this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLMapping_LegendStudioPlugin_Extension
+              ).getExtraConnectionValueEditorStateBuilders?.() ?? [],
+          );
+      for (const stateBuilder of extraConnectionValueEditorStateBuilders) {
+        const state = stateBuilder(this.editorStore, connection);
+        if (state) {
+          return state;
+        }
+      }
       return new UnsupportedConnectionValueState(this.editorStore, connection);
     }
   }

@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, Fragment } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDrop } from 'react-dnd';
-import { FaRegKeyboard } from 'react-icons/fa';
+import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { observer } from 'mobx-react-lite';
 import {
   DiagramRenderer,
@@ -26,18 +24,17 @@ import {
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
 } from '../../DiagramRenderer';
-import type {
-  DiagramEditorInlineClassCreatorState,
-  DiagramEditorInlineClassRenamerState,
-  DiagramEditorInlinePropertyEditorState,
-} from '../../stores/studio/DiagramEditorState';
 import {
+  type DiagramEditorInlineClassCreatorState,
+  type DiagramEditorInlineClassRenamerState,
+  type DiagramEditorInlinePropertyEditorState,
   DIAGRAM_EDITOR_SIDE_PANEL_TAB,
   DiagramEditorClassViewEditorSidePanelState,
   DiagramEditorState,
 } from '../../stores/studio/DiagramEditorState';
-import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  type ResizablePanelHandlerProps,
+  ContextMenu,
   getControlledResizablePanelProps,
   BasePopover,
   BlankPanelContent,
@@ -46,6 +43,7 @@ import {
   clsx,
   createFilter,
   CustomSelectorInput,
+  KeyboardIcon,
   DropdownMenu,
   MenuContent,
   MenuContentDivider,
@@ -55,9 +53,19 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanel,
+  ResizeIcon,
+  MinusIcon,
+  MousePointerIcon,
+  MoveIcon,
+  PlusCircleIcon,
+  SidebarIcon,
+  TriangleIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+  Dialog,
 } from '@finos/legend-art';
-import type { Type } from '@finos/legend-graph';
 import {
+  type Type,
   Class,
   DerivedProperty,
   Property,
@@ -71,21 +79,15 @@ import {
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
 import {
-  FiMinus,
-  FiMousePointer,
-  FiMove,
-  FiPlusCircle,
-  FiSidebar,
-  FiTriangle,
-  FiZoomIn,
-  FiZoomOut,
-} from 'react-icons/fi';
-import { IoResize } from 'react-icons/io5';
-import { Dialog } from '@material-ui/core';
-import { prettyCONSTName } from '@finos/legend-shared';
+  guaranteeNonNullable,
+  isNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import type { PackageableElementOption } from '@finos/legend-application';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  type PackageableElementOption,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   ClassFormEditor,
   CORE_DND_TYPE,
@@ -94,6 +96,42 @@ import {
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
+import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
+
+const DiagramEditorContextMenu = observer(
+  (
+    props: {
+      diagramEditorState: DiagramEditorState;
+    },
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const { diagramEditorState } = props;
+    const editorStore = useEditorStore();
+    const extraClassViewContextMenuItems =
+      diagramEditorState.contextMenuClassView
+        ? editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSLDiagram_LegendStudioPlugin_Extension
+                ).getExtraClassViewContextMenuItemRendererConfigurations?.() ??
+                [],
+            )
+            .filter(isNonNullable)
+            .map((config) => (
+              <Fragment key={config.key}>
+                {config.renderer(
+                  diagramEditorState,
+                  guaranteeNonNullable(diagramEditorState.contextMenuClassView),
+                )}
+              </Fragment>
+            ))
+        : [];
+    return <MenuContent>{extraClassViewContextMenuItems}</MenuContent>;
+  },
+  { forwardRef: true },
+);
 
 const DiagramRendererHotkeyInfosModal = observer(
   (props: { open: boolean; onClose: () => void }) => {
@@ -106,6 +144,9 @@ const DiagramRendererHotkeyInfosModal = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content--scrollable',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark modal--scrollable diagram-editor__hotkeys__dialog">
@@ -306,7 +347,7 @@ const DiagramEditorToolPanel = observer(
           )}
           title="View Tool (V)"
         >
-          <FiMousePointer className="diagram-editor__icon--layout" />
+          <MousePointerIcon className="diagram-editor__icon--layout" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -320,7 +361,7 @@ const DiagramEditorToolPanel = observer(
           )}
           title="Pan Tool (M)"
         >
-          <FiMove className="diagram-editor__icon--pan" />
+          <MoveIcon className="diagram-editor__icon--pan" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -334,7 +375,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
         >
-          <FiZoomIn className="diagram-editor__icon--zoom-in" />
+          <ZoomInIcon className="diagram-editor__icon--zoom-in" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -348,7 +389,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
         >
-          <FiZoomOut className="diagram-editor__icon--zoom-out" />
+          <ZoomOutIcon className="diagram-editor__icon--zoom-out" />
         </button>
         <div className="diagram-editor__tools__divider" />
         <button
@@ -367,7 +408,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
           )}
         >
-          <FiMinus className="diagram-editor__icon--property" />
+          <MinusIcon className="diagram-editor__icon--property" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -385,7 +426,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
           )}
         >
-          <FiTriangle className="diagram-editor__icon--inheritance" />
+          <TriangleIcon className="diagram-editor__icon--inheritance" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -402,7 +443,7 @@ const DiagramEditorToolPanel = observer(
           //   DIAGRAM_RELATIONSHIP_EDIT_MODE.ASSOCIATION,
           // )}
         >
-          <IoResize className="diagram-editor__icon--association" />
+          <ResizeIcon className="diagram-editor__icon--association" />
         </button>
         <button
           className={clsx('diagram-editor__tool', {
@@ -417,7 +458,7 @@ const DiagramEditorToolPanel = observer(
             DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
           )}
         >
-          <FiPlusCircle className="diagram-editor__icon--add-class" />
+          <PlusCircleIcon className="diagram-editor__icon--add-class" />
         </button>
         <div className="diagram-editor__tools__divider" />
         <button
@@ -426,7 +467,7 @@ const DiagramEditorToolPanel = observer(
           title="Show Hotkeys"
           onClick={showDiagramRendererHokeysModal}
         >
-          <FaRegKeyboard className="diagram-editor__icon--hotkey-info" />
+          <KeyboardIcon className="diagram-editor__icon--hotkey-info" />
         </button>
         <DiagramRendererHotkeyInfosModal
           open={diagramEditorState.showHotkeyInfosModal}
@@ -1256,7 +1297,7 @@ const DiagramEditorHeader = observer(
             tabIndex={-1}
             onClick={toggleSidePanel}
           >
-            <FiSidebar className="diagram-editor__icon--sidebar" />
+            <SidebarIcon className="diagram-editor__icon--sidebar" />
           </button>
         </div>
       </>
@@ -1269,6 +1310,7 @@ export const DiagramEditor = observer(() => {
   const diagramEditorState =
     editorStore.getCurrentEditorState(DiagramEditorState);
   const diagramCanvasRef = useRef<HTMLDivElement>(null);
+  const onContextMenuClose = (): void => diagramEditorState.closeContextMenu();
 
   return (
     <div className="diagram-editor">
@@ -1281,7 +1323,15 @@ export const DiagramEditor = observer(() => {
         {diagramEditorState.isDiagramRendererInitialized && (
           <DiagramEditorOverlay diagramEditorState={diagramEditorState} />
         )}
-        <div className="diagram-editor__stage">
+        <ContextMenu
+          className="diagram-editor__stage"
+          content={
+            <DiagramEditorContextMenu diagramEditorState={diagramEditorState} />
+          }
+          disabled={!diagramEditorState.showContextMenu}
+          menuProps={{ elevation: 7 }}
+          onClose={onContextMenuClose}
+        >
           {diagramEditorState.isDiagramRendererInitialized && (
             <DiagramEditorToolPanel diagramEditorState={diagramEditorState} />
           )}
@@ -1302,7 +1352,7 @@ export const DiagramEditor = observer(() => {
               />
             </>
           )}
-        </div>
+        </ContextMenu>
       </div>
     </div>
   );

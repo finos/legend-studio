@@ -16,12 +16,19 @@
 
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
-import { FaInfoCircle, FaTimes } from 'react-icons/fa';
-import { MdModeEdit } from 'react-icons/md';
-import { GoSync } from 'react-icons/go';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { Link } from 'react-router-dom';
-import { clsx, PanelLoadingIndicator, ContextMenu } from '@finos/legend-art';
+import {
+  clsx,
+  PanelLoadingIndicator,
+  ContextMenu,
+  SyncIcon,
+  PencilIcon,
+  InfoCircleIcon,
+  TimesIcon,
+  UsersIcon,
+  UserIcon,
+} from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
 import {
   generateEditorRoute,
@@ -29,11 +36,15 @@ import {
   generateReviewRoute,
 } from '../../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
-import type { Workspace } from '@finos/legend-server-sdlc';
-import { NewVersionType } from '@finos/legend-server-sdlc';
+import {
+  type Workspace,
+  NewVersionType,
+  WorkspaceType,
+  areWorkspacesEquivalent,
+} from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const WorkspaceViewerContextMenu = observer<
   {
@@ -46,9 +57,7 @@ const WorkspaceViewerContextMenu = observer<
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const deleteWorkspace = applicationStore.guaranteeSafeAction(() =>
-      flowResult(
-        editorStore.projectOverviewState.deleteWorkspace(workspace.workspaceId),
-      ),
+      flowResult(editorStore.projectOverviewState.deleteWorkspace(workspace)),
     );
 
     return (
@@ -68,9 +77,11 @@ const WorkspaceViewerContextMenu = observer<
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
-  const isActive =
-    editorStore.sdlcState.currentWorkspaceId === workspace.workspaceId;
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const isActive = areWorkspacesEquivalent(
+    editorStore.sdlcState.activeWorkspace,
+    workspace,
+  );
   const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
     useState(false);
   const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -94,16 +105,24 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         rel="noopener noreferrer"
         target="_blank"
         to={generateEditorRoute(
-          applicationStore.config.sdlcServerKey,
+          applicationStore.config.currentSDLCServerOption,
           workspace.projectId,
           workspace.workspaceId,
+          workspace.workspaceType,
         )}
         title={'Go to workspace detail'}
       >
-        <div className="project-overview__item__link__content">
-          <span className="project-overview__item__link__content__name">
+        <div className="project-overview__item__link__content project-overview__workspace__viewer">
+          <div className="project-overview__workspace__viewer-icon">
+            {workspace.workspaceType === WorkspaceType.GROUP ? (
+              <UsersIcon />
+            ) : (
+              <UserIcon />
+            )}
+          </div>
+          <div className="project-overview__item__link__content__name">
             {workspace.workspaceId}
-          </span>
+          </div>
         </div>
       </Link>
     </ContextMenu>
@@ -136,7 +155,9 @@ const WorkspacesViewer = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={
+            LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+          }
         >
           {workspaces.length}
         </div>
@@ -144,12 +165,12 @@ const WorkspacesViewer = observer(() => {
       <div className="panel__content project-overview__panel__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div
-          data-testid={STUDIO_TEST_ID.PANEL_CONTENT_LIST}
+          data-testid={LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_LIST}
           className="panel__content__list"
         >
           {workspaces.map((workspace) => (
             <WorkspaceViewer
-              key={workspace.workspaceId}
+              key={`${workspace.workspaceType}.${workspace.workspaceId}`}
               workspace={workspace}
             />
           ))}
@@ -161,9 +182,8 @@ const WorkspacesViewer = observer(() => {
 
 const ReleaseEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const projectOverviewState = editorStore.projectOverviewState;
-  const sdlcState = editorStore.sdlcState;
   const commitedReviews =
     projectOverviewState.committedReviewsBetweenMostRecentVersionAndProjectLatest;
   const isDispatchingAction =
@@ -196,13 +216,6 @@ const ReleaseEditor = observer(() => {
     );
   }, [applicationStore, projectOverviewState]);
 
-  if (!sdlcState.isCurrentProjectInProduction) {
-    return (
-      <div className="panel__content project-overview__release--empty">
-        Release is only supported for PROD projects
-      </div>
-    );
-  }
   return (
     <div className="panel side-bar__panel project-overview__panel project-overview__release">
       <div className="panel__header">
@@ -274,7 +287,7 @@ const ReleaseEditor = observer(() => {
                       rel="noopener noreferrer"
                       target="_blank"
                       to={generateViewVersionRoute(
-                        applicationStore.config.sdlcServerKey,
+                        applicationStore.config.currentSDLCServerOption,
                         latestProjectVersion.projectId,
                         latestProjectVersion.id.id,
                       )}
@@ -309,13 +322,13 @@ const ReleaseEditor = observer(() => {
                     className="side-bar__panel__title__info"
                     title="All committed reviews in the project since the latest release"
                   >
-                    <FaInfoCircle />
+                    <InfoCircleIcon />
                   </div>
                 </div>
                 <div
                   className="side-bar__panel__header__changes-count"
                   data-testid={
-                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                    LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
                   }
                 >
                   {commitedReviews.length}
@@ -329,7 +342,7 @@ const ReleaseEditor = observer(() => {
                     rel="noopener noreferrer"
                     target="_blank"
                     to={generateReviewRoute(
-                      applicationStore.config.sdlcServerKey,
+                      applicationStore.config.currentSDLCServerOption,
                       review.projectId,
                       review.id,
                     )}
@@ -356,7 +369,7 @@ const ReleaseEditor = observer(() => {
 
 const VersionsViewer = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const versions = editorStore.sdlcState.projectVersions;
   const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
 
@@ -377,7 +390,9 @@ const VersionsViewer = observer(() => {
         </div>
         <div
           className="side-bar__panel__header__changes-count"
-          data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+          data-testid={
+            LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+          }
         >
           {versions.length}
         </div>
@@ -392,7 +407,7 @@ const VersionsViewer = observer(() => {
               rel="noopener noreferrer"
               target="_blank"
               to={generateViewVersionRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 version.projectId,
                 version.id.id,
               )}
@@ -504,7 +519,7 @@ const OverviewViewer = observer(() => {
           tabIndex={-1}
           title="Update project"
         >
-          <GoSync />
+          <SyncIcon />
         </button>
       </div>
       <div className="panel__content project-overview__panel__content">
@@ -554,7 +569,9 @@ const OverviewViewer = observer(() => {
             <div className="panel__content__form__section__list"></div>
             <div
               className="panel__content__form__section__list__items"
-              data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+              data-testid={
+                LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+              }
             >
               {tagsArray.map((value, idx) => (
                 // NOTE: since the value must be unique, we will use it as the key
@@ -603,14 +620,14 @@ const OverviewViewer = observer(() => {
                           onClick={showEditItemInput(value, idx)}
                           tabIndex={-1}
                         >
-                          <MdModeEdit />
+                          <PencilIcon />
                         </button>
                         <button
                           className="panel__content__form__section__list__item__remove-btn"
                           onClick={deleteValue(idx)}
                           tabIndex={-1}
                         >
-                          <FaTimes />
+                          <TimesIcon />
                         </button>
                       </div>
                     </>
@@ -678,7 +695,7 @@ export const ProjectOverviewActivityBar = observer(() => {
       projectOverviewState.setActivityMode(activity);
   const activities: ProjectOverviewActivityDisplay[] = [
     { mode: PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW, title: 'Overview' },
-    editorStore.sdlcState.isCurrentProjectInProduction && {
+    {
       mode: PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE,
       title: 'Release',
     },
@@ -690,7 +707,7 @@ export const ProjectOverviewActivityBar = observer(() => {
 
   return (
     <div
-      data-testid={STUDIO_TEST_ID.PROJECT_OVERVIEW__ACTIVITY_BAR}
+      data-testid={LEGEND_STUDIO_TEST_ID.PROJECT_OVERVIEW__ACTIVITY_BAR}
       className="project-overview__activity-bar"
     >
       <div className="project-overview__activity-bar__items">
@@ -732,23 +749,6 @@ export const ProjectOverview = observer(() => {
         return null;
     }
   };
-
-  // we do not support release for non-prod projects
-  useEffect(() => {
-    if (
-      projectOverviewState.activityMode ===
-        PROJECT_OVERVIEW_ACTIVITY_MODE.RELEASE &&
-      !editorStore.sdlcState.isCurrentProjectInProduction
-    ) {
-      projectOverviewState.setActivityMode(
-        PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW,
-      );
-    }
-  }, [
-    projectOverviewState.activityMode,
-    editorStore.sdlcState.isCurrentProjectInProduction,
-    projectOverviewState,
-  ]);
 
   return (
     <div className="panel project-overview">

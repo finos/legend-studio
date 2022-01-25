@@ -24,22 +24,20 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { EditorSdlcState } from '../EditorSdlcState';
-import type {
-  ProjectConfiguration,
-  ProjectDependency,
-} from '@finos/legend-server-sdlc';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import {
+  type ProjectConfiguration,
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
 } from '@finos/legend-server-sdlc';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import { ProjectData } from '@finos/legend-server-depot';
 
 export enum CONFIGURATION_EDITOR_TAB {
@@ -48,7 +46,7 @@ export enum CONFIGURATION_EDITOR_TAB {
 }
 
 export class ProjectConfigurationEditorState extends EditorState {
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   originalProjectConfiguration?: ProjectConfiguration | undefined; // TODO: we might want to remove this when we do change detection for project configuration
   isUpdatingConfiguration = false;
   projectConfiguration?: ProjectConfiguration | undefined;
@@ -61,7 +59,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   isFetchingAssociatedProjectsAndVersions = false;
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     super(editorStore);
 
     makeObservable(this, {
@@ -124,22 +122,6 @@ export class ProjectConfigurationEditorState extends EditorState {
     );
   }
 
-  getProjectDataFromDependency(
-    dependency: ProjectDependency,
-  ): ProjectData | undefined {
-    if (!dependency.isLegacyDependency) {
-      return this.projects.get(dependency.projectId);
-    }
-    const projectData = Array.from(this.projects.values()).find(
-      (e) => e.projectId === dependency.projectId,
-    );
-    // re-write to new format
-    if (projectData) {
-      dependency.setProjectId(projectData.coordinates);
-    }
-    return projectData;
-  }
-
   *fectchAssociatedProjectsAndVersions(): GeneratorFn<void> {
     this.isFetchingAssociatedProjectsAndVersions = true;
     try {
@@ -150,14 +132,32 @@ export class ProjectConfigurationEditorState extends EditorState {
         // filter out non versioned projects
         .filter((p) => Boolean(p.versions.length))
         .forEach((project) => this.projects.set(project.coordinates, project));
+
+      // Update the legacy dependency to newer format (using group ID and artifact ID instead of just project ID)
+      this.projectConfiguration?.projectDependencies.forEach(
+        (dependency): void => {
+          if (!dependency.isLegacyDependency) {
+            return;
+          }
+          const projectData = Array.from(this.projects.values()).find(
+            (e) => e.projectId === dependency.projectId,
+          );
+          // re-write to new format
+          if (projectData) {
+            dependency.setProjectId(projectData.coordinates);
+          }
+        },
+      );
       this.associatedProjectsAndVersionsFetched = true;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notifyError(
+        `Can't get project dependencies data. Error:\n${error.message}`,
+      );
     } finally {
       this.isFetchingAssociatedProjectsAndVersions = false;
     }
@@ -169,8 +169,8 @@ export class ProjectConfigurationEditorState extends EditorState {
     try {
       this.isUpdatingConfiguration = true;
       yield this.editorStore.sdlcServerClient.updateConfiguration(
-        this.editorStore.sdlcState.currentProjectId,
-        this.editorStore.sdlcState.currentWorkspaceId,
+        this.editorStore.sdlcState.activeProject.projectId,
+        this.editorStore.sdlcState.activeWorkspace,
         UpdateProjectConfigurationCommand.serialization.toJson(
           updateConfigurationCommand,
         ),
@@ -179,14 +179,15 @@ export class ProjectConfigurationEditorState extends EditorState {
       // reset editor
       yield flowResult(
         this.editorStore.sdlcState.fetchCurrentWorkspace(
-          this.editorStore.sdlcState.currentProjectId,
-          this.editorStore.sdlcState.currentWorkspaceId,
+          this.editorStore.sdlcState.activeProject.projectId,
+          this.editorStore.sdlcState.activeWorkspace.workspaceId,
+          this.editorStore.sdlcState.activeWorkspace.workspaceType,
         ),
       );
       yield flowResult(
         this.sdlcState.fetchCurrentRevision(
-          this.editorStore.sdlcState.currentProjectId,
-          this.editorStore.sdlcState.currentWorkspaceId,
+          this.editorStore.sdlcState.activeProject.projectId,
+          this.editorStore.sdlcState.activeWorkspace,
         ),
       );
       yield flowResult(this.editorStore.initMode());
@@ -196,7 +197,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -218,7 +219,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
           error,
         );
         this.editorStore.applicationStore.notifyError(error);
@@ -257,7 +258,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -275,7 +276,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

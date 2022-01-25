@@ -15,14 +15,18 @@
  */
 
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
-import Dialog from '@material-ui/core/Dialog';
-import { BlankPanelContent, PanelLoadingIndicator } from '@finos/legend-art';
+import {
+  Dialog,
+  BlankPanelContent,
+  PanelLoadingIndicator,
+  PlayIcon,
+  PaperScrollIcon,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { FaPlay, FaScroll } from 'react-icons/fa';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type { ExecutionResult } from '@finos/legend-graph';
 import {
+  type ExecutionResult,
   extractExecutionResultValues,
   TdsExecutionResult,
 } from '@finos/legend-graph';
@@ -51,7 +55,7 @@ const QueryBuilderResultValues = observer(
             const row: Record<PropertyKey, unknown> = {};
             const cols = executionResult.result.columns;
             _row.values.forEach((value, idx) => {
-              row[cols[idx]] = value;
+              row[cols[idx] as string] = value;
             });
             return row;
           })
@@ -156,7 +160,7 @@ export const QueryBuilderResultPanel = observer(
               tabIndex={-1}
               title="Execute"
             >
-              <FaPlay />
+              <PlayIcon />
             </button>
             <button
               className="panel__header__action"
@@ -164,7 +168,7 @@ export const QueryBuilderResultPanel = observer(
               tabIndex={-1}
               title="View Exection Plan"
             >
-              <FaScroll />
+              <PaperScrollIcon />
             </button>
           </div>
         </div>
@@ -185,6 +189,9 @@ export const QueryBuilderResultPanel = observer(
             root: 'editor-modal__root-container',
             container: 'editor-modal__container',
             paper: 'editor-modal__content',
+          }}
+          TransitionProps={{
+            appear: false, // disable transition
           }}
         >
           <div className="modal modal--dark editor-modal">

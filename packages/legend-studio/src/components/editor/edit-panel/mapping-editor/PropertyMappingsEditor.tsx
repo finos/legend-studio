@@ -15,21 +15,24 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { FaArrowAltCircleRight } from 'react-icons/fa';
 import { MultiplicityBadge } from '../../../shared/MultiplicityBadge';
 import { PurePropertyMappingEditor } from './PurePropertyMappingEditor';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
-import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  type MappingElement,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { clsx } from '@finos/legend-art';
+import { clsx, ArrowCircleRightIcon } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
-import type { FlatDataPropertyMappingState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
+import {
+  type FlatDataPropertyMappingState,
+  FlatDataInstanceSetImplementationState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
 import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor';
 import { RelationalPropertyMappingEditor } from './relational/RelationalPropertyMappingEditor';
 import type {
@@ -37,8 +40,8 @@ import type {
   RootRelationalInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { Property } from '@finos/legend-graph';
 import {
+  type Property,
   getRootSetImplementation,
   nominateRootSetImplementation,
   Class,
@@ -99,7 +102,17 @@ export const PropertyMappingsEditor = observer(
             propertyRawType,
           );
           if (rootMappingElement) {
-            mappingEditorState.openMappingElement(rootMappingElement, true);
+            const parent = rootMappingElement.parent;
+            if (parent !== mappingEditorState.element) {
+              // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
+              editorStore.openElement(parent);
+              editorStore
+                .getCurrentEditorState(MappingEditorState)
+                .openMappingElement(rootMappingElement, false);
+            }
+            {
+              mappingEditorState.openMappingElement(rootMappingElement, true);
+            }
           } else {
             if (!isReadOnly) {
               mappingEditorState.createMappingElement({
@@ -123,7 +136,7 @@ export const PropertyMappingsEditor = observer(
         ) {
           if (
             propertyMappingStates.length === 1 &&
-            propertyMappingStates[0].propertyMapping instanceof
+            propertyMappingStates[0]?.propertyMapping instanceof
               EmbeddedFlatDataPropertyMapping
           ) {
             mappingEditorState.openMappingElement(
@@ -184,7 +197,7 @@ export const PropertyMappingsEditor = observer(
                   tabIndex={-1}
                   title={'Visit mapping element'}
                 >
-                  <FaArrowAltCircleRight />
+                  <ArrowCircleRightIcon />
                 </button>
               )}
             </div>
@@ -267,7 +280,7 @@ export const PropertyMappingsEditor = observer(
                       tabIndex={-1}
                       title={'Create mapping element'}
                     >
-                      <FaArrowAltCircleRight />
+                      <ArrowCircleRightIcon />
                     </button>
                     {`to create an embedded class mapping for property '${property.name}'.`}
                   </div>
@@ -281,7 +294,7 @@ export const PropertyMappingsEditor = observer(
                       tabIndex={-1}
                       title={'Create mapping element'}
                     >
-                      <FaArrowAltCircleRight />
+                      <ArrowCircleRightIcon />
                     </button>
                     {`to create a root class mapping for '${propertyRawType.name}'.`}
                   </div>

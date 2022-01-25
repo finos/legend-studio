@@ -16,15 +16,19 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaPlus } from 'react-icons/fa';
 import type { ProjectOption } from '../../stores/SetupStore';
-import type { SelectComponent } from '@finos/legend-art';
-import { compareLabelFn, clsx, CustomSelectorInput } from '@finos/legend-art';
+import {
+  type SelectComponent,
+  clsx,
+  compareLabelFn,
+  CustomSelectorInput,
+  PlusIcon,
+} from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   <div className="setup__project__label">
@@ -50,7 +54,7 @@ export const ProjectSelector = observer(
   ) => {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
-    const applicationStore = useApplicationStore<StudioConfig>();
+    const applicationStore = useApplicationStore<LegendStudioConfig>();
     const currentProjectId = setupStore.currentProjectId;
     const options = setupStore.projectOptions.sort(compareLabelFn);
     const selectedOption =
@@ -71,7 +75,7 @@ export const ProjectSelector = observer(
         }
         applicationStore.navigator.goTo(
           generateSetupRoute(
-            applicationStore.config.sdlcServerKey,
+            applicationStore.config.currentSDLCServerOption,
             val?.value ?? '',
           ),
         );
@@ -84,7 +88,7 @@ export const ProjectSelector = observer(
           // For first load, if the project is not found, reset the URL
           applicationStore.navigator.goTo(
             generateSetupRoute(
-              applicationStore.config.sdlcServerKey,
+              applicationStore.config.currentSDLCServerOption,
               undefined,
             ),
           );
@@ -119,7 +123,7 @@ export const ProjectSelector = observer(
           }
           title={'Create a Project'}
         >
-          <FaPlus />
+          <PlusIcon />
         </button>
         <CustomSelectorInput
           className="setup-selector__input"
@@ -143,5 +147,3 @@ export const ProjectSelector = observer(
   },
   { forwardRef: true },
 );
-
-ProjectSelector.displayName = 'ProjectSelector';

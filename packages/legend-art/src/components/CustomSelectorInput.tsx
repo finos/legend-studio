@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import type { CSSProperties } from 'react';
-import { useRef, useEffect, forwardRef } from 'react';
-import { FaCaretDown, FaCircleNotch, FaTimes } from 'react-icons/fa';
-import type { Props } from 'react-select/creatable';
-import CreatableSelect from 'react-select/creatable';
+import { type CSSProperties, useRef, useEffect, forwardRef } from 'react';
+import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './Icon';
+import CreatableSelect, { type Props } from 'react-select/creatable';
 import Select from 'react-select';
 import { FixedSizeList } from 'react-window';
 
@@ -101,7 +99,7 @@ const LoadingIndicator: React.FC = () => (
   <div
     className={`${STYLE_PREFIX}__indicator ${STYLE_PREFIX}__loading-indicator ${STYLE_PREFIX__DARK}__loading-indicator`}
   >
-    <FaCircleNotch />
+    <CircleNotchIcon />
   </div>
 );
 
@@ -109,7 +107,7 @@ const DropdownIndicator: React.FC = () => (
   <div
     className={`${STYLE_PREFIX}__indicator ${STYLE_PREFIX}__dropdown-indicator`}
   >
-    <FaCaretDown />
+    <CaretDownIcon />
   </div>
 );
 
@@ -126,7 +124,7 @@ const ClearIndicator: React.FC<{
       <div
         className={`${STYLE_PREFIX}__indicator ${STYLE_PREFIX}__clear-indicator`}
       >
-        <FaTimes />
+        <TimesIcon />
       </div>
     </div>
   );
@@ -152,7 +150,7 @@ export type SelectComponent = CreatableSelect<SelectOption> | Select;
 export const CustomSelectorInput = forwardRef<
   SelectComponent,
   CustomSelectorInputProps
->((props, ref) => {
+>(function CustomSelectorInput(props, ref) {
   const {
     option,
     allowCreating,
@@ -201,8 +199,6 @@ export const CustomSelectorInput = forwardRef<
     />
   );
 });
-
-CustomSelectorInput.displayName = 'CustomSelectorInput';
 
 export const compareLabelFn = (
   a: { label: string },

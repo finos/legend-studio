@@ -35,8 +35,8 @@ import {
   TEST_RESULT,
 } from './MappingTestState';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   deleteEntry,
@@ -58,18 +58,18 @@ import {
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
 import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
-import type {
-  CompilationError,
-  PackageableElement,
-  AbstractFlatDataPropertyMapping,
-  InputData,
-  Type,
-} from '@finos/legend-graph';
 import {
+  type CompilationError,
+  type PackageableElement,
+  type AbstractFlatDataPropertyMapping,
+  type InputData,
+  type Type,
+  getAllClassMappings,
   GRAPH_MANAGER_LOG_EVENT,
   PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   extractSourceInformationCoordinates,
+  getAllEnumerationMappings,
   Class,
   Enumeration,
   Mapping,
@@ -92,11 +92,7 @@ import {
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
   AggregationAwareSetImplementation,
-  Table,
-  View,
   TableAlias,
-  TableExplicitReference,
-  ViewExplicitReference,
   RelationalInputData,
   RelationalInputType,
   OperationSetImplementation,
@@ -108,6 +104,8 @@ import {
   updateRootSetImplementationOnDelete,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
+import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -150,8 +148,7 @@ export type MappingElementSource =
   | Type
   | Class
   | RootFlatDataRecordType
-  | View
-  | Table;
+  | TableAlias;
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementTarget = (
@@ -176,9 +173,9 @@ export const getMappingElementTarget = (
   );
 };
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSource = (
   mappingElement: MappingElement,
+  plugins: LegendStudioPlugin[],
 ): MappingElementSource | undefined => {
   if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
@@ -198,21 +195,37 @@ export const getMappingElementSource = (
         mappingElement.rootInstanceSetImplementation,
         FlatDataInstanceSetImplementation,
       ),
+      plugins,
     );
   } else if (
     mappingElement instanceof RootRelationalInstanceSetImplementation
   ) {
-    return mappingElement.mainTableAlias.relation.value;
+    return mappingElement.mainTableAlias;
   } else if (
     mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
   ) {
-    return mappingElement.rootInstanceSetImplementation.mainTableAlias.relation
-      .value;
+    return mappingElement.rootInstanceSetImplementation.mainTableAlias;
   } else if (mappingElement instanceof AggregationAwareSetImplementation) {
-    return getMappingElementSource(mappingElement.mainSetImplementation);
+    return getMappingElementSource(
+      mappingElement.mainSetImplementation,
+      plugins,
+    );
   }
+  const extraMappingElementSourceGetters = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_LegendStudioPlugin_Extension
+      ).getExtraMappingElementSourceGetters?.() ?? [],
+  );
+  for (const sourceGetter of extraMappingElementSourceGetters) {
+    const mappingElementSource = sourceGetter(mappingElement);
+    if (mappingElementSource) {
+      return mappingElementSource;
+    }
+  }
+
   throw new UnsupportedOperationError(
-    `Can't derive source of mapping element`,
+    `Can't derive source of mapping element: no compatible source available from plugins`,
     mappingElement,
   );
 };
@@ -288,10 +301,12 @@ export const createEnumerationMapping = (
   return enumMapping;
 };
 
+// We use get `own` Class mapping as embedded set implementations can only be within the
+// current class mapping i.e current mapping.
 const getEmbeddedSetImplmentations = (
   mapping: Mapping,
 ): InstanceSetImplementation[] =>
-  mapping.allClassMappings
+  mapping.allOwnClassMappings
     .filter(
       (setImpl): setImpl is InstanceSetImplementation =>
         setImpl instanceof InstanceSetImplementation,
@@ -311,12 +326,12 @@ const getMappingElementByTypeAndId = (
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
-      return mapping.allClassMappings.find(
+      return mapping.allOwnClassMappings.find(
         (classMapping) => classMapping.id.value === id,
       );
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
       return (
-        mapping.allClassMappings.find(
+        getAllClassMappings(mapping).find(
           (classMapping) => classMapping.id.value === id,
         ) ??
         getEmbeddedSetImplmentations(mapping)
@@ -330,7 +345,7 @@ const getMappingElementByTypeAndId = (
       );
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
       return (
-        mapping.allClassMappings.find(
+        getAllClassMappings(mapping).find(
           (classMapping) => classMapping.id.value === id,
         ) ??
         getEmbeddedSetImplmentations(mapping)
@@ -347,7 +362,7 @@ const getMappingElementByTypeAndId = (
         (associationMapping) => associationMapping.id.value === id,
       );
     case MAPPING_ELEMENT_TYPE.ENUMERATION:
-      return mapping.enumerationMappings.find(
+      return getAllEnumerationMappings(mapping).find(
         (enumerationMapping) => enumerationMapping.id.value === id,
       );
     default:
@@ -793,7 +808,10 @@ export class MappingEditorState extends ElementEditorState {
     setImplementation: InstanceSetImplementation,
     newSource: MappingElementSource | undefined,
   ): GeneratorFn<void> {
-    const currentSource = getMappingElementSource(setImplementation);
+    const currentSource = getMappingElementSource(
+      setImplementation,
+      this.editorStore.pluginManager.getStudioPlugins(),
+    );
     if (currentSource !== newSource) {
       if (
         setImplementation instanceof PureInstanceSetImplementation &&
@@ -827,7 +845,7 @@ export class MappingEditorState extends ElementEditorState {
             setImplementation.root,
             OptionalPackageableElementExplicitReference.create(newSource),
           );
-        } else if (newSource instanceof Table || newSource instanceof View) {
+        } else if (newSource instanceof TableAlias) {
           const newRootRelationalInstanceSetImplementation =
             new RootRelationalInstanceSetImplementation(
               setImplementation.id,
@@ -835,14 +853,7 @@ export class MappingEditorState extends ElementEditorState {
               setImplementation.class,
               setImplementation.root,
             );
-          const mainTableAlias = new TableAlias();
-          mainTableAlias.relation =
-            newSource instanceof Table
-              ? TableExplicitReference.create(newSource)
-              : ViewExplicitReference.create(newSource);
-          mainTableAlias.name = mainTableAlias.relation.value.name;
-          newRootRelationalInstanceSetImplementation.mainTableAlias =
-            mainTableAlias;
+          newRootRelationalInstanceSetImplementation.mainTableAlias = newSource;
           newSetImp = newRootRelationalInstanceSetImplementation;
         } else {
           throw new UnsupportedOperationError(
@@ -977,7 +988,6 @@ export class MappingEditorState extends ElementEditorState {
     }
   }
 
-  /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
   private createMappingElementState(
     mappingElement: MappingElement | undefined,
   ): MappingElementState | undefined {
@@ -1013,6 +1023,23 @@ export class MappingEditorState extends ElementEditorState {
         this.editorStore,
         mappingElement,
       );
+    }
+    const extraMappingElementStateCreators = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraMappingElementStateCreators?.() ?? [],
+      );
+    for (const elementStateCreator of extraMappingElementStateCreators) {
+      const mappingElementState = elementStateCreator(
+        mappingElement,
+        this.editorStore,
+      );
+      if (mappingElementState) {
+        return mappingElementState;
+      }
     }
     return new MappingElementState(this.editorStore, mappingElement);
   }
@@ -1092,8 +1119,14 @@ export class MappingEditorState extends ElementEditorState {
             errorCoordinates;
           const newMappingElement = getMappingElementByTypeAndId(
             this.mapping,
-            mappingType,
-            mappingId,
+            guaranteeNonNullable(
+              mappingType,
+              `Can't reveal compilation error: mapping type is missing`,
+            ),
+            guaranteeNonNullable(
+              mappingId,
+              `Can't reveal compilation error: mapping ID is missing`,
+            ),
           );
           // NOTE: Unfortunately this is quite convoluted at the moment that is because we maintain a separate state
           // that wraps around property mapping, this is deliberate as we don't want to mix UI state in metamodel classes
@@ -1104,7 +1137,10 @@ export class MappingEditorState extends ElementEditorState {
             newMappingElement instanceof EmbeddedFlatDataPropertyMapping
           ) {
             const propertyMapping = newMappingElement.findPropertyMapping(
-              propertyName,
+              guaranteeNonNullable(
+                propertyName,
+                `Can't reveal compilation error: mapping property name is missing`,
+              ),
               targetPropertyId,
             );
             if (propertyMapping) {
@@ -1319,7 +1355,10 @@ export class MappingEditorState extends ElementEditorState {
       this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
         setImplementation.class.value,
       );
-    const source = getMappingElementSource(setImplementation);
+    const source = getMappingElementSource(
+      setImplementation,
+      this.editorStore.pluginManager.getStudioPlugins(),
+    );
     if (setImplementation instanceof OperationSetImplementation) {
       this.editorStore.applicationStore.notifyWarning(
         `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
@@ -1341,9 +1380,11 @@ export class MappingEditorState extends ElementEditorState {
         PackageableElementExplicitReference.create(source.owner.owner),
         createMockDataForMappingElementSource(source, this.editorStore),
       );
-    } else if (source instanceof Table || source instanceof View) {
+    } else if (source instanceof TableAlias) {
       inputData = new RelationalInputData(
-        PackageableElementExplicitReference.create(source.schema.owner),
+        PackageableElementExplicitReference.create(
+          source.relation.ownerReference.value,
+        ),
         createMockDataForMappingElementSource(source, this.editorStore),
         RelationalInputType.SQL,
       );

@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
-import { computed, makeObservable, observable } from 'mobx';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { DSL_SERIALIZER_HASH_STRUCTURE } from '../../../../../DSLSerializer_ModelUtils';
 
 export class UrlStream implements Hashable {
-  url: string;
+  url!: string;
 
-  constructor(url: string) {
+  constructor() {
     makeObservable(this, {
       url: observable,
       hashCode: computed,
+      setUrl: action,
     });
+  }
 
-    this.url = url;
+  setUrl(val: string): void {
+    this.url = val;
   }
 
   get hashCode(): string {

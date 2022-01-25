@@ -15,6 +15,7 @@
  */
 
 import {
+  type SelectComponent,
   ArrowLeftIcon,
   ArrowRightIcon,
   BlankPanelContent,
@@ -24,20 +25,22 @@ import {
   PencilIcon,
   PlusIcon,
   RobotIcon,
+  SearchIcon,
   UserIcon,
+  QuestionCircleIcon,
 } from '@finos/legend-art';
-import { debounce } from '@finos/legend-shared';
+import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState } from 'react';
-import { FaQuestionCircle } from 'react-icons/fa';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   generateCreateQueryRoute,
   generateExistingQueryRoute,
   generateServiceQueryRoute,
 } from '../stores/LegendQueryRouter';
-import type { ServiceExecutionOption } from '../stores/QuerySetupStore';
 import {
+  type QuerySetupState,
+  type ServiceExecutionOption,
   CreateQuerySetupState,
   ExistingQuerySetupState,
   ServiceQuerySetupState,
@@ -45,23 +48,27 @@ import {
 import {
   CreateQueryInfoState,
   ExistingQueryInfoState,
-  LATEST_SNAPSHOT_VERSION_ALIAS,
-  LATEST_VERSION_ALIAS,
   ServiceQueryInfoState,
-} from '../stores/QueryStore';
+} from '../stores/LegendQueryStore';
 import {
   QuerySetupStoreProvider,
   useQuerySetupStore,
 } from './QuerySetupStoreProvider';
-import { useQueryStore } from './QueryStoreProvider';
-import type { ProjectData } from '@finos/legend-server-depot';
+import { useLegendQueryStore } from './LegendQueryStoreProvider';
+import {
+  type ProjectData,
+  LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 import type {
   LightQuery,
   Mapping,
   PackageableRuntime,
 } from '@finos/legend-graph';
-import type { PackageableElementOption } from '@finos/legend-application';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  type PackageableElementOption,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 type QueryOption = { label: string; value: LightQuery };
 const buildQueryOption = (query: LightQuery): QueryOption => ({
@@ -74,7 +81,8 @@ const ExistingQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
+    const querySearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
     const back = (): void => {
       setupStore.setSetupState(undefined);
@@ -113,7 +121,7 @@ const ExistingQuerySetup = observer(
       ? buildQueryOption(querySetupState.currentQuery)
       : null;
     const onQueryOptionChange = (option: QueryOption | null): void => {
-      if (option?.value !== querySetupState.currentQuery?.id) {
+      if (option?.value !== querySetupState.currentQuery) {
         querySetupState.setCurrentQuery(option?.value.id);
       }
     };
@@ -191,6 +199,10 @@ const ExistingQuerySetup = observer(
       );
     }, [querySetupState, applicationStore]);
 
+    useEffect(() => {
+      querySearchRef.current?.focus();
+    }, []);
+
     return (
       <div className="query-setup__wizard query-setup__existing-query">
         <div className="query-setup__wizard__header query-setup__existing-query__header">
@@ -216,10 +228,13 @@ const ExistingQuerySetup = observer(
           </button>
         </div>
         <div className="query-setup__wizard__content">
-          <div className="query-setup__wizard__group">
-            <div className="query-setup__wizard__group__title">Query</div>
+          <div className="query-setup__wizard__group query-setup__wizard__group--inline">
+            <div className="query-setup__wizard__group__title">
+              <SearchIcon />
+            </div>
             <div className="query-setup__existing-query__input">
               <CustomSelectorInput
+                ref={querySearchRef}
                 className="query-setup__wizard__selector"
                 options={queryOptions}
                 isLoading={querySetupState.loadQueriesState.isInProgress}
@@ -271,7 +286,7 @@ const ServiceQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
@@ -336,7 +351,7 @@ const ServiceQuerySetup = observer(
     // version
     const versionOptions = [
       LATEST_VERSION_ALIAS,
-      LATEST_SNAPSHOT_VERSION_ALIAS,
+      SNAPSHOT_VERSION_ALIAS,
       ...(querySetupState.currentProject?.versions ?? []),
     ].map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
@@ -512,7 +527,7 @@ const CreateQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useQueryStore();
+    const queryStore = useLegendQueryStore();
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
@@ -542,6 +557,7 @@ const CreateQuerySetup = observer(
             querySetupState.currentVersionId,
             querySetupState.currentMapping.path,
             querySetupState.currentRuntime.path,
+            undefined,
           ),
         );
       }
@@ -580,7 +596,7 @@ const CreateQuerySetup = observer(
     // version
     const versionOptions = [
       LATEST_VERSION_ALIAS,
-      LATEST_SNAPSHOT_VERSION_ALIAS,
+      SNAPSHOT_VERSION_ALIAS,
       ...(querySetupState.currentProject?.versions ?? []),
     ].map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
@@ -629,7 +645,10 @@ const CreateQuerySetup = observer(
       if (querySetupState.currentMapping) {
         if (querySetupState.runtimeOptions.length) {
           querySetupState.setCurrentRuntime(
-            querySetupState.runtimeOptions[0].value,
+            (
+              querySetupState
+                .runtimeOptions[0] as PackageableElementOption<PackageableRuntime>
+            ).value,
           );
         }
       } else {
@@ -790,13 +809,23 @@ const CreateQuerySetup = observer(
 
 const QuerySetupLandingPage = observer(() => {
   const setupStore = useQuerySetupStore();
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
+  const extraQuerySetupOptions = queryStore.pluginManager
+    .getQueryPlugins()
+    .flatMap(
+      (plugin) =>
+        plugin.getExtraQuerySetupOptionRendererConfigurations?.() ?? [],
+    )
+    .filter(isNonNullable)
+    .map((config) => (
+      <Fragment key={config.key}>{config.renderer(setupStore)}</Fragment>
+    ));
   const editQuery = (): void =>
-    setupStore.setSetupState(new ExistingQuerySetupState(queryStore));
+    setupStore.setSetupState(new ExistingQuerySetupState(setupStore));
   const loadServiceQuery = (): void =>
-    setupStore.setSetupState(new ServiceQuerySetupState(queryStore));
+    setupStore.setSetupState(new ServiceQuerySetupState(setupStore));
   const createQuery = (): void =>
-    setupStore.setSetupState(new CreateQuerySetupState(queryStore));
+    setupStore.setSetupState(new CreateQuerySetupState(setupStore));
 
   useEffect(() => {
     setupStore.initialize();
@@ -806,7 +835,7 @@ const QuerySetupLandingPage = observer(() => {
     <div className="query-setup__landing-page">
       <div className="query-setup__landing-page__title">
         What do you want to do today
-        <FaQuestionCircle
+        <QuestionCircleIcon
           className="query-setup__landing-page__title__question-mark"
           title="Choose one of the option below to start"
         />
@@ -823,8 +852,9 @@ const QuerySetupLandingPage = observer(() => {
             Load an existing query
           </div>
         </button>
+        {extraQuerySetupOptions}
         <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--service-query"
+          className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--service-query"
           onClick={loadServiceQuery}
         >
           <div className="query-setup__landing-page__option__icon">
@@ -835,7 +865,7 @@ const QuerySetupLandingPage = observer(() => {
           </div>
         </button>
         <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--create-query"
+          className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--create-query"
           onClick={createQuery}
         >
           <div className="query-setup__landing-page__option__icon">
@@ -852,20 +882,34 @@ const QuerySetupLandingPage = observer(() => {
 
 const QuerySetupInner = observer(() => {
   const setupStore = useQuerySetupStore();
+  const queryStore = useLegendQueryStore();
   const querySetupState = setupStore.querySetupState;
+  const renderQuerySetupScreen = (
+    setupState: QuerySetupState,
+  ): React.ReactNode => {
+    if (setupState instanceof ExistingQuerySetupState) {
+      return <ExistingQuerySetup querySetupState={setupState} />;
+    } else if (setupState instanceof ServiceQuerySetupState) {
+      return <ServiceQuerySetup querySetupState={setupState} />;
+    } else if (setupState instanceof CreateQuerySetupState) {
+      return <CreateQuerySetup querySetupState={setupState} />;
+    }
+    const extraQuerySetupRenderers = queryStore.pluginManager
+      .getQueryPlugins()
+      .flatMap((plugin) => plugin.getExtraQuerySetupRenderers?.() ?? []);
+    for (const querySetupRenderer of extraQuerySetupRenderers) {
+      const elementEditor = querySetupRenderer(setupState);
+      if (elementEditor) {
+        return elementEditor;
+      }
+    }
+    return null;
+  };
 
   return (
     <div className="query-setup">
       {!querySetupState && <QuerySetupLandingPage />}
-      {querySetupState instanceof ExistingQuerySetupState && (
-        <ExistingQuerySetup querySetupState={querySetupState} />
-      )}
-      {querySetupState instanceof ServiceQuerySetupState && (
-        <ServiceQuerySetup querySetupState={querySetupState} />
-      )}
-      {querySetupState instanceof CreateQuerySetupState && (
-        <CreateQuerySetup querySetupState={querySetupState} />
-      )}
+      {querySetupState && renderQuerySetupScreen(querySetupState)}
     </div>
   );
 });

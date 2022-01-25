@@ -17,18 +17,23 @@
 import { observer } from 'mobx-react-lite';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { GoCloudDownload } from 'react-icons/go';
-import { FaCheck, FaTimes, FaBan, FaInfoCircle } from 'react-icons/fa';
-import { PanelLoadingIndicator } from '@finos/legend-art';
+import {
+  PanelLoadingIndicator,
+  CloudDownloadIcon,
+  CheckIcon,
+  TimesIcon,
+  InfoCircleIcon,
+  BanIcon,
+} from '@finos/legend-art';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 
@@ -93,7 +98,7 @@ export const ConflictResolution = observer(() => {
             tabIndex={-1}
             title="Update workspace"
           >
-            <GoCloudDownload />
+            <CloudDownloadIcon />
           </button>
           <button
             className="panel__header__action side-bar__header__action"
@@ -104,7 +109,7 @@ export const ConflictResolution = observer(() => {
             tabIndex={-1}
             title="Accept resolution"
           >
-            <FaCheck />
+            <CheckIcon />
           </button>
           <button
             className="panel__header__action side-bar__header__action"
@@ -113,7 +118,7 @@ export const ConflictResolution = observer(() => {
             tabIndex={-1}
             title="Discard all changes made in the workspace"
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
           <button
             className="panel__header__action side-bar__header__action"
@@ -122,7 +127,7 @@ export const ConflictResolution = observer(() => {
             tabIndex={-1}
             title="Abort conflict resolution"
           >
-            <FaBan />
+            <BanIcon />
           </button>
         </div>
       </div>
@@ -136,12 +141,14 @@ export const ConflictResolution = observer(() => {
                 className="side-bar__panel__title__info"
                 title="All changes made in the workspace applied on top of the project revision the workspace is updated to"
               >
-                <FaInfoCircle />
+                <InfoCircleIcon />
               </div>
             </div>
             <div
               className="side-bar__panel__header__changes-count"
-              data-testid={STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT}
+              data-testid={
+                LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+              }
             >
               {changes.length +
                 (conflictResolutionState.hasResolvedAllConflicts

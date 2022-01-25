@@ -122,33 +122,20 @@ Now, you're good to start. After the setup step, you can start the application y
 ```sh
 # Run the main web application (top-level workspace) in development mode.
 yarn dev # alias: `yarn start` - this by default will start Studio
-
-# Or start the specific app you are working on
-yarn dev:query
-yarn dev:studio
 ```
 
-Each workspace in the monorepo should have a `dev` script. Run these (in separate terminal tabs) when you are making changes in these workspaces to rebuild on change. Otherwise, after making change, you have to manually rebuild the workspace using the `build` script. Following are some useful scripts for development.
+Each workspace in the monorepo should have a `dev` script. Run these (in separate terminal tabs) when you are making changes in these workspaces to rebuild on change. However, this requires building packages following the dependency order. As such, we recommend the following workflow using multiple terminal tabs:
 
 ```sh
-# Clean and build all workspaces.
-#
-# NOTE: To save time, keep the build scope as close to your changes as possible.
-#
-# In general, you can call a script from a particular workspace using
-# the following command construct
-#   yarn workspace <workspace-name> <workspace-script>
-# e.g. To call `build` script of workspace `lib1`:
-#   yarn workspace lib1 build
-#
-# There are also other build scripts within each workspace which targets a smaller build scopes.
-yarn build
+# keep one terminal tab for auto-building and serving the web application using Webpack
+yarn dev
 
-# Using project reference, build and develop Typescript files in all workspaces.
-# This is usually sufficient if you make code change not related to styling.
-yarn build:tsc
+# have other terminal tabs for auto-building code and style
 yarn dev:tsc
+yarn dev:sass
 ```
+
+> Note that `dev:tsc` is convenient as it watches for changes in the whole project, but sometimes, it might take long time or cause Webpack recompilation to take a long time. So there are times when it's better to focus the watcher in a particular workspace using the command `yarn workspace <workspace-name> <workspace-script>`, e.g. to call `dev` script of workspace `lib1`, use the command `yarn workspace lib1 dev`.
 
 #### :construction: Testing your code
 
@@ -210,6 +197,10 @@ Also please try to commit your code with messages following our [convention](#co
 #### :package: Releasing
 
 This section is only for maintainers, or whoever has [write access and above](https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/repository-permission-levels-for-an-organization#repository-access-for-each-permission-level) permission in this repository. Only this group of people should have the permission to trigger the release. For details of the release process, please read this [guide](./docs/workflow/release-process.md).
+
+#### :woman_technologist: Code contributor guide `[advanced]`
+
+To keep this guide succinct, we have a separate [guide](./docs/workflow/code-contributor-guide.md) for more advanced and miscellaneous topics regarding the development process: e.g. debugging, troubleshooting, etc.
 
 ### Code Conventions
 

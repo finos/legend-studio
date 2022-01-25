@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram",
-  "version": "0.0.8",
+  "version": "1.0.9",
   "description": "Legend extension for Diagram DSL",
   "keywords": [
     "legend",
@@ -25,14 +25,17 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "yarn clean && yarn build:sass && yarn build:tsc",
-    "build:sass": "cross-env INIT_CWD=$INIT_CWD sass ./style/index.scss ./lib/index.css --style=compressed && node ../../scripts/copyright/addBundledCodeCopyrightHeader.js ./lib/index.css",
+    "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
     "build:tsc": "tsc --project ./tsconfig.build.json",
-    "clean": "rimraf \"lib\" \"build\"",
+    "clean": "npm-run-all clean:cache clean:lib",
+    "clean:cache": "rimraf \"build\"",
+    "clean:lib": "rimraf \"lib\"",
     "dev": "npm-run-all --parallel dev:sass dev:tsc",
-    "dev:sass": "sass ./style/index.scss ./lib/index.css --watch",
+    "dev:sass": "sass style lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -43,28 +46,26 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@material-ui/core": "4.12.3",
-    "@types/react": "17.0.24",
-    "mobx": "6.3.3",
-    "mobx-react-lite": "3.2.1",
+    "@types/react": "17.0.38",
+    "mobx": "6.3.13",
+    "mobx-react-lite": "3.2.3",
     "react": "17.0.2",
-    "react-dnd": "14.0.3",
+    "react-dnd": "14.0.5",
     "react-dom": "17.0.2",
-    "react-icons": "4.2.0",
-    "react-resize-detector": "6.7.6",
+    "react-resize-detector": "7.0.0",
     "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/react": "12.1.0",
+    "@testing-library/react": "12.1.2",
     "cross-env": "7.0.3",
-    "eslint": "7.32.0",
-    "jest": "27.2.1",
+    "eslint": "8.7.0",
+    "jest": "27.4.7",
     "jest-canvas-mock": "2.3.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.42.1",
-    "typescript": "4.4.3"
+    "sass": "1.49.0",
+    "typescript": "4.5.5"
   },
   "peerDependencies": {
     "react": "^17.0.0"
@@ -77,7 +78,6 @@
     "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-protocol-processor",
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph-manager",
     "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph",
-    "studioPreset": "@finos/legend-studio-preset-dsl-diagram",
     "studioPlugin": "@finos/legend-studio-plugin-dsl-diagram"
   }
 }

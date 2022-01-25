@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin } from '@finos/legend-shared';
-import type { PlainObject } from '@finos/legend-shared';
+import { AbstractPlugin, type PlainObject } from '@finos/legend-shared';
 import type { PackageableElement } from '../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement';
 import type { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder';
@@ -29,6 +28,8 @@ import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1
 import type { V1_ProcessingContext } from './v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';
 import type { SimpleFunctionExpression } from '../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
 import type { ValueSpecification } from '../../metamodels/pure/valueSpecification/ValueSpecification';
+import type { GraphPluginManager } from '../../../GraphPluginManager';
+import type { Type } from '../../metamodels/pure/packageableElements/domain/Type';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -41,10 +42,12 @@ export type V1_ElementTransformer = (
 
 export type V1_ElementProtocolSerializer = (
   protocol: V1_PackageableElement,
+  plugins: PureProtocolProcessorPlugin[],
 ) => PlainObject<V1_PackageableElement> | undefined;
 
 export type V1_ElementProtocolDeserializer = (
   protocol: PlainObject<V1_PackageableElement>,
+  plugins: PureProtocolProcessorPlugin[],
 ) => V1_PackageableElement | undefined;
 
 export type V1_FunctionExpressionBuilder = (
@@ -62,6 +65,10 @@ export type V1_ExecutionInputGetter = (
   protocolGraph: V1_PureModelContextData,
 ) => V1_PackageableElement[];
 
+export type V1_PropertyExpressionTypeInferrer = (
+  variable: ValueSpecification | undefined,
+) => Type | undefined;
+
 /**
  * Plugins for protocol processors. Technically, this is a sub-part of `PureGraphManagerPlugin`
  * but due to the way we encapsulate the protocol code and the way we organize graph managers,
@@ -73,6 +80,10 @@ export type V1_ExecutionInputGetter = (
  */
 export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureProtocolProcessorPlugin';
+
+  install(pluginManager: GraphPluginManager): void {
+    pluginManager.registerPureProtocolProcessorPlugin(this);
+  }
 
   /**
    * Get the list of supported system element models.
@@ -133,4 +144,9 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * This would provide a mechanism to add more elements in this reduced graph.
    */
   V1_getExtraExecutionInputGetters?(): V1_ExecutionInputGetter[];
+
+  /**
+   * Get the list of type inferrers for property expression.
+   */
+  V1_getExtraPropertyExpressionTypeInferrers?(): V1_PropertyExpressionTypeInferrer[];
 }

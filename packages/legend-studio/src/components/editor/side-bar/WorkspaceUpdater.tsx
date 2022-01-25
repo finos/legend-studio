@@ -18,9 +18,6 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { FaInfoCircle } from 'react-icons/fa';
-import { GoCloudDownload } from 'react-icons/go';
-import { MdRefresh } from 'react-icons/md';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -28,29 +25,32 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  CloudDownloadIcon,
+  RefreshIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import { Link } from 'react-router-dom';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { STUDIO_TEST_ID } from '../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSdlcState';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { StudioConfig } from '../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const sdlcState = editorStore.sdlcState;
   const currentEditorState = editorStore.currentEditorState;
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;
@@ -155,7 +155,7 @@ export const WorkspaceUpdater = observer(() => {
             tabIndex={-1}
             title="Refresh"
           >
-            <MdRefresh />
+            <RefreshIcon />
           </button>
           <button
             className="panel__header__action side-bar__header__action workspace-updater__update-btn"
@@ -164,7 +164,7 @@ export const WorkspaceUpdater = observer(() => {
             tabIndex={-1}
             title="Update workspace"
           >
-            <GoCloudDownload />
+            <CloudDownloadIcon />
           </button>
         </div>
       </div>
@@ -182,13 +182,13 @@ export const WorkspaceUpdater = observer(() => {
                       'All changes made to project since the revision the workspace is created.\nPotential workspace update conflicts are also shown if they exist'
                     }
                   >
-                    <FaInfoCircle />
+                    <InfoCircleIcon />
                   </div>
                 </div>
                 <div
                   className="side-bar__panel__header__changes-count"
                   data-testid={
-                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                    LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
                   }
                 >
                   {changes.length}
@@ -238,13 +238,13 @@ export const WorkspaceUpdater = observer(() => {
                     className="side-bar__panel__title__info"
                     title="All committed reviews in the project since the revision the workspace is created"
                   >
-                    <FaInfoCircle />
+                    <InfoCircleIcon />
                   </div>
                 </div>
                 <div
                   className="side-bar__panel__header__changes-count"
                   data-testid={
-                    STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                    LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
                   }
                 >
                   {commitedReviews.length}
@@ -258,7 +258,7 @@ export const WorkspaceUpdater = observer(() => {
                     rel="noopener noreferrer"
                     target="_blank"
                     to={generateReviewRoute(
-                      applicationStore.config.sdlcServerKey,
+                      applicationStore.config.currentSDLCServerOption,
                       review.projectId,
                       review.id,
                     )}

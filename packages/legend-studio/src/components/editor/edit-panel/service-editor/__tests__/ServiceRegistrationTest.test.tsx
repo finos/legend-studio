@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { RenderResult } from '@testing-library/react';
 import {
+  type RenderResult,
   getByPlaceholderText,
   getByTitle,
   waitFor,
@@ -24,6 +24,7 @@ import {
 } from '@testing-library/react';
 import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/TEST_DATA__ServiceRegistration.json';
 import {
+  type PlainObject,
   integrationTest,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
@@ -35,8 +36,7 @@ import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditor,
 } from '../../../../EditorComponentTestUtils';
-import { STUDIO_TEST_ID } from '../../../../StudioTestID';
-import type { PlainObject } from '@finos/legend-shared';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import {
@@ -51,6 +51,7 @@ import {
   ServiceRegistrationResult,
 } from '@finos/legend-graph';
 import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils';
+import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager';
 
 let renderResult: RenderResult;
 
@@ -92,6 +93,7 @@ const setup = async (
           },
         },
       }),
+      LegendStudioPluginManager.create(),
     ),
   });
   renderResult = await TEST__setUpEditor(mockedEditorStore, {
@@ -173,17 +175,19 @@ test(
     MOBX__disableSpyOrMock();
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
-      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );
     await waitFor(() => getByText(editPanelHeader, 'myService'));
     const editPanel = await waitFor(() =>
-      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL),
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL),
     );
     fireEvent.click(getByTitle(editPanel, 'Register service...'));
     const serviceEditorState =
       mockedEditorStore.getCurrentEditorState(ServiceEditorState);
     const registrationModal = await waitFor(() =>
-      renderResult.getByTestId(STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL),
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL,
+      ),
     );
     await waitFor(() =>
       getByText(
@@ -263,11 +267,11 @@ test(
     MOBX__disableSpyOrMock();
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
-      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
     );
     await waitFor(() => getByText(editPanelHeader, 'myService'));
     const editPanel = await waitFor(() =>
-      renderResult.getByTestId(STUDIO_TEST_ID.EDIT_PANEL),
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL),
     );
     // labels + values
     await waitFor(() => getByText(editPanel, 'URL Pattern'));
@@ -299,7 +303,9 @@ test(
     // registration
     fireEvent.click(getByTitle(editPanel, 'Register service...'));
     const registrationModal = await waitFor(() =>
-      renderResult.getByTestId(STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL),
+      renderResult.getByTestId(
+        LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL,
+      ),
     );
     await waitFor(() =>
       getByText(

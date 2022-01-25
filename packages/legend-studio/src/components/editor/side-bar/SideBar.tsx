@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { Explorer } from './Explorer';
@@ -23,7 +22,7 @@ import { WorkspaceReview } from './WorkspaceReview';
 import { WorkspaceUpdater } from './WorkspaceUpdater';
 import { ConflictResolution } from './ConflictResolution';
 import { ProjectOverview } from './ProjectOverview';
-import { WorkspaceBuilds } from './WorkspaceBuilds';
+import { WorkspaceWorkflows } from './WorkspaceWorkflows';
 import { useEditorStore } from '../EditorStoreProvider';
 
 /**
@@ -46,8 +45,8 @@ export const SideBar = observer(() => {
         return <ConflictResolution />;
       case ACTIVITY_MODE.PROJECT_OVERVIEW:
         return <ProjectOverview />;
-      case ACTIVITY_MODE.WORKSPACE_BUILDS:
-        return <WorkspaceBuilds />;
+      case ACTIVITY_MODE.WORKSPACE_WORKFLOWS:
+        return <WorkspaceWorkflows />;
       default:
         return null;
     }
@@ -55,12 +54,7 @@ export const SideBar = observer(() => {
 
   return (
     <div className="side-bar">
-      <div
-        key={editorStore.activeActivity}
-        className={clsx('side-bar__view', 'side-bar__view--active')}
-      >
-        {renderSideBar()}
-      </div>
+      <div className="side-bar__view">{renderSideBar()}</div>
     </div>
   );
 });

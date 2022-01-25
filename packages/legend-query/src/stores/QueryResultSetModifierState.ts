@@ -22,8 +22,9 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type { LambdaFunction } from '@finos/legend-graph';
 import {
+  type LambdaFunction,
+  type ValueSpecification,
   extractElementNameFromPath,
   matchFunctionName,
   CollectionInstanceValue,
@@ -269,12 +270,13 @@ export class QueryResultSetModifierState {
               serializeFunction.parametersValues[0],
               SimpleFunctionExpression,
             );
-            const getAllFunc = graphFetchFunc.parametersValues[0];
+            const getAllFunc = graphFetchFunc
+              .parametersValues[0] as ValueSpecification;
             takeFunction.parametersValues[0] = getAllFunc;
             takeFunction.parametersValues[1] = limit;
             graphFetchFunc.parametersValues = [
               takeFunction,
-              graphFetchFunc.parametersValues[1],
+              graphFetchFunc.parametersValues[1] as ValueSpecification,
             ];
             return lambda;
           }

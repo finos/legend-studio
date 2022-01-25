@@ -16,14 +16,20 @@
 
 import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaTimes, FaArrowAltCircleRight, FaPlus } from 'react-icons/fa';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { clsx, CustomSelectorInput, createFilter } from '@finos/legend-art';
-import type {
-  OperationSetImplementationDropTarget,
-  MappingElementDragSource,
+import {
+  clsx,
+  CustomSelectorInput,
+  createFilter,
+  TimesIcon,
+  ArrowCircleRightIcon,
+  PlusIcon,
+} from '@finos/legend-art';
+import {
+  CORE_DND_TYPE,
+  type OperationSetImplementationDropTarget,
+  type MappingElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
 import { noop } from '@finos/legend-shared';
 import {
@@ -144,25 +150,35 @@ export const OperationSetImplementationEditor = observer(
     // actions
     const visit =
       (param: SetImplementationContainer): (() => void) =>
-      (): void =>
-        mappingEditorState.openMappingElement(
-          param.setImplementation.value,
-          true,
-        );
+      (): void => {
+        const parent = param.setImplementation.value.parent;
+        // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
+        if (parent !== mappingEditorState.element) {
+          editorStore.openElement(parent);
+          editorStore
+            .getCurrentEditorState(MappingEditorState)
+            .openMappingElement(param.setImplementation.value, false);
+        } else {
+          mappingEditorState.openMappingElement(
+            param.setImplementation.value,
+            true,
+          );
+        }
+      };
 
     useEffect(() => {
       if (!isReadOnly) {
         setImplementation.accept_SetImplementationVisitor(
-          new MappingElementDecorator(),
+          new MappingElementDecorator(editorStore),
         );
       }
       return isReadOnly
         ? noop()
         : (): void =>
             setImplementation.accept_SetImplementationVisitor(
-              new MappingElementDecorationCleaner(),
+              new MappingElementDecorationCleaner(editorStore),
             );
-    }, [setImplementation, isReadOnly]);
+    }, [setImplementation, isReadOnly, editorStore]);
 
     return (
       <div className="mapping-element-editor__content">
@@ -182,7 +198,7 @@ export const OperationSetImplementationEditor = observer(
                 tabIndex={-1}
                 title={'Add parameter'}
               >
-                <FaPlus />
+                <PlusIcon />
               </button>
             </div>
           </div>
@@ -217,7 +233,7 @@ export const OperationSetImplementationEditor = observer(
                   tabIndex={-1}
                   title={'Visit mapping element'}
                 >
-                  <FaArrowAltCircleRight />
+                  <ArrowCircleRightIcon />
                 </button>
                 {!isReadOnly && (
                   <button
@@ -227,7 +243,7 @@ export const OperationSetImplementationEditor = observer(
                     tabIndex={-1}
                     title={'Remove'}
                   >
-                    <FaTimes />
+                    <TimesIcon />
                   </button>
                 )}
               </div>

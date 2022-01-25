@@ -15,8 +15,7 @@
  */
 
 import { computed, observable, action, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PositionedRectangle } from './geometry/PositionedRectangle';
 import { Rectangle } from './geometry/Rectangle';
 import { Point } from './geometry/Point';
@@ -28,9 +27,9 @@ export class ClassView extends PositionedRectangle implements Hashable {
   owner: Diagram;
   class: PackageableElementReference<Class>;
   id: string;
-  hideProperties = false;
-  hideTaggedValues = false;
-  hideStereotypes = false;
+  hideProperties?: boolean | undefined;
+  hideTaggedValues?: boolean | undefined;
+  hideStereotypes?: boolean | undefined;
 
   constructor(
     owner: Diagram,
@@ -71,9 +70,9 @@ export class ClassView extends PositionedRectangle implements Hashable {
       super.hashCode,
       this.id,
       this.class.hashValue,
-      Boolean(this.hideProperties).toString(),
-      Boolean(this.hideTaggedValues).toString(),
-      Boolean(this.hideStereotypes).toString(),
+      this.hideProperties?.toString() ?? '',
+      this.hideTaggedValues?.toString() ?? '',
+      this.hideStereotypes?.toString() ?? '',
     ]);
   }
 }

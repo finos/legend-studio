@@ -17,10 +17,11 @@
 import { action, makeAutoObservable, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
-import type { EditorSdlcState } from '../EditorSdlcState';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import type { EditorSDLCState } from '../EditorSDLCState';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertErrorThrown,
   assertTrue,
@@ -36,21 +37,20 @@ import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { ACTIVITY_MODE } from '../EditorConfig';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  EntityChangeConflict,
-  EntityChangeConflictResolution,
-} from '@finos/legend-server-sdlc';
 import {
+  type EntityChangeConflict,
+  type EntityChangeConflictResolution,
   EntityChangeType,
   EntityDiff,
   ProjectConfiguration,
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
+import type { GraphBuilderReport } from '../EditorGraphState';
 
 export class ConflictResolutionState {
   editorStore: EditorStore;
-  sdlcState: EditorSdlcState;
+  sdlcState: EditorSDLCState;
   isInitializingConflictResolution = false;
   isAcceptingConflictResolution = false;
   isDiscardingConflictResolutionChanges = false;
@@ -65,7 +65,7 @@ export class ConflictResolutionState {
    */
   mergeEditorStates: EntityChangeConflictEditorState[] = [];
 
-  constructor(editorStore: EditorStore, sdlcState: EditorSdlcState) {
+  constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
       editorStore: false,
       sdlcState: false,
@@ -207,8 +207,8 @@ export class ConflictResolutionState {
     );
     const projectConfiguration =
       (yield this.editorStore.sdlcServerClient.getConfigurationOfWorkspaceInConflictResolutionMode(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
       )) as PlainObject<ProjectConfiguration>;
     this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
       ProjectConfiguration.serialization.fromJson(projectConfiguration),
@@ -249,7 +249,7 @@ export class ConflictResolutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -313,7 +313,13 @@ export class ConflictResolutionState {
             .filter(isNonNullable),
         );
       // build graph
-      yield flowResult(this.editorStore.graphState.buildGraph(entities));
+      const graphBuilderReport = (yield flowResult(
+        this.editorStore.graphState.buildGraph(entities),
+      )) as GraphBuilderReport;
+
+      if (graphBuilderReport.error) {
+        throw graphBuilderReport.error;
+      }
 
       // NOTE: since we have already started change detection engine when we entered conflict resolution mode, we just need
       // to restart local change detection here
@@ -333,7 +339,7 @@ export class ConflictResolutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -349,21 +355,21 @@ export class ConflictResolutionState {
       // fetch latest revision
       const latestRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getConflictResolutionRevision(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Revision>,
       );
       // make sure there is no good recovery from this, at this point all users work risk conflict
       assertTrue(
-        latestRevision.id === this.sdlcState.currentRevisionId,
+        latestRevision.id === this.sdlcState.activeRevision.id,
         `Can't run local change detection. Current workspace revision is not the latest. Please backup your work and refresh the application`,
       );
       const entities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
-          this.sdlcState.currentRevisionId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+          this.sdlcState.activeRevision.id,
         )) as Entity[];
       this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.setEntities(
         entities,
@@ -380,7 +386,7 @@ export class ConflictResolutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -395,8 +401,8 @@ export class ConflictResolutionState {
     try {
       const workspaceBaseEntities =
         (yield this.editorStore.sdlcServerClient.getEntitiesByRevisionFromWorkspaceInConflictResolutionMode(
-          this.sdlcState.currentProjectId,
-          this.sdlcState.currentWorkspaceId,
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
           RevisionAlias.BASE,
         )) as Entity[];
       this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.setEntities(
@@ -414,7 +420,7 @@ export class ConflictResolutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -462,8 +468,8 @@ export class ConflictResolutionState {
       const entityChanges =
         this.editorStore.graphState.computeLocalEntityChanges();
       yield this.editorStore.sdlcServerClient.acceptConflictResolution(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
         {
           message: `resolving update merge conflicts for workspace from ${
             this.editorStore.applicationStore.config.appName
@@ -473,7 +479,7 @@ export class ConflictResolutionState {
               : `${entityChanges.length} entities`
           }]`,
           entityChanges,
-          revisionId: this.sdlcState.currentRevisionId,
+          revisionId: this.sdlcState.activeRevision.id,
         },
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
@@ -481,7 +487,7 @@ export class ConflictResolutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -529,15 +535,15 @@ export class ConflictResolutionState {
         showLoading: true,
       });
       yield this.editorStore.sdlcServerClient.discardConflictResolutionChanges(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -585,15 +591,15 @@ export class ConflictResolutionState {
         showLoading: true,
       });
       yield this.editorStore.sdlcServerClient.abortConflictResolution(
-        this.sdlcState.currentProjectId,
-        this.sdlcState.currentWorkspaceId,
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
       );
       this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

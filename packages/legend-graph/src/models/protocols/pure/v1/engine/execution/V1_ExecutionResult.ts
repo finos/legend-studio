@@ -15,8 +15,11 @@
  */
 
 import { createModelSchema, list, optional, primitive, raw } from 'serializr';
-import type { PlainObject } from '@finos/legend-shared';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  SerializationFactory,
+  usingModelSchema,
+} from '@finos/legend-shared';
 import { BuilderType } from '../../../../../../graphManager/action/execution/ExecutionResult';
 
 export class V1_ResultBuilder {

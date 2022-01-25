@@ -1,5 +1,59 @@
 # @finos/legend-dev-utils
 
+## 0.3.7
+
+## 0.3.6
+
+## 0.3.5
+
+## 0.3.4
+
+## 0.3.3
+
+## 0.3.2
+
+## 0.3.1
+
+## 0.3.0
+
+### Minor Changes
+
+- [#707](https://github.com/finos/legend-studio/pull/707) [`5d9912d9`](https://github.com/finos/legend-studio/commit/5d9912d9a2c883e23d8852325a25fe59ae7597b1) ([@akphi](https://github.com/akphi)) - Turn off source-mapping for Webpack development build for better performance; to have source-mapping enabled in development mode, use `debug` mode. `advanced` mode is now renamed to `debug` mode for Webpack configuration generator.
+
+## 0.2.1
+
+## 0.2.0
+
+### Minor Changes
+
+- [#636](https://github.com/finos/legend-studio/pull/636) [`65bd91ee`](https://github.com/finos/legend-studio/commit/65bd91ee5840626097948d88179d2aa692be6440) ([@akphi](https://github.com/akphi)) - Export base `Typescript` config file: to use this in other projects, in their respective `tsconfig.json`, use `{ "extends": "@finos/legend-dev-utils/tsconfig.base.json", ... }`.
+
+* [#636](https://github.com/finos/legend-studio/pull/636) [`65bd91ee`](https://github.com/finos/legend-studio/commit/65bd91ee5840626097948d88179d2aa692be6440) ([@akphi](https://github.com/akphi)) - Add test mocks, polyfills and test setup scripts for Jest.
+
+## 0.1.1
+
+## 0.1.0
+
+### Minor Changes
+
+- [#594](https://github.com/finos/legend-studio/pull/594) [`c1249af7`](https://github.com/finos/legend-studio/commit/c1249af76c0d8f8df0978c1a4be5e54685e22982) ([@akphi](https://github.com/akphi)) - Remove usage of `fork-ts-checker-webpack-plugin` and unused utitlities for `Typescript` path mappings.
+
+* [#594](https://github.com/finos/legend-studio/pull/594) [`c1249af7`](https://github.com/finos/legend-studio/commit/c1249af76c0d8f8df0978c1a4be5e54685e22982) ([@akphi](https://github.com/akphi)) - Remove `cosmiconfig` config loader.
+
+### Patch Changes
+
+- [#596](https://github.com/finos/legend-studio/pull/596) [`adaa112a`](https://github.com/finos/legend-studio/commit/adaa112a637e8fcee894a1c5c706181faa349f0e) ([@akphi](https://github.com/akphi)) - Report `webpack` warnings and errors in development mode after we remove usage of `fork-ts-checker-webpack-plugin` in [#594](https://github.com/finos/legend-studio/pull/594).
+
+## 0.0.13
+
+### Patch Changes
+
+- [#569](https://github.com/finos/legend-studio/pull/569) [`67a95bd0`](https://github.com/finos/legend-studio/commit/67a95bd0dadd00b486c2f7884e7d9a10cb91b03c) ([@akphi](https://github.com/akphi)) - Upgrade to `jest-extended@1.0.0` and export the script `jest/setupJestExpectExtension` for the narrowed-down set of extensions for `Jest.expect`.
+
+## 0.0.12
+
+## 0.0.11
+
 ## 0.0.10
 
 ## 0.0.9

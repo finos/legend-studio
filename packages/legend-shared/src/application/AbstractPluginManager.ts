@@ -98,14 +98,15 @@ export abstract class AbstractPluginManager {
 
   configure(configData: Record<PropertyKey, object>): void {
     Object.keys(configData).forEach((key) => {
+      const configObj = configData[key] as object;
       this.presets.forEach((preset) => {
         if (preset.getName() === key) {
-          preset.configure(configData[key]);
+          preset.configure(configObj);
         }
       });
       this.plugins.forEach((plugin) => {
         if (plugin.getName() === key) {
-          plugin.configure(configData[key]);
+          plugin.configure(configObj);
         }
       });
     });
@@ -118,4 +119,8 @@ export abstract class AbstractPluginManager {
     // Presets ordering is first to last
     this.presets.forEach((plugin) => plugin.install(this));
   }
+}
+
+export interface PluginConsumer {
+  registerPlugins(plugins: AbstractPlugin[]): void;
 }

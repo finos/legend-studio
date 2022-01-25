@@ -25,6 +25,12 @@ import {
   baseTextEditorSettings,
   disableEditorHotKeys,
   resetLineNumberGutterWidth,
+  clsx,
+  WordWrapIcon,
+  getEditorValue,
+  normalizeLineEnding,
+  MoreHorizontalIcon,
+  HackerIcon,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -33,18 +39,18 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
-import { FaUserSecret } from 'react-icons/fa';
-import { MdMoreHoriz } from 'react-icons/md';
-import type { ElementDragSource } from '../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDrop } from 'react-dnd';
-import type { DSL_StudioPlugin_Extension } from '../../../stores/StudioPlugin';
+import {
+  type ElementDragSource,
+  CORE_DND_TYPE,
+} from '../../../stores/shared/DnDUtil';
+import { type DropTargetMonitor, useDrop } from 'react-dnd';
+import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
-  (props: {}, ref: React.Ref<HTMLDivElement>) => {
+  (props, ref: React.Ref<HTMLDivElement>) => {
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
@@ -75,12 +81,15 @@ export const GrammarTextEditor = observer(() => {
   const currentElementLabelRegexString =
     grammarTextEditorState.currentElementLabelRegexString;
   const error = grammarTextEditorState.error;
-  const graphGrammarText = grammarTextEditorState.graphGrammarText;
+  const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
 
   const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
     flowResult(editorStore.toggleTextMode()),
   );
+
+  const toggleWordWrap = (): void =>
+    grammarTextEditorState.setWrapText(!grammarTextEditorState.wrapText);
 
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
@@ -99,7 +108,7 @@ export const GrammarTextEditor = observer(() => {
         theme: EDITOR_THEME.LEGEND,
       });
       _editor.onDidChangeModelContent(() => {
-        grammarTextEditorState.setGraphGrammarText(_editor.getValue());
+        grammarTextEditorState.setGraphGrammarText(getEditorValue(_editor));
         editorStore.graphState.clearCompilationError();
         // we can technically can reset the current element label regex string here
         // but if we do that on first load, the cursor will not jump to the current element
@@ -132,7 +141,7 @@ export const GrammarTextEditor = observer(() => {
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_StudioPlugin_Extension
+          plugin as DSL_LegendStudioPlugin_Extension
         ).getExtraGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(
@@ -176,10 +185,13 @@ export const GrammarTextEditor = observer(() => {
 
   if (editor) {
     // Set the value of the editor
-    const currentValue = editor.getValue();
-    if (currentValue !== graphGrammarText) {
-      editor.setValue(graphGrammarText);
+    const currentValue = getEditorValue(editor);
+    if (currentValue !== value) {
+      editor.setValue(value);
     }
+    editor.updateOptions({
+      wordWrap: grammarTextEditorState.wrapText ? 'on' : 'off',
+    });
     resetLineNumberGutterWidth(editor);
     const editorModel = editor.getModel();
     if (editorModel) {
@@ -243,7 +255,7 @@ export const GrammarTextEditor = observer(() => {
           true,
         );
         if (Array.isArray(match) && match.length) {
-          const range = match[0].range;
+          const range = guaranteeNonNullable(match[0]).range;
           editor.focus();
           editor.revealPositionInCenter({
             lineNumber: range.startLineNumber,
@@ -280,7 +292,7 @@ export const GrammarTextEditor = observer(() => {
               tabIndex={-1}
               title="Click to exit text mode and go back to form mode"
             >
-              <MdMoreHoriz />
+              <MoreHorizontalIcon />
             </button>
           </div>
           <ContextMenu
@@ -288,10 +300,25 @@ export const GrammarTextEditor = observer(() => {
             content={<GrammarTextEditorHeaderTabContextMenu />}
           >
             <div className="edit-panel__header__tab__icon">
-              <FaUserSecret />
+              <HackerIcon />
             </div>
             <div className="edit-panel__header__tab__label">Text Mode</div>
           </ContextMenu>
+        </div>
+        <div className="edit-panel__header__actions">
+          <button
+            className={clsx('edit-panel__header__action', {
+              'edit-panel__header__action--active':
+                grammarTextEditorState.wrapText,
+            })}
+            onClick={toggleWordWrap}
+            tabIndex={-1}
+            title={`[${
+              grammarTextEditorState.wrapText ? 'on' : 'off'
+            }] Toggle word wrap`}
+          >
+            <WordWrapIcon className="edit-panel__icon__word-wrap" />
+          </button>
         </div>
       </ContextMenu>
       <div className="panel__content edit-panel__content">

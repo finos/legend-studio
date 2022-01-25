@@ -16,8 +16,8 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   addUniqueEntry,
@@ -27,14 +27,12 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
-import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
 import type { EditorStore } from '../../../EditorStore';
-import type {
-  RelationalDatabaseConnection,
-  Schema,
-  Table,
-} from '@finos/legend-graph';
 import {
+  type RelationalDatabaseConnection,
+  type Schema,
+  type Table,
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
@@ -117,7 +115,7 @@ export class DatabaseBuilderState {
       databaseGrammarCode: observable,
       isSavingDatabase: observable,
       setTargetDatabasePath: action,
-      setModal: action,
+      setShowModal: action,
       setDatabaseGrammarCode: action,
       setTreeData: action,
       treeData: observable,
@@ -136,7 +134,7 @@ export class DatabaseBuilderState {
     this.targetDatabasePath = this.currentDatabase?.path ?? 'store::MyDatabase';
   }
 
-  setModal(val: boolean): void {
+  setShowModal(val: boolean): void {
     this.showModal = val;
   }
 
@@ -152,7 +150,6 @@ export class DatabaseBuilderState {
     this.targetDatabasePath = val;
   }
 
-  // Tree Operations
   *onNodeSelect(
     node: DatabaseBuilderTreeNodeData,
     treeData: DatabaseBuilderTreeData,
@@ -233,30 +230,33 @@ export class DatabaseBuilderState {
       )) as Database;
       const rootIds: string[] = [];
       const nodes = new Map<string, DatabaseBuilderTreeNodeData>();
-      database.schemas.forEach((dbSchema) => {
-        const schemaId = dbSchema.name;
-        rootIds.push(schemaId);
-        const schemaNode = new SchemaDatabaseBuilderTreeNodeData(
-          schemaId,
-          undefined,
-          dbSchema,
-        );
-        schemaNode.isChecked = Boolean(
-          this.currentDatabase?.schemas.find(
-            (cSchema) => cSchema.name === dbSchema.name,
-          ),
-        );
-        nodes.set(schemaId, schemaNode);
-      });
+      database.schemas
+        .slice()
+        .sort((schemaA, schemaB) => schemaA.name.localeCompare(schemaB.name))
+        .forEach((dbSchema) => {
+          const schemaId = dbSchema.name;
+          rootIds.push(schemaId);
+          const schemaNode = new SchemaDatabaseBuilderTreeNodeData(
+            schemaId,
+            undefined,
+            dbSchema,
+          );
+          schemaNode.isChecked = Boolean(
+            this.currentDatabase?.schemas.find(
+              (cSchema) => cSchema.name === dbSchema.name,
+            ),
+          );
+          nodes.set(schemaId, schemaNode);
+        });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -278,31 +278,34 @@ export class DatabaseBuilderState {
       const tables = database.getSchema(schema.name).tables;
       const childrenIds = schemaNode.childrenIds ?? [];
       schema.tables = tables;
-      tables.forEach((e) => {
-        e.schema = schema;
-        const tableId = `${schema.name}.${e.name}`;
-        const tableNode = new TableDatabaseBuilderTreeNodeData(
-          tableId,
-          schemaNode.id,
-          e,
-        );
+      tables
+        .slice()
+        .sort((tableA, tableB) => tableA.name.localeCompare(tableB.name))
+        .forEach((e) => {
+          e.schema = schema;
+          const tableId = `${schema.name}.${e.name}`;
+          const tableNode = new TableDatabaseBuilderTreeNodeData(
+            tableId,
+            schemaNode.id,
+            e,
+          );
 
-        tableNode.isChecked = Boolean(
-          this.currentDatabase &&
-            getDbNullableTable(e.name, schema.name, this.currentDatabase),
-        );
-        treeData.nodes.set(tableId, tableNode);
-        addUniqueEntry(childrenIds, tableId);
-      });
+          tableNode.isChecked = Boolean(
+            this.currentDatabase &&
+              getDbNullableTable(e.name, schema.name, this.currentDatabase),
+          );
+          treeData.nodes.set(tableId, tableNode);
+          addUniqueEntry(childrenIds, tableId);
+        });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -340,10 +343,10 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -361,17 +364,20 @@ export class DatabaseBuilderState {
     this.removeChildren(tableNode, treeData);
     const childrenIds: string[] = [];
     const tableId = tableNode.id;
-    columns.forEach((c) => {
-      const columnId = `${tableId}.${c.name}`;
-      const columnNode = new ColumnDatabaseBuilderTreeNodeData(
-        columnId,
-        tableId,
-        c,
-      );
-      c.owner = tableNode.table;
-      treeData.nodes.set(columnId, columnNode);
-      addUniqueEntry(childrenIds, columnId);
-    });
+    columns
+      .slice()
+      .sort((colA, colB) => colA.name.localeCompare(colB.name))
+      .forEach((c) => {
+        const columnId = `${tableId}.${c.name}`;
+        const columnNode = new ColumnDatabaseBuilderTreeNodeData(
+          columnId,
+          tableId,
+          c,
+        );
+        c.owner = tableNode.table;
+        treeData.nodes.set(columnId, columnNode);
+        addUniqueEntry(childrenIds, columnId);
+      });
     tableNode.childrenIds = childrenIds;
   }
 
@@ -461,10 +467,10 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isBuildingDatabase = false;
     }
@@ -500,7 +506,7 @@ export class DatabaseBuilderState {
       dbGraph.ownDatabases.length === 1,
       'Expected one database to be generated from grammar',
     );
-    return dbGraph.ownDatabases[0];
+    return dbGraph.ownDatabases[0] as Database;
   }
 
   private *buildDatabaseFromInput(
@@ -524,7 +530,7 @@ export class DatabaseBuilderState {
       dbGraph.ownDatabases.length === 1,
       'Expected one database to be generated from input',
     );
-    return dbGraph.ownDatabases[0];
+    return dbGraph.ownDatabases[0] as Database;
   }
 
   *createOrUpdateDatabase(): GeneratorFn<void> {
@@ -579,10 +585,10 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(error, undefined, 3000);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isSavingDatabase = false;
     }

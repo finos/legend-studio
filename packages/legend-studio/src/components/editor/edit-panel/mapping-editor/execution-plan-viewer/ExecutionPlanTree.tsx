@@ -15,12 +15,10 @@
  */
 
 import { useState } from 'react';
-import type {
-  TreeNodeContainerProps,
-  TreeData,
-  TreeNodeData,
-} from '@finos/legend-art';
 import {
+  type TreeNodeContainerProps,
+  type TreeData,
+  type TreeNodeData,
   clsx,
   TreeView,
   ChevronDownIcon,
@@ -29,11 +27,11 @@ import {
 import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import {
+  type ExecutionPlan,
   ExecutionNode,
   SQLExecutionNode,
   RelationalTDSInstantiationExecutionNode,
 } from '@finos/legend-graph';
-import type { ExecutionPlan } from '@finos/legend-graph';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;
@@ -233,10 +231,7 @@ const ExecutionNodeElementTreeNodeContainer: React.FC<
 export const ExecutionPlanTree: React.FC<{
   executionPlanState: ExecutionPlanState;
   executionPlan: ExecutionPlan;
-}> = (props: {
-  executionPlanState: ExecutionPlanState;
-  executionPlan: ExecutionPlan;
-}) => {
+}> = (props) => {
   const { executionPlanState, executionPlan } = props;
   // NOTE: We only need to compute this once so we use lazy initial state syntax
   // See https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
@@ -298,6 +293,7 @@ export const ExecutionPlanTree: React.FC<{
 
     return childrenNodes;
   };
+
   return (
     <TreeView
       components={{

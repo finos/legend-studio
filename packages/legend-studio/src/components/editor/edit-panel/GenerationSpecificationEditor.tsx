@@ -16,18 +16,21 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type {
-  GenerationSpecNodeDragSource,
-  GenerationSpecNodeDropTarget,
-  GenerationTreeNodeState,
+import {
+  GenerationSpecificationEditorState,
+  type GenerationSpecNodeDragSource,
+  type GenerationSpecNodeDropTarget,
+  type GenerationTreeNodeState,
 } from '../../../stores/editor-state/GenerationSpecificationEditorState';
-import { GenerationSpecificationEditorState } from '../../../stores/editor-state/GenerationSpecificationEditorState';
-import { FaFire, FaTimes, FaPlus, FaLongArrowAltRight } from 'react-icons/fa';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import type { DropTargetMonitor, XYCoord } from 'react-dnd';
-import { useDragLayer, useDrag, useDrop } from 'react-dnd';
+import {
+  type DropTargetMonitor,
+  type XYCoord,
+  useDragLayer,
+  useDrag,
+  useDrop,
+} from 'react-dnd';
 import { getElementIcon } from '../../shared/ElementIconUtils';
-import { MdRefresh } from 'react-icons/md';
 import {
   clsx,
   BlankPanelContent,
@@ -36,25 +39,30 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  FileGenerationIcon,
+  PURE_FileGenerationIcon,
+  RefreshIcon,
+  FireIcon,
+  TimesIcon,
+  PlusIcon,
+  LongArrowRightIcon,
 } from '@finos/legend-art';
-import type {
-  ElementDragSource,
-  FileGenerationSourceDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type FileGenerationSourceDropTarget,
 } from '../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../stores/shared/DnDUtil';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import {
+  type PackageableElementOption,
+  buildElementOption,
+} from '../../../stores/shared/PackageableElementOptionUtil';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGenerationSpecification_StudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_StudioPlugin_Extension';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import type {
-  PackageableElement,
-  PackageableElementReference,
-  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
-} from '@finos/legend-graph';
 import {
+  type PackageableElement,
+  type PackageableElementReference,
+  type DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
   FileGenerationSpecification,
   PackageableElementExplicitReference,
   GenerationTreeNode,
@@ -233,7 +241,7 @@ const ModelGenerationItem = observer(
               tabIndex={-1}
               title={'See mapping'}
             >
-              <FaLongArrowAltRight />
+              <LongArrowRightIcon />
             </button>
             <button
               className="generation-spec-model-generation-editor__item__remove-btn"
@@ -241,7 +249,7 @@ const ModelGenerationItem = observer(
               tabIndex={-1}
               title={'Remove'}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           </>
         )}
@@ -270,7 +278,7 @@ const ModelGenerationSpecifications = observer(
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGenerationSpecification_StudioPlugin_Extension
+              plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
     const modelGenerationElementOptions =
@@ -328,7 +336,7 @@ const ModelGenerationSpecifications = observer(
               tabIndex={-1}
               title="Add File Generation"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>
@@ -393,7 +401,7 @@ const FileGenerationItem = observer(
     return (
       <div className="panel__content__form__section__list__item generation-spec-file-generation-editor__item">
         <div className="btn--sm generation-spec-file-generation-editor__item__label">
-          <FileGenerationIcon />
+          <PURE_FileGenerationIcon />
         </div>
         <CustomSelectorInput
           className="generation-spec-file-generation-editor__item__dropdown"
@@ -408,7 +416,7 @@ const FileGenerationItem = observer(
           tabIndex={-1}
           title={'See mapping'}
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
         <button
           className="generation-spec-file-generation-editor__item__remove-btn"
@@ -416,7 +424,7 @@ const FileGenerationItem = observer(
           tabIndex={-1}
           title={'Remove'}
         >
-          <FaTimes />
+          <TimesIcon />
         </button>
       </div>
     );
@@ -488,7 +496,7 @@ const FileGenerationSpecifications = observer(
               tabIndex={-1}
               title="Add File Generation"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>
@@ -567,7 +575,7 @@ export const GenerationSpecificationEditor = observer(() => {
               onClick={generate}
               title={'Generate'}
             >
-              <FaFire />
+              <FireIcon />
             </button>
             <button
               className={clsx(
@@ -581,7 +589,7 @@ export const GenerationSpecificationEditor = observer(() => {
               tabIndex={-1}
               title="Clear generation entities"
             >
-              <MdRefresh />
+              <RefreshIcon />
             </button>
           </div>
         </div>

@@ -15,8 +15,8 @@
  */
 
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   ActionState,
   assertErrorThrown,
   LogEvent,
@@ -33,17 +33,16 @@ import {
 } from '../../../editor-state/element-editor-state/RuntimeEditorState';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type {
-  ServiceExecution,
-  KeyedExecutionParameter,
-  PureExecution,
-  ServiceTest,
-  Mapping,
-  Runtime,
-  ExecutionResult,
-  LightQuery,
-} from '@finos/legend-graph';
 import {
+  type ServiceExecution,
+  type KeyedExecutionParameter,
+  type PureExecution,
+  type ServiceTest,
+  type Mapping,
+  type Runtime,
+  type ExecutionResult,
+  type LightQuery,
+  type PackageableRuntime,
   GRAPH_MANAGER_LOG_EVENT,
   RawLambda,
   PureSingleExecution,
@@ -53,8 +52,11 @@ import {
   PackageableElementExplicitReference,
   buildSourceInformationSourceId,
   PureClientVersion,
+  QueryProjectCoordinates,
+  QuerySearchSpecification,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
+import { parseGACoordinates } from '@finos/legend-server-depot';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -239,25 +241,39 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   *loadQueries(searchText: string): GeneratorFn<void> {
     const isValidSearchString = searchText.length >= 3;
     this.loadQueriesState.inProgress();
-    const dependencyProjectCoordinates = Array.from(
-      (
-        (yield flowResult(
-          this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
-        )) as Map<string, Entity[]>
-      ).keys(),
-    );
     try {
+      const searchSpecification = new QuerySearchSpecification();
+      const currentProjectCoordinates = new QueryProjectCoordinates();
+      currentProjectCoordinates.groupId =
+        this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
+      currentProjectCoordinates.artifactId =
+        this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
+      searchSpecification.searchTerm = isValidSearchString
+        ? searchText
+        : undefined;
+      searchSpecification.limit = 10;
+      searchSpecification.projectCoordinates = [
+        // either get queries for the current project
+        currentProjectCoordinates,
+        // or any of its dependencies
+        ...Array.from(
+          (
+            (yield flowResult(
+              this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
+            )) as Map<string, Entity[]>
+          ).keys(),
+        ).map((coordinatesInText) => {
+          const { groupId, artifactId } = parseGACoordinates(coordinatesInText);
+          const coordinates = new QueryProjectCoordinates();
+          coordinates.groupId = groupId;
+          coordinates.artifactId = artifactId;
+          return coordinates;
+        }),
+      ];
       this.queries =
-        (yield this.editorStore.graphManagerState.graphManager.getQueries({
-          search: isValidSearchString ? searchText : undefined,
-          projectCoordinates: [
-            // either get queries for the current project
-            `${this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId}:${this.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId}`,
-            // or any of its dependencies
-            ...dependencyProjectCoordinates,
-          ],
-          limit: 10,
-        })) as LightQuery[];
+        (yield this.editorStore.graphManagerState.graphManager.searchQueries(
+          searchSpecification,
+        )) as LightQuery[];
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -474,7 +490,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       decorateRuntimeWithNewMapping(
         this.selectedExecutionConfiguration.runtime,
         this.selectedExecutionConfiguration.mapping.value,
-        this.editorStore.graphManagerState.graph,
+        this.editorStore,
       );
       this.selectedExecutionConfiguration.setRuntime(customRuntime);
     }
@@ -488,7 +504,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         );
       if (runtimes.length) {
         this.selectedExecutionConfiguration.setRuntime(
-          runtimes[0].runtimeValue,
+          (runtimes[0] as PackageableRuntime).runtimeValue,
         );
       } else {
         this.useCustomRuntime();

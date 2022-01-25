@@ -15,12 +15,12 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import type { MenuProps } from '@material-ui/core/Menu';
-import { BaseMenu } from '../BaseMuiComponents';
+import type { MenuProps as MuiMenuProps } from '@mui/material';
+import { BaseMenu } from './BaseMenu';
 
 export const DropdownMenu: React.FC<{
   open?: boolean | undefined;
-  menuProps?: Partial<MenuProps> | undefined;
+  menuProps?: Partial<MuiMenuProps> | undefined;
   content?: React.ReactNode | undefined;
   className?: string | undefined;
   disabled?: boolean | undefined;
@@ -75,7 +75,6 @@ export const DropdownMenu: React.FC<{
       <BaseMenu
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        getContentAnchorEl={null}
         anchorEl={anchorEl}
         open={(open === undefined || Boolean(open)) && Boolean(anchorEl)}
         BackdropProps={{

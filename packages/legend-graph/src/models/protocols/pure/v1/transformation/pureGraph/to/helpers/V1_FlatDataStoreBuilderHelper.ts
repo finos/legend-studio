@@ -26,8 +26,8 @@ import {
 } from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../../MetaModelConst';
 import { FlatDataSection } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
-import type { FlatDataDataType } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
 import {
+  type FlatDataDataType,
   FlatDataString,
   FlatDataBoolean,
   FlatDataNumber,
@@ -45,11 +45,9 @@ import type { FlatData } from '../../../../../../../metamodels/pure/packageableE
 import { FlatDataProperty } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataProperty';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_FlatDataSection } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataSection';
-import type {
-  V1_FlatDataDataType,
-  V1_FlatDataRecordField,
-} from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
 import {
+  type V1_FlatDataDataType,
+  type V1_FlatDataRecordField,
   V1_FlatDataString,
   V1_FlatDataBoolean,
   V1_FlatDataNumber,
@@ -74,15 +72,15 @@ const buildFlatDataDataType = (
   ): FlatDataRecordField => {
     assertNonEmptyString(
       field.label,
-      'Flat-data record field label is missing',
+      `Flat-data record field 'label' field is missing or empty`,
     );
     assertNonNullable(
       field.flatDataDataType,
-      'Flat-data record field type is missing',
+      `Flat-data record field 'flatDataDataType' field is missing`,
     );
     assertNonNullable(
       field.optional,
-      'Flat-data record field optional flag is missing',
+      `Flat-data record field 'optional' field is missing`,
     );
     const recordField = new FlatDataRecordField(
       field.label,
@@ -162,8 +160,14 @@ const buildFlatDataRecordType = (
 const buildFlatDataProperty = (
   property: V1_FlatDataProperty,
 ): FlatDataProperty => {
-  assertNonEmptyString(property.name, 'Flat-data property name is missing');
-  assertNonNullable(property.value, 'Flat-data property value is missing');
+  assertNonEmptyString(
+    property.name,
+    `Flat-data property 'name' field is missing or empty`,
+  );
+  assertNonNullable(
+    property.value,
+    `Flat-data property 'value' field is missing`,
+  );
   assertTrue(
     isString(property.value) ||
       isNumber(property.value) ||
@@ -178,8 +182,14 @@ export const V1_buildFlatDataSection = (
   parentFlatData: FlatData,
   context: V1_GraphBuilderContext,
 ): FlatDataSection => {
-  assertNonEmptyString(section.name, 'Flat-data section name is missing');
-  assertNonEmptyString(section.driverId, 'Flat-data driver ID is missing');
+  assertNonEmptyString(
+    section.name,
+    `Flat-data section 'name' field is missing or empty`,
+  );
+  assertNonEmptyString(
+    section.driverId,
+    `Flat-data section 'driverId' field is missing`,
+  );
   const flatDataSection = new FlatDataSection(
     section.driverId,
     section.name,

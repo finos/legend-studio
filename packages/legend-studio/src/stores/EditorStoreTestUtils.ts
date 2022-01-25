@@ -15,7 +15,7 @@
  */
 
 import { EditorStore } from './EditorStore';
-import { StudioPluginManager } from '../application/StudioPluginManager';
+import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import { TEST__getTestGraphManagerState } from '@finos/legend-graph';
 import { TEST__getTestSDLCServerClient } from '@finos/legend-server-sdlc';
 import { TEST__getTestDepotServerClient } from '@finos/legend-server-depot';
@@ -23,8 +23,7 @@ import {
   TEST_DATA__applicationVersion,
   TEST__getTestApplicationStore,
 } from '@finos/legend-application';
-import { StudioConfig } from '../application/StudioConfig';
-import { URL_PATH_PLACEHOLDER } from './LegendStudioRouter';
+import { LegendStudioConfig } from '../application/LegendStudioConfig';
 
 export const TEST_DATA__studioConfig = {
   appName: 'test-studio-app',
@@ -45,8 +44,8 @@ export const TEST_DATA__studioConfig = {
 
 export const TEST__getTestStudioConfig = (
   extraConfigData = {},
-): StudioConfig => {
-  const config = new StudioConfig(
+): LegendStudioConfig => {
+  const config = new LegendStudioConfig(
     {
       ...TEST_DATA__studioConfig,
       ...extraConfigData,
@@ -54,15 +53,15 @@ export const TEST__getTestStudioConfig = (
     TEST_DATA__applicationVersion,
     '/studio/',
   );
-  config.setSDLCServerKey(URL_PATH_PLACEHOLDER);
   return config;
 };
 
 export const TEST__getTestEditorStore = (
-  pluginManager = StudioPluginManager.create(),
+  pluginManager = LegendStudioPluginManager.create(),
 ): EditorStore => {
   const applicationStore = TEST__getTestApplicationStore(
     TEST__getTestStudioConfig(),
+    pluginManager,
   );
   return new EditorStore(
     applicationStore,

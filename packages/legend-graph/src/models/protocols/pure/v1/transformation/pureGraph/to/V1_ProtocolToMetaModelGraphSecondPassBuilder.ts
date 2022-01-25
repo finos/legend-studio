@@ -22,6 +22,7 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
   assertTrue,
+  LogEvent,
 } from '@finos/legend-shared';
 import { Stereotype } from '../../../../../../metamodels/pure/packageableElements/domain/Stereotype';
 import { Tag } from '../../../../../../metamodels/pure/packageableElements/domain/Tag';
@@ -73,7 +74,6 @@ import {
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { V1_buildSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper';
-import type { V1_ServiceStore } from '../../../model/packageableElements/store/relational/V1_ServiceStore';
 
 export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -94,10 +94,32 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const profile = this.context.graph.getProfile(
       this.context.graph.buildPath(element.package, element.name),
     );
-    profile.stereotypes = element.stereotypes.map(
-      (stereotype) => new Stereotype(profile, stereotype),
-    );
-    profile.tags = element.tags.map((tag) => new Tag(profile, tag));
+    const uniqueStereotypes = new Set<string>();
+    profile.stereotypes = element.stereotypes.map((stereotype) => {
+      if (uniqueStereotypes.has(stereotype)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`,
+          ),
+        );
+      }
+      uniqueStereotypes.add(stereotype);
+      return new Stereotype(profile, stereotype);
+    });
+    const uniqueTags = new Set<string>();
+    profile.tags = element.tags.map((tag) => {
+      if (uniqueTags.has(tag)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated tag '${tag}' in profile '${element.path}'`,
+          ),
+        );
+      }
+      uniqueTags.add(tag);
+      return new Tag(profile, tag);
+    });
   }
 
   visit_Enumeration(element: V1_Enumeration): void {
@@ -109,8 +131,20 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     enumeration.taggedValues = element.taggedValues
       .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
+    const uniqueEnumValues = new Set<string>();
     enumeration.values = element.values.map((enumValue) => {
-      assertNonEmptyString(enumValue.value, 'Enum value name is missing');
+      assertNonEmptyString(
+        enumValue.value,
+        `Enum value 'value' field is missing or empty`,
+      );
+      if (uniqueEnumValues.has(enumValue.value)) {
+        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`,
+          ),
+        );
+      }
       const _enum = new Enum(enumValue.value, enumeration);
       _enum.stereotypes = enumValue.stereotypes
         .map((stereotype) => this.context.resolveStereotype(stereotype))
@@ -118,6 +152,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       _enum.taggedValues = enumValue.taggedValues
         .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
         .filter(isNonNullable);
+      uniqueEnumValues.add(enumValue.value);
       return _enum;
     });
   }
@@ -125,7 +160,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   visit_Measure(element: V1_Measure): void {
     assertNonNullable(
       element.canonicalUnit,
-      'Measure canonical unit is missing',
+      `Measure 'canonicalUnit' field is missing`,
     );
     const measure = this.context.graph.getMeasure(
       this.context.graph.buildPath(element.package, element.name),
@@ -166,11 +201,11 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   ): void {
     assertNonEmptyString(
       protocol.returnType,
-      'Function return type is missing',
+      `Function 'returnType' field is missing or empty`,
     );
     assertNonNullable(
       protocol.returnMultiplicity,
-      'Function return type multiplicity is missing',
+      `Function 'returnMultiplicity' field is missing`,
     );
     const func = this.context.graph.getFunction(
       this.context.graph.buildPath(protocol.package, protocol.name),
@@ -213,15 +248,6 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     );
   }
 
-  visit_ServiceStore(element: V1_ServiceStore): void {
-    assertNonEmptyString(element.docLink, 'Service store doc link is missing');
-    const serviceStore = this.context.graph.getServiceStore(
-      this.context.graph.buildPath(element.package, element.name),
-    );
-    // TODO includedStores
-    serviceStore.docLink = element.docLink;
-  }
-
   visit_Mapping(element: V1_Mapping): void {
     const mapping = this.context.graph.getMapping(
       this.context.graph.buildPath(element.package, element.name),
@@ -230,7 +256,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     mapping.includes = element.includedMappings.map((i) => {
       assertNonEmptyString(
         i.includedMappingPath,
-        'Mapping include path is missing',
+        `Mapping include 'includedMappingPath' field is missing or empty`,
       );
       assertTrue(
         !mappingIncludesSet.has(i.includedMappingPath),
@@ -246,7 +272,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Service(element: V1_Service): void {
-    assertNonEmptyString(element.pattern, 'Service pattern is missing');
+    assertNonEmptyString(
+      element.pattern,
+      `Service 'pattern' field is missing or empty`,
+    );
     const service = this.context.graph.getService(
       this.context.graph.buildPath(element.package, element.name),
     );
@@ -277,7 +306,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_FileGeneration(element: V1_FileGenerationSpecification): void {
-    assertNonEmptyString(element.type, 'File generation type is missing');
+    assertNonEmptyString(
+      element.type,
+      `File generation 'type' field is missing or empty`,
+    );
     const fileGeneration = this.context.graph.getFileGeneration(
       this.context.graph.buildPath(element.package, element.name),
     );

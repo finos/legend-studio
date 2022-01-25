@@ -21,18 +21,19 @@ module.exports = {
   // Refer to `material-ui` for their setup of `.stylelintrc.js` and `package.json`
   // See https://github.com/mui-org/material-ui/blob/next/package.json
   extends: ['stylelint-config-standard', 'stylelint-config-prettier'],
+  customSyntax: 'postcss-scss',
   rules: {
-    // Since we don't use Sass instead of pure CSS, we can override the
-    // `at-rule-no-unknown` rules like this, otherwise we need to create
-    // separate configs for each extension.
-    // See https://github.com/stylelint/stylelint/issues/3128
-    // See https://github.com/kristerkari/stylelint-scss/issues/196
+    // Since we use Sass, some @ rules like @include, @use, are not native to CSS
+    // so we can disable this rule
     'at-rule-no-unknown': null,
-    'scss/at-rule-no-unknown': true,
     // NOTE: this is a fair rule to enable by default, but with the way we're
     // organizing our stylesheet right now in Sass files, it takes some work
     // to test and clean up this to enable this rule
     // See https://stylelint.io/user-guide/rules/no-descending-specificity
     'no-descending-specificity': null,
+    // We don't really care about these naming conventions
+    'selector-class-pattern': null,
+    'custom-property-pattern': null,
+    'keyframes-name-pattern': null,
   },
 };

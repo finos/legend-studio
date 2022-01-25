@@ -30,3 +30,17 @@ export const V1_TEST_DATA__unsupportedFunctionExpression = {
   ],
   parameters: [],
 };
+
+export const V1_TEST_DATA__valueSpecificationWithLatestDate = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'latestDate',
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+    },
+  ],
+  parameters: [],
+};

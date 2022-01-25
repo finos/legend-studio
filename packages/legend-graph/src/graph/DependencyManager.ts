@@ -16,8 +16,8 @@
 
 import { observable, computed, makeObservable } from 'mobx';
 import { ROOT_PACKAGE_NAME } from '../MetaModelConst';
-import type { Clazz } from '@finos/legend-shared';
 import {
+  type Clazz,
   ActionState,
   guaranteeNonNullable,
   isNonNullable,
@@ -114,7 +114,6 @@ export class DependencyManager {
     return Array.from(this.projectDependencyModelsIndex.values());
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getOwnProfile = (path: string): Profile | undefined =>
     this.models.map((dep) => dep.getOwnProfile(path)).find(isNonNullable);
   getOwnType = (path: string): Type | undefined =>
@@ -167,7 +166,6 @@ export class DependencyManager {
       .find(isNonNullable);
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   get profiles(): Profile[] {
     return this.models.map((dep) => Array.from(dep.ownProfiles)).flat();
   }
@@ -217,6 +215,13 @@ export class DependencyManager {
   }
   get sectionIndices(): SectionIndex[] {
     return this.models.map((dep) => Array.from(dep.ownSectionIndices)).flat();
+  }
+  getExtensionElements<T extends PackageableElement>(
+    extensionElementClass: Clazz<T>,
+  ): T[] {
+    return this.models
+      .map((dep) => dep.getExtensionElements(extensionElementClass))
+      .flat();
   }
 
   getModel(projectId: string): BasicModel {

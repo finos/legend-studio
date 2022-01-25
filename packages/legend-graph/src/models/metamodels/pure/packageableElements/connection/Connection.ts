@@ -15,8 +15,7 @@
  */
 
 import { computed, makeObservable, action, observable } from 'mobx';
-import { hashArray, uuid } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Store } from '../store/Store';
 import type { JsonModelConnection } from '../store/modelToModel/connection/JsonModelConnection';

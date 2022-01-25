@@ -23,8 +23,10 @@ import {
 } from '@finos/legend-shared';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
 import type { Association } from '../../../../../../../metamodels/pure/packageableElements/domain/Association';
-import type { Measure } from '../../../../../../../metamodels/pure/packageableElements/domain/Measure';
-import { Unit } from '../../../../../../../metamodels/pure/packageableElements/domain/Measure';
+import {
+  type Measure,
+  Unit,
+} from '../../../../../../../metamodels/pure/packageableElements/domain/Measure';
 import { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property';
 import { DerivedProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty';
 import { RawVariableExpression } from '../../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression';
@@ -49,7 +51,7 @@ export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
   context: V1_GraphBuilderContext,
 ): TaggedValue | undefined => {
-  assertNonNullable(taggedValue.tag, 'Tagged value tag pointer is missing');
+  assertNonNullable(taggedValue.tag, `Tagged value 'tag' field is missing`);
   return new TaggedValue(
     context.resolveTag(taggedValue.tag),
     taggedValue.value,
@@ -61,10 +63,13 @@ export const V1_buildConstraint = (
   _class: Class,
   context: V1_GraphBuilderContext,
 ): Constraint => {
-  assertNonEmptyString(constraint.name, 'Class constraint name is missing');
+  assertNonEmptyString(
+    constraint.name,
+    `Class constraint 'name' field is missing or empty`,
+  );
   assertNonNullable(
     constraint.functionDefinition,
-    'Class constraint function definition is missing',
+    `Class constraint 'functionDefinition' field is missing`,
   );
   const pureConstraint = new Constraint(
     constraint.name,
@@ -91,9 +96,18 @@ export const V1_buildVariable = (
   variable: V1_RawVariable,
   context: V1_GraphBuilderContext,
 ): RawVariableExpression => {
-  assertNonEmptyString(variable.name, 'Variable name is missing');
-  assertNonEmptyString(variable.class, 'Variable class is missing');
-  assertNonNullable(variable.multiplicity, 'Variable multiplicity is missing');
+  assertNonEmptyString(
+    variable.name,
+    `Variable 'name' field is missing or empty`,
+  );
+  assertNonEmptyString(
+    variable.class,
+    `Variable 'class' field is missing or empty`,
+  );
+  assertNonNullable(
+    variable.multiplicity,
+    `Variable 'multiplicity' field is missing`,
+  );
   const multiplicity = context.graph.getMultiplicity(
     variable.multiplicity.lowerBound,
     variable.multiplicity.upperBound,
@@ -108,8 +122,11 @@ export const V1_buildUnit = (
   currentGraph: BasicModel,
   context: V1_GraphBuilderContext,
 ): Unit => {
-  assertNonEmptyString(unit.package, 'Unit package is missing');
-  assertNonEmptyString(unit.name, 'Unit name is missing');
+  assertNonEmptyString(
+    unit.package,
+    `Unit 'package' field is missing or empty`,
+  );
+  assertNonEmptyString(unit.name, `Unit 'name' field is missing or empty`);
   // TODO process unit conversion function, when we start processing value specification, we might want to separate this
   const pureUnit = new Unit(
     unit.name,
@@ -137,9 +154,18 @@ export const V1_buildProperty = (
   context: V1_GraphBuilderContext,
   owner: PropertyOwner,
 ): Property => {
-  assertNonEmptyString(property.name, 'Property name is missing');
-  assertNonEmptyString(property.type, 'Property type is missing');
-  assertNonNullable(property.multiplicity, 'Property multiplicity is missing');
+  assertNonEmptyString(
+    property.name,
+    `Property 'name' field is missing or empty`,
+  );
+  assertNonEmptyString(
+    property.type,
+    `Property 'type' field is missing or empty`,
+  );
+  assertNonNullable(
+    property.multiplicity,
+    `Property 'multiplicity' field is missing or empty`,
+  );
   // NOTE: pass in parent class added for quick conversion to pure protocol down the line
   const pureProperty = new Property(
     property.name,
@@ -164,14 +190,17 @@ export const V1_buildDerivedProperty = (
   context: V1_GraphBuilderContext,
   owner: PropertyOwner,
 ): DerivedProperty => {
-  assertNonEmptyString(property.name, 'Derived property name is missing');
+  assertNonEmptyString(
+    property.name,
+    `Derived property 'name' field is missing or empty`,
+  );
   assertNonEmptyString(
     property.returnType,
-    'Derived property return type is missing',
+    `Derived property 'returnType' field is missing or empty`,
   );
   assertNonNullable(
     property.returnMultiplicity,
-    'Derived property return multiplicity is missing',
+    `Derived property 'returnMultiplicity' field is missing`,
   );
   const derivedProperty = new DerivedProperty(
     property.name,
@@ -206,7 +235,7 @@ export const V1_buildAssociationProperty = (
 ): Property => {
   const associatedPropertyClassType = guaranteeNonNullable(
     associatedProperty.type,
-    'Association associated property type is missing',
+    `Association associated property 'type' field is missing`,
   );
   const associatedClass = context.resolveClass(associatedPropertyClassType);
   const property = V1_buildProperty(currentProperty, context, pureAssociation);
@@ -221,7 +250,8 @@ const isCompatibleDerivedProperty = (
 ): boolean =>
   o.name === name &&
   Array.isArray(o.parameters) &&
-  o.parameters.length === params.length;
+  // We add 1 to account for the `this` parameter in the derived property
+  o.parameters.length + 1 === params.length;
 
 export const V1_getAppliedProperty = (
   parentClass: Class,

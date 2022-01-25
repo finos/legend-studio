@@ -16,19 +16,19 @@
 
 import { action, makeAutoObservable } from 'mobx';
 import {
+  addUniqueEntry,
   getNullableFirstElement,
   isNonNullable,
   uniq,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type {
-  Class,
-  Mapping,
-  PackageableRuntime,
-  RawLambda,
-  Runtime,
-} from '@finos/legend-graph';
 import {
+  type Class,
+  type Mapping,
+  type PackageableRuntime,
+  type Runtime,
+  type ValueSpecification,
+  getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
@@ -36,40 +36,39 @@ import {
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
+  classMilestoningTemporalValues: ValueSpecification[] = [];
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
-  onSave?: ((lambda: RawLambda) => Promise<void>) | undefined;
   showSetupPanel = true;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
+      addClassMilestoningTemporalValues: action,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
       setRuntime: action,
+      setClassMilestoningTemporalValues: action,
       setShowSetupPanel: action,
-      setOnSaveQuery: action,
     });
 
     this.queryBuilderState = queryBuilderState;
   }
 
   get possibleMappings(): Mapping[] {
-    const mappingsWithClassMapped =
-      this.queryBuilderState.graphManagerState.graph.ownMappings.filter(
-        (mapping) =>
-          mapping.classMappings.some((cm) => cm.class.value === this._class),
-      );
-    const resolvedMappingIncludes =
-      this.queryBuilderState.graphManagerState.graph.ownMappings.filter(
-        (mapping) =>
-          mapping.allIncludedMappings.some((e) =>
-            mappingsWithClassMapped.includes(e),
-          ),
-      );
+    const mappingsWithClassMapped = this.queryBuilderState.mappings.filter(
+      (mapping) =>
+        mapping.classMappings.some((cm) => cm.class.value === this._class),
+    );
+    const resolvedMappingIncludes = this.queryBuilderState.mappings.filter(
+      (mapping) =>
+        mapping.allIncludedMappings.some((e) =>
+          mappingsWithClassMapped.includes(e),
+        ),
+    );
     return this._class
       ? uniq([...mappingsWithClassMapped, ...resolvedMappingIncludes])
       : [];
@@ -77,7 +76,7 @@ export class QueryBuilderSetupState {
 
   get possibleRuntimes(): PackageableRuntime[] {
     return this._class && this.mapping
-      ? this.queryBuilderState.graphManagerState.graph.ownRuntimes
+      ? this.queryBuilderState.runtimes
           .map((packageableRuntime) =>
             packageableRuntime.runtimeValue.mappings.some((mapping) =>
               this.possibleMappings.includes(mapping.value),
@@ -96,6 +95,10 @@ export class QueryBuilderSetupState {
     return false;
   }
 
+  addClassMilestoningTemporalValues(val: ValueSpecification): void {
+    addUniqueEntry(this.classMilestoningTemporalValues, val);
+  }
+
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
     this.queryBuilderState = queryBuilderState;
   }
@@ -103,11 +106,6 @@ export class QueryBuilderSetupState {
     if (!this.runtimeIsReadOnly) {
       this.runtime = val;
     }
-  }
-  setOnSaveQuery(
-    val: ((lambda: RawLambda) => Promise<void>) | undefined,
-  ): void {
-    this.onSave = val;
   }
   setShowSetupPanel(val: boolean): void {
     this.showSetupPanel = val;
@@ -128,6 +126,16 @@ export class QueryBuilderSetupState {
         this.setMapping(possibleMapping);
       }
     }
+    if (val !== undefined) {
+      const stereotype = getMilestoneTemporalStereotype(
+        val,
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      this.setClassMilestoningTemporalValues([]);
+      if (stereotype) {
+        this.queryBuilderState.buildClassMilestoningTemporalValue(stereotype);
+      }
+    }
   }
 
   setMapping(val: Mapping | undefined): void {
@@ -143,5 +151,9 @@ export class QueryBuilderSetupState {
       // TODO?: we should consider if we allow people to use custom runtime here
       this.setRuntime(undefined);
     }
+  }
+
+  setClassMilestoningTemporalValues(val: ValueSpecification[]): void {
+    this.classMilestoningTemporalValues = val;
   }
 }

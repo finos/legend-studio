@@ -15,8 +15,12 @@
  */
 
 export * from './DSLDiagram_Extension';
+export { DSLDiagram_LegendStudioPlugin } from './components/studio/DSLDiagram_LegendStudioPlugin';
+export * from './components/studio/DSLDiagram_LegendStudioPlugin_Extension';
 
-export { DiagramRenderer } from './DiagramRenderer';
+export { DiagramEditorState } from './stores/studio/DiagramEditorState';
+
+export { DiagramRenderer, DIAGRAM_INTERACTION_MODE } from './DiagramRenderer';
 
 export { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
 export { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
@@ -33,3 +37,4 @@ export { Rectangle } from './models/metamodels/pure/packageableElements/diagram/
 export { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/PositionedRectangle';
 
 export * from './helpers/DiagramHelper';
+export { V1_DSLDiagram_PackageableElementPointerType } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin';

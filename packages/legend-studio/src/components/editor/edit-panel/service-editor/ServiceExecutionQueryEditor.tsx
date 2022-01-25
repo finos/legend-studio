@@ -20,23 +20,18 @@ import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import { Dialog } from '@material-ui/core';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  Dialog,
+  type SelectComponent,
   BlankPanelContent,
   ArrowCircleDownIcon,
   clsx,
   CustomSelectorInput,
   PanelLoadingIndicator,
   PlayIcon,
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
-  ScrollIcon,
+  PaperScrollIcon,
 } from '@finos/legend-art';
-import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
-import { debounce, isNonNullable } from '@finos/legend-shared';
+import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
 import { useEditorStore } from '../../EditorStoreProvider';
@@ -46,6 +41,7 @@ import {
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { LightQuery } from '@finos/legend-graph';
+import type { DSLService_LegendStudioPlugin_Extension } from '../../../../stores/DSLService_LegendStudioPlugin_Extension';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -63,6 +59,9 @@ const ServiceExecutionResultViewer = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
+        }}
+        TransitionProps={{
+          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal">
@@ -174,6 +173,7 @@ const ServiceExecutionQueryImporter = observer(
         open={queryState.openQueryImporter}
         onClose={closeQueryImporter}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter: handleEnterQueryImporter,
         }}
         classes={{ container: 'search-modal__container' }}
@@ -233,30 +233,19 @@ export const ServiceExecutionQueryEditor = observer(
     const queryState = executionState.queryState;
     const editorStore = useEditorStore();
     const applicationStore = editorStore.applicationStore;
-    // query editor extensions
-    const extraServiceQueryEditors = editorStore.pluginManager
+    const extraServiceQueryEditorActions = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
-          plugin.TEMP__getExtraServiceQueryEditorRendererConfigurations?.() ??
-          [],
+          (
+            plugin as DSLService_LegendStudioPlugin_Extension
+          ).getExtraServiceQueryEditorActionConfigurations?.() ?? [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>
           {config.renderer(executionState, isReadOnly)}
         </Fragment>
       ));
-    if (extraServiceQueryEditors.length === 0) {
-      extraServiceQueryEditors.push(
-        <Fragment key={'unsupported-query-editor'}>
-          <UnsupportedEditorPanel
-            text={`Can't edit this query in form-mode`}
-            isReadOnly={isReadOnly}
-          />
-        </Fragment>,
-      );
-    }
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
@@ -283,6 +272,7 @@ export const ServiceExecutionQueryEditor = observer(
             </div>
           </div>
           <div className="panel__header__actions">
+            {extraServiceQueryEditorActions}
             <button
               className="panel__header__action"
               onClick={importQuery}
@@ -295,7 +285,6 @@ export const ServiceExecutionQueryEditor = observer(
             <button
               className="panel__header__action"
               onClick={execute}
-              disabled={isReadOnly}
               tabIndex={-1}
               title="Run service execution"
             >
@@ -304,11 +293,10 @@ export const ServiceExecutionQueryEditor = observer(
             <button
               className="panel__header__action"
               onClick={generatePlan}
-              disabled={isReadOnly}
               tabIndex={-1}
               title="Generate execution plan"
             >
-              <ScrollIcon />
+              <PaperScrollIcon />
             </button>
           </div>
         </div>
@@ -320,34 +308,14 @@ export const ServiceExecutionQueryEditor = observer(
               executionState.isGeneratingPlan
             }
           />
-          {queryState.query.isStub ? (
-            <div className="service-execution-query-editor__editor-trigger">
-              {extraServiceQueryEditors}
-            </div>
-          ) : (
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={300}>
-                <div
-                  className={clsx('service-execution-query-editor__content')}
-                >
-                  <StudioTextInputEditor
-                    inputValue={queryState.lambdaString}
-                    isReadOnly={true}
-                    language={EDITOR_LANGUAGE.PURE}
-                    showMiniMap={true}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-              </ResizablePanelSplitter>
-              <ResizablePanel size={300} minSize={200}>
-                <div className="service-execution-query-editor__editor-trigger">
-                  {extraServiceQueryEditors}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          )}
+          <div className="service-execution-query-editor__content">
+            <StudioTextInputEditor
+              inputValue={queryState.lambdaString}
+              isReadOnly={true}
+              language={EDITOR_LANGUAGE.PURE}
+              showMiniMap={true}
+            />
+          </div>
           <ExecutionPlanViewer
             executionPlanState={executionState.executionPlanState}
           />

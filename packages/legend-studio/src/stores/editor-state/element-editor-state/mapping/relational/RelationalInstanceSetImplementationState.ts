@@ -19,8 +19,8 @@ import {
   InstanceSetImplementationState,
   PropertyMappingState,
 } from '../MappingElementState';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   IllegalStateError,
@@ -30,14 +30,12 @@ import {
 import type { EditorStore } from '../../../../EditorStore';
 import { MappingElementDecorator } from '../MappingElementDecorator';
 import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from '../MappingEditorState';
-import type {
-  PropertyMapping,
-  RelationalInstanceSetImplementation,
-  RawRelationalOperationElement,
-  CompilationError,
-  SourceInformation,
-} from '@finos/legend-graph';
 import {
+  type PropertyMapping,
+  type RelationalInstanceSetImplementation,
+  type RawRelationalOperationElement,
+  type CompilationError,
+  type SourceInformation,
   RelationalPropertyMapping,
   createStubRelationalOperationElement,
   ParserError,
@@ -286,7 +284,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
    */
   decorate(): void {
     this.mappingElement.accept_SetImplementationVisitor(
-      new MappingElementDecorator(),
+      new MappingElementDecorator(this.editorStore),
     );
     const newPropertyMappingStates: RelationalPropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(

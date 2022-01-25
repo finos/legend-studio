@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../../mixins' as *;
+@use 'mixins' as *;
 
 .workspace-review {
   &__header__title {
@@ -94,7 +94,7 @@
       &__review-status {
         @include ellipsisTextOverflow;
 
-        margin: 0 0.5rem 0.6rem 0.5rem;
+        margin: 0 0.5rem 0.6rem;
         cursor: default;
         user-select: none;
         color: var(--color-dark-grey-400);

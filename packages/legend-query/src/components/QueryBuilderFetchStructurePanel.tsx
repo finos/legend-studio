@@ -15,11 +15,15 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, BlankPanelContent, PlusIcon } from '@finos/legend-art';
+import {
+  clsx,
+  BlankPanelContent,
+  PlusIcon,
+  OptionsIcon,
+} from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
-import { CgOptions } from 'react-icons/cg';
 import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel';
 import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState';
 
@@ -30,8 +34,8 @@ const QueryBuilderUnsupportedFetchStructure = observer(
     return (
       <div className="panel__content">
         <BlankPanelContent>
-          <div className="unsupported-element-editor__main">
-            <div className="unsupported-element-editor__summary">{`Unsupported fetch structure mode ${prettyCONSTName(
+          <div className="query-builder__unsupported-view__main">
+            <div className="query-builder__unsupported-view__summary">{`Unsupported fetch structure mode ${prettyCONSTName(
               mode,
             )}`}</div>
           </div>
@@ -79,7 +83,7 @@ export const QueryBuilderFetchStructurePanel = observer(
         if (fetchStructureState.fetchStructureMode !== fetchMode) {
           fetchStructureState.setFetchStructureMode(fetchMode);
           // TODO: might want to add alert modal to alert user changing fetch structure resets state
-          queryBuilderState.resetData();
+          queryBuilderState.changeFetchStructure();
         }
       };
 
@@ -98,7 +102,7 @@ export const QueryBuilderFetchStructurePanel = observer(
                   tabIndex={-1}
                   title="Configure result set modifiers..."
                 >
-                  <CgOptions className="query-builder__icon query-builder__icon__query-option" />
+                  <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
                 </button>
                 <button
                   className="panel__header__action"

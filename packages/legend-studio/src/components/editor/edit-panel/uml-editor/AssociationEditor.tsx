@@ -21,16 +21,10 @@ import {
   UML_EDITOR_TAB,
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import {
-  FaLock,
-  FaPlus,
-  FaArrowAltCircleRight,
-  FaLongArrowAltRight,
-} from 'react-icons/fa';
-import type {
-  UMLEditorElementDropTarget,
-  ElementDragSource,
+  CORE_DND_TYPE,
+  type UMLEditorElementDropTarget,
+  type ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { useDrop } from 'react-dnd';
 import {
   clsx,
@@ -42,21 +36,24 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
+  InputWithInlineValidation,
+  LockIcon,
+  PlusIcon,
+  ArrowCircleRightIcon,
+  LongArrowRightIcon,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
 import { PropertyEditor } from './PropertyEditor';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  Association,
-  Property,
-  StereotypeReference,
-} from '@finos/legend-graph';
 import {
+  type Association,
+  type Property,
+  type StereotypeReference,
   MULTIPLICITY_INFINITE,
   TaggedValue,
   Stereotype,
@@ -80,9 +77,19 @@ const AssociationPropertyBasicEditor = observer(
   }) => {
     const { association, property, selectProperty, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const isPropertyDuplicated = (val: Property): boolean => {
+      if (
+        association.properties[0].name === val.name &&
+        association.properties[1].name === val.name
+      ) {
+        return true;
+      }
+      return false;
+    };
     // Name
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property.setName(event.target.value);
+    };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     // FIXME: make this so that association can only refer to classes from the same space
@@ -159,14 +166,19 @@ const AssociationPropertyBasicEditor = observer(
 
     return (
       <div className="property-basic-editor">
-        <input
-          className="property-basic-editor__name"
-          disabled={isReadOnly}
-          value={property.name}
-          spellCheck={false}
-          onChange={changeValue}
-          placeholder={`Property name`}
-        />
+        <div className="input-group__input property-basic-editor__input">
+          <InputWithInlineValidation
+            className="input-group__input property-basic-editor__input--with-validation"
+            disabled={isReadOnly}
+            value={property.name}
+            spellCheck={false}
+            onChange={changeValue}
+            placeholder={`Property name`}
+            validationErrorMessage={
+              isPropertyDuplicated(property) ? 'Duplicated property' : undefined
+            }
+          />
+        </div>
         {!isReadOnly && isEditingType && (
           <CustomSelectorInput
             className="property-basic-editor__type"
@@ -205,13 +217,13 @@ const AssociationPropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -237,13 +249,13 @@ const AssociationPropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -271,7 +283,7 @@ const AssociationPropertyBasicEditor = observer(
           tabIndex={-1}
           title={'See detail'}
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
       </div>
     );
@@ -389,7 +401,7 @@ export const AssociationEditor = observer(
     );
     return (
       <div
-        data-testid={STUDIO_TEST_ID.ASSOCIATION_EDITOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.ASSOCIATION_EDITOR}
         className="uml-element-editor association-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
@@ -399,7 +411,7 @@ export const AssociationEditor = observer(
                 <div className="panel__header__title">
                   {isReadOnly && (
                     <div className="uml-element-editor__header__lock">
-                      <FaLock />
+                      <LockIcon />
                     </div>
                   )}
                   <div className="panel__header__title__label">association</div>
@@ -432,7 +444,7 @@ export const AssociationEditor = observer(
                     tabIndex={-1}
                     title={addButtonTitle}
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                 </div>
               </div>

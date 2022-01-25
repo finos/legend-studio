@@ -15,12 +15,11 @@
  */
 
 import packageJson from '../../package.json';
-import type {
-  GraphPluginManager,
-  PackageableElement,
-  PureGrammarElementLabeler,
+import {
+  PureGraphManagerPlugin,
+  type PackageableElement,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
 import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
 
 const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
@@ -29,10 +28,6 @@ const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
 export class DSLDiagram_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
   }
 
   override getExtraPureGrammarParserNames(): string[] {

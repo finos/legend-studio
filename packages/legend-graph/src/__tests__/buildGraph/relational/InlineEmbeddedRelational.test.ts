@@ -15,14 +15,18 @@
  */
 
 import { TEST_DATA__inlineEmbeddedRelationalTestData } from './TEST_DATA__RelationalEntities';
-import { guaranteeType, unitTest } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  unitTest,
+} from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '../../../GraphManagerTestUtils';
 import type { GraphManagerState } from '../../../GraphManagerState';
-import { getClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 
 let graphManagerState: GraphManagerState;
@@ -41,13 +45,13 @@ test(unitTest('Inline Embedded Relational Mapping'), () => {
   const graph = graphManagerState.graph;
   const myDB = graph.getDatabase('mapping::db');
   expect(myDB.schemas).toHaveLength(1);
-  expect(myDB.schemas[0].tables).toHaveLength(1);
+  expect(guaranteeNonNullable(myDB.schemas[0]).tables).toHaveLength(1);
 
   // mapping
   const mapping = graph.getMapping('mappingPackage::myMapping');
-  // // person
+  // person
   const personClassMapping = guaranteeType(
-    getClassMappingsByClass(mapping, graph.getClass('other::Person'))[0],
+    getOwnClassMappingsByClass(mapping, graph.getClass('other::Person'))[0],
     RootRelationalInstanceSetImplementation,
   );
   expect(personClassMapping.id.value).toBe('alias1');

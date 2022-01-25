@@ -60,10 +60,10 @@ test(unitTest('Class with hierarchy cycle is detected'), () => {
     'myPackage::test::shared::src::Address',
   );
   expect(classHasCycle(cycledComplexClass, true, new Set<string>())).toBe(true);
-  expect(
-    classHasCycle(nonComplexStyleClass, true, new Set<string>()),
-  ).toBeFalse();
-  expect(classHasCycle(simpleClass, true, new Set<string>())).toBeFalse();
+  expect(classHasCycle(nonComplexStyleClass, true, new Set<string>())).toBe(
+    false,
+  );
+  expect(classHasCycle(simpleClass, true, new Set<string>())).toBe(false);
 });
 
 // TODO: maybe we should isolate this to another test for mock data util

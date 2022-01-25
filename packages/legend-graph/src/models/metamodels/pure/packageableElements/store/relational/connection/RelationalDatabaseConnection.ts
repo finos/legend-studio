@@ -17,8 +17,10 @@
 import { observable, computed, makeObservable, action } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray, guaranteeType } from '@finos/legend-shared';
-import type { ConnectionVisitor } from '../../../connection/Connection';
-import { Connection } from '../../../connection/Connection';
+import {
+  type ConnectionVisitor,
+  Connection,
+} from '../../../connection/Connection';
 import type { DatasourceSpecification } from './DatasourceSpecification';
 import type { AuthenticationStrategy } from './AuthenticationStrategy';
 import { Database } from '../model/Database';

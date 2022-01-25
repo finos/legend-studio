@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { observable, computed, makeObservable, action } from 'mobx';
 
@@ -76,27 +75,22 @@ export class DatabricksDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
-  hostname: string;
+  host: string;
   port: string;
   protocol: string;
   httpPath: string;
 
-  constructor(
-    hostname: string,
-    port: string,
-    protocol: string,
-    httpPath: string,
-  ) {
+  constructor(host: string, port: string, protocol: string, httpPath: string) {
     super();
 
     makeObservable(this, {
-      hostname: observable,
+      host: observable,
       port: observable,
       protocol: observable,
       httpPath: observable,
       hashCode: computed,
     });
-    this.hostname = hostname;
+    this.host = host;
     this.port = port;
     this.protocol = protocol;
     this.httpPath = httpPath;
@@ -105,15 +99,15 @@ export class DatabricksDatasourceSpecification
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
-      this.hostname,
+      this.host,
       this.port,
       this.protocol,
       this.httpPath,
     ]);
   }
 
-  setHostname(val: string): void {
-    this.hostname = val;
+  setHost(val: string): void {
+    this.host = val;
   }
 
   setPort(val: string): void {
@@ -226,6 +220,12 @@ export class SnowflakeDatasourceSpecification
   databaseName: string;
   cloudType?: string | undefined;
   quotedIdentifiersIgnoreCase?: boolean | undefined;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
+  nonProxyHosts?: string | undefined;
+  organization?: string | undefined;
+  accountType?: string | undefined;
+  role?: string | undefined;
 
   constructor(
     accountName: string,
@@ -242,12 +242,24 @@ export class SnowflakeDatasourceSpecification
       databaseName: observable,
       cloudType: observable,
       quotedIdentifiersIgnoreCase: observable,
+      proxyHost: observable,
+      proxyPort: observable,
+      nonProxyHosts: observable,
+      organization: observable,
+      accountType: observable,
+      role: observable,
       hashCode: computed,
       setAccountName: action,
       setRegion: action,
       setWarehouseName: action,
       setDatabaseName: action,
       setCloudType: action,
+      setProxyHost: action,
+      setProxyPort: action,
+      setNonProxyHosts: action,
+      setOrganization: action,
+      setAccountType: action,
+      setRole: action,
       setQuotedIdentifiersIgnoreCase: action,
     });
 
@@ -281,6 +293,30 @@ export class SnowflakeDatasourceSpecification
     this.quotedIdentifiersIgnoreCase = val;
   }
 
+  setProxyHost(val: string | undefined): void {
+    this.proxyHost = val;
+  }
+
+  setProxyPort(val: string | undefined): void {
+    this.proxyPort = val;
+  }
+
+  setNonProxyHosts(val: string | undefined): void {
+    this.nonProxyHosts = val;
+  }
+
+  setOrganization(val: string | undefined): void {
+    this.organization = val;
+  }
+
+  setAccountType(val: string | undefined): void {
+    this.accountType = val;
+  }
+
+  setRole(val: string | undefined): void {
+    this.role = val;
+  }
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SNOWFLAKE_DATASOURCE_SPECIFICATION,
@@ -289,6 +325,12 @@ export class SnowflakeDatasourceSpecification
       this.warehouseName,
       this.databaseName,
       this.cloudType ?? '',
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
+      this.nonProxyHosts ?? '',
+      this.organization ?? '',
+      this.accountType ?? '',
+      this.role ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }

@@ -16,24 +16,25 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   uuid,
   deleteEntry,
   addUniqueEntry,
   changeEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { GenericTypeReference } from './GenericTypeReference';
-import { GenericTypeExplicitReference } from './GenericTypeReference';
+import {
+  type GenericTypeReference,
+  GenericTypeExplicitReference,
+} from './GenericTypeReference';
 import { Multiplicity } from './Multiplicity';
 import { GenericType } from './GenericType';
 import type { Class } from './Class';
 import type { AbstractProperty, PropertyOwner } from './AbstractProperty';
 import type { AnnotatedElement } from './AnnotatedElement';
 import type { TaggedValue } from './TaggedValue';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';
 

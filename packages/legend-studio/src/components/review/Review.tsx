@@ -20,46 +20,40 @@ import { ReviewStoreProvider, useReviewStore } from './ReviewStoreProvider';
 import { useParams } from 'react-router';
 import { ReviewSideBar } from './ReviewSideBar';
 import { ReviewPanel } from './ReviewPanel';
-import {
-  FaCodeBranch,
-  FaCog,
-  FaUser,
-  FaRegWindowMaximize,
-} from 'react-icons/fa';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import { MdPlaylistAddCheck } from 'react-icons/md';
 import { Link } from 'react-router-dom';
-import type { ResizablePanelHandlerProps } from '@finos/legend-art';
 import {
+  type ResizablePanelHandlerProps,
   getControlledResizablePanelProps,
   clsx,
   PanelLoadingIndicator,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
+  CheckListIcon,
+  CodeBranchIcon,
+  CogIcon,
+  WindowMaximizeIcon,
+  UserIcon,
 } from '@finos/legend-art';
-import type { ReviewPathParams } from '../../stores/LegendStudioRouter';
 import {
+  type ReviewPathParams,
   generateViewProjectRoute,
   generateEditorRoute,
 } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import {
-  NotificationSnackbar,
-  useApplicationStore,
-} from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import { AppHeader, useApplicationStore } from '@finos/legend-application';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const currentUserId =
     editorStore.sdlcServerClient.currentUser?.userId ?? '(unknown)';
   const currentProject = reviewStore.currentProject
@@ -86,12 +80,12 @@ const ReviewStatusBar = observer(() => {
       <div className="review__status-bar__left">
         <div className="review__status-bar__workspace">
           <div className="review__status-bar__workspace__icon">
-            <FaCodeBranch />
+            <CodeBranchIcon />
           </div>
           <div className="review__status-bar__workspace__project">
             <Link
               to={generateViewProjectRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 reviewStore.projectId,
               )}
             >
@@ -102,9 +96,10 @@ const ReviewStatusBar = observer(() => {
           <div className="review__status-bar__workspace__workspace">
             <Link
               to={generateEditorRoute(
-                applicationStore.config.sdlcServerKey,
+                applicationStore.config.currentSDLCServerOption,
                 reviewStore.projectId,
                 review.workspaceId,
+                review.workspaceType,
               )}
             >
               {review.workspaceId}
@@ -121,7 +116,7 @@ const ReviewStatusBar = observer(() => {
         <div className="review__status-bar__status">{reviewStatus}</div>
         <div className="review__status-bar__user">
           <div className="review__status-bar__user__icon">
-            <FaUser />
+            <UserIcon />
           </div>
           <div className="review__status-bar__user__name">{currentUserId}</div>
         </div>
@@ -137,7 +132,7 @@ const ReviewStatusBar = observer(() => {
           tabIndex={-1}
           title={'Maximize/Minimize'}
         >
-          <FaRegWindowMaximize />
+          <WindowMaximizeIcon />
         </button>
       </div>
     </div>
@@ -160,10 +155,7 @@ const ReviewExplorer = observer(() => {
   }, [applicationStore, reviewStore]);
 
   return (
-    <ResizablePanelGroup
-      orientation="vertical"
-      className="review-explorer__content"
-    >
+    <ResizablePanelGroup orientation="vertical">
       <ResizablePanel
         {...getControlledResizablePanelProps(
           editorStore.sideBarDisplayState.size === 0,
@@ -212,7 +204,7 @@ const ReviewInner = observer(() => {
   return (
     <div className="app__page">
       <AppHeader>
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="review">
@@ -231,7 +223,7 @@ const ReviewInner = observer(() => {
                       title={'Review'}
                       onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
                     >
-                      <MdPlaylistAddCheck />
+                      <CheckListIcon />
                     </button>
                   </div>
                   <div className="activity-bar__setting">
@@ -240,7 +232,7 @@ const ReviewInner = observer(() => {
                       tabIndex={-1}
                       title={'Settings...'}
                     >
-                      <FaCog />
+                      <CogIcon />
                     </button>
                   </div>
                 </div>
@@ -255,7 +247,6 @@ const ReviewInner = observer(() => {
                 </div>
               </div>
               <ReviewStatusBar />
-              <NotificationSnackbar />
             </>
           )}
         </div>

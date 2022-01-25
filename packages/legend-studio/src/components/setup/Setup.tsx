@@ -15,41 +15,40 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  type SelectComponent,
+  clsx,
+  Dialog,
+  SquareIcon,
+  TimesIcon,
   compareLabelFn,
   CustomSelectorInput,
   PanelLoadingIndicator,
+  CheckSquareIcon,
+  PencilIcon,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
-import { STUDIO_TEST_ID } from '../StudioTestID';
-import Dialog from '@material-ui/core/Dialog';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { isNumber } from '@finos/legend-shared';
-import { MdModeEdit } from 'react-icons/md';
-import type { SetupPathParams } from '../../stores/LegendStudioRouter';
 import {
+  type SetupPathParams,
   generateEditorRoute,
   generateViewProjectRoute,
 } from '../../stores/LegendStudioRouter';
-import { AppHeader } from '../shared/AppHeader';
-import { AppHeaderMenu } from '../editor/header/AppHeaderMenu';
+import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
-import { ProjectType } from '@finos/legend-server-sdlc';
-import {
-  useApplicationStore,
-  NotificationSnackbar,
-} from '@finos/legend-application';
-import type { StudioConfig } from '../../application/StudioConfig';
+import { ProjectType, WorkspaceType } from '@finos/legend-server-sdlc';
+import { useApplicationStore, AppHeader } from '@finos/legend-application';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const importProjectSuccessReport = setupStore.importProjectSuccessReport;
   const projectNameInputRef = useRef<HTMLInputElement>(null);
   const defaultType = applicationStore.config.options
@@ -79,7 +78,7 @@ const CreateProjectModal = observer(() => {
     setupStore.createOrImportProjectState.isInProgress ||
     setupStore.createWorkspaceState.isInProgress;
   const closeModal = (): void => {
-    setupStore.setCreateProjectModal(false);
+    setupStore.setShowCreateProjectModal(false);
     setupStore.setImportProjectSuccessReport(undefined);
   };
   const createProject = applicationStore.guaranteeSafeAction(() =>
@@ -195,6 +194,7 @@ const CreateProjectModal = observer(() => {
       open={setupStore.showCreateProjectModal}
       onClose={closeModal}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}
@@ -330,7 +330,7 @@ const CreateProjectModal = observer(() => {
                 <div
                   className="panel__content__form__section__list__items"
                   data-testid={
-                    STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+                    LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
                   }
                 >
                   {tagsArray.map((value, idx) => (
@@ -380,14 +380,14 @@ const CreateProjectModal = observer(() => {
                               onClick={showEditItemInput(value, idx)}
                               tabIndex={-1}
                             >
-                              <MdModeEdit />
+                              <PencilIcon />
                             </button>
                             <button
                               className="panel__content__form__section__list__item__remove-btn"
                               onClick={deleteValue(idx)}
                               tabIndex={-1}
                             >
-                              <FaTimes />
+                              <TimesIcon />
                             </button>
                           </div>
                         </>
@@ -484,6 +484,10 @@ const CreateWorkspaceModal = observer(() => {
     setupStore.currentProjectId,
   );
   const [workspaceName, setWorkspaceName] = useState('');
+  const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(false);
+  const workspaceType = isGroupWorkspace
+    ? WorkspaceType.GROUP
+    : WorkspaceType.USER;
   const projectOptions = setupStore.projectOptions.sort(compareLabelFn);
   const selectedOption =
     projectOptions.find((option) => option.value === currentProjectId) ?? null;
@@ -508,12 +512,16 @@ const CreateWorkspaceModal = observer(() => {
     : 'You have no projects, please create or acquire access for at least one';
 
   const closeModal = (): void => {
-    setupStore.setCreateWorkspaceModal(false);
+    setupStore.setShowCreateWorkspaceModal(false);
   };
   const createWorkspace = (): void => {
     if (currentProjectId && workspaceName) {
       flowResult(
-        setupStore.createWorkspace(currentProjectId, workspaceName),
+        setupStore.createWorkspace(
+          currentProjectId,
+          workspaceName,
+          workspaceType,
+        ),
       ).catch(applicationStore.alertIllegalUnhandledError);
     }
   };
@@ -531,12 +539,18 @@ const CreateWorkspaceModal = observer(() => {
       projectSelectorRef.current?.focus();
     }
   };
-
+  const toggleGroupWorkspace = (
+    event: React.FormEvent<HTMLButtonElement>,
+  ): void => {
+    event.preventDefault();
+    setIsGroupWorkspace(!isGroupWorkspace);
+  };
   return (
     <Dialog
       open={showCreateWorkspaceModal}
       onClose={closeModal}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}
@@ -549,37 +563,72 @@ const CreateWorkspaceModal = observer(() => {
             isLoading={setupStore.createWorkspaceState.isInProgress}
           />
           <div className="setup-create__form setup-create__form__workspace">
-            <CustomSelectorInput
-              className="setup-selector__input"
-              ref={projectSelectorRef}
-              options={projectOptions}
-              disabled={
-                dispatchingActions ||
-                isFetchingProjects ||
-                !projectOptions.length
-              }
-              isLoading={isFetchingProjects}
-              onChange={onSelectionChange}
-              value={selectedOption}
-              placeholder={projectSelectorPlaceholder}
-              isClearable={true}
-              escapeClearsValue={true}
-              darkMode={true}
-            />
-            <input
-              className="setup-create__form__workspace-name__input"
-              ref={workspaceNameInputRef}
-              spellCheck={false}
-              disabled={dispatchingActions}
-              placeholder={'Workspace Name'}
-              value={workspaceName}
-              onChange={changeWorkspaceName}
-              name={`Type workspace name`}
-            />
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Project Name
+              </div>
+              <CustomSelectorInput
+                className="setup-selector__input setup__workspace__selector"
+                ref={projectSelectorRef}
+                options={projectOptions}
+                disabled={
+                  dispatchingActions ||
+                  isFetchingProjects ||
+                  !projectOptions.length
+                }
+                isLoading={isFetchingProjects}
+                onChange={onSelectionChange}
+                value={selectedOption}
+                placeholder={projectSelectorPlaceholder}
+                isClearable={true}
+                escapeClearsValue={true}
+                darkMode={true}
+              />
+            </div>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Workspace Name
+              </div>
+              <input
+                className="setup-create__form__workspace-name__input"
+                ref={workspaceNameInputRef}
+                spellCheck={false}
+                disabled={dispatchingActions}
+                placeholder={'Workspace Name'}
+                value={workspaceName}
+                onChange={changeWorkspaceName}
+                name={`Type workspace name`}
+              />
+            </div>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Group Workspace
+              </div>
+              <div className="panel__content__form__section__toggler">
+                <button
+                  onClick={toggleGroupWorkspace}
+                  type="button" // prevent this toggler being activated on form submission
+                  className={clsx(
+                    'panel__content__form__section__toggler__btn',
+                    {
+                      'panel__content__form__section__toggler__btn--toggled':
+                        isGroupWorkspace,
+                    },
+                  )}
+                  tabIndex={-1}
+                >
+                  {isGroupWorkspace ? <CheckSquareIcon /> : <SquareIcon />}
+                </button>
+                <div className="panel__content__form__section__toggler__prompt">
+                  Group workspaces can be edited by all users in the
+                  corresponding project.
+                </div>
+              </div>
+            </div>
           </div>
           <button
             disabled={dispatchingActions || !workspaceName || !currentProjectId}
-            className="btn u-pull-right"
+            className="btn btn--dark u-pull-right"
           >
             Create
           </button>
@@ -591,7 +640,7 @@ const CreateWorkspaceModal = observer(() => {
 
 const SetupSelection = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const config = applicationStore.config;
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
@@ -601,7 +650,7 @@ const SetupSelection = observer(() => {
     setupStore.createOrImportProjectState.isInProgress;
   const disableProceedButton =
     !setupStore.currentProjectId ||
-    !setupStore.currentWorkspaceId ||
+    !setupStore.currentWorkspaceCompositeId ||
     isCreatingWorkspace ||
     isCreatingOrImportingProject;
   const onProjectChange = (focusNext: boolean): void =>
@@ -613,21 +662,22 @@ const SetupSelection = observer(() => {
       ? proceedButtonRef.current?.focus()
       : workspaceSelectorRef.current?.focus();
   const handleCreateProjectModal = (): void =>
-    setupStore.setCreateProjectModal(true);
+    setupStore.setShowCreateProjectModal(true);
   const handleCreateWorkspaceModal = (): void =>
-    setupStore.setCreateWorkspaceModal(true);
+    setupStore.setShowCreateWorkspaceModal(true);
   const handleProceed = (): void => {
     if (
       setupStore.currentProjectId &&
       setupStore.currentProject &&
-      setupStore.currentWorkspaceId &&
+      setupStore.currentWorkspaceCompositeId &&
       setupStore.currentWorkspace
     ) {
       applicationStore.navigator.goTo(
         generateEditorRoute(
-          applicationStore.config.sdlcServerKey,
+          applicationStore.config.currentSDLCServerOption,
           setupStore.currentProjectId,
-          setupStore.currentWorkspaceId,
+          setupStore.currentWorkspace.workspaceId,
+          setupStore.currentWorkspace.workspaceType,
         ),
       );
     }
@@ -642,13 +692,13 @@ const SetupSelection = observer(() => {
   return (
     <div className="app__page">
       <AppHeader>
-        <AppHeaderMenu />
+        <LegendStudioAppHeaderMenu />
       </AppHeader>
       <div className="app__content">
         <div className="setup">
           <div
             className="setup__content"
-            data-testid={STUDIO_TEST_ID.SETUP__CONTENT}
+            data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
           >
             <div>
               <ProjectSelector
@@ -675,7 +725,7 @@ const SetupSelection = observer(() => {
                   if (setupStore.currentProjectId) {
                     applicationStore.navigator.goTo(
                       generateViewProjectRoute(
-                        applicationStore.config.sdlcServerKey,
+                        applicationStore.config.currentSDLCServerOption,
                         setupStore.currentProjectId,
                       ),
                     );
@@ -701,7 +751,6 @@ const SetupSelection = observer(() => {
           {/* We do this to reset the initial state of the modals */}
           {setupStore.showCreateProjectModal && <CreateProjectModal />}
           {setupStore.showCreateWorkspaceModal && <CreateWorkspaceModal />}
-          <NotificationSnackbar />
         </div>
       </div>
     </div>
@@ -712,10 +761,9 @@ export const SetupInner = observer(() => {
   const params = useParams<SetupPathParams>();
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore();
-
   useEffect(() => {
     setupStore.setCurrentProjectId(params.projectId);
-    setupStore.setCurrentWorkspaceId(params.workspaceId);
+    setupStore.init(params.workspaceId, params.groupWorkspaceId);
   }, [setupStore, params]);
 
   useEffect(() => {

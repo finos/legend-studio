@@ -20,29 +20,39 @@ import {
   UML_EDITOR_TAB,
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { observer } from 'mobx-react-lite';
-import { FaPlus, FaTimes, FaLock } from 'react-icons/fa';
-import { clsx } from '@finos/legend-art';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import {
+  clsx,
+  InputWithInlineValidation,
+  PlusIcon,
+  TimesIcon,
+  LockIcon,
+} from '@finos/legend-art';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { Profile } from '@finos/legend-graph';
-import { Tag, Stereotype } from '@finos/legend-graph';
+import { type Profile, Tag, Stereotype } from '@finos/legend-graph';
 
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {
     const { tag, deleteValue, isReadOnly } = props;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tag.setValue(event.target.value);
+    };
+    const isTagDuplicated = (val: Tag): boolean =>
+      tag.owner.tags.filter((tag) => tag.value === val.value).length >= 2;
 
     return (
       <div className="tag-basic-editor">
-        <input
-          className="tag-basic-editor__value"
+        <InputWithInlineValidation
+          className="tag-basic-editor__value input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={tag.value}
           onChange={changeValue}
           placeholder={`Tag value`}
           name={`Tag value`}
+          validationErrorMessage={
+            isTagDuplicated(tag) ? 'Duplicated tag' : undefined
+          }
         />
         {!isReadOnly && (
           <button
@@ -52,7 +62,7 @@ const TagBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -67,19 +77,29 @@ const StereotypeBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { stereotype, deleteStereotype, isReadOnly } = props;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       stereotype.setValue(event.target.value);
+    };
+    const isStereotypeDuplicated = (val: Stereotype): boolean =>
+      stereotype.owner.stereotypes.filter(
+        (stereotype) => stereotype.value === val.value,
+      ).length >= 2;
 
     return (
       <div className="stereotype-basic-editor">
-        <input
-          className="stereotype-basic-editor__value"
+        <InputWithInlineValidation
+          className="stereotype-basic-editor__value input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={stereotype.value}
           onChange={changeValue}
           placeholder={`Stereotype value`}
           name={`Stereotype value`}
+          validationErrorMessage={
+            isStereotypeDuplicated(stereotype)
+              ? 'Duplicated stereotype'
+              : undefined
+          }
         />
         {!isReadOnly && (
           <button
@@ -89,7 +109,7 @@ const StereotypeBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -145,7 +165,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             )}
             <div className="panel__header__title__label">profile</div>
@@ -153,7 +173,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           </div>
         </div>
         <div
-          data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+          data-testid={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
           className="panel__header uml-element-editor__tabs__header"
         >
           <div className="uml-element-editor__tabs">
@@ -177,7 +197,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
               tabIndex={-1}
               title={addButtonTitle}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>

@@ -30,8 +30,8 @@ export {
   uniq,
   debounce,
   throttle,
+  type DebouncedFunc,
 } from 'lodash-es';
-export type { DebouncedFunc } from 'lodash-es';
 
 // NOTE: we can use the `rng` option in UUID V4 to control the random seed during testing
 // See https://github.com/uuidjs/uuid#version-4-random
@@ -50,22 +50,23 @@ export type Clazz<T> = { new (...args: any[]): T };
  * we will use `Function` in this case, this is a very loose check and will lose some benefit of type checking
  * during compile time, so refrain from using it extensively
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
 export type GenericClazz<T> = { new (...args: any[]): T } | Function;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SuperGenericFunction = (...args: any) => any;
 export const getClass = <T>(obj: object): Clazz<T> =>
   obj.constructor as Clazz<T>;
 
-export const getSuperClass = <V>(
+export const getSuperclass = <V>(
   _class: GenericClazz<unknown>,
 ): GenericClazz<V> | undefined => {
   if (!_class.name) {
     throw new UnsupportedOperationError(
-      `Cannot get super class for non user-defined classes`,
+      `Cannot get superclass for non user-defined classes`,
     );
   }
-  const superClass = Object.getPrototypeOf(_class) as Function | null;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const superclass = Object.getPrototypeOf(_class) as Function | null;
   /**
    * When it comes to inheritance, JavaScript only has one construct: objects.
    * Each object has a private property which holds a link to another object called its prototype.
@@ -75,7 +76,7 @@ export const getSuperClass = <V>(
    *
    * NOTE: when the prototype name is `empty` we know it's not user-defined classes, so we can return undefined
    */
-  return superClass?.name ? (superClass as GenericClazz<V>) : undefined;
+  return superclass?.name ? (superclass as GenericClazz<V>) : undefined;
 };
 
 /**
@@ -90,7 +91,7 @@ export const isClassAssignableFrom = (
     if (currentPrototype === cls1) {
       return true;
     }
-    currentPrototype = getSuperClass(currentPrototype);
+    currentPrototype = getSuperclass(currentPrototype);
   }
   return false;
 };
@@ -133,6 +134,22 @@ export const pruneObject = (
   obj: Record<PropertyKey, unknown>,
 ): Record<PropertyKey, unknown> =>
   pickBy(obj, (val: unknown): boolean => val !== undefined) as Record<
+    PropertyKey,
+    unknown
+  >;
+
+/**
+ * Recursively remove fields with null values in object
+ *
+ * This is particularly useful in serialization, especially when handling response
+ * coming from servers where `null` are returned for missing fields. We would like to
+ * treat them as `undefined` instead, so we want to strip all the `null` values from the
+ * plain JSON object.
+ */
+export const pruneNullValues = (
+  obj: Record<PropertyKey, unknown>,
+): Record<PropertyKey, unknown> =>
+  pickBy(obj, (val: unknown): boolean => val !== null) as Record<
     PropertyKey,
     unknown
   >;

@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { MdVerticalAlignBottom, MdAdd, MdEdit } from 'react-icons/md';
+import { VerticalAlignBottomIcon, AddIcon, EditIcon } from '../Icon';
 import clsx from 'clsx';
 import { useResizeDetector } from 'react-resize-detector';
 import { BlankPanelContent } from './BlankPanelContent';
@@ -29,7 +29,7 @@ type ClickActionType = 'add' | 'modify';
 const renderClickActionIcon = (
   type: ClickActionType | undefined,
 ): React.ReactElement | null =>
-  !type ? null : type === 'add' ? <MdAdd /> : <MdEdit />;
+  !type ? null : type === 'add' ? <AddIcon /> : <EditIcon />;
 
 /**
  * This component is used as placeholder for empty panel, which represents an unset/empty value of something.
@@ -79,7 +79,7 @@ export const BlankPanelPlaceholder: React.FC<{
   } = props;
   // if no action is provided, it means the panel support DnD
   const clickActionIcon = !onClick ? (
-    <MdVerticalAlignBottom />
+    <VerticalAlignBottomIcon />
   ) : (
     renderClickActionIcon(clickActionType)
   );
@@ -193,7 +193,7 @@ export const BlankPanelPlaceholder: React.FC<{
         >
           {dndProps && (
             <>
-              <MdVerticalAlignBottom
+              <VerticalAlignBottomIcon
                 className={clsx('blank-panel-placeholder__action__dnd-icon', {
                   'blank-panel-placeholder__action__dnd-icon--can-drop':
                     dndProps.canDrop,

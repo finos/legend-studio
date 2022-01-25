@@ -18,20 +18,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
-import type {
-  ElementDragSource,
-  UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import {
-  FaLock,
-  FaPlus,
-  FaTimes,
-  FaLongArrowAltRight,
-  FaArrowAltCircleRight,
-  FaFire,
-  FaArrowCircleRight,
-} from 'react-icons/fa';
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type UMLEditorElementDropTarget,
+} from '../../../../stores/shared/DnDUtil';
 import {
   clsx,
   CustomSelectorInput,
@@ -42,8 +33,16 @@ import {
   ResizablePanelSplitterLine,
   BlankPanelContent,
   getControlledResizablePanelProps,
+  InputWithInlineValidation,
+  LockIcon,
+  PlusIcon,
+  TimesIcon,
+  LongArrowRightIcon,
+  ArrowCircleRightIcon,
+  FireIcon,
+  StickArrowCircleRightIcon,
 } from '@finos/legend-art';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { PropertyEditor } from './PropertyEditor';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
@@ -52,11 +51,9 @@ import { ClassEditorState } from '../../../../stores/editor-state/element-editor
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  StereotypeReference,
-  GenericTypeReference,
-} from '@finos/legend-graph';
 import {
+  type StereotypeReference,
+  type GenericTypeReference,
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Class,
@@ -81,6 +78,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
+import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -97,9 +95,13 @@ const PropertyBasicEditor = observer(
       property.owner instanceof Class && property.owner !== _class;
     const isPropertyFromAssociation = property.owner instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
+    const isPropertyDuplicated = (val: Property): boolean =>
+      _class.properties.filter((property) => property.name === val.name)
+        .length >= 2;
     // Name
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property.setName(event.target.value);
+    };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
@@ -170,7 +172,7 @@ const PropertyBasicEditor = observer(
         {isIndirectProperty && (
           <div className="property-basic-editor__name--with-lock">
             <div className="property-basic-editor__name--with-lock__icon">
-              <FaLock />
+              <LockIcon />
             </div>
             <span className="property-basic-editor__name--with-lock__name">
               {property.name}
@@ -178,15 +180,22 @@ const PropertyBasicEditor = observer(
           </div>
         )}
         {!isIndirectProperty && (
-          <input
-            className="property-basic-editor__name"
-            disabled={isReadOnly}
-            value={property.name}
-            spellCheck={false}
-            onChange={changeValue}
-            placeholder={`Property name`}
-            name={`Property name`}
-          />
+          <div className="input-group__input property-basic-editor__input">
+            <InputWithInlineValidation
+              className="property-basic-editor__input--with-validation input-group__input"
+              disabled={isReadOnly}
+              value={property.name}
+              spellCheck={false}
+              onChange={changeValue}
+              placeholder={`Property name`}
+              name={`Property name`}
+              validationErrorMessage={
+                isPropertyDuplicated(property)
+                  ? 'Duplicated property'
+                  : undefined
+              }
+            />
+          </div>
         )}
         {!isIndirectProperty && !isReadOnly && isEditingType && (
           <CustomSelectorInput
@@ -220,7 +229,7 @@ const PropertyBasicEditor = observer(
             </div>
             <div
               data-testid={
-                STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                LEGEND_STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
               }
               className="property-basic-editor__type__label property-basic-editor__type__label--hover"
               onClick={(): void => setIsEditingType(true)}
@@ -229,13 +238,13 @@ const PropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -261,13 +270,13 @@ const PropertyBasicEditor = observer(
             </div>
             {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
               <button
-                data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
                 title={'Visit element'}
               >
-                <FaArrowAltCircleRight />
+                <ArrowCircleRightIcon />
               </button>
             )}
           </div>
@@ -298,7 +307,7 @@ const PropertyBasicEditor = observer(
             tabIndex={-1}
             title={'See detail'}
           >
-            <FaLongArrowAltRight />
+            <LongArrowRightIcon />
           </button>
         )}
         {isIndirectProperty && (
@@ -310,7 +319,7 @@ const PropertyBasicEditor = observer(
               isInheritedProperty ? 'super type class' : 'association'
             } '${property.owner.path}'`}
           >
-            <FaArrowAltCircleRight />
+            <ArrowCircleRightIcon />
           </button>
         )}
         {isIndirectProperty && (
@@ -325,7 +334,7 @@ const PropertyBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -440,7 +449,7 @@ const DerivedPropertyBasicEditor = observer(
           {isInheritedProperty && (
             <div className="property-basic-editor__name--with-lock">
               <div className="property-basic-editor__name--with-lock__icon">
-                <FaLock />
+                <LockIcon />
               </div>
               <span className="property-basic-editor__name--with-lock__name">
                 {derivedProperty.name}
@@ -490,7 +499,7 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               <div
                 data-testid={
-                  STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                  LEGEND_STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
                 }
                 className="property-basic-editor__type__label property-basic-editor__type__label--hover"
                 onClick={(): void => setIsEditingType(true)}
@@ -499,13 +508,13 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <button
-                  data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                  data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
                   title={'Visit element'}
                 >
-                  <FaArrowAltCircleRight />
+                  <ArrowCircleRightIcon />
                 </button>
               )}
             </div>
@@ -531,13 +540,13 @@ const DerivedPropertyBasicEditor = observer(
               </div>
               {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
                 <button
-                  data-testid={STUDIO_TEST_ID.TYPE_VISIT}
+                  data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
                   title={'Visit element'}
                 >
-                  <FaArrowAltCircleRight />
+                  <ArrowCircleRightIcon />
                 </button>
               )}
             </div>
@@ -568,7 +577,7 @@ const DerivedPropertyBasicEditor = observer(
               tabIndex={-1}
               title={'See detail'}
             >
-              <FaLongArrowAltRight />
+              <LongArrowRightIcon />
             </button>
           )}
           {isInheritedProperty && (
@@ -578,7 +587,7 @@ const DerivedPropertyBasicEditor = observer(
               tabIndex={-1}
               title={`Visit super type class ${derivedProperty.owner.path}`}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           )}
           {!isInheritedProperty && !isReadOnly && (
@@ -590,7 +599,7 @@ const DerivedPropertyBasicEditor = observer(
               tabIndex={-1}
               title={'Remove'}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           )}
         </div>
@@ -649,7 +658,7 @@ const ConstraintEditor = observer(
           {isInheritedConstraint && (
             <div className="constraint-editor__content__name--with-lock">
               <div className="constraint-editor__content__name--with-lock__icon">
-                <FaLock />
+                <LockIcon />
               </div>
               <span className="constraint-editor__content__name--with-lock__name">
                 {constraint.name}
@@ -674,7 +683,7 @@ const ConstraintEditor = observer(
               tabIndex={-1}
               title={`Visit super type class ${constraint.owner.path}`}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           )}
           {!isInheritedConstraint && !isReadOnly && (
@@ -685,7 +694,7 @@ const ConstraintEditor = observer(
               tabIndex={-1}
               title={'Remove'}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           )}
         </div>
@@ -722,9 +731,9 @@ const SuperTypeEditor = observer(
         // Exclude current class
         classOption.value !== _class &&
         // Exclude super types of the class
-        !_class.allSuperClasses.includes(classOption.value) &&
+        !_class.allSuperclasses.includes(classOption.value) &&
         // Ensure there is no loop (might be expensive)
-        !classOption.value.allSuperClasses.includes(_class),
+        !classOption.value.allSuperclasses.includes(_class),
     );
     const rawType = superType.value.rawType;
     const filterOption = createFilter({
@@ -755,7 +764,7 @@ const SuperTypeEditor = observer(
           tabIndex={-1}
           title={'Visit super type'}
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
         {!isReadOnly && (
           <button
@@ -765,7 +774,7 @@ const SuperTypeEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -860,7 +869,7 @@ export const ClassFormEditor = observer(
       (): void => {
         _class.deleteSuperType(superType);
         if (superType.value.rawType instanceof Class) {
-          superType.value.rawType.deleteSubClass(_class);
+          superType.value.rawType.deleteSubclass(_class);
         }
       };
     const possibleSupertypes =
@@ -869,9 +878,9 @@ export const ClassFormEditor = observer(
           // Exclude current class
           superType !== _class &&
           // Exclude super types of the class
-          !_class.allSuperClasses.includes(superType) &&
+          !_class.allSuperclasses.includes(superType) &&
           // Ensure there is no loop (might be expensive)
-          !superType.allSuperClasses.includes(_class),
+          !superType.allSuperclasses.includes(_class),
       );
     // Derived properties
     const indirectDerivedProperties = _class
@@ -935,12 +944,13 @@ export const ClassFormEditor = observer(
           selectedTab === UML_EDITOR_TAB.SUPER_TYPES &&
           possibleSupertypes.length
         ) {
+          const possibleSupertype = possibleSupertypes[0] as Class;
           _class.addSuperType(
             GenericTypeExplicitReference.create(
-              new GenericType(possibleSupertypes[0]),
+              new GenericType(possibleSupertype),
             ),
           );
-          possibleSupertypes[0].addSubClass(_class);
+          possibleSupertype.addSubclass(_class);
         } else if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           _class.addTaggedValue(
             TaggedValue.createStub(Tag.createStub(Profile.createStub())),
@@ -1015,14 +1025,14 @@ export const ClassFormEditor = observer(
           // Must not be the same class
           element !== _class &&
           // Must not be a supertype of the current class
-          !_class.allSuperClasses.includes(element) &&
+          !_class.allSuperclasses.includes(element) &&
           // Must not have the current class as a super type
-          !element.allSuperClasses.includes(_class)
+          !element.allSuperclasses.includes(_class)
         ) {
           _class.addSuperType(
             GenericTypeExplicitReference.create(new GenericType(element)),
           );
-          element.addSubClass(_class);
+          element.addSubclass(_class);
         }
       },
       [_class, isReadOnly],
@@ -1107,7 +1117,7 @@ export const ClassFormEditor = observer(
 
     return (
       <div
-        data-testid={STUDIO_TEST_ID.CLASS_FORM_EDITOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.CLASS_FORM_EDITOR}
         className="uml-element-editor class-form-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
@@ -1117,7 +1127,7 @@ export const ClassFormEditor = observer(
                 <div className="panel__header__title">
                   {isReadOnly && (
                     <div className="uml-element-editor__header__lock">
-                      <FaLock />
+                      <LockIcon />
                     </div>
                   )}
                   <div className="panel__header__title__label">class</div>
@@ -1134,20 +1144,22 @@ export const ClassFormEditor = observer(
                       title={`Visit generation parent '${_class.generationParentElement.path}'`}
                     >
                       <div className="uml-element-editor__header__generation-origin__label">
-                        <FaFire />
+                        <FireIcon />
                       </div>
                       <div className="uml-element-editor__header__generation-origin__parent-name">
                         {_class.generationParentElement.name}
                       </div>
                       <div className="uml-element-editor__header__generation-origin__visit-btn">
-                        <FaArrowCircleRight />
+                        <StickArrowCircleRightIcon />
                       </div>
                     </button>
                   )}
                 </div>
               </div>
               <div
-                data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER
+                }
                 className="panel__header uml-element-editor__tabs__header"
               >
                 <div className="uml-element-editor__tabs">
@@ -1171,7 +1183,7 @@ export const ClassFormEditor = observer(
                     tabIndex={-1}
                     title={addButtonTitle}
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                 </div>
               </div>
@@ -1349,7 +1361,8 @@ export const ClassEditor = observer((props: { _class: Class }) => {
   return (
     <ResizablePanelGroup orientation="vertical" className="class-editor">
       <ResizablePanel size={500} minSize={450}>
-        {classPreviewRenderers.length !== 0 && classPreviewRenderers[0](_class)}
+        {classPreviewRenderers.length !== 0 &&
+          (classPreviewRenderers[0] as ClassPreviewRenderer)(_class)}
         {classPreviewRenderers.length === 0 && (
           <BlankPanelContent>No preview</BlankPanelContent>
         )}

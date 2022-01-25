@@ -16,17 +16,17 @@
 
 export * from './const';
 
+export * from './application/LegendApplicationPluginManager';
 export * from './application/LegendApplication';
 
 export * from './components/ApplicationStoreProvider';
 export * from './components/WebApplicationNavigatorProvider';
+export * from './components/LegendApplicationComponentFrameworkProvider';
 
 export * from './components/ApplicationStoreProviderTestUtils';
 export * from './components/WebApplicationNavigatorProviderTestUtils';
-export { BlockingAlert } from './components/BlockingAlert';
-export { ActionAlert } from './components/ActionAlert';
-export { NotificationSnackbar } from './components/NotificationSnackbar';
-export { ApplicationBackdrop } from './components/ApplicationBackdrop';
+
+export { AppHeader } from './components/AppHeader';
 export * from './components/TextInputEditor';
 export * from './components/LambdaEditor';
 
@@ -40,5 +40,3 @@ export * from './stores/PackageableElementOption';
 export { GRAMMAR_ELEMENT_TYPE_LABEL } from './stores/PureLanguageSupport';
 
 export * from './stores/ApplicationStoreTestUtils';
-
-export * from './network/TelemetryEvent';

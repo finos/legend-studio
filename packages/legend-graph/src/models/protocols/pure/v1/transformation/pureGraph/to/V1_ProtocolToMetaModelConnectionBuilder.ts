@@ -22,10 +22,14 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst';
-import type { DatabaseType } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { RelationalDatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import type { Connection } from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
-import { ConnectionPointer } from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
+import {
+  type DatabaseType,
+  RelationalDatabaseConnection,
+} from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import {
+  type Connection,
+  ConnectionPointer,
+} from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
 import { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
 import { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
 import { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
@@ -33,8 +37,10 @@ import type { Store } from '../../../../../../metamodels/pure/packageableElement
 import { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
 import { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
 import { ModelStore } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
-import type { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+import {
+  type PackageableElementReference,
+  PackageableElementImplicitReference,
+} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection';
 import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type {
@@ -83,7 +89,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       }
     }
     throw new UnsupportedOperationError(
-      `Can't build new connection: no compatible builder available from plugins`,
+      `Can't build connection: no compatible builder available from plugins`,
       connection,
     );
   }
@@ -91,7 +97,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
   visit_ConnectionPointer(connection: V1_ConnectionPointer): Connection {
     assertNonNullable(
       connection.connection,
-      'Connection pointer connection is missing',
+      `Connection pointer 'connection' field is missing`,
     );
     return new ConnectionPointer(
       this.context.resolveConnection(connection.connection),
@@ -105,7 +111,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       assertType(
         this.embeddedConnectionStore.value,
         ModelStore,
-        `Embedded Model chain connection store must be 'ModelStore'`,
+        `Embedded model chain connection store must be 'ModelStore'`,
       );
     } else {
       assertTrue(
@@ -140,9 +146,12 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     }
     assertNonNullable(
       connection.class,
-      'JSON model connection class is missing',
+      `JSON model connection 'class' field is missing`,
     );
-    assertNonNullable(connection.url, 'JSON model connection data is missing');
+    assertNonNullable(
+      connection.url,
+      `JSON model connection 'url' field is missing`,
+    );
     return new JsonModelConnection(
       PackageableElementImplicitReference.create(
         this.context.graph.modelStore,
@@ -168,9 +177,12 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     }
     assertNonNullable(
       connection.class,
-      'XML model connection class is missing',
+      `XML model connection 'class' field is missing`,
     );
-    assertNonNullable(connection.url, 'XML model connection data is missing');
+    assertNonNullable(
+      connection.url,
+      `XML model connection 'url' field is missing`,
+    );
     return new XmlModelConnection(
       PackageableElementImplicitReference.create(
         this.context.graph.modelStore,
@@ -186,7 +198,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       ? this.context.resolveFlatDataStore(
           guaranteeNonNullable(
             connection.store,
-            'Flat-data connection store is missing',
+            `Flat-data connection 'store' field is missing`,
           ),
         )
       : connection.store
@@ -195,12 +207,15 @@ export class V1_ProtocolToMetaModelConnectionBuilder
           assertType(
             this.embeddedConnectionStore.value,
             FlatData,
-            'Flat-data connection store must be a flat-data store',
+            `Flat-data connection store must be a flat-data store`,
           );
           return this
             .embeddedConnectionStore as PackageableElementReference<FlatData>;
         })();
-    assertNonNullable(connection.url, 'Flat-data connection data is missing');
+    assertNonNullable(
+      connection.url,
+      `Flat-data connection 'url' field is missing`,
+    );
     return new FlatDataConnection(store, connection.url);
   }
 
@@ -211,7 +226,7 @@ export class V1_ProtocolToMetaModelConnectionBuilder
       ? this.context.resolveDatabase(
           guaranteeNonNullable(
             connection.store,
-            'Relational database connection store is missing',
+            `Relational database connection 'store' field is missing`,
           ),
         )
       : connection.store
@@ -220,22 +235,22 @@ export class V1_ProtocolToMetaModelConnectionBuilder
           assertType(
             this.embeddedConnectionStore.value,
             Database,
-            'Relational database connection store must be a database',
+            `Relational database connection store must be a database`,
           );
           return this
             .embeddedConnectionStore as PackageableElementReference<Database>;
         })();
     assertNonNullable(
       connection.type,
-      'Relational database connection type is missing',
+      `Relational database connection 'type' field is missing`,
     );
     assertNonNullable(
       connection.datasourceSpecification,
-      'Relational database connection datasource specification is missing',
+      `Relational database connection 'datasourceSpecification' field is missing`,
     );
     assertNonNullable(
       connection.authenticationStrategy,
-      'Relational database connection authentication strategy is missing',
+      `Relational database connection 'authenticationStrategy' field is missing`,
     );
     const val = new RelationalDatabaseConnection(
       store,

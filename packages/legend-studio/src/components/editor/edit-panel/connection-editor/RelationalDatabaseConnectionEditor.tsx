@@ -16,14 +16,12 @@
 
 import { observer } from 'mobx-react-lite';
 import {
+  type RelationalDatabaseConnectionValueState,
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import type { RelationalDatabaseConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import { useState } from 'react';
-import { MdModeEdit } from 'react-icons/md';
-import { VscError } from 'react-icons/vsc';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -33,16 +31,20 @@ import {
   CheckSquareIcon,
   SquareIcon,
   TimesIcon,
+  ErrorIcon,
+  PencilIcon,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
-import type { RelationalDatabaseConnection, Store } from '@finos/legend-graph';
 import {
+  type RelationalDatabaseConnection,
+  type Store,
   DatabaseType,
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   ApiTokenAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -53,10 +55,12 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { runInAction } from 'mobx';
-import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { StudioPlugin } from '../../../../stores/StudioPlugin';
-import type { StoreRelational_StudioPlugin_Extension } from '../../../../stores/StoreRelational_StudioPlugin_Extension';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '../../../../stores/shared/PackageableElementOptionUtil';
+import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin';
+import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension';
 import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
@@ -301,7 +305,7 @@ export const ConnectionEditor_ArrayEditor = observer(
                         onClick={showEditItemInput(value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -484,10 +488,10 @@ const DatabricksDatasourceSpecificationEditor = observer(
       <>
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
-          value={sourceSpec.hostname}
-          propertyName="hostname"
+          value={sourceSpec.host}
+          propertyName="host"
           update={(value: string | undefined): void =>
-            sourceSpec.setHostname(value ?? '')
+            sourceSpec.setHost(value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
@@ -565,6 +569,54 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           propertyName="cloud type"
           update={(value: string | undefined): void =>
             sourceSpec.setCloudType(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyHost}
+          propertyName="proxy host"
+          update={(value: string | undefined): void =>
+            sourceSpec.setProxyHost(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyPort}
+          propertyName="proxy port"
+          update={(value: string | undefined): void =>
+            sourceSpec.setProxyPort(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.nonProxyHosts}
+          propertyName="non proxy hosts"
+          update={(value: string | undefined): void =>
+            sourceSpec.setNonProxyHosts(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.organization}
+          propertyName="organization"
+          update={(value: string | undefined): void =>
+            sourceSpec.setOrganization(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.accountType}
+          propertyName="account type"
+          update={(value: string | undefined): void =>
+            sourceSpec.setAccountType(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.role}
+          propertyName="role"
+          update={(value: string | undefined): void =>
+            sourceSpec.setRole(value)
           }
         />
         {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}
@@ -793,6 +845,43 @@ const OAuthAuthenticationStrategyEditor = observer(
   },
 );
 
+const UsernamePasswordAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: UsernamePasswordAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.baseVaultReference}
+          propertyName={'base valut reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setBaseVaultReference(value)
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.userNameVaultReference}
+          propertyName={'user name vault reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setUserNameVaultReference(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.passwordVaultReference}
+          propertyName={'password valut reference'}
+          update={(value: string | undefined): void =>
+            authSpec.setPasswordVaultReference(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 const RelationalConnectionStoreEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
@@ -811,7 +900,7 @@ const RelationalConnectionStoreEditor = observer(
         <div className="relational-connection-editor__store-option--empty__label">
           (none)
         </div>
-        <VscError />
+        <ErrorIcon />
       </div>
     );
     const stores =
@@ -831,7 +920,8 @@ const RelationalConnectionStoreEditor = observer(
         );
       }
     };
-    const openDatabaseBuilder = (): void => databaseBuilderState.setModal(true);
+    const openDatabaseBuilder = (): void =>
+      databaseBuilderState.setShowModal(true);
 
     return (
       <div className="relational-connection-editor">
@@ -867,7 +957,7 @@ const RelationalConnectionStoreEditor = observer(
 const renderDatasourceSpecificationEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: StudioPlugin[],
+  plugins: LegendStudioPlugin[],
 ): React.ReactNode => {
   const sourceSpec = connection.datasourceSpecification;
   if (sourceSpec instanceof StaticDatasourceSpecification) {
@@ -923,7 +1013,7 @@ const renderDatasourceSpecificationEditor = (
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_StudioPlugin_Extension
+          plugin as StoreRelational_LegendStudioPlugin_Extension
         ).getExtraDatasourceSpecificationEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraDatasourceSpecificationEditorRenderers) {
@@ -940,7 +1030,7 @@ const renderDatasourceSpecificationEditor = (
 const renderAuthenticationStrategyEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: StudioPlugin[],
+  plugins: LegendStudioPlugin[],
 ): React.ReactNode => {
   const authSpec = connection.authenticationStrategy;
   if (authSpec instanceof DelegatedKerberosAuthenticationStrategy) {
@@ -978,11 +1068,18 @@ const renderAuthenticationStrategyEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (authSpec instanceof UsernamePasswordAuthenticationStrategy) {
+    return (
+      <UsernamePasswordAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else {
     const extraAuthenticationStrategyEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_StudioPlugin_Extension
+          plugin as StoreRelational_LegendStudioPlugin_Extension
         ).getExtraAuthenticationStrategyEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraAuthenticationStrategyEditorRenderers) {
@@ -1028,7 +1125,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_StudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioPlugin_Extension
             ).getExtraDatasourceSpecificationTypes?.() ?? [],
         ),
       )
@@ -1056,7 +1153,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_StudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioPlugin_Extension
             ).getExtraAuthenticationStrategyTypes?.() ?? [],
         ),
       )

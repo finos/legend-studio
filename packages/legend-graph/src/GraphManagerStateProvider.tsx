@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { Log } from '@finos/legend-shared';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { type Log, guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
 import { GraphManagerState } from './GraphManagerState';
@@ -25,15 +24,11 @@ const GraphManagerStateContext = createContext<GraphManagerState | undefined>(
   undefined,
 );
 
-export const GraphManagerStateProvider = ({
-  children,
-  pluginManager,
-  log,
-}: {
+export const GraphManagerStateProvider: React.FC<{
   children: React.ReactNode;
   pluginManager: GraphPluginManager;
   log: Log;
-}): React.ReactElement => {
+}> = ({ children, pluginManager, log }) => {
   const graphManagerState = useLocalObservable(
     () => new GraphManagerState(pluginManager, log),
   );

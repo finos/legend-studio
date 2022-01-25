@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
 export abstract class V1_AssociationMapping implements Hashable {

@@ -1,0 +1,10 @@
+{
+  "elements": [
+    {
+      "package": "meta::pure::profiles",
+      "_type": "profile",
+      "name": "enterprise",
+      "tags": ["taxonomyNodes"]
+    }
+  ]
+}

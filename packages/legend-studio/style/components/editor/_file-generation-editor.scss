@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../mixins' as *;
+@use 'mixins' as *;
 
 .file-generation-editor {
   height: 100%;
@@ -198,9 +198,14 @@
       }
     }
 
-    &__header-name {
+    &__header__name {
       font-weight: 500;
       font-size: 1.2rem;
+      margin-right: 1rem;
+    }
+
+    &__header__action + &__header__action {
+      margin-left: 0.5rem;
     }
   }
 }

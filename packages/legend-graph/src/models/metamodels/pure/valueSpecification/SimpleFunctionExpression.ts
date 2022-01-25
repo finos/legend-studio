@@ -18,8 +18,10 @@ import { observable, makeObservable, action } from 'mobx';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
-import type { ValueSpecificationVisitor } from './ValueSpecification';
-import { ValueSpecification } from './ValueSpecification';
+import {
+  type ValueSpecificationVisitor,
+  ValueSpecification,
+} from './ValueSpecification';
 import type { Function } from '../packageableElements/domain/Function';
 import type { AbstractProperty } from '../packageableElements/domain/AbstractProperty';
 import { UnsupportedOperationError } from '@finos/legend-shared';
@@ -62,6 +64,7 @@ export class FunctionExpression extends Expression {
 }
 
 export class SimpleFunctionExpression extends FunctionExpression {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   func?: PackageableElementReference<Function> | undefined;
 
   override accept_ValueSpecificationVisitor<T>(

@@ -16,8 +16,10 @@
 
 import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { ConnectionVisitor } from '../../../connection/Connection';
-import { Connection } from '../../../connection/Connection';
+import {
+  type ConnectionVisitor,
+  Connection,
+} from '../../../connection/Connection';
 import type { Mapping } from '../../../mapping/Mapping';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 

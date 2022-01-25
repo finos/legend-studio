@@ -16,8 +16,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { RuntimeEditorState } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import {
+  type RuntimeEditorState,
   PackageableRuntimeEditorState,
   RuntimeEditorRuntimeTabState,
   IdentifiedConnectionsEditorTabState,
@@ -25,13 +25,14 @@ import {
   IdentifiedConnectionsPerStoreEditorTabState,
 } from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
 import type { EditorStore } from '../../../stores/EditorStore';
-import type { TreeNodeContainerProps } from '@finos/legend-art';
 import {
+  clsx,
+  Dialog,
+  type TreeNodeContainerProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  clsx,
   TreeView,
   ContextMenu,
   CustomSelectorInput,
@@ -40,26 +41,24 @@ import {
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
-  RuntimeIcon,
-  ConnectionIcon,
-  ModelStoreIcon,
-  ClassIcon,
-  MappingIcon,
+  PURE_RuntimeIcon,
+  PURE_ConnectionIcon,
+  PURE_ModelStoreIcon,
+  PURE_ClassIcon,
+  PURE_MappingIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  TimesIcon,
+  LongArrowRightIcon,
+  CogIcon,
+  CaretRightIcon,
 } from '@finos/legend-art';
-import {
-  FaChevronDown,
-  FaChevronRight,
-  FaPlus,
-  FaTimes,
-  FaLongArrowAltRight,
-  FaCog,
-  FaCaretRight,
-} from 'react-icons/fa';
 import { getElementIcon } from '../../shared/ElementIconUtils';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor';
-import type { UMLEditorElementDropTarget } from '../../../stores/shared/DnDUtil';
 import {
+  type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
   ElementDragSource,
 } from '../../../stores/shared/DnDUtil';
@@ -70,12 +69,13 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import { Dialog } from '@material-ui/core';
-import { buildElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../EditorStoreProvider';
-import type { PackageableElementReference } from '@finos/legend-graph';
 import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '../../../stores/shared/PackageableElementOptionUtil';
+import { useEditorStore } from '../EditorStoreProvider';
+import {
+  type PackageableElementReference,
   Connection,
   ConnectionPointer,
   Runtime,
@@ -93,8 +93,12 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
-const getConnectionTooltipText = (connection: Connection): string => {
+const getConnectionTooltipText = (
+  connection: Connection,
+  editorStore: EditorStore,
+): string => {
   const connectionValue =
     connection instanceof ConnectionPointer
       ? connection.packageableConnection.value.connectionValue
@@ -108,8 +112,22 @@ const getConnectionTooltipText = (connection: Connection): string => {
   } else if (connectionValue instanceof RelationalDatabaseConnection) {
     return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
   }
+  const extraConnectionToolTipTexts = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_LegendStudioPlugin_Extension
+        ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
+    );
+  for (const builder of extraConnectionToolTipTexts) {
+    const tooltipText = builder(connectionValue);
+    if (tooltipText) {
+      return tooltipText;
+    }
+  }
   throw new UnsupportedOperationError(
-    `Can't build tooltip text for connection`,
+    `Can't build tooltip text for connection: no compatible builder available from plugins`,
     connection,
   );
 };
@@ -159,6 +177,7 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
       isActive,
       isReadOnly,
     } = props;
+    const editorStore = useEditorStore();
     const openConnection = (): void =>
       currentRuntimeEditorTabState.openIdentifiedConnection(
         identifiedConnection,
@@ -200,10 +219,13 @@ export const IdentifiedConnectionsPerStoreExplorerItem = observer(
           className="runtime-explorer__item__label runtime-explorer__item__label--simple"
           onClick={openConnection}
           tabIndex={-1}
-          title={getConnectionTooltipText(identifiedConnection.connection)}
+          title={getConnectionTooltipText(
+            identifiedConnection.connection,
+            editorStore,
+          )}
         >
           <div className="runtime-explorer__item__label__icon">
-            <ConnectionIcon />
+            <PURE_ConnectionIcon />
           </div>
           {/* TODO: we might want to add connection type label here */}
           <div className="runtime-explorer__item__label__text">
@@ -220,11 +242,11 @@ const getRuntimeExplorerTreeNodeIcon = (
   node: RuntimeExplorerTreeNodeData,
 ): React.ReactNode => {
   if (node.data instanceof Runtime) {
-    return <RuntimeIcon />;
+    return <PURE_RuntimeIcon />;
   } else if (node.data instanceof ModelStore) {
-    return <ModelStoreIcon />;
+    return <PURE_ModelStoreIcon />;
   } else if (node.data instanceof Connection) {
-    return <ConnectionIcon />;
+    return <PURE_ConnectionIcon />;
   }
   return getElementIcon(editorStore, node.data);
 };
@@ -261,9 +283,9 @@ const RuntimeExplorerTreeNodeContainer = observer(
     const isExpandable = Boolean(node.childrenIds?.length);
     const nodeExpandIcon = isExpandable ? (
       node.isOpen ? (
-        <FaChevronDown />
+        <ChevronDownIcon />
       ) : (
-        <FaChevronRight />
+        <ChevronRightIcon />
       )
     ) : (
       <div />
@@ -302,11 +324,16 @@ const RuntimeExplorerTreeNodeContainer = observer(
                 {node.label} ~
               </div>
               <div className="runtime-explorer__item__label__runtime__mapping__icon">
-                <MappingIcon />
+                <PURE_MappingIcon />
               </div>
               {/* TODO: handle when there are multiple mappings */}
               <div className="runtime-explorer__item__label__runtime__mapping__text">
-                {runtimeEditorState.runtimeValue.mappings[0].value.name}
+                {runtimeEditorState.runtimeValue.mappings.length
+                  ? (
+                      runtimeEditorState.runtimeValue
+                        .mappings[0] as PackageableElementReference<Mapping>
+                    ).value.name
+                  : '(no mapping)'}
               </div>
             </>
           )}
@@ -442,7 +469,6 @@ const IdentifiedConnectionEditor = observer(
       identifiedConnection,
       isReadOnly,
     } = props;
-    const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const runtimeValue = runtimeEditorState.runtimeValue;
     // TODO: add runtime connection id
@@ -452,7 +478,7 @@ const IdentifiedConnectionEditor = observer(
     );
     const embeddedConnectionLabel = (
       <div className="runtime-connection-editor__connection-option--custom">
-        <FaCog />
+        <CogIcon />
         <div className="runtime-connection-editor__connection-option--custom__label">
           (custom)
         </div>
@@ -480,6 +506,7 @@ const IdentifiedConnectionEditor = observer(
         : guaranteeType(identifiedConnection.connection, ConnectionPointer)
             .packageableConnection.value.path,
     };
+    const editorStore = useEditorStore();
     const onConnectionSelectionChange = (val: {
       label: string | React.ReactNode;
       value?: PackageableConnection;
@@ -488,7 +515,7 @@ const IdentifiedConnectionEditor = observer(
         let customConnection: Connection;
         try {
           customConnection =
-            currentRuntimeEditorTabState.createNewCustomConnection();
+            currentRuntimeEditorTabState.createDefaultConnection();
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.notifyWarning(error.message);
@@ -544,7 +571,7 @@ const IdentifiedConnectionEditor = observer(
           <div className="panel__content">
             <div className="runtime-connection-editor__connection-option">
               <div className="runtime-connection-editor__connection-option__label">
-                <ConnectionIcon />
+                <PURE_ConnectionIcon />
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown"
@@ -561,7 +588,7 @@ const IdentifiedConnectionEditor = observer(
                   tabIndex={-1}
                   title={'See connection'}
                 >
-                  <FaLongArrowAltRight />
+                  <LongArrowRightIcon />
                 </button>
               )}
             </div>
@@ -654,10 +681,10 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                       ModelStore
                     </div>
                     <div className="runtime-store-connections-editor__model-store__arrow-icon">
-                      <FaCaretRight />
+                      <CaretRightIcon />
                     </div>
                     <div className="runtime-store-connections-editor__model-store__class-icon">
-                      <ClassIcon />
+                      <PURE_ClassIcon />
                     </div>
                     <div className="runtime-store-connections-editor__model-store__class-name">
                       {currentRuntimeEditorTabState.class.name}
@@ -672,7 +699,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                     onClick={addNewConnection}
                     title="Add Connection..."
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                 </div>
               </div>
@@ -819,7 +846,7 @@ const RuntimeMappingEditor = observer(
           tabIndex={-1}
           title="Visit Mapping"
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
         {!isReadOnly && (
           <button
@@ -829,7 +856,7 @@ const RuntimeMappingEditor = observer(
             tabIndex={-1}
             title="Remove"
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -855,7 +882,7 @@ const RuntimeGeneralEditor = observer(
     const allowAddingMapping = !isReadOnly && Boolean(mappings.length);
     const addMapping = (): void => {
       if (allowAddingMapping) {
-        runtimeEditorState.addMapping(mappings[0]);
+        runtimeEditorState.addMapping(mappings[0] as Mapping);
       }
     };
     const handleDropMapping = useCallback(
@@ -1027,12 +1054,15 @@ export const EmbeddedRuntimeEditor = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
+        TransitionProps={{
+          appear: false, // disable transition
+        }}
       >
         <div className="modal modal--dark editor-modal embedded-runtime-editor">
           <div className="modal__header">
             <div className="modal__title">
               <div className="modal__title__icon">
-                <FaCog />
+                <CogIcon />
               </div>
               <div className="modal__title__label">custom runtime</div>
             </div>
@@ -1042,7 +1072,7 @@ export const EmbeddedRuntimeEditor = observer(
                 tabIndex={-1}
                 onClick={closeEditor}
               >
-                <FaTimes />
+                <TimesIcon />
               </button>
             </div>
           </div>

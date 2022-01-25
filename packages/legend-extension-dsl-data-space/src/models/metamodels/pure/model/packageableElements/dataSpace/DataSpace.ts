@@ -15,15 +15,49 @@
  */
 
 import { makeObservable, override } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
-import type {
-  PackageableElementVisitor,
-  StereotypeReference,
-  TaggedValue,
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  PackageableElement,
+  type PackageableElementVisitor,
+  type StereotypeReference,
+  type TaggedValue,
 } from '@finos/legend-graph';
-import { PackageableElement } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils';
+
+export abstract class DataSpaceSupportInfo implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class DataSpaceSupportEmail
+  extends DataSpaceSupportInfo
+  implements Hashable
+{
+  address!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SUPPORT_EMAIL,
+      this.address,
+    ]);
+  }
+}
+
+export class DataSpaceExecutionContext implements Hashable {
+  name!: string;
+  description?: string | undefined;
+  mapping!: string;
+  defaultRuntime!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
+      this.name,
+      this.description ?? '',
+      this.mapping,
+      this.defaultRuntime,
+    ]);
+  }
+}
 
 export class DataSpace extends PackageableElement implements Hashable {
   stereotypes: StereotypeReference[] = [];
@@ -31,13 +65,11 @@ export class DataSpace extends PackageableElement implements Hashable {
   groupId!: string;
   artifactId!: string;
   versionId!: string;
-  mapping!: string;
-  runtime!: string;
-  diagrams: string[] = [];
+  executionContexts: DataSpaceExecutionContext[] = [];
+  defaultExecutionContext!: DataSpaceExecutionContext;
+  featuredDiagrams: string[] = [];
   description?: string | undefined;
-  // NOTE: we're not too sure about this attribute. We feel that this would be needed but maybe
-  // we can think of a more generic strategy for this type of metadata
-  supportEmail?: string | undefined;
+  supportInfo?: DataSpaceSupportInfo | undefined;
 
   constructor(name: string) {
     super(name);
@@ -57,11 +89,11 @@ export class DataSpace extends PackageableElement implements Hashable {
       this.groupId,
       this.artifactId,
       this.versionId,
-      this.mapping,
-      this.runtime,
-      hashArray(this.diagrams),
+      hashArray(this.executionContexts),
+      this.defaultExecutionContext.name,
+      hashArray(this.featuredDiagrams),
       this.description ?? '',
-      this.supportEmail ?? '',
+      this.supportInfo ?? '',
     ]);
   }
 

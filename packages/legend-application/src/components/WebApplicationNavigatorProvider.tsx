@@ -18,18 +18,17 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
 import { useHistory } from 'react-router';
+import type { History } from 'history';
 import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
 
 const WebApplicationNavigatorContext = createContext<
   WebApplicationNavigator | undefined
 >(undefined);
 
-export const WebApplicationNavigatorProvider = ({
-  children,
-}: {
+export const WebApplicationNavigatorProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => {
-  const history = useHistory();
+}> = ({ children }) => {
+  const history = useHistory() as History;
   const navigator = useLocalObservable(
     () => new WebApplicationNavigator(history),
   );

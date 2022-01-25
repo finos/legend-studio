@@ -16,9 +16,9 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaTimes, FaPlus } from 'react-icons/fa';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  Dialog,
+  type SelectComponent,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -26,38 +26,42 @@ import {
   CustomSelectorInput,
   BlankPanelPlaceholder,
   createFilter,
-  EnumerationIcon,
+  PURE_EnumerationIcon,
+  PencilIcon,
+  TimesIcon,
+  PlusIcon,
 } from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { TypeTree } from '../../../shared/TypeTree';
 import { useDrop } from 'react-dnd';
-import type {
-  TransformDropTarget,
-  ElementDragSource,
-  MappingElementSourceDropTarget,
-} from '../../../../stores/shared/DnDUtil';
 import {
+  type TransformDropTarget,
+  type ElementDragSource,
+  type MappingElementSourceDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
-import { MdModeEdit } from 'react-icons/md';
-import Dialog from '@material-ui/core/Dialog';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  PackageableElement,
-  SourceValue,
-  EnumerationMapping,
-  OptionalPackageableElementReference,
+import {
+  PRIMITIVE_TYPE,
+  Type,
+  Enum,
+  Enumeration,
+  type PackageableElement,
+  type SourceValue,
+  type EnumerationMapping,
+  type OptionalPackageableElementReference,
 } from '@finos/legend-graph';
-import { PRIMITIVE_TYPE, Type, Enum, Enumeration } from '@finos/legend-graph';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {
@@ -108,6 +112,7 @@ const EnumerationMappingSourceSelectorModal = observer(
         open={open}
         onClose={closeModal}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter: handleEnter,
         }}
         classes={{
@@ -233,7 +238,7 @@ export const SourceValueInput = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -271,7 +276,7 @@ const EnumValueMappingEditor = observer(
               tabIndex={-1}
               title={'Add enum value'}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           )}
         </div>
@@ -302,7 +307,7 @@ const EnumValueMappingEditor = observer(
                   className="enumeration-mapping-editor__enum-value__source-value--empty__add-btn"
                   onClick={addSourceValue}
                 >
-                  <FaPlus />
+                  <PlusIcon />
                 </div>{' '}
                 to add one.
               </div>
@@ -354,19 +359,22 @@ export const EnumerationMappingEditor = observer(
     );
     useEffect(() => {
       if (!isReadOnly) {
-        new MappingElementDecorator().visitEnumerationMapping(
+        new MappingElementDecorator(editorStore).visitEnumerationMapping(
           enumerationMapping,
         );
       }
       return isReadOnly
         ? noop()
         : (): void =>
-            new MappingElementDecorationCleaner().visitEnumerationMapping(
-              enumerationMapping,
-            );
-    }, [enumerationMapping, isReadOnly]);
+            new MappingElementDecorationCleaner(
+              editorStore,
+            ).visitEnumerationMapping(enumerationMapping);
+    }, [enumerationMapping, isReadOnly, editorStore]);
     return (
-      <div data-testid={STUDIO_TEST_ID.MAIN_EDITOR} className="editor__main">
+      <div
+        data-testid={LEGEND_STUDIO_TEST_ID.MAIN_EDITOR}
+        className="editor__main"
+      >
         <div className="mapping-element-editor enumeration-mapping-editor">
           <div className="mapping-element-editor__metadata">
             {/* Target */}
@@ -386,7 +394,7 @@ export const EnumerationMappingEditor = observer(
               </div>
               <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__target">
                 <div className="mapping-element-editor__metadata__target__type icon">
-                  <EnumerationIcon />
+                  <PURE_EnumerationIcon />
                 </div>
                 <div className="mapping-element-editor__metadata__target__label">
                   {enumeration.value.name}
@@ -453,7 +461,7 @@ export const EnumerationMappingEditor = observer(
               <ResizablePanelSplitter />
               <ResizablePanel size={300} minSize={300}>
                 <div
-                  data-testid={STUDIO_TEST_ID.SOURCE_PANEL}
+                  data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
                   className="panel source-panel"
                 >
                   <div className="panel__header">
@@ -471,7 +479,7 @@ export const EnumerationMappingEditor = observer(
                         tabIndex={-1}
                         title={'Select Source...'}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                     </div>
                   </div>

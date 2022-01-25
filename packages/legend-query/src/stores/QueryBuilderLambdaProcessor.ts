@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   assertNonNullable,
   assertTrue,
   assertType,
@@ -32,30 +32,29 @@ import {
   COLUMN_SORT_TYPE,
   SortColumnState,
 } from './QueryResultSetModifierState';
-import type { QueryBuilderFilterState } from './QueryBuilderFilterState';
 import {
+  type QueryBuilderFilterState,
   QueryBuilderFilterTreeGroupNodeData,
   QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QueryBuilderFilterTreeConditionNodeData,
 } from './QueryBuilderFilterState';
 import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState';
-import type {
-  AlloySerializationConfigInstanceValue,
-  EnumValueInstanceValue,
-  FunctionExpression,
-  MappingInstanceValue,
-  PairInstanceValue,
-  PropertyGraphFetchTreeInstanceValue,
-  PureListInstanceValue,
-  RootGraphFetchTreeInstanceValue,
-  RuntimeInstanceValue,
-  ValueSpecification,
-  ValueSpecificationVisitor,
-  InstanceValue,
-  INTERNAL__UnknownValueSpecification,
-  LambdaFunction,
-} from '@finos/legend-graph';
 import {
+  type AlloySerializationConfigInstanceValue,
+  type EnumValueInstanceValue,
+  type FunctionExpression,
+  type MappingInstanceValue,
+  type PairInstanceValue,
+  type PropertyGraphFetchTreeInstanceValue,
+  type PureListInstanceValue,
+  type RootGraphFetchTreeInstanceValue,
+  type RuntimeInstanceValue,
+  type ValueSpecification,
+  type ValueSpecificationVisitor,
+  type InstanceValue,
+  type INTERNAL__UnknownValueSpecification,
+  type LambdaFunction,
+  MILESTONING_STEROTYPES,
   DerivedProperty,
   RawLambda,
   matchFunctionName,
@@ -70,9 +69,10 @@ import {
   AbstractPropertyExpression,
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
+  getMilestoneTemporalStereotype,
 } from '@finos/legend-graph';
-import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
 import {
+  type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState';
@@ -385,10 +385,6 @@ export class QueryBuilderLambdaProcessor
   ): void {
     const functionName = valueSpecification.functionName;
     if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
-      assertTrue(
-        valueSpecification.parametersValues.length === 1,
-        `Can't process getAll() expression: getAll() expects no argument`,
-      );
       const _class = valueSpecification.genericType?.value.rawType;
       assertType(
         _class,
@@ -397,6 +393,47 @@ export class QueryBuilderLambdaProcessor
       );
       this.queryBuilderState.querySetupState.setClass(_class, true);
       this.queryBuilderState.explorerState.refreshTreeData();
+      let acceptedNoOfParameters = 1;
+      const stereotype = getMilestoneTemporalStereotype(
+        _class,
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      if (stereotype) {
+        let milestoningParameters;
+        if (stereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+          acceptedNoOfParameters = 3;
+          assertTrue(
+            valueSpecification.parametersValues.length ===
+              acceptedNoOfParameters,
+            `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters of type 'Date'`,
+          );
+          milestoningParameters = [
+            guaranteeNonNullable(valueSpecification.parametersValues[1]),
+            guaranteeNonNullable(valueSpecification.parametersValues[2]),
+          ];
+          this.queryBuilderState.querySetupState.setClassMilestoningTemporalValues(
+            milestoningParameters,
+          );
+        } else {
+          acceptedNoOfParameters = 2;
+          assertTrue(
+            valueSpecification.parametersValues.length ===
+              acceptedNoOfParameters,
+            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter of type 'Date'`,
+          );
+          milestoningParameters = [
+            guaranteeNonNullable(valueSpecification.parametersValues[1]),
+          ];
+          this.queryBuilderState.querySetupState.setClassMilestoningTemporalValues(
+            milestoningParameters,
+          );
+        }
+      } else {
+        assertTrue(
+          valueSpecification.parametersValues.length === acceptedNoOfParameters,
+          `Can't process getAll() expression: getAll() expects no arguments`,
+        );
+      }
 
       return;
     } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)) {
@@ -457,7 +494,6 @@ export class QueryBuilderLambdaProcessor
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
       );
-
       // check caller
       assertTrue(
         [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
@@ -498,7 +534,7 @@ export class QueryBuilderLambdaProcessor
         .filter(isNonNullable);
 
       this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
-        (e, idx) => e.setColumnName(aliases[idx]),
+        (e, idx) => e.setColumnName(aliases[idx] as string),
       );
 
       return;
@@ -530,7 +566,7 @@ export class QueryBuilderLambdaProcessor
       );
 
       const takeValue = getNullableNumberValueFromValueSpec(
-        valueSpecification.parametersValues[1],
+        guaranteeNonNullable(valueSpecification.parametersValues[1]),
       );
       this.queryBuilderState.resultSetModifierState.setLimit(takeValue);
 
@@ -625,7 +661,7 @@ export class QueryBuilderLambdaProcessor
       );
 
       const sortColumnName = getNullableStringValueFromValueSpec(
-        valueSpecification.parametersValues[0],
+        guaranteeNonNullable(valueSpecification.parametersValues[0]),
       );
       const queryBuilderProjectionColumnState =
         this.queryBuilderState.fetchStructureState.projectionState.columns.find(
@@ -723,7 +759,7 @@ export class QueryBuilderLambdaProcessor
         .map(getNullableStringValueFromValueSpec)
         .filter(isNonNullable);
       this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
-        (e, idx) => e.setColumnName(aliases[idx]),
+        (e, idx) => e.setColumnName(aliases[idx] as string),
       );
 
       return;
@@ -743,7 +779,9 @@ export class QueryBuilderLambdaProcessor
         `Can't process agg() expression: only support agg() in aggregation`,
       );
 
-      const columnLambdas = valueSpecification.parametersValues[0];
+      const columnLambdas = guaranteeNonNullable(
+        valueSpecification.parametersValues[0],
+      );
       columnLambdas.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(
           this.queryBuilderState,
@@ -787,6 +825,7 @@ export class QueryBuilderLambdaProcessor
       precedingExpression.accept_ValueSpecificationVisitor(
         new QueryBuilderLambdaProcessor(
           this.queryBuilderState,
+
           valueSpecification,
         ),
       );
@@ -910,8 +949,9 @@ export class QueryBuilderLambdaProcessor
       let currentPropertyExpression: ValueSpecification = valueSpecification;
       while (currentPropertyExpression instanceof AbstractPropertyExpression) {
         const propertyExpression = currentPropertyExpression;
-        currentPropertyExpression =
-          currentPropertyExpression.parametersValues[0];
+        currentPropertyExpression = guaranteeNonNullable(
+          currentPropertyExpression.parametersValues[0],
+        );
         // here we just do a simple check to ensure that if we encounter derived properties
         // the number of parameters and arguments provided match
         if (propertyExpression.func instanceof DerivedProperty) {
@@ -921,6 +961,17 @@ export class QueryBuilderLambdaProcessor
               : 0) ===
               propertyExpression.parametersValues.length - 1,
             `Can't process property expression: derived property '${propertyExpression.func.name}' expects number of provided arguments to match number of parameters`,
+          );
+        }
+        if (
+          currentPropertyExpression instanceof SimpleFunctionExpression &&
+          matchFunctionName(
+            currentPropertyExpression.functionName,
+            SUPPORTED_FUNCTIONS.SUBTYPE,
+          )
+        ) {
+          currentPropertyExpression = guaranteeNonNullable(
+            currentPropertyExpression.parametersValues[0],
           );
         }
       }
@@ -956,12 +1007,12 @@ export class QueryBuilderLambdaProcessor
   }
 }
 
-const processQueryParameters = (
-  lambdaFunc: LambdaFunction,
+export const processQueryParameters = (
+  parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
 ): void => {
   const queryParameterState = queryBuilderState.queryParametersState;
-  lambdaFunc.functionType.parameters.forEach((parameter) => {
+  parameters.forEach((parameter) => {
     const variableState = new QueryParameterState(
       queryParameterState,
       parameter,
@@ -976,7 +1027,10 @@ export const processQueryBuilderLambdaFunction = (
   lambdaFunc: LambdaFunction,
 ): void => {
   if (lambdaFunc.functionType.parameters.length) {
-    processQueryParameters(lambdaFunc, queryBuilderState);
+    processQueryParameters(
+      lambdaFunc.functionType.parameters,
+      queryBuilderState,
+    );
   }
   lambdaFunc.expressionSequence.map((e) =>
     e.accept_ValueSpecificationVisitor(

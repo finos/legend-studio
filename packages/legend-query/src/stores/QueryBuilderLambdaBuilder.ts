@@ -19,9 +19,11 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { Class, ValueSpecification } from '@finos/legend-graph';
 import {
+  type ValueSpecification,
+  type Class,
   Multiplicity,
+  getMilestoneTemporalStereotype,
   INTERNAL__UnknownValueSpecification,
   V1_GraphTransformerContextBuilder,
   V1_serializeRawValueSpecification,
@@ -30,7 +32,7 @@ import {
   InstanceValue,
   PackageableElementExplicitReference,
   CollectionInstanceValue,
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
   FunctionType,
   GenericType,
   GenericTypeExplicitReference,
@@ -91,7 +93,7 @@ export const buildLambdaFunction = (
     PRIMITIVE_TYPE.STRING,
   );
   const typeAny = queryBuilderState.graphManagerState.graph.getType(
-    CORE_ELEMENT_PATH.ANY,
+    CORE_PURE_PATH.ANY,
   );
   const lambdaFunction = new LambdaFunction(
     new FunctionType(typeAny, multiplicityOne),
@@ -99,6 +101,22 @@ export const buildLambdaFunction = (
 
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
+  if (
+    getMilestoneTemporalStereotype(
+      _class,
+      queryBuilderState.graphManagerState.graph,
+    )
+  ) {
+    queryBuilderState.querySetupState.classMilestoningTemporalValues.forEach(
+      (parameter) =>
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            parameter,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
+        ),
+    );
+  }
   lambdaFunction.expressionSequence[0] = getAllFunction;
 
   // build filter()
@@ -352,7 +370,7 @@ export const buildLambdaFunction = (
   );
   // build parameters
   if (
-    !queryBuilderState.config.parametersDisabled &&
+    !queryBuilderState.mode.isParametersDisabled &&
     queryBuilderState.queryParametersState.parameters.length
   ) {
     // if we are executing:

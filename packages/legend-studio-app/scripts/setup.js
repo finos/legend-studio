@@ -48,10 +48,17 @@ export const setup = (outputDir) => {
           url: 'http://localhost:6060/api',
         },
         depot: {
-          url: 'http://localhost:9090/api',
+          url: 'http://localhost:9090/depot/api',
         },
         documentation: {
           url: 'https://legend.finos.org',
+        },
+        extensions: {
+          '@finos/legend-studio-plugin-external-language-morphir': {
+            visualizer: { url: 'http://localhost:8092' },
+            linterServer: { url: 'http://localhost:8091' },
+            linterApp: { url: 'http://localhost:8090' },
+          },
         },
       },
       undefined,

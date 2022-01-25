@@ -1,6 +1,6 @@
 {
   "name": "@finos/stylelint-config-legend-studio",
-  "version": "0.0.23",
+  "version": "1.0.6",
   "description": "Legend Studio Stylelint config",
   "keywords": [
     "legend",
@@ -23,23 +23,26 @@
     "index.js"
   ],
   "scripts": {
-    "clean": "rimraf \"build\"",
+    "clean": "yarn clean:cache",
+    "clean:cache": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=requireConfigFile:false \"./*.{mjs,cjs,js}\"",
-    "publish:prepare": "node ../../scripts/release/preparePublishContent.js"
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "stylelint": "13.13.1",
-    "stylelint-config-prettier": "8.0.2",
-    "stylelint-config-standard": "22.0.0",
-    "stylelint-scss": "3.21.0"
+    "postcss": "8.4.5",
+    "postcss-scss": "4.0.3",
+    "stylelint-config-prettier": "9.0.3",
+    "stylelint-config-standard": "24.0.0",
+    "stylelint-scss": "4.1.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "7.32.0",
+    "eslint": "8.7.0",
     "rimraf": "3.0.2"
   },
   "peerDependencies": {
-    "stylelint": "^13.0.0"
+    "stylelint": "^14.2.0"
   },
   "publishConfig": {
     "directory": "build/publishContent"

@@ -15,25 +15,20 @@
  */
 
 import { LegendQuery } from '@finos/legend-query';
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
-import { BrowserConsole } from '@finos/legend-shared';
-import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
-import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
+import { WebConsole } from '@finos/legend-shared';
+import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
+import { DSLDataSpace_LegendQueryPlugin } from '@finos/legend-extension-dsl-data-space';
 
-export class LegendQueryApplication {
+export class LegendQueryWebApplication {
   static run(baseUrl: string): void {
     LegendQuery.create()
       .setup({ baseUrl })
-      .withPresets([
-        new DSLText_GraphPreset(),
-        new DSLDiagram_GraphPreset(),
-        new DSLDataSpace_GraphPreset(),
-        new EFJSONSchema_GraphPreset(),
-        new DSLSerializer_GraphPreset(),
+      .withPresets(getLegendGraphExtensionCollection())
+      .withPlugins([
+        new DSLDataSpace_LegendQueryPlugin(),
+        // loggers
+        new WebConsole(),
       ])
-      .withLoggers([new BrowserConsole()])
       .start()
       .catch((e: unknown) => {
         throw e;

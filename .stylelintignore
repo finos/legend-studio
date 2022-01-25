@@ -6,9 +6,14 @@
 **/*.js
 **/*.cjs
 **/*.mjs
+**/*.md
+**/*.mdx
 
 # Build
 /build/
 /packages/*/build/
 /packages/*/dist/
 /packages/*/lib/
+/fixtures/*/build/
+/fixtures/*/dist/
+/fixtures/*/lib/

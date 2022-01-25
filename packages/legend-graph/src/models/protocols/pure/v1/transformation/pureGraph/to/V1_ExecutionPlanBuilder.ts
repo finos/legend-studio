@@ -26,6 +26,7 @@ import { SQLExecutionNode } from '../../../../../../metamodels/pure/executionPla
 import { SQLResultColumn } from '../../../../../../metamodels/pure/executionPlan/nodes/SQLResultColumn';
 import { DatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 import {
+  type RelationalDataType,
   Real,
   Binary,
   Bit,
@@ -44,7 +45,6 @@ import {
   SmallInt,
   BigInt,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
-import type { RelationalDataType } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import type { V1_ExecutionNode } from '../../../model/executionPlan/nodes/V1_ExecutionNode';
 import { V1_RelationalTDSInstantiationExecutionNode } from '../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
 import { V1_SQLExecutionNode } from '../../../model/executionPlan/nodes/V1_SQLExecutionNode';
@@ -61,7 +61,7 @@ import { DataTypeResultType } from '../../../../../../metamodels/pure/executionP
 import { TDSResultType } from '../../../../../../metamodels/pure/executionPlan/result/TDSResultType';
 import { TDSColumn } from '../../../../../../metamodels/pure/executionPlan/result/TDSColumn';
 import type { V1_TDSColumn } from '../../../model/executionPlan/results/V1_TDSColumn';
-import { CORE_ELEMENT_PATH } from '../../../../../../../MetaModelConst';
+import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst';
 
 const parseDataType = (val: string): RelationalDataType => {
   const getTypeParams = (typeVal: string): number[] =>
@@ -96,19 +96,45 @@ const parseDataType = (val: string): RelationalDataType => {
       return new Other();
     default: {
       if (val.match(/^VARCHAR\(\d+\)$/)) {
-        return new VarChar(getTypeParams(val)[0]);
+        return new VarChar(
+          guaranteeNonNullable(
+            getTypeParams(val)[0],
+            `VARCHAR type size is missing`,
+          ),
+        );
       } else if (val.match(/^CHAR\(\d+\)$/)) {
-        return new Char(getTypeParams(val)[0]);
+        return new Char(
+          guaranteeNonNullable(
+            getTypeParams(val)[0],
+            `VAR type size is missing`,
+          ),
+        );
       } else if (val.match(/^VARBINARY\(\d+\)$/)) {
-        return new VarBinary(getTypeParams(val)[0]);
+        return new VarBinary(
+          guaranteeNonNullable(
+            getTypeParams(val)[0],
+            `VARBINARY type size is missing`,
+          ),
+        );
       } else if (val.match(/^BINARY\(\d+\)$/)) {
-        return new Binary(getTypeParams(val)[0]);
+        return new Binary(
+          guaranteeNonNullable(
+            getTypeParams(val)[0],
+            `BINARY type size is missing`,
+          ),
+        );
       } else if (val.match(/^DECIMAL\(\d+\)$/)) {
         const params = getTypeParams(val);
-        return new Decimal(params[0], params[1]);
+        return new Decimal(
+          guaranteeNonNullable(params[0], `Decimal type precision is missing`),
+          guaranteeNonNullable(params[1], `Decimal type scale is missing`),
+        );
       } else if (val.match(/^NUMERIC\(\d+\)$/)) {
         const params = getTypeParams(val);
-        return new Numeric(params[0], params[1]);
+        return new Numeric(
+          guaranteeNonNullable(params[0], `Decimal type precision is missing`),
+          guaranteeNonNullable(params[1], `Decimal type scale is missing`),
+        );
       }
       throw new UnsupportedOperationError(`Can't parse data type '${val}'`);
     }
@@ -133,7 +159,7 @@ const buildTDSColumn = (
   const metamodel = new TDSColumn();
   metamodel.name = guaranteeNonNullable(
     protocol.name,
-    'TDS column name is missing',
+    `TDS column 'name' field is missing`,
   );
   metamodel.documentation = protocol.doc;
   metamodel.sourceDataType = protocol.relationalType
@@ -152,7 +178,7 @@ const buildTDSResultType = (
   context: V1_GraphBuilderContext,
 ): TDSResultType => {
   const metamodel = new TDSResultType();
-  metamodel.type = context.resolveType(CORE_ELEMENT_PATH.ANY);
+  metamodel.type = context.resolveType(CORE_PURE_PATH.ANY);
   metamodel.tdsColumns = protocol.tdsColumns.map((column) =>
     buildTDSColumn(column, context),
   );
@@ -182,7 +208,7 @@ const buildSQLResultColumn = (
   const metamodel = new SQLResultColumn();
   metamodel.label = guaranteeNonNullable(
     protocol.label,
-    'SQL result column label is missing',
+    `SQL result column 'label' field is missing`,
   );
   metamodel.dataType = protocol.dataType
     ? parseDataType(protocol.dataType)
@@ -215,7 +241,7 @@ const buildSQLExecutionNode = (
   buildBaseExecutionNode(metamodel, protocol, context);
   metamodel.sqlQuery = guaranteeNonNullable(
     protocol.sqlQuery,
-    'SQL execution node SQL query is missing',
+    `SQL execution node 'sqlQuery' field is missing`,
   );
   metamodel.onConnectionCloseCommitQuery =
     protocol.onConnectionCloseCommitQuery;
@@ -226,7 +252,7 @@ const buildSQLExecutionNode = (
       new V1_ProtocolToMetaModelConnectionBuilder(context),
     ),
     DatabaseConnection,
-    'SQL execution node connection must be of type database connection',
+    'SQL execution node connection must be a database connection',
   );
   metamodel.resultColumns = protocol.resultColumns.map(buildSQLResultColumn);
   return metamodel;
@@ -263,7 +289,7 @@ export const V1_buildExecutionPlan = (
     const metamodel = new ExecutionPlan();
     metamodel.authDependent = guaranteeNonNullable(
       protocol.authDependent,
-      'Single execution plan authentication dependent flag is missing',
+      `Single execution plan 'authDependent' field is missing`,
     );
     metamodel.kerberos = protocol.kerberos;
     metamodel.processingTemplateFunctions = protocol.templateFunctions;

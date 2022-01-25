@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { RenderResult } from '@testing-library/react';
 import {
+  type RenderResult,
   getByText,
   getByDisplayValue,
   queryByDisplayValue,
@@ -30,13 +30,13 @@ import {
   fireEvent,
 } from '@testing-library/react';
 import TEST_DATA__m2mGraphEntities from '../../../../../stores/__tests__/TEST_DATA__M2MGraphEntities.json';
-import { integrationTest } from '@finos/legend-shared';
+import { guaranteeNonNullable, integrationTest } from '@finos/legend-shared';
 import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../../EditorComponentTestUtils';
-import { STUDIO_TEST_ID } from '../../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID';
 
 let renderResult: RenderResult;
 
@@ -53,11 +53,11 @@ test(integrationTest('Profile editor renders properly'), async () => {
     renderResult,
   );
   const editPanelHeader = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'ProfileTest')).not.toBeNull();
   const editPanelContent = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
   );
   expect(getByText(editPanelContent, 'ProfileTest')).not.toBeNull();
   const taggedValues = ['tag1', 'tag2', 'tag3'];
@@ -76,11 +76,11 @@ test(
   async () => {
     await TEST__openElementFromExplorerTree('ui::TestClass', renderResult);
     const editPanelHeader = renderResult.getByTestId(
-      STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+      LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
     );
     expect(getByText(editPanelHeader, 'TestClass')).not.toBeNull();
     const classForm = renderResult.getByTestId(
-      STUDIO_TEST_ID.CLASS_FORM_EDITOR,
+      LEGEND_STUDIO_TEST_ID.CLASS_FORM_EDITOR,
     );
     // Normal properties
     const classProperties = ['a', 'b', 'name', 'person'];
@@ -123,25 +123,29 @@ test(
     fireEvent.click(getByText(classForm, 'Properties'));
     await waitFor(() => getByText(classForm, 'founder'));
     const inputA = getByDisplayValue(classForm, 'a');
-    const propertyA = inputA.parentElement as HTMLElement;
+    const propertyA = inputA.parentElement?.parentElement
+      ?.parentElement as HTMLElement;
     fireEvent.change(inputA, { target: { value: 'abcdefg' } });
     await waitFor(() => getByDisplayValue(classForm, 'abcdefg'));
     expect(getAllByDisplayValue(propertyA, '1')).toHaveLength(2);
     expect(getByText(propertyA, 'String')).not.toBeNull();
     expect(getAllByRole(propertyA, 'button')).toHaveLength(2);
-    const deleteButton = getAllByRole(propertyA, 'button')[1];
-    fireEvent.click(deleteButton);
+    fireEvent.click(guaranteeNonNullable(getAllByRole(propertyA, 'button')[1]));
     expect(queryByDisplayValue(classForm, 'abcdefg')).toBeNull();
     // Sub Panel Property
     const inputB = getByDisplayValue(classForm, 'b');
-    const propertyB = inputB.parentElement as HTMLElement;
+    const propertyB = inputB.parentElement?.parentElement
+      ?.parentElement as HTMLElement;
     const buttons = getAllByRole(propertyB, 'button');
     expect(buttons).toHaveLength(2);
     expect(queryByDisplayValue(classForm, 'ProfileTest')).toBeNull();
-    const navigateToPropertyButton = buttons[0];
+    const navigateToPropertyButton = guaranteeNonNullable(buttons[0]);
     fireEvent.click(navigateToPropertyButton);
     await waitFor(() => getByText(classForm, 'property'));
-    const subPropertyPanel = getByTestId(classForm, STUDIO_TEST_ID.PANEL);
+    const subPropertyPanel = getByTestId(
+      classForm,
+      LEGEND_STUDIO_TEST_ID.PANEL,
+    );
     expect(
       getByDisplayValue(subPropertyPanel, 'lets write a tag'),
     ).not.toBeNull();
@@ -149,8 +153,9 @@ test(
     expect(getByText(subPropertyPanel, 'ProfileTest')).not.toBeNull();
     fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
     await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
-    const exitButtons = getAllByRole(subPropertyPanel, 'button');
-    fireEvent.click(exitButtons[0]);
+    fireEvent.click(
+      guaranteeNonNullable(getAllByRole(subPropertyPanel, 'button')[0]),
+    );
     expect(queryByRole(classForm, 'panel')).toBeNull();
   },
 );
@@ -158,11 +163,11 @@ test(
 test(integrationTest('Enumeration editor'), async () => {
   await TEST__openElementFromExplorerTree('ui::TestEnumeration', renderResult);
   const editPanelHeader = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'TestEnumeration')).not.toBeNull();
   const enumerationEditor = renderResult.getByTestId(
-    STUDIO_TEST_ID.ENUMERATION_EDITOR,
+    LEGEND_STUDIO_TEST_ID.ENUMERATION_EDITOR,
   );
   const enums = ['enumA', 'enumB', 'enumC'];
   enums.forEach((e) => getByDisplayValue(enumerationEditor, e));
@@ -174,31 +179,33 @@ test(integrationTest('Enumeration editor'), async () => {
   fireEvent.click(getByText(enumerationEditor, 'Values'));
   await waitFor(() => getByDisplayValue(enumerationEditor, 'enumA'));
   const enumB = getByDisplayValue(enumerationEditor, 'enumA');
-  const parentElement = enumB.parentElement as HTMLElement;
+  const parentElement = enumB.parentElement?.parentElement as HTMLElement;
   const buttons = queryAllByRole(parentElement, 'button');
   expect(buttons).toHaveLength(2);
-  const navigateButton = buttons[0];
-  const deleteButton = buttons[1];
-  fireEvent.click(navigateButton);
+  fireEvent.click(guaranteeNonNullable(buttons[0])); // navigate
   await waitFor(() => getByText(enumerationEditor, 'enum'));
-  const subPropertyPanel = getByTestId(enumerationEditor, STUDIO_TEST_ID.PANEL);
+  const subPropertyPanel = getByTestId(
+    enumerationEditor,
+    LEGEND_STUDIO_TEST_ID.PANEL,
+  );
   getByDisplayValue(subPropertyPanel, 'enumATag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
-  const deleteSubPanelButton = queryAllByRole(subPropertyPanel, 'button')[0];
-  fireEvent.click(deleteSubPanelButton);
-  fireEvent.click(deleteButton);
+  fireEvent.click(
+    guaranteeNonNullable(queryAllByRole(subPropertyPanel, 'button')[0]),
+  );
+  fireEvent.click(guaranteeNonNullable(buttons[1])); // delete
   expect(queryByText(enumerationEditor, 'enumA')).toBeNull();
 });
 
 test(integrationTest('Association editor'), async () => {
   await TEST__openElementFromExplorerTree('ui::TestAssociation', renderResult);
   const editPanelHeader = renderResult.getByTestId(
-    STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
+    LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS,
   );
   expect(getByText(editPanelHeader, 'TestAssociation')).not.toBeNull();
   const associationEditor = renderResult.getByTestId(
-    STUDIO_TEST_ID.ASSOCIATION_EDITOR,
+    LEGEND_STUDIO_TEST_ID.ASSOCIATION_EDITOR,
   );
   const properties = ['testClassProp', 'testClassSibling'];
   // input fields for association property name are present
@@ -216,7 +223,8 @@ test(integrationTest('Association editor'), async () => {
   fireEvent.click(getByText(associationEditor, 'Properties'));
   await waitFor(() => getByDisplayValue(associationEditor, 'testClassProp'));
   const inputA = getByDisplayValue(associationEditor, 'testClassProp');
-  const propertyTypeA = inputA.parentElement as HTMLElement;
+  const propertyTypeA = inputA.parentElement?.parentElement
+    ?.parentElement as HTMLElement;
   fireEvent.change(inputA, { target: { value: 'random' } });
   await waitFor(() => getByDisplayValue(associationEditor, 'random'));
   expect(getAllByDisplayValue(propertyTypeA, '1')).toHaveLength(2);
@@ -224,16 +232,20 @@ test(integrationTest('Association editor'), async () => {
   expect(getAllByRole(propertyTypeA, 'button')).toHaveLength(2);
   // sub panel property
   const inputB = getByDisplayValue(associationEditor, 'testClassSibling');
-  const propertyTypeB = inputB.parentElement as HTMLElement;
+  const propertyTypeB = inputB.parentElement?.parentElement
+    ?.parentElement as HTMLElement;
   const buttons = getAllByRole(propertyTypeB, 'button');
   expect(buttons).toHaveLength(2);
   expect(queryByDisplayValue(associationEditor, 'ProfileTest')).toBeNull();
-  const navigateToPropertyButton = buttons[1];
-  fireEvent.click(navigateToPropertyButton);
-  const subPropertyPanel = getByTestId(associationEditor, STUDIO_TEST_ID.PANEL);
+  fireEvent.click(guaranteeNonNullable(buttons[1])); // navigate
+  const subPropertyPanel = getByTestId(
+    associationEditor,
+    LEGEND_STUDIO_TEST_ID.PANEL,
+  );
   getByDisplayValue(subPropertyPanel, 'association tag');
   fireEvent.click(getByText(subPropertyPanel, 'Stereotypes'));
   await waitFor(() => getByText(subPropertyPanel, 'stereotype1'));
-  const deleteSubPanelButton = queryAllByRole(subPropertyPanel, 'button')[0];
-  fireEvent.click(deleteSubPanelButton);
+  fireEvent.click(
+    guaranteeNonNullable(queryAllByRole(subPropertyPanel, 'button')[0]),
+  );
 });

@@ -21,7 +21,7 @@ import {
   usingModelSchema,
   usingConstantValueSchema,
 } from '@finos/legend-shared';
-import { V1_packageableElementPointerDeserrializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
+import { V1_packageableElementPointerDeserializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import {
   V1_GenerationSpecification,
   V1_GenerationTreeNode,
@@ -49,7 +49,7 @@ export const V1_generationSpecificationsModelSchema = createModelSchema(
       V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE,
     ),
     fileGenerations: list(
-      usingModelSchema(V1_packageableElementPointerDeserrializerSchema),
+      usingModelSchema(V1_packageableElementPointerDeserializerSchema),
     ),
     generationNodes: list(usingModelSchema(V1_generationTreeNodeModelSchema)),
     name: primitive(),

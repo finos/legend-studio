@@ -17,20 +17,19 @@
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
-import type { DepotServerClientConfig } from './DepotServerClient';
-import { DepotServerClient } from './DepotServerClient';
+import {
+  type DepotServerClientConfig,
+  DepotServerClient,
+} from './DepotServerClient';
 
 const DepotServerClientContext = createContext<DepotServerClient | undefined>(
   undefined,
 );
 
-export const DepotServerClientProvider = ({
-  children,
-  config,
-}: {
+export const DepotServerClientProvider: React.FC<{
   children: React.ReactNode;
   config: DepotServerClientConfig;
-}): React.ReactElement => {
+}> = ({ children, config }) => {
   const depotServerClient = useLocalObservable(
     () => new DepotServerClient(config),
   );

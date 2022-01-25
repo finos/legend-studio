@@ -15,15 +15,17 @@
  */
 
 import { action, flow, observable, makeObservable, computed } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import type { QueryBuilderFilterOperator } from './QueryBuilderFilterState';
-import { QueryBuilderFilterState } from './QueryBuilderFilterState';
+import {
+  type QueryBuilderFilterOperator,
+  QueryBuilderFilterState,
+} from './QueryBuilderFilterState';
 import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState';
 import { QueryResultSetModifierState } from './QueryResultSetModifierState';
 import {
@@ -33,24 +35,32 @@ import {
 import { QueryBuilderSetupState } from './QueryBuilderSetupState';
 import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
 import { QueryBuilderResultState } from './QueryBuilderResultState';
-import { processQueryBuilderLambdaFunction } from './QueryBuilderLambdaProcessor';
-import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
-import type {
-  Class,
-  Enumeration,
-  GraphManagerState,
-  LambdaFunction,
-  Mapping,
-  PackageableRuntime,
-  Service,
-} from '@finos/legend-graph';
 import {
+  processQueryBuilderLambdaFunction,
+  processQueryParameters,
+} from './QueryBuilderLambdaProcessor';
+import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
+import {
+  type Class,
+  type Enumeration,
+  type GraphManagerState,
+  type LambdaFunction,
+  type Mapping,
+  type PackageableRuntime,
+  type Service,
+  type ValueSpecification,
+  PrimitiveInstanceValue,
+  GenericTypeExplicitReference,
+  GenericType,
+  PRIMITIVE_TYPE,
   GRAPH_MANAGER_LOG_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
+  MILESTONING_STEROTYPES,
+  VariableExpression,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -81,23 +91,35 @@ import {
   QueryBuilderFilterOperator_NotIn,
 } from './filterOperators/QueryBuilderFilterOperator_In';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
-import type {
-  ApplicationStore,
-  PackageableElementOption,
+import {
+  buildElementOption,
+  type ApplicationStore,
+  type LegendApplicationConfig,
+  type PackageableElementOption,
 } from '@finos/legend-application';
-import { buildElementOption } from '@finos/legend-application';
-import type { QueryConfig } from '../application/QueryConfig';
 import { QueryParametersState } from './QueryParametersState';
 
-export interface QueryBuilderConfig {
-  parametersDisabled?: boolean;
+export abstract class QueryBuilderMode {
+  abstract get isParametersDisabled(): boolean;
+
+  abstract get isResultPanelHidden(): boolean;
+}
+
+export class StandardQueryBuilderMode extends QueryBuilderMode {
+  get isParametersDisabled(): boolean {
+    return false;
+  }
+
+  get isResultPanelHidden(): boolean {
+    return false;
+  }
 }
 
 export class QueryBuilderState {
-  applicationStore: ApplicationStore<QueryConfig>;
+  applicationStore: ApplicationStore<LegendApplicationConfig>;
   graphManagerState: GraphManagerState;
 
-  config: QueryBuilderConfig;
+  mode: QueryBuilderMode;
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
   queryParametersState: QueryParametersState;
@@ -129,9 +151,9 @@ export class QueryBuilderState {
   backdrop = false;
 
   constructor(
-    applicationStore: ApplicationStore<QueryConfig>,
+    applicationStore: ApplicationStore<LegendApplicationConfig>,
     graphManagerState: GraphManagerState,
-    queryBuilderConfig: QueryBuilderConfig,
+    queryBuilderMode: QueryBuilderMode,
   ) {
     makeObservable(this, {
       querySetupState: observable,
@@ -145,15 +167,19 @@ export class QueryBuilderState {
       queryUnsupportedState: observable,
       isCompiling: observable,
       backdrop: observable,
-      config: observable,
+      mode: observable,
       classOptions: computed,
       mappingOptions: computed,
       runtimeOptions: computed,
       serviceOptions: computed,
-      resetData: action,
+      setMode: action,
+      resetQueryBuilder: action,
+      resetQuerySetup: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
+      changeClass: action,
+      changeFetchStructure: action,
       compileQuery: flow,
     });
 
@@ -169,7 +195,11 @@ export class QueryBuilderState {
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
-    this.config = queryBuilderConfig;
+    this.mode = queryBuilderMode;
+  }
+
+  setMode(val: QueryBuilderMode): void {
+    this.mode = val;
   }
 
   setBackdrop(val: boolean): void {
@@ -177,17 +207,35 @@ export class QueryBuilderState {
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
-    return this.isQuerySupported()
-      ? this.buildRawLambdaFromLambdaFunction(
-          buildLambdaFunction(this, {
-            keepSourceInformation: Boolean(options?.keepSourceInformation),
-          }),
-        )
-      : guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
+    if (!this.isQuerySupported()) {
+      const parameters = this.queryParametersState.parameters.map((e) =>
+        this.graphManagerState.graphManager.serializeValueSpecification(
+          e.parameter,
+        ),
+      );
+      this.queryUnsupportedState.setRawLambda(
+        new RawLambda(parameters, this.queryUnsupportedState.rawLambda?.body),
+      );
+      return guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
+    }
+    return this.buildRawLambdaFromLambdaFunction(
+      buildLambdaFunction(this, {
+        keepSourceInformation: Boolean(options?.keepSourceInformation),
+      }),
+    );
   }
 
-  resetData(): void {
+  resetQueryBuilder(): void {
+    const resultState = new QueryBuilderResultState(this);
+    resultState.setPreviewLimit(this.resultState.previewLimit);
+    this.resultState = resultState;
+    this.queryTextEditorState = new QueryTextEditorState(this);
+    this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
+  }
+
+  resetQuerySetup(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
+    this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
@@ -196,12 +244,6 @@ export class QueryBuilderState {
     this.fetchStructureState = fetchStructureState;
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultSetModifierState = new QueryResultSetModifierState(this);
-    const resultState = new QueryBuilderResultState(this);
-    resultState.setPreviewLimit(this.resultState.previewLimit);
-    this.resultState = resultState;
-    this.queryTextEditorState = new QueryTextEditorState(this);
-    this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
-    this.explorerState.refreshTreeData();
     this.fetchStructureState.graphFetchTreeState.initialize();
   }
 
@@ -214,8 +256,21 @@ export class QueryBuilderState {
       this.buildStateFromRawLambda(rawLambda);
     } catch (error) {
       assertErrorThrown(error);
-      this.querySetupState.setClass(undefined, true);
-      this.resetData();
+      this.changeClass(undefined, true);
+      const parameters = ((rawLambda.parameters ?? []) as object[]).map(
+        (param) =>
+          this.graphManagerState.graphManager.buildValueSpecification(
+            param as Record<PropertyKey, unknown>,
+            this.graphManagerState.graph,
+          ),
+      );
+      processQueryParameters(
+        parameters.filter(
+          (parameter: ValueSpecification): parameter is VariableExpression =>
+            parameter instanceof VariableExpression,
+        ),
+        this,
+      );
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Unable to initialize query builder: ${error.message}`,
@@ -233,7 +288,8 @@ export class QueryBuilderState {
    * consumers of function should handle the errors.
    */
   buildStateFromRawLambda(rawLambda: RawLambda): void {
-    this.resetData();
+    this.resetQueryBuilder();
+    this.resetQuerySetup();
     if (!rawLambda.isStub) {
       const valueSpec =
         this.graphManagerState.graphManager.buildValueSpecification(
@@ -245,6 +301,7 @@ export class QueryBuilderState {
       const compiledValueSpecification = guaranteeType(
         valueSpec,
         LambdaFunctionInstanceValue,
+        `Can't build query state: query builder only support lambda`,
       );
       const compiledLambda = guaranteeNonNullable(
         compiledValueSpecification.values[0],
@@ -270,18 +327,69 @@ export class QueryBuilderState {
     );
   }
 
-  async saveQuery(): Promise<void> {
-    const onQuerySave = this.querySetupState.onSave;
-    if (onQuerySave) {
-      try {
-        const rawLambda = this.getQuery();
-        await onQuerySave(rawLambda);
-      } catch (error) {
-        assertErrorThrown(error);
-        this.applicationStore.notifyError(
-          `Unable to save query: ${error.message}`,
+  buildClassMilestoningTemporalValue(stereotype: string): void {
+    const milestoningParameter = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.LATESTDATE,
+          ),
+        ),
+      ),
+      this.graphManagerState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      ),
+    );
+    switch (stereotype) {
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
         );
+        break;
       }
+      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
+        );
+        break;
+      }
+      case MILESTONING_STEROTYPES.BITEMPORAL: {
+        const bitemporalMilestoningParameter = new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              this.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.LATESTDATE,
+              ),
+            ),
+          ),
+          this.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
+        );
+        this.querySetupState.addClassMilestoningTemporalValues(
+          milestoningParameter,
+        );
+        this.querySetupState.addClassMilestoningTemporalValues(
+          bitemporalMilestoningParameter,
+        );
+        break;
+      }
+      default:
+        this.querySetupState.setClassMilestoningTemporalValues([]);
+    }
+  }
+
+  async saveQuery(
+    onSaveQuery: (lambda: RawLambda) => Promise<void>,
+  ): Promise<void> {
+    try {
+      const rawLambda = this.getQuery();
+      await onSaveQuery(rawLambda);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notifyError(
+        `Unable to save query: ${error.message}`,
+      );
     }
   }
 
@@ -362,7 +470,7 @@ export class QueryBuilderState {
             error,
           );
           this.applicationStore.notifyWarning(
-            `Compilaion failed: ${error.message}`,
+            `Compilation failed: ${error.message}`,
           );
           const errorElementCoordinates = extractSourceInformationCoordinates(
             error.sourceInformation,
@@ -374,6 +482,21 @@ export class QueryBuilderState {
       } finally {
         this.isCompiling = false;
       }
+    }
+  }
+
+  changeClass(val: Class | undefined, isRebuildingState?: boolean): void {
+    this.resetQueryBuilder();
+    this.resetQuerySetup();
+    this.querySetupState.setClass(val, isRebuildingState);
+    this.explorerState.refreshTreeData();
+  }
+
+  changeFetchStructure(): void {
+    this.resultSetModifierState = new QueryResultSetModifierState(this);
+    const treeData = this.fetchStructureState.graphFetchTreeState.treeData;
+    if (!treeData) {
+      this.fetchStructureState.graphFetchTreeState.initialize();
     }
   }
 
@@ -397,18 +520,28 @@ export class QueryBuilderState {
   }
 
   get mappingOptions(): PackageableElementOption<Mapping>[] {
-    return this.graphManagerState.graph.ownMappings
-      .concat(this.graphManagerState.graph.dependencyManager.mappings)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Mapping>);
+    return this.mappings.map(
+      (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
+    );
+  }
+
+  get mappings(): Mapping[] {
+    return this.graphManagerState.graph.ownMappings.concat(
+      this.graphManagerState.graph.dependencyManager.mappings,
+    );
   }
 
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    return this.graphManagerState.graph.ownRuntimes
-      .concat(this.graphManagerState.graph.dependencyManager.runtimes)
-      .map(
-        (e) =>
-          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
-      );
+    return this.runtimes.map(
+      (e) =>
+        buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
+    );
+  }
+
+  get runtimes(): PackageableRuntime[] {
+    return this.graphManagerState.graph.ownRuntimes.concat(
+      this.graphManagerState.graph.dependencyManager.runtimes,
+    );
   }
 
   get serviceOptions(): PackageableElementOption<Service>[] {

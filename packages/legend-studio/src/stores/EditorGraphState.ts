@@ -17,8 +17,9 @@
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
 import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
-import type { GeneratorFn, PlainObject } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
+  type PlainObject,
   LogEvent,
   assertType,
   UnsupportedOperationError,
@@ -32,26 +33,24 @@ import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { GraphGenerationState } from './editor-state/GraphGenerationState';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
-import type { DSL_StudioPlugin_Extension } from './StudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  EntityChange,
-  ProjectDependency,
-} from '@finos/legend-server-sdlc';
 import {
+  type EntityChange,
+  type ProjectDependency,
   EntityChangeType,
   ProjectConfiguration,
+  applyEntityChanges,
 } from '@finos/legend-server-sdlc';
 import {
   ProjectVersionEntities,
   ProjectData,
   ProjectDependencyCoordinates,
+  generateGAVCoordinates,
 } from '@finos/legend-server-depot';
-import type {
-  SetImplementation,
-  PackageableElement,
-} from '@finos/legend-graph';
 import {
+  type SetImplementation,
+  type PackageableElement,
   GRAPH_MANAGER_LOG_EVENT,
   CompilationError,
   EngineError,
@@ -78,7 +77,6 @@ import {
   Measure,
   Unit,
   Database,
-  ServiceStore,
   SectionIndex,
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
@@ -87,12 +85,24 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
 } from '@finos/legend-graph';
-import type { LambdaEditorState } from '@finos/legend-application';
 import {
+  type LambdaEditorState,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
+import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
+
+export enum GraphBuilderStatus {
+  SUCCEEDED = 'SUCCEEDED',
+  FAILED = 'FAILED',
+  REDIRECTED_TO_TEXT_MODE = 'REDIRECTED_TO_TEXT_MODE',
+}
+
+export interface GraphBuilderReport {
+  status: GraphBuilderStatus;
+  error?: Error;
+}
 
 export class EditorGraphState {
   editorStore: EditorStore;
@@ -184,79 +194,7 @@ export class EditorGraphState {
     return false;
   }
 
-  /**
-   * Create a lean/read-only view of the project:
-   * - No change detection
-   * - No project viewer
-   * - No text mode support
-   */
-  *buildGraphForViewerMode(entities: Entity[]): GeneratorFn<void> {
-    try {
-      this.isInitializingGraph = true;
-      const startTime = Date.now();
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
-        Date.now() - startTime,
-        'ms',
-      );
-      // reset
-      this.editorStore.changeDetectionState.stop();
-      this.editorStore.graphManagerState.resetGraph();
-      // build compile context
-      this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
-        ProjectConfiguration.serialization.fromJson(
-          (yield this.editorStore.sdlcServerClient.getConfiguration(
-            this.editorStore.sdlcState.currentProjectId,
-            undefined,
-          )) as PlainObject<ProjectConfiguration>,
-        ),
-      );
-      const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          (yield flowResult(
-            this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, Entity[]>,
-        ),
-      );
-      this.editorStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
-      this.editorStore.explorerTreeState.buildImmutableModelTrees();
-      // build graph
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGraph(
-          this.editorStore.graphManagerState.graph,
-          entities,
-        ),
-      );
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
-        '[TOTAL]',
-        Date.now() - startTime,
-        'ms',
-      );
-      this.editorStore.explorerTreeState.build();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
-        error,
-      );
-      this.editorStore.graphManagerState.graph.buildState.fail();
-      this.editorStore.applicationStore.notifyError(
-        `Can't build graph. Error: ${error.message}`,
-      );
-    } finally {
-      this.isInitializingGraph = false;
-    }
-  }
-
-  *buildGraph(entities: Entity[]): GeneratorFn<void> {
+  *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderReport> {
     try {
       this.isInitializingGraph = true;
       const startTime = Date.now();
@@ -313,6 +251,9 @@ export class EditorGraphState {
       this.editorStore.explorerTreeState.build();
       // add generation specification if model generation elements exists in graph and no generation specification
       this.graphGenerationState.addMissingGenerationSpecifications();
+      return {
+        status: GraphBuilderStatus.SUCCEEDED,
+      };
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -325,8 +266,6 @@ export class EditorGraphState {
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
         this.editorStore.applicationStore.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
-          undefined,
-          null,
         );
         const projectConfigurationEditorState =
           this.editorStore.projectConfigurationEditorState;
@@ -366,7 +305,10 @@ export class EditorGraphState {
           if (error2 instanceof NetworkClientError) {
             // in case the server cannot even transform the JSON due to corrupted protocol, we can redirect to model loader
             this.redirectToModelLoaderForDebugging(error2);
-            throw error2;
+            return {
+              status: GraphBuilderStatus.FAILED,
+              error: error2,
+            };
           }
         }
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
@@ -376,8 +318,15 @@ export class EditorGraphState {
             suppressCompilationFailureMessage: true,
           }),
         );
+        return {
+          status: GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE,
+          error,
+        };
       }
-      throw error;
+      return {
+        status: GraphBuilderStatus.FAILED,
+        error,
+      };
     } finally {
       this.isInitializingGraph = false;
     }
@@ -444,6 +393,29 @@ export class EditorGraphState {
     return entityChanges;
   }
 
+  *loadEntityChangesToGraph(changes: EntityChange[]): GeneratorFn<void> {
+    try {
+      assertTrue(
+        this.editorStore.isInFormMode,
+        'Applying changes only supported in form mode',
+      );
+      const updatedEntities = applyEntityChanges(
+        this.editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+          this.editorStore.graphManagerState.graphManager.elementToEntity(
+            element,
+          ),
+        ),
+        changes,
+      );
+      yield flowResult(this.updateGraphAndApplication(updatedEntities));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(
+        `Can't load entity changes: ${error.message}`,
+      );
+    }
+  }
+
   // FIXME: when we support showing multiple notifications, we can take this options out as the only users of this
   // is delete element flow, where we want to say `re-compiling graph after deletion`, but because compilation
   // sometimes is so fast, the message flashes, so we want to combine with the message in this method
@@ -499,7 +471,10 @@ export class EditorGraphState {
         if (errorCoordinates) {
           const element =
             this.editorStore.graphManagerState.graph.getNullableElement(
-              errorCoordinates[0],
+              guaranteeNonNullable(
+                errorCoordinates[0],
+                `Can't reveal compilation error: element path is missing`,
+              ),
               false,
             );
           if (element) {
@@ -739,7 +714,7 @@ export class EditorGraphState {
    * 2. Reusable models, at this point in time, we haven't completed stabilize the logic for handling generated models, as well
    *    as depdendencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
-   *    e.g. when we have a computed value in a immutable class that get all sub-classes, etc.
+   *    e.g. when we have a computed value in a immutable class that get all subclasses, etc.
    * 3. We reprocess editor states to ensure good UX, e.g. find tabs to keep open, find tree nodes to expand, etc.
    *    after updating the graph. These in our experience is the MOST COMMON source of memory leak. It is actually
    *    quite predictable since structures like tabs and tree node embeds graph data, which are references to the old graph
@@ -763,7 +738,7 @@ export class EditorGraphState {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
       /* @MARKER: MEMORY-SENSITIVE */
       // NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
-      // e.g. sub-classes analytics on the immutable class, etc.
+      // e.g. subclass analytics on the immutable class, etc.
       if (
         this.editorStore.graphManagerState.graph.dependencyManager.buildState
           .hasSucceeded
@@ -775,8 +750,8 @@ export class EditorGraphState {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
           ProjectConfiguration.serialization.fromJson(
             (yield this.editorStore.sdlcServerClient.getConfiguration(
-              this.editorStore.sdlcState.currentProjectId,
-              this.editorStore.sdlcState.currentWorkspaceId,
+              this.editorStore.sdlcState.activeProject.projectId,
+              this.editorStore.sdlcState.activeWorkspace,
             )) as PlainObject<ProjectConfiguration>,
           ),
         );
@@ -1050,11 +1025,18 @@ export class EditorGraphState {
                   `Expected 1 project for project id '${dep.projectId}'. Got ${
                     projectsData.length
                   } projects with coordinates ${projectsData
-                    .map((i) => `'${i.groupId}:${i.artifactId}'`)
+                    .map(
+                      (i) =>
+                        `'${generateGAVCoordinates(
+                          i.groupId,
+                          i.artifactId,
+                          undefined,
+                        )}'`,
+                    )
                     .join(', ')}.`,
                 );
               }
-              const projectData = projectsData[0];
+              const projectData = projectsData[0] as ProjectData;
               return new ProjectDependencyCoordinates(
                 projectData.groupId,
                 projectData.artifactId,
@@ -1087,7 +1069,6 @@ export class EditorGraphState {
    * methods here so that we can load plugins.
    */
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getPackageableElementType(element: PackageableElement): string {
     if (element instanceof PrimitiveType) {
       return PACKAGEABLE_ELEMENT_TYPE.PRIMITIVE;
@@ -1111,8 +1092,6 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE;
     } else if (element instanceof Database) {
       return PACKAGEABLE_ELEMENT_TYPE.DATABASE;
-    } else if (element instanceof ServiceStore) {
-      return PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE;
     } else if (element instanceof Mapping) {
       return PACKAGEABLE_ELEMENT_TYPE.MAPPING;
     } else if (element instanceof Service) {
@@ -1133,7 +1112,7 @@ export class EditorGraphState {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_StudioPlugin_Extension
+            plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementTypeGetters?.() ?? [],
       );
     for (const labelGetter of extraElementTypeLabelGetters) {
@@ -1147,10 +1126,7 @@ export class EditorGraphState {
     );
   }
 
-  /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-  getSetImplementationType(
-    setImplementation: SetImplementation,
-  ): SET_IMPLEMENTATION_TYPE {
+  getSetImplementationType(setImplementation: SetImplementation): string {
     if (setImplementation instanceof PureInstanceSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.PUREINSTANCE;
     } else if (setImplementation instanceof OperationSetImplementation) {
@@ -1170,8 +1146,22 @@ export class EditorGraphState {
     } else if (setImplementation instanceof AggregationAwareSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE;
     }
+    const extraSetImplementationClassifiers = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraSetImplementationClassifiers?.() ?? [],
+      );
+    for (const Classifier of extraSetImplementationClassifiers) {
+      const setImplementationClassifier = Classifier(setImplementation);
+      if (setImplementationClassifier) {
+        return setImplementationClassifier;
+      }
+    }
     throw new UnsupportedOperationError(
-      `Can't classify set implementation`,
+      `Can't classify set implementation: no compatible classifer available from plugins`,
       setImplementation,
     );
   }

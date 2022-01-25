@@ -25,11 +25,12 @@ import {
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
 import {
+  guaranteeType,
   losslessParse,
   losslessStringify,
   unitTest,
 } from '@finos/legend-shared';
-import { ROOT_PACKAGE_NAME } from '../MetaModelConst';
+import { ROOT_PACKAGE_NAME, MILESTONING_STEROTYPES } from '../MetaModelConst';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import {
   ObjectInputData,
@@ -37,6 +38,13 @@ import {
 } from '../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { PackageableElementExplicitReference } from '../models/metamodels/pure/packageableElements/PackageableElementReference';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../GraphManagerTestUtils';
+import { TEST_DATA__MilestonedClassRoundtrip } from './roundtripTestData/TEST_DATA__DomainRoundtrip';
+import type { Entity } from '@finos/legend-model-storage';
+import { getMilestoneTemporalStereotype } from '../helpers/DomainHelper';
 
 test(unitTest('Create valid and invalid packages on a root package'), () => {
   const _root = new Package(ROOT_PACKAGE_NAME.MAIN);
@@ -48,10 +56,9 @@ test(unitTest('Create valid and invalid packages on a root package'), () => {
   const rootChildren = _root.children;
   expect(rootChildren.length).toBe(1);
   const modelPackage = rootChildren[0];
-  expect(modelPackage.name).toBe('model');
+  expect(modelPackage?.name).toBe('model');
   expect(modelPackage instanceof Package).toBe(true);
-  const modelPackageChildren = (modelPackage as Package).children;
-  expect(modelPackageChildren.length).toBe(1);
+  expect(guaranteeType(modelPackage, Package).children.length).toBe(1);
   const invalidPackages = [
     '$implicit',
     'model::$implicit::new',
@@ -182,4 +189,24 @@ test(unitTest('Converts element path to mapping element default ID'), () => {
     ),
   ).toBe('meta_pure_mapping_modelToModel_test_shared_dest_Person');
   expect(fromElementPathToMappingElementId('Person')).toBe('Person');
+});
+
+test(unitTest('Milestoned class'), async () => {
+  const graphManagerState = TEST__getTestGraphManagerState();
+  const data = TEST_DATA__MilestonedClassRoundtrip as Entity[];
+  await TEST__buildGraphWithEntities(graphManagerState, data, {
+    TEMPORARY__keepSectionIndex: true,
+  });
+  expect(
+    getMilestoneTemporalStereotype(
+      graphManagerState.graph.getClass('test::C'),
+      graphManagerState.graph,
+    ),
+  ).toBe(MILESTONING_STEROTYPES.BUSINESS_TEMPORAL);
+  expect(
+    getMilestoneTemporalStereotype(
+      graphManagerState.graph.getClass('test::D'),
+      graphManagerState.graph,
+    ),
+  ).toBe(MILESTONING_STEROTYPES.BUSINESS_TEMPORAL);
 });

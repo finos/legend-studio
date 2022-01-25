@@ -17,28 +17,28 @@
 import { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  FaLock,
-  FaCheckSquare,
-  FaSquare,
-  FaTimes,
-  FaInfoCircle,
-  FaSave,
-  FaRocket,
-} from 'react-icons/fa';
-import {
   ServiceEditorState,
   SERVICE_TAB,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import { clsx } from '@finos/legend-art';
-import { MdModeEdit } from 'react-icons/md';
+import {
+  clsx,
+  PencilIcon,
+  LockIcon,
+  CheckSquareIcon,
+  SquareIcon,
+  TimesIcon,
+  SaveIcon,
+  InfoCircleIcon,
+  RocketIcon,
+} from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/service-editor/ServiceRegistrationModalEditor';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import { validateServicePattern } from '@finos/legend-graph';
-import type { StudioConfig } from '../../../../application/StudioConfig';
+import type { LegendStudioConfig } from '../../../../application/LegendStudioConfig';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -169,7 +169,7 @@ const ServiceGeneralEditor = observer(() => {
               onClick={updatePattern}
               title="Save change"
             >
-              <FaSave />
+              <SaveIcon />
             </button>
           </div>
         </div>
@@ -183,7 +183,7 @@ const ServiceGeneralEditor = observer(() => {
             className="service-editor__pattern__parameters__header__info"
             title={`URL parameters (each must be surrounded by curly braces) will be passed as arguments for the execution query.\nNote that if the service is configured to use multi-execution, one of the URL parameters must be chosen as the execution key.`}
           >
-            <FaInfoCircle />
+            <InfoCircleIcon />
           </div>
         </div>
         <div className="service-editor__pattern__parameters__list">
@@ -209,7 +209,7 @@ const ServiceGeneralEditor = observer(() => {
                     title={'Remove parameter'}
                     tabIndex={-1}
                   >
-                    <FaTimes />
+                    <TimesIcon />
                   </button>
                 </div>
               </div>
@@ -250,7 +250,7 @@ const ServiceGeneralEditor = observer(() => {
             disabled={isReadOnly}
             tabIndex={-1}
           >
-            {service.autoActivateUpdates ? <FaCheckSquare /> : <FaSquare />}
+            {service.autoActivateUpdates ? <CheckSquareIcon /> : <SquareIcon />}
           </button>
           <div className="panel__content__form__section__toggler__prompt">
             Specifies if the new generation should be automatically activated;
@@ -269,7 +269,9 @@ const ServiceGeneralEditor = observer(() => {
         <div className="panel__content__form__section__list">
           <div
             className="panel__content__form__section__list__items"
-            data-testid={STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS}
+            data-testid={
+              LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+            }
           >
             {owners.map((value, idx) => (
               <div
@@ -322,7 +324,7 @@ const ServiceGeneralEditor = observer(() => {
                         onClick={showEditOwnerInput(value, idx)}
                         tabIndex={-1}
                       >
-                        <MdModeEdit />
+                        <PencilIcon />
                       </button>
                       <button
                         className="panel__content__form__section__list__item__remove-btn"
@@ -330,7 +332,7 @@ const ServiceGeneralEditor = observer(() => {
                         onClick={deleteOwner(idx)}
                         tabIndex={-1}
                       >
-                        <FaTimes />
+                        <TimesIcon />
                       </button>
                     </div>
                   </>
@@ -389,7 +391,7 @@ const ServiceGeneralEditor = observer(() => {
 
 export const ServiceEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<StudioConfig>();
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
   const isReadOnly = serviceState.isReadOnly;
@@ -409,7 +411,7 @@ export const ServiceEditor = observer(() => {
           <div className="panel__header__title">
             {isReadOnly && (
               <div className="uml-element-editor__header__lock">
-                <FaLock />
+                <LockIcon />
               </div>
             )}
             <div className="panel__header__title__label">service</div>
@@ -427,7 +429,7 @@ export const ServiceEditor = observer(() => {
                 onClick={serviceModal}
                 title={'Register service...'}
               >
-                <FaRocket />
+                <RocketIcon />
               </button>
             </div>
           )}
@@ -450,7 +452,7 @@ export const ServiceEditor = observer(() => {
         <div className="panel__content service-editor__content">
           {selectedTab === SERVICE_TAB.GENERAL && <ServiceGeneralEditor />}
           {selectedTab === SERVICE_TAB.EXECUTION && <ServiceExecutionEditor />}
-          {serviceState.registrationState.modal && (
+          {serviceState.registrationState.showModal && (
             <ServiceRegistrationModalEditor />
           )}
         </div>

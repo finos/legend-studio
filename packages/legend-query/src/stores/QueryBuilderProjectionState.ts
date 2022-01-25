@@ -21,8 +21,8 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   assertType,
   UnsupportedOperationError,
@@ -35,19 +35,19 @@ import {
   guaranteeNonNullable,
   findLast,
 } from '@finos/legend-shared';
-import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
-import { buildPropertyExpressionFromExplorerTreeNodeData } from './QueryBuilderExplorerState';
+import {
+  type QueryBuilderExplorerTreePropertyNodeData,
+  buildPropertyExpressionFromExplorerTreeNodeData,
+} from './QueryBuilderExplorerState';
 import {
   getPropertyChainName,
   QueryBuilderPropertyExpressionState,
 } from './QueryBuilderPropertyEditorState';
 import type { QueryBuilderState } from './QueryBuilderState';
-import type {
-  AbstractPropertyExpression,
-  CompilationError,
-  ExecutionResult,
-} from '@finos/legend-graph';
 import {
+  type AbstractPropertyExpression,
+  type CompilationError,
+  type ExecutionResult,
   GRAPH_MANAGER_LOG_EVENT,
   TdsExecutionResult,
   PureClientVersion,
@@ -72,8 +72,8 @@ import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperator
 import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min';
 import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max';
 import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString';
-import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
 import {
+  type QueryBuilderPreviewData,
   buildNonNumericPreviewDataQuery,
   buildNumericPreviewDataQuery,
 } from './QueryBuilderPreviewDataHelper';
@@ -594,7 +594,7 @@ export class QueryBuilderProjectionState {
       return;
     }
     if (
-      !node.mapped ||
+      !node.mappingData.mapped ||
       !this.queryBuilderState.querySetupState._class ||
       !this.queryBuilderState.querySetupState.mapping
     ) {
@@ -653,7 +653,12 @@ export class QueryBuilderProjectionState {
           const transposedPreviewResultData = {
             columns: ['Aggregation', 'Value'],
             rows: previewResultData.columns.map((column, idx) => ({
-              values: [column, previewResultData.rows[0].values[idx]],
+              values: [
+                column,
+                guaranteeNonNullable(previewResultData.rows[0]).values[
+                  idx
+                ] as string,
+              ],
             })),
           };
           this.queryBuilderState.explorerState.previewDataState.setPreviewData(

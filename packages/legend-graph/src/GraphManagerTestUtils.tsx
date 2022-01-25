@@ -45,7 +45,7 @@ export class TEST__GraphPluginManager
     this.pureProtocolProcessorPlugins.push(plugin);
   }
 
-  registerPureGraphPlugins(plugin: PureGraphPlugin): void {
+  registerPureGraphPlugin(plugin: PureGraphPlugin): void {
     this.pureGraphPlugins.push(plugin);
   }
 
@@ -83,11 +83,9 @@ export const TEST__provideMockedGraphManagerState = (customization?: {
   return value;
 };
 
-export const TEST__GraphManagerStateProvider = ({
-  children,
-}: {
+export const TEST__GraphManagerStateProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => (
+}> = ({ children }) => (
   <GraphManagerStateProvider
     pluginManager={new TEST__GraphPluginManager()}
     log={new Log()}

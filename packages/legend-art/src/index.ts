@@ -15,29 +15,42 @@
  */
 
 export * from './utils/ComponentUtils';
-export * from './utils/StubTransition';
 export * from './utils/PanelDisplayState';
 export * from './utils/TextEditorUtils';
-
-export * from './theme/LegendApplicationMaterialUITheme';
+export * from './utils/HotkeyConfiguration';
 
 export * from './components/Icon';
-export * from './components/LegendIcon';
+export * from './components/TypeIcon';
+export * from './components/Input';
 export * from './components/LegendLogo';
 export * from './components/TreeView';
 export * from './components/CustomSelectorInput';
-export * from './components/BaseMuiComponents';
 export * from './components/ComponentsConfiguration';
 export * from './components/ResizablePanel';
 
+export * from './components/dialog/Dialog';
 export * from './components/dialog/NonBlockingDialog';
 
 export * from './components/menu/MenuContent';
 export * from './components/menu/ContextMenu';
 export * from './components/menu/DropdownMenu';
 
+export * from './components/popover/BasePopoever';
+
 export * from './components/panel/BlankPanelContent';
 export * from './components/panel/BlankPanelPlaceholder';
 export * from './components/panel/PanelLoadingIndicator';
+
+export * from './components/ProgressBar';
+
+export * from './components/Tooltip';
+
+export * from './components/Notification';
+
+export * from './components/Backdrop';
+
+export * from './components/ClickAwayListener';
+
+export * from './components/LegendStyleProvider';
 
 export * from './testMocks/MonacoEditorMockUtils';

@@ -20,8 +20,8 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
 } from '@finos/legend-shared';
-import type { DatasourceSpecification } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
 import {
+  type DatasourceSpecification,
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
@@ -30,10 +30,11 @@ import {
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
-import type { AuthenticationStrategy } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
+  type AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
   ApiTokenAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
@@ -42,8 +43,8 @@ import {
   UserPasswordAuthenticationStrategy,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_DatasourceSpecification } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
+  type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
@@ -52,8 +53,8 @@ import {
   V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
-import type { V1_AuthenticationStrategy } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import {
+  type V1_AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -62,6 +63,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
+  V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
@@ -72,15 +74,15 @@ export const V1_buildDatasourceSpecification = (
   if (protocol instanceof V1_StaticDatasourceSpecification) {
     assertNonEmptyString(
       protocol.host,
-      'Static datasource specification host is missing',
+      `Static datasource specification 'host' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.databaseName,
-      'Static datasource specification database is missing',
+      `Static datasource specification 'databaseName' field is missing or empty`,
     );
     assertNonNullable(
       protocol.port,
-      'Static datasource specification port is missing',
+      `Static datasource specification 'port' field is missing`,
     );
     const staticSpec = new StaticDatasourceSpecification(
       protocol.host,
@@ -91,15 +93,15 @@ export const V1_buildDatasourceSpecification = (
   } else if (protocol instanceof V1_EmbeddedH2DatasourceSpecification) {
     assertNonEmptyString(
       protocol.databaseName,
-      'Embedded H2 datasource specification databaseName is missing',
+      `Embedded H2 datasource specification 'databaseName' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.directory,
-      'Embedded H2 datasource specification directory is missing',
+      `Embedded H2 datasource specification 'directory' field is missing or empty`,
     );
     assertNonNullable(
       protocol.autoServerMode,
-      'Embedded H2 datasource specification autoServerMode is missing',
+      `Embedded H2 datasource specification 'autoServerMode' field is missing or empty`,
     );
     const embeddedSpec = new EmbeddedH2DatasourceSpecification(
       protocol.databaseName,
@@ -109,7 +111,7 @@ export const V1_buildDatasourceSpecification = (
     return embeddedSpec;
   } else if (protocol instanceof V1_DatabricksDatasourceSpecification) {
     assertNonEmptyString(
-      protocol.hostname,
+      protocol.host,
       'Databricks hostname specification is missing',
     );
     assertNonEmptyString(
@@ -125,7 +127,7 @@ export const V1_buildDatasourceSpecification = (
       'Databricks httpPath specification is missing',
     );
     const databricksSpec = new DatabricksDatasourceSpecification(
-      protocol.hostname,
+      protocol.host,
       protocol.port,
       protocol.protocol,
       protocol.httpPath,
@@ -134,19 +136,19 @@ export const V1_buildDatasourceSpecification = (
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     assertNonEmptyString(
       protocol.accountName,
-      'Snowflake datasource specification property is missing',
+      `Snowflake datasource specification 'accountName' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.region,
-      'Snowflake datasource specification region is missing',
+      `Snowflake datasource specification 'region' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.warehouseName,
-      'Snowflake datasource specification warehouseName is missing',
+      `Snowflake datasource specification 'warehouseName' field is missing or empty`,
     );
     assertNonNullable(
       protocol.databaseName,
-      'Snowflake datasource specification databaseName is missing',
+      `Snowflake datasource specification 'databaseName' field is missing`,
     );
     const snowflakeSpec = new SnowflakeDatasourceSpecification(
       protocol.accountName,
@@ -157,11 +159,17 @@ export const V1_buildDatasourceSpecification = (
     snowflakeSpec.cloudType = protocol.cloudType;
     snowflakeSpec.quotedIdentifiersIgnoreCase =
       protocol.quotedIdentifiersIgnoreCase;
+    snowflakeSpec.proxyHost = protocol.proxyHost;
+    snowflakeSpec.proxyPort = protocol.proxyPort;
+    snowflakeSpec.nonProxyHosts = protocol.nonProxyHosts;
+    snowflakeSpec.organization = protocol.organization;
+    snowflakeSpec.accountType = protocol.accountType;
+    snowflakeSpec.role = protocol.role;
     return snowflakeSpec;
   } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
     assertNonEmptyString(
       protocol.projectId,
-      'BigQuery datasource specification property project ID is missing',
+      `BigQuery datasource specification 'projectId' field is missing or empty`,
     );
     const bigQuerySpec = new BigQueryDatasourceSpecification(
       protocol.projectId,
@@ -176,15 +184,15 @@ export const V1_buildDatasourceSpecification = (
   } else if (protocol instanceof V1_RedshiftDatasourceSpecification) {
     assertNonEmptyString(
       protocol.databaseName,
-      'Redshift datasource specification databaseName is missing',
+      `Redshift datasource specification 'databaseName' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.endpoint,
-      'Redshift datasource specification endpoint is missing',
+      `Redshift datasource specification 'endpoint' field is missing or empty`,
     );
     assertNonNullable(
       protocol.port,
-      'Redshift datasource specification port is missing',
+      `Redshift datasource specification 'port' field is missing or empty`,
     );
     const redshiftSpec = new RedshiftDatasourceSpecification(
       protocol.databaseName,
@@ -228,15 +236,15 @@ export const V1_buildAuthenticationStrategy = (
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     assertNonEmptyString(
       protocol.privateKeyVaultReference,
-      'Snowflake public authentication strategy private key vault reference is missing or empty',
+      `Snowflake public authentication strategy 'privateKeyVaultReference' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.passPhraseVaultReference,
-      'Snowflake public authentication strategy pass phrase vault reference is missing or empty',
+      `Snowflake public authentication strategy 'passPhraseVaultReference' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.publicUserName,
-      'Snowflake public authentication user name is missing or empty',
+      `Snowflake public authentication 'publicUserName' field is missing or empty`,
     );
     return new SnowflakePublicAuthenticationStrategy(
       protocol.privateKeyVaultReference,
@@ -264,16 +272,32 @@ export const V1_buildAuthenticationStrategy = (
   } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
     assertNonEmptyString(
       protocol.userName,
-      'User password authentication strategy userName is missing or empty',
+      `User password authentication strategy 'userName' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.passwordVaultReference,
-      'User password authentication strategy passwordVaultReference is missing or empty',
+      `User password authentication strategy 'passwordVaultReference' field is missing or empty`,
     );
     return new UserPasswordAuthenticationStrategy(
       protocol.userName,
       protocol.passwordVaultReference,
     );
+  } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
+    assertNonEmptyString(
+      protocol.userNameVaultReference,
+      `Username password authentication strategy 'userNameVaultReference' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      protocol.passwordVaultReference,
+      `Username password authentication strategy 'passwordVaultReference' field is missing or empty`,
+    );
+
+    const metamodel = new UsernamePasswordAuthenticationStrategy(
+      protocol.userNameVaultReference,
+      protocol.passwordVaultReference,
+    );
+    metamodel.baseVaultReference = protocol.baseVaultReference;
+    return metamodel;
   }
   const extraConnectionAuthenticationStrategyBuilders =
     context.extensions.plugins.flatMap(

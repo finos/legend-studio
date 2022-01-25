@@ -16,21 +16,27 @@
 
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
-import { CustomSelectorInput, createFilter } from '@finos/legend-art';
-import type {
-  MappingEditorState,
-  MappingElementSource,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { getMappingElementSource } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import Dialog from '@material-ui/core/Dialog';
-import type { InstanceSetImplementation } from '@finos/legend-graph';
 import {
+  Dialog,
+  type SelectComponent,
+  CustomSelectorInput,
+  createFilter,
+} from '@finos/legend-art';
+import {
+  getMappingElementSource,
+  type MappingEditorState,
+  type MappingElementSource,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  type InstanceSetImplementation,
+  type View,
   Class,
   RootFlatDataRecordType,
-  View,
   Table,
   DEFAULT_DATABASE_SCHEMA_NAME,
+  TableAlias,
+  TableExplicitReference,
+  ViewExplicitReference,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -47,8 +53,8 @@ export const getMappingElementSourceFilterText = (
     return val.path;
   } else if (val instanceof RootFlatDataRecordType) {
     return val.owner.name;
-  } else if (val instanceof Table || val instanceof View) {
-    return `${val.schema.owner.path}.${val.schema.name}.${val.name}`;
+  } else if (val instanceof TableAlias) {
+    return `${val.relation.ownerReference.value.path}.${val.relation.value.schema.name}.${val.relation.value.name}`;
   }
   throw new UnsupportedOperationError();
 };
@@ -67,12 +73,12 @@ export const getSourceElementLabel = (
     sourceLabel = srcElement.name;
   } else if (srcElement instanceof RootFlatDataRecordType) {
     sourceLabel = srcElement.owner.name;
-  } else if (srcElement instanceof Table || srcElement instanceof View) {
-    sourceLabel = `${srcElement.schema.owner.name}.${
-      srcElement.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
+  } else if (srcElement instanceof TableAlias) {
+    sourceLabel = `${srcElement.relation.ownerReference.value.name}.${
+      srcElement.relation.value.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
         ? ''
-        : `${srcElement.schema.name}.`
-    }${srcElement.name}`;
+        : `${srcElement.relation.value.schema.name}.`
+    }${srcElement.relation.value.name}`;
   }
   return sourceLabel;
 };
@@ -89,13 +95,13 @@ export const buildMappingElementSourceOption = (
       label: `${source.owner.owner.name}.${source.owner.name}`,
       value: source,
     };
-  } else if (source instanceof Table || source instanceof View) {
+  } else if (source instanceof TableAlias) {
     return {
-      label: `${source.schema.owner.name}.${
-        source.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
+      label: `${source.relation.ownerReference.value.name}.${
+        source.relation.value.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
           ? ''
-          : `${source.schema.name}.`
-      }${source.name}`,
+          : `${source.relation.value.schema.name}.`
+      }${source.relation.value.name}`,
       value: source,
     };
   }
@@ -131,11 +137,21 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
         ),
       )
       .concat(
-        editorStore.graphManagerState.graph.ownDatabases.flatMap((e) =>
-          e.schemas.flatMap((schema) =>
-            (schema.tables as (Table | View)[]).concat(schema.views),
-          ),
-        ),
+        editorStore.graphManagerState.graph.ownDatabases
+          .flatMap((e) =>
+            e.schemas.flatMap((schema) =>
+              (schema.tables as (Table | View)[]).concat(schema.views),
+            ),
+          )
+          .map((relation) => {
+            const mainTableAlias = new TableAlias();
+            mainTableAlias.relation =
+              relation instanceof Table
+                ? TableExplicitReference.create(relation)
+                : ViewExplicitReference.create(relation);
+            mainTableAlias.name = mainTableAlias.relation.value.name;
+            return mainTableAlias;
+          }),
       )
       .map(buildMappingElementSourceOption);
     const filterOption = createFilter({
@@ -145,7 +161,11 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     });
     const sourceSelectorRef = useRef<SelectComponent>(null);
     const selectedSourceType = buildMappingElementSourceOption(
-      sourceElementToSelect ?? getMappingElementSource(setImplementation),
+      sourceElementToSelect ??
+        getMappingElementSource(
+          setImplementation,
+          editorStore.pluginManager.getStudioPlugins(),
+        ),
     );
     const changeSourceType = (
       val: MappingElementSourceSelectOption | null,
@@ -165,6 +185,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
         open={true}
         onClose={closeModal}
         TransitionProps={{
+          appear: false, // disable transition
           onEnter: handleEnter,
         }}
         classes={{

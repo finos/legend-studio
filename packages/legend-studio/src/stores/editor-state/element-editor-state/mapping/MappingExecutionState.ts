@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import type {
-  MappingEditorState,
-  MappingElementSource,
-} from './MappingEditorState';
 import {
+  type MappingEditorState,
+  type MappingElementSource,
   getMappingElementSource,
   getMappingElementTarget,
   generateMappingTestName,
@@ -33,8 +31,8 @@ import {
   makeAutoObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
@@ -51,15 +49,15 @@ import {
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
-import type {
-  Runtime,
-  InputData,
-  Mapping,
-  Connection,
-  ExecutionResult,
-  SetImplementation,
-} from '@finos/legend-graph';
 import {
+  type Runtime,
+  type InputData,
+  type Mapping,
+  type Connection,
+  type ExecutionResult,
+  type SetImplementation,
+  type Table,
+  type View,
   extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_LOG_EVENT,
@@ -80,8 +78,6 @@ import {
   PureSingleExecution,
   RootFlatDataRecordType,
   PackageableElementExplicitReference,
-  Table,
-  View,
   DatabaseType,
   RelationalDatabaseConnection,
   LocalH2DatasourceSpecification,
@@ -91,6 +87,7 @@ import {
   OperationSetImplementation,
   buildSourceInformationSourceId,
   PureClientVersion,
+  TableAlias,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -370,10 +367,19 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
 
   get runtime(): Runtime {
     const datasourceSpecification = new LocalH2DatasourceSpecification();
-    datasourceSpecification.setTestDataSetupSqls(
-      // NOTE: this is a gross simplification of handling the input for relational input data
-      [this.inputData.data],
-    );
+    switch (this.inputData.inputType) {
+      case RelationalInputType.SQL:
+        datasourceSpecification.setTestDataSetupSqls(
+          // NOTE: this is a gross simplification of handling the input for relational input data
+          [this.inputData.data],
+        );
+        break;
+      case RelationalInputType.CSV:
+        datasourceSpecification.setTestDataSetupCsv(this.inputData.data);
+        break;
+      default:
+        throw new UnsupportedOperationError(`Invalid input data type`);
+    }
     return createRuntimeForExecution(
       this.mapping,
       new RelationalDatabaseConnection(
@@ -498,11 +504,11 @@ export class MappingExecutionState {
         );
       }
       this.setInputDataState(newRuntimeState);
-    } else if (source instanceof Table || source instanceof View) {
+    } else if (source instanceof TableAlias) {
       const newRuntimeState = new MappingExecutionRelationalInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
-        source,
+        source.relation.value,
       );
       if (populateWithMockData) {
         newRuntimeState.inputData.setData(
@@ -720,7 +726,10 @@ export class MappingExecutionState {
           );
         } else {
           this.setInputDataStateBasedOnSource(
-            getMappingElementSource(setImplementation),
+            getMappingElementSource(
+              setImplementation,
+              this.editorStore.pluginManager.getStudioPlugins(),
+            ),
             true,
           );
         }
@@ -737,7 +746,10 @@ export class MappingExecutionState {
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void =>
                 this.setInputDataStateBasedOnSource(
-                  getMappingElementSource(setImplementation),
+                  getMappingElementSource(
+                    setImplementation,
+                    this.editorStore.pluginManager.getStudioPlugins(),
+                  ),
                   true,
                 ),
             },

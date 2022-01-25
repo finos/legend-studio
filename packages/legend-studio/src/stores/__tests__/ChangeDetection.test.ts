@@ -17,7 +17,7 @@
 import { unitTest } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
-import { EntityChangeType } from '@finos/legend-server-sdlc';
+import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { Class } from '@finos/legend-graph';
 
 const entities = [
@@ -80,14 +80,10 @@ test(unitTest('Change detection works properly'), async () => {
     editorStore.changeDetectionState.workspaceLatestRevisionState.changes
       .length,
   ).toEqual(1);
-  expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes[0]
-      .entityChangeType,
-  ).toEqual(EntityChangeType.MODIFY);
-  expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes[0]
-      .oldPath,
-  ).toEqual(_class.path);
+  let change = editorStore.changeDetectionState.workspaceLatestRevisionState
+    .changes[0] as EntityDiff;
+  expect(change.entityChangeType).toEqual(EntityChangeType.MODIFY);
+  expect(change.oldPath).toEqual(_class.path);
   _class.getProperty('prop1').setName('prop'); // reset
 
   // add
@@ -100,14 +96,10 @@ test(unitTest('Change detection works properly'), async () => {
     editorStore.changeDetectionState.workspaceLatestRevisionState.changes
       .length,
   ).toEqual(1);
-  expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes[0]
-      .entityChangeType,
-  ).toEqual(EntityChangeType.CREATE);
-  expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes[0]
-      .newPath,
-  ).toEqual(newClass.path);
+  change = editorStore.changeDetectionState.workspaceLatestRevisionState
+    .changes[0] as EntityDiff;
+  expect(change.entityChangeType).toEqual(EntityChangeType.CREATE);
+  expect(change.newPath).toEqual(newClass.path);
   editorStore.graphManagerState.graph.deleteElement(newClass); // reset
 
   // delete
@@ -119,12 +111,8 @@ test(unitTest('Change detection works properly'), async () => {
     editorStore.changeDetectionState.workspaceLatestRevisionState.changes
       .length,
   ).toEqual(1);
-  expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes[0]
-      .entityChangeType,
-  ).toEqual(EntityChangeType.DELETE);
-  expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes[0]
-      .oldPath,
-  ).toEqual(_class.path);
+  change = editorStore.changeDetectionState.workspaceLatestRevisionState
+    .changes[0] as EntityDiff;
+  expect(change.entityChangeType).toEqual(EntityChangeType.DELETE);
+  expect(change.oldPath).toEqual(_class.path);
 });

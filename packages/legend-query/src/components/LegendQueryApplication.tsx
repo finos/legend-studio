@@ -17,7 +17,6 @@
 import { useEffect } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { ThemeProvider } from '@material-ui/core/styles';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter';
 import { QuerySetup } from './QuerySetup';
 import {
@@ -26,27 +25,22 @@ import {
   ServiceQueryLoader,
 } from './QueryEditor';
 import { flowResult } from 'mobx';
+import { PanelLoadingIndicator } from '@finos/legend-art';
 import {
-  LegendMaterialUITheme,
-  PanelLoadingIndicator,
-} from '@finos/legend-art';
-import type { Log } from '@finos/legend-shared';
-import { QueryStoreProvider, useQueryStore } from './QueryStoreProvider';
+  LegendQueryStoreProvider,
+  useLegendQueryStore,
+} from './LegendQueryStoreProvider';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
-  ActionAlert,
-  ApplicationStoreProvider,
-  BlockingAlert,
-  NotificationSnackbar,
+  LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
-  useWebApplicationNavigator,
 } from '@finos/legend-application';
-import type { QueryPluginManager } from '../application/QueryPluginManager';
-import type { QueryConfig } from '../application/QueryConfig';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 
 const LegendQueryApplicationInner = observer(() => {
-  const queryStore = useQueryStore();
+  const queryStore = useLegendQueryStore();
   const applicationStore = useApplicationStore();
 
   useEffect(() => {
@@ -57,9 +51,6 @@ const LegendQueryApplicationInner = observer(() => {
 
   return (
     <div className="app">
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationSnackbar />
       <PanelLoadingIndicator isLoading={queryStore.initState.isInProgress} />
       {queryStore.initState.hasSucceeded && (
         <Switch>
@@ -75,7 +66,10 @@ const LegendQueryApplicationInner = observer(() => {
           />
           <Route
             exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
+            path={[
+              LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY,
+              LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY_WITH_CLASS,
+            ]}
             component={CreateQueryLoader}
           />
           <Route
@@ -92,29 +86,31 @@ const LegendQueryApplicationInner = observer(() => {
 
 export const LegendQueryApplication = observer(
   (props: {
-    config: QueryConfig;
-    pluginManager: QueryPluginManager;
-    log: Log;
+    config: LegendQueryConfig;
+    pluginManager: LegendQueryPluginManager;
   }) => {
-    const { config, pluginManager, log } = props;
-    const navigator = useWebApplicationNavigator();
+    const { config, pluginManager } = props;
+    const applicationStore = useApplicationStore();
 
     return (
-      <ApplicationStoreProvider config={config} navigator={navigator} log={log}>
-        <DepotServerClientProvider
-          config={{
-            serverUrl: config.depotServerUrl,
-          }}
+      <DepotServerClientProvider
+        config={{
+          serverUrl: config.depotServerUrl,
+          TEMP__useLegacyDepotServerAPIRoutes:
+            config.TEMP__useLegacyDepotServerAPIRoutes,
+        }}
+      >
+        <GraphManagerStateProvider
+          pluginManager={pluginManager}
+          log={applicationStore.log}
         >
-          <GraphManagerStateProvider pluginManager={pluginManager} log={log}>
-            <QueryStoreProvider pluginManager={pluginManager}>
-              <ThemeProvider theme={LegendMaterialUITheme}>
-                <LegendQueryApplicationInner />
-              </ThemeProvider>
-            </QueryStoreProvider>
-          </GraphManagerStateProvider>
-        </DepotServerClientProvider>
-      </ApplicationStoreProvider>
+          <LegendQueryStoreProvider pluginManager={pluginManager}>
+            <LegendApplicationComponentFrameworkProvider>
+              <LegendQueryApplicationInner />
+            </LegendApplicationComponentFrameworkProvider>
+          </LegendQueryStoreProvider>
+        </GraphManagerStateProvider>
+      </DepotServerClientProvider>
     );
   },
 );

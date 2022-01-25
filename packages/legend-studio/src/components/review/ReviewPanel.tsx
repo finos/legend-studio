@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { FaTimes } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import { clsx, DropdownMenu, ContextMenu } from '@finos/legend-art';
+import { clsx, DropdownMenu, ContextMenu, TimesIcon } from '@finos/legend-art';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,
@@ -137,7 +136,7 @@ export const ReviewPanel = observer(() => {
                   onClick={closeTab(editorState)}
                   tabIndex={-1}
                 >
-                  <FaTimes />
+                  <TimesIcon />
                 </button>
               </ContextMenu>
             </div>

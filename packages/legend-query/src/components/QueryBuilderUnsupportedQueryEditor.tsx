@@ -24,6 +24,7 @@ import {
   ResizablePanelSplitter,
 } from '@finos/legend-art';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
+import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
 
 const QueryBuilderUnsupportedQueryExplorer = observer(() => (
   <div className="panel query-builder__explorer">
@@ -34,8 +35,8 @@ const QueryBuilderUnsupportedQueryExplorer = observer(() => (
     </div>
     <div className="panel__content">
       <BlankPanelContent>
-        <div className="unsupported-element-editor__main">
-          <div className="unsupported-element-editor__summary">{`Can't display query in form mode`}</div>
+        <div className="query-builder__unsupported-view__main">
+          <div className="query-builder__unsupported-view__summary">{`Can't display query in form mode`}</div>
         </div>
       </BlankPanelContent>
     </div>
@@ -61,10 +62,10 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
         </div>
         <div className="panel__content">
           <BlankPanelContent>
-            <div className="unsupported-element-editor__main">
-              <div className="unsupported-element-editor__summary">{`Can't display query in form mode ${errorMessage}`}</div>
+            <div className="query-builder__unsupported-view__main">
+              <div className="query-builder__unsupported-view__summary">{`Can't display query in form mode ${errorMessage}`}</div>
               <button
-                className="btn--dark unsupported-element-editor__to-text-mode__btn"
+                className="btn--dark query-builder__unsupported-view__to-text-mode__btn"
                 onClick={openLambdaModal}
               >
                 Edit in text mode
@@ -84,8 +85,18 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={450}>
-          <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
-          <QueryBuilderUnsupportedQueryExplorer />
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel>
+              <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
+              <QueryBuilderUnsupportedQueryExplorer />
+            </ResizablePanel>
+            <ResizablePanelSplitter />
+            <ResizablePanel minSize={40} direction={-1}>
+              <QueryBuilderParameterPanel
+                queryBuilderState={queryBuilderState}
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </ResizablePanel>
         <ResizablePanelSplitter />
         <ResizablePanel>

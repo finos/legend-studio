@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../../mixins' as *;
+@use 'mixins' as *;
 
 .source-panel {
   .panel {
@@ -49,6 +49,6 @@
   &__explorer {
     height: 100%;
     width: 100%;
-    padding: 0.8rem 0.3rem 0.5rem 0.3rem;
+    padding: 0.8rem 0.3rem 0.5rem;
   }
 }

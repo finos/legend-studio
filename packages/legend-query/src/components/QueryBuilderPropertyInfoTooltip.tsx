@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import type { TooltipProps } from '@material-ui/core';
-import { Tooltip } from '@material-ui/core';
-import { StubTransition } from '@finos/legend-art';
-import type { AbstractProperty } from '@finos/legend-graph';
-import { DerivedProperty } from '@finos/legend-graph';
+import { type TooltipPlacement, Tooltip } from '@finos/legend-art';
+import { type AbstractProperty, DerivedProperty } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 export const QueryBuilderPropertyInfoTooltip: React.FC<{
@@ -26,19 +23,24 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
   path: string;
   isMapped: boolean;
   children: React.ReactElement;
-  placement: NonNullable<TooltipProps['placement']>;
+  placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { property, path, isMapped, children, placement } = props;
   return (
     <Tooltip
       arrow={true}
-      placement={placement}
+      {...(placement !== undefined ? { placement } : {})}
       classes={{
         tooltip: 'query-builder__tooltip',
         arrow: 'query-builder__tooltip__arrow',
         tooltipPlacementRight: 'query-builder__tooltip--right',
       }}
-      TransitionComponent={StubTransition}
+      TransitionProps={{
+        // disable transition
+        // NOTE: somehow, this is the only workaround we have, if for example
+        // we set `appear = true`, the tooltip will jump out of position
+        timeout: 0,
+      }}
       title={
         <div className="query-builder__tooltip__content">
           <div className="query-builder__tooltip__item">

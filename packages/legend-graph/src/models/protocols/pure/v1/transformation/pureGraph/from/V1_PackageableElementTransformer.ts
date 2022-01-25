@@ -27,7 +27,6 @@ import type { Association } from '../../../../../../metamodels/pure/packageableE
 import type { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
 import type { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
 import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
-import type { ServiceStore } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
 import type { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime';
@@ -52,7 +51,6 @@ import {
   V1_transformGenerationSpecification,
 } from './V1_GenerationSpecificationTransformer';
 import { V1_transformFlatData } from './V1_FlatDataTransformer';
-import { V1_transformServiceStore } from './V1_ServiceStoreTransformer';
 import { V1_transformDatabase } from './V1_DatabaseTransformer';
 import { V1_transformMapping } from './V1_MappingTransformer';
 import { V1_transformService } from './V1_ServiceTransformer';
@@ -141,10 +139,6 @@ export class V1_PackageableElementTransformer
 
   visit_Database(element: Database): V1_PackageableElement {
     return V1_transformDatabase(element, this.context);
-  }
-
-  visit_ServiceStore(element: ServiceStore): V1_PackageableElement {
-    return V1_transformServiceStore(element);
   }
 
   visit_Mapping(element: Mapping): V1_PackageableElement {

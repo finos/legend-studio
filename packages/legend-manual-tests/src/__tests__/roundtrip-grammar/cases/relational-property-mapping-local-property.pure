@@ -1,0 +1,37 @@
+###Relational
+Database my::database::inMemoryAndRelationalDb
+(
+  Table productTable
+  (
+    productId VARCHAR(100) PRIMARY KEY,
+    productName VARCHAR(100),
+    description VARCHAR(1000)
+  )
+)
+
+
+###Pure
+Class my::models::Product
+{
+  productId: String[1];
+  productName: String[1];
+  description: String[1];
+}
+
+
+###Mapping
+Mapping my::mappings::InMemoryAndRelationalCrossStoreMapping1
+(
+  my::models::Product[prod_set]: Relational
+  {
+    ~primaryKey
+    (
+      [my::database::inMemoryAndRelationalDb]productTable.productId
+    )
+    ~mainTable [my::database::inMemoryAndRelationalDb]productTable
+    +local: String[1]: [my::database::inMemoryAndRelationalDb]productTable.productName,
+    productId: [my::database::inMemoryAndRelationalDb]productTable.productId,
+    productName: [my::database::inMemoryAndRelationalDb]productTable.productName,
+    description: [my::database::inMemoryAndRelationalDb]productTable.description
+  }
+)

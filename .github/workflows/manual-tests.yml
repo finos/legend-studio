@@ -28,14 +28,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
       - name: Checkout engine server code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           repository: finos/legend-engine
           path: legend-engine
       - name: Setup Maven cache
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.7
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -49,24 +49,25 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.1
         with:
           node-version: 14.x
       # Build the engine server and run it in the background
       - name: Run engine server
-        run: >
-          cd legend-engine &&
-          mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies &&
-          mvn -pl legend-engine-server -am -DskipTests clean install;
+        run: |
+          cd legend-engine
+          mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+          mvn -pl legend-engine-server -am -DskipTests clean install
           java -cp legend-engine-server/target/*-shaded.jar org.finos.legend.engine.server.Server server ../packages/legend-manual-tests/engine-config.json &
+      - name: Install dependencies
+        run: yarn
       - name: Test
         # TODO: we should consider building only relevant workspaces to reduce build time
-        run: yarn && yarn build && yarn workspace @finos/legend-manual-tests test:manual
+        run: yarn build && yarn workspace @finos/legend-manual-tests test:manual

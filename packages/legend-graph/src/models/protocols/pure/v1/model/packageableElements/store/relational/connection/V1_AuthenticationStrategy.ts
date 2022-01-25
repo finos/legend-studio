@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export abstract class V1_AuthenticationStrategy implements Hashable {
   private readonly _$nominalTypeBrand!: 'V1_AuthenticationStrategy';
@@ -128,6 +127,24 @@ export class V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY,
+    ]);
+  }
+}
+
+export class V1_UsernamePasswordAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  baseVaultReference?: string | undefined;
+  userNameVaultReference!: string;
+  passwordVaultReference!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.USERNAME_PASSWORD_AUTHENTICATION_STRATEGY,
+      this.baseVaultReference?.toString() ?? '',
+      this.userNameVaultReference,
+      this.passwordVaultReference,
     ]);
   }
 }

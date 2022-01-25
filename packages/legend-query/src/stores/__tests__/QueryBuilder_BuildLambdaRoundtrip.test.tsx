@@ -25,6 +25,9 @@ import {
   TEST_DATA__fullComplexProjectionQuery,
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
+  TEST_DATA__graphFetchWithDerivedProperty,
+  TEST_DATA__graphFetchWithDerivedPropertyAndParameter,
+  TEST_DATA__simpleProjectionWithSubtype,
 } from './TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
@@ -61,8 +64,11 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared';
-import { QueryBuilderState } from '../QueryBuilderState';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import {
+  QueryBuilderState,
+  StandardQueryBuilderMode,
+} from '../QueryBuilderState';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
 
@@ -94,6 +100,12 @@ const m2mFilterCtx = {
 const cases: RoundtripTestCase[] = [
   // projection
   ['Simple projection', projectionCtx, TEST_DATA__simpleProjection, undefined],
+  [
+    'Simple projection with subType',
+    projectionCtx,
+    TEST_DATA__simpleProjectionWithSubtype,
+    undefined,
+  ],
   [
     'Complex filter',
     projectionCtx,
@@ -137,6 +149,18 @@ const cases: RoundtripTestCase[] = [
     graphFetchCtx,
     TEST_DATA__lambda_output_graphFetchWithFullPathFunctions,
     TEST_DATA__lambda_input_graphFetchWithFullPathFunctions,
+  ],
+  [
+    'Graph-fetch with derived property',
+    graphFetchCtx,
+    TEST_DATA__graphFetchWithDerivedProperty,
+    undefined,
+  ],
+  [
+    'Graph-fetch with derived property with parameters',
+    graphFetchCtx,
+    TEST_DATA__graphFetchWithDerivedPropertyAndParameter,
+    undefined,
   ],
   // filter
   [
@@ -227,17 +251,18 @@ describe(
   () => {
     test.each(cases)('%s', async (testName, context, lambda, inputLambda) => {
       const { entities } = context;
-      const pluginManager = QueryPluginManager.create();
+      const pluginManager = LegendQueryPluginManager.create();
       pluginManager.usePresets([new Query_GraphPreset()]).install();
       const applicationStore = TEST__getTestApplicationStore(
         TEST__getTestQueryConfig(),
+        LegendQueryPluginManager.create(),
       );
       const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
       await TEST__buildGraphWithEntities(graphManagerState, entities);
       const queryBuilderState = new QueryBuilderState(
         applicationStore,
         graphManagerState,
-        {},
+        new StandardQueryBuilderMode(),
       );
       // do the check using input and output lambda
       const rawLambda = inputLambda ?? lambda;

@@ -15,8 +15,8 @@
  */
 
 import { observable, computed, action, makeObservable, override } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
 import {
+  type Hashable,
   guaranteeNonNullable,
   guaranteeType,
   assertTrue,
@@ -27,11 +27,12 @@ import {
   changeEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import { PackageableElement } from '../PackageableElement';
+import {
+  type PackageableElementVisitor,
+  PackageableElement,
+} from '../PackageableElement';
 import { Property } from './Property';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import { GenericType } from './GenericType';
 import { Class } from './Class';
 import type { AnnotatedElement } from './AnnotatedElement';
@@ -105,7 +106,7 @@ export class Association
       idx !== -1,
       `Can't find property '${property.name}' in association '${this.path}'`,
     );
-    return this.properties[(idx + 1) % 2];
+    return guaranteeNonNullable(this.properties[(idx + 1) % 2]);
   };
   getPropertyAssociatedClass = (property: AbstractProperty): Class => {
     if (property instanceof Property) {

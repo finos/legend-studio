@@ -17,19 +17,22 @@
 import { observer } from 'mobx-react-lite';
 import { InstanceSetImplementationEditor } from './InstanceSetImplementationEditor';
 import { OperationSetImplementationEditor } from './OperationSetImplementationEditor';
-import { FaRegSquare, FaCheckSquare } from 'react-icons/fa';
-import { clsx, CustomSelectorInput, ClassIcon } from '@finos/legend-art';
+import {
+  clsx,
+  CustomSelectorInput,
+  PURE_ClassIcon,
+  EmptySquareIcon,
+  CheckSquareIcon,
+} from '@finos/legend-art';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  SetImplementation,
-  PureInstanceSetImplementation,
-  FlatDataInstanceSetImplementation,
-  EmbeddedFlatDataPropertyMapping,
-  RootRelationalInstanceSetImplementation,
-} from '@finos/legend-graph';
 import {
+  type SetImplementation,
+  type PureInstanceSetImplementation,
+  type FlatDataInstanceSetImplementation,
+  type EmbeddedFlatDataPropertyMapping,
+  type RootRelationalInstanceSetImplementation,
   fromElementPathToMappingElementId,
   SET_IMPLEMENTATION_TYPE,
   OperationSetImplementation,
@@ -72,7 +75,6 @@ export const OperatorSelector = observer(
   },
 );
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export enum CLASS_MAPPING_SOURCE_TYPE {
   CLASS = 'CLASS',
   FLAT_DATA = 'FLAT DATA',
@@ -132,7 +134,7 @@ export const ClassMappingEditor = observer(
         sourceType = CLASS_MAPPING_SOURCE_TYPE.RELATIONAL;
         sourceName = (
           setImplementation as RootRelationalInstanceSetImplementation
-        ).mainTableAlias.relation.value.name;
+        ).mainTableAlias?.relation.value.name;
         break;
       }
       case SET_IMPLEMENTATION_TYPE.OPERATION:
@@ -171,7 +173,7 @@ export const ClassMappingEditor = observer(
               </div>
               <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__target">
                 <div className="mapping-element-editor__metadata__target__type icon">
-                  <ClassIcon />
+                  <PURE_ClassIcon />
                 </div>
                 <div className="mapping-element-editor__metadata__target__label">
                   {_class.value.name}
@@ -255,9 +257,9 @@ export const ClassMappingEditor = observer(
                 title={'Set/Unset root class mapping'}
               >
                 {setImplementation.root.value ? (
-                  <FaCheckSquare />
+                  <CheckSquareIcon />
                 ) : (
-                  <FaRegSquare />
+                  <EmptySquareIcon />
                 )}
                 root
               </button>

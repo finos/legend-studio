@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 
 // TODO: add `xterm` so we have a stream/log
+// See https://github.com/finos/legend-studio/issues/273
 export const Console = observer(() => (
   <div className="console-panel">
     <div className="console-panel__content"></div>

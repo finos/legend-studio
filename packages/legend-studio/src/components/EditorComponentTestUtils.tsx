@@ -14,64 +14,65 @@
  * limitations under the License.
  */
 
-import type { RenderResult } from '@testing-library/react';
-import { render, fireEvent, waitFor, getByText } from '@testing-library/react';
+import {
+  type RenderResult,
+  render,
+  fireEvent,
+  waitFor,
+  getByText,
+} from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
-import { STUDIO_TEST_ID } from './StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID';
 import { EditorStore } from '../stores/EditorStore';
 import { Editor } from './editor/Editor';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
-import type { PlainObject } from '@finos/legend-shared';
 import {
+  type PlainObject,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import { StudioPluginManager } from '../application/StudioPluginManager';
+import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  Project,
-  ProjectConfiguration,
-  ProjectStructureVersion,
-  Revision,
-  SDLCServerClient,
-  Version,
-  Workspace,
-} from '@finos/legend-server-sdlc';
 import {
+  type Project,
+  type ProjectConfiguration,
+  type ProjectStructureVersion,
+  type Revision,
+  type SDLCServerClient,
+  type Version,
+  type Workspace,
+  WorkspaceType,
   TEST__SDLCServerClientProvider,
   TEST__getTestSDLCServerClient,
 } from '@finos/legend-server-sdlc';
-import type {
-  ImportConfigurationDescription,
-  ImportMode,
-  GenerationConfigurationDescription,
-  GenerationMode,
-  GraphManagerState,
-} from '@finos/legend-graph';
 import {
+  type ImportConfigurationDescription,
+  type ImportMode,
+  type GenerationConfigurationDescription,
+  type GenerationMode,
+  type GraphManagerState,
   TEST__GraphManagerStateProvider,
   TEST__getTestGraphManagerState,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type {
-  DepotServerClient,
-  ProjectData,
-  ProjectVersionEntities,
-} from '@finos/legend-server-depot';
 import {
+  type DepotServerClient,
+  type ProjectData,
+  type ProjectVersionEntities,
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
 } from '@finos/legend-server-depot';
-import { StudioStoreProvider } from './StudioStoreProvider';
-import type { ApplicationStore } from '@finos/legend-application';
+import { LegendStudioStoreProvider } from './LegendStudioStoreProvider';
 import {
+  type ApplicationStore,
+  TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,
   WebApplicationNavigator,
 } from '@finos/legend-application';
 import { TEST__getTestStudioConfig } from '../stores/EditorStoreTestUtils';
-import type { StudioConfig } from '../application/StudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {
@@ -140,34 +141,37 @@ export const TEST_DATA__DefaultSDLCInfo = {
   ],
 };
 
-export const TEST__StudioStoreProvider = ({
-  children,
-}: {
+export const TEST__LegendStudioStoreProvider: React.FC<{
   children: React.ReactNode;
-}): React.ReactElement => (
-  <StudioStoreProvider pluginManager={StudioPluginManager.create()}>
+}> = ({ children }) => (
+  <LegendStudioStoreProvider pluginManager={LegendStudioPluginManager.create()}>
     {children}
-  </StudioStoreProvider>
+  </LegendStudioStoreProvider>
 );
 
 export const TEST__provideMockedEditorStore = (customization?: {
   mock?: EditorStore;
-  applicationStore?: ApplicationStore<StudioConfig>;
+  applicationStore?: ApplicationStore<LegendStudioConfig>;
   sdlcServerClient?: SDLCServerClient;
   depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
-  pluginManager?: StudioPluginManager;
+  pluginManager?: LegendStudioPluginManager;
 }): EditorStore => {
+  const pluginManager =
+    customization?.pluginManager ?? LegendStudioPluginManager.create();
   const value =
     customization?.mock ??
     new EditorStore(
       customization?.applicationStore ??
-        TEST__getTestApplicationStore(TEST__getTestStudioConfig()),
+        TEST__getTestApplicationStore(
+          TEST__getTestStudioConfig(),
+          pluginManager,
+        ),
       customization?.sdlcServerClient ?? TEST__getTestSDLCServerClient(),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
       customization?.graphManagerState ??
         TEST__getTestGraphManagerState(customization?.pluginManager),
-      customization?.pluginManager ?? StudioPluginManager.create(),
+      pluginManager,
     );
   const MockedEditorStoreProvider = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStoreProvider.useEditorStore = jest.fn();
@@ -181,7 +185,7 @@ export const TEST__openAndAssertPathWithElement = async (
   closePackage = true,
 ): Promise<void> => {
   const packageExplorer = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_TREES,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
   const packages = path.split(ELEMENT_PATH_DELIMITER);
   const rootPackage = packages.shift() as string;
@@ -203,7 +207,7 @@ export const TEST__openElementFromExplorerTree = async (
   renderResult: RenderResult,
 ): Promise<void> => {
   const packageExplorer = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_TREES,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
   await TEST__openAndAssertPathWithElement(path, renderResult, false);
   const elementName = path.split(ELEMENT_PATH_DELIMITER).pop() as string;
@@ -332,25 +336,29 @@ export const TEST__setUpEditor = async (
   const history = createMemoryHistory({
     initialEntries: [
       generateEditorRoute(
-        mockedEditorStore.applicationStore.config.sdlcServerKey,
+        mockedEditorStore.applicationStore.config.currentSDLCServerOption,
         (workspace as unknown as Workspace).projectId,
         (workspace as unknown as Workspace).workspaceId,
+        WorkspaceType.USER,
       ),
     ],
   });
-  mockedEditorStore.applicationStore.navigator = new WebApplicationNavigator(
-    history,
-  );
+  const navigator = new WebApplicationNavigator(history);
+  mockedEditorStore.applicationStore.navigator = navigator;
+  TEST__provideMockedWebApplicationNavigator({ mock: navigator });
 
   const renderResult = render(
     <Router history={history}>
-      <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+      <TEST__ApplicationStoreProvider
+        config={TEST__getTestStudioConfig()}
+        pluginManager={LegendStudioPluginManager.create()}
+      >
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__GraphManagerStateProvider>
-              <TEST__StudioStoreProvider>
+              <TEST__LegendStudioStoreProvider>
                 <Editor />
-              </TEST__StudioStoreProvider>
+              </TEST__LegendStudioStoreProvider>
             </TEST__GraphManagerStateProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>
@@ -388,7 +396,9 @@ export const TEST__setUpEditor = async (
       true,
     ),
   );
-  await waitFor(() => renderResult.getByTestId(STUDIO_TEST_ID.EXPLORER_TREES));
+  await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EXPLORER_TREES),
+  );
   return renderResult;
 };
 

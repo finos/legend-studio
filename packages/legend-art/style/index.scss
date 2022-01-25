@@ -24,7 +24,6 @@
 @forward 'base/modal';
 @forward 'base/menu';
 @forward 'base/table';
-
 @forward 'components/icon';
 @forward 'components/panel-loading-indicator';
 @forward 'components/blank-panel-placeholder';
@@ -32,5 +31,6 @@
 @forward 'components/tree-view';
 
 // Reset (override library styles)
+@forward 'reset/mui';
 @forward 'reset/react-reflex';
 @forward 'reset/monaco-editor';

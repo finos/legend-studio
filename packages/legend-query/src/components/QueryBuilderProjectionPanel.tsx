@@ -26,24 +26,26 @@ import {
   CaretDownIcon,
   GripVerticalIcon,
   ContextMenu,
+  InputWithInlineValidation,
+  SigmaIcon,
 } from '@finos/legend-art';
-import { MdFunctions } from 'react-icons/md';
-import type {
-  QueryBuilderExplorerTreeDragSource,
-  QueryBuilderExplorerTreePropertyNodeData,
-} from '../stores/QueryBuilderExplorerState';
 import {
+  type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryBuilderExplorerState';
-import type { DropTargetMonitor, XYCoord } from 'react-dnd';
-import { useDragLayer, useDrag, useDrop } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
-import type {
-  QueryBuilderProjectionColumnDragSource,
-  QueryBuilderProjectionColumnState,
-} from '../stores/QueryBuilderProjectionState';
 import {
+  type DropTargetMonitor,
+  type XYCoord,
+  useDragLayer,
+  useDrag,
+  useDrop,
+} from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
+import {
+  type QueryBuilderProjectionColumnDragSource,
+  type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
@@ -56,8 +58,10 @@ import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggreg
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
-import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
+import {
+  type QueryBuilderParameterDragSource,
+  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+} from '../stores/QueryParametersState';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -252,11 +256,17 @@ const QueryBuilderProjectionColumnEditor = observer(
       projectionColumnState.projectionState.queryBuilderState;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
+    const removeColumn = (): void =>
+      projectionState.removeColumn(projectionColumnState);
+
+    // name
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => projectionColumnState.setColumnName(event.target.value);
-    const removeColumn = (): void =>
-      projectionState.removeColumn(projectionColumnState);
+    const isDuplicatedColumnName =
+      projectionColumnState.projectionState.columns.filter(
+        (column) => column.columnName === projectionColumnState.columnName,
+      ).length > 1;
 
     // aggregation
     const aggregateColumnState = projectionState.aggregationState.columns.find(
@@ -375,11 +385,14 @@ const QueryBuilderProjectionColumnEditor = observer(
               </div>
             </div>
             <div className="query-builder__projection__column__name">
-              <input
-                className="query-builder__projection__column__name__input"
+              <InputWithInlineValidation
+                className="query-builder__projection__column__name__input input-group__input"
                 spellCheck={false}
                 value={projectionColumnState.columnName}
                 onChange={changeColumnName}
+                validationErrorMessage={
+                  isDuplicatedColumnName ? 'Duplicated column' : undefined
+                }
               />
             </div>
             <div className="query-builder__projection__column__value">
@@ -445,7 +458,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                     tabIndex={-1}
                     title="Choose Aggregate Operator..."
                   >
-                    <MdFunctions />
+                    <SigmaIcon />
                   </button>
                   <button
                     className="query-builder__projection__column__aggregate__operator__dropdown__trigger"
@@ -462,7 +475,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                 className="query-builder__projection__column__action"
                 tabIndex={-1}
                 onClick={removeColumn}
-                title={`Remove`}
+                title="Remove"
               >
                 <TimesIcon />
               </button>

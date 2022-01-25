@@ -50,14 +50,6 @@ This is why we need to be able to do the followings:
 
 These concerns are addressed by most bundlers like `webpack` or `rollup`. The former, however is not too straight-forward: to [fully support tree-shaking](https://webpack.js.org/guides/tree-shaking/), we need to build and ship the library modules (i.e. non-top-level modules) as [ESM](https://hacks.mozilla.org/2018/03/es-modules-a-cartoon-deep-dive/), rather than [CommonJS (CJS)](https://auth0.com/blog/javascript-module-systems-showdown/). For the latter, we can go with the ideal option by using Typescript compiler `tsc`, which does no bundling at all. The advantages of this approach over bundling will be discussed in the next [section](#to-bundle-or-not-to-bundle).
 
-Note that at the moment of speaking, the tooling support for ESM is not quite fully in place.
-
-> For example, due to `Jest@26`'s [incomplete support for ESM](https://github.com/facebook/jest/issues/9430), we still need to specify the `main` field in `package.json` and rely on `babel-jest` to transform packages during test.
-
-On top of that, not all dependencies support ESM (most, however, do have support for CJS as it's still the dominant one), and while some of them do, there are particular setup we have to follow to not wrongly pick the CJS bundle.
-
-> Take `lodash` for example, to use ESM `lodash`, we have to use the library [lodash-es](https://www.npmjs.com/package/lodash-es). For big library like `monaco-editor`, tree-shaking also becomes vital, and their setup to use ESM is also [not straight-forward](https://github.com/microsoft/monaco-editor-webpack-plugin/issues/97)
-
 ### To Bundle or Not to Bundle?
 
 There is probably only one clear advantage that bundling offer which is download size. For this reason, we tend to bundle top-level modules whose code is consumed by browsers and downloaded by the users. For non top-level modules, such as utilities or libraries, the only time we download their build artifacts is during development time. Sure it helps to save disk space here, but shipping unbundled code offers many advantage.

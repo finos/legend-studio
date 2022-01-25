@@ -21,35 +21,35 @@ import {
   UML_EDITOR_TAB,
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import { useDrop } from 'react-dnd';
-import type {
-  ElementDragSource,
-  UMLEditorElementDropTarget,
+import {
+  CORE_DND_TYPE,
+  type ElementDragSource,
+  type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
   clsx,
   getControlledResizablePanelProps,
+  InputWithInlineValidation,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  PlusIcon,
+  TimesIcon,
+  LongArrowRightIcon,
+  LockIcon,
+  FireIcon,
+  StickArrowCircleRightIcon,
 } from '@finos/legend-art';
-import { STUDIO_TEST_ID } from '../../../StudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { StereotypeSelector } from './StereotypeSelector';
 import { TaggedValueEditor } from './TaggedValueEditor';
-import {
-  FaPlus,
-  FaTimes,
-  FaLongArrowAltRight,
-  FaLock,
-  FaFire,
-  FaArrowCircleRight,
-} from 'react-icons/fa';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { Enumeration, StereotypeReference } from '@finos/legend-graph';
 import {
+  type Enumeration,
+  type StereotypeReference,
   Enum,
   Profile,
   Tag,
@@ -66,19 +66,25 @@ const EnumBasicEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { _enum, selectValue, deleteValue, isReadOnly } = props;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       _enum.setName(event.target.value);
+    };
+    const isEnumValueDuplicated = (val: Enum): boolean =>
+      _enum.owner.values.filter((value) => value.name === val.name).length >= 2;
 
     return (
       <div className="enum-basic-editor">
-        <input
-          className="enum-basic-editor__name"
+        <InputWithInlineValidation
+          className="enum-basic-editor__name input-group__input"
           spellCheck={false}
           disabled={isReadOnly}
           value={_enum.name}
           onChange={changeValue}
           placeholder={`Enum name`}
           name={`Type enum name`}
+          validationErrorMessage={
+            isEnumValueDuplicated(_enum) ? 'Duplicated enum' : undefined
+          }
         />
         <button
           className="uml-element-editor__basic__detail-btn"
@@ -86,7 +92,7 @@ const EnumBasicEditor = observer(
           tabIndex={-1}
           title={'See detail'}
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
         {!isReadOnly && (
           <button
@@ -96,7 +102,7 @@ const EnumBasicEditor = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>
@@ -199,12 +205,12 @@ const EnumEditor = observer(
 
     return (
       <div className="uml-element-editor enum-editor">
-        <div data-testid={STUDIO_TEST_ID.PANEL} className="panel">
+        <div data-testid={LEGEND_STUDIO_TEST_ID.PANEL} className="panel">
           <div className="panel__header">
             <div className="panel__header__title">
               {isReadOnly && (
                 <div className="uml-element-editor__header__lock">
-                  <FaLock />
+                  <LockIcon />
                 </div>
               )}
               <div className="panel__header__title__label">enum</div>
@@ -217,12 +223,12 @@ const EnumEditor = observer(
                 tabIndex={-1}
                 title={'Close'}
               >
-                <FaTimes />
+                <TimesIcon />
               </button>
             </div>
           </div>
           <div
-            data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+            data-testid={LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
             className="panel__header uml-element-editor__tabs__header"
           >
             <div className="uml-element-editor__tabs">
@@ -246,7 +252,7 @@ const EnumEditor = observer(
                 tabIndex={-1}
                 title={addButtonTitle}
               >
-                <FaPlus />
+                <PlusIcon />
               </button>
             </div>
           </div>
@@ -422,7 +428,7 @@ export const EnumerationEditor = observer(
 
     return (
       <div
-        data-testid={STUDIO_TEST_ID.ENUMERATION_EDITOR}
+        data-testid={LEGEND_STUDIO_TEST_ID.ENUMERATION_EDITOR}
         className="uml-element-editor enumeration-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
@@ -444,20 +450,22 @@ export const EnumerationEditor = observer(
                       title={`Visit generation parent '${enumeration.generationParentElement.path}'`}
                     >
                       <div className="uml-element-editor__header__generation-origin__label">
-                        <FaFire />
+                        <FireIcon />
                       </div>
                       <div className="uml-element-editor__header__generation-origin__parent-name">
                         {enumeration.generationParentElement.name}
                       </div>
                       <div className="uml-element-editor__header__generation-origin__visit-btn">
-                        <FaArrowCircleRight />
+                        <StickArrowCircleRightIcon />
                       </div>
                     </button>
                   )}
                 </div>
               </div>
               <div
-                data-testid={STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER}
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.UML_ELEMENT_EDITOR__TABS_HEADER
+                }
                 className="panel__header uml-element-editor__tabs__header"
               >
                 <div className="uml-element-editor__tabs">
@@ -480,7 +488,7 @@ export const EnumerationEditor = observer(
                     tabIndex={-1}
                     title={addButtonTitle}
                   >
-                    <FaPlus />
+                    <PlusIcon />
                   </button>
                 </div>
               </div>

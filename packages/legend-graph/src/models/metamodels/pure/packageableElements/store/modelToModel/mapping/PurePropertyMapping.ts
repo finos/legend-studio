@@ -15,11 +15,12 @@
  */
 
 import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Hashable } from '@finos/legend-shared';
-import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping';
-import { PropertyMapping } from '../../../mapping/PropertyMapping';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  type PropertyMappingVisitor,
+  PropertyMapping,
+} from '../../../mapping/PropertyMapping';
 import type { EnumerationMapping } from '../../../mapping/EnumerationMapping';
 import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { SetImplementation } from '../../../mapping/SetImplementation';

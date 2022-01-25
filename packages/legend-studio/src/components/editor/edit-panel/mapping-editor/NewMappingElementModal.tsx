@@ -15,26 +15,29 @@
  */
 
 import { useState, useRef } from 'react';
-import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
-import type { SelectComponent } from '@finos/legend-art';
 import {
+  Dialog,
+  type SelectComponent,
   CustomSelectorInput,
   createFilter,
   compareLabelFn,
 } from '@finos/legend-art';
-import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import {
+  type MappingElement,
   createClassMapping,
   createEnumerationMapping,
   getAllMappingElements,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { PackageableElement } from '@finos/legend-graph';
 import {
+  type PackageableElement,
   PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   Class,
@@ -104,7 +107,9 @@ export const NewMappingElementModal = observer(() => {
     { value: BASIC_SET_IMPLEMENTATION_TYPE.INSTANCE, label: 'Instance' },
     { value: BASIC_SET_IMPLEMENTATION_TYPE.OPERATION, label: 'Operation' },
   ];
-  const initialClassMappingType = classMappingTypeOptions[0];
+  const initialClassMappingType = guaranteeNonNullable(
+    classMappingTypeOptions[0],
+  );
   const [classMappingType, setClassMappingType] =
     useState<ClassMappingSubTypeOption | null>(initialClassMappingType);
   const changeClassMappingType = (val: ClassMappingSubTypeOption): void =>
@@ -202,6 +207,7 @@ export const NewMappingElementModal = observer(() => {
       open={Boolean(spec)}
       onClose={handleClose}
       TransitionProps={{
+        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{

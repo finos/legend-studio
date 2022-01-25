@@ -24,13 +24,17 @@ import {
 import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 import {
+  type SDLCServerClient,
   TEST__SDLCServerClientProvider,
   TEST__provideMockedSDLCServerClient,
 } from '@finos/legend-server-sdlc';
-import { TEST__ApplicationStoreProvider } from '@finos/legend-application';
+import {
+  TEST__ApplicationStoreProvider,
+  TEST__provideMockedWebApplicationNavigator,
+} from '@finos/legend-application';
 import { TEST__getTestStudioConfig } from '../../../stores/EditorStoreTestUtils';
+import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager';
 
 let sdlcServerClient: SDLCServerClient;
 
@@ -49,10 +53,14 @@ test(
       .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
       .mockResolvedValueOnce([]);
     MOBX__disableSpyOrMock();
+    TEST__provideMockedWebApplicationNavigator();
 
     const { queryByText } = render(
       <MemoryRouter>
-        <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+        <TEST__ApplicationStoreProvider
+          config={TEST__getTestStudioConfig()}
+          pluginManager={LegendStudioPluginManager.create()}
+        >
           <TEST__SDLCServerClientProvider>
             <Setup />
           </TEST__SDLCServerClientProvider>
@@ -74,10 +82,14 @@ test(
     MOBX__enableSpyOrMock();
     jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
     MOBX__disableSpyOrMock();
+    TEST__provideMockedWebApplicationNavigator();
 
     const { queryByText } = render(
       <MemoryRouter>
-        <TEST__ApplicationStoreProvider config={TEST__getTestStudioConfig()}>
+        <TEST__ApplicationStoreProvider
+          config={TEST__getTestStudioConfig()}
+          pluginManager={LegendStudioPluginManager.create()}
+        >
           <TEST__SDLCServerClientProvider>
             <Setup />
           </TEST__SDLCServerClientProvider>

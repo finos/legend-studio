@@ -17,20 +17,19 @@
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
-import type { SDLCServerClientConfig } from './SDLCServerClient';
-import { SDLCServerClient } from './SDLCServerClient';
+import {
+  type SDLCServerClientConfig,
+  SDLCServerClient,
+} from './SDLCServerClient';
 
 const SDLCServerClientContext = createContext<SDLCServerClient | undefined>(
   undefined,
 );
 
-export const SDLCServerClientProvider = ({
-  children,
-  config,
-}: {
+export const SDLCServerClientProvider: React.FC<{
   children: React.ReactNode;
   config: SDLCServerClientConfig;
-}): React.ReactElement => {
+}> = ({ children, config }) => {
   const sdlcServerClient = useLocalObservable(
     () => new SDLCServerClient(config),
   );

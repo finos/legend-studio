@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import { QueryBuilderFilterOperator } from '../QueryBuilderFilterState';
-import type {
-  QueryBuilderFilterState,
-  FilterConditionState,
-} from '../QueryBuilderFilterState';
-import type {
-  ValueSpecification,
-  SimpleFunctionExpression,
-} from '@finos/legend-graph';
 import {
+  QueryBuilderFilterOperator,
+  type QueryBuilderFilterState,
+  type FilterConditionState,
+} from '../QueryBuilderFilterState';
+import {
+  type ValueSpecification,
+  type SimpleFunctionExpression,
+  type Enum,
   EnumValueInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
@@ -138,7 +137,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
               multiplicityOne,
             );
             enumValueInstanceValue.values = [
-              EnumValueExplicitReference.create(propertyType.values[0]),
+              EnumValueExplicitReference.create(propertyType.values[0] as Enum),
             ];
             return enumValueInstanceValue;
           }

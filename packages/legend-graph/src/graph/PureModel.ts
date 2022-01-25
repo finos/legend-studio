@@ -21,8 +21,8 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../MetaModelConst';
-import type { Clazz } from '@finos/legend-shared';
 import {
+  type Clazz,
   guaranteeNonNullable,
   guaranteeType,
   returnUndefOnError,
@@ -56,7 +56,6 @@ import {
   Measure,
   Unit,
 } from '../models/metamodels/pure/packageableElements/domain/Measure';
-import { ServiceStore } from '../models/metamodels/pure/packageableElements/store/relational/model/ServiceStore';
 import type { PureGraphPlugin } from './PureGraphPlugin';
 
 /**
@@ -234,7 +233,6 @@ export class PureModel extends BasicModel {
     path: string,
   ): FileGenerationSpecification | undefined =>
     returnUndefOnError(() => this.getFileGeneration(path));
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   getType = (path: string): Type =>
     guaranteeNonNullable(
       this.getOwnType(path) ??
@@ -301,12 +299,6 @@ export class PureModel extends BasicModel {
       this.getStore(path),
       Database,
       `Can't find database store '${path}'`,
-    );
-  getServiceStore = (path: string): ServiceStore =>
-    guaranteeType(
-      this.getStore(path),
-      ServiceStore,
-      `Can't find service store '${path}'`,
     );
   getMapping = (path: string): Mapping =>
     guaranteeNonNullable(
@@ -436,7 +428,6 @@ export class PureModel extends BasicModel {
     return multiplicity ?? new Multiplicity(lowerBound, upperBound);
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   addElement(element: PackageableElement): void {
     this.getNullableElement(element.path);
     if (element instanceof Mapping) {

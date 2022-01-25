@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-@use '../mixins' as *;
+@use 'mixins' as *;
 
 .icon {
   @include flexCenter;
 
   // TODO: try to remove this style so we don't need to depend on yet another font
-  font-family: 'Raleway', sans-serif;
+  // then we can remove font `Raleway` from Google font loader call
+  font-family: Raleway, sans-serif;
   font-weight: 900;
   user-select: none;
 }

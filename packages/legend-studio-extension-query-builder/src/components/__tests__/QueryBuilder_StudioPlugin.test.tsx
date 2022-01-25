@@ -21,10 +21,10 @@ import {
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
-import type { EditorStore } from '@finos/legend-studio';
 import {
-  StudioPluginManager,
-  STUDIO_TEST_ID,
+  type EditorStore,
+  LegendStudioPluginManager,
+  LEGEND_STUDIO_TEST_ID,
   TEST__openElementFromExplorerTree,
   TEST__getTestStudioConfig,
   TEST__provideMockedEditorStore,
@@ -32,17 +32,18 @@ import {
 } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
-import { QueryBuilder_StudioPreset } from '../../QueryBuilder_StudioPreset';
+import { QueryBuilder_LegendStudioPreset } from '../../QueryBuilder_LegendStudioPreset';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
 
 const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
-  const pluginManager = StudioPluginManager.create();
-  pluginManager.usePresets([new QueryBuilder_StudioPreset()]).install();
+  const pluginManager = LegendStudioPluginManager.create();
+  pluginManager.usePresets([new QueryBuilder_LegendStudioPreset()]).install();
 
   return TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(
       TEST__getTestStudioConfig(),
+      pluginManager,
     ),
     graphManagerState: TEST__provideMockedGraphManagerState({ pluginManager }),
     pluginManager,
@@ -229,13 +230,13 @@ test(integrationTest('Open query builder by executing a class'), async () => {
   await TEST__openElementFromExplorerTree('model::Person', renderResult);
 
   const projectExplorer = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_TREES,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
   const elementInExplorer = getByText(projectExplorer, 'Person');
   fireEvent.contextMenu(elementInExplorer);
 
   const explorerContextMenu = renderResult.getByTestId(
-    STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
+    LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
   );
 
   fireEvent.click(getByText(explorerContextMenu, 'Execute...'));
@@ -263,14 +264,14 @@ test(
     await TEST__openElementFromExplorerTree('model::MyMapping', renderResult);
 
     const mappingExplorer = renderResult.getByTestId(
-      STUDIO_TEST_ID.MAPPING_EXPLORER,
+      LEGEND_STUDIO_TEST_ID.MAPPING_EXPLORER,
     );
     const classMappingInExplorer = getByText(mappingExplorer, 'Person');
     fireEvent.contextMenu(classMappingInExplorer);
 
     fireEvent.click(renderResult.getByText('Execute'));
-    await waitFor(() => renderResult.getByText('Edit Query'));
-    fireEvent.click(renderResult.getByText('Edit Query'));
+    await waitFor(() => renderResult.getByTitle('Edit query...'));
+    fireEvent.click(renderResult.getByTitle('Edit query...'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
@@ -296,8 +297,8 @@ test(
 
     await TEST__openElementFromExplorerTree('model::MyMapping', renderResult);
     fireEvent.click(renderResult.getByText('test_1'));
-    await waitFor(() => renderResult.getByText('Edit Query'));
-    fireEvent.click(renderResult.getByText('Edit Query'));
+    await waitFor(() => renderResult.getByTitle('Edit query...'));
+    fireEvent.click(renderResult.getByTitle('Edit query...'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
@@ -323,8 +324,8 @@ test(
 
     await TEST__openElementFromExplorerTree('model::MyService', renderResult);
     fireEvent.click(renderResult.getByText('Execution'));
-    await waitFor(() => renderResult.getByText('Edit Query'));
-    fireEvent.click(renderResult.getByText('Edit Query'));
+    await waitFor(() => renderResult.getByTitle('Edit query...'));
+    fireEvent.click(renderResult.getByTitle('Edit query...'));
 
     await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),

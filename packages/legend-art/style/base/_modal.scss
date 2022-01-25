@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../mixins' as *;
+@use 'mixins' as *;
 
 .modal {
   &__header {
@@ -167,5 +167,17 @@
 
   .modal__body.modal__body--footless {
     height: calc(100% - 3.6rem);
+  }
+}
+
+.modal--simple {
+  &__input {
+    height: 2.8rem;
+    width: 100%;
+  }
+
+  &__btn {
+    margin-top: 0.5rem;
+    height: 2.8rem;
   }
 }

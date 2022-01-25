@@ -125,6 +125,7 @@ export const unauthenticated = (response: Response): boolean =>
  * should be optional and configurable.
  */
 export const autoReAuthenticate = (url: string): Promise<void> =>
+  // eslint-disable-next-line @typescript-eslint/ban-types
   new Promise((resolve: Function): void => {
     const id = 'AUTO_AUTHENTICATION_IFRAME';
     const previous = document.getElementById(id);
@@ -445,7 +446,8 @@ export class NetworkClient {
     /**
      * For network client to work, we need an implementation of `window.fetch` to be present.
      * Modern browsers should already have native support for `fetch`.
-     * In case they don't, there are several ways to go about this, but we recommend using `whatwg-fetch` polyfill.
+     * In case they don't (such as in test where we use `jsdom` for example),
+     * there are several ways to go about this,but we recommend using `whatwg-fetch` polyfill.
      *
      * Why favor `whatwg-fetch`?
      * It's Github's polyfill for a subset of features of Fetch API.
@@ -473,7 +475,7 @@ export class NetworkClient {
  * Create and download a file using data URI
  * See http://stackoverflow.com/questions/283956
  */
-export const downloadFile = (
+export const downloadFileUsingDataURI = (
   fileName: string,
   content: string,
   contentType: ContentType,

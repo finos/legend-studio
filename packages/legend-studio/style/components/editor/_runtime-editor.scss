@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../../mixins' as *;
+@use 'mixins' as *;
 
 .runtime-editor {
   height: 100%;
@@ -180,7 +180,7 @@
     border-bottom: 0.1rem solid var(--color-dark-grey-200);
 
     .panel__content {
-      padding: 1.5rem 1.5rem 1rem 1.5rem;
+      padding: 1.5rem 1.5rem 1rem;
     }
   }
 

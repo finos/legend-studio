@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@use '../mixins' as *;
+@use 'mixins' as *;
 
 .setup {
   height: 100%;
@@ -103,6 +103,29 @@
 
       height: 1.8rem;
     }
+  }
+
+  &__workspace__label {
+    display: flex;
+
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.7rem;
+      min-width: 1.7rem;
+      margin-right: 1rem;
+    }
+
+    &__name {
+      @include flexVCenter;
+
+      height: 1.8rem;
+    }
+  }
+
+  &__workspace__selector {
+    margin-top: 1rem;
   }
 }
 

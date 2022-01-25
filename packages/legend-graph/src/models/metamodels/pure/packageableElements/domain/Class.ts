@@ -16,6 +16,7 @@
 
 import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   uniqBy,
   IllegalStateError,
@@ -25,18 +26,16 @@ import {
   deleteEntry,
   changeEntry,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
 } from '../../../../../MetaModelConst';
 import { Type } from './Type';
 import type { Property } from './Property';
 import type { Constraint } from './Constraint';
 import type { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { isStubArray } from '../../../../../helpers/Stubable';
+import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import { PrimitiveType } from './PrimitiveType';
 import { Enumeration } from './Enumeration';
@@ -52,11 +51,13 @@ export class Class extends Type implements Hashable, Stubable {
   derivedProperties: DerivedProperty[] = [];
   generalizations: GenericTypeReference[] = [];
   /**
+   * We can also call this `specifications` (i.e. vs. `generalizations`)
+   *
    * @MARKER MEMORY-SENSITIVE
    * if this belongs to immutable elements: i.e. in system, project dependency, etc.
    * we have to make sure to remove of disposed classes from this when we reprocess the graph
    */
-  _subClasses: Class[] = [];
+  subclasses: Class[] = [];
   constraints: Constraint[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
@@ -69,7 +70,7 @@ export class Class extends Type implements Hashable, Stubable {
       propertiesFromAssociations: observable,
       derivedProperties: observable,
       generalizations: observable,
-      _subClasses: observable,
+      subclasses: observable,
       constraints: observable,
       stereotypes: observable,
       taggedValues: observable,
@@ -82,15 +83,15 @@ export class Class extends Type implements Hashable, Stubable {
       changeConstraint: action,
       addSuperType: action,
       deleteSuperType: action,
-      addSubClass: action,
-      deleteSubClass: action,
+      addSubclass: action,
+      deleteSubclass: action,
       deleteTaggedValue: action,
       addTaggedValue: action,
       deleteStereotype: action,
       changeStereotype: action,
       addStereotype: action,
-      allSuperClasses: computed,
-      allSubClasses: computed({ keepAlive: true }),
+      allSuperclasses: computed,
+      allSubclasses: computed({ keepAlive: true }),
       dispose: override,
       isStub: computed,
       _elementHashCode: override,
@@ -124,11 +125,11 @@ export class Class extends Type implements Hashable, Stubable {
   deleteSuperType(val: GenericTypeReference): void {
     deleteEntry(this.generalizations, val);
   }
-  addSubClass(val: Class): void {
-    addUniqueEntry(this._subClasses, val);
+  addSubclass(val: Class): void {
+    addUniqueEntry(this.subclasses, val);
   }
-  deleteSubClass(val: Class): void {
-    deleteEntry(this._subClasses, val);
+  deleteSubclass(val: Class): void {
+    deleteEntry(this.subclasses, val);
   }
   deleteTaggedValue(val: TaggedValue): void {
     deleteEntry(this.taggedValues, val);
@@ -154,7 +155,7 @@ export class Class extends Type implements Hashable, Stubable {
    */
   getAllProperties = (): Property[] =>
     uniqBy(
-      this.allSuperClasses
+      this.allSuperclasses
         .concat(this)
         .map((_class) =>
           _class.propertiesFromAssociations.concat(_class.properties),
@@ -171,7 +172,7 @@ export class Class extends Type implements Hashable, Stubable {
 
   getAllDerivedProperties = (): DerivedProperty[] =>
     uniqBy(
-      this.allSuperClasses
+      this.allSuperclasses
         .concat(this)
         .map((_class) => _class.derivedProperties)
         .flat(),
@@ -191,22 +192,22 @@ export class Class extends Type implements Hashable, Stubable {
 
   // Perhaps we don't need to care about deduping constraints here like for properties
   getAllConstraints = (): Constraint[] =>
-    this.allSuperClasses
+    this.allSuperclasses
       .concat(this)
       .map((_class) => _class.constraints)
       .flat();
 
   isSuperType(type: Type): boolean {
     return (
-      type.path === CORE_ELEMENT_PATH.ANY ||
-      (type instanceof Class && type.allSuperClasses.includes(this))
+      type.path === CORE_PURE_PATH.ANY ||
+      (type instanceof Class && type.allSuperclasses.includes(this))
     );
   }
 
   isSubType(type: Type): boolean {
     return (
-      this.path === CORE_ELEMENT_PATH.ANY ||
-      (type instanceof Class && type.allSubClasses.includes(this))
+      this.path === CORE_PURE_PATH.ANY ||
+      (type instanceof Class && type.allSubclasses.includes(this))
     );
   }
 
@@ -214,7 +215,7 @@ export class Class extends Type implements Hashable, Stubable {
    * Get all super types of a class, accounted for loop and duplication (which should be caught by compiler)
    * NOTE: we intentionally leave out `Any`
    */
-  get allSuperClasses(): Class[] {
+  get allSuperclasses(): Class[] {
     const visitedClasses = new Set<Class>();
     visitedClasses.add(this);
     const resolveSuperTypes = (_class: Class): void => {
@@ -232,31 +233,31 @@ export class Class extends Type implements Hashable, Stubable {
   }
 
   /**
-   * Get all sub-classes of a class, accounted for loop and duplication (which should be caught by compiler)
+   * Get all subclasses of a class, accounted for loop and duplication (which should be caught by compiler)
    * NOTE: we intentionally leave out `Any`
    *
    * @MARKER MEMORY-SENSITIVE
    * When this is an immutable class such as project dependency or system we need to remember to remove the classes from the sub-types array.
    * And rerun this computation to avoid potenial memory leak
    */
-  get allSubClasses(): Class[] {
+  get allSubclasses(): Class[] {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }
     const visitedClasses = new Set<Class>();
     visitedClasses.add(this);
-    const resolveSubClasses = (_class: Class): void => {
+    const resolveSubclasses = (_class: Class): void => {
       if (_class._isDisposed) {
         return;
       }
-      _class._subClasses.forEach((subClass) => {
-        if (!visitedClasses.has(subClass)) {
-          visitedClasses.add(subClass);
-          resolveSubClasses(subClass);
+      _class.subclasses.forEach((subclass) => {
+        if (!visitedClasses.has(subclass)) {
+          visitedClasses.add(subclass);
+          resolveSubclasses(subclass);
         }
       });
     };
-    resolveSubClasses(this);
+    resolveSubclasses(this);
     visitedClasses.delete(this);
     return Array.from(visitedClasses);
   }
@@ -269,7 +270,7 @@ export class Class extends Type implements Hashable, Stubable {
    * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
    */
   override dispose(): void {
-    this._subClasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
+    this.subclasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
     this._isDisposed = true;
     // dispose hash computation
     try {
@@ -277,19 +278,19 @@ export class Class extends Type implements Hashable, Stubable {
     } catch {
       /* do nothing */
     } // trigger recomputation on `hashCode` so it removes itself from all observables it previously observed
-    // cleanup sub-classes analytics on super classes
-    this.allSuperClasses.forEach((superClass) => {
-      if (!superClass._isDisposed) {
-        superClass._subClasses = superClass._subClasses.filter(
-          (subClass) => !subClass._isDisposed,
+    // cleanup subclasses analytics on superclasses
+    this.allSuperclasses.forEach((superclass) => {
+      if (!superclass._isDisposed) {
+        superclass.subclasses = superclass.subclasses.filter(
+          (subclass) => !subclass._isDisposed,
         );
       }
     });
     try {
-      this.allSubClasses;
+      this.allSubclasses;
     } catch {
       /* do nothing */
-    } // trigger recomputation on `allSubClasses` so it removes itself from all observables it previously observed
+    } // trigger recomputation on `allSubclasses` so it removes itself from all observables it previously observed
   }
 
   static createStub = (): Class => new Class('');

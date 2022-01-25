@@ -17,25 +17,27 @@
 import packageJson from '../../package.json';
 import { Binding } from '../models/metamodels/pure/model/packageableElements/store/Binding';
 import { SchemaSet } from '../models/metamodels/pure/model/packageableElements/schemaSet/SchemaSet';
-import type {
-  GraphPluginManager,
-  PackageableElement,
-  PureGrammarElementLabeler,
+import {
+  PureGraphManagerPlugin,
+  type DSLMapping_PureGraphManagerPlugin_Extension,
+  type PureGrammarConnectionLabeler,
+  type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
-import { PureGraphManagerPlugin } from '@finos/legend-graph';
+import { ExternalFormatConnection } from '../models/metamodels/pure/model/packageableElements/connection/ExternalFormatConnection';
 
 const PURE_GRAMMAR_BINDING_PARSER_NAME = 'ExternalFormat';
 const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';
 const PURE_GRAMMAR_SCHEMA_SET_PARSER_NAME = 'ExternalFormat';
 const PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL = 'SchemaSet';
+const PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL =
+  'ExternalFormatConnection';
 
-export class DSLSerializer_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class DSLSerializer_PureGraphManagerPlugin
+  extends PureGraphManagerPlugin
+  implements DSLMapping_PureGraphManagerPlugin_Extension
+{
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    pluginManager.registerPureGraphManagerPlugin(this);
   }
 
   override getExtraPureGrammarParserNames(): string[] {
@@ -49,15 +51,28 @@ export class DSLSerializer_PureGraphManagerPlugin extends PureGraphManagerPlugin
     return [
       PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
       PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL,
     ];
   }
+
   override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
     return [
-      (element: PackageableElement): string | undefined => {
+      (element): string | undefined => {
         if (element instanceof Binding) {
           return PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL;
         } else if (element instanceof SchemaSet) {
           return PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
+    return [
+      (connection): string | undefined => {
+        if (connection instanceof ExternalFormatConnection) {
+          return PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL;
         }
         return undefined;
       },

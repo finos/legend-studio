@@ -15,11 +15,11 @@ jobs:
     if: github.repository == 'finos/legend-studio' # prevent running this action in forks
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0 # disabling shallow clone is recommended for improving relevancy of reporting
       - name: SonarCloud scan
-        uses: sonarsource/sonarcloud-github-action@master
+        uses: sonarsource/sonarcloud-github-action@v1.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

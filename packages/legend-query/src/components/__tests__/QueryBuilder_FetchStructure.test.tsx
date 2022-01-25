@@ -24,6 +24,7 @@ import {
   TEST_DATA__projectWithDerivedProperty,
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
+  TEST_DATA__simpleProjectionWithSubtype,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
@@ -39,14 +40,17 @@ import {
   RawLambda,
 } from '@finos/legend-graph';
 import {
-  TEST__provideMockedQueryStore,
+  TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
 } from '../QueryComponentTestUtils';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID';
-import { QueryBuilderExplorerTreeRootNodeData } from '../../stores/QueryBuilderExplorerState';
+import {
+  QueryBuilderExplorerTreeRootNodeData,
+  QueryBuilderExplorerTreeSubTypeNodeData,
+} from '../../stores/QueryBuilderExplorerState';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
 
@@ -60,9 +64,9 @@ test(
     'Query builder state is properly set after processing a projection lambda',
   ),
   async () => {
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedQueryStore({
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
@@ -84,8 +88,7 @@ test(
       'model::relational::tests::simpleRelationalMapping',
     );
 
-    queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetData();
+    queryBuilderState.changeClass(_personClass);
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -98,14 +101,14 @@ test(
       queryBuilderState.explorerState.treeData,
     );
     const rootNode = guaranteeType(
-      treeData.nodes.get(treeData.rootIds[0]),
+      treeData.nodes.get(treeData.rootIds[0] as string),
       QueryBuilderExplorerTreeRootNodeData,
     );
 
     expect(getRootSetImplementation(mapping, _personClass)).toBe(
-      rootNode.setImpl,
+      rootNode.mappingData.targetSetImpl,
     );
-    expect(rootNode.mapped).toBe(true);
+    expect(rootNode.mappingData.mapped).toBe(true);
 
     // simpleProjection
     queryBuilderState.initialize(getRawLambda(TEST_DATA__simpleProjection));
@@ -281,7 +284,8 @@ test(
     ).toBe(0);
 
     // filter with group condition
-    queryBuilderState.resetData();
+    queryBuilderState.resetQueryBuilder();
+    queryBuilderState.resetQuerySetup();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__getAllWithGroupedFilter),
@@ -313,7 +317,8 @@ test(
     ).toBe(0);
 
     // projection column with derived property
-    queryBuilderState.resetData();
+    queryBuilderState.resetQueryBuilder();
+    queryBuilderState.resetQuerySetup();
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     queryBuilderState.initialize(
       getRawLambda(TEST_DATA__projectWithDerivedProperty),
@@ -345,12 +350,101 @@ test(
 
 test(
   integrationTest(
+    'Query builder state is properly set after processing a lambda with subtype',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_DATA__ComplexRelationalModel,
+      RawLambda.createStub(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass = mockedQueryStore.graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+    const mapping = mockedQueryStore.graphManagerState.graph.getMapping(
+      'model::relational::tests::simpleRelationalMapping',
+    );
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() =>
+      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+
+    //check subclass display in the explorer tree
+    const treeData = guaranteeNonNullable(
+      queryBuilderState.explorerState.treeData,
+    );
+    const rootNode = guaranteeType(
+      treeData.nodes.get(treeData.rootIds[0] as string),
+      QueryBuilderExplorerTreeRootNodeData,
+    );
+    expect(getRootSetImplementation(mapping, _personClass)).toBe(
+      rootNode.mappingData.targetSetImpl,
+    );
+    expect(rootNode.mappingData.mapped).toBe(true);
+    const subTypeNodes = [...treeData.nodes.values()].filter(
+      (node) => node instanceof QueryBuilderExplorerTreeSubTypeNodeData,
+    );
+    expect(subTypeNodes.length).toBe(2);
+    const queryBuilderExplorerTreeSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    await waitFor(() => getByText(queryBuilderExplorerTreeSetup, '@Person'));
+    await waitFor(() =>
+      getByText(queryBuilderExplorerTreeSetup, '@Person Extension'),
+    );
+
+    // simpleProjection with subType
+    queryBuilderState.initialize(
+      getRawLambda(TEST_DATA__simpleProjectionWithSubtype),
+    );
+    const projectionColsWithSubType = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+    );
+    const NAME_ALIAS = '(@Person)/First Name';
+    await waitFor(() => getByText(projectionColsWithSubType, NAME_ALIAS));
+    expect(
+      await waitFor(() =>
+        projectionColsWithSubType.querySelector(`input[value="${NAME_ALIAS}"]`),
+      ),
+    ).not.toBeNull();
+    expect(
+      queryBuilderState.fetchStructureState.projectionState.columns.length,
+    ).toBe(1);
+    const nameCol = guaranteeNonNullable(
+      queryBuilderState.fetchStructureState.projectionState.columns.find(
+        (e) => e.columnName === NAME_ALIAS,
+      ),
+    );
+    const nameProperty = guaranteeType(
+      nameCol,
+      QueryBuilderSimpleProjectionColumnState,
+    ).propertyExpressionState.propertyExpression.func;
+    expect(nameProperty).toBe(_personClass.getProperty('firstName'));
+  },
+);
+
+test(
+  integrationTest(
     'Query builder state is properly set after processing a graph-fetch lambda',
   ),
   async () => {
-    const pluginManager = QueryPluginManager.create();
+    const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedQueryStore({
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
@@ -369,8 +463,7 @@ test(
       'model::target::NFirm',
     );
 
-    queryBuilderState.querySetupState.setClass(_personClass);
-    queryBuilderState.resetData();
+    queryBuilderState.changeClass(_personClass);
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );

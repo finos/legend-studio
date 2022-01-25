@@ -16,12 +16,12 @@
 
 import { observable, action, computed, makeObservable } from 'mobx';
 import {
+  type Hashable,
   hashArray,
   hashString,
   IllegalStateError,
   uuid,
 } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
@@ -44,7 +44,6 @@ import type { FileGenerationSpecification } from './fileGeneration/FileGeneratio
 import type { GenerationSpecification } from './generationSpecification/GenerationSpecification';
 import type { Measure } from './domain/Measure';
 import type { SectionIndex } from './section/SectionIndex';
-import type { ServiceStore } from './store/relational/model/ServiceStore';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -63,7 +62,6 @@ export interface PackageableElementVisitor<T> {
 
   visit_FlatData(element: FlatData): T;
   visit_Database(element: Database): T;
-  visit_ServiceStore(element: ServiceStore): T;
   visit_Service(element: Service): T;
   visit_FileGenerationSpecification(element: FileGenerationSpecification): T;
   visit_GenerationSpecification(element: GenerationSpecification): T;
@@ -150,7 +148,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
       : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
   }
 
-  // NOTE: we don't need `createStub` as the sub-classes will have to implement their own for type narrowing
+  // NOTE: we don't need `createStub` as the subclasses will have to implement their own for type narrowing
   get isStub(): boolean {
     return !this.name && !this.package;
   }
@@ -213,7 +211,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
   ): T;
 }
 
-/* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
 export enum PACKAGEABLE_ELEMENT_TYPE {
   PRIMITIVE = 'PRIMITIVE',
   PACKAGE = 'PACKAGE',

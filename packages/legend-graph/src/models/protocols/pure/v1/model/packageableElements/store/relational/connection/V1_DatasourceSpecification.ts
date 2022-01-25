@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
-import { hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 
 export enum V1_DatasourceSpecificationType {
@@ -74,7 +73,7 @@ export class V1_DatabricksDatasourceSpecification
   extends V1_DatasourceSpecification
   implements Hashable
 {
-  hostname!: string;
+  host!: string;
   port!: string;
   protocol!: string;
   httpPath!: string;
@@ -82,7 +81,7 @@ export class V1_DatabricksDatasourceSpecification
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
-      this.hostname,
+      this.host,
       this.port,
       this.protocol,
       this.httpPath,
@@ -100,6 +99,12 @@ export class V1_SnowflakeDatasourceSpecification
   databaseName!: string;
   cloudType?: string | undefined;
   quotedIdentifiersIgnoreCase?: boolean | undefined;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
+  nonProxyHosts?: string | undefined;
+  organization?: string | undefined;
+  accountType?: string | undefined;
+  role?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -109,6 +114,12 @@ export class V1_SnowflakeDatasourceSpecification
       this.warehouseName,
       this.databaseName,
       this.cloudType ?? '',
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
+      this.nonProxyHosts ?? '',
+      this.organization ?? '',
+      this.accountType ?? '',
+      this.role ?? '',
       this.quotedIdentifiersIgnoreCase?.toString() ?? '',
     ]);
   }

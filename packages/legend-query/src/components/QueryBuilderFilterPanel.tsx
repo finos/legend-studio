@@ -17,38 +17,34 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  FaChevronDown,
-  FaChevronRight,
-  FaCompress,
-  FaExpand,
-  FaBrush,
-  FaFolderPlus,
-  FaPlus,
-  FaPlusCircle,
-  FaTimes,
-  FaCircle,
-  FaCaretDown,
-} from 'react-icons/fa';
-import { BsFillTriangleFill } from 'react-icons/bs';
-import type {
-  TreeNodeContainerProps,
-  TreeNodeViewProps,
-} from '@finos/legend-art';
-import {
+  type TreeNodeContainerProps,
+  type TreeNodeViewProps,
   clsx,
+  ClickAwayListener,
   ContextMenu,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
+  FilledTriangleIcon,
+  RefreshIcon,
+  CompressIcon,
+  ExpandIcon,
+  BrushIcon,
+  NewFolderIcon,
+  CircleIcon,
+  CaretDownIcon,
+  PlusIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PlusCircleIcon,
+  TimesIcon,
 } from '@finos/legend-art';
-import type {
-  QueryBuilderFilterConditionDragSource,
-  QueryBuilderFilterDropTarget,
-  QueryBuilderFilterTreeNodeData,
-  QueryBuilderFilterOperator,
-} from '../stores/QueryBuilderFilterState';
 import {
+  type QueryBuilderFilterConditionDragSource,
+  type QueryBuilderFilterDropTarget,
+  type QueryBuilderFilterTreeNodeData,
+  type QueryBuilderFilterOperator,
   QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QUERY_BUILDER_FILTER_DND_TYPE,
   FilterConditionState,
@@ -56,15 +52,16 @@ import {
   QueryBuilderFilterTreeBlankConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
 } from '../stores/QueryBuilderFilterState';
-import { ClickAwayListener } from '@material-ui/core';
-import type { DropTargetMonitor } from 'react-dnd';
-import { useDragLayer, useDrag, useDrop } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
-import type {
-  QueryBuilderExplorerTreeDragSource,
-  QueryBuilderExplorerTreePropertyNodeData,
-} from '../stores/QueryBuilderExplorerState';
 import {
+  type DropTargetMonitor,
+  useDragLayer,
+  useDrag,
+  useDrop,
+} from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
+import {
+  type QueryBuilderExplorerTreeDragSource,
+  type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryBuilderExplorerState';
@@ -74,9 +71,10 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { useApplicationStore } from '@finos/legend-application';
-import type { QueryBuilderParameterDragSource } from '../stores/QueryParametersState';
-import { QUERY_BUILDER_PARAMETER_TREE_DND_TYPE } from '../stores/QueryParametersState';
-import { MdRefresh } from 'react-icons/md';
+import {
+  type QueryBuilderParameterDragSource,
+  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+} from '../stores/QueryParametersState';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -154,7 +152,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
             {node.groupOperation}
           </div>
           <button className="query-builder-filter-tree__group-node__action">
-            <BsFillTriangleFill />
+            <FilledTriangleIcon />
           </button>
         </div>
       </div>
@@ -249,7 +247,7 @@ const QueryBuilderFilterConditionEditor = observer(
               tabIndex={-1}
               title="Choose Operator..."
             >
-              <FaCaretDown />
+              <CaretDownIcon />
             </button>
           </DropdownMenu>
           {node.condition.value && (
@@ -524,7 +522,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 className="query-builder-filter-tree__expand-icon"
                 onClick={toggleExpandNode}
               >
-                {node.isOpen ? <FaChevronDown /> : <FaChevronRight />}
+                {node.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
               </div>
             )}
             <div
@@ -564,7 +562,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 title="Reset Filter Value"
                 onClick={resetNode}
               >
-                <MdRefresh />
+                <RefreshIcon style={{ fontSize: '1.6rem' }} />
               </button>
             )}
             <button
@@ -573,7 +571,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               title="Remove"
               onClick={removeNode}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           </div>
         </div>
@@ -780,7 +778,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Create Condition"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
             <button
               className="panel__header__action"
@@ -794,7 +792,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Create Group From Condition"
             >
-              <FaPlusCircle />
+              <PlusCircleIcon />
             </button>
             <button
               className="panel__header__action"
@@ -803,7 +801,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Create Logical Group"
             >
-              <FaFolderPlus />
+              <NewFolderIcon />
             </button>
             <button
               className="panel__header__action"
@@ -811,7 +809,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Cleanup Tree"
             >
-              <FaBrush />
+              <BrushIcon />
             </button>
             <button
               className="panel__header__action"
@@ -819,7 +817,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Simplify Tree"
             >
-              <FaCircle />
+              <CircleIcon />
             </button>
             <button
               className="panel__header__action"
@@ -827,7 +825,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Collapse Tree"
             >
-              <FaCompress />
+              <CompressIcon />
             </button>
             <button
               className="panel__header__action"
@@ -835,7 +833,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Expand Tree"
             >
-              <FaExpand />
+              <ExpandIcon />
             </button>
           </div>
         </div>

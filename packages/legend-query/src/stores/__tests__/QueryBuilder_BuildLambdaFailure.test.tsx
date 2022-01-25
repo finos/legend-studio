@@ -29,10 +29,13 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
-import { QueryPluginManager } from '../../application/QueryPluginManager';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
-import { QueryBuilderState } from '../QueryBuilderState';
+import {
+  QueryBuilderState,
+  StandardQueryBuilderMode,
+} from '../QueryBuilderState';
 import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
 
 const getRawLambda = (jsonRawLambda: {
@@ -95,17 +98,18 @@ describe(
       '%s',
       async (testName, context, lambdaJson, errorMessage) => {
         const { entities } = context;
-        const pluginManager = QueryPluginManager.create();
+        const pluginManager = LegendQueryPluginManager.create();
         pluginManager.usePresets([new Query_GraphPreset()]).install();
         const applicationStore = TEST__getTestApplicationStore(
           TEST__getTestQueryConfig(),
+          LegendQueryPluginManager.create(),
         );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
         await TEST__buildGraphWithEntities(graphManagerState, entities);
         const queryBuilderState = new QueryBuilderState(
           applicationStore,
           graphManagerState,
-          {},
+          new StandardQueryBuilderMode(),
         );
         expect(() =>
           queryBuilderState.buildStateFromRawLambda(getRawLambda(lambdaJson)),

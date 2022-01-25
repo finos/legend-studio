@@ -19,6 +19,8 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
+  isNonNullable,
+  uniq,
 } from '@finos/legend-shared';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
@@ -29,24 +31,26 @@ import {
   FunctionType,
   LambdaFunctionInstanceValue,
 } from '../../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
-import type { ExecutionContext } from '../../../../../../../metamodels/pure/valueSpecification/ExecutionContext';
 import {
+  type ExecutionContext,
   BaseExecutionContext,
   AnalyticsExecutionContext,
 } from '../../../../../../../metamodels/pure/valueSpecification/ExecutionContext';
 import { VariableExpression } from '../../../../../../../metamodels/pure/valueSpecification/VariableExpression';
 import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { GraphFetchTree } from '../../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
 import type { AbstractProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import {
+  type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
   PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
 } from '../../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
 import { ValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
-import type { SimpleFunctionExpression } from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
-import { AbstractPropertyExpression } from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
+import {
+  type SimpleFunctionExpression,
+  AbstractPropertyExpression,
+} from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
 import { GenericType } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericType';
 import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference';
 import {
@@ -203,7 +207,7 @@ export class V1_ValueSpecificationBuilder
       `Applying function '${appliedFunction.function}'`,
     );
     if (appliedFunction.function === LET_FUNCTION) {
-      const vs = appliedFunction.parameters.map((expression) =>
+      const parameters = appliedFunction.parameters.map((expression) =>
         expression.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationBuilder(
             this.context,
@@ -212,11 +216,16 @@ export class V1_ValueSpecificationBuilder
           ),
         ),
       );
-      const letName = guaranteeType(appliedFunction.parameters[0], V1_CString)
-        .values[0];
-      const ve = new VariableExpression(letName, vs[0].multiplicity);
-      ve.genericType = vs[0].genericType;
-      this.processingContext.addInferredVariables(letName, ve);
+      const letName = guaranteeNonNullable(
+        guaranteeType(appliedFunction.parameters[0], V1_CString).values[0],
+      );
+      const firstParam = guaranteeNonNullable(parameters[0]);
+      const variableExpression = new VariableExpression(
+        letName,
+        firstParam.multiplicity,
+      );
+      variableExpression.genericType = firstParam.genericType;
+      this.processingContext.addInferredVariables(letName, variableExpression);
     }
     const func = V1_buildFunctionExpression(
       appliedFunction.function,
@@ -260,6 +269,17 @@ export class V1_ValueSpecificationBuilder
       ),
     );
     instance.values = transformed;
+    // NOTE: Engine applies a more sophisticated `findMostCommon()` algorithm to find the collection's generic type. Here we only handle the case where the collection has one type.
+    const typeValues = uniq(
+      instance.values
+        .map((v) => v.genericType?.value.rawType)
+        .filter(isNonNullable),
+    );
+    if (typeValues.length === 1) {
+      instance.genericType = GenericTypeExplicitReference.create(
+        new GenericType(guaranteeNonNullable(typeValues[0])),
+      );
+    }
     return instance;
   }
 
@@ -598,7 +618,7 @@ export function V1_buildLambdaBody(
       ) as VariableExpression,
   );
   const openVariables: string[] = [];
-  const valueSpecifications = expressions.map((e) =>
+  const _expressions = expressions.map((e) =>
     e.accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         context,
@@ -608,15 +628,16 @@ export function V1_buildLambdaBody(
     ),
   );
   // Remove let variables
+  const firstExpression = guaranteeNonNullable(_expressions[0]);
   const functionType = buildFunctionType(
     pureParameters,
-    valueSpecifications[0].genericType?.value.rawType,
-    valueSpecifications[0].multiplicity,
+    firstExpression.genericType?.value.rawType,
+    firstExpression.multiplicity,
   );
   processingContext.pop();
   const _lambda = new LambdaFunction(functionType);
   _lambda.openVariables = [];
-  _lambda.expressionSequence = valueSpecifications;
+  _lambda.expressionSequence = _expressions;
   return _lambda;
 }
 
@@ -684,7 +705,7 @@ function buildPropertyGraphFetchTree(
 ): PropertyGraphFetchTree {
   let property: AbstractProperty;
   let pureParameters: ValueSpecification[] = [];
-  if (!propertyGraphFetchTree.parameters.length) {
+  if (propertyGraphFetchTree.parameters.length) {
     const thisVariable = new V1_Variable();
     thisVariable.name = 'this';
     thisVariable.class = parentClass.path;
@@ -836,7 +857,7 @@ export function V1_processProperty(
       ),
     ),
   );
-  let inferredVariable: ValueSpecification;
+  let inferredVariable: ValueSpecification | undefined;
   if (firstParameter instanceof V1_Variable) {
     inferredVariable = guaranteeType(
       processingContext.getInferredVariable(firstParameter.name),
@@ -846,9 +867,14 @@ export function V1_processProperty(
     inferredVariable = processedParameters[0];
   }
   let inferredType: Type | undefined =
-    inferredVariable.genericType?.value.rawType;
+    inferredVariable?.genericType?.value.rawType;
   if (inferredVariable instanceof AbstractPropertyExpression) {
     inferredType = inferredVariable.func.genericType.value.rawType;
+  } else {
+    inferredType = V1_resolvePropertyExpressionTypeInference(
+      inferredVariable,
+      context,
+    );
   }
   if (inferredType instanceof Class) {
     const processedProperty = new AbstractPropertyExpression(
@@ -910,5 +936,23 @@ export function V1_buildFunctionExpression(
   }
   throw new UnsupportedOperationError(
     `Can't find expression builder for function '${functionName}': no compatible function expression builder available from plugins`,
+  );
+}
+
+export function V1_resolvePropertyExpressionTypeInference(
+  inferredVariable: ValueSpecification | undefined,
+  compileContext: V1_GraphBuilderContext,
+): Type | undefined {
+  const inferrers = compileContext.extensions.plugins.flatMap(
+    (plugin) => plugin.V1_getExtraPropertyExpressionTypeInferrers?.() ?? [],
+  );
+  for (const inferrer of inferrers) {
+    const inferredType = inferrer(inferredVariable);
+    if (inferredType) {
+      return inferredType;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't infer type for variable '${inferredVariable}': no compatible property expression type inferrer available from plugins`,
   );
 }

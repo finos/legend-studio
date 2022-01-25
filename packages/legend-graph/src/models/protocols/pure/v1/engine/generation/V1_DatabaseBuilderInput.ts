@@ -27,6 +27,7 @@ import {
   V1_deserializeConnectionValue,
 } from '../../transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper';
 import type { V1_RelationalDatabaseConnection } from '../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
+import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin';
 
 export class V1_DatabasePattern {
   schemaPattern!: string;
@@ -78,15 +79,17 @@ export class V1_DatabaseBuilderInput {
   connection!: V1_RelationalDatabaseConnection;
   config!: V1_DatabaseBuilderConfig;
   targetDatabase!: V1_TargetDatabase;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_DatabaseBuilderInput, {
-      config: usingModelSchema(V1_DatabaseBuilderConfig.serialization.schema),
-      connection: custom(
-        (val) => V1_serializeConnectionValue(val, false),
-        (val) => V1_deserializeConnectionValue(val, false),
-      ),
-      targetDatabase: usingModelSchema(V1_TargetDatabase.serialization.schema),
-    }),
-  );
 }
+
+export const V1_setupDatabaseBuilderInputSerialization = (
+  plugins: PureProtocolProcessorPlugin[],
+): void => {
+  createModelSchema(V1_DatabaseBuilderInput, {
+    config: usingModelSchema(V1_DatabaseBuilderConfig.serialization.schema),
+    connection: custom(
+      (val) => V1_serializeConnectionValue(val, false, plugins),
+      (val) => V1_deserializeConnectionValue(val, false, plugins),
+    ),
+    targetDatabase: usingModelSchema(V1_TargetDatabase.serialization.schema),
+  });
+};

@@ -1,11 +1,30 @@
 {
-  "extends": "../../scripts/typescript/tsconfig.base.json",
+  "extends": "@finos/legend-dev-utils/tsconfig.base.json",
   "compilerOptions": {
     "tsBuildInfoFile": "build/dev.tsbuildinfo",
     "noEmit": true,
-    "jsx": "react-jsxdev",
-    "allowJs": true
+    "jsx": "react-jsxdev"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
-  "references": [{ "path": "../legend-shared" }, { "path": "../legend-graph" }]
+  "references": [
+    { "path": "../legend-art" },
+    { "path": "../legend-shared" },
+    { "path": "../legend-graph" },
+    // extensions
+    {
+      "path": "../legend-extension-dsl-text"
+    },
+    {
+      "path": "../legend-extension-dsl-diagram"
+    },
+    {
+      "path": "../legend-extension-dsl-data-space"
+    },
+    {
+      "path": "../legend-extension-dsl-serializer"
+    },
+    {
+      "path": "../legend-extension-external-store-service"
+    }
+  ]
 }

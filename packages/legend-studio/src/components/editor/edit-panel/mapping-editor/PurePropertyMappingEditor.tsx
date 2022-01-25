@@ -16,21 +16,25 @@
 
 import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { TransformDropTarget } from '../../../../stores/shared/DnDUtil';
 import {
+  type TransformDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
 } from '../../../../stores/shared/DnDUtil';
-import type { MappingElement } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import {
+  type MappingElement,
+  MappingEditorState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import type {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { clsx, CustomSelectorInput } from '@finos/legend-art';
-import { FaArrowAltCircleRight } from 'react-icons/fa';
-import type { ConnectDropTarget } from 'react-dnd';
-import { useDrop } from 'react-dnd';
+import {
+  clsx,
+  CustomSelectorInput,
+  ArrowCircleRightIcon,
+} from '@finos/legend-art';
+import { type ConnectDropTarget, useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   Enumeration,
@@ -179,7 +183,7 @@ const EnumerationPropertyMappingEditor = observer(
               tabIndex={-1}
               title={'Visit enumeration mapping'}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           </div>
           <StudioLambdaEditor
@@ -271,7 +275,7 @@ const ClassPropertyMappingEditor = observer(
               tabIndex={-1}
               title={'Visit class mapping'}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           </div>
           <StudioLambdaEditor

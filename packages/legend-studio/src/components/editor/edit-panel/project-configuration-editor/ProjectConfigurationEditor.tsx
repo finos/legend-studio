@@ -22,27 +22,31 @@ import {
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
-  FaPlus,
-  FaTimes,
-  FaCheckCircle,
-  FaExclamationCircle,
-} from 'react-icons/fa';
-import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
 } from '../../../../stores/editor-state/ProjectConfigurationEditorState';
-import type { SelectComponent } from '@finos/legend-art';
-import { compareLabelFn, clsx, CustomSelectorInput } from '@finos/legend-art';
+import {
+  type SelectComponent,
+  compareLabelFn,
+  clsx,
+  CustomSelectorInput,
+  PlusIcon,
+  TimesIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+} from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import { ProjectDependency } from '@finos/legend-server-sdlc';
-import type { ProjectConfiguration } from '@finos/legend-server-sdlc';
+import {
+  ProjectDependency,
+  type ProjectConfiguration,
+} from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
-import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../../stores/LegendStudioLogEvent';
 import type { ProjectData } from '@finos/legend-server-depot';
 
 interface VersionOption {
@@ -99,12 +103,12 @@ const ProjectStructureEditor = observer(
           <div className="project-configuration-editor__project__structure__version__label">
             <div className="project-configuration-editor__project__structure__version__label__status">
               {isVersionOutdated ? (
-                <FaExclamationCircle
+                <ExclamationCircleIcon
                   className="project-configuration-editor__project__structure__version__label__status--outdated"
                   title="Project structure is outdated"
                 />
               ) : (
-                <FaCheckCircle
+                <CheckCircleIcon
                   className="project-configuration-editor__project__structure__version__label__status--up-to-date"
                   title="Project structure is up to date"
                 />
@@ -198,8 +202,9 @@ const ProjectDependencyEditor = observer(
     const versionSelectorRef = useRef<SelectComponent>(null);
     const configState = editorStore.projectConfigurationEditorState;
     // project
-    const selectedProject =
-      configState.getProjectDataFromDependency(projectDependency);
+    const selectedProject = configState.projects.get(
+      projectDependency.projectId,
+    );
     const selectedProjectOption = selectedProject
       ? buildProjectOption(selectedProject)
       : null;
@@ -245,7 +250,7 @@ const ProjectDependencyEditor = observer(
         } catch (error) {
           assertErrorThrown(error);
           logger.error(
-            LogEvent.create(STUDIO_LOG_EVENT.SDLC_MANAGER_FAILURE),
+            LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
             error,
           );
         }
@@ -256,6 +261,7 @@ const ProjectDependencyEditor = observer(
       : versionDisabled
       ? 'No project version found. Please create a new one.'
       : 'Select version';
+
     return (
       <div className="project-dependency-editor">
         <CustomSelectorInput
@@ -294,7 +300,7 @@ const ProjectDependencyEditor = observer(
           tabIndex={-1}
           title={'Close'}
         >
-          <FaTimes />
+          <TimesIcon />
         </button>
       </div>
     );
@@ -336,7 +342,7 @@ export const ProjectConfigurationEditor = observer(() => {
       if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
         const currentProjects = Array.from(configState.projects.values());
         if (currentProjects.length) {
-          const projectToAdd = currentProjects[0];
+          const projectToAdd = currentProjects[0] as ProjectData;
           const dependencyToAdd = new ProjectDependency(
             projectToAdd.coordinates,
           );
@@ -385,17 +391,17 @@ export const ProjectConfigurationEditor = observer(() => {
       );
     }
   };
-
   useEffect(() => {
     if (
       configState.projectConfiguration &&
+      selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES &&
       !configState.associatedProjectsAndVersionsFetched
     ) {
       flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
         applicationStore.alertIllegalUnhandledError,
       );
     }
-  }, [applicationStore, configState]);
+  }, [applicationStore, configState, selectedTab]);
 
   if (!configState.projectConfiguration) {
     return null;
@@ -429,7 +435,7 @@ export const ProjectConfigurationEditor = observer(() => {
         <div className="panel__header project-configuration-editor__tabs__header">
           <div className="project-configuration-editor__tabs">
             {tabs.map((tab) => (
-              <div
+              <button
                 key={tab}
                 onClick={changeTab(tab)}
                 className={clsx('project-configuration-editor__tab', {
@@ -438,7 +444,7 @@ export const ProjectConfigurationEditor = observer(() => {
                 })}
               >
                 {prettyCONSTName(tab)}
-              </div>
+              </button>
             ))}
           </div>
           <div className="panel__header__actions">
@@ -449,7 +455,7 @@ export const ProjectConfigurationEditor = observer(() => {
               onClick={addValue}
               title={addButtonTitle}
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>

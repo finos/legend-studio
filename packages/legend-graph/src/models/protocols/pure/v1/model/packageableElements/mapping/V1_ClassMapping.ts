@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray } from '@finos/legend-shared';
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping';
 import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping';
@@ -25,8 +24,8 @@ import type { V1_OperationClassMapping } from './V1_OperationClassMapping';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
 import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface V1_ClassMappingVisitor<T> {
+  visit_ClassMapping(classMapping: V1_ClassMapping): T;
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): T;
   visit_PureInstanceClassMapping(classMapping: V1_PureInstanceClassMapping): T;
   visit_RootFlatDataClassMapping(classMapping: V1_RootFlatDataClassMapping): T;
@@ -46,6 +45,7 @@ export abstract class V1_ClassMapping implements Hashable {
   class?: string | undefined;
   root!: boolean;
   mappingClass?: V1_MappingClass | undefined;
+  extendsClassMappingId?: string | undefined;
 
   get hashCode(): string {
     return hashArray([

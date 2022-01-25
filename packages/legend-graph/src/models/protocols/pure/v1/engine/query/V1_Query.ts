@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-import { SerializationFactory } from '@finos/legend-shared';
-import { createModelSchema, optional, primitive } from 'serializr';
+import {
+  NullphobicSerializationFactory,
+  usingModelSchema,
+} from '@finos/legend-shared';
+import { createModelSchema, list, optional, primitive } from 'serializr';
+import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr';
+import type { V1_TaggedValue } from '../../model/packageableElements/domain/V1_TaggedValue';
+import {
+  V1_stereotypePtrSchema,
+  V1_taggedValueSchema,
+} from '../../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
 
 export class V1_Query {
   name!: string;
@@ -27,8 +36,10 @@ export class V1_Query {
   runtime!: string;
   content!: string;
   owner?: string | undefined;
+  taggedValues?: V1_TaggedValue[] | undefined;
+  stereotypes?: V1_StereotypePtr[] | undefined;
 
-  static readonly serialization = new SerializationFactory(
+  static readonly serialization = new NullphobicSerializationFactory(
     createModelSchema(V1_Query, {
       artifactId: primitive(),
       content: primitive(),
@@ -38,6 +49,8 @@ export class V1_Query {
       name: primitive(),
       owner: optional(primitive()),
       runtime: primitive(),
+      stereotypes: optional(list(usingModelSchema(V1_stereotypePtrSchema))),
+      taggedValues: optional(list(usingModelSchema(V1_taggedValueSchema))),
       versionId: primitive(),
     }),
   );
@@ -51,7 +64,7 @@ export class V1_LightQuery {
   artifactId!: string;
   versionId!: string;
 
-  static readonly serialization = new SerializationFactory(
+  static readonly serialization = new NullphobicSerializationFactory(
     createModelSchema(V1_Query, {
       artifactId: primitive(),
       id: primitive(),

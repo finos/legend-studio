@@ -17,20 +17,18 @@
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../graphManager/GraphManagerLogEvent';
 import {
-  CORE_ELEMENT_PATH,
+  CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   SOURCE_INFORMATION_KEY,
 } from '../../../../MetaModelConst';
-import type {
-  Clazz,
-  GeneratorFn,
-  Log,
-  PlainObject,
-  ServerClientConfig,
-  TracerServicePlugin,
-} from '@finos/legend-shared';
 import {
+  type Clazz,
+  type GeneratorFn,
+  type Log,
+  type PlainObject,
+  type ServerClientConfig,
+  TracerService,
   LogEvent,
   getClass,
   guaranteeNonNullable,
@@ -41,11 +39,11 @@ import {
   promisify,
 } from '@finos/legend-shared';
 import type { TEMP__AbstractEngineConfig } from '../../../../graphManager/action/TEMP__AbstractEngineConfig';
-import type {
-  TEMP__EngineSetupConfig,
-  GraphBuilderOptions,
+import {
+  AbstractPureGraphManager,
+  type TEMP__EngineSetupConfig,
+  type GraphBuilderOptions,
 } from '../../../../graphManager/AbstractPureGraphManager';
-import { AbstractPureGraphManager } from '../../../../graphManager/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/packageableElements/runtime/Runtime';
 import type {
@@ -53,8 +51,11 @@ import type {
   ImportMode,
 } from '../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { PackageableElement } from '../../../metamodels/pure/packageableElements/PackageableElement';
-import type { SystemModel, CoreModel } from '../../../../graph/PureModel';
-import { PureModel } from '../../../../graph/PureModel';
+import {
+  type SystemModel,
+  type CoreModel,
+  PureModel,
+} from '../../../../graph/PureModel';
 import type { BasicModel } from '../../../../graph/BasicModel';
 import type { DependencyManager } from '../../../../graph/DependencyManager';
 import type { Class } from '../../../metamodels/pure/packageableElements/domain/Class';
@@ -90,11 +91,9 @@ import {
   V1_setupPureModelContextDataSerialization,
 } from './transformation/pureProtocol/V1_PureProtocolSerialization';
 import { V1_PureModelContextData } from './model/context/V1_PureModelContextData';
-import type {
-  V1_PackageableElement,
-  V1_PackageableElementVisitor,
-} from './model/packageableElements/V1_PackageableElement';
 import {
+  type V1_PackageableElement,
+  type V1_PackageableElementVisitor,
   V1_PackageableElementPointerType,
   V1_PackageableElementPointer,
 } from './model/packageableElements/V1_PackageableElement';
@@ -105,8 +104,10 @@ import { V1_ProtocolToMetaModelGraphFourthPassBuilder } from './transformation/p
 import { V1_ProtocolToMetaModelGraphFifthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFifthPassBuilder';
 import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelRawValueSpecificationBuilder';
 import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext';
-import type { V1_GraphBuilderContext } from './transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_GraphBuilderContextBuilder } from './transformation/pureGraph/to/V1_GraphBuilderContext';
+import {
+  type V1_GraphBuilderContext,
+  V1_GraphBuilderContextBuilder,
+} from './transformation/pureGraph/to/V1_GraphBuilderContext';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer';
 import { V1_Engine } from './engine/V1_Engine';
 import { V1_PackageableElementTransformer } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
@@ -135,7 +136,7 @@ import { V1_GenerationSpecification } from './model/packageableElements/generati
 import { V1_Mapping } from './model/packageableElements/mapping/V1_Mapping';
 import { V1_ConcreteFunctionDefinition } from './model/packageableElements/function/V1_ConcreteFunctionDefinition';
 import { V1_PureModelContextComposite } from './model/context/V1_PureModelContextComposite';
-import { V1_AlloySdlc } from './model/context/V1_AlloySdlc';
+import { V1_AlloySDLC } from './model/context/V1_SDLC';
 import { V1_Protocol } from './model/V1_Protocol';
 import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
 import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
@@ -148,16 +149,19 @@ import {
   V1_DatabaseBuilderConfig,
   V1_DatabaseBuilderInput,
   V1_DatabasePattern,
+  V1_setupDatabaseBuilderInputSerialization,
   V1_TargetDatabase,
 } from './engine/generation/V1_DatabaseBuilderInput';
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database';
-import { V1_ServiceStore } from './model/packageableElements/store/relational/V1_ServiceStore';
 import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity';
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
-import { V1_setupEngineRuntimeSerialization } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
+import {
+  V1_setupEngineRuntimeSerialization,
+  V1_setupLegacyRuntimeSerialization,
+} from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
 import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
 import type { RawRelationalOperationElement } from '../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
@@ -189,10 +193,13 @@ import {
   V1_transformQuery,
   V1_buildGenerationOutput,
   V1_buildLightQuery,
+  V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper';
 import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
-import type { Entity } from '@finos/legend-model-storage';
-import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
+import {
+  type Entity,
+  ENTITY_PATH_DELIMITER,
+} from '@finos/legend-model-storage';
 import {
   DependencyGraphBuilderError,
   GraphBuilderError,
@@ -200,6 +207,7 @@ import {
 } from '../../../../graphManager/GraphManagerUtils';
 import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { GraphPluginManager } from '../../../../GraphPluginManager';
+import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -380,7 +388,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     this.extensions = new V1_GraphBuilderExtensions(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
-    // setup (de)serializer using plugins
+    // setup serialization plugins
     V1_setupPureModelContextDataSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
@@ -388,6 +396,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
     V1_setupEngineRuntimeSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupLegacyRuntimeSerialization(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    V1_setupDatabaseBuilderInputSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
   }
@@ -398,20 +412,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   *initialize(
     config: TEMP__EngineSetupConfig,
-    options: {
-      tracerServicePlugins?: TracerServicePlugin<unknown>[] | undefined;
+    options?: {
+      tracerService?: TracerService | undefined;
     },
   ): GeneratorFn<void> {
     this.engine = new V1_Engine(config.clientConfig, this.log);
     this.engine
       .getEngineServerClient()
-      .registerTracerServicePlugins(options.tracerServicePlugins ?? []);
+      .setTracerService(options?.tracerService ?? new TracerService());
     yield this.engine.setup(config);
   }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   *buildSystem(
     coreModel: CoreModel,
     systemModel: SystemModel,
@@ -485,7 +498,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   *buildDependencies(
     coreModel: CoreModel,
     systemModel: SystemModel,
@@ -595,7 +607,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   *buildGraph(
     graph: PureModel,
     entities: Entity[],
@@ -1784,7 +1795,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      *
      */
     const graphData = this.getFullGraphModelData(graph);
-    /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
     const extraExecutionElements = this.pluginManager
       .getPureProtocolProcessorPlugins()
@@ -1960,7 +1970,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
-        const sdlcInfo = new V1_AlloySdlc(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySDLC(groupdId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         // data
         const data = new V1_PureModelContextData();
@@ -1986,7 +1996,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.PROD: {
-        const sdlcInfo = new V1_AlloySdlc(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySDLC(groupdId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(
@@ -2024,20 +2034,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     service: Service,
   ): V1_PureModelContextData => {
     const graphData = this.getFullGraphModelData(graph);
-    /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
     const prunedGraphData = new V1_PureModelContextData();
     prunedGraphData.elements = graphData.elements.filter(
-      (element) =>
-        element instanceof V1_Class ||
-        element instanceof V1_Enumeration ||
-        element instanceof V1_Profile ||
-        element instanceof V1_Association ||
-        element instanceof V1_ConcreteFunctionDefinition ||
-        element instanceof V1_Measure ||
-        element instanceof V1_Store ||
-        element instanceof V1_PackageableConnection ||
-        element instanceof V1_Mapping ||
-        element instanceof V1_PackageableRuntime,
+      (element) => !(element instanceof V1_Service),
     );
     prunedGraphData.elements.push(this.elementToProtocol<V1_Service>(service));
     return prunedGraphData;
@@ -2045,13 +2044,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Query ---------------------------------------------
 
-  async getQueries(options?: {
-    search?: string | undefined;
-    projectCoordinates?: string[] | undefined;
-    showCurrentUserQueriesOnly?: boolean | undefined;
-    limit?: number | undefined;
-  }): Promise<LightQuery[]> {
-    return (await this.engine.getQueries(options)).map((protocol) =>
+  async searchQueries(
+    searchSpecification: QuerySearchSpecification,
+  ): Promise<LightQuery[]> {
+    return (
+      await this.engine.searchQueries(
+        V1_transformQuerySearchSpecification(searchSpecification),
+      )
+    ).map((protocol) =>
       V1_buildLightQuery(
         protocol,
         this.engine.getEngineServerClient().currentUserId,
@@ -2258,42 +2258,39 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return `${elementProtocol.package}${ENTITY_PATH_DELIMITER}${name}`;
   };
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private getElementClassiferPath = (
     protocol: V1_PackageableElement,
   ): string => {
     if (protocol instanceof V1_Association) {
-      return CORE_ELEMENT_PATH.ASSOCIATION;
+      return CORE_PURE_PATH.ASSOCIATION;
     } else if (protocol instanceof V1_Class) {
-      return CORE_ELEMENT_PATH.CLASS;
+      return CORE_PURE_PATH.CLASS;
     } else if (protocol instanceof V1_Enumeration) {
-      return CORE_ELEMENT_PATH.ENUMERATION;
+      return CORE_PURE_PATH.ENUMERATION;
     } else if (protocol instanceof V1_ConcreteFunctionDefinition) {
-      return CORE_ELEMENT_PATH.FUNCTION;
+      return CORE_PURE_PATH.FUNCTION;
     } else if (protocol instanceof V1_Profile) {
-      return CORE_ELEMENT_PATH.PROFILE;
+      return CORE_PURE_PATH.PROFILE;
     } else if (protocol instanceof V1_Measure) {
-      return CORE_ELEMENT_PATH.MEASURE;
+      return CORE_PURE_PATH.MEASURE;
     } else if (protocol instanceof V1_Mapping) {
-      return CORE_ELEMENT_PATH.MAPPING;
+      return CORE_PURE_PATH.MAPPING;
     } else if (protocol instanceof V1_PackageableConnection) {
-      return CORE_ELEMENT_PATH.CONNECTION;
+      return CORE_PURE_PATH.CONNECTION;
     } else if (protocol instanceof V1_PackageableRuntime) {
-      return CORE_ELEMENT_PATH.RUNTIME;
+      return CORE_PURE_PATH.RUNTIME;
     } else if (protocol instanceof V1_SectionIndex) {
-      return CORE_ELEMENT_PATH.SECTION_INDEX;
+      return CORE_PURE_PATH.SECTION_INDEX;
     } else if (protocol instanceof V1_FlatData) {
-      return CORE_ELEMENT_PATH.FLAT_DATA;
+      return CORE_PURE_PATH.FLAT_DATA;
     } else if (protocol instanceof V1_Database) {
-      return CORE_ELEMENT_PATH.DATABASE;
-    } else if (protocol instanceof V1_ServiceStore) {
-      return CORE_ELEMENT_PATH.SERVICE_STORE;
+      return CORE_PURE_PATH.DATABASE;
     } else if (protocol instanceof V1_Service) {
-      return CORE_ELEMENT_PATH.SERVICE;
+      return CORE_PURE_PATH.SERVICE;
     } else if (protocol instanceof V1_FileGenerationSpecification) {
-      return CORE_ELEMENT_PATH.FILE_GENERATION;
+      return CORE_PURE_PATH.FILE_GENERATION;
     } else if (protocol instanceof V1_GenerationSpecification) {
-      return CORE_ELEMENT_PATH.GENERATION_SPECIFICATION;
+      return CORE_PURE_PATH.GENERATION_SPECIFICATION;
     }
     const extraElementProtocolClassifierPathGetters = this.pluginManager
       .getPureProtocolProcessorPlugins()
@@ -2311,7 +2308,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   };
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private graphToPureModelContextData = (
     graph: PureModel,
     options?: { keepSourceInformation?: boolean | undefined } | undefined,
@@ -2333,7 +2329,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return graphData;
   };
 
-  /* @MARKER: NEW ELEMENT TYPE SUPPORT --- consider adding new element type handler here whenever support for a new element type is added to the app */
   private getGraphCompileContext = (
     graph: PureModel,
   ): V1_PureModelContextData => {

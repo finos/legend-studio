@@ -16,8 +16,8 @@
 
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import {
+  type MappingTestState,
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
   MappingTestObjectInputDataState,
@@ -25,38 +25,46 @@ import {
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { FaScroll, FaWrench } from 'react-icons/fa';
 import { JsonDiffView } from '../../../shared/DiffView';
 import {
   clsx,
   PanelLoadingIndicator,
   BlankPanelPlaceholder,
   TimesIcon,
-  PencilIcon,
   PlayIcon,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
+  ErrorIcon,
+  RefreshIcon,
+  PaperScrollIcon,
+  WrenchIcon,
 } from '@finos/legend-art';
-import { MdRefresh } from 'react-icons/md';
 import { useDrop } from 'react-dnd';
-import type { MappingElementDragSource } from '../../../../stores/shared/DnDUtil';
-import { CORE_DND_TYPE } from '../../../../stores/shared/DnDUtil';
+import {
+  type MappingElementDragSource,
+  CORE_DND_TYPE,
+} from '../../../../stores/shared/DnDUtil';
 import {
   IllegalStateError,
-  isNonNullable,
   guaranteeType,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { VscError } from 'react-icons/vsc';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { ClassMappingSelectorModal } from './MappingExecutionBuilder';
+import {
+  ClassMappingSelectorModal,
+  getRelationalInputTestDataEditorLanguage,
+} from './MappingExecutionBuilder';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer';
 import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
@@ -70,8 +78,10 @@ import {
   RawLambda,
   SetImplementation,
   OperationSetImplementation,
+  RelationalInputType,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -80,25 +90,19 @@ const MappingTestQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditors = editorStore.pluginManager
+    const extraQueryEditorActions = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin) =>
-          plugin.getExtraMappingTestQueryEditorRendererConfigurations?.() ?? [],
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraMappingTestQueryEditorActionConfigurations?.() ?? [],
       )
-      .filter(isNonNullable)
       .map((config) => (
         <Fragment key={config.key}>
           {config.renderer(testState, isReadOnly)}
         </Fragment>
       ));
-    if (extraQueryEditors.length === 0) {
-      extraQueryEditors.push(
-        <Fragment key={'unsupported-query-editor'}>
-          <div>{`No query editor available`}</div>
-        </Fragment>,
-      );
-    }
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -138,7 +142,10 @@ const MappingTestQueryEditor = observer(
                 type: ActionAlertActionType.PROCEED_WITH_CAUTION,
                 handler: (): void =>
                   testState.setInputDataStateBasedOnSource(
-                    getMappingElementSource(setImplementation),
+                    getMappingElementSource(
+                      setImplementation,
+                      editorStore.pluginManager.getStudioPlugins(),
+                    ),
                     true,
                   ),
               },
@@ -185,6 +192,7 @@ const MappingTestQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
+            {extraQueryEditorActions}
             <button
               className="panel__header__action"
               tabIndex={-1}
@@ -194,39 +202,18 @@ const MappingTestQueryEditor = observer(
             >
               <TimesIcon />
             </button>
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              disabled={isReadOnly}
-              onClick={showClassMappingSelectorModal}
-              title={'Choose target...'}
-            >
-              <PencilIcon />
-            </button>
           </div>
         </div>
         {!queryState.query.isStub && (
           <div className="panel__content">
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel minSize={250}>
-                <div className="mapping-test-editor__query-panel__query">
-                  <StudioTextInputEditor
-                    inputValue={queryState.lambdaString}
-                    isReadOnly={true}
-                    language={EDITOR_LANGUAGE.PURE}
-                    showMiniMap={false}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizablePanelSplitter>
-                <ResizablePanelSplitterLine color="var(--color-dark-grey-50)" />
-              </ResizablePanelSplitter>
-              <ResizablePanel size={250} minSize={250}>
-                <div className="mapping-test-editor__query-panel__query-editor">
-                  {extraQueryEditors}
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+            <div className="mapping-test-editor__query-panel__query">
+              <StudioTextInputEditor
+                inputValue={queryState.lambdaString}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.PURE}
+                showMiniMap={false}
+              />
+            </div>
           </div>
         )}
         {queryState.query.isStub && (
@@ -318,12 +305,12 @@ export const MappingTestRelationalInputDataBuilder = observer(
     const updateInput = (val: string): void =>
       inputDataState.inputData.setData(val);
 
-    // TODO: handle CSV input type
-
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
         <StudioTextInputEditor
-          language={EDITOR_LANGUAGE.SQL}
+          language={getRelationalInputTestDataEditorLanguage(
+            inputDataState.inputData.inputType,
+          )}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
           updateInput={updateInput}
@@ -333,10 +320,55 @@ export const MappingTestRelationalInputDataBuilder = observer(
   },
 );
 
+const RelationalMappingTestInputDataTypeSelector = observer(
+  (props: {
+    inputDataState: MappingTestRelationalInputDataState;
+    isReadOnly: boolean;
+  }) => {
+    const { inputDataState, isReadOnly } = props;
+
+    const changeInputType =
+      (val: string): (() => void) =>
+      (): void => {
+        inputDataState.inputData.setInputType(val);
+      };
+    return (
+      <DropdownMenu
+        className="mapping-test-editor__input-data-panel__type-selector"
+        disabled={isReadOnly}
+        content={
+          <MenuContent>
+            {Object.keys(RelationalInputType).map((mode) => (
+              <MenuContentItem
+                key={mode}
+                className="mapping-test-editor__input-data-panel__type-selector__option"
+                onClick={changeInputType(mode)}
+              >
+                {mode}
+              </MenuContentItem>
+            ))}
+          </MenuContent>
+        }
+      >
+        <div
+          className="mapping-test-editor__input-data-panel__type-selector__value"
+          title="Choose input data type..."
+        >
+          <div className="mapping-test-editor__input-data-panel__type-selector__value__label">
+            {inputDataState.inputData.inputType}
+          </div>
+          <CaretDownIcon />
+        </div>
+      </DropdownMenu>
+    );
+  },
+);
+
 export const MappingTestInputDataBuilder = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
     const { testState, isReadOnly } = props;
     const inputDataState = testState.inputDataState;
+    const editorStore = useEditorStore();
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -349,18 +381,21 @@ export const MappingTestInputDataBuilder = observer(
       (setImplementation: SetImplementation | undefined): void => {
         testState.setInputDataStateBasedOnSource(
           setImplementation
-            ? getMappingElementSource(setImplementation)
+            ? getMappingElementSource(
+                setImplementation,
+                editorStore.pluginManager.getStudioPlugins(),
+              )
             : undefined,
           true,
         );
         hideClassMappingSelectorModal();
       },
-      [testState],
+      [testState, editorStore],
     );
     const classMappingFilterFn = (setImp: SetImplementation): boolean =>
       !(setImp instanceof OperationSetImplementation);
 
-    // Input data builder
+    // input data builder
     let inputDataBuilder: React.ReactNode;
     if (inputDataState instanceof MappingTestObjectInputDataState) {
       inputDataBuilder = (
@@ -387,6 +422,19 @@ export const MappingTestInputDataBuilder = observer(
       inputDataBuilder = null;
     }
 
+    // input type
+    let inputTypeSelector: React.ReactNode;
+    if (inputDataState instanceof MappingTestRelationalInputDataState) {
+      inputTypeSelector = (
+        <RelationalMappingTestInputDataTypeSelector
+          inputDataState={inputDataState}
+          isReadOnly={isReadOnly}
+        />
+      );
+    } else {
+      inputTypeSelector = null;
+    }
+
     return (
       <div className="panel mapping-test-editor__input-data-panel">
         <div className="panel__header">
@@ -394,14 +442,15 @@ export const MappingTestInputDataBuilder = observer(
             <div className="panel__header__title__label">input data</div>
           </div>
           <div className="panel__header__actions">
+            {inputTypeSelector}
             <button
               className="panel__header__action"
               tabIndex={-1}
               disabled={isReadOnly}
               onClick={showClassMappingSelectorModal}
-              title={'Choose a class mapping...'}
+              title={'Regenerate...'}
             >
-              <PencilIcon />
+              <RefreshIcon className="mapping-test-editor__icon--refresh" />
             </button>
           </div>
         </div>
@@ -457,7 +506,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               tabIndex={-1}
               title={'Regenerate Result'}
             >
-              <MdRefresh className="mapping-test-editor__icon__regenerate-result" />
+              <RefreshIcon className="mapping-test-editor__icon__regenerate-result" />
             </button>
             <button
               className="panel__header__action"
@@ -466,7 +515,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               onClick={formatExpectedResultJSONString}
               title={'Format JSON'}
             >
-              <FaWrench />
+              <WrenchIcon />
             </button>
           </div>
         </div>
@@ -481,7 +530,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               className="panel__content__validation-error"
               title={validationResult.messages.join('\n')}
             >
-              <VscError />
+              <ErrorIcon />
             </div>
           )}
           <StudioTextInputEditor
@@ -643,7 +692,7 @@ export const MappingTestEditor = observer(
               tabIndex={-1}
               title="View Execution Plan"
             >
-              <FaScroll className="mapping-test-editor__icon__generate-plan" />
+              <PaperScrollIcon className="mapping-test-editor__icon__generate-plan" />
             </button>
           </div>
         </div>

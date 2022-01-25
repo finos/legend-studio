@@ -17,9 +17,9 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { STUDIO_LOG_EVENT } from '../../../../stores/StudioLogEvent';
-import type { GeneratorFn } from '@finos/legend-shared';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
 import {
+  type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   losslessStringify,
@@ -29,18 +29,15 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToFormatJSONString,
-  toGrammarString,
-  fromGrammarString,
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
-import type {
-  ServiceTestResult,
-  KeyedSingleExecutionTest,
-  Runtime,
-  ExecutionResult,
-} from '@finos/legend-graph';
 import {
+  type ServiceTestResult,
+  type KeyedSingleExecutionTest,
+  type Runtime,
+  type ExecutionResult,
+  type Connection,
   extractExecutionResultValues,
   GRAPH_MANAGER_LOG_EVENT,
   TestContainer,
@@ -61,6 +58,7 @@ import {
   PureClientVersion,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
+import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -134,7 +132,11 @@ export class TestContainerState {
       this.testContainer.assert =
         this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-          toGrammarString(tryToMinifyLosslessJSONString(this.assertionData)),
+          // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
+          // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
+          // See https://github.com/finos/legend-studio/issues/586
+          // See https://github.com/finos/legend-engine/issues/429
+          tryToMinifyLosslessJSONString(this.assertionData),
         );
     }
   }
@@ -145,10 +147,12 @@ export class TestContainerState {
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
-      ? fromGrammarString(
-          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-          tryToFormatLosslessJSONString(expectedResultAssertionString),
-        )
+      ? /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
+        // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
+        // See https://github.com/finos/legend-studio/issues/586
+        // See https://github.com/finos/legend-engine/issues/429
+        tryToFormatLosslessJSONString(expectedResultAssertionString)
       : undefined;
   }
 
@@ -162,7 +166,6 @@ export class TestContainerState {
         ? runtime.packageableRuntime.value.runtimeValue
         : guaranteeType(runtime, EngineRuntime);
     newRuntime.mappings = runtimeValue.mappings;
-    /* @MARKER: NEW CONNECTION TYPE SUPPORT --- consider adding connection type handler here whenever support for a new one is added to the app */
     runtimeValue.connections.forEach((storeConnections) => {
       storeConnections.storeConnections.forEach((identifiedConnection) => {
         const connection =
@@ -238,10 +241,35 @@ export class TestContainerState {
             ),
           );
         } else {
-          throw new UnsupportedOperationError(
-            `Can't apply test data for runtime connection`,
-            connection,
-          );
+          let testConnection: Connection | undefined;
+          const extraServiceTestRuntimeConnectionBuilders =
+            this.editorStore.pluginManager
+              .getStudioPlugins()
+              .flatMap(
+                (plugin) =>
+                  (
+                    plugin as DSLService_LegendStudioPlugin_Extension
+                  ).getExtraServiceTestRuntimeConnectionBuilders?.() ?? [],
+              );
+          for (const builder of extraServiceTestRuntimeConnectionBuilders) {
+            testConnection = builder(connection, newRuntime, testData);
+            if (testConnection) {
+              break;
+            }
+          }
+          if (testConnection) {
+            newRuntime.addIdentifiedConnection(
+              new IdentifiedConnection(
+                newRuntime.generateIdentifiedConnectionId(),
+                testConnection,
+              ),
+            );
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't build service test runtime connection: no compatible builder available from plugins`,
+              connection,
+            );
+          }
         }
       });
     });
@@ -289,7 +317,9 @@ export class TestContainerState {
       assertErrorThrown(error);
       this.setAssertionData(tryToFormatJSONString('{}'));
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -335,7 +365,9 @@ export class TestContainerState {
       assertErrorThrown(error);
       this.setTestExecutionResultText(undefined);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -387,7 +419,7 @@ export class SingleExecutionTestState {
     this.selectedTestContainerState = this.test.asserts.length
       ? new TestContainerState(
           editorStore,
-          this.test.asserts[0],
+          this.test.asserts[0] as TestContainer,
           serviceEditorState,
           this,
         )
@@ -504,7 +536,9 @@ export class SingleExecutionTestState {
         })),
       );
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.SERVICE_TEST_RUNNER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
+        ),
         error,
       );
     } finally {

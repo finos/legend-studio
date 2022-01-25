@@ -22,20 +22,18 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { GeneratorFn } from '@finos/legend-shared';
 import {
+  type GeneratorFn,
   LogEvent,
   assertTrue,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
-import { STUDIO_LOG_EVENT } from '../../stores/StudioLogEvent';
-import type {
-  GenerationTreeNodeData,
-  GenerationOutputResult,
-} from '../shared/FileGenerationTreeUtil';
+import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import {
+  type GenerationTreeNodeData,
+  type GenerationOutputResult,
   GenerationDirectory,
   GENERATION_FILE_ROOT_NAME,
   GenerationFile,
@@ -53,17 +51,17 @@ import type { EditorState } from './EditorState';
 import { ElementEditorState } from './element-editor-state/ElementEditorState';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
 import type { Entity } from '@finos/legend-model-storage';
-import type {
-  GenerationConfigurationDescription,
-  GenerationOutput,
-  DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
-} from '@finos/legend-graph';
 import {
-  GenerationSpecification,
+  type GenerationConfigurationDescription,
+  type GenerationOutput,
+  type DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+  type GenerationTreeNode,
   Class,
   Enumeration,
+  GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -127,14 +125,32 @@ export class GraphGenerationState {
   get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
     if (this.editorStore.currentEditorState instanceof ElementEditorState) {
       const currentElement = this.editorStore.currentEditorState.element;
-      if (
-        currentElement instanceof Class ||
-        currentElement instanceof Enumeration
-      ) {
-        return this.fileGenerationConfigurations
-          .slice()
-          .sort((a, b): number => a.label.localeCompare(b.label));
-      }
+      // Note: For now we only allow classes and enumerations for all types of generations.
+      const extraFileGenerationScopeFilterConfigurations =
+        this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+              ).getExtraFileGenerationScopeFilterConfigurations?.() ?? [],
+          );
+      return this.fileGenerationConfigurations.filter((generationType) => {
+        const scopeFilters =
+          extraFileGenerationScopeFilterConfigurations.filter(
+            (configuration) =>
+              configuration.type.toLowerCase() === generationType.key,
+          );
+        if (scopeFilters.length) {
+          return scopeFilters.some((scopeFilter) =>
+            scopeFilter.filter(currentElement),
+          );
+        }
+        return (
+          currentElement instanceof Class ||
+          currentElement instanceof Enumeration
+        );
+      });
     }
     return [];
   }
@@ -167,7 +183,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -191,7 +207,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -214,10 +230,10 @@ export class GraphGenerationState {
         generationSpecs.length === 1,
         `Can't generate models: only one generation specification permitted to generate`,
       );
-      const generationSpec = generationSpecs[0];
+      const generationSpec = generationSpecs[0] as GenerationSpecification;
       const generationNodes = generationSpec.generationNodes;
       for (let i = 0; i < generationNodes.length; i++) {
-        const node = generationNodes[i];
+        const node = generationNodes[i] as GenerationTreeNode;
         let generatedEntities: Entity[] = [];
         try {
           generatedEntities =
@@ -246,7 +262,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -272,7 +288,7 @@ export class GraphGenerationState {
         generationSpecs.length === 1,
         `Can't generate models: only one generation specification permitted to generate`,
       );
-      const generationSpec = generationSpecs[0];
+      const generationSpec = generationSpecs[0] as GenerationSpecification;
       const fileGenerations = generationSpec.fileGenerations;
       // we don't need to keep 'fetching' the main model as it won't grow with each file generation
       for (const fileGeneration of fileGenerations) {
@@ -300,7 +316,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -354,7 +370,7 @@ export class GraphGenerationState {
         // NOTE: add generation specification at the same package as the first generation element found.
         // we might want to revisit this decision?
         const specPackage = guaranteeNonNullable(
-          [...modelGenerationElements, ...fileGenerations][0].package,
+          [...modelGenerationElements, ...fileGenerations][0]?.package,
         );
         specPackage.addElement(generationSpec);
         this.editorStore.graphManagerState.graph.addElement(generationSpec);
@@ -391,7 +407,7 @@ export class GraphGenerationState {
         genOutput.cleanFileName(rootFolder);
         if (generationResultMap.has(genOutput.fileName)) {
           this.editorStore.applicationStore.log.warn(
-            LogEvent.create(STUDIO_LOG_EVENT.GENERATION_FAILURE),
+            LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );
         }
@@ -464,7 +480,8 @@ export class GraphGenerationState {
     const selectedFileNodePath =
       this.selectedNode?.fileNode.path ??
       (generationResult.length === 1
-        ? generationResult[0].generationOutput.fileName
+        ? (generationResult[0] as GenerationOutputResult).generationOutput
+            .fileName
         : undefined);
     if (selectedFileNodePath) {
       const file = this.filesIndex.get(selectedFileNodePath);

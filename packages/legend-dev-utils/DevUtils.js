@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { platform } from 'os';
 import { readFileSync } from 'fs';
-import { cosmiconfigSync } from 'cosmiconfig';
 
 export const getFileContent = (file) =>
   readFileSync(file, { encoding: 'utf-8' });
@@ -35,17 +35,10 @@ export const exitOrThrowError = (msg, throwError = true) => {
   }
 };
 
-export const getConfigLoader = (configName) =>
-  cosmiconfigSync(configName, {
-    searchPlaces: [
-      'package.json',
-      `.${configName}rc`,
-      `.${configName}rc.json`,
-      `.${configName}rc.js`,
-      `${configName}.config.js`,
-    ],
-  });
-
 // NOTE: unlike `require`, ESM `import` does not support JSON files without the flag --experimental-json-modules
 // being specified, which is not convenient at all in our setup. So we will use the following approach to load them
 export const loadJSON = (path) => JSON.parse(getFileContent(path));
+
+export const loadJSModule = (path) =>
+  // NOTE: Windows requires prefix `file://` for absolute path
+  import(`${platform() === 'win32' ? 'file://' : ''}${path}`);
