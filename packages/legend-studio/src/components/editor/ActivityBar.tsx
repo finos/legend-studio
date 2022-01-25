@@ -241,8 +241,8 @@ export const ActivityBar = observer(() => {
       ),
     },
     !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.WORKSPACE_WORKFLOWS,
-      title: 'Workspace Builds',
+      mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
+      title: 'Workflow Manager',
       icon: <WrenchIcon />,
     },
   ].filter((activity): activity is ActivityDisplay => Boolean(activity));

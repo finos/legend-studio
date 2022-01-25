@@ -15,7 +15,14 @@
  */
 
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import { makeAutoObservable, observable, action, flowResult } from 'mobx';
+import {
+  makeAutoObservable,
+  observable,
+  action,
+  flowResult,
+  makeObservable,
+  flow,
+} from 'mobx';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
@@ -27,7 +34,7 @@ import {
   LogEvent,
   ActionState,
 } from '@finos/legend-shared';
-import { WorkflowJob, Workflow } from '@finos/legend-server-sdlc';
+import { type Version, WorkflowJob, Workflow } from '@finos/legend-server-sdlc';
 
 export abstract class WorkflowExplorerTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;
@@ -91,14 +98,14 @@ const updateWorkflowJobData = (
 
 export class WorkflowLogState {
   editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  workflowManagerState: WorkflowManagerState;
   job: WorkflowJob | undefined;
   logs: string;
   fetchJobLogState = ActionState.create();
 
   constructor(
     editorStore: EditorStore,
-    sdlcState: EditorSDLCState,
+    workflowManagerState: WorkflowManagerState,
     job: WorkflowJob | undefined,
     logs: string | undefined,
   ) {
@@ -111,7 +118,7 @@ export class WorkflowLogState {
     });
 
     this.editorStore = editorStore;
-    this.sdlcState = sdlcState;
+    this.workflowManagerState = workflowManagerState;
     this.job = job;
     this.logs = logs ?? '';
   }
@@ -132,18 +139,12 @@ export class WorkflowLogState {
   *refreshJobLogs(workflowJob: WorkflowJob): GeneratorFn<void> {
     try {
       this.fetchJobLogState.inProgress();
-      const job = WorkflowJob.serialization.fromJson(
-        (yield this.editorStore.sdlcServerClient.getWorkflowJob(
-          this.editorStore.sdlcState.activeProject.projectId,
-          this.editorStore.sdlcState.activeWorkspace,
-          workflowJob,
-        )) as PlainObject<WorkflowJob>,
-      );
+      const job = (yield flowResult(
+        this.workflowManagerState.getJob(workflowJob),
+      )) as WorkflowJob;
       this.setJob(job);
-      const logs = (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
-        this.editorStore.sdlcState.activeProject.projectId,
-        this.editorStore.sdlcState.activeWorkspace,
-        job,
+      const logs = (yield flowResult(
+        this.workflowManagerState.getJobLogs(workflowJob),
       )) as string;
       this.setLogs(logs);
       this.fetchJobLogState.pass();
@@ -162,10 +163,8 @@ export class WorkflowLogState {
     try {
       this.setJob(workflowJob);
       this.fetchJobLogState.inProgress();
-      const logs = (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
-        this.sdlcState.activeProject.projectId,
-        this.sdlcState.activeWorkspace,
-        workflowJob,
+      const logs = (yield flowResult(
+        this.workflowManagerState.getJobLogs(workflowJob),
       )) as string;
       this.setLogs(logs);
       this.fetchJobLogState.pass();
@@ -181,16 +180,16 @@ export class WorkflowLogState {
   }
 }
 
-export class WorkspaceWorkflowState {
+export class WorkflowState {
   uuid = uuid();
   editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  workflowManagerState: WorkflowManagerState;
   treeData: TreeData<WorkflowExplorerTreeNodeData>;
   isExecutingWorkflowRequest = false;
 
   constructor(
     editorStore: EditorStore,
-    sdlcState: EditorSDLCState,
+    WorkflowManagerState: WorkflowManagerState,
     workflow: Workflow,
     jobs: WorkflowJob[] | undefined,
   ) {
@@ -201,7 +200,7 @@ export class WorkspaceWorkflowState {
     });
 
     this.editorStore = editorStore;
-    this.sdlcState = sdlcState;
+    this.workflowManagerState = WorkflowManagerState;
     this.treeData = this.buildTreeData(workflow, jobs);
   }
 
@@ -233,17 +232,10 @@ export class WorkspaceWorkflowState {
     try {
       this.isExecutingWorkflowRequest = true;
       const workflowJobs = (
-        (yield this.editorStore.sdlcServerClient.getWorkflowJobs(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          workflowId,
-          undefined,
-          undefined,
-          undefined,
-        )) as PlainObject<WorkflowJob>[]
-      )
-        .map((job) => WorkflowJob.serialization.fromJson(job))
-        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+        (yield flowResult(
+          this.workflowManagerState.getJobs(workflowId),
+        )) as WorkflowJob[]
+      ).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
       updateWorkflowJobData(workflowJobs, workflowId, treeData);
       this.setWorkflowTreeData({ ...treeData });
     } catch (error) {
@@ -279,11 +271,7 @@ export class WorkspaceWorkflowState {
   ): GeneratorFn<void> {
     try {
       this.isExecutingWorkflowRequest = true;
-      (yield this.editorStore.sdlcServerClient.cancelWorkflowJob(
-        this.sdlcState.activeProject.projectId,
-        this.sdlcState.activeWorkspace,
-        workflowJob,
-      )) as PlainObject<WorkflowJob>[];
+      this.workflowManagerState.cancelJob(workflowJob);
       yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
     } catch (error) {
       assertErrorThrown(error);
@@ -303,13 +291,9 @@ export class WorkspaceWorkflowState {
   ): GeneratorFn<void> {
     const node = treeData.nodes.get(getWorkflowNodeId(workflowId));
     if (node instanceof WorkflowTreeNodeData) {
-      const workflow = Workflow.serialization.fromJson(
-        (yield this.editorStore.sdlcServerClient.getWorkflow(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          workflowId,
-        )) as PlainObject<Workflow>,
-      );
+      const workflow = (yield flowResult(
+        this.workflowManagerState.getWorkflow(workflowId),
+      )) as Workflow;
       node.workflow = workflow;
     }
     yield flowResult(this.fetchAllWorkspaceWorkJobs(workflowId, treeData));
@@ -321,11 +305,7 @@ export class WorkspaceWorkflowState {
   ): GeneratorFn<void> {
     try {
       this.isExecutingWorkflowRequest = true;
-      (yield this.editorStore.sdlcServerClient.retryWorkflowJob(
-        this.sdlcState.activeProject.projectId,
-        this.sdlcState.activeWorkspace,
-        workflowJob,
-      )) as PlainObject<WorkflowJob>[];
+      yield flowResult(this.workflowManagerState.retryJob(workflowJob));
       yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
     } catch (error) {
       assertErrorThrown(error);
@@ -340,44 +320,57 @@ export class WorkspaceWorkflowState {
   }
 }
 
-export class WorkspaceWorkflowsState {
+export abstract class WorkflowManagerState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
   fetchWorkflowsState = ActionState.create();
   logState: WorkflowLogState;
-  workflowStates: WorkspaceWorkflowState[] = [];
+  workflowStates: WorkflowState[] = [];
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
+    this.editorStore = editorStore;
+    this.sdlcState = sdlcState;
+    makeObservable(this, {
       editorStore: false,
       sdlcState: false,
       fetchWorkflowsState: observable,
       logState: observable,
+      workflowStates: observable,
+      fetchAllWorkflows: flow,
+      getWorkflows: flow,
+      getWorkflow: flow,
+      getJobs: flow,
+      getJob: flow,
+      retryJob: flow,
+      cancelJob: flow,
+      getJobLogs: flow,
     });
-
-    this.editorStore = editorStore;
-    this.sdlcState = sdlcState;
     this.logState = new WorkflowLogState(
       this.editorStore,
-      this.sdlcState,
+      this,
       undefined,
       undefined,
     );
   }
+  abstract getWorkflows(): GeneratorFn<Workflow[]>;
 
-  *fetchAllWorkspaceWorkflows(): GeneratorFn<void> {
+  abstract getWorkflow(workflowId: string): GeneratorFn<Workflow>;
+
+  abstract getJobs(workflowId: string): GeneratorFn<WorkflowJob[]>;
+
+  abstract getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]>;
+
+  abstract retryJob(workflowJob: WorkflowJob): GeneratorFn<void>;
+
+  abstract cancelJob(workflowJob: WorkflowJob): GeneratorFn<void>;
+
+  abstract getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string>;
+
+  *fetchAllWorkflows(): GeneratorFn<void> {
     try {
       this.fetchWorkflowsState.inProgress();
       // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
-      const workflows = (
-        (yield this.editorStore.sdlcServerClient.getWorkflows(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-          undefined,
-          undefined,
-          undefined,
-        )) as PlainObject<Workflow>[]
-      ).map((workflow) => Workflow.serialization.fromJson(workflow));
+      const workflows = (yield flowResult(this.getWorkflows())) as Workflow[];
       const openWorkflowIds = this.workflowStates
         .map((workflowState) =>
           Array.from(workflowState.treeData.nodes.values()),
@@ -395,32 +388,21 @@ export class WorkspaceWorkflowsState {
           .filter((workflow) => openWorkflowIds.includes(workflow.id))
           // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
           .map((workflow) =>
-            this.editorStore.sdlcServerClient
-              .getWorkflowJobs(
-                this.sdlcState.activeProject.projectId,
-                this.sdlcState.activeWorkspace,
+            flowResult(this.getJobs(workflow.id)).then((jobs: WorkflowJob[]) =>
+              workflowToJobsMap.set(
                 workflow.id,
-                undefined,
-                undefined,
-                undefined,
-              )
-              .then((jobs: PlainObject<WorkflowJob>[]) =>
-                workflowToJobsMap.set(
-                  workflow.id,
-                  jobs
-                    .map((x) => WorkflowJob.serialization.fromJson(x))
-                    .sort(
-                      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-                    ),
+                jobs.sort(
+                  (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
                 ),
               ),
+            ),
           ),
       );
       this.workflowStates = workflows.map(
         (workflow) =>
-          new WorkspaceWorkflowState(
+          new WorkflowState(
             this.editorStore,
-            this.sdlcState,
+            this,
             workflow,
             workflowToJobsMap.get(workflow.id),
           ),
@@ -435,5 +417,228 @@ export class WorkspaceWorkflowsState {
       this.editorStore.applicationStore.notifyError(error);
       this.fetchWorkflowsState.fail();
     }
+  }
+}
+
+export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
+  override *getJobs(workflowId: string): GeneratorFn<WorkflowJob[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflowJobs(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
+        workflowId,
+        undefined,
+        undefined,
+        undefined,
+      )) as PlainObject<WorkflowJob>[]
+    ).map((job) => WorkflowJob.serialization.fromJson(job));
+  }
+
+  override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflowJob(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
+        job,
+      )) as PlainObject<WorkflowJob>[]
+    ).map((job) => WorkflowJob.serialization.fromJson(job));
+  }
+
+  override *getWorkflows(): GeneratorFn<Workflow[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflows(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
+        undefined,
+        undefined,
+        undefined,
+      )) as PlainObject<Workflow>[]
+    ).map((workflow) => Workflow.serialization.fromJson(workflow));
+  }
+
+  override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {
+    return Workflow.serialization.fromJson(
+      (yield this.editorStore.sdlcServerClient.getWorkflow(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
+        workflowId,
+      )) as PlainObject<Workflow>,
+    );
+  }
+
+  override *retryJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.retryWorkflowJob(
+      this.sdlcState.activeProject.projectId,
+      this.sdlcState.activeWorkspace,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
+  override *cancelJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.cancelWorkflowJob(
+      this.sdlcState.activeProject.projectId,
+      this.sdlcState.activeWorkspace,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
+  override *getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string> {
+    return (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
+      this.sdlcState.activeProject.projectId,
+      this.sdlcState.activeWorkspace,
+      workflowJob,
+    )) as string;
+  }
+}
+
+export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
+  version: Version;
+  constructor(
+    editorStore: EditorStore,
+    sdlcState: EditorSDLCState,
+    version: Version,
+  ) {
+    super(editorStore, sdlcState);
+    this.version = version;
+  }
+
+  override *getJobs(workflowId: string): GeneratorFn<WorkflowJob[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflowJobsByVersion(
+        this.sdlcState.activeProject.projectId,
+        this.version.id.id,
+        workflowId,
+        undefined,
+        undefined,
+        undefined,
+      )) as PlainObject<WorkflowJob>[]
+    ).map((job) => WorkflowJob.serialization.fromJson(job));
+  }
+
+  override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflowJobByVersion(
+        this.sdlcState.activeProject.projectId,
+        this.version.id.id,
+        job,
+      )) as PlainObject<WorkflowJob>[]
+    ).map((job) => WorkflowJob.serialization.fromJson(job));
+  }
+
+  override *getWorkflows(): GeneratorFn<Workflow[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflowsByVersion(
+        this.sdlcState.activeProject.projectId,
+        this.version.id.id,
+        undefined,
+        undefined,
+        undefined,
+      )) as PlainObject<Workflow>[]
+    ).map((workflow) => Workflow.serialization.fromJson(workflow));
+  }
+
+  override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {
+    return Workflow.serialization.fromJson(
+      (yield this.editorStore.sdlcServerClient.getWorkflowByVersion(
+        this.sdlcState.activeProject.projectId,
+        this.version.id.id,
+        workflowId,
+      )) as PlainObject<Workflow>,
+    );
+  }
+
+  override *retryJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.retryWorkflowJobByVersion(
+      this.sdlcState.activeProject.projectId,
+      this.version.id.id,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
+  override *cancelJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.cancelWorkflowJobByVersion(
+      this.sdlcState.activeProject.projectId,
+      this.version.id.id,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
+  override *getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string> {
+    return (yield this.editorStore.sdlcServerClient.getWorkflowJobLogsByVersion(
+      this.sdlcState.activeProject.projectId,
+      this.version.id.id,
+      workflowJob,
+    )) as string;
+  }
+}
+
+export class ProjectWorkflowManagerState extends WorkflowManagerState {
+  override *getJobs(workflowId: string): GeneratorFn<WorkflowJob[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflowJobs(
+        this.sdlcState.activeProject.projectId,
+        undefined,
+        workflowId,
+        undefined,
+        undefined,
+        undefined,
+      )) as PlainObject<WorkflowJob>[]
+    ).map((job) => WorkflowJob.serialization.fromJson(job));
+  }
+
+  override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflowJob(
+        this.sdlcState.activeProject.projectId,
+        undefined,
+        job,
+      )) as PlainObject<WorkflowJob>[]
+    ).map((job) => WorkflowJob.serialization.fromJson(job));
+  }
+
+  override *getWorkflows(): GeneratorFn<Workflow[]> {
+    return (
+      (yield this.editorStore.sdlcServerClient.getWorkflows(
+        this.sdlcState.activeProject.projectId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      )) as PlainObject<Workflow>[]
+    ).map((workflow) => Workflow.serialization.fromJson(workflow));
+  }
+
+  override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {
+    return Workflow.serialization.fromJson(
+      (yield this.editorStore.sdlcServerClient.getWorkflow(
+        this.sdlcState.activeProject.projectId,
+        undefined,
+        workflowId,
+      )) as PlainObject<Workflow>,
+    );
+  }
+
+  override *retryJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.retryWorkflowJob(
+      this.sdlcState.activeProject.projectId,
+      undefined,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
+  override *cancelJob(workflowJob: WorkflowJob): GeneratorFn<void> {
+    (yield this.editorStore.sdlcServerClient.cancelWorkflowJob(
+      this.sdlcState.activeProject.projectId,
+      undefined,
+      workflowJob,
+    )) as PlainObject<WorkflowJob>[];
+  }
+
+  override *getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string> {
+    return (yield this.editorStore.sdlcServerClient.getWorkflowJobLogs(
+      this.sdlcState.activeProject.projectId,
+      undefined,
+      workflowJob,
+    )) as string;
   }
 }

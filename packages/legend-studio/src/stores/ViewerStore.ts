@@ -51,6 +51,11 @@ import {
   ProjectVersionEntities,
 } from '@finos/legend-server-depot';
 import { GRAPH_MANAGER_LOG_EVENT } from '@finos/legend-graph';
+import {
+  type WorkflowManagerState,
+  ProjectVersionWorkflowManagerState,
+  ProjectWorkflowManagerState,
+} from './sidebar-state/WorkflowManagerState';
 
 export class ViewerStore {
   editorStore: EditorStore;
@@ -61,6 +66,7 @@ export class ViewerStore {
   version?: Version | undefined;
   elementPath?: string | undefined;
   projectGAVCoordinates?: ProjectGAVCoordinates | undefined;
+  workflowManagerState: WorkflowManagerState | undefined;
 
   constructor(editorStore: EditorStore) {
     makeAutoObservable(this, {
@@ -433,8 +439,9 @@ export class ViewerStore {
               undefined,
               revisionId,
             ),
-            this.editorStore.sdlcServerClient.getConfigurationByVersion(
+            this.editorStore.sdlcServerClient.getConfigurationByRevision(
               this.editorStore.sdlcState.activeProject.projectId,
+              undefined,
               revisionId,
             ),
           ])) as [Entity[], PlainObject<ProjectConfiguration>];
@@ -498,6 +505,7 @@ export class ViewerStore {
           );
         }
       }
+      this.initWorkflowManagerState();
       onLeave(true);
     } catch (error) {
       assertErrorThrown(error);
@@ -507,6 +515,24 @@ export class ViewerStore {
       );
       this.editorStore.applicationStore.notifyError(error);
       onLeave(false);
+    }
+  }
+
+  initWorkflowManagerState(): void {
+    // NOTE: We will not show workflow viewer when `GAV` coordinates are provided
+    // as we don't know which sdlc instance to fetch from.
+    // Revision will be supported once `SDLC` adds the workflow apis.
+    if (this.version) {
+      this.workflowManagerState = new ProjectVersionWorkflowManagerState(
+        this.editorStore,
+        this.editorStore.sdlcState,
+        this.version,
+      );
+    } else if (!this.projectGAVCoordinates && !this.revision) {
+      this.workflowManagerState = new ProjectWorkflowManagerState(
+        this.editorStore,
+        this.editorStore.sdlcState,
+      );
     }
   }
 }

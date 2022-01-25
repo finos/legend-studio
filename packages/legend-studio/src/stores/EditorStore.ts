@@ -39,7 +39,7 @@ import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState';
 import { LocalChangesState } from './sidebar-state/LocalChangesState';
 import { ConflictResolutionState } from './sidebar-state/ConflictResolutionState';
-import { WorkspaceWorkflowsState } from './sidebar-state/WorkspaceWorkflowsState';
+import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState';
 import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
 import {
   type Clazz,
@@ -177,7 +177,7 @@ export class EditorStore {
   modelLoaderState: ModelLoaderState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
-  workspaceWorkflowsState: WorkspaceWorkflowsState;
+  workspaceWorkflowManagerState: WorkspaceWorkflowManagerState;
   workspaceUpdaterState: WorkspaceUpdaterState;
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
@@ -283,7 +283,7 @@ export class EditorStore {
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);
-    this.workspaceWorkflowsState = new WorkspaceWorkflowsState(
+    this.workspaceWorkflowManagerState = new WorkspaceWorkflowManagerState(
       this,
       this.sdlcState,
     );
