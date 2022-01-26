@@ -22,7 +22,7 @@ import { WorkspaceReview } from './WorkspaceReview';
 import { WorkspaceUpdater } from './WorkspaceUpdater';
 import { ConflictResolution } from './ConflictResolution';
 import { ProjectOverview } from './ProjectOverview';
-import { WorkspaceWorkflows } from './WorkspaceWorkflows';
+import { WorkflowManager } from './WorkflowManager';
 import { useEditorStore } from '../EditorStoreProvider';
 
 /**
@@ -45,8 +45,12 @@ export const SideBar = observer(() => {
         return <ConflictResolution />;
       case ACTIVITY_MODE.PROJECT_OVERVIEW:
         return <ProjectOverview />;
-      case ACTIVITY_MODE.WORKSPACE_WORKFLOWS:
-        return <WorkspaceWorkflows />;
+      case ACTIVITY_MODE.WORKFLOW_MANAGER:
+        return (
+          <WorkflowManager
+            workflowManagerState={editorStore.workspaceWorkflowManagerState}
+          />
+        );
       default:
         return null;
     }

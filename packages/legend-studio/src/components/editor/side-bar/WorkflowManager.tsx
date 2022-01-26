@@ -40,7 +40,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
-import { useEditorStore } from '../EditorStoreProvider';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,
@@ -48,11 +47,11 @@ import {
 import {
   type WorkflowExplorerTreeNodeData,
   type WorkflowLogState,
-  type WorkspaceWorkflowsState,
-  type WorkspaceWorkflowState,
+  type WorkflowManagerState,
+  type WorkflowState,
   WorkflowJobTreeNodeData,
   WorkflowTreeNodeData,
-} from '../../../stores/sidebar-state/WorkspaceWorkflowsState';
+} from '../../../stores/sidebar-state/WorkflowManagerState';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -184,9 +183,10 @@ const getWorkflowJobStatusIcon = (
       );
   }
 };
+
 const WorkflowJobLogsViewer = observer(
   (props: {
-    workflowState: WorkspaceWorkflowsState;
+    workflowState: WorkflowManagerState;
     logState: WorkflowLogState;
   }) => {
     const { workflowState, logState } = props;
@@ -194,7 +194,7 @@ const WorkflowJobLogsViewer = observer(
     const jobIsInProgress = job.status === WorkflowJobStatus.IN_PROGRESS;
     const closeLogViewer = (): void => {
       logState.closeModal();
-      flowResult(workflowState.fetchAllWorkspaceWorkflows()).catch(
+      flowResult(workflowState.fetchAllWorkflows()).catch(
         workflowState.editorStore.applicationStore.alertIllegalUnhandledError,
       );
     };
@@ -256,14 +256,14 @@ const WorkflowJobLogsViewer = observer(
 const WorkflowExplorerContextMenu = observer(
   (
     props: {
-      workflowsState: WorkspaceWorkflowsState;
-      workflowState: WorkspaceWorkflowState;
+      workflowManagerState: WorkflowManagerState;
+      workflowState: WorkflowState;
       node: WorkflowExplorerTreeNodeData;
       treeData: TreeData<WorkflowExplorerTreeNodeData>;
     },
     ref: React.Ref<HTMLDivElement>,
   ) => {
-    const { node, workflowsState, workflowState, treeData } = props;
+    const { node, workflowManagerState, workflowState, treeData } = props;
     const retryJob = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
         workflowState.retryJob(node.workflowJob, treeData);
@@ -276,7 +276,7 @@ const WorkflowExplorerContextMenu = observer(
     };
     const viewLogs = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
-        workflowsState.logState.viewJobLogs(node.workflowJob);
+        workflowManagerState.logState.viewJobLogs(node.workflowJob);
       }
     };
     const visitWeburl = (): void => {
@@ -320,14 +320,14 @@ const WorkflowTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     WorkflowExplorerTreeNodeData,
     {
-      workflowsState: WorkspaceWorkflowsState;
-      workflowState: WorkspaceWorkflowState;
+      workflowManagerState: WorkflowManagerState;
+      workflowState: WorkflowState;
       treeData: TreeData<WorkflowExplorerTreeNodeData>;
     }
   >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
-  const { workflowsState, treeData, workflowState } = props.innerProps;
+  const { workflowManagerState, treeData, workflowState } = props.innerProps;
   const expandIcon = !(node instanceof WorkflowTreeNodeData) ? (
     <div />
   ) : node.isOpen ? (
@@ -346,7 +346,7 @@ const WorkflowTreeNodeContainer: React.FC<
     <ContextMenu
       content={
         <WorkflowExplorerContextMenu
-          workflowsState={workflowsState}
+          workflowManagerState={workflowManagerState}
           workflowState={workflowState}
           treeData={treeData}
           node={node}
@@ -420,111 +420,116 @@ const WorkflowTreeNodeContainer: React.FC<
     </ContextMenu>
   );
 };
-export const WorkspaceWorkflows = observer(() => {
-  const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const workflowsState = editorStore.workspaceWorkflowsState;
-  const logState = workflowsState.logState;
-  const isDispatchingAction =
-    workflowsState.fetchWorkflowsState.isInProgress ||
-    Boolean(
-      workflowsState.workflowStates.find((e) => e.isExecutingWorkflowRequest),
-    );
-  const refresh = applicationStore.guaranteeSafeAction(() =>
-    flowResult(workflowsState.fetchAllWorkspaceWorkflows()),
-  );
-  useEffect(() => {
-    flowResult(workflowsState.fetchAllWorkspaceWorkflows()).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
-  }, [applicationStore, workflowsState]);
 
-  return (
-    <div className="panel workspace-workflows">
-      <div className="panel__header side-bar__header">
-        <div className="panel__header__title workspace-workflows__header__title">
-          <div className="panel__header__title__content side-bar__header__title__content">
-            WORKSPACE WORKFLOWS
-          </div>
-        </div>
-        <div className="panel__header__actions side-bar__header__actions">
-          <button
-            className={clsx(
-              'panel__header__action side-bar__header__action workspace-workflows__refresh-btn',
-              {
-                'workspace-workflows__refresh-btn--loading':
-                  isDispatchingAction,
-              },
-            )}
-            disabled={isDispatchingAction}
-            onClick={refresh}
-            tabIndex={-1}
-            title="Refresh"
-          >
-            <RefreshIcon />
-          </button>
-        </div>
-      </div>
-      <div className="panel__content side-bar__content">
-        <PanelLoadingIndicator isLoading={isDispatchingAction} />
-        <div className="panel side-bar__panel">
-          <div className="panel__header">
-            <div className="panel__header__title">
-              <div className="panel__header__title__content">WORKFLOWS</div>
-            </div>
-            <div
-              className="side-bar__panel__header__changes-count"
-              data-testid={
-                LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
-              }
-            >
-              {workflowsState.workflowStates.length}
-            </div>
-          </div>
-          <div className="panel__content">
-            {workflowsState.workflowStates.map((workflowState) => {
-              const onNodeSelect = (
-                node: WorkflowExplorerTreeNodeData,
-              ): void => {
-                workflowState.onTreeNodeSelect(node, workflowState.treeData);
-              };
-              const getChildNodes = (
-                node: WorkflowExplorerTreeNodeData,
-              ): WorkflowExplorerTreeNodeData[] => {
-                if (node.childrenIds && node instanceof WorkflowTreeNodeData) {
-                  return node.childrenIds
-                    .map((id) => workflowState.treeData.nodes.get(id))
-                    .filter(isNonNullable);
-                }
-                return [];
-              };
+export const WorkflowManager = observer(
+  (props: { workflowManagerState: WorkflowManagerState }) => {
+    const applicationStore = useApplicationStore();
+    const workflowManagerState = props.workflowManagerState;
+    const isDispatchingAction =
+      workflowManagerState.fetchWorkflowsState.isInProgress ||
+      Boolean(
+        workflowManagerState.workflowStates.find(
+          (e) => e.isExecutingWorkflowRequest,
+        ),
+      );
+    const renderWorkflowContent = (): React.ReactNode => (
+      <>
+        {workflowManagerState.workflowStates.map((workflowState) => {
+          const onNodeSelect = (node: WorkflowExplorerTreeNodeData): void => {
+            workflowState.onTreeNodeSelect(node, workflowState.treeData);
+          };
+          const getChildNodes = (
+            node: WorkflowExplorerTreeNodeData,
+          ): WorkflowExplorerTreeNodeData[] => {
+            if (node.childrenIds && node instanceof WorkflowTreeNodeData) {
+              return node.childrenIds
+                .map((id) => workflowState.treeData.nodes.get(id))
+                .filter(isNonNullable);
+            }
+            return [];
+          };
 
-              return (
-                <TreeView
-                  components={{
-                    TreeNodeContainer: WorkflowTreeNodeContainer,
-                  }}
-                  key={workflowState.uuid}
-                  treeData={workflowState.treeData}
-                  onNodeSelect={onNodeSelect}
-                  getChildNodes={getChildNodes}
-                  innerProps={{
-                    workflowsState: workflowsState,
-                    workflowState: workflowState,
-                    treeData: workflowState.treeData,
-                  }}
-                />
-              );
-            })}
-          </div>
-        </div>
-        {logState.job && (
+          return (
+            <TreeView
+              components={{
+                TreeNodeContainer: WorkflowTreeNodeContainer,
+              }}
+              key={workflowState.uuid}
+              treeData={workflowState.treeData}
+              onNodeSelect={onNodeSelect}
+              getChildNodes={getChildNodes}
+              innerProps={{
+                workflowManagerState,
+                workflowState: workflowState,
+                treeData: workflowState.treeData,
+              }}
+            />
+          );
+        })}
+        {workflowManagerState.logState.job && (
           <WorkflowJobLogsViewer
-            logState={logState}
-            workflowState={workflowsState}
+            logState={workflowManagerState.logState}
+            workflowState={workflowManagerState}
           />
         )}
+      </>
+    );
+
+    const refresh = applicationStore.guaranteeSafeAction(() =>
+      flowResult(workflowManagerState.fetchAllWorkflows()),
+    );
+    useEffect(() => {
+      flowResult(workflowManagerState.fetchAllWorkflows()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [applicationStore, workflowManagerState]);
+
+    return (
+      <div className="panel workspace-workflows">
+        <div className="panel__header side-bar__header">
+          <div className="panel__header__title workspace-workflows__header__title">
+            <div className="panel__header__title__content side-bar__header__title__content">
+              WORKFLOW MANAGER
+            </div>
+          </div>
+          <div className="panel__header__actions side-bar__header__actions">
+            <button
+              className={clsx(
+                'panel__header__action side-bar__header__action workspace-workflows__refresh-btn',
+                {
+                  'workspace-workflows__refresh-btn--loading':
+                    isDispatchingAction,
+                },
+              )}
+              disabled={isDispatchingAction}
+              onClick={refresh}
+              tabIndex={-1}
+              title="Refresh"
+            >
+              <RefreshIcon />
+            </button>
+          </div>
+        </div>
+        <div className="panel__content side-bar__content">
+          <PanelLoadingIndicator isLoading={isDispatchingAction} />
+          <div className="panel side-bar__panel">
+            <div className="panel__header">
+              <div className="panel__header__title">
+                <div className="panel__header__title__content">WORKFLOWS</div>
+              </div>
+              <div
+                className="side-bar__panel__header__changes-count"
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                }
+              >
+                {workflowManagerState.workflowStates.length}
+              </div>
+            </div>
+            <div className="panel__content">{renderWorkflowContent()}</div>
+          </div>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
