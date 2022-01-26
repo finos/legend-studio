@@ -743,7 +743,7 @@ const ApiTokenAuthenticationStrategyEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={authSpec.apiToken}
-          propertyName={'apiToken'}
+          propertyName={'apiTokenRef'}
           update={(value: string | undefined): void =>
             authSpec.setApiToken(value ?? '')
           }
