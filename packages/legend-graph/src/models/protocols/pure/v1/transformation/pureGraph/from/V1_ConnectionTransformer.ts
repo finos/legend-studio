@@ -117,7 +117,7 @@ const transformDatabricksDatasourceSpecification = (
   metamodel: DatabricksDatasourceSpecification,
 ): V1_DatabricksDatasourceSpecification => {
   const source = new V1_DatabricksDatasourceSpecification();
-  source.host = metamodel.host;
+  source.hostname = metamodel.hostname;
   source.port = metamodel.port;
   source.protocol = metamodel.protocol;
   source.httpPath = metamodel.httpPath;

@@ -488,10 +488,10 @@ const DatabricksDatasourceSpecificationEditor = observer(
       <>
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
-          value={sourceSpec.host}
-          propertyName="host"
+          value={sourceSpec.hostname}
+          propertyName="hostname"
           update={(value: string | undefined): void =>
-            sourceSpec.setHost(value ?? '')
+            sourceSpec.setHostName(value ?? '')
           }
         />
         <ConnectionEditor_StringEditor

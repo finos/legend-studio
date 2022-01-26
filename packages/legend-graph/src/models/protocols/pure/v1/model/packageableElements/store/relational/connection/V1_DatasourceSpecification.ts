@@ -73,7 +73,7 @@ export class V1_DatabricksDatasourceSpecification
   extends V1_DatasourceSpecification
   implements Hashable
 {
-  host!: string;
+  hostname!: string;
   port!: string;
   protocol!: string;
   httpPath!: string;
@@ -81,7 +81,7 @@ export class V1_DatabricksDatasourceSpecification
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
-      this.host,
+      this.hostname,
       this.port,
       this.protocol,
       this.httpPath,

@@ -111,7 +111,7 @@ export const V1_buildDatasourceSpecification = (
     return embeddedSpec;
   } else if (protocol instanceof V1_DatabricksDatasourceSpecification) {
     assertNonEmptyString(
-      protocol.host,
+      protocol.hostname,
       'Databricks hostname specification is missing',
     );
     assertNonEmptyString(
@@ -127,7 +127,7 @@ export const V1_buildDatasourceSpecification = (
       'Databricks httpPath specification is missing',
     );
     const databricksSpec = new DatabricksDatasourceSpecification(
-      protocol.host,
+      protocol.hostname,
       protocol.port,
       protocol.protocol,
       protocol.httpPath,
