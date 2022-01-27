@@ -65,12 +65,12 @@ import { flowResult } from 'mobx';
 import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState';
 import {
   type Type,
+  type Multiplicity,
   Class,
   DerivedProperty,
   PrimitiveType,
   PRIMITIVE_TYPE,
   Enumeration,
-  Multiplicity,
   TYPE_CAST_TOKEN,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
@@ -84,8 +84,9 @@ const QueryBuilderSubclassInfoTooltip: React.FC<{
   isMapped: boolean;
   children: React.ReactElement;
   placement?: TooltipPlacement | undefined;
+  multiplicity: Multiplicity;
 }> = (props) => {
-  const { subclass, path, isMapped, children, placement } = props;
+  const { subclass, path, isMapped, children, placement, multiplicity } = props;
   return (
     <Tooltip
       arrow={true}
@@ -118,7 +119,7 @@ const QueryBuilderSubclassInfoTooltip: React.FC<{
               Multiplicity
             </div>
             <div className="query-builder__tooltip__item__value">
-              {getMultiplicityDescription(new Multiplicity(1, 1))}
+              {getMultiplicityDescription(multiplicity)}
             </div>
           </div>
           <div className="query-builder__tooltip__item">
@@ -428,9 +429,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
       node.property instanceof DerivedProperty;
     const isMultiple =
-      node instanceof QueryBuilderExplorerTreePropertyNodeData &&
-      (node.property.multiplicity.upperBound === undefined ||
-        node.property.multiplicity.upperBound > 1);
+      (node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+        (node.property.multiplicity.upperBound === undefined ||
+          node.property.multiplicity.upperBound > 1)) ||
+      (node instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
+        (node.multiplicity.upperBound === undefined ||
+          node.multiplicity.upperBound > 1));
     const allowPreview =
       node.mappingData.mapped &&
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
@@ -609,6 +613,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     subclass={node.subclass}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
+                    multiplicity={node.multiplicity}
                   >
                     <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
                       <InfoCircleIcon />

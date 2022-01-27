@@ -29,6 +29,9 @@ import {
   TEST_DATA__graphFetchWithDerivedPropertyAndParameter,
   TEST_DATA__simpleProjectionWithSubtype,
   TEST_DATA__graphFetchWithSubtype,
+  TEST_DATA__filterQueryWithSubtypeWithoutExists,
+  TEST_DATA__filterQueryWithSubtypeWithExists,
+  TEST_DATA__filterQueryWithSubtypeWithExistsChain,
 } from './TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
@@ -185,6 +188,24 @@ const cases: RoundtripTestCase[] = [
     'Filter with a single condition',
     projectionCtx,
     TEST_DATA__getAllWithOneConditionFilter,
+    undefined,
+  ],
+  [
+    'Filter with subtype without exists',
+    projectionCtx,
+    TEST_DATA__filterQueryWithSubtypeWithoutExists,
+    undefined,
+  ],
+  [
+    'Filter with subtype with exists',
+    projectionCtx,
+    TEST_DATA__filterQueryWithSubtypeWithExists,
+    undefined,
+  ],
+  [
+    'Filter with subtype with exists() chain',
+    projectionCtx,
+    TEST_DATA__filterQueryWithSubtypeWithExistsChain,
     undefined,
   ],
   [

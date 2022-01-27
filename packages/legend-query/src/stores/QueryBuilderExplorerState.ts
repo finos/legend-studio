@@ -47,6 +47,7 @@ import {
   TYPE_CAST_TOKEN,
   VARIABLE_REFERENCE_TOKEN,
   ARROW_FUNCTION_TOKEN,
+  Multiplicity,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
@@ -137,6 +138,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
 export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplorerTreeNodeData {
   subclass: Class;
   parentId: string;
+  multiplicity: Multiplicity;
 
   constructor(
     id: string,
@@ -146,6 +148,7 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
     parentId: string,
     isPartOfDerivedPropertyBranch: boolean,
     mappingData: QueryBuilderPropertyMappingData,
+    multiplicity: Multiplicity,
   ) {
     super(
       id,
@@ -157,6 +160,7 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
     );
     this.subclass = subclass;
     this.parentId = parentId;
+    this.multiplicity = multiplicity;
   }
 }
 
@@ -433,6 +437,11 @@ export const getQueryBuilderSubTypeNodeData = (
     //Display subclasses, anyway.
     //TODO: Enchance mapping algo to take into account this
     { mapped: true, skipMappingCheck: true },
+    parentNode instanceof QueryBuilderExplorerTreePropertyNodeData
+      ? parentNode.property.multiplicity
+      : parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+      ? parentNode.multiplicity
+      : new Multiplicity(1, 1),
   );
   subTypeNode.childrenIds =
     generateExplorerTreeClassNodeChildrenIDs(subTypeNode);
