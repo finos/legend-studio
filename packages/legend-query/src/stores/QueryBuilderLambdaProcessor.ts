@@ -963,7 +963,9 @@ export class QueryBuilderLambdaProcessor
             `Can't process property expression: derived property '${propertyExpression.func.name}' expects number of provided arguments to match number of parameters`,
           );
         }
-        if (
+        // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+        // $x.employees->subType(@Person)->subType(@Staff)
+        while (
           currentPropertyExpression instanceof SimpleFunctionExpression &&
           matchFunctionName(
             currentPropertyExpression.functionName,

@@ -64,7 +64,9 @@ export const getPropertyChainName = (
         prettyPropertyName(currentExpression.func.name),
       );
     }
-    if (
+    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+    // $x.employees->subType(@Person)->subType(@Staff)
+    while (
       currentExpression instanceof SimpleFunctionExpression &&
       matchFunctionName(
         currentExpression.functionName,
@@ -315,6 +317,19 @@ export class QueryBuilderPropertyExpressionState {
       currentExpression = getNullableFirstElement(
         currentExpression.parametersValues,
       );
+      // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+      // $x.employees->subType(@Person)->subType(@Staff)
+      while (
+        currentExpression instanceof SimpleFunctionExpression &&
+        matchFunctionName(
+          currentExpression.functionName,
+          SUPPORTED_FUNCTIONS.SUBTYPE,
+        )
+      ) {
+        currentExpression = getNullableFirstElement(
+          currentExpression.parametersValues,
+        );
+      }
     }
     this.requiresExistsHandling = requiresExistsHandling;
     this.derivedPropertyExpressionStates = result.reverse();
