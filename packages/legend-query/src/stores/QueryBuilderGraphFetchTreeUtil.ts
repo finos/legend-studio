@@ -24,11 +24,14 @@ import {
   PropertyExplicitReference,
   Class,
   PropertyGraphFetchTree,
+  OptionalPackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
+  QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState';
+import type { QueryBuilderState } from './QueryBuilderState';
 
 export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;
@@ -170,11 +173,11 @@ export const removeNodeRecursively = (
   pruneTreeData(treeData);
 };
 
-// TODO: handle subtype
 export const addQueryBuilderPropertyNode = (
   treeData: QueryBuilderGraphFetchTreeData,
   explorerTreeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
+  queryBuilderState: QueryBuilderState,
 ): void => {
   // traverse the property node all the way to the root and resolve the
   // chain of property that leads to this property node
@@ -183,18 +186,46 @@ export const addQueryBuilderPropertyNode = (
   ];
   let parentExplorerTreeNode = explorerTreeData.nodes.get(node.parentId);
   while (
-    parentExplorerTreeNode instanceof QueryBuilderExplorerTreePropertyNodeData
+    parentExplorerTreeNode instanceof
+      QueryBuilderExplorerTreePropertyNodeData ||
+    parentExplorerTreeNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
   ) {
-    const propertyGraphFetchTree = new PropertyGraphFetchTree(
-      PropertyExplicitReference.create(parentExplorerTreeNode.property),
-    );
-    propertyGraphFetchTree.subTrees.push(
-      propertyGraphFetchTrees[0] as PropertyGraphFetchTree,
-    );
-    propertyGraphFetchTrees.unshift(propertyGraphFetchTree);
-    parentExplorerTreeNode = explorerTreeData.nodes.get(
-      parentExplorerTreeNode.parentId,
-    );
+    let subType =
+      OptionalPackageableElementExplicitReference.create<Class>(undefined);
+    let subtypeAssigned = false;
+    while (
+      parentExplorerTreeNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+    ) {
+      if (!subtypeAssigned) {
+        subType = OptionalPackageableElementExplicitReference.create(
+          parentExplorerTreeNode.subclass,
+        );
+        subtypeAssigned = true;
+      }
+      parentExplorerTreeNode = explorerTreeData.nodes.get(
+        parentExplorerTreeNode.parentId,
+      );
+    }
+    if (
+      parentExplorerTreeNode instanceof QueryBuilderExplorerTreePropertyNodeData
+    ) {
+      const propertyGraphFetchTree = new PropertyGraphFetchTree(
+        PropertyExplicitReference.create(parentExplorerTreeNode.property),
+        subType,
+      );
+      propertyGraphFetchTree.subTrees.push(
+        propertyGraphFetchTrees[0] as PropertyGraphFetchTree,
+      );
+      propertyGraphFetchTrees.unshift(propertyGraphFetchTree);
+      parentExplorerTreeNode = explorerTreeData.nodes.get(
+        parentExplorerTreeNode.parentId,
+      );
+    } else {
+      queryBuilderState.applicationStore.notifyError(
+        `Can't cast the root class of graph fetch structure to its subtype.`,
+      );
+      return;
+    }
   }
 
   // traverse the chain of property from the root class to find a node in the
