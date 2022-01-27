@@ -203,7 +203,7 @@ const cases: RoundtripTestCase[] = [
     undefined,
   ],
   [
-    'Filter with subtype with multi exists',
+    'Filter with subtype with exists() chain',
     projectionCtx,
     TEST_DATA__filterQueryWithSubtypeWithExistsChain,
     undefined,
