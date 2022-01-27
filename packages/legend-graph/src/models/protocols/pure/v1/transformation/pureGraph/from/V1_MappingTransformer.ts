@@ -147,12 +147,17 @@ import type { SubstituteStore } from '../../../../../../metamodels/pure/packagea
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
-  isTransformingEmbeddedPropertyMapping: boolean,
+  options?: {
+    isTransformingEmbeddedPropertyMapping?: boolean;
+    isTransformingLocalPropertyMapping?: boolean;
+  },
 ): V1_PropertyPointer => {
   const property = new V1_PropertyPointer();
-  property.class = isTransformingEmbeddedPropertyMapping
-    ? undefined
-    : V1_transformElementReference(element.ownerReference);
+  property.class =
+    options?.isTransformingEmbeddedPropertyMapping ||
+    options?.isTransformingLocalPropertyMapping
+      ? undefined
+      : V1_transformElementReference(element.ownerReference);
   property.property = element.value.name;
   return property;
 };
@@ -372,7 +377,6 @@ const transformSimpleFlatDataPropertyMapping = (
     transformOptionalPropertyMappingTransformer(element.transformer);
   flatDataPropertyMapping.property = V1_transformPropertyReference(
     element.property,
-    false,
   );
   flatDataPropertyMapping.source = transformPropertyMappingSource(
     element.sourceSetImplementation,
@@ -399,10 +403,7 @@ const transformEmbeddedFlatDataPropertyMapping = (
     embedded.id = id;
   }
   embedded.class = V1_transformElementReference(element.class);
-  embedded.property = V1_transformPropertyReference(
-    element.property,
-    false, // TODO: we might ned to turn this on in the future once we start working on the gramar roundtrip for flat-data
-  );
+  embedded.property = V1_transformPropertyReference(element.property); // TODO: we might ned to turn 'isTransformingEmbeddedPropertyMapping' on in the future once we start working on the gramar roundtrip for flat-data
   embedded.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     false, // TODO: we might ned to turn this on in the future once we start working on the gramar roundtrip for flat-data
@@ -428,7 +429,9 @@ const transformPurePropertyMapping = (
     transformOptionalPropertyMappingTransformer(element.transformer);
   purePropertyMapping.property = V1_transformPropertyReference(
     element.property,
-    false,
+    {
+      isTransformingLocalPropertyMapping: Boolean(element.localMappingProperty),
+    },
   );
   purePropertyMapping.source = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   purePropertyMapping.target = transformPropertyMappingTarget(
@@ -459,10 +462,11 @@ const transformRelationalPropertyMapping = (
   propertyMapping.enumMappingId = transformOptionalPropertyMappingTransformer(
     element.transformer,
   );
-  propertyMapping.property = V1_transformPropertyReference(
-    element.property,
-    isTransformingEmbeddedPropertyMapping,
-  );
+  propertyMapping.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+    isTransformingLocalPropertyMapping: Boolean(element.localMappingProperty),
+  });
   // Prune source information from the operation
   // NOTE: if in the future, source information is stored under different key,
   // e.g. { "classPointerSourceInformation": ... }
@@ -496,10 +500,10 @@ const transformEmbeddedRelationalPropertyMapping = (
   context: V1_GraphTransformerContext,
 ): V1_EmbeddedRelationalPropertyMapping => {
   const embedded = new V1_EmbeddedRelationalPropertyMapping();
-  embedded.property = V1_transformPropertyReference(
-    element.property,
-    isTransformingEmbeddedPropertyMapping,
-  );
+  embedded.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+  });
   embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
@@ -533,10 +537,10 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
   isTransformingEmbeddedPropertyMapping: boolean,
 ): V1_InlineEmbeddedPropertyMapping => {
   const embedded = new V1_InlineEmbeddedPropertyMapping();
-  embedded.property = V1_transformPropertyReference(
-    element.property,
-    isTransformingEmbeddedPropertyMapping,
-  );
+  embedded.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+  });
   embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
@@ -556,10 +560,10 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
   context: V1_GraphTransformerContext,
 ): V1_OtherwiseEmbeddedRelationalPropertyMapping => {
   const embedded = new V1_OtherwiseEmbeddedRelationalPropertyMapping();
-  embedded.property = V1_transformPropertyReference(
-    element.property,
-    isTransformingEmbeddedPropertyMapping,
-  );
+  embedded.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+  });
   embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
@@ -601,7 +605,7 @@ const transformXStorePropertyMapping = (
   context: V1_GraphTransformerContext,
 ): V1_XStorePropertyMapping => {
   const xstore = new V1_XStorePropertyMapping();
-  xstore.property = V1_transformPropertyReference(element.property, false);
+  xstore.property = V1_transformPropertyReference(element.property);
   xstore.source = transformPropertyMappingSource(
     element.sourceSetImplementation,
   );
@@ -626,10 +630,7 @@ const transformAggregationAwarePropertyMapping = (
   element: AggregationAwarePropertyMapping,
 ): V1_AggregationAwarePropertyMapping => {
   const propertyMapping = new V1_AggregationAwarePropertyMapping();
-  propertyMapping.property = V1_transformPropertyReference(
-    element.property,
-    false,
-  );
+  propertyMapping.property = V1_transformPropertyReference(element.property);
   propertyMapping.source = transformPropertyMappingSource(
     element.sourceSetImplementation,
   );
