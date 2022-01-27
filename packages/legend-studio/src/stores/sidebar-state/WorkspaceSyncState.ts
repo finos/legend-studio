@@ -458,7 +458,7 @@ export class WorkspaceSyncState {
         this.editorStore.setActionAltertInfo({
           message: 'Conflicts found while pulling changes',
           prompt:
-            'You can either force-pull (override local changes) or resolve these conflicts manually.',
+            'You can either force-pull (override local changes) or resolve these conflicts manually',
           type: ActionAlertType.CAUTION,
           onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
           onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
