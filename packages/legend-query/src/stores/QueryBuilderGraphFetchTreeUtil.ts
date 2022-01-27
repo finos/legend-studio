@@ -222,7 +222,7 @@ export const addQueryBuilderPropertyNode = (
       );
     } else {
       queryBuilderState.applicationStore.notifyError(
-        `Can't cast the root class of graph fetch structure to its subtype.`,
+        `Can't cast the root class of graph fetch structure to its subtype`,
       );
       return;
     }
