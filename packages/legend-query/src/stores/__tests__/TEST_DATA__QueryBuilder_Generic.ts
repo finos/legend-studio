@@ -1277,3 +1277,72 @@ export const TEST_DATA__graphFetchWithDerivedPropertyAndParameter = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__graphFetchWithSubtype = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'serialize',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'graphFetch',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::target::NFirm',
+                },
+              ],
+            },
+            {
+              _type: 'rootGraphFetchTree',
+              class: 'model::target::NFirm',
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [],
+                  property: 'nEmployees',
+                  subTrees: [
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      parameters: [],
+                      property: 'fullAddress',
+                      subTrees: [],
+                    },
+                  ],
+                  subType: 'model::target::NDeveloper',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'rootGraphFetchTree',
+          class: 'model::target::NFirm',
+          subTrees: [
+            {
+              _type: 'propertyGraphFetchTree',
+              parameters: [],
+              property: 'nEmployees',
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [],
+                  property: 'fullAddress',
+                  subTrees: [],
+                },
+              ],
+              subType: 'model::target::NDeveloper',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

@@ -311,6 +311,7 @@ const QueryBuilderExplorerContextMenu = observer(
                 graphFetchTreeData,
                 queryBuilderState.explorerState.nonNullableTreeData,
                 nodeToAdd,
+                queryBuilderState,
               ),
             );
             queryBuilderState.fetchStructureState.graphFetchTreeState.setGraphFetchTree(
