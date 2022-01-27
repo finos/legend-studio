@@ -123,7 +123,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
    * when the diff is a delete or create. But we can always guarantee that at least one exist and thus `effectiveEntityPath` is that guaranteed to exist path.
    * It serves 2 main purposes:
    * 1. For display
-   * 2. For refreshing diff: for example, when we sync workspace change, a delete is updated and if we continue to use the
+   * 2. For refreshing diff: for example, when we push a workspace change, a delete is updated and if we continue to use the
    *    `toEntityPath` the diff will be shown as a delete still, but we don't want this, we want both panels to have the same content
    *
    * As for which path to take precedence, it is more suitable to take `toEntityPath` because it reflects what currently presents in the project

@@ -84,6 +84,7 @@ import {
   AggregationAwareSetImplementation,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
+  GraphBuilderError,
 } from '@finos/legend-graph';
 import {
   type LambdaEditorState,
@@ -358,7 +359,7 @@ export class EditorGraphState {
     const baseHashesIndex = this.editorStore.isInConflictResolutionMode
       ? this.editorStore.changeDetectionState
           .conflictResolutionHeadRevisionState.entityHashesIndex
-      : this.editorStore.changeDetectionState.workspaceLatestRevisionState
+      : this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .entityHashesIndex;
     const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
     const entityChanges: EntityChange[] = [];
@@ -393,21 +394,27 @@ export class EditorGraphState {
     return entityChanges;
   }
 
-  *loadEntityChangesToGraph(changes: EntityChange[]): GeneratorFn<void> {
+  /**
+   * Loads entity changes to graph and updates application.
+   */
+  *loadEntityChangesToGraph(
+    changes: EntityChange[],
+    baseEntities: Entity[] | undefined,
+  ): GeneratorFn<void> {
     try {
       assertTrue(
         this.editorStore.isInFormMode,
-        'Applying changes only supported in form mode',
+        `Can't apply entity changes: operation only supported in form mode`,
       );
-      const updatedEntities = applyEntityChanges(
+      const entities =
+        baseEntities ??
         this.editorStore.graphManagerState.graph.allOwnElements.map((element) =>
           this.editorStore.graphManagerState.graphManager.elementToEntity(
             element,
           ),
-        ),
-        changes,
-      );
-      yield flowResult(this.updateGraphAndApplication(updatedEntities));
+        );
+      const modifiedEntities = applyEntityChanges(entities, changes);
+      yield flowResult(this.updateGraphAndApplication(modifiedEntities));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(
@@ -823,7 +830,6 @@ export class EditorGraphState {
       // FIXME: we allow this so the UX stays the same but this causes memory leak
       // do this properly using node IDs -> this causes mem-leak right now
       this.editorStore.explorerTreeState.reprocess();
-
       // Reprocess editor states
       // FIXME: we allow this so the UX stays the same but this causes memory leak
       // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
@@ -865,13 +871,22 @@ export class EditorGraphState {
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      this.editorStore.applicationStore.notifyError(
-        `Can't build graph: ${error.message}`,
-      ); // TODO?: should we say can't rebuild application state
       this.editorStore.changeDetectionState.stop(true); // force stop change detection
       this.isUpdatingGraph = false;
+      if (error instanceof GraphBuilderError) {
+        this.editorStore.applicationStore.setBlockingAlert({
+          message: `Can't build graph: ${error.message}`,
+          prompt: 'Refreshing full application',
+          showLoading: true,
+        });
+        this.editorStore.openedEditorStates = [];
+        this.editorStore.setCurrentEditorState(undefined);
+        this.editorStore.cleanUp();
+        yield flowResult(this.editorStore.buildGraph(entities));
+      }
     } finally {
       this.isUpdatingApplication = false;
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 

@@ -39,6 +39,7 @@ import {
 } from '@finos/legend-model-storage';
 import { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import { ParserError } from '@finos/legend-graph';
+import type { AbstractConflictResolutionState } from '../../AbstractConflictResolutionState';
 
 const START_HEADER_MARKER = '<<<<<<<';
 const COMMON_BASE_MARKER = '|||||||';
@@ -162,9 +163,11 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
   currentMergeEditorLine?: number | undefined;
   mergeEditorParserError?: ParserError | undefined;
   currentMode = ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.MERGE_VIEW;
+  conflictResolutionState: AbstractConflictResolutionState;
 
   constructor(
     editorStore: EditorStore,
+    conflictResolutionState: AbstractConflictResolutionState,
     entityPath: string,
     baseRevision: SPECIAL_REVISION_ALIAS | string,
     currentChangeRevision: SPECIAL_REVISION_ALIAS | string,
@@ -231,7 +234,6 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
       markAsResolved: flow,
       useCurrentChanges: flow,
       useIncomingChanges: flow,
-      onMarkAsResolved: flow,
       getGrammarForEntity: flow,
     });
 
@@ -248,6 +250,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
     this.baseEntityGetter = baseEntityGetter;
     this.currentChangeEntityGetter = currentChangeEntityGetter;
     this.incomingChangeEntityGetter = incomingChangeEntityGetter;
+    this.conflictResolutionState = conflictResolutionState;
   }
 
   setReadOnly(val: boolean): void {
@@ -422,7 +425,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
           this.mergedText ?? '',
         )) as Entity[];
       if (!entities.length) {
-        this.editorStore.changeDetectionState.resolutions.push(
+        this.conflictResolutionState.resolveConflict(
           new EntityChangeConflictResolution(this.entityPath, undefined),
         );
       } else if (entities.length === 1) {
@@ -432,7 +435,7 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
           this.editorStore.graphManagerState.graphManager.pruneSourceInformation(
             resolvedEntity.content as object,
           );
-        this.editorStore.changeDetectionState.resolutions.push(
+        this.conflictResolutionState.resolveConflict(
           new EntityChangeConflictResolution(this.entityPath, resolvedEntity),
         );
       } else {
@@ -450,27 +453,27 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
         );
       }
     }
-    yield flowResult(this.onMarkAsResolved());
+    yield flowResult(this.conflictResolutionState.markConflictAsResolved(this));
   }
 
   *useCurrentChanges(): GeneratorFn<void> {
-    this.editorStore.changeDetectionState.resolutions.push(
+    this.conflictResolutionState.resolveConflict(
       new EntityChangeConflictResolution(
         this.entityPath,
         this.currentChangeEntity,
       ),
     );
-    yield flowResult(this.onMarkAsResolved());
+    yield flowResult(this.conflictResolutionState.markConflictAsResolved(this));
   }
 
   *useIncomingChanges(): GeneratorFn<void> {
-    this.editorStore.changeDetectionState.resolutions.push(
+    this.conflictResolutionState.resolveConflict(
       new EntityChangeConflictResolution(
         this.entityPath,
         this.incomingChangeEntity,
       ),
     );
-    yield flowResult(this.onMarkAsResolved());
+    yield flowResult(this.conflictResolutionState.markConflictAsResolved(this));
   }
 
   acceptCurrentChange(conflict: MergeConflict): void {
@@ -546,24 +549,5 @@ export class EntityChangeConflictEditorState extends EntityDiffEditorState {
         .join('\n'),
     );
     this.refreshMergeConflict();
-  }
-
-  *onMarkAsResolved(): GeneratorFn<void> {
-    // swap out the current conflict editor with a normal diff editor
-    const resolvedChange =
-      this.editorStore.conflictResolutionState.resolvedChanges.find(
-        (change) => change.entityPath === this.entityPath,
-      );
-    if (resolvedChange) {
-      this.editorStore.conflictResolutionState.openConflictResolutionChange(
-        resolvedChange,
-      );
-    }
-    this.editorStore.closeState(this);
-    this.editorStore.conflictResolutionState.removeMergeEditorState(this);
-    // check for remaining conflicts, if none left, prompt the users for the next action
-    yield flowResult(
-      this.editorStore.conflictResolutionState.promptBuildGraphAfterAllConflictsResolved(),
-    );
   }
 }

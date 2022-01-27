@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
+import { EntityDiffSideBarItem } from '../edit-panel/diff-editor/EntityDiffView';
 import {
   PanelLoadingIndicator,
   CloudDownloadIcon,
@@ -25,7 +25,7 @@ import {
   InfoCircleIcon,
   BanIcon,
 } from '@finos/legend-art';
-import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
+import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
@@ -37,7 +37,7 @@ import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 
-export const ConflictResolution = observer(() => {
+export const WorkspaceUpdateConflictResolver = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const sdlcState = editorStore.sdlcState;

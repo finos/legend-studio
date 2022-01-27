@@ -117,7 +117,7 @@ export class ReviewStore {
       this.editorStore.changeDetectionState.workspaceBaseRevisionState.setEntities(
         fromEntities,
       );
-      this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
+      this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
         toEntities,
       );
       yield Promise.all([
@@ -127,7 +127,7 @@ export class ReviewStore {
             CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
           ),
         ),
-        this.editorStore.changeDetectionState.workspaceLatestRevisionState.buildEntityHashesIndex(
+        this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           toEntities,
           LogEvent.create(
             CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
