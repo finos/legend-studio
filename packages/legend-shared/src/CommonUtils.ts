@@ -42,7 +42,7 @@ export {
   uniq,
   debounce,
   throttle,
-  DebouncedFunc,
+  type DebouncedFunc,
 };
 
 // NOTE: we can use the `rng` option in UUID V4 to control the random seed during testing
