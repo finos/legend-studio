@@ -55,7 +55,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
         logger: new HttpLogger({
           endpoint: configData.url,
           jsonEncoder: jsonEncoder.JSON_V2,
-          // NOTE: this fetch implementation will be used for sending `spans`. Here, we use `whatwg-fetch`
+          // NOTE: this fetch implementation will be used for sending `spans`.
           // with some specific options, we have to customize this instead of using the default global fetch
           // See https://github.com/openzipkin/zipkin-js/tree/master/packages/zipkin-transport-http#optional
           fetchImplementation: (
