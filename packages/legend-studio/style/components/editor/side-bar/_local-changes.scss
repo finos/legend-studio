@@ -29,12 +29,12 @@
     animation: spin 1s infinite ease;
   }
 
-  &__sync-btn svg {
+  &__push-changes-btn svg {
     font-size: 1.6rem;
   }
 
-  &__sync-btn--loading svg {
-    animation: spin 1s infinite ease;
+  &__push-changes-btn--loading svg {
+    animation: jiggle 0.3s infinite ease;
   }
 
   &__revision {

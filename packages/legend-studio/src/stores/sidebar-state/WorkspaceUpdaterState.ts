@@ -47,9 +47,10 @@ import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
+  committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
+
   isUpdatingWorkspace = false;
   isRefreshingWorkspaceUpdater = false;
-  committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {

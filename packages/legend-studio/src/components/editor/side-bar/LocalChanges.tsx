@@ -161,8 +161,8 @@ export const LocalChanges = observer(() => {
       applicationStore.alertIllegalUnhandledError,
     );
   const isDispatchingAction =
-    localChangesState.isPushingToWorkspace ||
-    localChangesState.isRefreshingLocalChangesDetector;
+    localChangesState.pushChangesState.isInProgress ||
+    localChangesState.refreshLocalChangesDetectorState.isInProgress;
   // Changes
   const currentEditorState = editorStore.currentEditorState;
   const isSelectedDiff = (diff: EntityDiff): boolean =>
@@ -246,7 +246,8 @@ export const LocalChanges = observer(() => {
               'panel__header__action side-bar__header__action local-changes__refresh-btn',
               {
                 'local-changes__refresh-btn--loading':
-                  localChangesState.isRefreshingLocalChangesDetector,
+                  localChangesState.refreshLocalChangesDetectorState
+                    .isInProgress,
               },
             )}
             onClick={refreshLocalChanges}
@@ -258,10 +259,10 @@ export const LocalChanges = observer(() => {
           </button>
           <button
             className={clsx(
-              'panel__header__action side-bar__header__action local-changes__sync-btn',
+              'panel__header__action side-bar__header__action local-changes__push-changes-btn',
               {
-                'local-changes__sync-btn--loading':
-                  localChangesState.isPushingToWorkspace,
+                'local-changes__push-changes-btn--loading':
+                  localChangesState.pushChangesState.isInProgress,
               },
             )}
             onClick={pushLocalChanges}

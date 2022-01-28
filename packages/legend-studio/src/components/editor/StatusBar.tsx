@@ -85,13 +85,13 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       : editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .isBuildingEntityHashesIndex
       ? 'building indexes...'
-      : editorStore.localChangesState.isPushingToWorkspace
+      : editorStore.localChangesState.pushChangesState.isInProgress
       ? 'pushing local changes...'
       : configurationState.isUpdatingConfiguration
       ? 'updating configuration...'
       : changes
       ? `${changes} unpushed changes`
-      : 'changes pushed';
+      : 'no changes detected';
   const workspaceOutOfSync =
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
   // Conflict resolution
@@ -205,13 +205,13 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         className="editor__status-bar__right"
       >
         {isInConflictResolutionMode && (
-          <div className="editor__status-bar__sync">
-            <div className="editor__status-bar__sync__status">
+          <div className="editor__status-bar__workspace-sync">
+            <div className="editor__status-bar__workspace-sync__status">
               {conflictResolutionStatusText}
             </div>
             <button
-              className={clsx('editor__status-bar__sync__btn', {
-                'editor__status-bar__sync__btn--spinning':
+              className={clsx('editor__status-bar__push-changes__btn', {
+                'editor__status-bar__push-changes__btn--loading':
                   editorStore.conflictResolutionState
                     .isAcceptingConflictResolution,
               })}
@@ -219,7 +219,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               disabled={
                 Boolean(conflicts) ||
                 !editorStore.conflictResolutionState.hasResolvedAllConflicts ||
-                editorStore.localChangesState.isPushingToWorkspace ||
+                editorStore.localChangesState.pushChangesState.isInProgress ||
                 editorStore.workspaceUpdaterState.isUpdatingWorkspace ||
                 editorStore.conflictResolutionState
                   .isInitializingConflictResolution ||
@@ -237,21 +237,21 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           </div>
         )}
         {!isInConflictResolutionMode && (
-          <div className="editor__status-bar__sync">
-            <div className="editor__status-bar__sync__status">
+          <div className="editor__status-bar__workspace-sync">
+            <div className="editor__status-bar__workspace-sync__status">
               {pushStatusText}
             </div>
             <button
-              className={clsx('editor__status-bar__sync__btn', {
-                'editor__status-bar__sync__btn--spinning':
-                  editorStore.localChangesState.isPushingToWorkspace ||
+              className={clsx('editor__status-bar__push-changes__btn', {
+                'editor__status-bar__push-changes__btn--loading':
+                  editorStore.localChangesState.pushChangesState.isInProgress ||
                   configurationState.isUpdatingConfiguration,
               })}
               onClick={pushLocalChanges}
               disabled={
                 !changes ||
                 configurationState.isUpdatingConfiguration ||
-                editorStore.localChangesState.isPushingToWorkspace ||
+                editorStore.localChangesState.pushChangesState.isInProgress ||
                 editorStore.changeDetectionState
                   .workspaceLocalLatestRevisionState
                   .isBuildingEntityHashesIndex ||
