@@ -65,12 +65,10 @@ export const StereotypeSelector = observer(
     const visitProfile = (): void =>
       editorStore.openElement(selectedProfile.value);
     // Stereotype
-    const stereotypeOptions = selectedProfile.value.stereotypes.map(
-      (stereotype) => ({
-        label: stereotype.value,
-        value: stereotype,
-      }),
-    );
+    const stereotypeOptions = selectedProfile.value.stereotypes.map((st) => ({
+      label: st.value,
+      value: st,
+    }));
     const stereotypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
