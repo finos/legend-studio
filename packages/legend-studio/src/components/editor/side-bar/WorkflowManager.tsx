@@ -67,7 +67,7 @@ const getWorkflowStatusIcon = (
       return (
         <div
           title="Pipeline is suspended"
-          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--suspended"
+          className="workflow-manager__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--suspended"
         >
           <PauseCircleIcon />
         </div>
@@ -76,7 +76,7 @@ const getWorkflowStatusIcon = (
       return (
         <div
           title="Pipeline is running"
-          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--in-progress"
+          className="workflow-manager__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--in-progress"
         >
           <CircleNotchIcon />
         </div>
@@ -85,7 +85,7 @@ const getWorkflowStatusIcon = (
       return (
         <div
           title="Pipeline succeeded"
-          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--succeeded"
+          className="workflow-manager__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--succeeded"
         >
           <CheckCircleIcon />
         </div>
@@ -94,7 +94,7 @@ const getWorkflowStatusIcon = (
       return (
         <div
           title="Pipeline failed"
-          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--failed"
+          className="workflow-manager__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--failed"
         >
           <TimesCircleIcon />
         </div>
@@ -103,7 +103,7 @@ const getWorkflowStatusIcon = (
       return (
         <div
           title="Pipeline is canceled"
-          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--canceled"
+          className="workflow-manager__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--canceled"
         >
           <BanIcon />
         </div>
@@ -113,7 +113,7 @@ const getWorkflowStatusIcon = (
       return (
         <div
           title="Pipeline status is unknown"
-          className="workspace-workflows__item__link__content__status__indicator workspace-workflows__item__link__content__status__indicator--unknown"
+          className="workflow-manager__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--unknown"
         >
           <QuestionCircleIcon />
         </div>
@@ -356,7 +356,7 @@ const WorkflowTreeNodeContainer: React.FC<
     >
       <div
         className={clsx(
-          'tree-view__node__container workspace-workflows__explorer__workflow-tree__node__container',
+          'tree-view__node__container workflow-manager__explorer__workflow-tree__node__container',
         )}
         onClick={selectNode}
         style={{
@@ -364,27 +364,27 @@ const WorkflowTreeNodeContainer: React.FC<
           display: 'flex',
         }}
       >
-        <div className="tree-view__node__icon workspace-workflows__explorer__workflow-tree__node__icon">
-          <div className="workspace-workflows__explorer__workflow-tree__node__icon__expand">
+        <div className="tree-view__node__icon workflow-manager__explorer__workflow-tree__node__icon">
+          <div className="workflow-manager__explorer__workflow-tree__node__icon__expand">
             {expandIcon}
           </div>
-          <div className="workspace-workflows__explorer__workflow-tree__node__icon__type">
+          <div className="workflow-manager__explorer__workflow-tree__node__icon__type">
             {nodeIcon}
           </div>
         </div>
         {node instanceof WorkflowTreeNodeData && (
           <a
-            className="workspace-workflows__item__link"
+            className="workflow-manager__item__link"
             rel="noopener noreferrer"
             target="_blank"
             href={node.workflow.webURL}
             title={'See workflow detail'}
           >
-            <div className="workspace-workflows__item__link__content">
-              <span className="workspace-workflows__item__link__content__id">
+            <div className="workflow-manager__item__link__content">
+              <span className="workflow-manager__item__link__content__id">
                 #{node.label}
               </span>
-              <span className="workspace-workflows__item__link__content__created-at">
+              <span className="workflow-manager__item__link__content__created-at">
                 created{' '}
                 {formatDistanceToNow(node.workflow.createdAt, {
                   includeSeconds: true,
@@ -396,17 +396,17 @@ const WorkflowTreeNodeContainer: React.FC<
         )}
         {node instanceof WorkflowJobTreeNodeData && (
           <a
-            className="workspace-workflows__item__link"
+            className="workflow-manager__item__link"
             rel="noopener noreferrer"
             target="_blank"
             href={node.workflowJob.webURL}
             title={'See job detail'}
           >
-            <div className="workspace-workflows__item__link__content">
-              <span className="workspace-workflows__item__link__content__id">
+            <div className="workflow-manager__item__link__content">
+              <span className="workflow-manager__item__link__content__id">
                 {node.workflowJob.name}
               </span>
-              <span className="workspace-workflows__item__link__content__created-at">
+              <span className="workflow-manager__item__link__content__created-at">
                 created{' '}
                 {formatDistanceToNow(node.workflowJob.createdAt, {
                   includeSeconds: true,
@@ -485,9 +485,9 @@ export const WorkflowManager = observer(
     }, [applicationStore, workflowManagerState]);
 
     return (
-      <div className="panel workspace-workflows">
+      <div className="panel workflow-manager">
         <div className="panel__header side-bar__header">
-          <div className="panel__header__title workspace-workflows__header__title">
+          <div className="panel__header__title workflow-manager__header__title">
             <div className="panel__header__title__content side-bar__header__title__content">
               WORKFLOW MANAGER
             </div>
@@ -495,10 +495,9 @@ export const WorkflowManager = observer(
           <div className="panel__header__actions side-bar__header__actions">
             <button
               className={clsx(
-                'panel__header__action side-bar__header__action workspace-workflows__refresh-btn',
+                'panel__header__action side-bar__header__action workflow-manager__refresh-btn',
                 {
-                  'workspace-workflows__refresh-btn--loading':
-                    isDispatchingAction,
+                  'workflow-manager__refresh-btn--loading': isDispatchingAction,
                 },
               )}
               disabled={isDispatchingAction}

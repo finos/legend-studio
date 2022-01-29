@@ -44,10 +44,11 @@ export class WorkspaceReviewState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
   reviewTitle = '';
-  isUpdatingWorkspace = false;
-  isRefreshingWorkspaceUpdater = false;
   committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
   workspaceReview?: Review | undefined;
+
+  isUpdatingWorkspace = false;
+  isRefreshingWorkspaceUpdater = false;
   isFetchingCurrentWorkspaceReview = false;
   isRefreshingWorkspaceChangesDetector = false;
   isClosingWorkspaceReview = false;

@@ -123,10 +123,7 @@ export const toGrammarString = (value: string): string =>
  * NOTE: One can perform regular operations with a LosslessNumber, and it will throw an error when this would result in losing information.
  * But use this with discretion since it it does not result in the same object as `JSON.parse`
  */
-export {
-  stringify as losslessStringify,
-  parse as losslessParse,
-} from 'lossless-json';
+export { losslessStringify, losslessParse };
 export const tryToFormatLosslessJSONString = (
   value: string,
   tabSize = 2,

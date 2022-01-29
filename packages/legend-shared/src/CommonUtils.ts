@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import { cloneDeep as deepClone, mergeWith, pickBy } from 'lodash-es';
-import { UnsupportedOperationError } from './error/ErrorUtils';
-import { format as prettyPrintObject } from 'pretty-format';
-
-// NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
-// in case we want to swap out the implementation
-export {
+import {
   cloneDeep as deepClone,
   isEqual as deepEqual,
   findLast,
@@ -30,8 +24,26 @@ export {
   uniq,
   debounce,
   throttle,
+  mergeWith,
   type DebouncedFunc,
 } from 'lodash-es';
+import { UnsupportedOperationError } from './error/ErrorUtils';
+import { format as prettyPrintObject } from 'pretty-format';
+
+// NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
+// in case we want to swap out the implementation
+export {
+  deepClone,
+  deepEqual,
+  findLast,
+  isEmpty,
+  pickBy,
+  uniqBy,
+  uniq,
+  debounce,
+  throttle,
+  type DebouncedFunc,
+};
 
 // NOTE: we can use the `rng` option in UUID V4 to control the random seed during testing
 // See https://github.com/uuidjs/uuid#version-4-random

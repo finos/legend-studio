@@ -32,6 +32,7 @@ import {
   deleteEntry,
   assertTrue,
   readFileAsText,
+  ActionState,
 } from '@finos/legend-shared';
 import {
   DATE_TIME_FORMAT,
@@ -162,9 +163,9 @@ class PatchLoaderState {
 export class LocalChangesState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
-  isPushingToWorkspace = false;
   workspaceSyncState: WorkspaceSyncState;
-  isRefreshingLocalChangesDetector = false;
+  pushChangesState = ActionState.create();
+  refreshLocalChangesDetectorState = ActionState.create();
   patchLoaderState: PatchLoaderState;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
@@ -291,7 +292,7 @@ export class LocalChangesState {
 
   *refreshLocalChanges(): GeneratorFn<void> {
     const startTime = Date.now();
-    this.isRefreshingLocalChangesDetector = true;
+    this.refreshLocalChangesDetectorState.inProgress();
     try {
       // ======= (RE)START CHANGE DETECTION =======
       this.editorStore.changeDetectionState.stop();
@@ -318,7 +319,7 @@ export class LocalChangesState {
       this.editorStore.applicationStore.notifyError(error);
       this.sdlcState.handleChangeDetectionRefreshIssue(error);
     } finally {
-      this.isRefreshingLocalChangesDetector = false;
+      this.refreshLocalChangesDetectorState.complete();
     }
   }
 
@@ -436,7 +437,7 @@ export class LocalChangesState {
 
   *pushLocalChanges(pushMessage?: string): GeneratorFn<void> {
     if (
-      this.isPushingToWorkspace ||
+      this.pushChangesState.isInProgress ||
       this.editorStore.workspaceUpdaterState.isUpdatingWorkspace
     ) {
       return;
@@ -461,10 +462,12 @@ export class LocalChangesState {
       return;
     }
 
+    this.pushChangesState.inProgress();
     const startTime = Date.now();
     const localChanges =
       this.editorStore.graphState.computeLocalEntityChanges();
     if (!localChanges.length) {
+      this.pushChangesState.complete();
       return;
     }
     yield flowResult(
@@ -476,13 +479,13 @@ export class LocalChangesState {
     if (this.sdlcState.isWorkspaceOutOfSync) {
       this.editorStore.setActionAltertInfo({
         message: 'Local workspace is out-of-sync',
-        prompt: 'Please pull remote changes before pushing your local changes.',
+        prompt: 'Please pull remote changes before pushing your local changes',
         type: ActionAlertType.CAUTION,
         onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
         onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
         actions: [
           {
-            label: 'Pull remote Changes',
+            label: 'Pull remote changes',
             type: ActionAlertActionType.STANDARD,
             default: true,
             handler: (): void => {
@@ -500,9 +503,9 @@ export class LocalChangesState {
           },
         ],
       });
+      this.pushChangesState.complete();
       return;
     }
-    this.isPushingToWorkspace = true;
     const currentHashesIndex =
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
@@ -648,7 +651,7 @@ export class LocalChangesState {
         this.editorStore.applicationStore.notifyError(error);
       }
     } finally {
-      this.isPushingToWorkspace = false;
+      this.pushChangesState.complete();
     }
   }
 }

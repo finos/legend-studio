@@ -83,7 +83,7 @@ export const ActivityBar = observer(() => {
     ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
       editorStore.changeDetectionState.workspaceLocalLatestRevisionState
         .isBuildingEntityHashesIndex ||
-      editorStore.localChangesState.isPushingToWorkspace ? (
+      editorStore.localChangesState.pushChangesState.isInProgress ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__local-change-counter activity-bar__local-change-counter--waiting"
         data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}

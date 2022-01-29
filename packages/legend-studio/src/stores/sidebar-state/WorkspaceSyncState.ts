@@ -35,6 +35,7 @@ import {
   guaranteeNonNullable,
   assertErrorThrown,
   deleteEntry,
+  ActionState,
 } from '@finos/legend-shared';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
@@ -375,7 +376,7 @@ export class WorkspaceSyncState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
 
-  isPullingWorkspace = false;
+  pullChangesState = ActionState.create();
   incomingRevisions: Revision[] = [];
   workspaceSyncConflictResolutionState: WorkspaceSyncConflictResolutionState;
 
@@ -437,7 +438,7 @@ export class WorkspaceSyncState {
         message: `Pulling latest changes...`,
         showLoading: true,
       });
-      this.isPullingWorkspace = true;
+      this.pullChangesState.inProgress();
       const changes =
         this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .changes;
@@ -496,7 +497,7 @@ export class WorkspaceSyncState {
         `Can't pull changes. Error: ${error.message}`,
       );
     } finally {
-      this.isPullingWorkspace = false;
+      this.pullChangesState.complete();
     }
   }
 

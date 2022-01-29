@@ -26,6 +26,16 @@
   }
 }
 
+@keyframes jiggle {
+  from {
+    transform: translateY(0.1rem);
+  }
+
+  to {
+    transform: translateY(-0.1rem);
+  }
+}
+
 @keyframes dnd-bounceup {
   from {
     transform: translateY(0.3rem);

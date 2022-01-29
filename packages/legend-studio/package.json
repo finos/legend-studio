@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.11.2",
+    "@testing-library/dom": "8.11.3",
     "cross-env": "7.0.3",
     "eslint": "8.7.0",
     "jest": "27.4.7",
