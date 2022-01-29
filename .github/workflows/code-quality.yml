@@ -18,10 +18,27 @@ jobs:
         uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0 # disabling shallow clone is recommended for improving relevancy of reporting
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v2.1.7
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v2.5.1
+        with:
+          node-version: 14.x
+        # Install step is needed for Typescript scanning to work properly since
+        # we refer to another packages in `tsconfig` files, which is used by Sonar
+        # See https://community.sonarsource.com/t/sonarts-is-not-able-to-analyse-typescript-files/21510/5
+      - name: Install dependencies
+        run: yarn
       - name: SonarCloud scan
-        # This action does follow a strict release-versioning scheme, it is recommended to use `@master`
-        # https://github.com/SonarSource/sonarcloud-github-action
-        uses: sonarsource/sonarcloud-github-action@master
+        uses: sonarsource/sonarcloud-github-action@v1.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
