@@ -143,8 +143,6 @@ const cases: RoundtripTestCase[] = [
 describe(unitTest('Lambda processing roundtrip test'), () => {
   test.each(cases)('%s', async (testName, context, lambdaJson) => {
     const { entities } = context;
-    const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new Query_GraphPreset()]).install();
     const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
     await TEST__buildGraphWithEntities(graphManagerState, entities);
     // roundtrip check

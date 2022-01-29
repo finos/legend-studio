@@ -25,16 +25,16 @@ export const getMilestoneTemporalStereotype = (
   const milestonedProfile = graph.getProfile(CORE_PURE_PATH.PROFILE_TEMPORAL);
   let stereotype;
   const profile = val.stereotypes.find(
-    (e) => e.ownerReference.value === milestonedProfile,
+    (st) => st.ownerReference.value === milestonedProfile,
   );
   stereotype = Object.values(MILESTONING_STEROTYPES).find(
-    (e) => e === profile?.value.value,
+    (value) => value === profile?.value.value,
   );
   if (stereotype !== undefined) {
     return stereotype;
   }
-  val.generalizations.forEach((e) => {
-    const superType = e.value.rawType;
+  val.generalizations.forEach((generalization) => {
+    const superType = generalization.value.rawType;
     if (superType instanceof Class) {
       const milestonedStereotype = getMilestoneTemporalStereotype(
         superType,
@@ -42,7 +42,7 @@ export const getMilestoneTemporalStereotype = (
       );
       if (milestonedStereotype !== undefined) {
         stereotype = Object.values(MILESTONING_STEROTYPES).find(
-          (e) => e === milestonedStereotype,
+          (value) => value === milestonedStereotype,
         );
       }
     }
