@@ -48,6 +48,7 @@ import {
   VARIABLE_REFERENCE_TOKEN,
   ARROW_FUNCTION_TOKEN,
   Multiplicity,
+  getAllSuperSetImplementations,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
@@ -282,6 +283,22 @@ const isAutoMappedProperty = (
   return false;
 };
 
+export const generatePropertyNodeMappingDataForNonPrimitveProperty = (
+  propertyMapping: PropertyMapping,
+): QueryBuilderPropertyMappingData => {
+  const targetSetImpl =
+    resolveTargetSetImplementationForPropertyMapping(propertyMapping);
+  return {
+    mapped: true,
+    // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
+    // help identifying the mapped properties. However, we would not do that here
+    // as opertion mapping can support more complicated branching logic (right now we just assume
+    // it's always simple union), that Studio should not try to analyze.
+    skipMappingCheck: targetSetImpl instanceof OperationSetImplementation,
+    targetSetImpl,
+  };
+};
+
 export const getPropertyNodeMappingData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
@@ -301,34 +318,29 @@ export const getPropertyNodeMappingData = (
     if (parentMappingData.skipMappingCheck) {
       return { mapped: true, skipMappingCheck: true };
     } else if (parentTargetSetImpl) {
+      const superSetImplementations =
+        getAllSuperSetImplementations(parentTargetSetImpl);
       const propertyMappings = resolvePropertyMappingsForSetImpl(
         graphManagerState,
         parentTargetSetImpl,
       );
-      const mappedProperties = propertyMappings
-        .filter((p) => !p.isStub)
-        .map((p) => p.property.value.name);
+      const propertyMappingsFromSuperSetImpls = superSetImplementations
+        .map((s) => resolvePropertyMappingsForSetImpl(graphManagerState, s))
+        .flat();
+      const mappedPropertyMappings = propertyMappings
+        .concat(propertyMappingsFromSuperSetImpls)
+        .filter((p) => !p.isStub);
+      // propertyMappings from the current level is the highest priority
+      const propertyMapping = mappedPropertyMappings.find(
+        (p) => p.property.value === property,
+      );
       // check if property is mapped through defined property mappings
-      if (mappedProperties.includes(property.name)) {
+      if (propertyMapping) {
         // if class we need to resolve the Set Implementation
         if (property.genericType.value.rawType instanceof Class) {
-          const propertyMapping = propertyMappings.find(
-            (p) => p.property.value === property,
+          return generatePropertyNodeMappingDataForNonPrimitveProperty(
+            propertyMapping,
           );
-          if (propertyMapping) {
-            const targetSetImpl =
-              resolveTargetSetImplementationForPropertyMapping(propertyMapping);
-            return {
-              mapped: true,
-              // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
-              // help identifying the mapped properties. However, we would not do that here
-              // as opertion mapping can support more complicated branching logic (right now we just assume
-              // it's always simple union), that Studio should not try to analyze.
-              skipMappingCheck:
-                targetSetImpl instanceof OperationSetImplementation,
-              targetSetImpl,
-            };
-          }
         }
         return { mapped: true, skipMappingCheck: false };
       }
