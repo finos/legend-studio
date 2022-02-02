@@ -16,13 +16,13 @@ concurrency:
   group: ${{ github.ref == 'refs/heads/master' && format('ci-default-branch-{0}-{1}', github.sha, github.workflow) || format('ci-pr-{0}-{1}', github.ref, github.workflow) }}
   cancel-in-progress: true
 
-# NOTE: we cannot run this action in PR because secrets are not accessible from forks
-# See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
 jobs:
   code-quality-check:
     name: SonarCloud Code Quality Check
     runs-on: ubuntu-latest
-    if: github.repository == 'finos/legend-studio' # prevent running this action in forks
+    # NOTE: we cannot run this action in PR because secrets are not accessible from forks
+    # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
+    if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.4.0
