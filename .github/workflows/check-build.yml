@@ -9,6 +9,13 @@ on:
     branches:
       - '**'
 
+# Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
+# NOTE: we don't want this behavior on default branch
+# See https://stackoverflow.com/a/68422069
+concurrency:
+  group: ${{ github.ref == 'refs/heads/master' && format('ci-default-branch-{0}-{1}', github.sha, github.workflow) || format('ci-pr-{0}-{1}', github.ref, github.workflow) }}
+  cancel-in-progress: true
+
 jobs:
   # This job is to make sure Webpack builds the application fine. This is helpful
   # to know as we don't want to find out this failure as late as when we prepare the
