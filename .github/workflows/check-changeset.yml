@@ -1,4 +1,4 @@
-name: Changeset
+name: Check Changeset
 
 # NOTE: changeset validation only makes sense in PR pipeline
 on:
