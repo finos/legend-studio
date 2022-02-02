@@ -56,17 +56,17 @@ jobs:
       - name: Build image
         run: yarn workspace ${{ matrix.package }} build-dry:docker ${{ github.sha }}
       - name: Scan image for security issues
-        uses: Azure/container-scan@v0
-        env:
-          # This internally uses `trivy` CLI, so we can pass `trivy` CLI flags to customize
-          # See https://aquasecurity.github.io/trivy/v0.20.1/getting-started/cli/config/
-          #
-          # Skip `won't fix` CVEs
-          # See https://github.com/Azure/container-scan/issues/61
-          TRIVY_IGNORE_UNFIXED: true
-          # Manually increase timeout as the default 2-minute is not enough
-          # See https://github.com/Azure/container-scan/issues/109
-          TRIVY_TIMEOUT: 10m
+        uses: aquasecurity/trivy-action@0.2.1
         with:
-          image-name: ${{ matrix.image }}:${{ github.sha }}
-          severity-threshold: CRITICAL
+          # TODO: we should probably also setup misconfiguration scanning
+          # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code
+          scan-type: image
+          image-ref: ${{ matrix.image }}:${{ github.sha }}
+          format: table
+          exit-code: 1
+          # Ignore unpatched/unfixed vulnerabilities/CVEs
+          ignore-unfixed: true
+          severity: CRITICAL
+          # Manually increase timeout as the default 2-minute is not enough
+          # See https://github.com/aquasecurity/trivy/issues/802
+          timeout: 10m
