@@ -1,4 +1,4 @@
-name: Docker Check
+name: Check Docker
 
 # NOTE: this job does not scan for the latest image published on Docker Hub
 # We might need to use some other tools such as http://snyk.io/ to monitor
