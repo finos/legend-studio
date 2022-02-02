@@ -6,6 +6,11 @@ on:
     branches:
       - '**'
 
+# Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
+concurrency:
+  group: ci-pr-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   check-changeset:
     name: Validate Changesets
