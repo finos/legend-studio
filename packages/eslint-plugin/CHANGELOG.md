@@ -1,5 +1,11 @@
 # @finos/eslint-plugin-legend-studio
 
+## 0.2.0
+
+### Minor Changes
+
+- [#821](https://github.com/finos/legend-studio/pull/821) [`9af3076d`](https://github.com/finos/legend-studio/commit/9af3076dee533f55b459cd8698df26f58d7f2309) ([@akphi](https://github.com/akphi)) - Remove rule `no-duplicate-exports` in favor of setting option `includeExports` for rule `no-duplicate-imports`.
+
 ## 0.1.9
 
 ## 0.1.8

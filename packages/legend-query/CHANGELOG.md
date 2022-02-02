@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 0.6.0
+
+### Minor Changes
+
+- [#787](https://github.com/finos/legend-studio/pull/787) [`cf4be129`](https://github.com/finos/legend-studio/commit/cf4be12998af8931b27f8cbac9e2da57f251dfe0) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support subtype in the filter panel
+
+* [#789](https://github.com/finos/legend-studio/pull/789) [`4cfb5298`](https://github.com/finos/legend-studio/commit/4cfb529843ccee4f0dbbc73777c1d2a1b262733a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Subtype support for graph fetch structure.
+
 ## 0.5.0
 
 ### Minor Changes
