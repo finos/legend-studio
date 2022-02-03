@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 0.6.1
+
+### Patch Changes
+
+- [#831](https://github.com/finos/legend-studio/pull/831) [`2637ad6d`](https://github.com/finos/legend-studio/commit/2637ad6d4b3f62daa065c6a4348796dda3968b6d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add parameter instance values when executing unsupported queries.
+
+* [#822](https://github.com/finos/legend-studio/pull/822) [`333c846d`](https://github.com/finos/legend-studio/commit/333c846df6f8eb7f0d5c5e7c156458b61955fc47) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display properties mapped through inheritance mapping in the explorer tree
+
 ## 0.6.0
 
 ### Minor Changes
