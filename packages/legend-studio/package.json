@@ -48,7 +48,7 @@
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@testing-library/react": "12.1.2",
-    "@types/react": "17.0.38",
+    "@types/react": "17.0.39",
     "@types/react-dom": "17.0.11",
     "@types/react-router-dom": "5.3.2",
     "date-fns": "2.28.0",
