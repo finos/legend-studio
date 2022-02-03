@@ -29,7 +29,10 @@ import {
   GRAPH_MANAGER_LOG_EVENT,
   PureClientVersion,
 } from '@finos/legend-graph';
-import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
+import {
+  buildLambdaFunction,
+  buildParametersLetLambdaFunc,
+} from './QueryBuilderLambdaBuilder';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -91,6 +94,26 @@ export class QueryBuilderResultState {
           this.queryBuilderState.queryUnsupportedState.rawLambda,
           'Lambda is required to execute query',
         );
+        if (
+          !this.queryBuilderState.mode.isParametersDisabled &&
+          this.queryBuilderState.queryParametersState.parameters.length
+        ) {
+          const letlambdaFunction = buildParametersLetLambdaFunc(
+            this.queryBuilderState,
+          );
+          const letRawLambda =
+            this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+              letlambdaFunction,
+            );
+          // reset paramaters
+          if (Array.isArray(query.body) && Array.isArray(letRawLambda.body)) {
+            letRawLambda.body = [
+              ...(letRawLambda.body as object[]),
+              ...(query.body as object[]),
+            ];
+            query = letRawLambda;
+          }
+        }
       }
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
