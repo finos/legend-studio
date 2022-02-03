@@ -323,7 +323,7 @@ function V1_resolveElementPath(
   resolver: V1_ValueSpecificationPathResolver,
 ): string {
   const resolvedPath = resolverFunc(path).value.path;
-  // Note: this handles any system elements + primitve types already resolved. i.e String, ModelStore
+  // Note: this handles any system elements + primitive types already resolved. i.e String, ModelStore
   if (resolvedPath !== path) {
     resolver.hasModifiedLambda = true;
   }
