@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 1.0.4
+
+### Patch Changes
+
+- [#817](https://github.com/finos/legend-studio/pull/817) [`3da897a2`](https://github.com/finos/legend-studio/commit/3da897a2612420aa70b462f660d87645441d9ada) ([@gayathrir11](https://github.com/gayathrir11)) - Exclude class in property pointer during transformation for local property mapping.
+
+* [#822](https://github.com/finos/legend-studio/pull/822) [`333c846d`](https://github.com/finos/legend-studio/commit/333c846df6f8eb7f0d5c5e7c156458b61955fc47) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display properties mapped through inheritance mapping in the explorer tree
+
 ## 1.0.3
 
 ## 1.0.2

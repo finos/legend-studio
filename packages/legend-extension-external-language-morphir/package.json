@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-external-language-morphir",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Legend extension for Morphir external language",
   "keywords": [
     "legend",
