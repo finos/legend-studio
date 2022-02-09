@@ -873,7 +873,9 @@ export class EditorGraphState {
       );
       this.editorStore.changeDetectionState.stop(true); // force stop change detection
       this.isUpdatingGraph = false;
-      if (error instanceof GraphBuilderError) {
+      // Note: in the future this function will probably be ideal to refactor when we have different classes for each mode
+      // as we would handle this error differently in `text` mode and `form` mode.
+      if (error instanceof GraphBuilderError && this.editorStore.isInFormMode) {
         this.editorStore.applicationStore.setBlockingAlert({
           message: `Can't build graph: ${error.message}`,
           prompt: 'Refreshing full application',
@@ -883,6 +885,10 @@ export class EditorGraphState {
         this.editorStore.setCurrentEditorState(undefined);
         this.editorStore.cleanUp();
         yield flowResult(this.editorStore.buildGraph(entities));
+      } else {
+        this.editorStore.applicationStore.notifyError(
+          `Can't build graph: ${error.message}`,
+        );
       }
     } finally {
       this.isUpdatingApplication = false;
