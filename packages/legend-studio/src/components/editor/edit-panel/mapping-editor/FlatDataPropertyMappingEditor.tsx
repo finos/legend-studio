@@ -239,8 +239,8 @@ export const FlatDataPropertyMappingEditor = observer(
         accept: [CORE_DND_TYPE.TYPE_TREE_PRIMITIVE],
         drop: (droppedItem: FlatDataPropertyMappingTransformDropTarget): void =>
           handleDrop(droppedItem),
-        collect: (monitor): { item: unknown } => ({
-          item: monitor.getItem(),
+        collect: (monitor): { item: FlatDataColumnDragSource | null } => ({
+          item: monitor.getItem<FlatDataColumnDragSource | null>(),
         }),
       }),
       [handleDrop],

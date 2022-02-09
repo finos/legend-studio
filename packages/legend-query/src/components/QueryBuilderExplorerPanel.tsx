@@ -208,7 +208,7 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
     const { itemType, item, isDragging, currentPosition } = useDragLayer(
       (monitor) => ({
         itemType: monitor.getItemType() as QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
-        item: monitor.getItem() as QueryBuilderExplorerTreeDragSource | null,
+        item: monitor.getItem<QueryBuilderExplorerTreeDragSource | null>(),
         isDragging: monitor.isDragging(),
         initialOffset: monitor.getInitialSourceClientOffset(),
         currentPosition: monitor.getClientOffset(),

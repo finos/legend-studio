@@ -643,9 +643,12 @@ const IdentifiedConnectionsPerStoreEditor = observer(
         drop: (item: ElementDragSource): void => handleDropConnection(item),
         collect: (
           monitor,
-        ): { isConnectionDragOver: boolean; dragItem: unknown } => ({
+        ): {
+          isConnectionDragOver: boolean;
+          dragItem: ElementDragSource | null;
+        } => ({
           isConnectionDragOver: monitor.isOver({ shallow: true }),
-          dragItem: monitor.getItem(),
+          dragItem: monitor.getItem<ElementDragSource | null>(),
         }),
       }),
       [handleDropConnection],

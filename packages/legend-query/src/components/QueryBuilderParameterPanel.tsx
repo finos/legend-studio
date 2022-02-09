@@ -301,7 +301,7 @@ const QueryBuilderParameterDragLayer = observer(
       (monitor) => ({
         itemType:
           monitor.getItemType() as QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-        item: monitor.getItem() as QueryBuilderParameterDragSource | null,
+        item: monitor.getItem<QueryBuilderParameterDragSource | null>(),
         isDragging: monitor.isDragging(),
         initialOffset: monitor.getInitialSourceClientOffset(),
         currentPosition: monitor.getClientOffset(),
