@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 1.0.5
+
+### Patch Changes
+
+- [#845](https://github.com/finos/legend-studio/pull/845) [`29c12a63`](https://github.com/finos/legend-studio/commit/29c12a637d6d5b4eb08f31e2d79ee4bd2a39977a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Export `V1_SectionIndex`.
+
 ## 1.0.4
 
 ### Patch Changes

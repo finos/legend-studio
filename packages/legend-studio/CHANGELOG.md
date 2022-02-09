@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 2.4.2
+
+### Patch Changes
+
+- [#845](https://github.com/finos/legend-studio/pull/845) [`29c12a63`](https://github.com/finos/legend-studio/commit/29c12a637d6d5b4eb08f31e2d79ee4bd2a39977a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix editor going in infinity loop when in text mode, engine compile successfully and we fail to build graph for funtcion `updateGraphAndApplication`.
+
 ## 2.4.1
 
 ## 2.4.0
