@@ -75,6 +75,7 @@ export * from './models/protocols/pure/v1/model/packageableElements/V1_Packageab
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
 export { V1_TaggedValue } from './models/protocols/pure/v1/model/packageableElements/domain/V1_TaggedValue';
 export { V1_PropertyPointer } from './models/protocols/pure/v1/model/packageableElements/domain/V1_PropertyPointer';
+export { V1_SectionIndex } from './models/protocols/pure/v1/model/packageableElements/section/V1_SectionIndex';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
