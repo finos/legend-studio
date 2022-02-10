@@ -524,7 +524,7 @@ export class WorkspaceSyncState {
     this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(
       [],
     );
-    this.editorStore.changeDetectionState.setpotentialWorkspacePullConflicts(
+    this.editorStore.changeDetectionState.setPotentialWorkspacePullConflicts(
       [],
     );
     yield flowResult(

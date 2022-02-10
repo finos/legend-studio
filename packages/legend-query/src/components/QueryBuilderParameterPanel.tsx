@@ -68,9 +68,6 @@ const ParameterValuesEditor = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__values__editor__modal">
           <div className="modal__header">
@@ -211,9 +208,6 @@ const VariableExpressionEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
-        }}
-        TransitionProps={{
-          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__modal">

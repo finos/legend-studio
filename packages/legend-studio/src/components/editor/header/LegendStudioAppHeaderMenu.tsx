@@ -43,13 +43,7 @@ const AboutModal: React.FC<{
   const config = applicationStore.config;
 
   return (
-    <Dialog
-      onClose={closeModal}
-      open={open}
-      TransitionProps={{
-        appear: false, // disable transition
-      }}
-    >
+    <Dialog onClose={closeModal} open={open}>
       <div className="modal modal--dark about-modal">
         <div className="modal__header">
           <div className="modal__title">

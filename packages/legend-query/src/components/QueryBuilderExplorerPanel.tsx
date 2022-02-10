@@ -151,9 +151,6 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
       >
         <div className="modal modal--dark editor-modal query-builder__explorer__preview-data-modal">
           <div className="modal__header">

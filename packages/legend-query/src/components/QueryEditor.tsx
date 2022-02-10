@@ -123,9 +123,6 @@ const QueryExport = observer(() => {
         container: 'editor-modal__container',
         paper: 'editor-modal__content',
       }}
-      TransitionProps={{
-        appear: false, // disable transition
-      }}
     >
       <div className="modal modal--dark query-export">
         <div className="modal__header">

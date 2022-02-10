@@ -338,7 +338,7 @@ export class ChangeDetectionState {
     this.potentialWorkspaceUpdateConflicts = conflicts;
   }
 
-  setpotentialWorkspacePullConflicts(conflicts: EntityChangeConflict[]): void {
+  setPotentialWorkspacePullConflicts(conflicts: EntityChangeConflict[]): void {
     this.potentialWorkspacePullConflicts = conflicts;
   }
 
@@ -522,7 +522,7 @@ export class ChangeDetectionState {
         this.workspaceRemoteLatestRevisionState.entityHashesIndex,
       ),
     )) as EntityChangeConflict[];
-    this.setpotentialWorkspacePullConflicts(conflicts);
+    this.setPotentialWorkspacePullConflicts(conflicts);
   }
 
   *computeAggregatedProjectLatestChanges(quiet?: boolean): GeneratorFn<void> {

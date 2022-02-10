@@ -250,9 +250,6 @@ export const DatabaseBuilder = observer(
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
       >
         <div className="modal modal--dark database-builder">
           <div className="database-builder__heading">

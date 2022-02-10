@@ -365,7 +365,7 @@ export class LocalChangesState {
           this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
             [],
           );
-          this.editorStore.changeDetectionState.setpotentialWorkspacePullConflicts(
+          this.editorStore.changeDetectionState.setPotentialWorkspacePullConflicts(
             [],
           );
           this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(

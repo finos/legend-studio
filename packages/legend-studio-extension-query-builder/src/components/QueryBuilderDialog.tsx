@@ -59,9 +59,6 @@ export const QueryBuilderDialog = observer(() => {
         paper:
           'editor-modal__content query-builder__dialog__container__content',
       }}
-      TransitionProps={{
-        appear: false, // disable transition
-      }}
     >
       <div
         className={clsx(
