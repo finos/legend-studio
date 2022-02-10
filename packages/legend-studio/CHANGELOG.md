@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 2.4.3
+
+### Patch Changes
+
+- [#849](https://github.com/finos/legend-studio/pull/849) [`a0db639f`](https://github.com/finos/legend-studio/commit/a0db639fd49243793f14b22f486cc491e96ff2e0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Ensure changes/conflicts have been computed for latest remote version when pulling changes
+
 ## 2.4.2
 
 ### Patch Changes
