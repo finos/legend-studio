@@ -234,9 +234,6 @@ export class EditorSDLCState {
             )) as PlainObject<Revision>),
       );
       this.setWorkspaceLatestRevision(latestRevision);
-      if (this.isWorkspaceOutOfSync) {
-        this.editorStore.localChangesState.workspaceSyncState.fetchIncomingRevisions();
-      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(

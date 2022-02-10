@@ -167,6 +167,7 @@ export class LocalChangesState {
   pushChangesState = ActionState.create();
   refreshLocalChangesDetectorState = ActionState.create();
   patchLoaderState: PatchLoaderState;
+  refreshWorkspaceSyncStatusState = ActionState.create();
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
@@ -325,43 +326,52 @@ export class LocalChangesState {
 
   *refreshWorkspaceSyncStatus(): GeneratorFn<void> {
     try {
+      this.refreshWorkspaceSyncStatusState.inProgress();
+      const currentRemoteRevision =
+        this.sdlcState.activeRemoteWorkspaceRevision;
       yield flowResult(
         this.sdlcState.fetchRemoteWorkspaceRevision(
           this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
         ),
       );
-      if (this.sdlcState.isWorkspaceOutOfSync) {
-        const remoteWorkspaceEntities =
-          (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
-            this.sdlcState.activeProject.projectId,
-            this.sdlcState.activeWorkspace,
-            this.sdlcState.activeRemoteWorkspaceRevision.id,
-          )) as Entity[];
-        this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
-          remoteWorkspaceEntities,
-        );
-        yield flowResult(
-          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
+      if (
+        currentRemoteRevision.id !==
+        this.sdlcState.activeRemoteWorkspaceRevision.id
+      ) {
+        if (this.sdlcState.isWorkspaceOutOfSync) {
+          this.editorStore.localChangesState.workspaceSyncState.fetchIncomingRevisions();
+          const remoteWorkspaceEntities =
+            (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+              this.sdlcState.activeProject.projectId,
+              this.sdlcState.activeWorkspace,
+              this.sdlcState.activeRemoteWorkspaceRevision.id,
+            )) as Entity[];
+          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
             remoteWorkspaceEntities,
-            LogEvent.create(
-              CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          );
+          yield flowResult(
+            this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
+              remoteWorkspaceEntities,
+              LogEvent.create(
+                CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+              ),
             ),
-          ),
-        );
-        yield flowResult(
-          this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
-        );
-      } else {
-        this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
-          [],
-        );
-        this.editorStore.changeDetectionState.setpotentialWorkspacePullConflicts(
-          [],
-        );
-        this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(
-          [],
-        );
+          );
+          yield flowResult(
+            this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
+          );
+        } else {
+          this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
+            [],
+          );
+          this.editorStore.changeDetectionState.setpotentialWorkspacePullConflicts(
+            [],
+          );
+          this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(
+            [],
+          );
+        }
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -369,6 +379,8 @@ export class LocalChangesState {
         LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
         error,
       );
+    } finally {
+      this.refreshWorkspaceSyncStatusState.complete();
     }
   }
 
@@ -477,6 +489,27 @@ export class LocalChangesState {
       ),
     );
     if (this.sdlcState.isWorkspaceOutOfSync) {
+      // ensure changes/conflicts have been computed for latest remote version
+      const remoteWorkspaceEntities =
+        (yield this.editorStore.sdlcServerClient.getEntitiesByRevision(
+          this.sdlcState.activeProject.projectId,
+          this.sdlcState.activeWorkspace,
+          this.sdlcState.activeRemoteWorkspaceRevision.id,
+        )) as Entity[];
+      this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
+        remoteWorkspaceEntities,
+      );
+      yield flowResult(
+        this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.buildEntityHashesIndex(
+          remoteWorkspaceEntities,
+          LogEvent.create(
+            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          ),
+        ),
+      );
+      yield flowResult(
+        this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
+      );
       this.editorStore.setActionAltertInfo({
         message: 'Local workspace is out-of-sync',
         prompt: 'Please pull remote changes before pushing your local changes',
