@@ -156,13 +156,18 @@ export const LocalChanges = observer(() => {
   const refreshLocalChanges = applicationStore.guaranteeSafeAction(() =>
     flowResult(localChangesState.refreshLocalChanges()),
   );
-  const pullRemoteWorkspace = (): Promise<void> =>
-    flowResult(updateState.pullChanges()).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
+  const pullRemoteWorkspace = (): void => {
+    if (!localChangesState.refreshWorkspaceSyncStatusState.isInProgress) {
+      flowResult(updateState.pullChanges()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }
+  };
   const isDispatchingAction =
     localChangesState.pushChangesState.isInProgress ||
-    localChangesState.refreshLocalChangesDetectorState.isInProgress;
+    localChangesState.refreshLocalChangesDetectorState.isInProgress ||
+    localChangesState.workspaceSyncState.pullChangesState.isInProgress ||
+    localChangesState.refreshWorkspaceSyncStatusState.isInProgress;
   // Changes
   const currentEditorState = editorStore.currentEditorState;
   const isSelectedDiff = (diff: EntityDiff): boolean =>
