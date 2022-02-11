@@ -23,6 +23,10 @@ export enum BuilderType {
   JSON_BUILDER = 'json',
 }
 
+export enum EXECUTION_SERIALIZATION_FORMAT {
+  CSV = 'CSV',
+}
+
 export class ResultBuilder {
   _type: BuilderType;
 
@@ -43,6 +47,15 @@ export class JsonBuilder {
 
 export class JsonExecutionResult extends ExecutionResult {
   values!: object;
+}
+
+export class RawExecutionResult extends ExecutionResult {
+  value!: string;
+
+  constructor(content: string) {
+    super();
+    this.value = content;
+  }
 }
 
 // TDS

@@ -644,7 +644,9 @@ export class MappingExecutionState {
             query,
             runtime,
             PureClientVersion.VX_X_X,
-            true,
+            {
+              useLosslessParse: true,
+            },
           )) as ExecutionResult;
         this.setExecutionResultText(
           losslessStringify(

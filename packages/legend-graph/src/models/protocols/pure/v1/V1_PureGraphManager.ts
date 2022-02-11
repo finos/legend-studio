@@ -43,6 +43,7 @@ import {
   AbstractPureGraphManager,
   type TEMP__EngineSetupConfig,
   type GraphBuilderOptions,
+  type ExecutionOptions,
 } from '../../../../graphManager/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/packageableElements/runtime/Runtime';
@@ -1852,7 +1853,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-    useLosslessParse: boolean,
+    options?: ExecutionOptions,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
       await this.engine.executeMapping(
@@ -1863,7 +1864,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           runtime,
           clientVersion,
         ),
-        useLosslessParse,
+        options,
       ),
     );
   }
