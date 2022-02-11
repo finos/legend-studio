@@ -179,6 +179,7 @@ export const V1_buildServiceParameter = (
     Object.values(LOCATION).find((type) => type === protocol.location),
     `Service parameter location '${protocol.location}' is not supported`,
   );
+  serviceParameter.allowReserved = protocol.allowReserved;
   serviceParameter.enumeration = protocol.enumeration;
   if (protocol.serializationFormat !== undefined) {
     serviceParameter.serializationFormat = V1_buildSerializationFormat(
