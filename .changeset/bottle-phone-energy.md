@@ -2,4 +2,4 @@
 '@finos/legend-graph': patch
 ---
 
-Fix hashing of self join on a View.
+Fix hashing of self-join of a database view.
