@@ -1,7 +1,7 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
-  V1_PackageableElement,
   type V1_PackageableElementVisitor,
+  V1_PackageableElement,
 } from '@finos/legend-graph';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils';
 
@@ -582,7 +582,7 @@ export class V1_SourceSpecifiesFromAndThruDateTime
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.SOURCE_SPECIFIES_FROM_DATE_TIME,
+      PERSISTENCE_HASH_STRUCTURE.SOURCE_SPECIFIES_FROM_AND_THRU_DATE_TIME,
       this.sourceDateTimeFromProperty,
       this.sourceDateTimeThruProperty,
     ]);
