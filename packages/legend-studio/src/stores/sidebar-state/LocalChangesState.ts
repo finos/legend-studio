@@ -562,7 +562,7 @@ export class LocalChangesState {
         )) as unknown as PlainObject<Revision> | undefined;
       const revisionChange = guaranteeNonNullable(
         nullableRevisionChange,
-        `Can't push empty change set. This may be due to an error with your local change set. Please considering raising issue with developer.`,
+        `Can't push an empty change set. This may be due to an error with change detection`,
       );
       const latestRevision = Revision.serialization.fromJson(revisionChange);
       this.sdlcState.setCurrentRevision(latestRevision); // update current revision to the latest
