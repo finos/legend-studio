@@ -1,7 +1,6 @@
 import packageJson from '../../../../package.json';
 
 import { PersistencePipe } from '../../metamodels/pure/model/packageableElements/persistence/Persistence';
-
 import { V1_PersistencePipe } from './v1/model/packageableElements/persistence/V1_Persistence';
 
 import {
@@ -12,17 +11,21 @@ import {
 import {
   PackageableElement,
   PureProtocolProcessorPlugin,
+  V1_ElementBuilder,
   V1_ElementProtocolClassifierPathGetter,
   V1_ElementProtocolDeserializer,
   V1_ElementProtocolSerializer,
   V1_ElementTransformer,
+  V1_GraphBuilderContext,
   V1_GraphTransformerContext,
+  V1_initPackageableElement,
   V1_PackageableElement,
 } from '@finos/legend-graph';
 
-import type { PlainObject } from '@finos/legend-shared';
+import { type PlainObject, assertType } from '@finos/legend-shared';
 
 import { deserialize, serialize } from 'serializr';
+import { V1_buildPersistencePipe } from './v1/transformation/pureGraph/to/V1_PersistencePipeBuilder';
 
 export const PERSISTENCE_PIPE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::persistence::metamodel::PersistencePipe';
@@ -33,6 +36,38 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
       packageJson.extensions.pureProtocolProcessorPlugin,
       packageJson.version,
     );
+  }
+
+  override V1_getExtraElementBuilders(): V1_ElementBuilder<V1_PackageableElement>[] {
+    return [
+      new V1_ElementBuilder<V1_PersistencePipe>({
+        elementClassName: 'PersistencePipe',
+        _class: V1_PersistencePipe,
+        firstPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): PackageableElement => {
+          const element = new PersistencePipe(elementProtocol.name);
+          const path = context.currentSubGraph.buildPath(
+            elementProtocol.package,
+            elementProtocol.name,
+          );
+          context.currentSubGraph.setOwnElementInExtension(
+            path,
+            element,
+            PersistencePipe,
+          );
+          return element;
+        },
+        secondPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): void => {
+          assertType(elementProtocol, V1_PersistencePipe);
+          V1_buildPersistencePipe(elementProtocol, context);
+        },
+      }),
+    ];
   }
 
   override V1_getExtraElementClassifierPathGetters(): V1_ElementProtocolClassifierPathGetter[] {
@@ -82,7 +117,10 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
       ): V1_PackageableElement | undefined => {
         if (metamodel instanceof PersistencePipe) {
           const protocol = new V1_PersistencePipe();
-
+          V1_initPackageableElement(protocol, metamodel);
+          protocol.documentation = metamodel.documentation;
+          protocol.owners = metamodel.owners;
+          //TODO: ledav -- fill out rest of model
           return protocol;
         }
         return undefined;
