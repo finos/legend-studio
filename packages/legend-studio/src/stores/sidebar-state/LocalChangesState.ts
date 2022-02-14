@@ -542,7 +542,7 @@ export class LocalChangesState {
     const currentHashesIndex =
       this.editorStore.changeDetectionState.snapshotLocalEntityHashesIndex();
     try {
-      const latestRevision = Revision.serialization.fromJson(
+      const nullableRevisionChange =
         (yield this.editorStore.sdlcServerClient.performEntityChanges(
           this.sdlcState.activeProject.projectId,
           this.sdlcState.activeWorkspace,
@@ -559,8 +559,12 @@ export class LocalChangesState {
             entityChanges: localChanges,
             revisionId: this.sdlcState.activeRevision.id,
           },
-        )) as PlainObject<Revision>,
+        )) as unknown as PlainObject<Revision> | undefined;
+      const revisionChange = guaranteeNonNullable(
+        nullableRevisionChange,
+        `Can't push empty change set. This may be due to an error with your local change set. Please considering raising issue with developer.`,
       );
+      const latestRevision = Revision.serialization.fromJson(revisionChange);
       this.sdlcState.setCurrentRevision(latestRevision); // update current revision to the latest
       this.sdlcState.setWorkspaceLatestRevision(latestRevision);
       const syncFinishedTime = Date.now();

@@ -660,7 +660,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     command: PlainObject<UpdateEntitiesCommand>,
-  ): Promise<PlainObject<Revision>> =>
+  ): Promise<PlainObject<Revision> | undefined> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.UPDATE_ENTITIES),
       this._entities(projectId, workspace),
@@ -670,7 +670,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     command: PerformEntitiesChangesCommand,
-  ): Promise<PlainObject<Revision>> =>
+  ): Promise<PlainObject<Revision> | undefined> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.PERFORM_ENTITY_CHANGES),
       `${this._adaptiveWorkspace(projectId, workspace)}/entityChanges`,
