@@ -242,7 +242,7 @@ export class TableAliasColumn extends RelationalOperationElement {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_ALIAS_COLUMN,
       this.alias.isSelfJoinTarget
-        ? this.alias.relation.selJoinPointerHashCode
+        ? this.alias.relation.selfJoinPointerHashCode
         : this.alias.relation.pointerHashCode,
       this.alias.isSelfJoinTarget ? SELF_JOIN_TABLE_NAME : this.alias.name,
       this.column.value.name,

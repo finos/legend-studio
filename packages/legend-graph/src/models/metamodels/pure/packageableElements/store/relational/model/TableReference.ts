@@ -49,7 +49,7 @@ export abstract class TableReference extends NamedRelationalReference {
       value: observable,
       setValue: action,
       pointerHashCode: computed,
-      selJoinPointerHashCode: computed,
+      selfJoinPointerHashCode: computed,
     });
 
     this.value = value;
@@ -71,7 +71,7 @@ export abstract class TableReference extends NamedRelationalReference {
       .join(',');
   }
 
-  get selJoinPointerHashCode(): string {
+  get selfJoinPointerHashCode(): string {
     return [
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_POINTER,
       this.ownerReference.hashValue,

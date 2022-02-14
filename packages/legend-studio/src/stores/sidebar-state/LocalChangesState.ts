@@ -559,7 +559,7 @@ export class LocalChangesState {
             entityChanges: localChanges,
             revisionId: this.sdlcState.activeRevision.id,
           },
-        )) as unknown as PlainObject<Revision> | undefined;
+        )) as PlainObject<Revision> | undefined;
       const revisionChange = guaranteeNonNullable(
         nullableRevisionChange,
         `Can't push an empty change set. This may be due to an error with change detection`,
