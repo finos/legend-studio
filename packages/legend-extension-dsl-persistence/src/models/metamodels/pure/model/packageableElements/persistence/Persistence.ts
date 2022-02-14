@@ -2,7 +2,7 @@ import {
   PackageableElement,
   PackageableElementVisitor,
 } from '@finos/legend-graph';
-import { Hashable } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 
 export class PersistencePipe extends PackageableElement implements Hashable {
   documentation!: string;

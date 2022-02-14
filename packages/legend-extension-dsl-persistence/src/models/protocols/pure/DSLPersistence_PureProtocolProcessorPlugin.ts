@@ -1,7 +1,9 @@
 import packageJson from '../../../../package.json';
 
 import { PersistencePipe } from '../../metamodels/pure/model/packageableElements/persistence/Persistence';
+
 import { V1_PersistencePipe } from './v1/model/packageableElements/persistence/V1_Persistence';
+
 import {
   V1_PERSISTENCE_PIPE_ELEMENT_PROTOCOL_TYPE,
   V1_persistencePipeModelSchema,
@@ -18,7 +20,7 @@ import {
   V1_PackageableElement,
 } from '@finos/legend-graph';
 
-import { PlainObject } from '@finos/legend-shared';
+import type { PlainObject } from '@finos/legend-shared';
 
 import { deserialize, serialize } from 'serializr';
 
