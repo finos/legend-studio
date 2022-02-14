@@ -24,7 +24,7 @@ import {
 import type { GroupByMapping } from '../mapping/GroupByMapping';
 import type { FilterMapping } from '../mapping/FilterMapping';
 import type { JoinReference } from './JoinReference';
-import { TableReference } from './TableReference';
+import type { TableReference } from './TableReference';
 import type { ViewReference } from './ViewReference';
 import type { ColumnReference } from './ColumnReference';
 import type { Database } from './Database';
@@ -241,8 +241,7 @@ export class TableAliasColumn extends RelationalOperationElement {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_ALIAS_COLUMN,
-      this.alias.isSelfJoinTarget &&
-      this.alias.relation instanceof TableReference
+      this.alias.isSelfJoinTarget
         ? this.alias.relation.selJoinPointerHashCode
         : this.alias.relation.pointerHashCode,
       this.alias.isSelfJoinTarget ? SELF_JOIN_TABLE_NAME : this.alias.name,

@@ -25,6 +25,7 @@ import {
 import type { Database } from './Database';
 import type { View } from './View';
 import { NamedRelationalReference } from './TableReference';
+import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
 
 export abstract class ViewReference extends NamedRelationalReference {
   value: View;
@@ -55,6 +56,17 @@ export abstract class ViewReference extends NamedRelationalReference {
       this.ownerReference.hashValue,
       this.value.schema.name,
       this.value.name,
+    ]
+      .map(hashString)
+      .join(',');
+  }
+
+  get selJoinPointerHashCode(): string {
+    return [
+      CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_POINTER,
+      this.ownerReference.hashValue,
+      SELF_JOIN_SCHEMA_NAME,
+      SELF_JOIN_TABLE_NAME,
     ]
       .map(hashString)
       .join(',');
