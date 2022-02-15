@@ -1,7 +1,10 @@
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils';
 import {
+  Class,
   PackageableElement,
+  PackageableElementReference,
   PackageableElementVisitor,
+  Service,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { observable, makeObservable, override } from 'mobx';
@@ -75,10 +78,13 @@ export abstract class Reader implements Hashable {
 }
 
 export class ServiceReader extends Reader implements Hashable {
-  service!: string;
+  service!: PackageableElementReference<Service>;
 
   override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.SERVICE_READER, this.service]);
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.SERVICE_READER,
+      this.service.hashValue,
+    ]);
   }
 }
 
@@ -114,12 +120,12 @@ export class BatchPersister extends Persister implements Hashable {
  **********/
 
 export abstract class TargetSpecification implements Hashable {
-  modelClass!: string;
+  modelClass!: PackageableElementReference<Class>;
 
   get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.TARGET_SPECIFICATION,
-      this.modelClass,
+      this.modelClass.hashValue,
     ]);
   }
 }

@@ -137,7 +137,7 @@ export class V1_FlatTargetSpecification
   targetName!: string;
   partitionProperties: string[] = [];
   deduplicationStrategy!: V1_DeduplicationStrategy;
-  batchMilestoningMode!: V1_BatchMilestoningMode;
+  batchMode!: V1_BatchMilestoningMode;
 
   override get hashCode(): string {
     return hashArray([
@@ -146,7 +146,7 @@ export class V1_FlatTargetSpecification
       this.targetName,
       hashArray(this.partitionProperties),
       this.deduplicationStrategy,
-      this.batchMilestoningMode,
+      this.batchMode,
     ]);
   }
 }
