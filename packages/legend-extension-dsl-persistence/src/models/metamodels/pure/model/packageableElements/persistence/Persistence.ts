@@ -10,7 +10,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { makeObservable, observable, override } from 'mobx';
 
 /**********
- * persistence pipe
+ * pipe
  **********/
 
 export class PersistencePipe extends PackageableElement implements Hashable {

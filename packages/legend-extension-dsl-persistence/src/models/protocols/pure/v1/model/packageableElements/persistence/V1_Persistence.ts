@@ -6,7 +6,7 @@ import {
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils';
 
 /**********
- * persistence pipe
+ * pipe
  **********/
 
 export class V1_PersistencePipe

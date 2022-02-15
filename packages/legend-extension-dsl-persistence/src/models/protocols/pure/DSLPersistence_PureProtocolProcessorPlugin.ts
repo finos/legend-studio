@@ -63,10 +63,6 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
         secondPass: (
           elementProtocol: V1_PackageableElement,
           context: V1_GraphBuilderContext,
-        ): void => {},
-        thirdPass: (
-          elementProtocol: V1_PackageableElement,
-          context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_PersistencePipe);
           V1_buildPersistencePipe(elementProtocol, context);
