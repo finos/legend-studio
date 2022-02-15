@@ -18,14 +18,14 @@ import {
   V1_ElementTransformer,
   V1_GraphBuilderContext,
   V1_GraphTransformerContext,
-  V1_initPackageableElement,
   V1_PackageableElement,
 } from '@finos/legend-graph';
 
-import { type PlainObject, assertType } from '@finos/legend-shared';
+import { assertType, type PlainObject } from '@finos/legend-shared';
 
 import { deserialize, serialize } from 'serializr';
 import { V1_buildPersistencePipe } from './v1/transformation/pureGraph/to/V1_PersistencePipeBuilder';
+import { V1_transformPersistencePipe } from './v1/transformation/pureGraph/from/V1_PersistencePipeTransformer';
 
 export const PERSISTENCE_PIPE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::persistence::metamodel::PersistencePipe';
@@ -47,6 +47,7 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
           elementProtocol: V1_PackageableElement,
           context: V1_GraphBuilderContext,
         ): PackageableElement => {
+          assertType(elementProtocol, V1_PersistencePipe);
           const element = new PersistencePipe(elementProtocol.name);
           const path = context.currentSubGraph.buildPath(
             elementProtocol.package,
@@ -60,6 +61,10 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
           return element;
         },
         secondPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): void => {},
+        thirdPass: (
           elementProtocol: V1_PackageableElement,
           context: V1_GraphBuilderContext,
         ): void => {
@@ -116,12 +121,7 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
         context: V1_GraphTransformerContext,
       ): V1_PackageableElement | undefined => {
         if (metamodel instanceof PersistencePipe) {
-          const protocol = new V1_PersistencePipe();
-          V1_initPackageableElement(protocol, metamodel);
-          protocol.documentation = metamodel.documentation;
-          protocol.owners = metamodel.owners;
-          //TODO: ledav -- fill out rest of model
-          return protocol;
+          return V1_transformPersistencePipe(metamodel, context);
         }
         return undefined;
       },
