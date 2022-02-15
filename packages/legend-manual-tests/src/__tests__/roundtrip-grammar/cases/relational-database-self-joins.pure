@@ -1,0 +1,23 @@
+###Relational
+Database model::Store
+(
+  Schema Schema1
+  (
+    Table Table1
+    (
+      c1 INTEGER,
+      c2 INTEGER,
+      c3 INTEGER
+    )
+
+    View View1
+    (
+      c1: Schema1.Table1.c1,
+      c2: Schema1.Table1.c2,
+      c3: Schema1.Table1.c3
+    )
+  )
+
+  Join Join1(Schema1.Table1.c3 = {target}.c3)
+  Join Join2(Schema1.View1.c3 = {target}.c3)
+)
