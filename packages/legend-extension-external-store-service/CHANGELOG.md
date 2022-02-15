@@ -1,5 +1,11 @@
 # @finos/legend-extension-external-store-service
 
+## 1.0.14
+
+### Patch Changes
+
+- [#854](https://github.com/finos/legend-studio/pull/854) [`da8de4e9`](https://github.com/finos/legend-studio/commit/da8de4e9073c6f42c96cf807fab2354c79f11782) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Add allowReserved config for service store parameters.
+
 ## 1.0.13
 
 ## 1.0.12

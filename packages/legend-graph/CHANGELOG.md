@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 1.0.6
+
+### Patch Changes
+
+- [#860](https://github.com/finos/legend-studio/pull/860) [`640987ad`](https://github.com/finos/legend-studio/commit/640987adc9938b87208bb5e306a3b0c42c1daa89) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix hashing of self-join of a database view.
+
 ## 1.0.5
 
 ### Patch Changes
