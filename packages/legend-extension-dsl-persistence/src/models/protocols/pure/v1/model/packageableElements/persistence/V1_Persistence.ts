@@ -399,10 +399,7 @@ export class V1_OpaqueMergeStrategy
  * batch mode - append only
  **********/
 
-export class V1_NonAppendOnly
-  extends V1_BatchMilestoningMode
-  implements Hashable
-{
+export class V1_AppendOnly extends V1_BatchMilestoningMode implements Hashable {
   auditing!: V1_Auditing;
 
   override get hashCode(): string {
