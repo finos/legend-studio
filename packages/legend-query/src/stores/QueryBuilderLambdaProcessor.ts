@@ -441,6 +441,7 @@ export class QueryBuilderLambdaProcessor
         valueSpecification.parametersValues.length === 2,
         `Can't process filter() expression: filter() expects 1 argument`,
       );
+      console.log('TEST');
 
       const filterState = this.queryBuilderState.filterState;
       const precedingExpression = guaranteeType(
@@ -1028,6 +1029,7 @@ export const processQueryBuilderLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   lambdaFunc: LambdaFunction,
 ): void => {
+  console.log('mytest');
   if (lambdaFunc.functionType.parameters.length) {
     processQueryParameters(
       lambdaFunc.functionType.parameters,

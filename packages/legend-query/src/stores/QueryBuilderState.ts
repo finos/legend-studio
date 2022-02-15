@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, observable, makeObservable, computed } from 'mobx';
+import { action, flow, observable, makeObservable, computed, toJS } from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
@@ -98,6 +98,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { QueryParametersState } from './QueryParametersState';
+import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -125,6 +126,7 @@ export class QueryBuilderState {
   queryParametersState: QueryParametersState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
+  postFilterState: QueryBuilderPostFilterState;
   resultSetModifierState: QueryResultSetModifierState;
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
@@ -191,6 +193,7 @@ export class QueryBuilderState {
     this.queryParametersState = new QueryParametersState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.postFilterState = new QueryBuilderPostFilterState();
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
@@ -288,6 +291,7 @@ export class QueryBuilderState {
    * consumers of function should handle the errors.
    */
   buildStateFromRawLambda(rawLambda: RawLambda): void {
+    console.log('XXXXXXXXXXXXXXXXX');
     this.resetQueryBuilder();
     this.resetQuerySetup();
     if (!rawLambda.isStub) {
@@ -306,6 +310,7 @@ export class QueryBuilderState {
       const compiledLambda = guaranteeNonNullable(
         compiledValueSpecification.values[0],
       );
+      console.log(toJS(compiledLambda));
       processQueryBuilderLambdaFunction(this, compiledLambda);
     }
   }
