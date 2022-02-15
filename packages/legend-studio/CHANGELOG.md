@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 2.4.4
+
+### Patch Changes
+
+- [#860](https://github.com/finos/legend-studio/pull/860) [`640987ad`](https://github.com/finos/legend-studio/commit/640987adc9938b87208bb5e306a3b0c42c1daa89) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - - Handle `204 No content` response when pushing local changes.
+
 ## 2.4.3
 
 ### Patch Changes
