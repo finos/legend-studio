@@ -7,7 +7,7 @@ import {
   Service,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { observable, makeObservable, override } from 'mobx';
+import { makeObservable, observable, override } from 'mobx';
 
 /**********
  * persistence pipe
@@ -404,7 +404,7 @@ export class OpaqueMergeStrategy extends MergeStrategy implements Hashable {
  * batch mode - append only
  **********/
 
-export class NonAppendOnly extends BatchMilestoningMode implements Hashable {
+export class AppendOnly extends BatchMilestoningMode implements Hashable {
   auditing!: Auditing;
 
   override get hashCode(): string {
