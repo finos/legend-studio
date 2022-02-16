@@ -39,6 +39,7 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import {
@@ -60,6 +61,7 @@ import {
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
@@ -225,6 +227,39 @@ export const V1_buildAuthenticationStrategy = (
     V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   ) {
     return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+  } else if (
+    protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    assertNonEmptyString(
+      protocol.workloadProjectNumber,
+      `GCPWorkloadIdentityFederationAuthenticationStrategy 'workloadProjectNumber' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      protocol.serviceAccountEmail,
+      `GCPWorkloadIdentityFederationAuthenticationStrategy 'serviceAccountEmail' field is missing or empty`,
+    );
+
+    assertNonEmptyString(
+      protocol.gcpScope,
+      `GCPWorkloadIdentityFederationAuthenticationStrategy 'gcpScope' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      protocol.workloadPoolId,
+      `GCPWorkloadIdentityFederationAuthenticationStrategy 'workloadPoolId' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      protocol.workloadProviderId,
+      `GCPWorkloadIdentityFederationAuthenticationStrategy 'workloadProviderId' field is missing or empty`,
+    );
+    return new GCPWorkloadIdentityFederationAuthenticationStrategy(
+      protocol.workloadProjectNumber,
+      protocol.serviceAccountEmail,
+      protocol.gcpScope,
+      protocol.workloadPoolId,
+      protocol.workloadProviderId,
+      protocol.discoveryUrl,
+      protocol.clientId,
+    );
   } else if (protocol instanceof V1_TestDatabaseAuthenticationStrategy) {
     return new TestDatabaseAuthenticationStrategy();
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {

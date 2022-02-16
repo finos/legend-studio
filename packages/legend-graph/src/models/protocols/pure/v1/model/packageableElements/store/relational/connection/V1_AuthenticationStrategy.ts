@@ -117,6 +117,32 @@ export class V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   }
 }
 
+export class V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  workloadProjectNumber!: string;
+  serviceAccountEmail!: string;
+  gcpScope!: string;
+  workloadPoolId!: string;
+  workloadProviderId!: string;
+  discoveryUrl!: string;
+  clientId!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY,
+      this.workloadProjectNumber,
+      this.serviceAccountEmail,
+      this.gcpScope,
+      this.workloadPoolId,
+      this.workloadProviderId,
+      this.discoveryUrl,
+      this.clientId,
+    ]);
+  }
+}
+
 export class V1_UsernamePasswordAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable

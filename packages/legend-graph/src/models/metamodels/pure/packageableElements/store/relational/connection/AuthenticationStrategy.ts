@@ -234,6 +234,98 @@ export class GCPApplicationDefaultCredentialsAuthenticationStrategy
   }
 }
 
+export class GCPWorkloadIdentityFederationAuthenticationStrategy
+  extends AuthenticationStrategy
+  implements Hashable
+{
+  workloadProjectNumber: string;
+  serviceAccountEmail: string;
+  gcpScope: string;
+  workloadPoolId: string;
+  workloadProviderId: string;
+  discoveryUrl: string;
+  clientId: string;
+
+  constructor(
+    workloadProjectNumber: string,
+    serviceAccountEmail: string,
+    gcpScope: string,
+    workloadPoolId: string,
+    workloadProviderId: string,
+    discoveryUrl: string,
+    clientId: string,
+  ) {
+    super();
+
+    makeObservable(this, {
+      hashCode: computed,
+      workloadProjectNumber: observable,
+      serviceAccountEmail: observable,
+      gcpScope: observable,
+      workloadPoolId: observable,
+      workloadProviderId: observable,
+      discoveryUrl: observable,
+      clientId: observable,
+      setWorkloadProjectNumber: action,
+      setServiceAccountEmail: action,
+      setGcpScope: action,
+      setWorkloadPoolId: action,
+      setWorkloadProviderId: action,
+      setDiscoveryUrl: action,
+      setClientId: action,
+    });
+
+    this.workloadProjectNumber = workloadProjectNumber;
+    this.serviceAccountEmail = serviceAccountEmail;
+    this.gcpScope = gcpScope;
+    this.workloadPoolId = workloadPoolId;
+    this.workloadProviderId = workloadProviderId;
+    this.discoveryUrl = discoveryUrl;
+    this.clientId = clientId;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY,
+      this.workloadProjectNumber,
+      this.serviceAccountEmail,
+      this.gcpScope,
+      this.workloadPoolId,
+      this.workloadProviderId,
+      this.discoveryUrl,
+      this.clientId,
+    ]);
+  }
+
+  setWorkloadProjectNumber(val: string): void {
+    this.workloadProjectNumber = val;
+  }
+
+  setServiceAccountEmail(val: string): void {
+    this.serviceAccountEmail = val;
+  }
+
+  setGcpScope(val: string): void {
+    this.gcpScope = val;
+  }
+
+  setWorkloadPoolId(val: string): void {
+    this.workloadPoolId = val;
+  }
+
+  setWorkloadProviderId(val: string): void {
+    this.workloadProviderId = val;
+  }
+
+  setDiscoveryUrl(val: string): void {
+    this.discoveryUrl = val;
+  }
+
+  setClientId(val: string): void {
+    this.clientId = val;
+  }
+}
+
 export class UsernamePasswordAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable

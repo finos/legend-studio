@@ -60,11 +60,16 @@ import {
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
+import {
+  GCPApplicationDefaultCredentialsAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
+} from '../../../../../../..';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
 
@@ -289,6 +294,7 @@ enum V1_AuthenticationStrategyType {
   OAUTH = 'oauth',
   USER_PASSWORD = 'userPassword',
   USERNAME_PASSWORD = 'userNamePassword',
+  GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -341,6 +347,20 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     ),
   });
 
+const V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema =
+  createModelSchema(V1_GCPWorkloadIdentityFederationAuthenticationStrategy, {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION,
+    ),
+    workloadProjectNumber: primitive(),
+    serviceAccountEmail: primitive(),
+    gcpScope: primitive(),
+    workloadPoolId: primitive(),
+    workloadProviderId: primitive(),
+    discoveryUrl: primitive(),
+    clientId: primitive(),
+  });
+
 const V1_UsernamePasswordAuthenticationStrategyModelSchema = createModelSchema(
   V1_UsernamePasswordAuthenticationStrategy,
   {
@@ -389,6 +409,13 @@ export const V1_serializeAuthenticationStrategy = (
   ) {
     return serialize(
       V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (
+    protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    return serialize(
+      V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
       protocol,
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
@@ -449,6 +476,11 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS:
       return deserialize(
         V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
+        json,
+      );
+    case V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION:
+      return deserialize(
+        V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.TEST:
