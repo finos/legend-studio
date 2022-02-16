@@ -1,22 +1,36 @@
 import {
   AppendOnly,
   Auditing,
+  BatchDateTimeAuditing,
+  BatchIdAndDateTimeTransactionMilestoning,
+  BatchIdTransactionMilestoning,
   BatchMilestoningMode,
   BatchPersister,
   BitemporalDelta,
   BitemporalSnapshot,
+  DateTimeTransactionMilestoning,
+  DateTimeValidityMilestoning,
   DeduplicationStrategy,
+  DeleteIndicatorMergeStrategy,
   FlatTargetSpecification,
   GroupedFlatTargetSpecification,
   MergeStrategy,
   NestedTargetSpecification,
+  NoAuditing,
+  NoDeletesMergeStrategy,
   NonMilestonedDelta,
   NonMilestonedSnapshot,
+  OpaqueAuditing,
+  OpaqueMergeStrategy,
+  OpaqueTransactionMilestoning,
   OpaqueTrigger,
+  OpaqueValidityMilestoning,
   PersistencePipe,
   Persister,
   Reader,
   ServiceReader,
+  SourceSpecifiesFromAndThruDateTime,
+  SourceSpecifiesFromDateTime,
   StreamingPersister,
   TargetSpecification,
   TransactionMilestoning,
@@ -29,22 +43,36 @@ import {
 import {
   V1_AppendOnly,
   V1_Auditing,
+  V1_BatchDateTimeAuditing,
+  V1_BatchIdAndDateTimeTransactionMilestoning,
+  V1_BatchIdTransactionMilestoning,
   V1_BatchMilestoningMode,
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
+  V1_DateTimeTransactionMilestoning,
+  V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
+  V1_DeleteIndicatorMergeStrategy,
   V1_FlatTargetSpecification,
   V1_GroupedFlatTargetSpecification,
   V1_MergeStrategy,
   V1_NestedTargetSpecification,
+  V1_NoAuditing,
+  V1_NoDeletesMergeStrategy,
   V1_NonMilestonedDelta,
   V1_NonMilestonedSnapshot,
+  V1_OpaqueAuditing,
+  V1_OpaqueMergeStrategy,
+  V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
+  V1_OpaqueValidityMilestoning,
   V1_PersistencePipe,
   V1_Persister,
   V1_Reader,
   V1_ServiceReader,
+  V1_SourceSpecifiesFromAndThruDateTime,
+  V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
   V1_TargetSpecification,
   V1_TransactionMilestoning,
@@ -58,7 +86,7 @@ import type { V1_GraphTransformerContext } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
 /**********
- * pipe
+ * persistence
  **********/
 
 export const V1_transformPersistencePipe = (
@@ -283,6 +311,16 @@ export const V1_transformMergeStrategy = (
   element: MergeStrategy,
   context: V1_GraphTransformerContext,
 ): V1_MergeStrategy => {
+  if (element instanceof NoDeletesMergeStrategy) {
+    return new V1_NoDeletesMergeStrategy();
+  } else if (element instanceof DeleteIndicatorMergeStrategy) {
+    const protocol = new V1_DeleteIndicatorMergeStrategy();
+    protocol.deleteProperty = element.deleteProperty;
+    protocol.deleteValues = element.deleteValues;
+    return protocol;
+  } else if (element instanceof OpaqueMergeStrategy) {
+    return new V1_OpaqueMergeStrategy();
+  }
   throw new UnsupportedOperationError(
     `Unable to transform merge strategy '${element}'`,
   );
@@ -296,6 +334,15 @@ export const V1_transformAuditing = (
   element: Auditing,
   context: V1_GraphTransformerContext,
 ): V1_Auditing => {
+  if (element instanceof NoAuditing) {
+    return new V1_NoAuditing();
+  } else if (element instanceof BatchDateTimeAuditing) {
+    const protocol = new V1_BatchDateTimeAuditing();
+    protocol.dateTimeProperty = element.dateTimeProperty;
+    return protocol;
+  } else if (element instanceof OpaqueAuditing) {
+    return new V1_OpaqueAuditing();
+  }
   throw new UnsupportedOperationError(
     `Unable to transform auditing '${element}'`,
   );
@@ -309,6 +356,26 @@ export const V1_transformTransactionMilestoning = (
   element: TransactionMilestoning,
   context: V1_GraphTransformerContext,
 ): V1_TransactionMilestoning => {
+  if (element instanceof BatchIdTransactionMilestoning) {
+    const protocol = new V1_BatchIdTransactionMilestoning();
+    protocol.batchIdInName = element.batchIdInName;
+    protocol.batchIdOutName = element.batchIdOutName;
+    return protocol;
+  } else if (element instanceof DateTimeTransactionMilestoning) {
+    const protocol = new V1_DateTimeTransactionMilestoning();
+    protocol.dateTimeInName = element.dateTimeInName;
+    protocol.dateTimeOutName = element.dateTimeOutName;
+    return protocol;
+  } else if (element instanceof BatchIdAndDateTimeTransactionMilestoning) {
+    const protocol = new V1_BatchIdAndDateTimeTransactionMilestoning();
+    protocol.batchIdInName = element.batchIdInName;
+    protocol.batchIdOutName = element.batchIdOutName;
+    protocol.dateTimeInName = element.dateTimeInName;
+    protocol.dateTimeOutName = element.dateTimeOutName;
+    return protocol;
+  } else if (element instanceof OpaqueTransactionMilestoning) {
+    return new V1_OpaqueTransactionMilestoning();
+  }
   throw new UnsupportedOperationError(
     `Unable to transform transaction milestoning '${element}'`,
   );
@@ -322,6 +389,14 @@ export const V1_transformValidityMilestoning = (
   element: ValidityMilestoning,
   context: V1_GraphTransformerContext,
 ): V1_ValidityMilestoning => {
+  if (element instanceof DateTimeValidityMilestoning) {
+    const protocol = new V1_DateTimeValidityMilestoning();
+    protocol.dateTimeFromName = element.dateTimeFromName;
+    protocol.dateTimeThruName = element.dateTimeThruName;
+    return protocol;
+  } else if (element instanceof OpaqueValidityMilestoning) {
+    return new V1_OpaqueValidityMilestoning();
+  }
   throw new UnsupportedOperationError(
     `Unable to transform validity milestoning '${element}'`,
   );
@@ -331,6 +406,16 @@ export const V1_transformValidityDerivation = (
   element: ValidityDerivation,
   context: V1_GraphTransformerContext,
 ): V1_ValidityDerivation => {
+  if (element instanceof SourceSpecifiesFromDateTime) {
+    const protocol = new V1_SourceSpecifiesFromDateTime();
+    protocol.sourceDateTimeFromProperty = element.sourceDateTimeFromProperty;
+    return protocol;
+  } else if (element instanceof SourceSpecifiesFromAndThruDateTime) {
+    const protocol = new V1_SourceSpecifiesFromAndThruDateTime();
+    protocol.sourceDateTimeFromProperty = element.sourceDateTimeFromProperty;
+    protocol.sourceDateTimeThruProperty = element.sourceDateTimeThruProperty;
+    return protocol;
+  }
   throw new UnsupportedOperationError(
     `Unable to transform validity derivation '${element}'`,
   );

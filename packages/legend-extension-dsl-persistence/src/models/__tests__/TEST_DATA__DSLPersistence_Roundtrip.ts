@@ -1,0 +1,208 @@
+export const TEST_DATA__roundtrip = [
+  {
+    path: 'test::ZooClass',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Zoo',
+      package: 'org::dxl',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'zookeeper',
+          type: 'org::dxl::Person',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'owner',
+          type: 'org::dxl::Person',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'animals',
+          type: 'org::dxl::Animal',
+        },
+      ],
+    },
+  },
+  {
+    path: 'test::PersonClass',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'org::dxl',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+      ],
+    },
+  },
+  {
+    path: 'test::AnimalClass',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Animal',
+      package: 'org::dxl',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+      ],
+    },
+  },
+  {
+    path: 'test::Mapping',
+    classifierPath: 'meta::legend::service::metamodel::Service',
+    content: {
+      _type: 'mapping',
+      name: 'Mapping',
+      package: 'org::dxl',
+    },
+  },
+  {
+    path: 'test::Service',
+    classifierPath: 'meta::legend::service::metamodel::Service',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: 'test',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'src',
+                },
+              ],
+              property: 'name',
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              class: 'org::dxl::Zoo',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              name: 'src',
+            },
+          ],
+        },
+        mapping: 'org::dxl::Mapping',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [],
+          mappings: [],
+        },
+      },
+      name: 'ZooService',
+      owners: [],
+      package: 'org::dxl',
+      pattern: 'test',
+      test: {
+        _type: 'singleExecutionTest',
+        asserts: [],
+        data: 'test',
+      },
+    },
+  },
+  {
+    path: 'test::Persistence',
+    classifierPath: 'meta::pure::metamodel::persistence::PersistencePipe',
+    content: {
+      _type: 'persistencePipe',
+      name: 'ZooPipe',
+      documentation: 'A persistence pipe for Zoos.',
+      owners: [],
+      package: 'org::dxl',
+      persister: {
+        _type: 'batchPersister',
+        targetSpecification: {
+          _type: 'groupedFlatTargetSpecification',
+          components: [
+            {
+              property: 'zookeeper',
+              targetSpecification: {
+                _type: 'flatTargetSpecification',
+                batchMode: {
+                  _type: 'appendOnly',
+                  auditing: {
+                    _type: 'noAuditing',
+                  },
+                  filterDuplicates: false,
+                },
+                deduplicationStrategy: {
+                  _type: 'noDeduplicationStrategy',
+                },
+                partitionPropertyPaths: [],
+                targetName: 'PersonDataset1',
+              },
+            },
+            {
+              property: 'owner',
+              targetSpecification: {
+                _type: 'flatTargetSpecification',
+                batchMode: {
+                  _type: 'appendOnly',
+                  auditing: {
+                    _type: 'noAuditing',
+                  },
+                  filterDuplicates: false,
+                },
+                deduplicationStrategy: {
+                  _type: 'noDeduplicationStrategy',
+                },
+                partitionPropertyPaths: [],
+                targetName: 'PersonDataset2',
+              },
+            },
+          ],
+          modelClass: 'org::dxl::Zoo',
+          transactionScope: 'ALL_TARGETS',
+        },
+      },
+      reader: {
+        _type: 'serviceReader',
+        service: 'org::dxl::ZooService',
+      },
+      trigger: {
+        _type: 'opaqueTrigger',
+      },
+    },
+  },
+];

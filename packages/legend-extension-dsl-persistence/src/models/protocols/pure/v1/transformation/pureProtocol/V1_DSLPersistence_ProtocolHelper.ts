@@ -62,7 +62,7 @@ import {
 } from 'serializr';
 
 /**********
- * pipe
+ * persistence
  **********/
 
 export const V1_PERSISTENCE_PIPE_ELEMENT_PROTOCOL_TYPE = 'persistencePipe';
@@ -71,21 +71,21 @@ export const V1_persistencePipeModelSchema = createModelSchema(
   V1_PersistencePipe,
   {
     _type: usingConstantValueSchema(V1_PERSISTENCE_PIPE_ELEMENT_PROTOCOL_TYPE),
-    name: primitive(),
-    package: primitive(),
     documentation: primitive(),
+    name: primitive(),
     owners: list(primitive()),
-    trigger: custom(
-      (val) => V1_serializeTrigger(val),
-      (val) => V1_deserializeTrigger(val),
+    package: primitive(),
+    persister: custom(
+      (val) => V1_serializePersister(val),
+      (val) => V1_deserializePersister(val),
     ),
     reader: custom(
       (val) => V1_serializeReader(val),
       (val) => V1_deserializeReader(val),
     ),
-    persister: custom(
-      (val) => V1_serializePersister(val),
-      (val) => V1_deserializePersister(val),
+    trigger: custom(
+      (val) => V1_serializeTrigger(val),
+      (val) => V1_deserializeTrigger(val),
     ),
   },
 );
@@ -220,8 +220,6 @@ const V1_groupedFlatTargetSpecificationModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_TargetSpecificationType.GROUPED_FLAT_TARGET_SPECIFICATION,
     ),
-    modelClass: primitive(),
-    transactionScope: primitive(),
     components: custom(
       (val) =>
         serializeArray(
@@ -236,6 +234,8 @@ const V1_groupedFlatTargetSpecificationModelSchema = createModelSchema(
           false,
         ),
     ),
+    modelClass: primitive(),
+    transactionScope: primitive(),
   },
 );
 
@@ -245,17 +245,17 @@ const V1_flatTargetSpecificationModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_TargetSpecificationType.FLAT_TARGET_SPECIFICATION,
     ),
-    modelClass: primitive(),
-    targetName: primitive(),
-    partitionProperties: list(primitive()),
-    deduplicationStrategy: custom(
-      (val) => V1_serializeDeduplicationStrategy(val),
-      (val) => V1_deserializeDeduplicationStrategy(val),
-    ),
     batchMode: custom(
       (val) => V1_serializeBatchMilestoningMode(val),
       (val) => V1_deserializeBatchMilestoningMode(val),
     ),
+    deduplicationStrategy: custom(
+      (val) => V1_serializeDeduplicationStrategy(val),
+      (val) => V1_deserializeDeduplicationStrategy(val),
+    ),
+    modelClass: primitive(),
+    partitionProperties: list(primitive()),
+    targetName: primitive(),
   },
 );
 
@@ -449,13 +449,13 @@ const V1_bitemporalSnapshotModelSchema = createModelSchema(
       (val) => V1_serializeTransactionMilestoning(val),
       (val) => V1_deserializeTransactionMilestoning(val),
     ),
-    validityMilestoning: custom(
-      (val) => V1_serializeValidityMilestoning(val),
-      (val) => V1_deserializeValidityMilestoning(val),
-    ),
     validityDerivation: custom(
       (val) => V1_serializeValidityDerivation(val),
       (val) => V1_deserializeValidityDerivation(val),
+    ),
+    validityMilestoning: custom(
+      (val) => V1_serializeValidityMilestoning(val),
+      (val) => V1_deserializeValidityMilestoning(val),
     ),
   },
 );
@@ -493,13 +493,13 @@ const V1_bitemporalDeltaModelSchema = createModelSchema(V1_BitemporalDelta, {
     (val) => V1_serializeTransactionMilestoning(val),
     (val) => V1_deserializeTransactionMilestoning(val),
   ),
-  validityMilestoning: custom(
-    (val) => V1_serializeValidityMilestoning(val),
-    (val) => V1_deserializeValidityMilestoning(val),
-  ),
   validityDerivation: custom(
     (val) => V1_serializeValidityDerivation(val),
     (val) => V1_deserializeValidityDerivation(val),
+  ),
+  validityMilestoning: custom(
+    (val) => V1_serializeValidityMilestoning(val),
+    (val) => V1_deserializeValidityMilestoning(val),
   ),
 });
 

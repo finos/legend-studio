@@ -101,7 +101,7 @@ import {
 import { guaranteeNonEmptyString } from '@finos/legend-shared';
 
 /**********
- * pipe
+ * persistence
  **********/
 
 export const V1_buildPersistencePipe = (
