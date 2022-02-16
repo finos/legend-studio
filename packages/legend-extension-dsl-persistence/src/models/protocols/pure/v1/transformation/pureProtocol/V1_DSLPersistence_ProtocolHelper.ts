@@ -3,32 +3,47 @@ import {
   V1_AppendOnly,
   V1_Auditing,
   V1_BatchDateTimeAuditing,
+  V1_BatchIdAndDateTimeTransactionMilestoning,
+  V1_BatchIdTransactionMilestoning,
   V1_BatchMilestoningMode,
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
+  V1_DateTimeTransactionMilestoning,
+  V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
+  V1_DeleteIndicatorMergeStrategy,
   V1_FlatTargetSpecification,
   V1_GroupedFlatTargetSpecification,
   V1_MaxVersionDeduplicationStrategy,
+  V1_MergeStrategy,
   V1_NestedTargetSpecification,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
+  V1_NoDeletesMergeStrategy,
   V1_NonMilestonedDelta,
   V1_NonMilestonedSnapshot,
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
+  V1_OpaqueMergeStrategy,
+  V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
+  V1_OpaqueValidityMilestoning,
   V1_PersistencePipe,
   V1_Persister,
   V1_PropertyAndFlatTargetSpecification,
   V1_Reader,
   V1_ServiceReader,
+  V1_SourceSpecifiesFromAndThruDateTime,
+  V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
   V1_TargetSpecification,
+  V1_TransactionMilestoning,
   V1_Trigger,
   V1_UnitemporalDelta,
   V1_UnitemporalSnapshot,
+  V1_ValidityDerivation,
+  V1_ValidityMilestoning,
 } from '../../model/packageableElements/persistence/V1_Persistence';
 import {
   deserializeArray,
@@ -56,6 +71,8 @@ export const V1_persistencePipeModelSchema = createModelSchema(
   V1_PersistencePipe,
   {
     _type: usingConstantValueSchema(V1_PERSISTENCE_PIPE_ELEMENT_PROTOCOL_TYPE),
+    name: primitive(),
+    package: primitive(),
     documentation: primitive(),
     owners: list(primitive()),
     trigger: custom(
@@ -366,7 +383,7 @@ const V1_serializeDeduplicationStrategy = (
     return serialize(V1_opaqueDeduplicationStrategyModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Unable to serialize deduplication strategy '${protocol}'`,
+    `Unable to serialize deduplication strategy '${typeof protocol}'`,
   );
 };
 
@@ -384,7 +401,7 @@ const V1_deserializeDeduplicationStrategy = (
       return deserialize(V1_opaqueDeduplicationStrategyModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize deduplicationStrategy '${json}'`,
+        `Unable to deserialize deduplicationStrategy '${typeof json}'`,
       );
   }
 };
@@ -418,6 +435,10 @@ const V1_unitemporalSnapshotModelSchema = createModelSchema(
   V1_UnitemporalSnapshot,
   {
     _type: usingConstantValueSchema(V1_BatchModeType.UNITEMPORAL_SNAPSHOT),
+    transactionMilestoning: custom(
+      (val) => V1_serializeTransactionMilestoning(val),
+      (val) => V1_deserializeTransactionMilestoning(val),
+    ),
   },
 );
 
@@ -425,6 +446,18 @@ const V1_bitemporalSnapshotModelSchema = createModelSchema(
   V1_BitemporalSnapshot,
   {
     _type: usingConstantValueSchema(V1_BatchModeType.BITEMPORAL_SNAPSHOT),
+    transactionMilestoning: custom(
+      (val) => V1_serializeTransactionMilestoning(val),
+      (val) => V1_deserializeTransactionMilestoning(val),
+    ),
+    validityMilestoning: custom(
+      (val) => V1_serializeValidityMilestoning(val),
+      (val) => V1_deserializeValidityMilestoning(val),
+    ),
+    validityDerivation: custom(
+      (val) => V1_serializeValidityDerivation(val),
+      (val) => V1_deserializeValidityDerivation(val),
+    ),
   },
 );
 
@@ -432,19 +465,48 @@ const V1_nonMilestonedDeltaModelSchema = createModelSchema(
   V1_NonMilestonedDelta,
   {
     _type: usingConstantValueSchema(V1_BatchModeType.NON_MILESTONED_DELTA),
+    auditing: custom(
+      (val) => V1_serializeAuditing(val),
+      (val) => V1_deserializeAuditing(val),
+    ),
   },
 );
 
 const V1_unitemporalDeltaModelSchema = createModelSchema(V1_UnitemporalDelta, {
   _type: usingConstantValueSchema(V1_BatchModeType.UNITEMPORAL_DELTA),
+  mergeStrategy: custom(
+    (val) => V1_serializeMergeStrategy(val),
+    (val) => V1_deserializeMergeStrategy(val),
+  ),
+  transactionMilestoning: custom(
+    (val) => V1_serializeTransactionMilestoning(val),
+    (val) => V1_deserializeTransactionMilestoning(val),
+  ),
 });
 
 const V1_bitemporalDeltaModelSchema = createModelSchema(V1_BitemporalDelta, {
   _type: usingConstantValueSchema(V1_BatchModeType.BITEMPORAL_DELTA),
+  mergeStrategy: custom(
+    (val) => V1_serializeMergeStrategy(val),
+    (val) => V1_deserializeMergeStrategy(val),
+  ),
+  transactionMilestoning: custom(
+    (val) => V1_serializeTransactionMilestoning(val),
+    (val) => V1_deserializeTransactionMilestoning(val),
+  ),
+  validityMilestoning: custom(
+    (val) => V1_serializeValidityMilestoning(val),
+    (val) => V1_deserializeValidityMilestoning(val),
+  ),
+  validityDerivation: custom(
+    (val) => V1_serializeValidityDerivation(val),
+    (val) => V1_deserializeValidityDerivation(val),
+  ),
 });
 
 const V1_appendOnlyModelSchema = createModelSchema(V1_AppendOnly, {
   _type: usingConstantValueSchema(V1_BatchModeType.APPEND_ONLY),
+  filterDuplicates: primitive(),
 });
 
 const V1_serializeBatchMilestoningMode = (
@@ -471,20 +533,89 @@ const V1_serializeBatchMilestoningMode = (
 };
 
 const V1_deserializeBatchMilestoningMode = (
-  json: PlainObject<V1_DeduplicationStrategy>,
-): V1_DeduplicationStrategy => {
+  json: PlainObject<V1_BatchMilestoningMode>,
+): V1_BatchMilestoningMode => {
   switch (json._type) {
-    case V1_DeduplicationStrategyType.NO_DEDUPLICATION_STRATEGY:
-      return deserialize(V1_noDeduplicationStrategyModelSchema, json);
-    case V1_DeduplicationStrategyType.ANY_VERSION_DEDUPLICATION_STRATEGY:
-      return deserialize(V1_anyVersionDeduplicationStrategyModelSchema, json);
-    case V1_DeduplicationStrategyType.MAX_VERSION_DEDUPLICATION_STRATEGY:
-      return deserialize(V1_maxVersionDeduplicationStrategyModelSchema, json);
-    case V1_DeduplicationStrategyType.OPAQUE_DEDUPLICATION_STRATEGY:
-      return deserialize(V1_opaqueDeduplicationStrategyModelSchema, json);
+    case V1_BatchModeType.NON_MILESTONED_SNAPSHOT:
+      return deserialize(V1_nonMilestonedSnapshotModelSchema, json);
+    case V1_BatchModeType.UNITEMPORAL_SNAPSHOT:
+      return deserialize(V1_unitemporalSnapshotModelSchema, json);
+    case V1_BatchModeType.BITEMPORAL_SNAPSHOT:
+      return deserialize(V1_bitemporalSnapshotModelSchema, json);
+    case V1_BatchModeType.NON_MILESTONED_DELTA:
+      return deserialize(V1_nonMilestonedDeltaModelSchema, json);
+    case V1_BatchModeType.UNITEMPORAL_DELTA:
+      return deserialize(V1_unitemporalDeltaModelSchema, json);
+    case V1_BatchModeType.BITEMPORAL_DELTA:
+      return deserialize(V1_bitemporalDeltaModelSchema, json);
+    case V1_BatchModeType.APPEND_ONLY:
+      return deserialize(V1_appendOnlyModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize deduplicationStrategy '${json}'`,
+        `Unable to deserialize batch mode '${json}'`,
+      );
+  }
+};
+
+// merge strategy
+
+enum V1_MergeStrategyType {
+  NO_DELETES_MERGE_STRATEGY = 'noDeletesMergeStrategy',
+  DELETE_INDICATOR_MERGE_STRATEGY = 'deleteIndicatorMergeStrategy',
+  OPAQUE_MERGE_STRATEGY = 'opaqueMergeStrategy',
+}
+
+const V1_noDeletesMergeStrategyModelSchema = createModelSchema(
+  V1_NoDeletesMergeStrategy,
+  {
+    _type: usingConstantValueSchema(V1_NoDeletesMergeStrategy),
+  },
+);
+
+const V1_deleteIndicatorMergeStrategyModelSchema = createModelSchema(
+  V1_DeleteIndicatorMergeStrategy,
+  {
+    _type: usingConstantValueSchema(V1_DeleteIndicatorMergeStrategy),
+    deleteProperty: primitive(),
+    deleteValues: list(primitive()),
+  },
+);
+
+const V1_opaqueMergeStrategyModelSchema = createModelSchema(
+  V1_OpaqueMergeStrategy,
+  {
+    _type: usingConstantValueSchema(V1_OpaqueMergeStrategy),
+  },
+);
+
+const V1_serializeMergeStrategy = (
+  protocol: V1_MergeStrategy,
+): PlainObject<V1_MergeStrategy> => {
+  if (protocol instanceof V1_NoDeletesMergeStrategy) {
+    return serialize(V1_noDeletesMergeStrategyModelSchema, protocol);
+  } else if (protocol instanceof V1_DeleteIndicatorMergeStrategy) {
+    return serialize(V1_deleteIndicatorMergeStrategyModelSchema, protocol);
+  } else if (protocol instanceof V1_OpaqueMergeStrategy) {
+    return serialize(V1_opaqueMergeStrategyModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Unable to serialize merge strategy '${protocol}'`,
+  );
+};
+
+const V1_deserializeMergeStrategy = (
+  json: PlainObject<V1_MergeStrategy>,
+): V1_MergeStrategy => {
+  switch (json._type) {
+    case V1_MergeStrategyType.NO_DELETES_MERGE_STRATEGY:
+      return deserialize(V1_noDeletesMergeStrategyModelSchema, json);
+    case V1_MergeStrategyType.DELETE_INDICATOR_MERGE_STRATEGY:
+      return deserialize(V1_deleteIndicatorMergeStrategyModelSchema, json);
+    case V1_MergeStrategyType.OPAQUE_MERGE_STRATEGY:
+      return deserialize(V1_opaqueMergeStrategyModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Unable to deserialize merge strategy '${json}'`,
       );
   }
 };
@@ -542,6 +673,206 @@ const V1_deserializeAuditing = (
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize auditing '${json}'`,
+      );
+  }
+};
+
+/**********
+ * transaction milestoning
+ **********/
+
+enum V1_TransactionMilestoningType {
+  BATCH_ID_TRANSACTION_MILESTONING = 'batchIdTransactionMilestoning',
+  DATE_TIME_TRANSACTION_MILESTONING = 'dateTimeTransactionMilestoning',
+  BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING = 'batchIdAndDateTimeTransactionMilestoning',
+  OPAQUE_TRANSACTION_MILESTONING = 'opaqueTransactionMilestoning',
+}
+
+const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
+  V1_BatchIdTransactionMilestoning,
+  {
+    _type: usingConstantValueSchema(V1_BatchIdTransactionMilestoning),
+    batchIdInName: primitive(),
+    batchIdOutName: primitive(),
+  },
+);
+
+const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
+  V1_DateTimeTransactionMilestoning,
+  {
+    _type: usingConstantValueSchema(V1_DateTimeTransactionMilestoning),
+    dateTimeInName: primitive(),
+    dateTimeOutName: primitive(),
+  },
+);
+
+const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
+  createModelSchema(V1_BatchIdAndDateTimeTransactionMilestoning, {
+    _type: usingConstantValueSchema(
+      V1_BatchIdAndDateTimeTransactionMilestoning,
+    ),
+    batchIdInName: primitive(),
+    batchIdOutName: primitive(),
+    dateTimeInName: primitive(),
+    dateTimeOutName: primitive(),
+  });
+
+const V1_opaqueTransactionMilestoningModelSchema = createModelSchema(
+  V1_OpaqueTransactionMilestoning,
+  {
+    _type: usingConstantValueSchema(V1_OpaqueTransactionMilestoning),
+  },
+);
+
+const V1_serializeTransactionMilestoning = (
+  protocol: V1_TransactionMilestoning,
+): PlainObject<V1_TransactionMilestoning> => {
+  if (protocol instanceof V1_BatchIdTransactionMilestoning) {
+    return serialize(V1_batchIdTransactionMilestoningModelSchema, protocol);
+  } else if (protocol instanceof V1_DateTimeTransactionMilestoning) {
+    return serialize(V1_dateTimeTransactionMilestoningModelSchema, protocol);
+  } else if (protocol instanceof V1_BatchIdAndDateTimeTransactionMilestoning) {
+    return serialize(
+      V1_batchIdAndDateTimeTransactionMilestoningModelSchema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_OpaqueTransactionMilestoning) {
+    return serialize(V1_opaqueTransactionMilestoningModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Unable to serialize transaction milestoning '${protocol}'`,
+  );
+};
+
+const V1_deserializeTransactionMilestoning = (
+  json: PlainObject<V1_TransactionMilestoning>,
+): V1_TransactionMilestoning => {
+  switch (json._type) {
+    case V1_TransactionMilestoningType.BATCH_ID_TRANSACTION_MILESTONING:
+      return deserialize(V1_batchIdTransactionMilestoningModelSchema, json);
+    case V1_TransactionMilestoningType.DATE_TIME_TRANSACTION_MILESTONING:
+      return deserialize(V1_dateTimeTransactionMilestoningModelSchema, json);
+    case V1_TransactionMilestoningType.BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING:
+      return deserialize(
+        V1_batchIdAndDateTimeTransactionMilestoningModelSchema,
+        json,
+      );
+    case V1_TransactionMilestoningType.OPAQUE_TRANSACTION_MILESTONING:
+      return deserialize(V1_opaqueTransactionMilestoningModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Unable to deserialize transaction milestoning '${json}'`,
+      );
+  }
+};
+
+/**********
+ * validity milestoning
+ **********/
+
+enum V1_ValidityMilestoningType {
+  DATE_TIME_VALIDITY_MILESTONING = 'dateTimeValidityMilestoning',
+  OPAQUE_VALIDITY_MILESTONING = 'opaqueValidityMilestoning',
+}
+
+const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
+  V1_DateTimeValidityMilestoning,
+  {
+    _type: usingConstantValueSchema(V1_DateTimeValidityMilestoning),
+    dateTimeFromName: primitive(),
+    dateTimeThruName: primitive(),
+  },
+);
+
+const V1_opaqueValidityMilestoningModelSchema = createModelSchema(
+  V1_OpaqueValidityMilestoning,
+  {
+    _type: usingConstantValueSchema(V1_OpaqueValidityMilestoning),
+  },
+);
+
+const V1_serializeValidityMilestoning = (
+  protocol: V1_ValidityMilestoning,
+): PlainObject<V1_ValidityMilestoning> => {
+  if (protocol instanceof V1_DateTimeValidityMilestoning) {
+    return serialize(V1_dateTimeValidityMilestoningModelSchema, protocol);
+  } else if (protocol instanceof V1_OpaqueValidityMilestoning) {
+    return serialize(V1_opaqueValidityMilestoningModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Unable to serialize validity milestoning '${protocol}'`,
+  );
+};
+
+const V1_deserializeValidityMilestoning = (
+  json: PlainObject<V1_ValidityMilestoning>,
+): V1_ValidityMilestoning => {
+  switch (json._type) {
+    case V1_ValidityMilestoningType.DATE_TIME_VALIDITY_MILESTONING:
+      return deserialize(V1_dateTimeValidityMilestoningModelSchema, json);
+    case V1_ValidityMilestoningType.OPAQUE_VALIDITY_MILESTONING:
+      return deserialize(V1_opaqueValidityMilestoningModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Unable to deserialize validity milestoning '${json}'`,
+      );
+  }
+};
+
+// validity derivation
+
+enum V1_ValidityDerivationType {
+  SOURCE_SPECIFIES_FROM_DATE_TIME = 'sourceSpecifiesFromDateTime',
+  SOURCE_SPECIFIES_FROM_AND_THRU_DATE_TIME = 'sourceSpecifiesFromAndThruDateTime',
+}
+
+const V1_sourceSpecifiesFromDateTimeModelSchema = createModelSchema(
+  V1_SourceSpecifiesFromDateTime,
+  {
+    _type: usingConstantValueSchema(V1_SourceSpecifiesFromDateTime),
+    sourceDateTimeFromProperty: primitive(),
+  },
+);
+
+const V1_sourceSpecifiesFromAndThruDateTimeModelSchema = createModelSchema(
+  V1_SourceSpecifiesFromAndThruDateTime,
+  {
+    _type: usingConstantValueSchema(V1_SourceSpecifiesFromAndThruDateTime),
+    sourceDateTimeFromProperty: primitive(),
+    sourceDateTimeThruProperty: primitive(),
+  },
+);
+
+const V1_serializeValidityDerivation = (
+  protocol: V1_ValidityDerivation,
+): PlainObject<V1_ValidityDerivation> => {
+  if (protocol instanceof V1_SourceSpecifiesFromDateTime) {
+    return serialize(V1_sourceSpecifiesFromDateTimeModelSchema, protocol);
+  } else if (protocol instanceof V1_SourceSpecifiesFromAndThruDateTime) {
+    return serialize(
+      V1_sourceSpecifiesFromAndThruDateTimeModelSchema,
+      protocol,
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Unable to serialize validity derivation '${protocol}'`,
+  );
+};
+
+const V1_deserializeValidityDerivation = (
+  json: PlainObject<V1_ValidityDerivation>,
+): V1_ValidityDerivation => {
+  switch (json._type) {
+    case V1_ValidityDerivationType.SOURCE_SPECIFIES_FROM_DATE_TIME:
+      return deserialize(V1_sourceSpecifiesFromDateTimeModelSchema, json);
+    case V1_ValidityDerivationType.SOURCE_SPECIFIES_FROM_AND_THRU_DATE_TIME:
+      return deserialize(
+        V1_sourceSpecifiesFromAndThruDateTimeModelSchema,
+        json,
+      );
+    default:
+      throw new UnsupportedOperationError(
+        `Unable to deserialize validity derivation '${json}'`,
       );
   }
 };
