@@ -182,7 +182,11 @@ export const V1_buildTargetSpecification = (
   if (protocol instanceof V1_GroupedFlatTargetSpecification) {
     return V1_buildGroupedFlatTargetSpecification(protocol, context);
   } else if (protocol instanceof V1_FlatTargetSpecification) {
-    return V1_buildFlatTargetSpecification(protocol, context);
+    return V1_buildFlatTargetSpecification(
+      protocol,
+      protocol.modelClass,
+      context,
+    );
   } else if (protocol instanceof V1_NestedTargetSpecification) {
     return V1_buildNestedTargetSpecification(protocol, context);
   }
@@ -202,17 +206,23 @@ export const V1_buildGroupedFlatTargetSpecification = (
     context,
   );
   targetSpecification.components = protocol.components.map((c) =>
-    V1_buildPropertyAndFlatTargetSpecification(c, context),
+    V1_buildPropertyAndFlatTargetSpecification(c, protocol.modelClass, context),
   );
   return targetSpecification;
 };
 
 export const V1_buildFlatTargetSpecification = (
   protocol: V1_FlatTargetSpecification,
+  modelClass: string,
   context: V1_GraphBuilderContext,
 ): FlatTargetSpecification => {
   const targetSpecification = new FlatTargetSpecification();
-  targetSpecification.modelClass = context.resolveClass(protocol.modelClass);
+
+  // Flat: modelClass will match protocol.modelClass
+  // GroupedFlat: protocol.modelClass will not be populated;
+  //              instead infer it from rootModelClass.property target type
+
+  targetSpecification.modelClass = context.resolveClass(modelClass);
   targetSpecification.targetName = guaranteeNonEmptyString(protocol.targetName);
   targetSpecification.partitionProperties = protocol.partitionProperties;
   targetSpecification.deduplicationStrategy = V1_buildDeduplicationStrategy(
@@ -250,15 +260,24 @@ export const V1_buildTransactionScope = (
 
 export const V1_buildPropertyAndFlatTargetSpecification = (
   protocol: V1_PropertyAndFlatTargetSpecification,
+  groupModelClass: string,
   context: V1_GraphBuilderContext,
 ): PropertyAndFlatTargetSpecification => {
-  //TODO: ledav -- validate property exists on model class
   const specification = new PropertyAndFlatTargetSpecification();
   specification.property = protocol.property;
+
+  // resolve target type of property to populate model class in target specification
+  const property = context.graph
+    .getClass(groupModelClass)
+    .getProperty(protocol.property);
+  const targetModelClass = property.genericType.value.rawType.path;
+
   specification.targetSpecification = V1_buildFlatTargetSpecification(
     protocol.targetSpecification,
+    targetModelClass,
     context,
   );
+
   return specification;
 };
 
