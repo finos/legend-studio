@@ -183,6 +183,8 @@ export const V1_transformNestedTargetSpecification = (
   context: V1_GraphTransformerContext,
 ): V1_NestedTargetSpecification => {
   const protocol = new V1_NestedTargetSpecification();
+  protocol.modelClass = `${element.modelClass.value.package}::${element.modelClass.value.name}`;
+  protocol.targetName = element.targetName;
   return protocol;
 };
 
