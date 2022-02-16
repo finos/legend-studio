@@ -166,6 +166,7 @@ export const V1_buildPersister = (
       protocol.targetSpecification,
       context,
     );
+    return persister;
   }
   throw new GraphBuilderError(`Unrecognized persister '${typeof protocol}'`);
 };
