@@ -377,6 +377,7 @@ export const V1_buildBatchMilestoningMode = (
   } else if (protocol instanceof V1_AppendOnly) {
     const batchMode = new AppendOnly();
     batchMode.auditing = V1_buildAuditing(protocol.auditing, context);
+    batchMode.filterDuplicates = protocol.filterDuplicates;
     return batchMode;
   }
   throw new GraphBuilderError(

@@ -1,6 +1,6 @@
 export const TEST_DATA__roundtrip = [
   {
-    path: 'test::ZooClass',
+    path: 'org::dxl::Zoo',
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
       _type: 'class',
@@ -42,7 +42,7 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
-    path: 'test::PersonClass',
+    path: 'org::dxl::Person',
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
       _type: 'class',
@@ -61,7 +61,7 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
-    path: 'test::AnimalClass',
+    path: 'org::dxl::Animal',
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
       _type: 'class',
@@ -80,16 +80,20 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
-    path: 'test::Mapping',
-    classifierPath: 'meta::legend::service::metamodel::Service',
+    path: 'org::dxl::Mapping',
+    classifierPath: 'meta::pure::mapping::Mapping',
     content: {
       _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
       name: 'Mapping',
       package: 'org::dxl',
+      tests: [],
     },
   },
   {
-    path: 'test::Service',
+    path: 'org::dxl::ZooService',
     classifierPath: 'meta::legend::service::metamodel::Service',
     content: {
       _type: 'service',
@@ -127,7 +131,12 @@ export const TEST_DATA__roundtrip = [
         runtime: {
           _type: 'engineRuntime',
           connections: [],
-          mappings: [],
+          mappings: [
+            {
+              path: 'org::dxl::Mapping',
+              type: 'MAPPING',
+            },
+          ],
         },
       },
       name: 'ZooService',
@@ -142,8 +151,8 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
-    path: 'test::Persistence',
-    classifierPath: 'meta::pure::metamodel::persistence::PersistencePipe',
+    path: 'org::dxl::ZooPipe',
+    classifierPath: 'meta::pure::persistence::metamodel::PersistencePipe',
     content: {
       _type: 'persistencePipe',
       name: 'ZooPipe',
@@ -156,6 +165,7 @@ export const TEST_DATA__roundtrip = [
           _type: 'groupedFlatTargetSpecification',
           components: [
             {
+              _type: 'propertyAndFlatTargetSpecification',
               property: 'zookeeper',
               targetSpecification: {
                 _type: 'flatTargetSpecification',
@@ -169,11 +179,13 @@ export const TEST_DATA__roundtrip = [
                 deduplicationStrategy: {
                   _type: 'noDeduplicationStrategy',
                 },
-                partitionPropertyPaths: [],
+                modelClass: 'org::dxl::Person',
+                partitionProperties: [],
                 targetName: 'PersonDataset1',
               },
             },
             {
+              _type: 'propertyAndFlatTargetSpecification',
               property: 'owner',
               targetSpecification: {
                 _type: 'flatTargetSpecification',
@@ -187,7 +199,8 @@ export const TEST_DATA__roundtrip = [
                 deduplicationStrategy: {
                   _type: 'noDeduplicationStrategy',
                 },
-                partitionPropertyPaths: [],
+                modelClass: 'org::dxl::Person',
+                partitionProperties: [],
                 targetName: 'PersonDataset2',
               },
             },

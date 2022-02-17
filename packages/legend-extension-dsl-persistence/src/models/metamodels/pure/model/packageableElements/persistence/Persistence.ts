@@ -406,9 +406,14 @@ export class OpaqueMergeStrategy extends MergeStrategy implements Hashable {
 
 export class AppendOnly extends BatchMilestoningMode implements Hashable {
   auditing!: Auditing;
+  filterDuplicates!: boolean;
 
   override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.APPEND_ONLY, this.auditing]);
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.APPEND_ONLY,
+      this.auditing,
+      this.filterDuplicates.toString(),
+    ]);
   }
 }
 
