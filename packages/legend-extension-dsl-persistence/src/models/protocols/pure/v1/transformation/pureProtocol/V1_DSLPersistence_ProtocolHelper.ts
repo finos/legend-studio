@@ -303,15 +303,9 @@ const V1_deserializeTargetSpecification = (
   }
 };
 
-const V1_PROPERTY_AND_FLAT_TARGET_SPECIFICATION_TYPE =
-  'propertyAndFlatTargetSpecification';
-
 const V1_propertyAndFlatTargetSpecificationSchema = createModelSchema(
   V1_PropertyAndFlatTargetSpecification,
   {
-    _type: usingConstantValueSchema(
-      V1_PROPERTY_AND_FLAT_TARGET_SPECIFICATION_TYPE,
-    ),
     property: primitive(),
     targetSpecification: custom(
       (val) => serialize(V1_flatTargetSpecificationModelSchema, val),
