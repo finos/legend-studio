@@ -1,4 +1,5 @@
 import {
+  AnyVersionDeduplicationStrategy,
   AppendOnly,
   Auditing,
   BatchDateTimeAuditing,
@@ -14,19 +15,23 @@ import {
   DeleteIndicatorMergeStrategy,
   FlatTargetSpecification,
   GroupedFlatTargetSpecification,
+  MaxVersionDeduplicationStrategy,
   MergeStrategy,
   NestedTargetSpecification,
   NoAuditing,
+  NoDeduplicationStrategy,
   NoDeletesMergeStrategy,
   NonMilestonedDelta,
   NonMilestonedSnapshot,
   OpaqueAuditing,
+  OpaqueDeduplicationStrategy,
   OpaqueMergeStrategy,
   OpaqueTransactionMilestoning,
   OpaqueTrigger,
   OpaqueValidityMilestoning,
   PersistencePipe,
   Persister,
+  PropertyAndFlatTargetSpecification,
   Reader,
   ServiceReader,
   SourceSpecifiesFromAndThruDateTime,
@@ -34,6 +39,7 @@ import {
   StreamingPersister,
   TargetSpecification,
   TransactionMilestoning,
+  TransactionScope,
   Trigger,
   UnitemporalDelta,
   UnitemporalSnapshot,
@@ -41,6 +47,7 @@ import {
   ValidityMilestoning,
 } from '../../../../../../metamodels/pure/model/packageableElements/persistence/Persistence';
 import {
+  V1_AnyVersionDeduplicationStrategy,
   V1_AppendOnly,
   V1_Auditing,
   V1_BatchDateTimeAuditing,
@@ -56,19 +63,23 @@ import {
   V1_DeleteIndicatorMergeStrategy,
   V1_FlatTargetSpecification,
   V1_GroupedFlatTargetSpecification,
+  V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
   V1_NestedTargetSpecification,
   V1_NoAuditing,
+  V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
   V1_NonMilestonedDelta,
   V1_NonMilestonedSnapshot,
   V1_OpaqueAuditing,
+  V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
   V1_PersistencePipe,
   V1_Persister,
+  V1_PropertyAndFlatTargetSpecification,
   V1_Reader,
   V1_ServiceReader,
   V1_SourceSpecifiesFromAndThruDateTime,
@@ -76,6 +87,7 @@ import {
   V1_StreamingPersister,
   V1_TargetSpecification,
   V1_TransactionMilestoning,
+  V1_TransactionScope,
   V1_Trigger,
   V1_UnitemporalDelta,
   V1_UnitemporalSnapshot,
@@ -83,6 +95,10 @@ import {
   V1_ValidityMilestoning,
 } from '../../../model/packageableElements/persistence/V1_Persistence';
 import type { V1_GraphTransformerContext } from '@finos/legend-graph';
+import {
+  V1_initPackageableElement,
+  V1_transformElementReference,
+} from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
 /**********
@@ -94,6 +110,7 @@ export const V1_transformPersistencePipe = (
   context: V1_GraphTransformerContext,
 ): V1_PersistencePipe => {
   const protocol = new V1_PersistencePipe();
+  V1_initPackageableElement(protocol, element);
   protocol.documentation = element.documentation;
   protocol.owners = element.owners;
   protocol.trigger = V1_transformTrigger(element.trigger, context);
@@ -128,7 +145,7 @@ export const V1_transformReader = (
 ): V1_Reader => {
   if (element instanceof ServiceReader) {
     const protocol = new V1_ServiceReader();
-    protocol.service = `${element.service.value.package}::${element.service.value.name}`;
+    protocol.service = V1_transformElementReference(element.service);
     return protocol;
   }
   throw new UnsupportedOperationError(
@@ -184,6 +201,27 @@ export const V1_transformGroupedFlatTargetSpecification = (
   context: V1_GraphTransformerContext,
 ): V1_GroupedFlatTargetSpecification => {
   const protocol = new V1_GroupedFlatTargetSpecification();
+  protocol.modelClass = V1_transformElementReference(element.modelClass);
+  protocol.transactionScope = V1_transformTransactionScope(
+    element.transactionScope,
+    context,
+  );
+  protocol.components = element.components.map((c) =>
+    V1_transformPropertyAndFlatTargetSpecification(c, context),
+  );
+  return protocol;
+};
+
+export const V1_transformPropertyAndFlatTargetSpecification = (
+  element: PropertyAndFlatTargetSpecification,
+  context: V1_GraphTransformerContext,
+): V1_PropertyAndFlatTargetSpecification => {
+  const protocol = new V1_PropertyAndFlatTargetSpecification();
+  protocol.property = element.property;
+  protocol.targetSpecification = V1_transformFlatTargetSpecification(
+    element.targetSpecification,
+    context,
+  );
   return protocol;
 };
 
@@ -192,7 +230,7 @@ export const V1_transformFlatTargetSpecification = (
   context: V1_GraphTransformerContext,
 ): V1_FlatTargetSpecification => {
   const protocol = new V1_FlatTargetSpecification();
-  protocol.modelClass = `${element.modelClass.value.package}::${element.modelClass.value.name}`;
+  protocol.modelClass = V1_transformElementReference(element.modelClass);
   protocol.targetName = element.targetName;
   protocol.partitionProperties = element.partitionProperties;
   protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(
@@ -211,9 +249,23 @@ export const V1_transformNestedTargetSpecification = (
   context: V1_GraphTransformerContext,
 ): V1_NestedTargetSpecification => {
   const protocol = new V1_NestedTargetSpecification();
-  protocol.modelClass = `${element.modelClass.value.package}::${element.modelClass.value.name}`;
+  protocol.modelClass = V1_transformElementReference(element.modelClass);
   protocol.targetName = element.targetName;
   return protocol;
+};
+
+export const V1_transformTransactionScope = (
+  element: TransactionScope,
+  context: V1_GraphTransformerContext,
+): V1_TransactionScope => {
+  if (element == TransactionScope.SINGLE_TARGET) {
+    return V1_TransactionScope.SINGLE_TARGET;
+  } else if (element == TransactionScope.ALL_TARGETS) {
+    return V1_TransactionScope.ALL_TARGETS;
+  }
+  throw new UnsupportedOperationError(
+    `Unable to transform transaction scope '${element}'`,
+  );
 };
 
 /**********
@@ -224,6 +276,17 @@ export const V1_transformDeduplicationStrategy = (
   element: DeduplicationStrategy,
   context: V1_GraphTransformerContext,
 ): V1_DeduplicationStrategy => {
+  if (element instanceof NoDeduplicationStrategy) {
+    return new V1_NoDeduplicationStrategy();
+  } else if (element instanceof AnyVersionDeduplicationStrategy) {
+    return new V1_AnyVersionDeduplicationStrategy();
+  } else if (element instanceof MaxVersionDeduplicationStrategy) {
+    const protocol = new V1_MaxVersionDeduplicationStrategy();
+    protocol.versionProperty = element.versionProperty;
+    return protocol;
+  } else if (element instanceof OpaqueDeduplicationStrategy) {
+    return new V1_OpaqueDeduplicationStrategy();
+  }
   throw new UnsupportedOperationError(
     `Unable to transform deduplicationStrategy '${element}'`,
   );
@@ -298,7 +361,10 @@ export const V1_transformBatchMilestoningMode = (
     );
     return protocol;
   } else if (element instanceof AppendOnly) {
-    return new V1_AppendOnly();
+    const protocol = new V1_AppendOnly();
+    protocol.auditing = V1_transformAuditing(element.auditing, context);
+    protocol.filterDuplicates = element.filterDuplicates;
+    return protocol;
   }
   throw new UnsupportedOperationError(
     `Unable to transform batch milestoning mode '${element}'`,
