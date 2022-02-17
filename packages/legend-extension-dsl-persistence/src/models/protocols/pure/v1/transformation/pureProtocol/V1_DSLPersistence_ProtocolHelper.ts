@@ -572,14 +572,18 @@ enum V1_MergeStrategyType {
 const V1_noDeletesMergeStrategyModelSchema = createModelSchema(
   V1_NoDeletesMergeStrategy,
   {
-    _type: usingConstantValueSchema(V1_NoDeletesMergeStrategy),
+    _type: usingConstantValueSchema(
+      V1_MergeStrategyType.NO_DELETES_MERGE_STRATEGY,
+    ),
   },
 );
 
 const V1_deleteIndicatorMergeStrategyModelSchema = createModelSchema(
   V1_DeleteIndicatorMergeStrategy,
   {
-    _type: usingConstantValueSchema(V1_DeleteIndicatorMergeStrategy),
+    _type: usingConstantValueSchema(
+      V1_MergeStrategyType.DELETE_INDICATOR_MERGE_STRATEGY,
+    ),
     deleteProperty: primitive(),
     deleteValues: list(primitive()),
   },
@@ -588,7 +592,7 @@ const V1_deleteIndicatorMergeStrategyModelSchema = createModelSchema(
 const V1_opaqueMergeStrategyModelSchema = createModelSchema(
   V1_OpaqueMergeStrategy,
   {
-    _type: usingConstantValueSchema(V1_OpaqueMergeStrategy),
+    _type: usingConstantValueSchema(V1_MergeStrategyType.OPAQUE_MERGE_STRATEGY),
   },
 );
 
@@ -695,7 +699,9 @@ enum V1_TransactionMilestoningType {
 const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
   V1_BatchIdTransactionMilestoning,
   {
-    _type: usingConstantValueSchema(V1_BatchIdTransactionMilestoning),
+    _type: usingConstantValueSchema(
+      V1_TransactionMilestoningType.BATCH_ID_TRANSACTION_MILESTONING,
+    ),
     batchIdInName: primitive(),
     batchIdOutName: primitive(),
   },
@@ -704,7 +710,9 @@ const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
 const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
   V1_DateTimeTransactionMilestoning,
   {
-    _type: usingConstantValueSchema(V1_DateTimeTransactionMilestoning),
+    _type: usingConstantValueSchema(
+      V1_TransactionMilestoningType.DATE_TIME_TRANSACTION_MILESTONING,
+    ),
     dateTimeInName: primitive(),
     dateTimeOutName: primitive(),
   },
@@ -713,7 +721,7 @@ const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
 const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
   createModelSchema(V1_BatchIdAndDateTimeTransactionMilestoning, {
     _type: usingConstantValueSchema(
-      V1_BatchIdAndDateTimeTransactionMilestoning,
+      V1_TransactionMilestoningType.BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING,
     ),
     batchIdInName: primitive(),
     batchIdOutName: primitive(),
@@ -724,7 +732,9 @@ const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
 const V1_opaqueTransactionMilestoningModelSchema = createModelSchema(
   V1_OpaqueTransactionMilestoning,
   {
-    _type: usingConstantValueSchema(V1_OpaqueTransactionMilestoning),
+    _type: usingConstantValueSchema(
+      V1_TransactionMilestoningType.OPAQUE_TRANSACTION_MILESTONING,
+    ),
   },
 );
 
@@ -783,7 +793,9 @@ enum V1_ValidityMilestoningType {
 const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
   V1_DateTimeValidityMilestoning,
   {
-    _type: usingConstantValueSchema(V1_DateTimeValidityMilestoning),
+    _type: usingConstantValueSchema(
+      V1_ValidityMilestoningType.DATE_TIME_VALIDITY_MILESTONING,
+    ),
     dateTimeFromName: primitive(),
     dateTimeThruName: primitive(),
   },
@@ -792,7 +804,9 @@ const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
 const V1_opaqueValidityMilestoningModelSchema = createModelSchema(
   V1_OpaqueValidityMilestoning,
   {
-    _type: usingConstantValueSchema(V1_OpaqueValidityMilestoning),
+    _type: usingConstantValueSchema(
+      V1_ValidityMilestoningType.OPAQUE_VALIDITY_MILESTONING,
+    ),
   },
 );
 
@@ -835,7 +849,9 @@ enum V1_ValidityDerivationType {
 const V1_sourceSpecifiesFromDateTimeModelSchema = createModelSchema(
   V1_SourceSpecifiesFromDateTime,
   {
-    _type: usingConstantValueSchema(V1_SourceSpecifiesFromDateTime),
+    _type: usingConstantValueSchema(
+      V1_ValidityDerivationType.SOURCE_SPECIFIES_FROM_DATE_TIME,
+    ),
     sourceDateTimeFromProperty: primitive(),
   },
 );
@@ -843,7 +859,9 @@ const V1_sourceSpecifiesFromDateTimeModelSchema = createModelSchema(
 const V1_sourceSpecifiesFromAndThruDateTimeModelSchema = createModelSchema(
   V1_SourceSpecifiesFromAndThruDateTime,
   {
-    _type: usingConstantValueSchema(V1_SourceSpecifiesFromAndThruDateTime),
+    _type: usingConstantValueSchema(
+      V1_ValidityDerivationType.SOURCE_SPECIFIES_FROM_AND_THRU_DATE_TIME,
+    ),
     sourceDateTimeFromProperty: primitive(),
     sourceDateTimeThruProperty: primitive(),
   },

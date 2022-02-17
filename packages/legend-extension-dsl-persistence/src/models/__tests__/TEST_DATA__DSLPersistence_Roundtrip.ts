@@ -57,6 +57,22 @@ export const TEST_DATA__roundtrip = [
           name: 'name',
           type: 'String',
         },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'effectiveDateFrom',
+          type: 'DateTime',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'effectiveDateThru',
+          type: 'DateTime',
+        },
       ],
     },
   },
@@ -190,11 +206,24 @@ export const TEST_DATA__roundtrip = [
               targetSpecification: {
                 _type: 'flatTargetSpecification',
                 batchMode: {
-                  _type: 'appendOnly',
-                  auditing: {
-                    _type: 'noAuditing',
+                  _type: 'bitemporalSnapshot',
+                  transactionMilestoning: {
+                    _type: 'batchIdAndDateTimeTransactionMilestoning',
+                    batchIdInName: 'BATCH_ID_IN',
+                    batchIdOutName: 'BATCH_ID_OUT',
+                    dateTimeInName: 'IN_Z',
+                    dateTimeOutName: 'OUT_Z',
                   },
-                  filterDuplicates: false,
+                  validityMilestoning: {
+                    _type: 'dateTimeValidityMilestoning',
+                    dateTimeFromName: 'IN_Z',
+                    dateTimeThruName: 'OUT_Z',
+                  },
+                  validityDerivation: {
+                    _type: 'sourceSpecifiesFromAndThruDateTime',
+                    sourceDateTimeFromProperty: 'effectiveDateFrom',
+                    sourceDateTimeThruProperty: 'effectiveDateThru',
+                  },
                 },
                 deduplicationStrategy: {
                   _type: 'noDeduplicationStrategy',
