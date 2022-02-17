@@ -181,7 +181,6 @@ export const TEST_DATA__roundtrip = [
           _type: 'groupedFlatTargetSpecification',
           components: [
             {
-              _type: 'propertyAndFlatTargetSpecification',
               property: 'zookeeper',
               targetSpecification: {
                 _type: 'flatTargetSpecification',
@@ -201,7 +200,6 @@ export const TEST_DATA__roundtrip = [
               },
             },
             {
-              _type: 'propertyAndFlatTargetSpecification',
               property: 'owner',
               targetSpecification: {
                 _type: 'flatTargetSpecification',
