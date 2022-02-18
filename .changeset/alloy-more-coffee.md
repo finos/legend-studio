@@ -2,4 +2,4 @@
 '@finos/legend-query': minor
 ---
 
-Add support for exporting query data.
+Add support for exporting query result.
