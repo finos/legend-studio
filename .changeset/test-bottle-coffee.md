@@ -2,4 +2,4 @@
 "@finos/legend-graph": patch
 ---
 
-Add `RawExecutionResult` for string execution results.
+Add `RawExecutionResult` to support `string` execution results.
