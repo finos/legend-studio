@@ -336,7 +336,6 @@ export const V1_buildFilterFunctionExpression = (
     parameters.length === 2,
     `Can't build filter() expression: filter() expects 1 argument`,
   );
-
   const precedingExpression = (
     parameters[0] as V1_ValueSpecification
   ).accept_ValueSpecificationVisitor(
@@ -477,6 +476,11 @@ export const V1_buildProjectFunctionExpression = (
     processedParams,
     functionName,
     compileContext,
+  );
+  expression.genericType = GenericTypeExplicitReference.create(
+    new GenericType(
+      compileContext.resolveType('meta::pure::tds::TDSRow').value,
+    ),
   );
   return [expression, processedParams];
 };

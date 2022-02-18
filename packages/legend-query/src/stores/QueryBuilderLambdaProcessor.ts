@@ -79,6 +79,11 @@ import {
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
+import { toJS } from 'mobx';
+import {
+  QueryBuilderPostFilterState,
+  QueryBuilderPostFilterTreeConditionNodeData,
+} from './QueryBuilderPostFilterState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -202,6 +207,98 @@ const processFilterLambda = (
     ).name,
   );
   processFilterExpression(rootExpression, filterState, undefined);
+};
+
+const processPostFilterExpression = (
+  expression: SimpleFunctionExpression,
+  queryBuilderState: QueryBuilderState,
+  parentFilterNodeId: string | undefined,
+): void => {
+  const postFilterState = queryBuilderState.postFilterState;
+  const parentNode = parentFilterNodeId
+    ? postFilterState.getNode(parentFilterNodeId)
+    : undefined;
+  if (
+    [SUPPORTED_FUNCTIONS.AND, SUPPORTED_FUNCTIONS.OR].some((fn) =>
+      matchFunctionName(expression.functionName, fn),
+    )
+  ) {
+    const groupNode = new QueryBuilderFilterTreeGroupNodeData(
+      parentFilterNodeId,
+      toGroupOperation(expression.functionName),
+    );
+    postFilterState.nodes.set(groupNode.id, groupNode);
+    expression.parametersValues.forEach((filterExpression) =>
+      processPostFilterExpression(
+        guaranteeType(
+          filterExpression,
+          SimpleFunctionExpression,
+          `Can't process filter group expression: each child expression must be a function expression`,
+        ),
+        queryBuilderState,
+        groupNode.id,
+      ),
+    );
+    postFilterState.addNodeFromNode(groupNode, parentNode);
+  } else {
+    for (const operator of postFilterState.operators) {
+      // NOTE: this allow plugin author to either return `undefined` or throw error
+      // if there is a problem with building the lambda. Either case, the plugin is
+      // considered as not supporting the lambda.
+      const filterConditionState = returnUndefOnError(() =>
+        operator.buildPostFilterConditionState(postFilterState, expression),
+      );
+      if (filterConditionState) {
+        console.log('---------------');
+        postFilterState.addNodeFromNode(
+          new QueryBuilderPostFilterTreeConditionNodeData(
+            undefined,
+            filterConditionState,
+          ),
+          parentNode,
+        );
+        console.log('done adding node');
+        console.log(toJS(postFilterState));
+        return;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't process filter expression: no compatible filter operator processer available from plugins`,
+    );
+  }
+};
+
+const processPostFilterLambda = (
+  postFilterLambda: LambdaFunctionInstanceValue,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  const postFilterState = queryBuilderState.postFilterState;
+  const lambdaFunc = guaranteeNonNullable(
+    postFilterLambda.values[0],
+    `Can't process filter() lambda: filter() lambda function is missing`,
+  );
+  assertTrue(
+    lambdaFunc.expressionSequence.length === 1,
+    `Can't process filter() lambda: only support filter() lambda body with 1 expression`,
+  );
+  const rootExpression = guaranteeType(
+    lambdaFunc.expressionSequence[0],
+    SimpleFunctionExpression,
+    `Can't process filter() lambda: only support filter() lambda body with 1 expression`,
+  );
+
+  assertTrue(
+    lambdaFunc.functionType.parameters.length === 1,
+    `Can't process filter() lambda: only support filter() lambda with 1 parameter`,
+  );
+  postFilterState.setLambdaParameterName(
+    guaranteeType(
+      lambdaFunc.functionType.parameters[0],
+      VariableExpression,
+      `Can't process filter() lambda: only support filter() lambda with 1 parameter`,
+    ).name,
+  );
+  processPostFilterExpression(rootExpression, queryBuilderState, undefined);
 };
 
 const processAggregateLambda = (
@@ -453,31 +550,51 @@ export class QueryBuilderLambdaProcessor
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
       );
 
-      // check caller
-      assertTrue(
+      if (
         matchFunctionName(
           precedingExpression.functionName,
           SUPPORTED_FUNCTIONS.GET_ALL,
-        ),
-        `Can't process filter() expression: only support filter() immediately following getAll()`,
-      );
+        )
+      ) {
+        const filterLambda = valueSpecification.parametersValues[1];
+        assertType(
+          filterLambda,
+          LambdaFunctionInstanceValue,
+          `Can't process filter() expression: filter() expects argument #1 to be a lambda function`,
+        );
+        processFilterLambda(filterLambda, filterState);
+        /**
+         * NOTE: Since group operations like and/or do not take more than 2 parameters, if there are
+         * more than 2 clauses in each group operations, then these clauses are converted into an
+         * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
+         * After building the filter state.
+         */
+        filterState.simplifyTree();
 
-      const filterLambda = valueSpecification.parametersValues[1];
-      assertType(
-        filterLambda,
-        LambdaFunctionInstanceValue,
-        `Can't process filter() expression: filter() expects argument #1 to be a lambda function`,
-      );
-      processFilterLambda(filterLambda, filterState);
-      /**
-       * NOTE: Since group operations like and/or do not take more than 2 parameters, if there are
-       * more than 2 clauses in each group operations, then these clauses are converted into an
-       * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
-       * After building the filter state.
-       */
-      filterState.simplifyTree();
+        return;
+      } else if (
+        matchFunctionName(
+          precedingExpression.functionName,
+          SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        )
+      ) {
+        const postFilterLambda = valueSpecification.parametersValues[1];
+        assertType(
+          postFilterLambda,
+          LambdaFunctionInstanceValue,
+          `Can't process post filter() expression: filter() expects argument #1 to be a lambda function`,
+        );
 
-      return;
+        processPostFilterLambda(postFilterLambda, this.queryBuilderState);
+        this.queryBuilderState.postFilterState.setShowPostFilterPanel(true);
+        console.log(this.queryBuilderState.postFilterState);
+        console.log(toJS(this.queryBuilderState.postFilterState));
+        return;
+      } else {
+        throw new UnsupportedOperationError(
+          "`Can't process filter() expression: only support filter() immediately following getAll() or TDS project()",
+        );
+      }
     } else if (
       matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
     ) {

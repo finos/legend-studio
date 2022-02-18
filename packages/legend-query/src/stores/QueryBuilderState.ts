@@ -163,6 +163,7 @@ export class QueryBuilderState {
       queryParametersState: observable,
       fetchStructureState: observable,
       filterState: observable,
+      postFilterState: observable,
       resultSetModifierState: observable,
       resultState: observable,
       queryTextEditorState: observable,
@@ -193,7 +194,10 @@ export class QueryBuilderState {
     this.queryParametersState = new QueryParametersState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
-    this.postFilterState = new QueryBuilderPostFilterState();
+    this.postFilterState = new QueryBuilderPostFilterState(
+      this,
+      this.filterOperators,
+    );
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
@@ -246,6 +250,10 @@ export class QueryBuilderState {
     );
     this.fetchStructureState = fetchStructureState;
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.postFilterState = new QueryBuilderPostFilterState(
+      this,
+      this.filterOperators,
+    );
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.fetchStructureState.graphFetchTreeState.initialize();
   }

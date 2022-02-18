@@ -42,6 +42,12 @@ import {
 } from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+import type {
+  QueryBuilderPostFilterState,
+  PostFilterConditionState,
+} from '../QueryBuilderPostFilterState';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+import { buildFullPostFilterConditionExpression } from '../QueryBuilderLambdaBuilder';
 
 export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -164,12 +170,33 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
     );
   }
 
+  buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildFullPostFilterConditionExpression(
+      postFilterConditionState,
+      SUPPORTED_FUNCTIONS.EQUAL,
+    );
+  }
+
   buildFilterConditionState(
     filterState: QueryBuilderFilterState,
     expression: SimpleFunctionExpression,
   ): FilterConditionState | undefined {
     return buildFilterConditionState(
       filterState,
+      expression,
+      SUPPORTED_FUNCTIONS.EQUAL,
+      this,
+    );
+  }
+
+  buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: SimpleFunctionExpression,
+  ): PostFilterConditionState | undefined {
+    return buildPostFilterConditionState(
+      postFilterState,
       expression,
       SUPPORTED_FUNCTIONS.EQUAL,
       this,
@@ -199,5 +226,12 @@ export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOpera
     return innerExpression
       ? super.buildFilterConditionState(filterState, innerExpression)
       : undefined;
+  }
+
+  override buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: SimpleFunctionExpression,
+  ): PostFilterConditionState | undefined {
+    throw new Error('Method not implemented.');
   }
 }

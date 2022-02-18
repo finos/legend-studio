@@ -50,6 +50,10 @@ import {
   SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+import type {
+  PostFilterConditionState,
+  QueryBuilderPostFilterState,
+} from './QueryBuilderPostFilterState';
 
 export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
   AND = 'and',
@@ -81,6 +85,15 @@ export abstract class QueryBuilderFilterOperator {
     filterState: QueryBuilderFilterState,
     expression: SimpleFunctionExpression,
   ): FilterConditionState | undefined;
+
+  abstract buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: SimpleFunctionExpression,
+  ): PostFilterConditionState | undefined;
+
+  abstract buildPostFilterConditionExpression(
+    filterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined;
 }
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {

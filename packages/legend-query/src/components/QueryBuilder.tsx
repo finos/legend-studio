@@ -38,6 +38,7 @@ import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
 import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
+import { QueryBuilderPostFilterPanel } from './QueryBuilderPostFilterPanel';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',
@@ -106,6 +107,7 @@ export const QueryBuilder = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const isQuerySupported = queryBuilderState.isQuerySupported();
+    const postFilterState = queryBuilderState.postFilterState;
 
     // Hotkeys
     const keyMap = {
@@ -171,9 +173,26 @@ export const QueryBuilder = observer(
                     </ResizablePanel>
                     <ResizablePanelSplitter />
                     <ResizablePanel minSize={300}>
-                      <QueryBuilderFilterPanel
-                        queryBuilderState={queryBuilderState}
-                      />
+                      {!postFilterState.showPostFilterPanel && (
+                        <QueryBuilderFilterPanel
+                          queryBuilderState={queryBuilderState}
+                        />
+                      )}
+                      {postFilterState.showPostFilterPanel && (
+                        <ResizablePanelGroup orientation="horizontal">
+                          <ResizablePanel minSize={300}>
+                            <QueryBuilderFilterPanel
+                              queryBuilderState={queryBuilderState}
+                            />
+                          </ResizablePanel>
+                          <ResizablePanelSplitter />
+                          <ResizablePanel>
+                            <QueryBuilderPostFilterPanel
+                              queryBuilderState={queryBuilderState}
+                            />
+                          </ResizablePanel>
+                        </ResizablePanelGroup>
+                      )}
                     </ResizablePanel>
                   </ResizablePanelGroup>
                 ) : (

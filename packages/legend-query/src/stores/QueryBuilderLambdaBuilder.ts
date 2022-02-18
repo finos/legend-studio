@@ -15,8 +15,10 @@
  */
 
 import {
+  assertTrue,
   guaranteeNonNullable,
   isNonNullable,
+  prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
@@ -42,6 +44,8 @@ import {
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  AbstractPropertyExpression,
+  VariableExpression,
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -52,6 +56,13 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+import type {
+  PostFilterConditionState,
+  QueryBuilderPostFilterState,
+  QueryBuilderPostFilterTreeNodeData,
+} from './QueryBuilderPostFilterState';
+import { QueryBuilderPostFilterTreeConditionNodeData } from './QueryBuilderPostFilterState';
+import { toJS } from 'mobx';
 
 export const buildGetAllFunction = (
   _class: Class,
@@ -107,6 +118,153 @@ export const buildParametersLetLambdaFunc = (
       })
       .filter(isNonNullable);
   return letlambdaFunction;
+};
+
+export const buildFullPostFilterConditionExpression = (
+  filterConditionState: PostFilterConditionState,
+  operatorFunctionFullPath: string,
+): SimpleFunctionExpression => {
+  const graph =
+    filterConditionState.postFilterState.queryBuilderState.graphManagerState
+      .graph;
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
+  const typeString = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
+  const expression = new SimpleFunctionExpression(
+    extractElementNameFromPath(operatorFunctionFullPath),
+    multiplicityOne,
+  );
+  const colState = filterConditionState.colState;
+  const propExpression = new AbstractPropertyExpression('', multiplicityOne);
+  if (colState instanceof QueryBuilderSimpleProjectionColumnState) {
+    const type =
+      colState.propertyExpressionState.propertyExpression.func.genericType.value
+        .rawType;
+    // handle enum
+    propExpression.func = guaranteeNonNullable(
+      graph
+        .getClass('meta::pure::tds::TDSRow')
+        .getAllDerivedProperties()
+        .find((p) => p.name === `get${prettyCONSTName(type.name)}`),
+    );
+    const variableName = new VariableExpression(
+      filterConditionState.postFilterState.lambdaParameterName,
+      multiplicityOne,
+    );
+
+    const colInstanceValue = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(new GenericType(typeString)),
+      multiplicityOne,
+    );
+    colInstanceValue.values = [colState.columnName];
+    propExpression.parametersValues = [variableName, colInstanceValue];
+  }
+  expression.parametersValues.push(propExpression);
+  // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
+  if (filterConditionState.value) {
+    expression.parametersValues.push(filterConditionState.value);
+  }
+  console.log('xxx', toJS(filterConditionState.value));
+
+  return expression;
+};
+
+const buildPostFilterConditionExpression = (
+  filterState: QueryBuilderPostFilterState,
+  node: QueryBuilderPostFilterTreeNodeData,
+): ValueSpecification | undefined => {
+  if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
+    return node.condition.operator.buildPostFilterConditionExpression(
+      node.condition,
+    );
+  }
+  // else if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
+  //   const multiplicityOne =
+  //     filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+  //       TYPICAL_MULTIPLICITY_TYPE.ONE,
+  //     );
+  //   const func = new SimpleFunctionExpression(
+  //     extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
+  //     multiplicityOne,
+  //   );
+  //   const clauses = node.childrenIds
+  //     .map((e) => filterState.nodes.get(e))
+  //     .filter(isNonNullable)
+  //     .map((e) => buildFilterConditionExpression(filterState, e))
+  //     .filter(isNonNullable);
+  //   /**
+  //    * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
+  //    * like and/or do not take more than 2 parameters, as such, if we have more than 2, we need
+  //    * to create a chain of this operation to accomondate.
+  //    *
+  //    * This means that in the read direction, we might need to flatten the chains down to group with
+  //    * multiple clauses. This means user's intended grouping will not be kept.
+  //    */
+  //   if (clauses.length > 2) {
+  //     const firstClause = clauses[0] as ValueSpecification;
+  //     let currentClause: ValueSpecification = clauses[
+  //       clauses.length - 1
+  //     ] as ValueSpecification;
+  //     for (let i = clauses.length - 2; i > 0; --i) {
+  //       const clause1 = clauses[i] as ValueSpecification;
+  //       const clause2 = currentClause;
+  //       const groupClause = new SimpleFunctionExpression(
+  //         extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
+  //         multiplicityOne,
+  //       );
+  //       groupClause.parametersValues = [clause1, clause2];
+  //       currentClause = groupClause;
+  //     }
+  //     func.parametersValues = [firstClause, currentClause];
+  //   } else {
+  //     func.parametersValues = clauses;
+  //   }
+  //   return func.parametersValues.length ? func : undefined;
+  // }
+  return undefined;
+};
+
+export const processPostFilterOnLambda = (
+  filterState: QueryBuilderPostFilterState,
+  lambda: LambdaFunction,
+): LambdaFunction => {
+  const filterConditionExpressions = filterState.rootIds
+    .map((e) => guaranteeNonNullable(filterState.nodes.get(e)))
+    .map((e) => buildPostFilterConditionExpression(filterState, e))
+    .filter(isNonNullable);
+
+  if (
+    !filterConditionExpressions.length ||
+    lambda.expressionSequence.length !== 1
+  ) {
+    return lambda;
+  }
+  assertTrue(
+    filterState.queryBuilderState.fetchStructureState.isProjectionMode(),
+    'Can only apply post filter while fetching projection columns',
+  );
+  const multiplicityOne =
+    filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+
+  const filterLambda = buildGenericLambdaFunctionInstanceValue(
+    filterState.lambdaParameterName,
+    filterConditionExpressions,
+    filterState.queryBuilderState.graphManagerState.graph,
+  );
+  // main filter expression
+  const filterExpression = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FILTER),
+    multiplicityOne,
+  );
+
+  const currentExpression = guaranteeNonNullable(lambda.expressionSequence[0]);
+  // TODO verify its a `project` or `groupBy` expression ?
+  filterExpression.parametersValues = [currentExpression, filterLambda];
+  lambda.expressionSequence[0] = filterExpression;
+  return lambda;
 };
 
 export const buildLambdaFunction = (
@@ -166,7 +324,6 @@ export const buildLambdaFunction = (
   if (filterFunction) {
     lambdaFunction.expressionSequence[0] = filterFunction;
   }
-
   // build fetch structure
   if (queryBuilderState.fetchStructureState.isProjectionMode()) {
     if (
@@ -398,6 +555,8 @@ export const buildLambdaFunction = (
     lambdaFunction.expressionSequence[0] = serializeFunction;
   }
 
+  // build post filter
+  processPostFilterOnLambda(queryBuilderState.postFilterState, lambdaFunction);
   // build result set modifiers
   queryBuilderState.resultSetModifierState.processModifiersOnLambda(
     lambdaFunction,
