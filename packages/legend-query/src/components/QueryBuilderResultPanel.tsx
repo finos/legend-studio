@@ -43,7 +43,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { PARAMETER_POST_EDIT_ACTION } from '../stores/QueryParametersState';
+import { PARAMETER_SUBMIT_ACTION } from '../stores/QueryParametersState';
 
 const QueryBuilderResultValues = observer(
   (props: { executionResult: ExecutionResult }) => {
@@ -113,24 +113,19 @@ export const QueryBuilderResultPanel = observer(
     const resultState = queryBuilderState.resultState;
     const queryParametersState = queryBuilderState.queryParametersState;
     const executionResult = resultState.executionResult;
-    const _execute = (): Promise<void> =>
-      flowResult(resultState.execute()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
-    const _exportQuery = (
-      format: EXECUTION_SERIALIZATION_FORMAT,
-    ): Promise<void> =>
-      flowResult(resultState.exportData(format)).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
     const execute = async (): Promise<void> => {
       if (queryParametersState.parameters.length) {
         queryParametersState.parameterValuesEditorState.open(
-          _execute,
-          PARAMETER_POST_EDIT_ACTION.EXECUTE,
+          (): Promise<void> =>
+            flowResult(resultState.execute()).catch(
+              applicationStore.alertIllegalUnhandledError,
+            ),
+          PARAMETER_SUBMIT_ACTION.EXECUTE,
         );
       } else {
-        await _execute();
+        await flowResult(resultState.execute()).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
       }
     };
     const exportQueryResults = async (
@@ -138,11 +133,16 @@ export const QueryBuilderResultPanel = observer(
     ): Promise<void> => {
       if (queryBuilderState.queryParametersState.parameters.length) {
         queryParametersState.parameterValuesEditorState.open(
-          () => _exportQuery(format),
-          PARAMETER_POST_EDIT_ACTION.EXPORT,
+          (): Promise<void> =>
+            flowResult(resultState.exportData(format)).catch(
+              applicationStore.alertIllegalUnhandledError,
+            ),
+          PARAMETER_SUBMIT_ACTION.EXPORT,
         );
       } else {
-        await _exportQuery(format);
+        await flowResult(resultState.exportData(format)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
       }
     };
     const executePlan = (): Promise<void> =>

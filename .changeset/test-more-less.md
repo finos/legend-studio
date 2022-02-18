@@ -1,5 +1,5 @@
 ---
-"@finos/legend-shared": patch
+"@finos/legend-shared": minor
 ---
 
 Add `text/csv` as a `ContentType`.

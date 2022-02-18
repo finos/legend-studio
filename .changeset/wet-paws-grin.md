@@ -1,5 +1,5 @@
 ---
-"@finos/legend-query": patch
+"@finos/legend-query": minor
 ---
 
-Show `RawExecutionResult` in result panel for string result types.
+Support `RawExecutionResult` in result panel for string result types.

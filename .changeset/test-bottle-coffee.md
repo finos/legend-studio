@@ -1,5 +1,5 @@
 ---
-"@finos/legend-graph": patch
+"@finos/legend-graph": minor
 ---
 
 Add `RawExecutionResult` to support `string` execution results.

@@ -52,11 +52,11 @@ const ParameterValuesEditor = observer(
     const parameterValuesEditorState =
       parameterState.parameterValuesEditorState;
     const close = (): void => parameterValuesEditorState.close();
-    const postEditAction = parameterValuesEditorState.postEditAction;
+    const submitAction = parameterValuesEditorState.submitAction;
     const postEdit = async (): Promise<void> => {
-      if (postEditAction) {
+      if (submitAction) {
         close();
-        await postEditAction.action();
+        await submitAction.handler();
       }
     };
     return (
@@ -107,13 +107,13 @@ const ParameterValuesEditor = observer(
             })}
           </div>
           <div className="modal__footer">
-            {postEditAction && (
+            {submitAction && (
               <button
                 className="btn modal__footer__close-btn"
-                title={postEditAction.label}
+                title={submitAction.label}
                 onClick={postEdit}
               >
-                {prettyCONSTName(postEditAction.label)}
+                {prettyCONSTName(submitAction.label)}
               </button>
             )}
             <button className="btn modal__footer__close-btn" onClick={close}>

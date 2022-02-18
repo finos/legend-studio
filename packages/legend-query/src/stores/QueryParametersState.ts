@@ -214,27 +214,27 @@ export class QueryParameterState {
   }
 }
 
-export enum PARAMETER_POST_EDIT_ACTION {
+export enum PARAMETER_SUBMIT_ACTION {
   EXECUTE = 'EXECUTE',
   EXPORT = 'EXPORT',
 }
 
 export class ParameterInstanceValuesEditorState {
   showModal = false;
-  postEditAction:
+  submitAction:
     | {
-        action: () => Promise<void>;
-        label: PARAMETER_POST_EDIT_ACTION;
+        handler: () => Promise<void>;
+        label: PARAMETER_SUBMIT_ACTION;
       }
     | undefined;
 
   constructor() {
     makeObservable(this, {
       showModal: observable,
-      postEditAction: observable,
+      submitAction: observable,
       setShowModal: action,
       open: action,
-      setPostEditAction: action,
+      setSubmitAction: action,
     });
   }
 
@@ -242,24 +242,24 @@ export class ParameterInstanceValuesEditorState {
     this.showModal = val;
   }
 
-  setPostEditAction(
+  setSubmitAction(
     val:
       | {
-          action: () => Promise<void>;
-          label: PARAMETER_POST_EDIT_ACTION;
+          handler: () => Promise<void>;
+          label: PARAMETER_SUBMIT_ACTION;
         }
       | undefined,
   ): void {
-    this.postEditAction = val;
+    this.submitAction = val;
   }
 
-  open(action: () => Promise<void>, label: PARAMETER_POST_EDIT_ACTION): void {
-    this.setPostEditAction({ action, label });
+  open(handler: () => Promise<void>, label: PARAMETER_SUBMIT_ACTION): void {
+    this.setSubmitAction({ handler, label });
     this.setShowModal(true);
   }
 
   close(): void {
-    this.setPostEditAction(undefined);
+    this.setSubmitAction(undefined);
     this.setShowModal(false);
   }
 }
