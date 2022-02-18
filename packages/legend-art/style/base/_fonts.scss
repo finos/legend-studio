@@ -14,24 +14,17 @@
  * limitations under the License.
  */
 
-@forward 'base/variables';
-@forward 'base/normalize';
-@forward 'base/fonts';
-@forward 'base/utils';
-@forward 'base/common';
-@forward 'base/button';
-@forward 'base/input';
-@forward 'base/panel';
-@forward 'base/modal';
-@forward 'base/menu';
-@forward 'base/table';
-@forward 'components/icon';
-@forward 'components/panel-loading-indicator';
-@forward 'components/blank-panel-placeholder';
-@forward 'components/selector-input';
-@forward 'components/tree-view';
+@import '@fontsource/roboto/300.css';
+@import '@fontsource/roboto/400.css';
+@import '@fontsource/roboto/500.css';
+@import '@fontsource/roboto/700.css';
+@import '@fontsource/roboto/900.css';
 
-// Reset (override library styles)
-@forward 'reset/mui';
-@forward 'reset/react-reflex';
-@forward 'reset/monaco-editor';
+@import '@fontsource/roboto-condensed/300.css';
+@import '@fontsource/roboto-condensed/400.css';
+@import '@fontsource/roboto-condensed/700.css';
+
+@import '@fontsource/roboto-mono/400.css';
+@import '@fontsource/roboto-mono/700.css';
+
+@import '@fontsource/raleway/900.css';
