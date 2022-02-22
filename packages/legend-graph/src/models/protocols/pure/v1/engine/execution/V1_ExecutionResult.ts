@@ -19,6 +19,7 @@ import {
   type PlainObject,
   SerializationFactory,
   usingModelSchema,
+  isString,
 } from '@finos/legend-shared';
 import { BuilderType } from '../../../../../../graphManager/action/execution/ExecutionResult';
 
@@ -101,6 +102,15 @@ export class V1_ClassExecutionResult extends V1_ExecutionResult {
   );
 }
 
+export class V1_RawExecutionResult extends V1_ExecutionResult {
+  value: string;
+
+  constructor(value: string) {
+    super();
+    this.value = value;
+  }
+}
+
 export class V1_INTERNAL__UnknownExecutionResult extends V1_ExecutionResult {
   content: object;
 
@@ -111,8 +121,11 @@ export class V1_INTERNAL__UnknownExecutionResult extends V1_ExecutionResult {
 }
 
 export const V1_serializeExecutionResult = (
-  value: PlainObject<V1_ExecutionResult>,
+  value: PlainObject<V1_ExecutionResult> | string,
 ): V1_ExecutionResult => {
+  if (isString(value)) {
+    return new V1_RawExecutionResult(value);
+  }
   switch ((value.builder as PlainObject<V1_ResultBuilder>)._type) {
     case BuilderType.CLASS_BUILDER:
       return V1_ClassExecutionResult.serialization.fromJson(value);

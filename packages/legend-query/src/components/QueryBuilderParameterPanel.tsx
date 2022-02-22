@@ -43,24 +43,25 @@ import {
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { flowResult } from 'mobx';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
-    // main state
     const { queryBuilderState } = props;
     const parameterState = queryBuilderState.queryParametersState;
-    const close = (): void => parameterState.setValuesEditorIsOpen(false);
-    const execute = (): void => {
-      close();
-      flowResult(queryBuilderState.resultState.execute()).catch(
-        queryBuilderState.applicationStore.alertIllegalUnhandledError,
-      );
+    const parameterValuesEditorState =
+      parameterState.parameterValuesEditorState;
+    const close = (): void => parameterValuesEditorState.close();
+    const submitAction = parameterValuesEditorState.submitAction;
+    const postEdit = async (): Promise<void> => {
+      if (submitAction) {
+        close();
+        await submitAction.handler();
+      }
     };
-
     return (
       <Dialog
-        open={Boolean(parameterState.valuesEditorIsOpen)}
+        open={Boolean(parameterValuesEditorState.showModal)}
         onClose={close}
         classes={{
           root: 'editor-modal__root-container',
@@ -106,13 +107,15 @@ const ParameterValuesEditor = observer(
             })}
           </div>
           <div className="modal__footer">
-            <button
-              className="btn modal__footer__close-btn"
-              title="execute"
-              onClick={execute}
-            >
-              Execute
-            </button>
+            {submitAction && (
+              <button
+                className="btn modal__footer__close-btn"
+                title={submitAction.label}
+                onClick={postEdit}
+              >
+                {prettyCONSTName(submitAction.label)}
+              </button>
+            )}
             <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
@@ -455,7 +458,7 @@ export const QueryBuilderParameterPanel = observer(
             variableExpressionState={queryParameterState.selectedParameter}
           />
         )}
-        {queryParameterState.valuesEditorIsOpen && (
+        {queryParameterState.parameterValuesEditorState.showModal && (
           <ParameterValuesEditor queryBuilderState={queryBuilderState} />
         )}
       </div>

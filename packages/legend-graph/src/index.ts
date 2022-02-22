@@ -181,6 +181,8 @@ export * from './graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_
 export {
   ExecutionResult,
   TdsExecutionResult,
+  RawExecutionResult,
+  EXECUTION_SERIALIZATION_FORMAT,
 } from './graphManager/action/execution/ExecutionResult';
 export * from './graphManager/action/execution/ExecutionResultHelper';
 export * from './graphManager/PureGraphManagerPlugin';
