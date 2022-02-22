@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 1.1.0
+
+### Minor Changes
+
+- [#836](https://github.com/finos/legend-studio/pull/836) [`4e08df9a`](https://github.com/finos/legend-studio/commit/4e08df9ae59e50cd5400d5d9bdcf43f1c7d2b423) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `RawExecutionResult` to support `string` execution results.
+
 ## 1.0.6
 
 ### Patch Changes
