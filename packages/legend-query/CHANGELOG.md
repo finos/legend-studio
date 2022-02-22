@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 0.7.0
+
+### Minor Changes
+
+- [#836](https://github.com/finos/legend-studio/pull/836) [`4e08df9a`](https://github.com/finos/legend-studio/commit/4e08df9ae59e50cd5400d5d9bdcf43f1c7d2b423) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for exporting query result.
+
+* [#836](https://github.com/finos/legend-studio/pull/836) [`4e08df9a`](https://github.com/finos/legend-studio/commit/4e08df9ae59e50cd5400d5d9bdcf43f1c7d2b423) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `RawExecutionResult` in result panel for string result types.
+
 ## 0.6.3
 
 ## 0.6.2
