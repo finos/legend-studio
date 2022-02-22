@@ -643,9 +643,12 @@ const IdentifiedConnectionsPerStoreEditor = observer(
         drop: (item: ElementDragSource): void => handleDropConnection(item),
         collect: (
           monitor,
-        ): { isConnectionDragOver: boolean; dragItem: unknown } => ({
+        ): {
+          isConnectionDragOver: boolean;
+          dragItem: ElementDragSource | null;
+        } => ({
           isConnectionDragOver: monitor.isOver({ shallow: true }),
-          dragItem: monitor.getItem(),
+          dragItem: monitor.getItem<ElementDragSource | null>(),
         }),
       }),
       [handleDropConnection],
@@ -1053,9 +1056,6 @@ export const EmbeddedRuntimeEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
-        }}
-        TransitionProps={{
-          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal embedded-runtime-editor">

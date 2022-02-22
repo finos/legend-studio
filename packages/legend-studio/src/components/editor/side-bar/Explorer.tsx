@@ -142,7 +142,6 @@ const ElementRenamer = observer(() => {
       open={Boolean(element)}
       onClose={abort}
       TransitionProps={{
-        appear: false, // disable transition
         onEnter: onEnter,
       }}
       classes={{ container: 'search-modal__container' }}

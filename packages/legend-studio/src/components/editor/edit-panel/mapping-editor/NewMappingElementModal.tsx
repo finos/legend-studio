@@ -207,7 +207,6 @@ export const NewMappingElementModal = observer(() => {
       open={Boolean(spec)}
       onClose={handleClose}
       TransitionProps={{
-        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{

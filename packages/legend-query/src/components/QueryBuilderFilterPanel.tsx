@@ -80,7 +80,7 @@ const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType() as QUERY_BUILDER_FILTER_DND_TYPE,
-      item: monitor.getItem() as QueryBuilderFilterConditionDragSource | null,
+      item: monitor.getItem<QueryBuilderFilterConditionDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),

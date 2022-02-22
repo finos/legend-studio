@@ -266,9 +266,6 @@ export const RelationalPropertyMappingEditor = observer(
         accept: [TABLE_ELEMENT_DND_TYPE],
         drop: (droppedItem: TableOrViewTreeNodeDragSource): void =>
           handleDrop(droppedItem),
-        collect: (monitor): { item: unknown } => ({
-          item: monitor.getItem(),
-        }),
       }),
       [handleDrop],
     );

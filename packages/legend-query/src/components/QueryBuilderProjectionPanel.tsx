@@ -67,7 +67,7 @@ const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType(),
-      item: monitor.getItem() as QueryBuilderProjectionColumnDragSource | null,
+      item: monitor.getItem<QueryBuilderProjectionColumnDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
@@ -206,10 +206,6 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { item: unknown; dragItemType: string } => ({
-          item: monitor.getItem(),
-          dragItemType: monitor.getItemType() as string,
-        }),
       }),
       [handleDrop],
     );

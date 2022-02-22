@@ -75,13 +75,7 @@ const ShareModal = observer(
     ): void => setSelectedVersion(val?.value);
 
     return (
-      <Dialog
-        onClose={closeModal}
-        open={open}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
-      >
+      <Dialog onClose={closeModal} open={open}>
         <div className="modal modal--dark modal--no-padding">
           <PanelLoadingIndicator isLoading={isDispatchingAction} />
           <div className="modal__body">

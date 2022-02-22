@@ -87,7 +87,6 @@ const NewFileGenerationModal = observer(
         open={elementGenerationState.showNewFileGenerationModal}
         onClose={close}
         TransitionProps={{
-          appear: false, // disable transition
           onEnter: handleEnter,
         }}
         PaperProps={{

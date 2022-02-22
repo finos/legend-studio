@@ -185,7 +185,6 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
         open={true}
         onClose={closeModal}
         TransitionProps={{
-          appear: false, // disable transition
           onEnter: handleEnter,
         }}
         classes={{

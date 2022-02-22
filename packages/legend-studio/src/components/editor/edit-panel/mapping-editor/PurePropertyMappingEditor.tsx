@@ -344,9 +344,11 @@ export const PurePropertyMappingEditor = observer(
         ],
         drop: (dropItem: TransformDropTarget, monitor): void =>
           handleDrop(dropItem, monitor.getItemType() as string),
-        collect: (monitor): { item: unknown; dragItemType: string } => ({
-          item: monitor.getItem(),
-          dragItemType: monitor.getItemType() as string,
+        collect: (
+          monitor,
+        ): { item: TypeDragSource | null; dragItemType: CORE_DND_TYPE } => ({
+          item: monitor.getItem<TypeDragSource | null>(),
+          dragItemType: monitor.getItemType() as CORE_DND_TYPE,
         }),
       }),
       [handleDrop],

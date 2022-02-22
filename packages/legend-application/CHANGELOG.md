@@ -6,10 +6,6 @@
 
 ## 1.1.5
 
-### Patch Changes
-
-- [#846](https://github.com/finos/legend-studio/pull/846) [`ede47204`](https://github.com/finos/legend-studio/commit/ede472048fb1f0596e4f835c56363e1071fdf910) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove TransitionProps `appear` flag to display lambda in lambda editor modal.
-
 ## 1.1.4
 
 ## 1.1.3

@@ -129,7 +129,6 @@ export const ClassMappingSelectorModal = observer(
         open={true}
         onClose={hideClassMappingSelectorModal}
         TransitionProps={{
-          appear: false, // disable transition
           onEnter: handleEnterClassMappingSelectorModal,
         }}
         classes={{ container: 'search-modal__container' }}
