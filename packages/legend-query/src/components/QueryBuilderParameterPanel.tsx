@@ -53,12 +53,13 @@ const ParameterValuesEditor = observer(
       parameterState.parameterValuesEditorState;
     const close = (): void => parameterValuesEditorState.close();
     const submitAction = parameterValuesEditorState.submitAction;
-    const postEdit = async (): Promise<void> => {
+    const submit = async (): Promise<void> => {
       if (submitAction) {
         close();
         await submitAction.handler();
       }
     };
+
     return (
       <Dialog
         open={Boolean(parameterValuesEditorState.showModal)}
@@ -108,7 +109,7 @@ const ParameterValuesEditor = observer(
               <button
                 className="btn modal__footer__close-btn"
                 title={submitAction.label}
-                onClick={postEdit}
+                onClick={submit}
               >
                 {prettyCONSTName(submitAction.label)}
               </button>

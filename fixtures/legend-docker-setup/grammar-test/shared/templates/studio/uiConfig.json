@@ -1,0 +1,21 @@
+{
+  "appName": "studio",
+  "env": "test",
+  "sdlc": {
+    "url": "__LEGEND_SDLC_URL__/api"
+  },
+  "depot": {
+    "url": "https://legend.finos.org/unused"
+  },
+  "engine": {
+    "url": "__LEGEND_ENGINE_URL__/api"
+  },
+  "documentation": {
+    "url": "https://legend.finos.org"
+  },
+  "options": {
+    "core": {
+      "TEMPORARY__disableServiceRegistration": true
+    }
+  }
+}
