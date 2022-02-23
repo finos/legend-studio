@@ -33,9 +33,13 @@ import type { InferableMappingElementIdValue } from './InferableMappingElementId
 import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
 import type { InstanceSetImplementation } from './InstanceSetImplementation';
+import type { MergeOperationSetImplementation } from './MergeOperationSetImplementation';
 
 export interface SetImplementationVisitor<T> {
   visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
+  visit_MergeOperationSetImplementation(
+    setImplementation: MergeOperationSetImplementation,
+  ): T;
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): T;
@@ -142,4 +146,5 @@ export enum SET_IMPLEMENTATION_TYPE {
   RELATIONAL = 'relational',
   EMBEDDED_RELATIONAL = 'embeddedRelational',
   AGGREGATION_AWARE = 'aggregationAware',
+  MERGE_OPERATION = 'mergeOperation',
 }

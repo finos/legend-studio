@@ -16,24 +16,15 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import {
-  type V1_ClassMappingVisitor,
-  V1_ClassMapping,
-} from './V1_ClassMapping';
+import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda';
+import type { V1_ClassMappingVisitor } from './V1_ClassMapping';
+import { V1_OperationClassMapping } from './V1_OperationClassMapping';
 
-export enum V1_MappingOperationType {
-  STORE_UNION = 'STORE_UNION',
-  ROUTER_UNION = 'ROUTER_UNION',
-  INHERITANCE = 'INHERITANCE',
-  MERGE = 'MERGE',
-}
-
-export class V1_OperationClassMapping
-  extends V1_ClassMapping
+export class V1_MergeOperationClassMapping
+  extends V1_OperationClassMapping
   implements Hashable
 {
-  parameters: string[] = [];
-  operation!: V1_MappingOperationType;
+  validationFunction!: V1_RawLambda;
 
   override get hashCode(): string {
     return hashArray([
@@ -42,8 +33,9 @@ export class V1_OperationClassMapping
       hashArray(this.parameters),
     ]);
   }
-
-  accept_ClassMappingVisitor<T>(visitor: V1_ClassMappingVisitor<T>): T {
-    return visitor.visit_OperationClassMapping(this);
+  override accept_ClassMappingVisitor<T>(
+    visitor: V1_ClassMappingVisitor<T>,
+  ): T {
+    return visitor.visit_MergeOperationClassMapping(this);
   }
 }

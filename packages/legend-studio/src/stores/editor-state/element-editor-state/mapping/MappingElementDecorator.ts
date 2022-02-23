@@ -106,6 +106,18 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     );
   }
 
+  visit_MergeOperationSetImplementation(
+    setImplementation: OperationSetImplementation,
+  ): void {
+    setImplementation.setParameters(
+      setImplementation.parameters.filter((param) =>
+        getAllClassMappings(setImplementation.parent).find(
+          (setImp) => setImp === param.setImplementation.value,
+        ),
+      ),
+    );
+  }
+
   visit_PureInstanceSetImplementation(
     setImplementation: PureInstanceSetImplementation,
   ): void {
@@ -529,6 +541,14 @@ export class MappingElementDecorationCleaner
   }
 
   visit_OperationSetImplementation(
+    setImplementation: OperationSetImplementation,
+  ): void {
+    setImplementation.setParameters(
+      setImplementation.parameters.filter((param) => !param.isStub),
+    );
+  }
+
+  visit_MergeOperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
     setImplementation.setParameters(

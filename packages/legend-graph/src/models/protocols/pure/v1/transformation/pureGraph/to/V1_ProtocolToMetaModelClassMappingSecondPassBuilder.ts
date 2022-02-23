@@ -66,6 +66,7 @@ import {
   getOwnClassMappingById,
 } from '../../../../../../../helpers/MappingHelper';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
+import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 
 export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
@@ -126,6 +127,12 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
         );
       })
       .filter(isNonNullable);
+  }
+
+  visit_MergeOperationClassMapping(
+    classMapping: V1_MergeOperationClassMapping,
+  ): void {
+    this.visit_OperationClassMapping(classMapping);
   }
 
   visit_PureInstanceClassMapping(
