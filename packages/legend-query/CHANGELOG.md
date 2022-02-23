@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 0.8.0
+
+### Minor Changes
+
+- [#874](https://github.com/finos/legend-studio/pull/874) [`12f61a84`](https://github.com/finos/legend-studio/commit/12f61a840df60708ec062bab6397ec5981de33e6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add attestation confirmation before exporting query data.
+
 ## 0.7.0
 
 ### Minor Changes
