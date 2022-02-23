@@ -37,6 +37,8 @@ import {
   EXECUTION_SERIALIZATION_FORMAT,
 } from '@finos/legend-graph';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
   EDITOR_LANGUAGE,
   TAB_SIZE,
   TextInputEditor,
@@ -113,6 +115,8 @@ export const QueryBuilderResultPanel = observer(
     const resultState = queryBuilderState.resultState;
     const queryParametersState = queryBuilderState.queryParametersState;
     const executionResult = resultState.executionResult;
+    const USER_ATTESTATION_MESSAGE =
+      'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
     const execute = async (): Promise<void> => {
       if (queryParametersState.parameters.length) {
         queryParametersState.parameterValuesEditorState.open(
@@ -144,6 +148,25 @@ export const QueryBuilderResultPanel = observer(
           applicationStore.alertIllegalUnhandledError,
         );
       }
+    };
+
+    const confirmExport = (format: EXECUTION_SERIALIZATION_FORMAT): void => {
+      applicationStore.setActionAltertInfo({
+        message: USER_ATTESTATION_MESSAGE,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Accept',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): Promise<void> => exportQueryResults(format),
+          },
+          {
+            label: 'Decline',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
     };
     const executePlan = (): Promise<void> =>
       flowResult(resultState.generateExecutionPlan()).catch(
@@ -213,9 +236,7 @@ export const QueryBuilderResultPanel = observer(
                       <MenuContentItem
                         key={format}
                         className="query-builder__export__dropdown__menu__item"
-                        onClick={(): Promise<void> =>
-                          exportQueryResults(format)
-                        }
+                        onClick={(): void => confirmExport(format)}
                       >
                         {prettyCONSTName(format)}
                       </MenuContentItem>
