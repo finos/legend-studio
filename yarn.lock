@@ -1973,7 +1973,7 @@ __metadata:
     "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
     eslint: 8.9.0
-    history: 5.2.0
+    history: 5.3.0
     jest: 27.5.1
     mobx: 6.4.1
     mobx-react-lite: 3.3.0
@@ -2287,7 +2287,7 @@ __metadata:
     cross-env: 7.0.3
     eslint: 8.9.0
     fastify: 3.27.2
-    fastify-cors: 6.0.2
+    fastify-cors: 6.0.3
     nodemon: 2.0.15
     npm-run-all: 4.1.5
     rimraf: 3.0.2
@@ -2449,7 +2449,7 @@ __metadata:
     cross-env: 7.0.3
     date-fns: 2.28.0
     eslint: 8.9.0
-    history: 5.2.0
+    history: 5.3.0
     jest: 27.5.1
     mobx: 6.4.1
     mobx-react-lite: 3.3.0
@@ -2672,7 +2672,7 @@ __metadata:
     cross-env: 7.0.3
     date-fns: 2.28.0
     eslint: 8.9.0
-    history: 5.2.0
+    history: 5.3.0
     jest: 27.5.1
     mobx: 6.4.1
     mobx-react-lite: 3.3.0
@@ -2754,7 +2754,7 @@ __metadata:
     "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
     eslint: 8.9.0
-    history: 5.2.0
+    history: 5.3.0
     jest: 27.5.1
     mobx: 6.4.1
     mobx-react-lite: 3.3.0
@@ -3817,13 +3817,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:27.4.0":
-  version: 27.4.0
-  resolution: "@types/jest@npm:27.4.0"
+"@types/jest@npm:27.4.1":
+  version: 27.4.1
+  resolution: "@types/jest@npm:27.4.1"
   dependencies:
-    jest-diff: ^27.0.0
+    jest-matcher-utils: ^27.0.0
     pretty-format: ^27.0.0
-  checksum: d2350267f954f9a2e4a15e5f02fbf19a77abfb9fd9e57a954de1fb0e9a0d3d5f8d3646ac7d9c42aeb4b4d828d2e70624ec149c85bb50a48634a54eed8429e1f8
+  checksum: 5184f3eef4832d01ee8f59bed15eec45ccc8e29c724a5e6ce37bf74396b37bdf04f557000f45ba4fc38ae6075cf9cfcce3d7a75abc981023c61ceb27230a93e4
   languageName: node
   linkType: hard
 
@@ -3894,10 +3894,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:17.0.19":
+"@types/node@npm:*":
   version: 17.0.19
   resolution: "@types/node@npm:17.0.19"
   checksum: 6bbd35bfc23dd50d1aefd4ae49c31f7fd632be209dba67c0322bb4fe8b555f4bb6e894018963146ad7758ae596857d5cbecc2d46ddf90a54f6a4424811cf4351
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:17.0.20":
+  version: 17.0.20
+  resolution: "@types/node@npm:17.0.20"
+  checksum: 50cdbd3c4c93f117f95e7c11ee28540f388500d6496e9efc8610f7e27839cb1fcf6c2479cac1dcd00fcc4658029a41201cc3294ae0d42e24ffcc71477a44191c
   languageName: node
   linkType: hard
 
@@ -7400,13 +7407,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify-cors@npm:6.0.2":
-  version: 6.0.2
-  resolution: "fastify-cors@npm:6.0.2"
+"fastify-cors@npm:6.0.3":
+  version: 6.0.3
+  resolution: "fastify-cors@npm:6.0.3"
   dependencies:
     fastify-plugin: ^3.0.0
     vary: ^1.1.2
-  checksum: f600eb30d2259bf0277c3df72c73f09f6891f3984c62e1c9a7489f0d6b2ffb1749dbe9a79a05ad74b08a660c1a707c9fb7636c20b87d07eae0e6efd9c951fd03
+  checksum: 054cf4e1cf0b20778ac24d9995a99f44e9b026ca9a028db0cbb6093922bcc931dff5f5bb185d19e881014392bb5886a8b5f9da6af3d3ab5e62b7a68f4eca33c4
   languageName: node
   linkType: hard
 
@@ -8126,12 +8133,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"history@npm:5.2.0":
-  version: 5.2.0
-  resolution: "history@npm:5.2.0"
+"history@npm:5.3.0":
+  version: 5.3.0
+  resolution: "history@npm:5.3.0"
   dependencies:
     "@babel/runtime": ^7.7.6
-  checksum: 2c6a05aa86793e0a0857013457f34474c17f81a012c6bdb00bf30862389ac6a8c2df113d82176f67af2fd534ea9dc4e1218470c5526355b6fc1aefcc971f2eb2
+  checksum: d73c35df49d19ac172f9547d30a21a26793e83f16a78386d99583b5bf1429cc980799fcf1827eb215d31816a6600684fba9686ce78104e23bd89ec239e7c726f
   languageName: node
   linkType: hard
 
@@ -9198,7 +9205,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-diff@npm:^27.0.0, jest-diff@npm:^27.2.5, jest-diff@npm:^27.5.1":
+"jest-diff@npm:^27.2.5, jest-diff@npm:^27.5.1":
   version: 27.5.1
   resolution: "jest-diff@npm:27.5.1"
   dependencies:
@@ -9339,7 +9346,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-matcher-utils@npm:^27.5.1":
+"jest-matcher-utils@npm:^27.0.0, jest-matcher-utils@npm:^27.5.1":
   version: 27.5.1
   resolution: "jest-matcher-utils@npm:27.5.1"
   dependencies:
@@ -9866,8 +9873,8 @@ __metadata:
     "@finos/eslint-plugin-legend-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
-    "@types/jest": 27.4.0
-    "@types/node": 17.0.19
+    "@types/jest": 27.4.1
+    "@types/node": 17.0.20
     chalk: 5.0.0
     cross-env: 7.0.3
     envinfo: 7.8.1
@@ -9883,7 +9890,7 @@ __metadata:
     sass: 1.49.8
     semver: 7.3.5
     sort-package-json: 1.54.0
-    stylelint: 14.5.2
+    stylelint: 14.5.3
     typescript: 4.5.5
     yargs: 17.3.1
   languageName: unknown
@@ -13927,9 +13934,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:14.5.2":
-  version: 14.5.2
-  resolution: "stylelint@npm:14.5.2"
+"stylelint@npm:14.5.3":
+  version: 14.5.3
+  resolution: "stylelint@npm:14.5.3"
   dependencies:
     balanced-match: ^2.0.0
     colord: ^2.9.2
@@ -13974,7 +13981,7 @@ __metadata:
     write-file-atomic: ^4.0.1
   bin:
     stylelint: bin/stylelint.js
-  checksum: a54c42c8779c28d2dfade97fadac6040aad9581017f1f7cd28b9ed28e3cb3f1fe4c46a02fdbbd87e6eb497bb813e176063518a9cab0c4f0a4468e35e5d808354
+  checksum: 5fadb61263e003fe791d6c8a31c48825e015a5fee909b0a484baad8d4a46622425409f18d2734a01e91405c825a5b3ccad943ed2298cd4f7df4a0a605c4d0292
   languageName: node
   linkType: hard
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type RuntimeEditorState,
@@ -133,14 +133,14 @@ const getConnectionTooltipText = (
 };
 
 const IdentifiedConnectionsPerStoreExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       identifiedConnection?: IdentifiedConnection;
       deleteIdentifiedConnection?: () => void;
       createNewIdentifiedConnection: () => void;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function IdentifiedConnectionsPerStoreExplorerContextMenu(props, ref) {
     const {
       identifiedConnection,
       deleteIdentifiedConnection,
@@ -160,8 +160,7 @@ const IdentifiedConnectionsPerStoreExplorerContextMenu = observer(
         )}
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const IdentifiedConnectionsPerStoreExplorerItem = observer(

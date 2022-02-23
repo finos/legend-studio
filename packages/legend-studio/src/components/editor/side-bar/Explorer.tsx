@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import React, { Fragment, useRef, useEffect, useState } from 'react';
+import React, {
+  Fragment,
+  useRef,
+  useEffect,
+  useState,
+  forwardRef,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -173,13 +179,13 @@ const ElementRenamer = observer(() => {
 });
 
 const ExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       node?: PackageTreeNodeData | undefined;
       nodeIsImmutable?: boolean | undefined;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function ExplorerContextMenu(props, ref) {
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore<LegendStudioConfig>();
@@ -286,6 +292,7 @@ const ExplorerContextMenu = observer(
         </MenuContent>
       );
     }
+
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {extraExplorerContextMenuItems}
@@ -309,8 +316,7 @@ const ExplorerContextMenu = observer(
         )}
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const ProjectConfig = observer(() => {
@@ -453,41 +459,38 @@ const PackageTreeNodeContainer = observer(
   },
 );
 
-const ExplorerDropdownMenu = observer(
-  () => {
-    const editorStore = useEditorStore();
-    const _package = editorStore.explorerTreeState.getSelectedNodePackage();
-    const createNewElement =
-      (type: string): (() => void) =>
-      (): void =>
-        editorStore.newElementState.openModal(type, _package);
+const ExplorerDropdownMenu = observer(() => {
+  const editorStore = useEditorStore();
+  const _package = editorStore.explorerTreeState.getSelectedNodePackage();
+  const createNewElement =
+    (type: string): (() => void) =>
+    (): void =>
+      editorStore.newElementState.openModal(type, _package);
 
-    const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
-      .concat(editorStore.getSupportedElementTypes())
-      .filter(
-        // NOTE: we can only create package in root
-        (type) =>
-          _package !== editorStore.graphManagerState.graph.root ||
-          type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
-      );
-
-    return (
-      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
-        {elementTypes.map((type) => (
-          <MenuContentItem key={type} onClick={createNewElement(type)}>
-            <MenuContentItemIcon>
-              {getElementTypeIcon(editorStore, type)}
-            </MenuContentItemIcon>
-            <MenuContentItemLabel>
-              New {toTitleCase(getElementTypeLabel(editorStore, type))}...
-            </MenuContentItemLabel>
-          </MenuContentItem>
-        ))}
-      </MenuContent>
+  const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
+    .concat(editorStore.getSupportedElementTypes())
+    .filter(
+      // NOTE: we can only create package in root
+      (type) =>
+        _package !== editorStore.graphManagerState.graph.root ||
+        type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
     );
-  },
-  { forwardRef: true },
-);
+
+  return (
+    <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      {elementTypes.map((type) => (
+        <MenuContentItem key={type} onClick={createNewElement(type)}>
+          <MenuContentItemIcon>
+            {getElementTypeIcon(editorStore, type)}
+          </MenuContentItemIcon>
+          <MenuContentItemLabel>
+            New {toTitleCase(getElementTypeLabel(editorStore, type))}...
+          </MenuContentItemLabel>
+        </MenuContentItem>
+      ))}
+    </MenuContent>
+  );
+});
 
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();

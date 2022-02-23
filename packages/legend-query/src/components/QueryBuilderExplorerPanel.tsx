@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -244,14 +244,14 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
 );
 
 const QueryBuilderExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       queryBuilderState: QueryBuilderState;
       openNode: () => void;
       node: QueryBuilderExplorerTreeNodeData;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function QueryBuilderExplorerContextMenu(props, ref) {
     const { queryBuilderState, openNode, node } = props;
     const applicationStore = useApplicationStore();
     const viewType = (): void =>
@@ -353,8 +353,7 @@ const QueryBuilderExplorerContextMenu = observer(
         <MenuContentItem onClick={viewType}>View Type</MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const renderPropertyTypeIcon = (type: Type): React.ReactNode => {

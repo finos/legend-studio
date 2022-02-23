@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useResizeDetector } from 'react-resize-detector';
 import {
@@ -58,13 +58,13 @@ interface DataSpaceViewerActivityConfig {
 }
 
 const DataSpaceDiagramCanvas = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       dataSpaceViewerState: DataSpaceViewerState;
       diagram: Diagram;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function DataSpaceDiagramCanvas(props, ref) {
     const { dataSpaceViewerState, diagram } = props;
     const diagramCanvasRef =
       ref as React.MutableRefObject<HTMLDivElement | null>;
@@ -102,8 +102,7 @@ const DataSpaceDiagramCanvas = observer(
         onContextMenu={(event): void => event.preventDefault()}
       />
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 type DiagramOption = { label: string; value: Diagram };

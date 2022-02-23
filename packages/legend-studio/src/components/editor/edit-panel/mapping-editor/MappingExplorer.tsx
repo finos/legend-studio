@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type MappingExplorerDropTarget,
@@ -69,13 +69,13 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 
 export const MappingExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       mappingElement?: MappingElement;
       openNewMapingModal?: () => void;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function MappingExplorerContextMenu(props, ref) {
     const { mappingElement, openNewMapingModal } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -218,8 +218,7 @@ export const MappingExplorerContextMenu = observer(
         )}
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const MappingElementExplorer = observer(
