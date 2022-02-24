@@ -31,7 +31,10 @@ import type { PropertyMappingsImplementation } from '../../../../../../metamodel
 import { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EnumerationMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import type { SetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
+import {
+  TEMPORARY__UnresolvedSetImplementation,
+  type SetImplementation,
+} from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
 import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
 import type { TableAlias } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
@@ -86,6 +89,20 @@ import {
 } from '../../../../../../../helpers/MappingHelper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
+import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
+
+/**
+ * When the ID cannot be resolve, we will not fail graph building for now
+ * instead, we will leave this loose end unresolved.
+ *
+ * See https://github.com/finos/legend-studio/issues/880
+ */
+const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
+  mapping: Mapping,
+  id: string,
+): SetImplementation =>
+  returnUndefOnError(() => getClassMappingById(mapping, id)) ??
+  new TEMPORARY__UnresolvedSetImplementation(id, mapping);
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -94,7 +111,10 @@ const resolveRelationalPropertyMappingSource = (
 ): SetImplementation | undefined => {
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
-      return getClassMappingById(immediateParent.parent, value.source);
+      return TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+        immediateParent.parent,
+        value.source,
+      );
     }
     const property = immediateParent.association.value.getProperty(
       value.property.property,
@@ -197,10 +217,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const topParent = guaranteeNonNullable(this.topParent);
     if (propertyType instanceof Class) {
       if (protocol.target) {
-        targetSetImplementation = getClassMappingById(
-          topParent.parent,
-          protocol.target,
-        );
+        targetSetImplementation =
+          TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+            topParent.parent,
+            protocol.target,
+          );
       } else {
         /* @MARKER: ACTION ANALYTICS */
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
@@ -214,11 +235,12 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         );
       }
     }
-    const sourceSetImplementation = returnUndefOnError(() =>
-      protocol.source
-        ? getClassMappingById(topParent.parent, protocol.source)
-        : undefined,
-    );
+    const sourceSetImplementation = protocol.source
+      ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+          topParent.parent,
+          protocol.source,
+        )
+      : undefined;
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
@@ -288,7 +310,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const propertyType = property.genericType.value.rawType;
     if (propertyType instanceof Class && protocol.target) {
       targetSetImplementation = this.topParent
-        ? getClassMappingById(this.topParent.parent, protocol.target)
+        ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+            this.topParent.parent,
+            protocol.target,
+          )
         : undefined;
     }
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
@@ -480,7 +505,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       }
       if (protocol.target) {
         targetSetImplementation = parentMapping
-          ? getClassMappingById(parentMapping, protocol.target)
+          ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+              parentMapping,
+              protocol.target,
+            )
           : undefined;
       } else {
         targetSetImplementation = parentMapping
@@ -618,10 +646,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       _class,
       InferableMappingElementIdExplicitValue.create(id, ''),
     );
-    inline.inlineSetImplementation = getClassMappingById(
-      topParent.parent,
-      protocol.setImplementationId,
-    );
+    inline.inlineSetImplementation =
+      TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+        topParent.parent,
+        protocol.setImplementationId,
+      );
     return inline;
   }
 

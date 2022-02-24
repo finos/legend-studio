@@ -42,7 +42,7 @@ import {
 export const V1_buildRelationalClassMapping = (
   relationalClassMapping: V1_RelationalClassMapping,
   context: V1_GraphBuilderContext,
-  base: RelationalInstanceSetImplementation,
+  immediateParent: RelationalInstanceSetImplementation,
   topParent: RootRelationalInstanceSetImplementation,
   parentMapping: Mapping,
   embeddedRelationalPropertyMappings: EmbeddedRelationalInstanceSetImplementation[],
@@ -51,25 +51,25 @@ export const V1_buildRelationalClassMapping = (
 ): SetImplementation => {
   const pureClass = relationalClassMapping.class
     ? context.resolveClass(relationalClassMapping.class)
-    : base.class;
+    : immediateParent.class;
   // TODO localMappingProperties
-  base.primaryKey = relationalClassMapping.primaryKey.map((key) =>
+  immediateParent.primaryKey = relationalClassMapping.primaryKey.map((key) =>
     V1_buildRelationalOperationElement(key, context, tableAliasMap, []),
   );
-  base.propertyMappings = relationalClassMapping.propertyMappings.map(
-    (propertyMapping) =>
+  immediateParent.propertyMappings =
+    relationalClassMapping.propertyMappings.map((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
         new V1_ProtocolToMetaModelPropertyMappingBuilder(
           context,
-          base,
+          immediateParent,
           topParent,
           enumerationMappings,
           tableAliasMap,
         ),
       ),
-  ) as RelationalPropertyMapping[];
-  base.class = pureClass;
-  return base;
+    ) as RelationalPropertyMapping[];
+  immediateParent.class = pureClass;
+  return immediateParent;
 };
 
 export const V1_buildRelationalPrimaryKey = (

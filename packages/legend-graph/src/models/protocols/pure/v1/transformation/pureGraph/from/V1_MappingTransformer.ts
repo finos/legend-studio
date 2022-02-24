@@ -15,6 +15,7 @@
  */
 
 import {
+  IllegalStateError,
   isNonNullable,
   recursiveOmit,
   UnsupportedOperationError,
@@ -23,6 +24,7 @@ import type { Mapping } from '../../../../../../metamodels/pure/packageableEleme
 import type {
   SetImplementationVisitor,
   SetImplementation,
+  TEMPORARY__UnresolvedSetImplementation,
 } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import type {
   PropertyMappingVisitor,
@@ -1058,7 +1060,8 @@ export class V1_SetImplementationTransformer
   visit_EmbeddedFlatDataSetImplementation(
     setImplementation: EmbeddedFlatDataPropertyMapping,
   ): V1_ClassMapping | undefined {
-    // FIXME?
+    // NOTE: we currently don't support this and flat-data would probably be deprecated
+    // in the future in favor of schema-set/binding
     return undefined;
   }
 
@@ -1078,6 +1081,14 @@ export class V1_SetImplementationTransformer
     return transformAggregationAwareSetImplementation(
       setImplementation,
       this.context,
+    );
+  }
+
+  visit_TEMPORARY__UnresolvedSetImplementation(
+    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  ): V1_ClassMapping | undefined {
+    throw new IllegalStateError(
+      `Can't transform unresolved set implementation. This type of set implementation should only show up in references.`,
     );
   }
 }
