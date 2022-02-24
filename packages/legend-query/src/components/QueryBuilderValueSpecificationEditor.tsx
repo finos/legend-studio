@@ -60,6 +60,10 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
+import {
+  type QueryBuilderDerivedPropertyExpressionState,
+  removePropagatedDates,
+} from '../stores/QueryBuilderPropertyEditorState';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -567,8 +571,17 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   graph: PureModel;
   expectedType: Type;
   className?: string | undefined;
+  derivedPropertyExpressionStates?:
+    | QueryBuilderDerivedPropertyExpressionState[]
+    | undefined;
 }> = (props) => {
-  const { valueSpecification, graph, expectedType, className } = props;
+  const {
+    valueSpecification,
+    graph,
+    expectedType,
+    className,
+    derivedPropertyExpressionStates,
+  } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
     switch (_type.path) {
@@ -636,6 +649,9 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   }
   // property expression
   else if (valueSpecification instanceof VariableExpression) {
+    if (derivedPropertyExpressionStates?.length) {
+      removePropagatedDates(derivedPropertyExpressionStates);
+    }
     return (
       <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}

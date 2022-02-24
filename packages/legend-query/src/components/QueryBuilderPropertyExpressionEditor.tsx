@@ -20,7 +20,9 @@ import { clsx, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import {
+  fillDerivedPropertyArguments,
   getPropertyPath,
+  isDatePropagationSupported,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState';
@@ -38,7 +40,7 @@ import {
 } from '../stores/QueryParametersState';
 import { MdRefresh } from 'react-icons/md';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
   type ValueSpecification,
   type VariableExpression,
@@ -47,15 +49,23 @@ import {
   PrimitiveType,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
+  getMilestoneTemporalStereotype,
+  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 
 const DerivedPropertyParameterEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
+    derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[];
     variable: VariableExpression;
     idx: number;
   }) => {
-    const { derivedPropertyExpressionState, variable, idx } = props;
+    const {
+      derivedPropertyExpressionState,
+      derivedPropertyExpressionStates,
+      variable,
+      idx,
+    } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
         derivedPropertyExpressionState.propertyExpression.parametersValues[
@@ -96,6 +106,31 @@ const DerivedPropertyParameterEditor = observer(
           ),
         ];
       }
+      if (
+        isDatePropagationSupported(
+          derivedPropertyExpressionState.derivedProperty,
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState
+            .graph,
+        )
+      ) {
+        const targetStereotype = getMilestoneTemporalStereotype(
+          guaranteeType(
+            derivedPropertyExpressionState.derivedProperty.genericType.value
+              .rawType,
+            Class,
+          ),
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState
+            .graph,
+        );
+        if (targetStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+          fillDerivedPropertyArguments(
+            derivedPropertyExpressionState,
+            derivedPropertyExpressionState.queryBuilderState.graphManagerState
+              .graph,
+            true,
+          );
+        }
+      }
       derivedPropertyExpressionState.propertyExpression.parametersValues[
         idx + 1
       ] = primitiveInstanceValue;
@@ -120,9 +155,15 @@ const DerivedPropertyParameterEditor = observer(
           )}
           <QueryBuilderValueSpecificationEditor
             valueSpecification={
-              derivedPropertyExpressionState.parameterValues[
-                idx
-              ] as ValueSpecification
+              (isDatePropagationSupported(
+                derivedPropertyExpressionState.derivedProperty,
+                derivedPropertyExpressionState.queryBuilderState
+                  .graphManagerState.graph,
+              ) && derivedPropertyExpressionState.parameterValues.length === 0
+                ? derivedPropertyExpressionState.parameters[idx]
+                : derivedPropertyExpressionState.parameterValues[
+                    idx
+                  ]) as ValueSpecification
             }
             graph={
               derivedPropertyExpressionState.queryBuilderState.graphManagerState
@@ -132,6 +173,7 @@ const DerivedPropertyParameterEditor = observer(
               derivedPropertyExpressionState.propertyExpression.func.genericType
                 .value.rawType
             }
+            derivedPropertyExpressionStates={derivedPropertyExpressionStates}
           />
           <button
             className="query-builder-filter-tree__node__action"
@@ -150,8 +192,10 @@ const DerivedPropertyParameterEditor = observer(
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
+    derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[];
   }) => {
-    const { derivedPropertyExpressionState } = props;
+    const { derivedPropertyExpressionState, derivedPropertyExpressionStates } =
+      props;
     const parameterValues = derivedPropertyExpressionState.parameterValues;
     const parameters = derivedPropertyExpressionState.parameters;
 
@@ -160,7 +204,13 @@ const DerivedPropertyExpressionEditor = observer(
         <div className="panel__content__form__section__header__label">
           {derivedPropertyExpressionState.title}
         </div>
-        {!parameterValues.length && (
+        {(isDatePropagationSupported(
+          derivedPropertyExpressionState.derivedProperty,
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState
+            .graph,
+        )
+          ? !derivedPropertyExpressionState.parameters.length
+          : !parameterValues.length) && (
           <div className="query-builder-property-editor__section__content--empty">
             No parameter
           </div>
@@ -169,6 +219,7 @@ const DerivedPropertyExpressionEditor = observer(
           <DerivedPropertyParameterEditor
             key={variable.name}
             derivedPropertyExpressionState={derivedPropertyExpressionState}
+            derivedPropertyExpressionStates={derivedPropertyExpressionStates}
             variable={variable}
             idx={idx}
           />
@@ -206,6 +257,9 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 <DerivedPropertyExpressionEditor
                   key={pe.path}
                   derivedPropertyExpressionState={pe}
+                  derivedPropertyExpressionStates={
+                    propertyExpressionState.derivedPropertyExpressionStates
+                  }
                 />
               ),
             )}
