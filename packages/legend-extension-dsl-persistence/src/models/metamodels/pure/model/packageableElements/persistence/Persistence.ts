@@ -464,14 +464,14 @@ export class BatchIdTransactionMilestoning
   extends TransactionMilestoning
   implements Hashable
 {
-  batchIdInName!: string;
-  batchIdOutName!: string;
+  batchIdInFieldName!: string;
+  batchIdOutFieldName!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_ID_TRANSACTION_MILESTONING,
-      this.batchIdInName,
-      this.batchIdOutName,
+      this.batchIdInFieldName,
+      this.batchIdOutFieldName,
     ]);
   }
 }
@@ -480,14 +480,14 @@ export class DateTimeTransactionMilestoning
   extends TransactionMilestoning
   implements Hashable
 {
-  dateTimeInName!: string;
-  dateTimeOutName!: string;
+  dateTimeInFieldName!: string;
+  dateTimeOutFieldName!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_TRANSACTION_MILESTONING,
-      this.dateTimeInName,
-      this.dateTimeOutName,
+      this.dateTimeInFieldName,
+      this.dateTimeOutFieldName,
     ]);
   }
 }
@@ -496,18 +496,18 @@ export class BatchIdAndDateTimeTransactionMilestoning
   extends TransactionMilestoning
   implements Hashable
 {
-  batchIdInName!: string;
-  batchIdOutName!: string;
-  dateTimeInName!: string;
-  dateTimeOutName!: string;
+  batchIdInFieldName!: string;
+  batchIdOutFieldName!: string;
+  dateTimeInFieldName!: string;
+  dateTimeOutFieldName!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING,
-      this.batchIdInName,
-      this.batchIdOutName,
-      this.dateTimeInName,
-      this.dateTimeOutName,
+      this.batchIdInFieldName,
+      this.batchIdOutFieldName,
+      this.dateTimeInFieldName,
+      this.dateTimeOutFieldName,
     ]);
   }
 }
@@ -537,14 +537,14 @@ export class DateTimeValidityMilestoning
   extends ValidityMilestoning
   implements Hashable
 {
-  dateTimeFromName!: string;
-  dateTimeThruName!: string;
+  dateTimeFromFieldName!: string;
+  dateTimeThruFieldName!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_VALIDITY_MILESTONING,
-      this.dateTimeFromName,
-      this.dateTimeThruName,
+      this.dateTimeFromFieldName,
+      this.dateTimeThruFieldName,
     ]);
   }
 }

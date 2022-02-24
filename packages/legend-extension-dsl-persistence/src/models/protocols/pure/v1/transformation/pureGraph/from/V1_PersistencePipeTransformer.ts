@@ -424,20 +424,20 @@ export const V1_transformTransactionMilestoning = (
 ): V1_TransactionMilestoning => {
   if (element instanceof BatchIdTransactionMilestoning) {
     const protocol = new V1_BatchIdTransactionMilestoning();
-    protocol.batchIdInName = element.batchIdInName;
-    protocol.batchIdOutName = element.batchIdOutName;
+    protocol.batchIdInFieldName = element.batchIdInFieldName;
+    protocol.batchIdOutFieldName = element.batchIdOutFieldName;
     return protocol;
   } else if (element instanceof DateTimeTransactionMilestoning) {
     const protocol = new V1_DateTimeTransactionMilestoning();
-    protocol.dateTimeInName = element.dateTimeInName;
-    protocol.dateTimeOutName = element.dateTimeOutName;
+    protocol.dateTimeInFieldName = element.dateTimeInFieldName;
+    protocol.dateTimeOutFieldName = element.dateTimeOutFieldName;
     return protocol;
   } else if (element instanceof BatchIdAndDateTimeTransactionMilestoning) {
     const protocol = new V1_BatchIdAndDateTimeTransactionMilestoning();
-    protocol.batchIdInName = element.batchIdInName;
-    protocol.batchIdOutName = element.batchIdOutName;
-    protocol.dateTimeInName = element.dateTimeInName;
-    protocol.dateTimeOutName = element.dateTimeOutName;
+    protocol.batchIdInFieldName = element.batchIdInFieldName;
+    protocol.batchIdOutFieldName = element.batchIdOutFieldName;
+    protocol.dateTimeInFieldName = element.dateTimeInFieldName;
+    protocol.dateTimeOutFieldName = element.dateTimeOutFieldName;
     return protocol;
   } else if (element instanceof OpaqueTransactionMilestoning) {
     return new V1_OpaqueTransactionMilestoning();
@@ -457,8 +457,8 @@ export const V1_transformValidityMilestoning = (
 ): V1_ValidityMilestoning => {
   if (element instanceof DateTimeValidityMilestoning) {
     const protocol = new V1_DateTimeValidityMilestoning();
-    protocol.dateTimeFromName = element.dateTimeFromName;
-    protocol.dateTimeThruName = element.dateTimeThruName;
+    protocol.dateTimeFromFieldName = element.dateTimeFromFieldName;
+    protocol.dateTimeThruFieldName = element.dateTimeThruFieldName;
     return protocol;
   } else if (element instanceof OpaqueValidityMilestoning) {
     return new V1_OpaqueValidityMilestoning();
