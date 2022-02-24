@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 0.8.1
+
+### Patch Changes
+
+- [#881](https://github.com/finos/legend-studio/pull/881) [`b38d8200`](https://github.com/finos/legend-studio/commit/b38d8200d0c1e32556c51cf2537b3456731a76c9) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Update the display order of query builder explorer tree nodes' children to show `subtype` nodes last.
+
 ## 0.8.0
 
 ### Minor Changes
