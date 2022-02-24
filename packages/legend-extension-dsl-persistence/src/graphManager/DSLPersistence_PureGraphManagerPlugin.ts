@@ -1,5 +1,5 @@
 import packageJson from '../../package.json';
-import { PersistencePipe } from '../models/metamodels/pure/model/packageableElements/persistence/Persistence';
+import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/Persistence';
 import {
   PureGraphManagerPlugin,
   type PackageableElement,
@@ -7,7 +7,7 @@ import {
 } from '@finos/legend-graph';
 
 const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
-const PURE_GRAMMAR_PERSISTENCE_PIPE_ELEMENT_TYPE_LABEL = 'PersistencePipe';
+const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
 
 export class DSLPersistence_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -19,14 +19,14 @@ export class DSLPersistence_PureGraphManagerPlugin extends PureGraphManagerPlugi
   }
 
   override getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_PERSISTENCE_PIPE_ELEMENT_TYPE_LABEL];
+    return [PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL];
   }
 
   override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
     return [
       (element: PackageableElement): string | undefined => {
-        if (element instanceof PersistencePipe) {
-          return PURE_GRAMMAR_PERSISTENCE_PIPE_ELEMENT_TYPE_LABEL;
+        if (element instanceof Persistence) {
+          return PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL;
         }
         return undefined;
       },

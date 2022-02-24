@@ -29,7 +29,7 @@ import {
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
-  V1_PersistencePipe,
+  V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTargetSpecification,
   V1_Reader,
@@ -65,30 +65,27 @@ import {
  * persistence
  **********/
 
-export const V1_PERSISTENCE_PIPE_ELEMENT_PROTOCOL_TYPE = 'persistencePipe';
+export const V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE = 'persistence';
 
-export const V1_persistencePipeModelSchema = createModelSchema(
-  V1_PersistencePipe,
-  {
-    _type: usingConstantValueSchema(V1_PERSISTENCE_PIPE_ELEMENT_PROTOCOL_TYPE),
-    documentation: primitive(),
-    name: primitive(),
-    owners: list(primitive()),
-    package: primitive(),
-    persister: custom(
-      (val) => V1_serializePersister(val),
-      (val) => V1_deserializePersister(val),
-    ),
-    reader: custom(
-      (val) => V1_serializeReader(val),
-      (val) => V1_deserializeReader(val),
-    ),
-    trigger: custom(
-      (val) => V1_serializeTrigger(val),
-      (val) => V1_deserializeTrigger(val),
-    ),
-  },
-);
+export const V1_persistenceModelSchema = createModelSchema(V1_Persistence, {
+  _type: usingConstantValueSchema(V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE),
+  documentation: primitive(),
+  name: primitive(),
+  owners: list(primitive()),
+  package: primitive(),
+  persister: custom(
+    (val) => V1_serializePersister(val),
+    (val) => V1_deserializePersister(val),
+  ),
+  reader: custom(
+    (val) => V1_serializeReader(val),
+    (val) => V1_deserializeReader(val),
+  ),
+  trigger: custom(
+    (val) => V1_serializeTrigger(val),
+    (val) => V1_deserializeTrigger(val),
+  ),
+});
 
 /**********
  * trigger

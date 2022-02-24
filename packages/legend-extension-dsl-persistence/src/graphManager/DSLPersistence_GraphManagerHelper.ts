@@ -1,12 +1,9 @@
 import type { PureModel } from '@finos/legend-graph';
-import { PersistencePipe } from '../models/metamodels/pure/model/packageableElements/persistence/Persistence';
+import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/Persistence';
 
-export const getPersistencePipe = (
-  path: string,
-  graph: PureModel,
-): PersistencePipe =>
+export const getPersistence = (path: string, graph: PureModel): Persistence =>
   graph.getExtensionElement(
     path,
-    PersistencePipe,
-    `Can't find persistence pipe '${path}'`,
+    Persistence,
+    `Can't find persistence '${path}'`,
   );
