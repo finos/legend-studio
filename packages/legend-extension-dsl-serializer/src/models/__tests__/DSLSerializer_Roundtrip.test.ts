@@ -22,6 +22,7 @@ import {
   TEST__GraphPluginManager,
   TEST__checkBuildingElementsRoundtrip,
 } from '@finos/legend-graph';
+import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip';
 
 const pluginManager = new TEST__GraphPluginManager();
 pluginManager.usePresets([new DSLSerializer_GraphPreset()]).install();
@@ -29,6 +30,13 @@ pluginManager.usePresets([new DSLSerializer_GraphPreset()]).install();
 test(unitTest('DSL Serializer import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     roundtripTestData as Entity[],
+    pluginManager,
+  );
+});
+
+test(unitTest('SemiStructured relational type roundtrip'), async () => {
+  await TEST__checkBuildingElementsRoundtrip(
+    TEST_DATA__SemiStructuredRelationalTypeRoundtrip as Entity[],
     pluginManager,
   );
 });

@@ -144,6 +144,7 @@ import { toJS } from 'mobx';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 import type { SubstituteStore } from '../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
+import { V1_BindingTransformer } from '../../../model/packageableElements/store/relational/mapping/V1_BindingTransformer';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -486,6 +487,11 @@ const transformRelationalPropertyMapping = (
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
+  if (element.bindingTransformer?.binding !== undefined) {
+    const bindingTransformer = new V1_BindingTransformer();
+    bindingTransformer.binding = element.bindingTransformer.binding;
+    propertyMapping.bindingTransformer = bindingTransformer;
+  }
   if (element.localMappingProperty) {
     propertyMapping.localMappingProperty = transformLocalPropertyInfo(
       element.localMappingProperty,

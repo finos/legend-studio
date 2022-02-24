@@ -86,6 +86,7 @@ import {
 } from '../../../../../../../helpers/MappingHelper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
+import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/BindingTransformer';
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -510,6 +511,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       sourceSetImplementation,
       targetSetImplementation,
     );
+    if (protocol.bindingTransformer?.binding !== undefined) {
+      const bindingTransformer = new BindingTransformer();
+      bindingTransformer.binding = protocol.bindingTransformer.binding;
+      relationalPropertyMapping.bindingTransformer = bindingTransformer;
+    }
     // NOTE: we only need to use the raw form of the operation for the editor
     // but we need to process it anyway so we can:
     // 1. do analytics on table alias map

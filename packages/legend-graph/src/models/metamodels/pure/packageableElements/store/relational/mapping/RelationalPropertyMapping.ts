@@ -30,6 +30,7 @@ import {
   isStubRelationalOperationElement,
   type RawRelationalOperationElement,
 } from '../model/RawRelationalOperationElement';
+import type { BindingTransformer } from './BindingTransformer';
 
 export class RelationalPropertyMapping
   extends PropertyMapping
@@ -37,6 +38,7 @@ export class RelationalPropertyMapping
 {
   transformer?: EnumerationMapping | undefined;
   relationalOperation!: RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
+  bindingTransformer?: BindingTransformer | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
@@ -49,6 +51,8 @@ export class RelationalPropertyMapping
     makeObservable(this, {
       transformer: observable,
       relationalOperation: observable.ref,
+      bindingTransformer: observable,
+      setBindingTransformer: action,
       setTransformer: action,
       hashCode: computed,
     });
@@ -56,6 +60,10 @@ export class RelationalPropertyMapping
 
   setTransformer(value: EnumerationMapping | undefined): void {
     this.transformer = value;
+  }
+
+  setBindingTransformer(value: BindingTransformer | undefined): void {
+    this.bindingTransformer = value;
   }
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
@@ -71,6 +79,7 @@ export class RelationalPropertyMapping
       CORE_HASH_STRUCTURE.REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
       this.transformer?.id.value ?? '',
+      this.bindingTransformer ?? '',
       hashObjectWithoutSourceInformation(this.relationalOperation),
     ]);
   }
