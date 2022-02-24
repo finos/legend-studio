@@ -3901,10 +3901,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:17.0.20":
-  version: 17.0.20
-  resolution: "@types/node@npm:17.0.20"
-  checksum: 50cdbd3c4c93f117f95e7c11ee28540f388500d6496e9efc8610f7e27839cb1fcf6c2479cac1dcd00fcc4658029a41201cc3294ae0d42e24ffcc71477a44191c
+"@types/node@npm:17.0.21":
+  version: 17.0.21
+  resolution: "@types/node@npm:17.0.21"
+  checksum: 89dcd2fe82f21d3634266f8384e9c865cf8af49685639fbdbd799bdd1040480fb1e8eeda2d3b9fce41edbe704d2a4be9f427118c4ae872e8d9bb7cbeb3c41a94
   languageName: node
   linkType: hard
 
@@ -9874,7 +9874,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@types/jest": 27.4.1
-    "@types/node": 17.0.20
+    "@types/node": 17.0.21
     chalk: 5.0.0
     cross-env: 7.0.3
     envinfo: 7.8.1
