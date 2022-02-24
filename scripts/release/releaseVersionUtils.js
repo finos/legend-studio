@@ -41,9 +41,17 @@ const ITERATION_RELEASE_VERSION_BUMP_CHANGESET_PATH = resolve(
   `../../${ITERATION_RELEASE_VERSION_BUMP_CHANGESET_SHORT_PATH}`,
 );
 
+/**
+ * Changesets's `fixed` mode should guarantee that we do not miss any application packages
+ * when we bump version as long as they follow the right patterns.
+ *
+ * In fact, creating a simple changeset with just a single package like `@finos/legend-studio-app`
+ * is sufficient and listing out ALL packages in the changeset is overkill, but we do this anyway
+ * for completeness sake.
+ */
 export const getPackagesToBumpVersion = () => {
   const changesetConfig = loadJSON(CHANGESET_CONFIG_PATH);
-  const patterns = changesetConfig.linked[0];
+  const patterns = changesetConfig.fixed[0];
   // NOTE: changeset's config structure could change so we would like to do some validation
   if (!Array.isArray(patterns) || patterns.length === 0) {
     console.log(

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import {
@@ -50,25 +50,26 @@ import { useEditorStore } from '../EditorStoreProvider';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
-  (props, ref: React.Ref<HTMLDivElement>) => {
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
-      flowResult(editorStore.toggleTextMode()),
-    );
+  forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
+    function GrammarTextEditorHeaderTabContextMenu(props, ref) {
+      const editorStore = useEditorStore();
+      const applicationStore = useApplicationStore();
+      const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
+        flowResult(editorStore.toggleTextMode()),
+      );
 
-    return (
-      <div ref={ref} className="edit-panel__header__tab__context-menu">
-        <button
-          className="edit-panel__header__tab__context-menu__item"
-          onClick={leaveTextMode}
-        >
-          Leave Text Mode
-        </button>
-      </div>
-    );
-  },
-  { forwardRef: true },
+      return (
+        <div ref={ref} className="edit-panel__header__tab__context-menu">
+          <button
+            className="edit-panel__header__tab__context-menu__item"
+            onClick={leaveTextMode}
+          >
+            Leave Text Mode
+          </button>
+        </div>
+      );
+    },
+  ),
 );
 
 export const GrammarTextEditor = observer(() => {

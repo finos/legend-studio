@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { useRef, useState, useEffect, useCallback, Fragment } from 'react';
+import {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  Fragment,
+  forwardRef,
+} from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { observer } from 'mobx-react-lite';
@@ -99,12 +106,12 @@ import { Point } from '../../models/metamodels/pure/packageableElements/diagram/
 import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
 
 const DiagramEditorContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       diagramEditorState: DiagramEditorState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function DiagramEditorContextMenu(props, ref) {
     const { diagramEditorState } = props;
     const editorStore = useEditorStore();
     const extraClassViewContextMenuItems =
@@ -129,8 +136,7 @@ const DiagramEditorContextMenu = observer(
             ))
         : [];
     return <MenuContent>{extraClassViewContextMenuItems}</MenuContent>;
-  },
-  { forwardRef: true },
+  }),
 );
 
 const DiagramRendererHotkeyInfosModal = observer(
@@ -1142,12 +1148,12 @@ const DiagramEditorInlinePropertyEditor = observer(
 );
 
 const DiagramEditorDiagramCanvas = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       diagramEditorState: DiagramEditorState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function DiagramEditorDiagramCanvas(props, ref) {
     const { diagramEditorState } = props;
     const diagramCanvasRef =
       ref as React.MutableRefObject<HTMLDivElement | null>;
@@ -1223,8 +1229,7 @@ const DiagramEditorDiagramCanvas = observer(
         onContextMenu={(event): void => event.preventDefault()}
       />
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const DiagramEditorHeader = observer(

@@ -42,7 +42,7 @@ const ES_RULES = {
   'dot-notation': [ERROR, { allowKeywords: true }],
   'eol-last': [WARN, 'always'],
   eqeqeq: ERROR,
-  'func-call-spacing': ERROR,
+  'func-call-spacing': OFF,
   'guard-for-in': ERROR,
   'jsx-quotes': ERROR,
   'key-spacing': WARN,
@@ -135,6 +135,7 @@ const TYPESCRIPT_RULES = {
     WARN,
     { allowTypedFunctionExpressions: true },
   ],
+  '@typescript-eslint/func-call-spacing': ERROR,
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],
   '@typescript-eslint/no-var-requires': OFF,
   '@typescript-eslint/no-unused-vars': [

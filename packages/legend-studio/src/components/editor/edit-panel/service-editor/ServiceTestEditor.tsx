@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { ServiceExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
 import {
@@ -64,14 +64,14 @@ import type { TestContainer } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 
 const TestContainerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       testContainer?: TestContainer;
-      deleteTestContainer?: () => void;
       createTestContainer: () => void;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+      deleteTestContainer?: () => void;
+    }
+  >(function TestContainerContextMenu(props, ref) {
     const { testContainer, deleteTestContainer, createTestContainer } = props;
     const remove = (): void => deleteTestContainer?.();
 
@@ -95,8 +95,7 @@ const TestContainerContextMenu = observer(
         )}
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const TestContainerItem = observer(

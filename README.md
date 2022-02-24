@@ -8,9 +8,9 @@ The codebase and home of Legend applications: `Legend Studio`, `Legend Query`, e
 
 ## Getting started
 
-Make sure you have SDLC and Engine servers running. If you don't have these servers [setup to run locally](https://legend.finos.org/docs/installation/maven-install-guide#installation-steps), you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev) to quickly set them up.
+Make sure you have _at least_ SDLC and Engine servers running. To quickly set these up, use our development [Docker compose](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev). If you need to debug and code on the backend at the same time, follow [this guide](./fixtures/legend-docker-setup/studio-dev-setup/README.md) to set them up using `maven`.
 
-Make sure you have `Yarn` installed. Run the following commands in order.
+Last but not least, make sure you have `Yarn` installed. Run the following commands in order.
 
 ```bash
   yarn install
