@@ -167,12 +167,12 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
-    path: 'org::dxl::ZooPipe',
+    path: 'org::dxl::ZooPersistence',
     classifierPath: 'meta::pure::persistence::metamodel::PersistencePipe',
     content: {
-      _type: 'persistencePipe',
-      name: 'ZooPipe',
-      documentation: 'A persistence pipe for Zoos.',
+      _type: 'persistence',
+      name: 'ZooPersistence',
+      documentation: 'A persistence specification for Zoos.',
       owners: [],
       package: 'org::dxl',
       persister: {

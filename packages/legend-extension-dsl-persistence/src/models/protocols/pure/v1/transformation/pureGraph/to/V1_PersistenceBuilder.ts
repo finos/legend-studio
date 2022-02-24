@@ -29,7 +29,7 @@ import {
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
-  type V1_PersistencePipe,
+  type V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTargetSpecification,
   V1_Reader,
@@ -93,7 +93,7 @@ import {
   ValidityDerivation,
   ValidityMilestoning,
 } from '../../../../../../metamodels/pure/model/packageableElements/persistence/Persistence';
-import { getPersistencePipe } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
+import { getPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
 import {
   GraphBuilderError,
   type V1_GraphBuilderContext,
@@ -104,20 +104,20 @@ import { guaranteeNonEmptyString } from '@finos/legend-shared';
  * persistence
  **********/
 
-export const V1_buildPersistencePipe = (
-  protocol: V1_PersistencePipe,
+export const V1_buildPersistence = (
+  protocol: V1_Persistence,
   context: V1_GraphBuilderContext,
 ): void => {
   const path = context.graph.buildPath(protocol.package, protocol.name);
-  const pipe = getPersistencePipe(path, context.graph);
-  pipe.documentation = guaranteeNonEmptyString(
+  const persistence = getPersistence(path, context.graph);
+  persistence.documentation = guaranteeNonEmptyString(
     protocol.documentation,
-    `Persistence pipe 'documentation' field is missing or empty`,
+    `Persistence 'documentation' field is missing or empty`,
   );
-  pipe.owners = protocol.owners;
-  pipe.trigger = V1_buildTrigger(protocol.trigger, context);
-  pipe.reader = V1_buildReader(protocol.reader, context);
-  pipe.persister = V1_buildPersister(protocol.persister, context);
+  persistence.owners = protocol.owners;
+  persistence.trigger = V1_buildTrigger(protocol.trigger, context);
+  persistence.reader = V1_buildReader(protocol.reader, context);
+  persistence.persister = V1_buildPersister(protocol.persister, context);
 };
 
 /**********

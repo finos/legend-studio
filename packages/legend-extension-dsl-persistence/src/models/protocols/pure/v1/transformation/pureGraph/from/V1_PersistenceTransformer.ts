@@ -29,7 +29,7 @@ import {
   OpaqueTransactionMilestoning,
   OpaqueTrigger,
   OpaqueValidityMilestoning,
-  PersistencePipe,
+  Persistence,
   Persister,
   PropertyAndFlatTargetSpecification,
   Reader,
@@ -77,7 +77,7 @@ import {
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
-  V1_PersistencePipe,
+  V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTargetSpecification,
   V1_Reader,
@@ -105,11 +105,11 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
  * persistence
  **********/
 
-export const V1_transformPersistencePipe = (
-  element: PersistencePipe,
+export const V1_transformPersistence = (
+  element: Persistence,
   context: V1_GraphTransformerContext,
-): V1_PersistencePipe => {
-  const protocol = new V1_PersistencePipe();
+): V1_Persistence => {
+  const protocol = new V1_Persistence();
   V1_initPackageableElement(protocol, element);
   protocol.documentation = element.documentation;
   protocol.owners = element.owners;

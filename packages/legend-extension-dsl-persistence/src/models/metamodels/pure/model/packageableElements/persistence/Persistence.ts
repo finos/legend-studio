@@ -10,10 +10,10 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { makeObservable, observable, override } from 'mobx';
 
 /**********
- * pipe
+ * persistence
  **********/
 
-export class PersistencePipe extends PackageableElement implements Hashable {
+export class Persistence extends PackageableElement implements Hashable {
   documentation!: string;
   owners: string[] = [];
   trigger!: Trigger;
@@ -23,7 +23,7 @@ export class PersistencePipe extends PackageableElement implements Hashable {
   constructor(name: string) {
     super(name);
 
-    makeObservable<PersistencePipe, '_elementHashCode'>(this, {
+    makeObservable<Persistence, '_elementHashCode'>(this, {
       documentation: observable,
       owners: observable,
       trigger: observable,
@@ -35,7 +35,7 @@ export class PersistencePipe extends PackageableElement implements Hashable {
 
   protected override get _elementHashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_PIPE,
+      PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
       hashArray(this.owners),
       this.trigger,

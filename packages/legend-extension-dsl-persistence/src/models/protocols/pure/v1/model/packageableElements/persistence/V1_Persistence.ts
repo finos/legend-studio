@@ -6,13 +6,10 @@ import {
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils';
 
 /**********
- * pipe
+ * persistence
  **********/
 
-export class V1_PersistencePipe
-  extends V1_PackageableElement
-  implements Hashable
-{
+export class V1_Persistence extends V1_PackageableElement implements Hashable {
   documentation!: string;
   owners: string[] = [];
   trigger!: V1_Trigger;
@@ -21,7 +18,7 @@ export class V1_PersistencePipe
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_PIPE,
+      PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
       hashArray(this.owners),
       this.trigger,
