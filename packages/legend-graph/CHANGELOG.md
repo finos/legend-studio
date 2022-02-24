@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 1.1.2
+
+### Patch Changes
+
+- [#883](https://github.com/finos/legend-studio/pull/883) [`05e54011`](https://github.com/finos/legend-studio/commit/05e54011d6e4b5e1cc74375e1e73effdd35f695d) ([@akphi](https://github.com/akphi)) - Add a temporary workaround to not fail graph building when there are unresolved class mapping IDs (see [#880](https://github.com/finos/legend-studio/issues/880) for more details).
+
 ## 1.1.1
 
 ## 1.1.0
