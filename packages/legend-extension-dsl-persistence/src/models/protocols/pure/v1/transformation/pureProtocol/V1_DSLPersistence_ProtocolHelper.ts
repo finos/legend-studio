@@ -696,8 +696,8 @@ const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_TransactionMilestoningType.BATCH_ID_TRANSACTION_MILESTONING,
     ),
-    batchIdInName: primitive(),
-    batchIdOutName: primitive(),
+    batchIdInFieldName: primitive(),
+    batchIdOutFieldName: primitive(),
   },
 );
 
@@ -707,8 +707,8 @@ const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_TransactionMilestoningType.DATE_TIME_TRANSACTION_MILESTONING,
     ),
-    dateTimeInName: primitive(),
-    dateTimeOutName: primitive(),
+    dateTimeInFieldName: primitive(),
+    dateTimeOutFieldName: primitive(),
   },
 );
 
@@ -717,10 +717,10 @@ const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
     _type: usingConstantValueSchema(
       V1_TransactionMilestoningType.BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING,
     ),
-    batchIdInName: primitive(),
-    batchIdOutName: primitive(),
-    dateTimeInName: primitive(),
-    dateTimeOutName: primitive(),
+    batchIdInFieldName: primitive(),
+    batchIdOutFieldName: primitive(),
+    dateTimeInFieldName: primitive(),
+    dateTimeOutFieldName: primitive(),
   });
 
 const V1_opaqueTransactionMilestoningModelSchema = createModelSchema(
@@ -790,8 +790,8 @@ const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_ValidityMilestoningType.DATE_TIME_VALIDITY_MILESTONING,
     ),
-    dateTimeFromName: primitive(),
-    dateTimeThruName: primitive(),
+    dateTimeFromFieldName: primitive(),
+    dateTimeThruFieldName: primitive(),
   },
 );
 

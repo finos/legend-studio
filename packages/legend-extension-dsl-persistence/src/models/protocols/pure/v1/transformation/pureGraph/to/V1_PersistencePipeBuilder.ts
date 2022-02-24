@@ -437,20 +437,20 @@ export const V1_buildTransactionMilestoning = (
   //TODO: ledav -- validate property exists on model class
   if (protocol instanceof V1_BatchIdTransactionMilestoning) {
     const milestoning = new BatchIdTransactionMilestoning();
-    milestoning.batchIdInName = protocol.batchIdInName;
-    milestoning.batchIdOutName = protocol.batchIdOutName;
+    milestoning.batchIdInFieldName = protocol.batchIdInFieldName;
+    milestoning.batchIdOutFieldName = protocol.batchIdOutFieldName;
     return milestoning;
   } else if (protocol instanceof V1_DateTimeTransactionMilestoning) {
     const milestoning = new DateTimeTransactionMilestoning();
-    milestoning.dateTimeInName = protocol.dateTimeInName;
-    milestoning.dateTimeOutName = protocol.dateTimeOutName;
+    milestoning.dateTimeInFieldName = protocol.dateTimeInFieldName;
+    milestoning.dateTimeOutFieldName = protocol.dateTimeOutFieldName;
     return milestoning;
   } else if (protocol instanceof V1_BatchIdAndDateTimeTransactionMilestoning) {
     const milestoning = new BatchIdAndDateTimeTransactionMilestoning();
-    milestoning.batchIdInName = protocol.batchIdInName;
-    milestoning.batchIdOutName = protocol.batchIdOutName;
-    milestoning.dateTimeInName = protocol.dateTimeInName;
-    milestoning.dateTimeOutName = protocol.dateTimeOutName;
+    milestoning.batchIdInFieldName = protocol.batchIdInFieldName;
+    milestoning.batchIdOutFieldName = protocol.batchIdOutFieldName;
+    milestoning.dateTimeInFieldName = protocol.dateTimeInFieldName;
+    milestoning.dateTimeOutFieldName = protocol.dateTimeOutFieldName;
     return milestoning;
   } else if (protocol instanceof V1_OpaqueTransactionMilestoning) {
     return new OpaqueTransactionMilestoning();
@@ -471,8 +471,8 @@ export const V1_buildValidityMilestoning = (
   //TODO: ledav -- validate property exists on model class
   if (protocol instanceof V1_DateTimeValidityMilestoning) {
     const milestoning = new DateTimeValidityMilestoning();
-    milestoning.dateTimeFromName = protocol.dateTimeFromName;
-    milestoning.dateTimeThruName = protocol.dateTimeThruName;
+    milestoning.dateTimeFromFieldName = protocol.dateTimeFromFieldName;
+    milestoning.dateTimeThruFieldName = protocol.dateTimeThruFieldName;
     return milestoning;
   } else if (protocol instanceof V1_OpaqueValidityMilestoning) {
     return new OpaqueValidityMilestoning();
