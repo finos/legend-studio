@@ -208,7 +208,7 @@ test.skip(unitTest('Duplicate class properties'), async () => {
 });
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
-test.skip(unitTest('Duplicate aoociation properties'), async () => {
+test.skip(unitTest('Duplicate association properties'), async () => {
   const buildGraph = flowResult(
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
