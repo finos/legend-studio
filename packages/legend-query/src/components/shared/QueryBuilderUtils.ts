@@ -35,3 +35,19 @@ export const getMultiplicityDescription = (
       : `Must have at least ${multiplicity.lowerBound} values(s)`
   }`;
 };
+
+export const getSimpleMultiplicityDescription = (
+  multiplicity: Multiplicity,
+): string => {
+  if (multiplicity.lowerBound === multiplicity.upperBound) {
+    return `[${multiplicity.lowerBound.toString()}]`;
+  } else if (
+    multiplicity.lowerBound === 0 &&
+    multiplicity.upperBound === undefined
+  ) {
+    return `[${MULTIPLICITY_INFINITE}]`;
+  }
+  return `[${multiplicity.lowerBound}..${
+    multiplicity.upperBound ?? MULTIPLICITY_INFINITE
+  }]`;
+};

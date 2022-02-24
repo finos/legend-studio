@@ -54,3 +54,5 @@ export * from './components/ClickAwayListener';
 export * from './components/LegendStyleProvider';
 
 export * from './testMocks/MonacoEditorMockUtils';
+
+export * from './components/divider/Divider';

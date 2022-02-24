@@ -38,6 +38,7 @@ import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
 import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
+import { QueryBuilderFunctionPanel } from './QueryBuilderFunctionPanel';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',
@@ -152,6 +153,12 @@ export const QueryBuilder = observer(
                         <ResizablePanelSplitter />
                         <ResizablePanel minSize={40} direction={[1, -1]}>
                           <QueryBuilderExplorerPanel
+                            queryBuilderState={queryBuilderState}
+                          />
+                        </ResizablePanel>
+                        <ResizablePanelSplitter />
+                        <ResizablePanel minSize={40} direction={[1, -1]}>
+                          <QueryBuilderFunctionPanel
                             queryBuilderState={queryBuilderState}
                           />
                         </ResizablePanel>

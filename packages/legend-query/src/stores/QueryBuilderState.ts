@@ -98,6 +98,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { QueryParametersState } from './QueryParametersState';
+import { QueryFunctionsState } from './QueryFunctionsState';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -123,6 +124,7 @@ export class QueryBuilderState {
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
   queryParametersState: QueryParametersState;
+  queryFunctionsState: QueryFunctionsState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   resultSetModifierState: QueryResultSetModifierState;
@@ -159,6 +161,7 @@ export class QueryBuilderState {
       querySetupState: observable,
       explorerState: observable,
       queryParametersState: observable,
+      queryFunctionsState: observable,
       fetchStructureState: observable,
       filterState: observable,
       resultSetModifierState: observable,
@@ -189,6 +192,7 @@ export class QueryBuilderState {
     this.querySetupState = new QueryBuilderSetupState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.queryParametersState = new QueryParametersState(this);
+    this.queryFunctionsState = new QueryFunctionsState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultSetModifierState = new QueryResultSetModifierState(this);
@@ -237,6 +241,8 @@ export class QueryBuilderState {
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
+    this.queryFunctionsState = new QueryFunctionsState(this);
+    this.queryFunctionsState.refreshTreeData();
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
