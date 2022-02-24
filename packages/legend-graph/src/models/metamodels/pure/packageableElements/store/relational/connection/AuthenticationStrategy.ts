@@ -234,26 +234,32 @@ export class GCPApplicationDefaultCredentialsAuthenticationStrategy
   }
 }
 
-export class GCPWorkloadIdentityFederationAuthenticationStrategy
+export class GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
   workloadProjectNumber: string;
   serviceAccountEmail: string;
-  gcpScope: string;
+  additionalGcpScopes: string[] = [];
   workloadPoolId: string;
   workloadProviderId: string;
-  discoveryUrl: string;
-  clientId: string;
+  awsAccountId: string;
+  awsRegion: string;
+  awsRole: string;
+  awsAccessKeyIdVaultReference: string;
+  awsSecretAccessKeyVaultReference: string;
 
   constructor(
     workloadProjectNumber: string,
     serviceAccountEmail: string,
-    gcpScope: string,
+    additionalGcpScopes: string[] = [],
     workloadPoolId: string,
     workloadProviderId: string,
-    discoveryUrl: string,
-    clientId: string,
+    awsAccountId: string,
+    awsRegion: string,
+    awsRole: string,
+    awsAccessKeyIdVaultReference: string,
+    awsSecretAccessKeyVaultReference: string,
   ) {
     super();
 
@@ -261,39 +267,51 @@ export class GCPWorkloadIdentityFederationAuthenticationStrategy
       hashCode: computed,
       workloadProjectNumber: observable,
       serviceAccountEmail: observable,
-      gcpScope: observable,
+      additionalGcpScopes: observable,
       workloadPoolId: observable,
       workloadProviderId: observable,
-      discoveryUrl: observable,
-      clientId: observable,
+      awsAccountId: observable,
+      awsRegion: observable,
+      awsRole: observable,
+      awsAccessKeyIdVaultReference: observable,
+      awsSecretAccessKeyVaultReference: observable,
       setWorkloadProjectNumber: action,
       setServiceAccountEmail: action,
-      setGcpScope: action,
+      setAdditionalGcpScopes: action,
       setWorkloadPoolId: action,
       setWorkloadProviderId: action,
-      setDiscoveryUrl: action,
-      setClientId: action,
+      setAwsAccountId: action,
+      setAwsRegion: action,
+      setAwsRole: action,
+      setAwsAccessKeyIdVaultReference: action,
+      setAwsSecretAccessKeyVaultReference: action,
     });
 
     this.workloadProjectNumber = workloadProjectNumber;
     this.serviceAccountEmail = serviceAccountEmail;
-    this.gcpScope = gcpScope;
+    this.additionalGcpScopes = additionalGcpScopes;
     this.workloadPoolId = workloadPoolId;
     this.workloadProviderId = workloadProviderId;
-    this.discoveryUrl = discoveryUrl;
-    this.clientId = clientId;
+    this.awsAccountId = awsAccountId;
+    this.awsRegion = awsRegion;
+    this.awsRole = awsRole;
+    this.awsAccessKeyIdVaultReference = awsAccessKeyIdVaultReference;
+    this.awsSecretAccessKeyVaultReference = awsSecretAccessKeyVaultReference;
   }
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY,
+      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS_AUTHENTICATION_STRATEGY,
       this.workloadProjectNumber,
       this.serviceAccountEmail,
-      this.gcpScope,
+      hashArray(this.additionalGcpScopes),
       this.workloadPoolId,
       this.workloadProviderId,
-      this.discoveryUrl,
-      this.clientId,
+      this.awsAccountId,
+      this.awsRegion,
+      this.awsRole,
+      this.awsAccessKeyIdVaultReference,
+      this.awsSecretAccessKeyVaultReference,
     ]);
   }
 
@@ -305,8 +323,8 @@ export class GCPWorkloadIdentityFederationAuthenticationStrategy
     this.serviceAccountEmail = val;
   }
 
-  setGcpScope(val: string): void {
-    this.gcpScope = val;
+  setAdditionalGcpScopes(val: string[]): void {
+    this.additionalGcpScopes = val;
   }
 
   setWorkloadPoolId(val: string): void {
@@ -317,12 +335,24 @@ export class GCPWorkloadIdentityFederationAuthenticationStrategy
     this.workloadProviderId = val;
   }
 
-  setDiscoveryUrl(val: string): void {
-    this.discoveryUrl = val;
+  setAwsAccountId(val: string): void {
+    this.awsAccountId = val;
   }
 
-  setClientId(val: string): void {
-    this.clientId = val;
+  setAwsRegion(val: string): void {
+    this.awsRegion = val;
+  }
+
+  setAwsRole(val: string): void {
+    this.awsRole = val;
+  }
+
+  setAwsAccessKeyIdVaultReference(val: string): void {
+    this.awsAccessKeyIdVaultReference = val;
+  }
+
+  setAwsSecretAccessKeyVaultReference(val: string): void {
+    this.awsSecretAccessKeyVaultReference = val;
   }
 }
 

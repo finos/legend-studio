@@ -4041,10 +4041,13 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
       connectionValue: {
         _type: 'RelationalDatabaseConnection',
         authenticationStrategy: {
-          _type: 'gcpWorkloadIdentityFederation',
-          clientId: '',
-          discoveryUrl: '',
-          gcpScope: 'gcpScope',
+          _type: 'gcpWorkloadIdentityFederationWithAWS',
+          additionalGcpScopes: [],
+          awsAccessKeyIdVaultReference: 'awsAccessKeyIdVaultReference',
+          awsAccountId: 'awsAccountId',
+          awsRegion: 'awsRegion',
+          awsRole: 'awsRole',
+          awsSecretAccessKeyVaultReference: 'awsSecretAccessKeyVaultReference',
           serviceAccountEmail: 'serviceAccountEmail',
           workloadPoolId: 'workloadPoolId',
           workloadProjectNumber: 'workloadProjectNumber',

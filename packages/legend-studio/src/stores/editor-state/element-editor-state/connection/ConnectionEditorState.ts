@@ -38,7 +38,7 @@ import {
   UsernamePasswordAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  GCPWorkloadIdentityFederationAuthenticationStrategy,
+  GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
@@ -243,7 +243,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     ) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS;
     } else if (
-      auth instanceof GCPWorkloadIdentityFederationAuthenticationStrategy
+      auth instanceof GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy
     ) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION;
     }
@@ -291,7 +291,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION: {
         this.connection.setAuthenticationStrategy(
-          new GCPWorkloadIdentityFederationAuthenticationStrategy(
+          new GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy(
+            '',
+            '',
+            [],
             '',
             '',
             '',

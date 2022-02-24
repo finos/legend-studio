@@ -117,28 +117,34 @@ export class V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   }
 }
 
-export class V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+export class V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable
 {
   workloadProjectNumber!: string;
   serviceAccountEmail!: string;
-  gcpScope!: string;
+  additionalGcpScopes: string[] = [];
   workloadPoolId!: string;
   workloadProviderId!: string;
-  discoveryUrl!: string;
-  clientId!: string;
+  awsAccountId!: string;
+  awsRegion!: string;
+  awsRole!: string;
+  awsAccessKeyIdVaultReference!: string;
+  awsSecretAccessKeyVaultReference!: string;
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY,
+      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS_AUTHENTICATION_STRATEGY,
       this.workloadProjectNumber,
       this.serviceAccountEmail,
-      this.gcpScope,
+      hashArray(this.additionalGcpScopes),
       this.workloadPoolId,
       this.workloadProviderId,
-      this.discoveryUrl,
-      this.clientId,
+      this.awsAccountId,
+      this.awsRegion,
+      this.awsRole,
+      this.awsAccessKeyIdVaultReference,
+      this.awsSecretAccessKeyVaultReference,
     ]);
   }
 }

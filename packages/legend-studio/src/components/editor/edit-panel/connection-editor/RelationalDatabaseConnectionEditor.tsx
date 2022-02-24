@@ -44,7 +44,7 @@ import {
   SnowflakePublicAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
-  GCPWorkloadIdentityFederationAuthenticationStrategy,
+  GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -815,74 +815,100 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
   },
 );
 
-const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
-  (props: {
-    authSpec: GCPWorkloadIdentityFederationAuthenticationStrategy;
-    isReadOnly: boolean;
-  }) => {
-    const { authSpec, isReadOnly } = props;
-    return (
-      <>
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.workloadProjectNumber}
-          propertyName={'Workload Project Number'}
-          update={(value: string | undefined): void =>
-            authSpec.setWorkloadProjectNumber(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.serviceAccountEmail}
-          propertyName={'Service Account Email'}
-          update={(value: string | undefined): void =>
-            authSpec.setServiceAccountEmail(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.gcpScope}
-          propertyName={'GCP Scope'}
-          update={(value: string | undefined): void =>
-            authSpec.setGcpScope(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.workloadPoolId}
-          propertyName={'Workload Pool ID'}
-          update={(value: string | undefined): void =>
-            authSpec.setWorkloadPoolId(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.workloadProviderId}
-          propertyName={'Workload Provider ID'}
-          update={(value: string | undefined): void =>
-            authSpec.setWorkloadProviderId(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.discoveryUrl}
-          propertyName={'Discovery Url'}
-          update={(value: string | undefined): void =>
-            authSpec.setDiscoveryUrl(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.clientId}
-          propertyName={'Client Id'}
-          update={(value: string | undefined): void =>
-            authSpec.setClientId(value ?? '')
-          }
-        />
-      </>
-    );
-  },
-);
+const GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyEditor =
+  observer(
+    (props: {
+      authSpec: GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy;
+      isReadOnly: boolean;
+    }) => {
+      const { authSpec, isReadOnly } = props;
+      const GCPScopes = authSpec.additionalGcpScopes.join('\n');
+      return (
+        <>
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.workloadProjectNumber}
+            propertyName={'Workload Project Number'}
+            update={(value: string | undefined): void =>
+              authSpec.setWorkloadProjectNumber(value ?? '')
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.serviceAccountEmail}
+            propertyName={'Service Account Email'}
+            update={(value: string | undefined): void =>
+              authSpec.setServiceAccountEmail(value ?? '')
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={GCPScopes}
+            propertyName={'Additional GCP Scopes'}
+            update={(value: string | undefined): void =>
+              authSpec.setAdditionalGcpScopes(value ? [value] : [])
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.workloadPoolId}
+            propertyName={'Workload Pool ID'}
+            update={(value: string | undefined): void =>
+              authSpec.setWorkloadPoolId(value ?? '')
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.workloadProviderId}
+            propertyName={'Workload Provider ID'}
+            update={(value: string | undefined): void =>
+              authSpec.setWorkloadProviderId(value ?? '')
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.awsAccountId}
+            propertyName={'AWS Account ID'}
+            update={(value: string | undefined): void =>
+              authSpec.setAwsAccountId(value ?? '')
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.awsRegion}
+            propertyName={'AWS Region'}
+            update={(value: string | undefined): void =>
+              authSpec.setAwsRegion(value ?? '')
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.awsRole}
+            propertyName={'AWS Role'}
+            update={(value: string | undefined): void =>
+              authSpec.setAwsRole(value ?? '')
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.awsAccessKeyIdVaultReference}
+            propertyName={'AWS Access Key Id Vault Reference'}
+            update={(value: string | undefined): void =>
+              authSpec.setAwsAccessKeyIdVaultReference(value ?? '')
+            }
+          />
+          <ConnectionEditor_StringEditor
+            isReadOnly={isReadOnly}
+            value={authSpec.awsSecretAccessKeyVaultReference}
+            propertyName={'AWS Secret Access Key Vault Reference'}
+            update={(value: string | undefined): void =>
+              authSpec.setAwsSecretAccessKeyVaultReference(value ?? '')
+            }
+          />
+        </>
+      );
+    },
+  );
 
 const RelationalConnectionStoreEditor = observer(
   (props: {
@@ -1064,10 +1090,11 @@ const renderAuthenticationStrategyEditor = (
       />
     );
   } else if (
-    authSpec instanceof GCPWorkloadIdentityFederationAuthenticationStrategy
+    authSpec instanceof
+    GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy
   ) {
     return (
-      <GCPWorkloadIdentityFederationAuthenticationStrategyEditor
+      <GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />
