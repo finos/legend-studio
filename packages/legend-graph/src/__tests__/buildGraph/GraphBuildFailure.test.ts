@@ -126,7 +126,10 @@ test(unitTest('Missing class mapping'), async () => {
   );
 });
 
-test(unitTest('Missing class mapping with ID'), async () => {
+// TODO: This test is skipped because we want to temporarily relax graph building algorithm
+// to ease Pure -> Legend migration push.
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
+test.skip(unitTest('Missing class mapping with ID'), async () => {
   const buildGraph = flowResult(
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
@@ -138,7 +141,7 @@ test(unitTest('Missing class mapping with ID'), async () => {
   );
 });
 
-// TODO This test is skipped because we don't support include mappings. We don't fail yet
+// TODO: This test is skipped because we don't support include mappings. We don't fail yet
 // Unskip when include mappings support is added
 test.skip(unitTest('Missing set implementation'), async () => {
   const buildGraph = flowResult(
@@ -152,7 +155,7 @@ test.skip(unitTest('Missing set implementation'), async () => {
   );
 });
 
-/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate enumeration values'), async () => {
   const buildGraph = flowResult(
     graphManagerState.graphManager.buildGraph(
@@ -165,7 +168,7 @@ test.skip(unitTest('Duplicate enumeration values'), async () => {
   );
 });
 
-/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate profile tags'), async () => {
   const buildGraph = flowResult(
     graphManagerState.graphManager.buildGraph(
@@ -178,7 +181,7 @@ test.skip(unitTest('Duplicate profile tags'), async () => {
   );
 });
 
-/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate profile stereotypes'), async () => {
   const buildGraph = flowResult(
     graphManagerState.graphManager.buildGraph(
@@ -191,7 +194,7 @@ test.skip(unitTest('Duplicate profile stereotypes'), async () => {
   );
 });
 
-/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate class properties'), async () => {
   const buildGraph = flowResult(
     graphManagerState.graphManager.buildGraph(
@@ -204,7 +207,7 @@ test.skip(unitTest('Duplicate class properties'), async () => {
   );
 });
 
-/* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate aoociation properties'), async () => {
   const buildGraph = flowResult(
     graphManagerState.graphManager.buildGraph(

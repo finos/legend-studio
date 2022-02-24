@@ -91,12 +91,7 @@ import { GraphBuilderError } from '../../../../../../../graphManager/GraphManage
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 
-/**
- * When the ID cannot be resolve, we will not fail graph building for now
- * instead, we will leave this loose end unresolved.
- *
- * See https://github.com/finos/legend-studio/issues/880
- */
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
 const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
   mapping: Mapping,
   id: string,

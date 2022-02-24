@@ -156,6 +156,7 @@ export enum SET_IMPLEMENTATION_TYPE {
   AGGREGATION_AWARE = 'aggregationAware',
 }
 
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
 /**
  * When set implementation cannot be resolved by ID,
  * we try to avoid failing graph building for now

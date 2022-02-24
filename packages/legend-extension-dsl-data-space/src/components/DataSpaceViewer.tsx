@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useRef, useEffect, forwardRef } from 'react';
+import { useRef, useEffect, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useResizeDetector } from 'react-resize-detector';
 import {

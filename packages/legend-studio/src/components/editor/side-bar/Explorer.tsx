@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import React, {
-  Fragment,
-  useRef,
-  useEffect,
-  useState,
-  forwardRef,
-} from 'react';
+import { Fragment, useRef, useEffect, useState, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,

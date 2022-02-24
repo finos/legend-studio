@@ -1084,6 +1084,7 @@ export class V1_SetImplementationTransformer
     );
   }
 
+  /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
   visit_TEMPORARY__UnresolvedSetImplementation(
     setImplementation: TEMPORARY__UnresolvedSetImplementation,
   ): V1_ClassMapping | undefined {
