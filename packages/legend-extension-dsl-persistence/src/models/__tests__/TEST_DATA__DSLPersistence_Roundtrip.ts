@@ -207,15 +207,15 @@ export const TEST_DATA__roundtrip = [
                   _type: 'bitemporalSnapshot',
                   transactionMilestoning: {
                     _type: 'batchIdAndDateTimeTransactionMilestoning',
-                    batchIdInName: 'BATCH_ID_IN',
-                    batchIdOutName: 'BATCH_ID_OUT',
-                    dateTimeInName: 'IN_Z',
-                    dateTimeOutName: 'OUT_Z',
+                    batchIdInFieldName: 'BATCH_ID_IN',
+                    batchIdOutFieldName: 'BATCH_ID_OUT',
+                    dateTimeInFieldName: 'IN_Z',
+                    dateTimeOutFieldName: 'OUT_Z',
                   },
                   validityMilestoning: {
                     _type: 'dateTimeValidityMilestoning',
-                    dateTimeFromName: 'IN_Z',
-                    dateTimeThruName: 'OUT_Z',
+                    dateTimeFromFieldName: 'IN_Z',
+                    dateTimeThruFieldName: 'OUT_Z',
                   },
                   validityDerivation: {
                     _type: 'sourceSpecifiesFromAndThruDateTime',
