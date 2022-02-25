@@ -440,10 +440,6 @@ const V1_bitemporalSnapshotModelSchema = createModelSchema(
       (val) => V1_serializeTransactionMilestoning(val),
       (val) => V1_deserializeTransactionMilestoning(val),
     ),
-    validityDerivation: custom(
-      (val) => V1_serializeValidityDerivation(val),
-      (val) => V1_deserializeValidityDerivation(val),
-    ),
     validityMilestoning: custom(
       (val) => V1_serializeValidityMilestoning(val),
       (val) => V1_deserializeValidityMilestoning(val),
@@ -483,10 +479,6 @@ const V1_bitemporalDeltaModelSchema = createModelSchema(V1_BitemporalDelta, {
   transactionMilestoning: custom(
     (val) => V1_serializeTransactionMilestoning(val),
     (val) => V1_deserializeTransactionMilestoning(val),
-  ),
-  validityDerivation: custom(
-    (val) => V1_serializeValidityDerivation(val),
-    (val) => V1_deserializeValidityDerivation(val),
   ),
   validityMilestoning: custom(
     (val) => V1_serializeValidityMilestoning(val),
@@ -789,6 +781,10 @@ const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
     ),
     dateTimeFromFieldName: primitive(),
     dateTimeThruFieldName: primitive(),
+    derivation: custom(
+      (val) => V1_serializeValidityDerivation(val),
+      (val) => V1_deserializeValidityDerivation(val),
+    ),
   },
 );
 

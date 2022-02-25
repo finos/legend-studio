@@ -284,14 +284,12 @@ export class V1_BitemporalSnapshot
 {
   transactionMilestoning!: V1_TransactionMilestoning;
   validityMilestoning!: V1_ValidityMilestoning;
-  validityDerivation!: V1_ValidityDerivation;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BITEMPORAL_SNAPSHOT,
       this.transactionMilestoning,
       this.validityMilestoning,
-      this.validityDerivation,
     ]);
   }
 }
@@ -337,7 +335,6 @@ export class V1_BitemporalDelta
   mergeStrategy!: V1_MergeStrategy;
   transactionMilestoning!: V1_TransactionMilestoning;
   validityMilestoning!: V1_ValidityMilestoning;
-  validityDerivation!: V1_ValidityDerivation;
 
   override get hashCode(): string {
     return hashArray([
@@ -345,7 +342,6 @@ export class V1_BitemporalDelta
       this.mergeStrategy,
       this.transactionMilestoning,
       this.validityMilestoning,
-      this.validityDerivation,
     ]);
   }
 }
@@ -531,12 +527,14 @@ export class V1_DateTimeValidityMilestoning
 {
   dateTimeFromFieldName!: string;
   dateTimeThruFieldName!: string;
+  derivation!: V1_ValidityDerivation;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_VALIDITY_MILESTONING,
       this.dateTimeFromFieldName,
       this.dateTimeThruFieldName,
+      this.derivation,
     ]);
   }
 }

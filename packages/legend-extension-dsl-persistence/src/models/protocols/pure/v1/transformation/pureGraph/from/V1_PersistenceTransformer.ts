@@ -321,10 +321,6 @@ export const V1_transformBatchMilestoningMode = (
       element.validityMilestoning,
       context,
     );
-    protocol.validityDerivation = V1_transformValidityDerivation(
-      element.validityDerivation,
-      context,
-    );
     return protocol;
   } else if (element instanceof NonMilestonedDelta) {
     const protocol = new V1_NonMilestonedDelta();
@@ -353,10 +349,6 @@ export const V1_transformBatchMilestoningMode = (
     );
     protocol.validityMilestoning = V1_transformValidityMilestoning(
       element.validityMilestoning,
-      context,
-    );
-    protocol.validityDerivation = V1_transformValidityDerivation(
-      element.validityDerivation,
       context,
     );
     return protocol;
@@ -459,6 +451,10 @@ export const V1_transformValidityMilestoning = (
     const protocol = new V1_DateTimeValidityMilestoning();
     protocol.dateTimeFromFieldName = element.dateTimeFromFieldName;
     protocol.dateTimeThruFieldName = element.dateTimeThruFieldName;
+    protocol.derivation = V1_transformValidityDerivation(
+      element.derivation,
+      context,
+    );
     return protocol;
   } else if (element instanceof OpaqueValidityMilestoning) {
     return new V1_OpaqueValidityMilestoning();
