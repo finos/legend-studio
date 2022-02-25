@@ -216,11 +216,11 @@ export const TEST_DATA__roundtrip = [
                     _type: 'dateTimeValidityMilestoning',
                     dateTimeFromFieldName: 'IN_Z',
                     dateTimeThruFieldName: 'OUT_Z',
-                  },
-                  validityDerivation: {
-                    _type: 'sourceSpecifiesFromAndThruDateTime',
-                    sourceDateTimeFromProperty: 'effectiveDateFrom',
-                    sourceDateTimeThruProperty: 'effectiveDateThru',
+                    derivation: {
+                      _type: 'sourceSpecifiesFromAndThruDateTime',
+                      sourceDateTimeFromProperty: 'effectiveDateFrom',
+                      sourceDateTimeThruProperty: 'effectiveDateThru',
+                    },
                   },
                 },
                 deduplicationStrategy: {

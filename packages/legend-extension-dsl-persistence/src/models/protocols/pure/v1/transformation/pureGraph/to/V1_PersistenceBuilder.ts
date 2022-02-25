@@ -335,10 +335,6 @@ export const V1_buildBatchMilestoningMode = (
       protocol.validityMilestoning,
       context,
     );
-    batchMode.validityDerivation = V1_buildValidityDerivation(
-      protocol.validityDerivation,
-      context,
-    );
     return batchMode;
   } else if (protocol instanceof V1_NonMilestonedDelta) {
     const batchMode = new NonMilestonedDelta();
@@ -367,10 +363,6 @@ export const V1_buildBatchMilestoningMode = (
     );
     batchMode.validityMilestoning = V1_buildValidityMilestoning(
       protocol.validityMilestoning,
-      context,
-    );
-    batchMode.validityDerivation = V1_buildValidityDerivation(
-      protocol.validityDerivation,
       context,
     );
     return batchMode;
@@ -473,6 +465,10 @@ export const V1_buildValidityMilestoning = (
     const milestoning = new DateTimeValidityMilestoning();
     milestoning.dateTimeFromFieldName = protocol.dateTimeFromFieldName;
     milestoning.dateTimeThruFieldName = protocol.dateTimeThruFieldName;
+    milestoning.derivation = V1_buildValidityDerivation(
+      protocol.derivation,
+      context,
+    );
     return milestoning;
   } else if (protocol instanceof V1_OpaqueValidityMilestoning) {
     return new OpaqueValidityMilestoning();
