@@ -294,7 +294,7 @@ enum V1_AuthenticationStrategyType {
   OAUTH = 'oauth',
   USER_PASSWORD = 'userPassword',
   USERNAME_PASSWORD = 'userNamePassword',
-  GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederationWithAWS',
+  GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS = 'gcpWorkloadIdentityFederationWithAWS',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -352,7 +352,7 @@ const V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyModelSchema =
     V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
     {
       _type: usingConstantValueSchema(
-        V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION,
+        V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS,
       ),
       additionalGcpScopes: list(primitive()),
       awsAccessKeyIdVaultReference: primitive(),
@@ -485,7 +485,7 @@ export const V1_deserializeAuthenticationStrategy = (
         V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
         json,
       );
-    case V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION:
+    case V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS:
       return deserialize(
         V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyModelSchema,
         json,

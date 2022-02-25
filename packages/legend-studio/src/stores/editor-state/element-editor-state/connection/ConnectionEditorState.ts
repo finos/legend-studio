@@ -86,7 +86,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   OAUTH = 'OAUTH',
   USER_PASSWORD = 'USER_PASSWORD',
   USERNAME_PASSWORD = 'USERNAME_PASSWORD',
-  GCP_WORKLOAD_IDENTITY_FEDERATION = 'GCP_WORKLOAD_IDENTITY_FEDERATION',
+  GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS = 'GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS',
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
@@ -245,7 +245,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     } else if (
       auth instanceof GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy
     ) {
-      return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION;
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS;
     }
 
     const extraAuthenticationStrategyTypeGetters =
@@ -289,7 +289,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
-      case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION: {
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS: {
         this.connection.setAuthenticationStrategy(
           new GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy(
             '',
@@ -304,6 +304,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             '',
           ),
         );
+        return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT: {
         this.connection.setAuthenticationStrategy(
