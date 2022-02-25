@@ -208,7 +208,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -241,7 +241,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),

@@ -26,18 +26,18 @@ import type { StoredEntity } from './models/StoredEntity';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
-  TEMP__useLegacyDepotServerAPIRoutes?: boolean | undefined;
+  TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 }
 
 export class DepotServerClient extends AbstractServerClient {
-  private TEMP__useLegacyDepotServerAPIRoutes = false;
+  private TEMPORARY__useLegacyDepotServerAPIRoutes = false;
 
   constructor(config: DepotServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
     });
-    this.TEMP__useLegacyDepotServerAPIRoutes = Boolean(
-      config.TEMP__useLegacyDepotServerAPIRoutes,
+    this.TEMPORARY__useLegacyDepotServerAPIRoutes = Boolean(
+      config.TEMPORARY__useLegacyDepotServerAPIRoutes,
     );
   }
 
@@ -122,7 +122,7 @@ export class DepotServerClient extends AbstractServerClient {
       limit?: number | undefined;
     },
   ): Promise<PlainObject<StoredEntity>[]> =>
-    this.TEMP__useLegacyDepotServerAPIRoutes
+    this.TEMPORARY__useLegacyDepotServerAPIRoutes
       ? this.get(
           `${this.baseUrl}/classifiers/${encodeURIComponent(classifierPath)}`,
           undefined,

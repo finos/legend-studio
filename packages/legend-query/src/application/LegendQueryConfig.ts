@@ -35,7 +35,7 @@ export interface LegendQueryConfigurationData
      * the new API calls, we need to update them to use the latest version of
      * finos/legend-depot though
      */
-    TEMP__useLegacyDepotServerAPIRoutes?: boolean;
+    TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean;
   };
   engine: { url: string; queryUrl?: string };
   studio: { url: string };
@@ -47,7 +47,7 @@ export class LegendQueryConfig extends LegendApplicationConfig {
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
   readonly studioUrl: string;
-  readonly TEMP__useLegacyDepotServerAPIRoutes?: boolean | undefined;
+  readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
   constructor(
     configData: LegendQueryConfigurationData,
@@ -73,7 +73,7 @@ export class LegendQueryConfig extends LegendApplicationConfig {
       configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
     );
-    this.TEMP__useLegacyDepotServerAPIRoutes =
-      configData.depot.TEMP__useLegacyDepotServerAPIRoutes;
+    this.TEMPORARY__useLegacyDepotServerAPIRoutes =
+      configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
   }
 }

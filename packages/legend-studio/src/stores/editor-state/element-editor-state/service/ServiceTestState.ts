@@ -174,7 +174,7 @@ export class TestContainerState {
                 .connectionValue
             : identifiedConnection.connection;
         const engineConfig =
-          this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
+          this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
 
         if (connection instanceof JsonModelConnection) {
           newRuntime.addIdentifiedConnection(

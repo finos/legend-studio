@@ -38,10 +38,10 @@ import {
   assertErrorThrown,
   promisify,
 } from '@finos/legend-shared';
-import type { TEMP__AbstractEngineConfig } from '../../../../graphManager/action/TEMP__AbstractEngineConfig';
+import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import {
   AbstractPureGraphManager,
-  type TEMP__EngineSetupConfig,
+  type TEMPORARY__EngineSetupConfig,
   type GraphBuilderOptions,
   type ExecutionOptions,
 } from '../../../../graphManager/AbstractPureGraphManager';
@@ -407,12 +407,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  TEMP__getEngineConfig(): TEMP__AbstractEngineConfig {
+  TEMPORARY__getEngineConfig(): TEMPORARY__AbstractEngineConfig {
     return this.engine.config;
   }
 
   *initialize(
-    config: TEMP__EngineSetupConfig,
+    config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
     },
@@ -1034,7 +1034,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      * perserve the element path both resolved and unresolved
      */
     if (!options?.TEMPORARY__keepSectionIndex) {
-      graph.TEMP__deleteOwnSectionIndex();
+      graph.TEMPORARY__deleteOwnSectionIndex();
     }
   }
 
