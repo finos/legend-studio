@@ -19,7 +19,7 @@ import chalk from 'chalk';
 import { resolve, dirname } from 'path';
 import { execSync } from 'child_process';
 import { resolveFullTsConfig } from '@finos/legend-dev-utils/TypescriptConfigUtils';
-import { mkdirs, copySync } from 'fs-extra';
+import fsExtra from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { loadJSModule, loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
@@ -44,13 +44,13 @@ const preparePublishContent = async () => {
     // If the directory for staging publish content is not there, create it
     // and populate it with publish content
     if (!existsSync(publishContentDir)) {
-      mkdirs(publishContentDir);
+      fsExtra.mkdirs(publishContentDir);
       // Copy the content of the workspace (including build artifacts) to the staging area
       readdirSync(workspaceDir).forEach((fileOrDir) => {
         if (['build', 'dev', 'temp'].includes(fileOrDir)) {
           return;
         }
-        copySync(
+        fsExtra.copySync(
           resolve(workspaceDir, fileOrDir),
           resolve(publishContentDir, fileOrDir),
         );
