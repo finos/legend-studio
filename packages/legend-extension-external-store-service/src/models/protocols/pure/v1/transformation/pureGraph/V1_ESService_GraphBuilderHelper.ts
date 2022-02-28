@@ -180,6 +180,7 @@ export const V1_buildServiceParameter = (
     `Service parameter location '${protocol.location}' is not supported`,
   );
   serviceParameter.allowReserved = protocol.allowReserved;
+  serviceParameter.required = protocol.required;
   serviceParameter.enumeration = protocol.enumeration;
   if (protocol.serializationFormat !== undefined) {
     serviceParameter.serializationFormat = V1_buildSerializationFormat(

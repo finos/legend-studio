@@ -184,6 +184,7 @@ const V1_serviceParameterModelSchema = createModelSchema(V1_ServiceParameter, {
   enumeration: optional(primitive()),
   location: primitive(),
   name: primitive(),
+  required: optional(primitive()),
   serializationFormat: optional(
     usingModelSchema(V1_serializationFormatModelSchema),
   ),
