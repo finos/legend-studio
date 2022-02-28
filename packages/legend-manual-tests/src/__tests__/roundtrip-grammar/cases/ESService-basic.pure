@@ -87,8 +87,8 @@ ServiceStore test::ServiceStore1
       method : GET;
       parameters :
       (
-        param1 : String ( location = query, allowReserved = true ),
-        param2 : String ( location = query, allowReserved = false )
+        param1 : String ( location = query, allowReserved = true, required = true ),
+        param2 : String ( location = query, allowReserved = false, required = false )
       );
       response : test::gen::Trade <- test::gen::TestBinding;
       security : [];
