@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDrop } from 'react-dnd';
 import {
@@ -55,14 +55,14 @@ const addTestPromps = [
 ];
 
 export const MappingTestExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       mappingTestState?: MappingTestState;
       showCreateNewTestModal?: () => void;
       isReadOnly: boolean;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function MappingTestExplorerContextMenu(props, ref) {
     const { mappingTestState, isReadOnly, showCreateNewTestModal } = props;
     const applicationStore = useApplicationStore();
     const runMappingTest = (): void => {
@@ -149,8 +149,7 @@ export const MappingTestExplorerContextMenu = observer(
         )}
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const MappingTestStatusIndicator: React.FC<{

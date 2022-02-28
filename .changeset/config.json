@@ -5,7 +5,7 @@
     { "repo": "finos/legend-studio" }
   ],
   "commit": false,
-  "linked": [["@finos/legend-*-app", "@finos/legend-*-deployment"]],
+  "fixed": [["@finos/legend-*-app", "@finos/legend-*-deployment"]],
   "access": "public",
   "baseBranch": "master",
   "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {

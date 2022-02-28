@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeData,
@@ -250,16 +250,17 @@ const WorkflowJobLogsViewer = observer(
     );
   },
 );
+
 const WorkflowExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       workflowManagerState: WorkflowManagerState;
       workflowState: WorkflowState;
       node: WorkflowExplorerTreeNodeData;
       treeData: TreeData<WorkflowExplorerTreeNodeData>;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function WorkflowExplorerContextMenu(props, ref) {
     const { node, workflowManagerState, workflowState, treeData } = props;
     const retryJob = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
@@ -309,8 +310,7 @@ const WorkflowExplorerContextMenu = observer(
         )}
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const WorkflowTreeNodeContainer: React.FC<
@@ -339,6 +339,7 @@ const WorkflowTreeNodeContainer: React.FC<
           guaranteeType(node, WorkflowJobTreeNodeData).workflowJob.status,
         );
   const selectNode: React.MouseEventHandler = (event) => onNodeSelect?.(node);
+
   return (
     <ContextMenu
       content={
