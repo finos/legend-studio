@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaPlus } from 'react-icons/fa';
 import type { ProjectOption } from '../../stores/SetupStore';
 import {
   type SelectComponent,
-  compareLabelFn,
   clsx,
+  compareLabelFn,
   CustomSelectorInput,
+  PlusIcon,
 } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
@@ -45,13 +45,13 @@ const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
 );
 
 export const ProjectSelector = observer(
-  (
-    props: {
+  forwardRef<
+    SelectComponent,
+    {
       onChange: (focusNext: boolean) => void;
       create: () => void;
-    },
-    ref: React.Ref<SelectComponent>,
-  ) => {
+    }
+  >(function ProjectSelector(props, ref) {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore<LegendStudioConfig>();
@@ -95,13 +95,7 @@ export const ProjectSelector = observer(
         }
         onChange(false);
       }
-    }, [
-      applicationStore,
-      setupStore.projects,
-      setupStore.currentProject,
-      currentProjectId,
-      onChange,
-    ]);
+    }, [applicationStore, setupStore.projects, setupStore.currentProject, currentProjectId, onChange]);
 
     const projectSelectorPlaceholder = isLoadingOptions
       ? 'Loading projects'
@@ -123,7 +117,7 @@ export const ProjectSelector = observer(
           }
           title={'Create a Project'}
         >
-          <FaPlus />
+          <PlusIcon />
         </button>
         <CustomSelectorInput
           className="setup-selector__input"
@@ -144,6 +138,5 @@ export const ProjectSelector = observer(
         />
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );

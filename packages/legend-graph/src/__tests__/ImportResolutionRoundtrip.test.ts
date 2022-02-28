@@ -58,6 +58,7 @@ import {
 import { TEST_DATA__ServiceRoundtrip } from './roundtripTestData/TEST_DATA__ServiceRoundtrip';
 import {
   TEST_DATA__AggregationAwareMappingRoundtrip,
+  TEST_DATA__Relational_LocalPropertyMappingRoundtrip,
   TEST_DATA__MappingRoundtrip,
   TEST_DATA__LocalPropertyMapping,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip';
@@ -119,6 +120,10 @@ describe(unitTest('Mapping import resolution roundtrip'), () => {
     ['M2M mapping', TEST_DATA__MappingRoundtrip],
     // TODO? association mapping
     ['Aggregation-aware mapping', TEST_DATA__AggregationAwareMappingRoundtrip],
+    [
+      'Relational mapping with local property',
+      TEST_DATA__Relational_LocalPropertyMappingRoundtrip,
+    ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
   });

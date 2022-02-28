@@ -71,6 +71,45 @@ export const buildGetAllFunction = (
   return _func;
 };
 
+export const buildParametersLetLambdaFunc = (
+  queryBuilderState: QueryBuilderState,
+): LambdaFunction => {
+  const multiplicityOne =
+    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+  const typeString = queryBuilderState.graphManagerState.graph.getPrimitiveType(
+    PRIMITIVE_TYPE.STRING,
+  );
+  const typeAny = queryBuilderState.graphManagerState.graph.getType(
+    CORE_PURE_PATH.ANY,
+  );
+  const letlambdaFunction = new LambdaFunction(
+    new FunctionType(typeAny, multiplicityOne),
+  );
+  letlambdaFunction.expressionSequence =
+    queryBuilderState.queryParametersState.parameters
+      .map((_var) => {
+        if (_var.values) {
+          const letFunc = new SimpleFunctionExpression(
+            extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
+            multiplicityOne,
+          );
+          const letVar = new PrimitiveInstanceValue(
+            GenericTypeExplicitReference.create(new GenericType(typeString)),
+            multiplicityOne,
+          );
+          letVar.values = [_var.variableName];
+          letFunc.parametersValues.push(letVar);
+          letFunc.parametersValues.push(_var.values);
+          return letFunc;
+        }
+        return undefined;
+      })
+      .filter(isNonNullable);
+  return letlambdaFunction;
+};
+
 export const buildLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   options?: {
@@ -413,27 +452,9 @@ export const buildLambdaFunction = (
     // add let statements for each parameter
     if (options?.isBuildingExecutionQuery) {
       lambdaFunction.functionType.parameters = [];
-      const letsFuncs = queryBuilderState.queryParametersState.parameters
-        .map((_var) => {
-          if (_var.values) {
-            const letFunc = new SimpleFunctionExpression(
-              extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
-              multiplicityOne,
-            );
-            const letVar = new PrimitiveInstanceValue(
-              GenericTypeExplicitReference.create(new GenericType(typeString)),
-              multiplicityOne,
-            );
-            letVar.values = [_var.variableName];
-            letFunc.parametersValues.push(letVar);
-            letFunc.parametersValues.push(_var.values);
-            return letFunc;
-          }
-          return undefined;
-        })
-        .filter(isNonNullable);
+      const letsFuncs = buildParametersLetLambdaFunc(queryBuilderState);
       lambdaFunction.expressionSequence = [
-        ...letsFuncs,
+        ...letsFuncs.expressionSequence,
         ...lambdaFunction.expressionSequence,
       ];
     } else {

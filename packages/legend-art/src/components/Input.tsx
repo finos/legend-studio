@@ -17,6 +17,8 @@ import styled from '@emotion/styled';
 import { css, cx } from '@emotion/css';
 import { TimesCircleIcon } from './Icon';
 
+// TODO: migrate to `TailWindCSS`
+// See https://github.com/finos/legend-studio/issues/760
 const InputGroup = styled.div`
   position: relative;
   width: 100%;

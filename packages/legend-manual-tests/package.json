@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-manual-tests",
-  "version": "0.0.24",
+  "version": "0.0.35",
   "private": true,
   "description": "Legend manual tests",
   "keywords": [
@@ -33,12 +33,12 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "axios": "0.24.0",
+    "axios": "0.26.0",
     "cross-env": "7.0.3",
-    "eslint": "8.6.0",
-    "jest": "27.4.7",
+    "eslint": "8.9.0",
+    "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "typescript": "4.5.4"
+    "typescript": "4.5.5"
   }
 }

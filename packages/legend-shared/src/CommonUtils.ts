@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import { cloneDeep as deepClone, mergeWith, pickBy } from 'lodash-es';
-import { UnsupportedOperationError } from './error/ErrorUtils';
-import { format as prettyPrintObject } from 'pretty-format';
-
-// NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
-// in case we want to swap out the implementation
-export {
+import {
   cloneDeep as deepClone,
   isEqual as deepEqual,
   findLast,
@@ -30,8 +24,26 @@ export {
   uniq,
   debounce,
   throttle,
+  mergeWith,
   type DebouncedFunc,
 } from 'lodash-es';
+import { UnsupportedOperationError } from './error/ErrorUtils';
+import { format as prettyPrintObject } from 'pretty-format';
+
+// NOTE: We re-export lodash utilities like this so we centralize utility usage in our app
+// in case we want to swap out the implementation
+export {
+  deepClone,
+  deepEqual,
+  findLast,
+  isEmpty,
+  pickBy,
+  uniqBy,
+  uniq,
+  debounce,
+  throttle,
+  type DebouncedFunc,
+};
 
 // NOTE: we can use the `rng` option in UUID V4 to control the random seed during testing
 // See https://github.com/uuidjs/uuid#version-4-random
@@ -57,16 +69,16 @@ export type SuperGenericFunction = (...args: any) => any;
 export const getClass = <T>(obj: object): Clazz<T> =>
   obj.constructor as Clazz<T>;
 
-export const getSuperClass = <V>(
+export const getSuperclass = <V>(
   _class: GenericClazz<unknown>,
 ): GenericClazz<V> | undefined => {
   if (!_class.name) {
     throw new UnsupportedOperationError(
-      `Cannot get super class for non user-defined classes`,
+      `Cannot get superclass for non user-defined classes`,
     );
   }
   // eslint-disable-next-line @typescript-eslint/ban-types
-  const superClass = Object.getPrototypeOf(_class) as Function | null;
+  const superclass = Object.getPrototypeOf(_class) as Function | null;
   /**
    * When it comes to inheritance, JavaScript only has one construct: objects.
    * Each object has a private property which holds a link to another object called its prototype.
@@ -76,7 +88,7 @@ export const getSuperClass = <V>(
    *
    * NOTE: when the prototype name is `empty` we know it's not user-defined classes, so we can return undefined
    */
-  return superClass?.name ? (superClass as GenericClazz<V>) : undefined;
+  return superclass?.name ? (superclass as GenericClazz<V>) : undefined;
 };
 
 /**
@@ -91,7 +103,7 @@ export const isClassAssignableFrom = (
     if (currentPrototype === cls1) {
       return true;
     }
-    currentPrototype = getSuperClass(currentPrototype);
+    currentPrototype = getSuperclass(currentPrototype);
   }
   return false;
 };

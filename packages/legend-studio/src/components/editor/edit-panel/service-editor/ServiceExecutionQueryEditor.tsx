@@ -20,8 +20,8 @@ import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
-import { Dialog } from '@material-ui/core';
 import {
+  Dialog,
   type SelectComponent,
   BlankPanelContent,
   ArrowCircleDownIcon,
@@ -29,7 +29,7 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
   PlayIcon,
-  ScrollIcon,
+  PaperScrollIcon,
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -292,7 +292,7 @@ export const ServiceExecutionQueryEditor = observer(
               tabIndex={-1}
               title="Generate execution plan"
             >
-              <ScrollIcon />
+              <PaperScrollIcon />
             </button>
           </div>
         </div>

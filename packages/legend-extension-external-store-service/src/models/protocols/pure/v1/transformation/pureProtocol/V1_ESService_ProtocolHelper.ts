@@ -32,6 +32,7 @@ import {
   serialize,
   deserialize,
   object,
+  raw,
 } from 'serializr';
 import { V1_ServiceStore } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStore';
 import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreService';
@@ -179,6 +180,7 @@ const V1_serializationFormatModelSchema = createModelSchema(
 );
 
 const V1_serviceParameterModelSchema = createModelSchema(V1_ServiceParameter, {
+  allowReserved: optional(primitive()),
   enumeration: optional(primitive()),
   location: primitive(),
   name: primitive(),
@@ -396,6 +398,7 @@ const V1_serviceMappingModelSchema = createModelSchema(V1_ServiceMapping, {
       (val) => V1_deserializeServiceParameterMapping(val),
     ),
   ),
+  pathOffset: raw(),
   service: usingModelSchema(V1_servicePtrModelSchema),
 });
 

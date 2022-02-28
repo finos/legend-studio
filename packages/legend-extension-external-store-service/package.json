@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-external-store-service",
-  "version": "1.0.6",
+  "version": "1.0.17",
   "description": "Legend extension for Service Store",
   "keywords": [
     "legend",
@@ -45,22 +45,22 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.38",
-    "mobx": "6.3.12",
-    "mobx-react-lite": "3.2.3",
-    "monaco-editor": "0.31.1",
+    "@types/react": "17.0.39",
+    "mobx": "6.4.1",
+    "mobx-react-lite": "3.3.0",
+    "monaco-editor": "0.32.1",
     "react": "17.0.2",
     "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.6.0",
-    "jest": "27.4.7",
+    "eslint": "8.9.0",
+    "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.47.0",
-    "typescript": "4.5.4"
+    "sass": "1.49.9",
+    "typescript": "4.5.5"
   },
   "peerDependencies": {
     "react": "^17.0.0"

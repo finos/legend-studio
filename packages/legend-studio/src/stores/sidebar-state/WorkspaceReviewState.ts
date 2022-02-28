@@ -44,10 +44,11 @@ export class WorkspaceReviewState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
   reviewTitle = '';
-  isUpdatingWorkspace = false;
-  isRefreshingWorkspaceUpdater = false;
   committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
   workspaceReview?: Review | undefined;
+
+  isUpdatingWorkspace = false;
+  isRefreshingWorkspaceUpdater = false;
   isFetchingCurrentWorkspaceReview = false;
   isRefreshingWorkspaceChangesDetector = false;
   isClosingWorkspaceReview = false;
@@ -84,20 +85,20 @@ export class WorkspaceReviewState {
       entityPath: string | undefined,
     ): Entity | undefined =>
       entityPath
-        ? this.editorStore.changeDetectionState.workspaceLatestRevisionState.entities.find(
+        ? this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
             (e) => e.path === entityPath,
           )
         : undefined;
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)
       ? guaranteeNonNullable(
           fromEntityGetter(diff.getValidatedOldPath()),
-          `Can't find element entity '${diff.oldPath}'`,
+          `Can't find entity with path  '${diff.oldPath}'`,
         )
       : undefined;
     const toEntity = EntityDiff.shouldNewEntityExist(diff)
       ? guaranteeNonNullable(
           toEntityGetter(diff.getValidatedNewPath()),
-          `Can't find element entity '${diff.newPath}'`,
+          `Can't find entity with path  '${diff.newPath}'`,
         )
       : undefined;
     this.editorStore.openEntityDiff(

@@ -15,11 +15,11 @@
  */
 
 import { useState, useRef } from 'react';
-import type { MenuProps } from '@material-ui/core/Menu';
-import { BaseMenu } from '../BaseMuiComponents';
+import type { MenuProps as MuiMenuProps } from '@mui/material';
+import { BaseMenu } from './BaseMenu';
 
 export const ContextMenu: React.FC<{
-  menuProps?: Partial<MenuProps>;
+  menuProps?: Partial<MuiMenuProps>;
   content?: React.ReactNode;
   onClose?: () => void;
   onOpen?: () => void;
@@ -69,7 +69,7 @@ export const ContextMenu: React.FC<{
         // eslint-disable-next-line no-process-env
         if (process.env.NODE_ENV !== 'test') {
           const elements = document.elementsFromPoint(clientX, clientY);
-          // Besides checking for the element containment, we also want to check for position as `material-ui`
+          // Besides checking for the element containment, we also want to check for position as MUI
           // Menu have a background that spans the whole screen to check for clickout and trap focus
           // which means right click on other part of the screen will also result in context menu being shown
           const hasAnchor =

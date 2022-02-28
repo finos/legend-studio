@@ -16,20 +16,21 @@
 
 import { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  FaInfoCircle,
-  FaTimes,
-  FaPlus,
-  FaExternalLinkSquareAlt,
-} from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { clsx, PanelLoadingIndicator } from '@finos/legend-art';
-import { MdRefresh } from 'react-icons/md';
+import {
+  clsx,
+  PanelLoadingIndicator,
+  TruncatedGitMergeIcon,
+  RefreshIcon,
+  InfoCircleIcon,
+  TimesIcon,
+  PlusIcon,
+  ExternalLinkSquareIcon,
+} from '@finos/legend-art';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
 import { formatDistanceToNow } from 'date-fns';
-import { FiGitMerge } from 'react-icons/fi';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
@@ -66,7 +67,7 @@ export const WorkspaceReviewDiffs = observer(() => {
             className="side-bar__panel__title__info"
             title="All changes made in the workspace since the revision the workspace is created"
           >
-            <FaInfoCircle />
+            <InfoCircleIcon />
           </div>
         </div>
         <div
@@ -138,9 +139,9 @@ export const WorkspaceReview = observer(() => {
           workspaceReviewState.commitWorkspaceReview(workspaceReview),
         ).catch(applicationStore.alertIllegalUnhandledError);
       };
-      if (editorStore.hasUnsyncedChanges) {
+      if (editorStore.hasUnpushedChanges) {
         editorStore.setActionAltertInfo({
-          message: 'You have unsynced changes',
+          message: 'You have unpushed changes',
           prompt:
             'This action will discard these changes and refresh the application',
           type: ActionAlertType.CAUTION,
@@ -218,7 +219,7 @@ export const WorkspaceReview = observer(() => {
             tabIndex={-1}
             title="Refresh"
           >
-            <MdRefresh />
+            <RefreshIcon />
           </button>
           <button
             className="panel__header__action side-bar__header__action workspace-review__close-btn"
@@ -227,7 +228,7 @@ export const WorkspaceReview = observer(() => {
             tabIndex={-1}
             title="Close review"
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         </div>
       </div>
@@ -263,7 +264,7 @@ export const WorkspaceReview = observer(() => {
                   }
                   title={'Create review'}
                 >
-                  <FaPlus />
+                  <PlusIcon />
                 </button>
               </form>
             </>
@@ -290,7 +291,7 @@ export const WorkspaceReview = observer(() => {
                         {workspaceReview.title}
                       </span>
                       <div className="workspace-review__title__content__input__link__btn">
-                        <FaExternalLinkSquareAlt />
+                        <ExternalLinkSquareIcon />
                       </div>
                     </Link>
                   </div>
@@ -302,7 +303,7 @@ export const WorkspaceReview = observer(() => {
                   tabIndex={-1}
                   title={'Commit review'}
                 >
-                  <FiGitMerge />
+                  <TruncatedGitMergeIcon />
                 </button>
               </div>
               <div className="workspace-review__title__content__review-status">

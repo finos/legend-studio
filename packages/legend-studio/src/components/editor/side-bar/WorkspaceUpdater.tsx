@@ -18,9 +18,6 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { FaInfoCircle } from 'react-icons/fa';
-import { GoCloudDownload } from 'react-icons/go';
-import { MdRefresh } from 'react-icons/md';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -28,6 +25,9 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
+  CloudDownloadIcon,
+  RefreshIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import { Link } from 'react-router-dom';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
@@ -56,9 +56,9 @@ export const WorkspaceUpdater = observer(() => {
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;
   // Actions
   const updateWorkspace = (): void => {
-    if (editorStore.hasUnsyncedChanges) {
+    if (editorStore.hasUnpushedChanges) {
       editorStore.setActionAltertInfo({
-        message: 'You have unsynced changes',
+        message: 'You have unpushed changes',
         prompt:
           'This action will discard these changes and refresh the application',
         type: ActionAlertType.CAUTION,
@@ -155,7 +155,7 @@ export const WorkspaceUpdater = observer(() => {
             tabIndex={-1}
             title="Refresh"
           >
-            <MdRefresh />
+            <RefreshIcon />
           </button>
           <button
             className="panel__header__action side-bar__header__action workspace-updater__update-btn"
@@ -164,7 +164,7 @@ export const WorkspaceUpdater = observer(() => {
             tabIndex={-1}
             title="Update workspace"
           >
-            <GoCloudDownload />
+            <CloudDownloadIcon />
           </button>
         </div>
       </div>
@@ -182,7 +182,7 @@ export const WorkspaceUpdater = observer(() => {
                       'All changes made to project since the revision the workspace is created.\nPotential workspace update conflicts are also shown if they exist'
                     }
                   >
-                    <FaInfoCircle />
+                    <InfoCircleIcon />
                   </div>
                 </div>
                 <div
@@ -238,7 +238,7 @@ export const WorkspaceUpdater = observer(() => {
                     className="side-bar__panel__title__info"
                     title="All committed reviews in the project since the revision the workspace is created"
                   >
-                    <FaInfoCircle />
+                    <InfoCircleIcon />
                   </div>
                 </div>
                 <div

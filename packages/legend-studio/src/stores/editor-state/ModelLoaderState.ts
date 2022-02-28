@@ -119,8 +119,8 @@ export class ModelLoaderState extends EditorState {
                   element,
                 ),
             )
-          : this.editorStore.changeDetectionState.workspaceLatestRevisionState
-              .entities;
+          : this.editorStore.changeDetectionState
+              .workspaceLocalLatestRevisionState.entities;
         this.modelText =
           (yield this.editorStore.graphManagerState.graphManager.entitiesToPureProtocolText(
             graphEntities,
@@ -136,8 +136,8 @@ export class ModelLoaderState extends EditorState {
                   element,
                 ),
             )
-          : this.editorStore.changeDetectionState.workspaceLatestRevisionState
-              .entities;
+          : this.editorStore.changeDetectionState
+              .workspaceLocalLatestRevisionState.entities;
         this.modelText = JSON.stringify(graphEntities, undefined, TAB_SIZE);
         break;
       }

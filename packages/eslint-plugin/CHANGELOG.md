@@ -1,5 +1,23 @@
 # @finos/eslint-plugin-legend-studio
 
+## 0.2.2
+
+## 0.2.1
+
+## 0.2.0
+
+### Minor Changes
+
+- [#821](https://github.com/finos/legend-studio/pull/821) [`9af3076d`](https://github.com/finos/legend-studio/commit/9af3076dee533f55b459cd8698df26f58d7f2309) ([@akphi](https://github.com/akphi)) - Remove rule `no-duplicate-exports` in favor of setting option `includeExports` for rule `no-duplicate-imports`.
+
+## 0.1.9
+
+## 0.1.8
+
+### Patch Changes
+
+- [#751](https://github.com/finos/legend-studio/pull/751) [`017f9c60`](https://github.com/finos/legend-studio/commit/017f9c60fef1426521c8feca5d314a9880d1a1a2) ([@akphi](https://github.com/akphi)) - Prefer usage of inline type import `import { type ... }` over `import type`; as a result, we have enabled `no-duplicate-imports` rule. Also, we created rule `no-duplicate-exports` to enforce the usage on export side.
+
 ## 0.1.7
 
 ## 0.1.6

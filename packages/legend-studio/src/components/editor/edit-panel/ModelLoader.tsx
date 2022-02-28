@@ -19,14 +19,16 @@ import {
   ModelLoaderState,
   MODEL_UPDATER_INPUT_TYPE,
 } from '../../../stores/editor-state/ModelLoaderState';
-import {
-  FaCaretDown,
-  FaRegSquare,
-  FaCheckSquare,
-  FaTruckLoading,
-} from 'react-icons/fa';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { DropdownMenu, MenuContent, MenuContentItem } from '@finos/legend-art';
+import {
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
+  CheckSquareIcon,
+  TruckLoadingIcon,
+  EmptySquareIcon,
+} from '@finos/legend-art';
 import type { ImportConfigurationDescription } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
@@ -68,9 +70,9 @@ export const ModelLoader = observer(() => {
     );
   };
   const loadModel = (): void => {
-    if (editorStore.hasUnsyncedChanges) {
+    if (editorStore.hasUnpushedChanges) {
       editorStore.setActionAltertInfo({
-        message: 'You have unsynced changes',
+        message: 'You have unpushed changes',
         prompt:
           'This action will discard these changes and refresh the application',
         type: ActionAlertType.CAUTION,
@@ -161,7 +163,7 @@ export const ModelLoader = observer(() => {
                   : prettyCONSTName(currentInputType)}
               </div>
               <div className="model-loader__header__configs__type__icon">
-                <FaCaretDown />
+                <CaretDownIcon />
               </div>
             </div>
           </DropdownMenu>
@@ -170,7 +172,7 @@ export const ModelLoader = observer(() => {
             onClick={toggleReplace}
           >
             <div className="model-loader__header__configs__edit-mode__icon">
-              {replace ? <FaCheckSquare /> : <FaRegSquare />}
+              {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
             </div>
             <div className="model-loader__header__configs__edit-mode__label">
               replace
@@ -183,7 +185,7 @@ export const ModelLoader = observer(() => {
               onClick={loadCurrentProjectEntities}
               title="Load current project entities"
             >
-              <FaTruckLoading />
+              <TruckLoadingIcon />
             </button>
           )}
         </div>

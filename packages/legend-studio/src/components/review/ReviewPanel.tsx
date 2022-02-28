@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { FaTimes } from 'react-icons/fa';
 import { observer } from 'mobx-react-lite';
-import { clsx, DropdownMenu, ContextMenu } from '@finos/legend-art';
+import { clsx, DropdownMenu, ContextMenu, TimesIcon } from '@finos/legend-art';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,
@@ -24,18 +23,19 @@ import {
 import { EntityDiffView } from '../editor/edit-panel/diff-editor/EntityDiffView';
 import type { EditorState } from '../../stores/editor-state/EditorState';
 import { useEditorStore } from '../editor/EditorStoreProvider';
+import { forwardRef } from 'react';
 
 export const ReviewPanelSplashScreen: React.FC = () => (
   <div className="review-panel__splash-screen"></div>
 );
 
 export const ReviewPanelHeaderTabContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       editorState: EditorState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function ReviewPanelHeaderTabContextMenu(props, ref) {
     const { editorState } = props;
     const editorStore = useEditorStore();
     const close = (): void => editorStore.closeState(editorState);
@@ -66,8 +66,7 @@ export const ReviewPanelHeaderTabContextMenu = observer(
         </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const ReviewPanel = observer(() => {
@@ -137,7 +136,7 @@ export const ReviewPanel = observer(() => {
                   onClick={closeTab(editorState)}
                   tabIndex={-1}
                 >
-                  <FaTimes />
+                  <TimesIcon />
                 </button>
               </ContextMenu>
             </div>
@@ -179,7 +178,7 @@ export const ReviewPanel = observer(() => {
         </div>
       </ContextMenu>
       <div className="panel__content review-panel__content">
-        <EntityDiffView />
+        <EntityDiffView entityDiffViewState={currentEditorState} />
       </div>
     </div>
   );

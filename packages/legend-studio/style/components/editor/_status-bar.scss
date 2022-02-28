@@ -96,27 +96,28 @@
     color: var(--color-light-grey-0);
   }
 
-  &__sync {
+  &__workspace-sync {
     display: flex;
     height: 100%;
   }
 
-  &__sync__status {
+  &__workspace-sync__status {
     @include flexCenter;
 
     cursor: default;
   }
 
-  &__sync__btn {
+  &__push-changes__btn {
     @include flexCenter;
 
     background: none;
     color: var(--color-light-grey-0);
     cursor: pointer;
     padding: 0 0.5rem;
+    margin-left: 0.5rem;
 
-    &--spinning svg {
-      animation: spin 1s infinite ease;
+    &--loading svg {
+      animation: jiggle 0.3s infinite ease;
     }
 
     &[disabled] {

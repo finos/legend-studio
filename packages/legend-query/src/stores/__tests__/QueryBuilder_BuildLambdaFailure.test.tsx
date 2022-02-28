@@ -20,6 +20,7 @@ import {
   TEST_DATA__unsupportedFunction,
   TEST_DATA__misplacedTakeFunction,
   TEST_DATA__unsupportedFunctionWithFullPath,
+  TEST_DATA_malformedFilterExpressionWithSubtype,
 } from './TEST_DATA__QueryBuilder_Failure';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import { integrationTest } from '@finos/legend-shared';
@@ -86,6 +87,12 @@ const cases: TestCase[] = [
     relationalCtx,
     TEST_DATA__misplacedTakeFunction,
     `Can't process take() expression: only support take() in TDS expression`,
+  ],
+  [
+    'Malformed filter with subtype',
+    relationalCtx,
+    TEST_DATA_malformedFilterExpressionWithSubtype,
+    `Can't find expression builder for function 'subTypes': no compatible function expression builder available from plugins`,
   ],
 ];
 

@@ -28,9 +28,14 @@ import {
   TEST_DATA__graphFetchWithDerivedProperty,
   TEST_DATA__graphFetchWithDerivedPropertyAndParameter,
   TEST_DATA__simpleProjectionWithSubtype,
+  TEST_DATA__graphFetchWithSubtype,
+  TEST_DATA__filterQueryWithSubtypeWithoutExists,
+  TEST_DATA__filterQueryWithSubtypeWithExists,
+  TEST_DATA__filterQueryWithSubtypeWithExistsChain,
 } from './TEST_DATA__QueryBuilder_Generic';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
+import TEST_DATA__M2MWithInheritance from './TEST_DATA__QueryBuilder_Model_M2MWithInheritance.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M.json';
 import {
@@ -87,6 +92,10 @@ const projectionCtx = {
 
 const graphFetchCtx = {
   entities: TEST_DATA__ComplexM2MModel,
+};
+
+const graphFetchWithSubtypeCtx = {
+  entities: TEST_DATA__M2MWithInheritance,
 };
 
 const relationalFilterCtx = {
@@ -162,6 +171,12 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__graphFetchWithDerivedPropertyAndParameter,
     undefined,
   ],
+  [
+    'Graph-fetch with subtype',
+    graphFetchWithSubtypeCtx,
+    TEST_DATA__graphFetchWithSubtype,
+    undefined,
+  ],
   // filter
   [
     'Simple filter',
@@ -173,6 +188,24 @@ const cases: RoundtripTestCase[] = [
     'Filter with a single condition',
     projectionCtx,
     TEST_DATA__getAllWithOneConditionFilter,
+    undefined,
+  ],
+  [
+    'Filter with subtype without exists',
+    projectionCtx,
+    TEST_DATA__filterQueryWithSubtypeWithoutExists,
+    undefined,
+  ],
+  [
+    'Filter with subtype with exists',
+    projectionCtx,
+    TEST_DATA__filterQueryWithSubtypeWithExists,
+    undefined,
+  ],
+  [
+    'Filter with subtype with exists() chain',
+    projectionCtx,
+    TEST_DATA__filterQueryWithSubtypeWithExistsChain,
     undefined,
   ],
   [

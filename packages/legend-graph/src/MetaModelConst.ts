@@ -22,6 +22,9 @@ export const LAMBDA_PIPE = '|';
 export const DEFAULT_SOURCE_PARAMETER_NAME = 'src';
 export const DEFAULT_DATABASE_SCHEMA_NAME = 'default';
 export const SECTION_INDEX_ELEMENT_PATH = '__internal__::SectionIndex';
+export const VARIABLE_REFERENCE_TOKEN = '$';
+export const TYPE_CAST_TOKEN = '@';
+export const ARROW_FUNCTION_TOKEN = '->';
 
 export enum ROOT_PACKAGE_NAME {
   CORE = 'CORE',
@@ -123,7 +126,7 @@ export enum CORE_PURE_PATH {
  * These tokens will be used in the definition of the hash as marker for the type of the strucure
  * arguably some of these can be redundant since this information is encoded in the resulting hash
  * code anyway, but sometimes when polymorphism manifests, such as when we have an array of structure
- * which are sub-classes of an abstract stucture, hashing the marker is sometimes the only way to
+ * which are subclasses of an abstract stucture, hashing the marker is sometimes the only way to
  * discern between instances of different sub-structures
  */
 export enum CORE_HASH_STRUCTURE {

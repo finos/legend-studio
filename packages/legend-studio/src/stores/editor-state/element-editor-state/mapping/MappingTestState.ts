@@ -571,7 +571,9 @@ export class MappingTestState {
           query,
           runtime,
           PureClientVersion.VX_X_X,
-          true,
+          {
+            useLosslessParse: true,
+          },
         )) as ExecutionResult;
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
@@ -630,7 +632,9 @@ export class MappingTestState {
           this.test.query,
           runtime,
           PureClientVersion.VX_X_X,
-          true,
+          {
+            useLosslessParse: true,
+          },
         )) as ExecutionResult;
       this.testExecutionResultText = losslessStringify(
         extractExecutionResultValues(result),

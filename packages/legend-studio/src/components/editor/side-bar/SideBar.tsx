@@ -20,9 +20,9 @@ import { Explorer } from './Explorer';
 import { LocalChanges } from './LocalChanges';
 import { WorkspaceReview } from './WorkspaceReview';
 import { WorkspaceUpdater } from './WorkspaceUpdater';
-import { ConflictResolution } from './ConflictResolution';
+import { WorkspaceUpdateConflictResolver } from './WorkspaceUpdateConflictResolver';
 import { ProjectOverview } from './ProjectOverview';
-import { WorkspaceWorkflows } from './WorkspaceWorkflows';
+import { WorkflowManager } from './WorkflowManager';
 import { useEditorStore } from '../EditorStoreProvider';
 
 /**
@@ -35,18 +35,22 @@ export const SideBar = observer(() => {
     switch (editorStore.activeActivity) {
       case ACTIVITY_MODE.EXPLORER:
         return <Explorer />;
-      case ACTIVITY_MODE.CHANGES:
+      case ACTIVITY_MODE.LOCAL_CHANGES:
         return <LocalChanges />;
       case ACTIVITY_MODE.WORKSPACE_REVIEW:
         return <WorkspaceReview />;
       case ACTIVITY_MODE.WORKSPACE_UPDATER:
         return <WorkspaceUpdater />;
       case ACTIVITY_MODE.CONFLICT_RESOLUTION:
-        return <ConflictResolution />;
+        return <WorkspaceUpdateConflictResolver />;
       case ACTIVITY_MODE.PROJECT_OVERVIEW:
         return <ProjectOverview />;
-      case ACTIVITY_MODE.WORKSPACE_WORKFLOWS:
-        return <WorkspaceWorkflows />;
+      case ACTIVITY_MODE.WORKFLOW_MANAGER:
+        return (
+          <WorkflowManager
+            workflowManagerState={editorStore.workspaceWorkflowManagerState}
+          />
+        );
       default:
         return null;
     }

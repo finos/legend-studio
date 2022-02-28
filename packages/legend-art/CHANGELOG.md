@@ -1,5 +1,31 @@
 # @finos/legend-art
 
+## 0.3.6
+
+## 0.3.5
+
+## 0.3.4
+
+## 0.3.3
+
+## 0.3.2
+
+## 0.3.1
+
+## 0.3.0
+
+### Minor Changes
+
+- [#788](https://github.com/finos/legend-studio/pull/788) [`ca293f83`](https://github.com/finos/legend-studio/commit/ca293f83e554f488f58ee77249838b6b87a3e3da) ([@akphi](https://github.com/akphi)) - Consolidate all `react-icons` icons used in other packages. Rename all `Pure`-related icons to include prefix `PURE_`.
+
+* [#788](https://github.com/finos/legend-studio/pull/788) [`ca293f83`](https://github.com/finos/legend-studio/commit/ca293f83e554f488f58ee77249838b6b87a3e3da) ([@akphi](https://github.com/akphi)) - Consolidate all `@mui/material` components used in other packages.
+
+- [#777](https://github.com/finos/legend-studio/pull/777) [`d54fe6f5`](https://github.com/finos/legend-studio/commit/d54fe6f51d826bec7902971841244d89ac035723) ([@akphi](https://github.com/akphi)) - Upgrade to `Material UI (mui)` to version 5 following their [migration guide](https://mui.com/guides/migration-v4/#menu).
+
+### Patch Changes
+
+- [#769](https://github.com/finos/legend-studio/pull/769) [`57b9d9c9`](https://github.com/finos/legend-studio/commit/57b9d9c9915b7d7707c7f15568ee3620a1e309d7) ([@akphi](https://github.com/akphi)) - Fix `ApplicationError` to have message default to `non-empty` (i.e. `(no error message)`).
+
 ## 0.2.3
 
 ## 0.2.2

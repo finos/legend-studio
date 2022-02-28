@@ -56,7 +56,7 @@ test(unitTest('Change detection works properly'), async () => {
   // set original hash
   const protocolHashesIndex =
     await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
-  editorStore.changeDetectionState.workspaceLatestRevisionState.setEntityHashesIndex(
+  editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntityHashesIndex(
     protocolHashesIndex,
   );
 
@@ -64,7 +64,7 @@ test(unitTest('Change detection works properly'), async () => {
   await flowResult(editorStore.graphManagerState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length,
   ).toEqual(0);
 
@@ -77,11 +77,11 @@ test(unitTest('Change detection works properly'), async () => {
   await flowResult(editorStore.graphManagerState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length,
   ).toEqual(1);
-  let change = editorStore.changeDetectionState.workspaceLatestRevisionState
-    .changes[0] as EntityDiff;
+  let change = editorStore.changeDetectionState
+    .workspaceLocalLatestRevisionState.changes[0] as EntityDiff;
   expect(change.entityChangeType).toEqual(EntityChangeType.MODIFY);
   expect(change.oldPath).toEqual(_class.path);
   _class.getProperty('prop1').setName('prop'); // reset
@@ -93,10 +93,10 @@ test(unitTest('Change detection works properly'), async () => {
   await flowResult(editorStore.graphManagerState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length,
   ).toEqual(1);
-  change = editorStore.changeDetectionState.workspaceLatestRevisionState
+  change = editorStore.changeDetectionState.workspaceLocalLatestRevisionState
     .changes[0] as EntityDiff;
   expect(change.entityChangeType).toEqual(EntityChangeType.CREATE);
   expect(change.newPath).toEqual(newClass.path);
@@ -108,10 +108,10 @@ test(unitTest('Change detection works properly'), async () => {
   await flowResult(editorStore.graphManagerState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length,
   ).toEqual(1);
-  change = editorStore.changeDetectionState.workspaceLatestRevisionState
+  change = editorStore.changeDetectionState.workspaceLocalLatestRevisionState
     .changes[0] as EntityDiff;
   expect(change.entityChangeType).toEqual(EntityChangeType.DELETE);
   expect(change.oldPath).toEqual(_class.path);

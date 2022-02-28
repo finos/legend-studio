@@ -17,13 +17,11 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  EntityDiffViewState,
+  type EntityDiffViewState,
   DIFF_VIEW_MODE,
 } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { TextDiffView, JsonDiffView } from '../../../shared/DiffView';
-import { MdCompareArrows } from 'react-icons/md';
-import { VscGoToFile } from 'react-icons/vsc';
-import { clsx } from '@finos/legend-art';
+import { clsx, GoToFileIcon, CompareIcon } from '@finos/legend-art';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
@@ -84,82 +82,86 @@ export const EntityDiffSideBarItem = observer(
   },
 );
 
-export const EntityDiffView = observer(() => {
-  const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const diffEditorState =
-    editorStore.getCurrentEditorState(EntityDiffViewState);
-  const {
-    fromEntity,
-    fromGrammarText,
-    toEntity,
-    toGrammarText,
-    fromRevision,
-    toRevision,
-  } = diffEditorState;
-  const goToElement = (): void => {
-    if (diffEditorState.element) {
-      editorStore.openElement(diffEditorState.element);
-    }
-  };
+export const EntityDiffView = observer(
+  (props: { entityDiffViewState: EntityDiffViewState }) => {
+    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
+    const diffEditorState = props.entityDiffViewState;
+    const {
+      fromEntity,
+      fromGrammarText,
+      toEntity,
+      toGrammarText,
+      fromRevision,
+      toRevision,
+    } = diffEditorState;
+    const goToElement = (): void => {
+      if (diffEditorState.element) {
+        editorStore.openElement(diffEditorState.element);
+      }
+    };
 
-  useEffect(() => {
-    diffEditorState.refresh();
-  }, [diffEditorState]);
-  useEffect(() => {
-    flowResult(diffEditorState.getFromGrammar()).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
-  }, [applicationStore, diffEditorState, diffEditorState.fromEntity]);
-  useEffect(() => {
-    flowResult(diffEditorState.getToGrammar()).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
-  }, [applicationStore, diffEditorState, diffEditorState.toEntity]);
+    useEffect(() => {
+      diffEditorState.refresh();
+    }, [diffEditorState]);
+    useEffect(() => {
+      flowResult(diffEditorState.getFromGrammar()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [applicationStore, diffEditorState, diffEditorState.fromEntity]);
+    useEffect(() => {
+      flowResult(diffEditorState.getToGrammar()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [applicationStore, diffEditorState, diffEditorState.toEntity]);
 
-  return (
-    <div className="entity-diff-view">
-      <div className="entity-diff-view__header">
-        <div className="entity-diff-view__header__info">
-          <div className="entity-diff-view__header__info__revision-summary">
-            <div className="entity-diff-view__header__info__revision-summary__revision">
-              {getPrettyLabelForRevision(fromRevision)}
+    return (
+      <div className="entity-diff-view">
+        <div className="entity-diff-view__header">
+          <div className="entity-diff-view__header__info">
+            <div className="entity-diff-view__header__info__revision-summary">
+              <div className="entity-diff-view__header__info__revision-summary__revision">
+                {getPrettyLabelForRevision(fromRevision)}
+              </div>
+              <div className="entity-diff-view__header__info__revision-summary__icon">
+                <CompareIcon />
+              </div>
+              <div className="entity-diff-view__header__info__revision-summary__revision">
+                {getPrettyLabelForRevision(toRevision)}
+              </div>
             </div>
             <div className="entity-diff-view__header__info__revision-summary__icon">
-              <MdCompareArrows />
+              <CompareIcon />
             </div>
             <div className="entity-diff-view__header__info__revision-summary__revision">
               {getPrettyLabelForRevision(toRevision)}
             </div>
           </div>
-          <div className="entity-diff-view__header__info__comparison-summary">
-            {diffEditorState.summaryText}
+          <div className="entity-diff-view__header__actions">
+            <button
+              className="entity-diff-view__header__action"
+              disabled={!diffEditorState.element}
+              tabIndex={-1}
+              onClick={goToElement}
+              title={'Go to element'}
+            >
+              <GoToFileIcon />
+            </button>
           </div>
         </div>
-        <div className="entity-diff-view__header__actions">
-          <button
-            className="entity-diff-view__header__action"
-            disabled={!diffEditorState.element}
-            tabIndex={-1}
-            onClick={goToElement}
-            title={'Go to element'}
-          >
-            <VscGoToFile />
-          </button>
+        <div className="entity-diff-view__content">
+          {diffEditorState.diffMode === DIFF_VIEW_MODE.GRAMMAR && (
+            <TextDiffView
+              language={EDITOR_LANGUAGE.PURE}
+              from={fromGrammarText}
+              to={toGrammarText}
+            />
+          )}
+          {diffEditorState.diffMode === DIFF_VIEW_MODE.JSON && (
+            <JsonDiffView from={fromEntity?.content} to={toEntity?.content} />
+          )}
         </div>
       </div>
-      <div className="entity-diff-view__content">
-        {diffEditorState.diffMode === DIFF_VIEW_MODE.GRAMMAR && (
-          <TextDiffView
-            language={EDITOR_LANGUAGE.PURE}
-            from={fromGrammarText}
-            to={toGrammarText}
-          />
-        )}
-        {diffEditorState.diffMode === DIFF_VIEW_MODE.JSON && (
-          <JsonDiffView from={fromEntity?.content} to={toEntity?.content} />
-        )}
-      </div>
-    </div>
-  );
-});
+    );
+  },
+);

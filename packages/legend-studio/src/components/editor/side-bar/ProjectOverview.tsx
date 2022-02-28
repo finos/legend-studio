@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
-import { FaInfoCircle, FaTimes, FaUserFriends, FaUser } from 'react-icons/fa';
-import { MdModeEdit } from 'react-icons/md';
-import { GoSync } from 'react-icons/go';
 import { Link } from 'react-router-dom';
-import { clsx, PanelLoadingIndicator, ContextMenu } from '@finos/legend-art';
+import {
+  clsx,
+  PanelLoadingIndicator,
+  ContextMenu,
+  SyncIcon,
+  PencilIcon,
+  InfoCircleIcon,
+  TimesIcon,
+  UsersIcon,
+  UserIcon,
+} from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
 import {
   generateEditorRoute,
@@ -39,13 +46,13 @@ import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
-const WorkspaceViewerContextMenu = observer<
-  {
-    workspace: Workspace;
-  },
-  HTMLDivElement
->(
-  (props, ref) => {
+const WorkspaceViewerContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      workspace: Workspace;
+    }
+  >(function WorkspaceViewerContextMenu(props, ref) {
     const { workspace } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -63,8 +70,7 @@ const WorkspaceViewerContextMenu = observer<
         </div>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
@@ -108,9 +114,9 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         <div className="project-overview__item__link__content project-overview__workspace__viewer">
           <div className="project-overview__workspace__viewer-icon">
             {workspace.workspaceType === WorkspaceType.GROUP ? (
-              <FaUserFriends />
+              <UsersIcon />
             ) : (
-              <FaUser />
+              <UserIcon />
             )}
           </div>
           <div className="project-overview__item__link__content__name">
@@ -315,7 +321,7 @@ const ReleaseEditor = observer(() => {
                     className="side-bar__panel__title__info"
                     title="All committed reviews in the project since the latest release"
                   >
-                    <FaInfoCircle />
+                    <InfoCircleIcon />
                   </div>
                 </div>
                 <div
@@ -512,7 +518,7 @@ const OverviewViewer = observer(() => {
           tabIndex={-1}
           title="Update project"
         >
-          <GoSync />
+          <SyncIcon />
         </button>
       </div>
       <div className="panel__content project-overview__panel__content">
@@ -613,14 +619,14 @@ const OverviewViewer = observer(() => {
                           onClick={showEditItemInput(value, idx)}
                           tabIndex={-1}
                         >
-                          <MdModeEdit />
+                          <PencilIcon />
                         </button>
                         <button
                           className="panel__content__form__section__list__item__remove-btn"
                           onClick={deleteValue(idx)}
                           tabIndex={-1}
                         >
-                          <FaTimes />
+                          <TimesIcon />
                         </button>
                       </div>
                     </>

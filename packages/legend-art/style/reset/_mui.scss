@@ -1,0 +1,66 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.mui-menu__paper {
+  background: var(--color-dark-grey-100);
+}
+
+.mui-menu__list {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.mui-popover__paper {
+  background: var(--color-dark-grey-100);
+  // NOTE: this is needed in order to have elements display go beyond
+  // the boundary of the popover, e.g. elements shown with `display: relative`
+  // such as validation error for inputs
+  overflow: unset;
+}
+
+.mui-non-blocking-dialog__root {
+  pointer-events: none;
+}
+
+.mui-non-blocking-dialog__paper {
+  pointer-events: auto;
+}
+
+// override global style
+
+.MuiDialog-root {
+  margin-top: 4.8rem;
+}
+
+.MuiDialog-paper {
+  margin: 0;
+  max-width: initial;
+}
+
+.MuiDialog-scrollPaper {
+  align-items: flex-start;
+}
+
+.MuiTooltip-tooltip {
+  background: var(--color-dark-grey-100);
+  color: var(--color-light-grey-100);
+  font-size: 1.2rem;
+  max-width: inherit;
+}
+
+.MuiTooltip-tooltipPlacementTop {
+  margin: 0.5rem 0;
+}

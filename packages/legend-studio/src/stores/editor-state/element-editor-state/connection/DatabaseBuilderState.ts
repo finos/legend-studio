@@ -230,21 +230,24 @@ export class DatabaseBuilderState {
       )) as Database;
       const rootIds: string[] = [];
       const nodes = new Map<string, DatabaseBuilderTreeNodeData>();
-      database.schemas.forEach((dbSchema) => {
-        const schemaId = dbSchema.name;
-        rootIds.push(schemaId);
-        const schemaNode = new SchemaDatabaseBuilderTreeNodeData(
-          schemaId,
-          undefined,
-          dbSchema,
-        );
-        schemaNode.isChecked = Boolean(
-          this.currentDatabase?.schemas.find(
-            (cSchema) => cSchema.name === dbSchema.name,
-          ),
-        );
-        nodes.set(schemaId, schemaNode);
-      });
+      database.schemas
+        .slice()
+        .sort((schemaA, schemaB) => schemaA.name.localeCompare(schemaB.name))
+        .forEach((dbSchema) => {
+          const schemaId = dbSchema.name;
+          rootIds.push(schemaId);
+          const schemaNode = new SchemaDatabaseBuilderTreeNodeData(
+            schemaId,
+            undefined,
+            dbSchema,
+          );
+          schemaNode.isChecked = Boolean(
+            this.currentDatabase?.schemas.find(
+              (cSchema) => cSchema.name === dbSchema.name,
+            ),
+          );
+          nodes.set(schemaId, schemaNode);
+        });
       const treeData = { rootIds, nodes, database };
       this.setTreeData(treeData);
     } catch (error) {
@@ -275,22 +278,25 @@ export class DatabaseBuilderState {
       const tables = database.getSchema(schema.name).tables;
       const childrenIds = schemaNode.childrenIds ?? [];
       schema.tables = tables;
-      tables.forEach((e) => {
-        e.schema = schema;
-        const tableId = `${schema.name}.${e.name}`;
-        const tableNode = new TableDatabaseBuilderTreeNodeData(
-          tableId,
-          schemaNode.id,
-          e,
-        );
+      tables
+        .slice()
+        .sort((tableA, tableB) => tableA.name.localeCompare(tableB.name))
+        .forEach((e) => {
+          e.schema = schema;
+          const tableId = `${schema.name}.${e.name}`;
+          const tableNode = new TableDatabaseBuilderTreeNodeData(
+            tableId,
+            schemaNode.id,
+            e,
+          );
 
-        tableNode.isChecked = Boolean(
-          this.currentDatabase &&
-            getDbNullableTable(e.name, schema.name, this.currentDatabase),
-        );
-        treeData.nodes.set(tableId, tableNode);
-        addUniqueEntry(childrenIds, tableId);
-      });
+          tableNode.isChecked = Boolean(
+            this.currentDatabase &&
+              getDbNullableTable(e.name, schema.name, this.currentDatabase),
+          );
+          treeData.nodes.set(tableId, tableNode);
+          addUniqueEntry(childrenIds, tableId);
+        });
       schemaNode.childrenIds = childrenIds;
       this.setTreeData({ ...treeData });
     } catch (error) {
@@ -358,17 +364,20 @@ export class DatabaseBuilderState {
     this.removeChildren(tableNode, treeData);
     const childrenIds: string[] = [];
     const tableId = tableNode.id;
-    columns.forEach((c) => {
-      const columnId = `${tableId}.${c.name}`;
-      const columnNode = new ColumnDatabaseBuilderTreeNodeData(
-        columnId,
-        tableId,
-        c,
-      );
-      c.owner = tableNode.table;
-      treeData.nodes.set(columnId, columnNode);
-      addUniqueEntry(childrenIds, columnId);
-    });
+    columns
+      .slice()
+      .sort((colA, colB) => colA.name.localeCompare(colB.name))
+      .forEach((c) => {
+        const columnId = `${tableId}.${c.name}`;
+        const columnNode = new ColumnDatabaseBuilderTreeNodeData(
+          columnId,
+          tableId,
+          c,
+        );
+        c.owner = tableNode.table;
+        treeData.nodes.set(columnId, columnNode);
+        addUniqueEntry(childrenIds, columnId);
+      });
     tableNode.childrenIds = childrenIds;
   }
 

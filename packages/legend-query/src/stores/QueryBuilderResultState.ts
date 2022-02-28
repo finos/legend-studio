@@ -20,6 +20,11 @@ import {
   assertErrorThrown,
   LogEvent,
   guaranteeNonNullable,
+  ContentType,
+  guaranteeType,
+  downloadFileUsingDataURI,
+  UnsupportedOperationError,
+  ActionState,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState';
 import {
@@ -28,8 +33,13 @@ import {
   type RawLambda,
   GRAPH_MANAGER_LOG_EVENT,
   PureClientVersion,
+  EXECUTION_SERIALIZATION_FORMAT,
+  RawExecutionResult,
 } from '@finos/legend-graph';
-import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
+import {
+  buildLambdaFunction,
+  buildParametersLetLambdaFunc,
+} from './QueryBuilderLambdaBuilder';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -37,6 +47,7 @@ export class QueryBuilderResultState {
   queryBuilderState: QueryBuilderState;
   isExecutingQuery = false;
   isGeneratingPlan = false;
+  exportDataState = ActionState.create();
   executionResult?: ExecutionResult | undefined;
   executionPlan?: RawExecutionPlan | undefined;
   showServicePathModal = false;
@@ -66,6 +77,98 @@ export class QueryBuilderResultState {
     this.previewLimit = Math.max(1, val);
   };
 
+  buildExecutionRawLambda(): RawLambda {
+    let query: RawLambda;
+    if (this.queryBuilderState.isQuerySupported()) {
+      const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
+        isBuildingExecutionQuery: true,
+      });
+      query =
+        this.queryBuilderState.buildRawLambdaFromLambdaFunction(lambdaFunction);
+    } else {
+      query = guaranteeNonNullable(
+        this.queryBuilderState.queryUnsupportedState.rawLambda,
+        'Lambda is required to execute query',
+      );
+      if (
+        !this.queryBuilderState.mode.isParametersDisabled &&
+        this.queryBuilderState.queryParametersState.parameters.length
+      ) {
+        const letlambdaFunction = buildParametersLetLambdaFunc(
+          this.queryBuilderState,
+        );
+        const letRawLambda =
+          this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+            letlambdaFunction,
+          );
+        // reset paramaters
+        if (Array.isArray(query.body) && Array.isArray(letRawLambda.body)) {
+          letRawLambda.body = [
+            ...(letRawLambda.body as object[]),
+            ...(query.body as object[]),
+          ];
+          query = letRawLambda;
+        }
+      }
+    }
+    return query;
+  }
+
+  *exportData(
+    serializationFormat: EXECUTION_SERIALIZATION_FORMAT,
+  ): GeneratorFn<void> {
+    try {
+      this.exportDataState.inProgress();
+      const mapping = guaranteeNonNullable(
+        this.queryBuilderState.querySetupState.mapping,
+        'Mapping is required to execute query',
+      );
+      const runtime = guaranteeNonNullable(
+        this.queryBuilderState.querySetupState.runtime,
+        `Runtime is required to execute query`,
+      );
+      const query = this.buildExecutionRawLambda();
+      const result =
+        (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+          this.queryBuilderState.graphManagerState.graph,
+          mapping,
+          query,
+          runtime,
+          PureClientVersion.VX_X_X,
+          {
+            serializationFormat,
+          },
+        )) as ExecutionResult;
+      let contentType: ContentType;
+      let fileName = 'result';
+      let content: string;
+      switch (serializationFormat) {
+        case EXECUTION_SERIALIZATION_FORMAT.CSV:
+          {
+            const rawResult = guaranteeType(result, RawExecutionResult);
+            contentType = ContentType.TEXT_CSV;
+            fileName = `${fileName}.csv`;
+            content = rawResult.value;
+          }
+          break;
+        default:
+          throw new UnsupportedOperationError(
+            `Can't download file for serialization type: '${serializationFormat}'`,
+          );
+      }
+      downloadFileUsingDataURI(fileName, content, contentType);
+      this.exportDataState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryBuilderState.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+      this.queryBuilderState.applicationStore.notifyError(error);
+      this.exportDataState.fail();
+    }
+  }
+
   *execute(): GeneratorFn<void> {
     try {
       this.isExecutingQuery = true;
@@ -77,21 +180,7 @@ export class QueryBuilderResultState {
         this.queryBuilderState.querySetupState.runtime,
         `Runtime is required to execute query`,
       );
-      let query: RawLambda;
-      if (this.queryBuilderState.isQuerySupported()) {
-        const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
-          isBuildingExecutionQuery: true,
-        });
-        query =
-          this.queryBuilderState.buildRawLambdaFromLambdaFunction(
-            lambdaFunction,
-          );
-      } else {
-        query = guaranteeNonNullable(
-          this.queryBuilderState.queryUnsupportedState.rawLambda,
-          'Lambda is required to execute query',
-        );
-      }
+      const query = this.buildExecutionRawLambda();
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
           this.queryBuilderState.graphManagerState.graph,
@@ -99,7 +188,6 @@ export class QueryBuilderResultState {
           query,
           runtime,
           PureClientVersion.VX_X_X,
-          false,
         )) as ExecutionResult;
       this.setExecutionResult(result);
     } catch (error) {

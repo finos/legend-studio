@@ -214,28 +214,73 @@ export class QueryParameterState {
   }
 }
 
+export enum PARAMETER_SUBMIT_ACTION {
+  EXECUTE = 'EXECUTE',
+  EXPORT = 'EXPORT',
+}
+
+export class ParameterInstanceValuesEditorState {
+  showModal = false;
+  submitAction:
+    | {
+        handler: () => Promise<void>;
+        label: PARAMETER_SUBMIT_ACTION;
+      }
+    | undefined;
+
+  constructor() {
+    makeObservable(this, {
+      showModal: observable,
+      submitAction: observable,
+      setShowModal: action,
+      open: action,
+      setSubmitAction: action,
+    });
+  }
+
+  setShowModal(val: boolean): void {
+    this.showModal = val;
+  }
+
+  setSubmitAction(
+    val:
+      | {
+          handler: () => Promise<void>;
+          label: PARAMETER_SUBMIT_ACTION;
+        }
+      | undefined,
+  ): void {
+    this.submitAction = val;
+  }
+
+  open(handler: () => Promise<void>, label: PARAMETER_SUBMIT_ACTION): void {
+    this.setSubmitAction({ handler, label });
+    this.setShowModal(true);
+  }
+
+  close(): void {
+    this.setSubmitAction(undefined);
+    this.setShowModal(false);
+  }
+}
+
 export class QueryParametersState {
   selectedParameter: QueryParameterState | undefined;
   queryBuilderState: QueryBuilderState;
   parameters: QueryParameterState[] = [];
-  valuesEditorIsOpen = false;
+  parameterValuesEditorState = new ParameterInstanceValuesEditorState();
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
-      valuesEditorIsOpen: observable,
+      parameterValuesEditorState: observable,
       parameters: observable,
       selectedParameter: observable,
-      setValuesEditorIsOpen: action,
       setSelectedParameter: action,
       addParameter: action,
       removeParameter: action,
     });
 
     this.queryBuilderState = queryBuilderState;
-  }
-
-  setValuesEditorIsOpen(val: boolean): void {
-    this.valuesEditorIsOpen = val;
   }
 
   setSelectedParameter(val: QueryParameterState | undefined): void {

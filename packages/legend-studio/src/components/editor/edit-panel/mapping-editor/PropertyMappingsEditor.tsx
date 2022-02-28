@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { FaArrowAltCircleRight } from 'react-icons/fa';
 import { MultiplicityBadge } from '../../../shared/MultiplicityBadge';
 import { PurePropertyMappingEditor } from './PurePropertyMappingEditor';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
@@ -28,7 +27,7 @@ import {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { clsx } from '@finos/legend-art';
+import { clsx, ArrowCircleRightIcon } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
 import {
   type FlatDataPropertyMappingState,
@@ -198,7 +197,7 @@ export const PropertyMappingsEditor = observer(
                   tabIndex={-1}
                   title={'Visit mapping element'}
                 >
-                  <FaArrowAltCircleRight />
+                  <ArrowCircleRightIcon />
                 </button>
               )}
             </div>
@@ -281,7 +280,7 @@ export const PropertyMappingsEditor = observer(
                       tabIndex={-1}
                       title={'Create mapping element'}
                     >
-                      <FaArrowAltCircleRight />
+                      <ArrowCircleRightIcon />
                     </button>
                     {`to create an embedded class mapping for property '${property.name}'.`}
                   </div>
@@ -295,7 +294,7 @@ export const PropertyMappingsEditor = observer(
                       tabIndex={-1}
                       title={'Create mapping element'}
                     >
-                      <FaArrowAltCircleRight />
+                      <ArrowCircleRightIcon />
                     </button>
                     {`to create a root class mapping for '${propertyRawType.name}'.`}
                   </div>

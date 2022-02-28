@@ -20,10 +20,6 @@ import chalk from 'chalk';
 import semver from 'semver';
 
 /**
- * Changesets generate tags and Github release by default, but this is cluttering the
- * project quickly as we have a lot of libraries within the monorepo.
- * As such, we would want to undo all of these and create a single release.
- *
  * Following is the list of expected environment variables:
  *
  * GITHUB_TOKEN - the Github token
@@ -41,9 +37,6 @@ const concludeNewRelease = async () => {
   const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
 
   const publishedPackages = JSON.parse(process.env.PUBLISHED_PACKAGES);
-  const tagsToCleanup = publishedPackages.map(
-    (pkg) => `${pkg.name}@${pkg.version}`,
-  );
   const mainPackageName = process.env.MAIN_PACKAGE;
   const currentReleaseVersion = publishedPackages.find(
     (pkg) => pkg.name === mainPackageName,
@@ -52,33 +45,16 @@ const concludeNewRelease = async () => {
   console.log(
     `Removing Github releases and tags created by changesets/action...`,
   );
+  const tagsToCleanup = publishedPackages.map(
+    (pkg) => `${pkg.name}@${pkg.version}`,
+  );
   const tagsNotRemoved = [];
   await Promise.all(
     tagsToCleanup.map(async (tag) => {
       try {
-        // Delete the release published on Github by `changesets/action`
-        // Check the following links for Github actions API reference
-        // See https://octokit.github.io/rest.js/v18/
-        // See https://docs.github.com/en/rest/reference/repos#releases
-        let release;
-        try {
-          release = (
-            await octokit.rest.repos.getReleaseByTag({
-              tag,
-              ...github.context.repo,
-            })
-          ).data;
-        } catch {
-          release = undefined;
-        }
-        if (release) {
-          await octokit.rest.repos.deleteRelease({
-            release_id: release.id,
-            ...github.context.repo,
-          });
-        }
-
-        // Delete the tags published by `changesets/action`
+        // Delete the tags pushed by `changesets/action`
+        // Workaround until we can use `pushGitTags` tags to turn off pushing Git tags
+        // See https://github.com/changesets/action/pull/143
         let tagRef;
         try {
           tagRef = (
@@ -106,7 +82,6 @@ const concludeNewRelease = async () => {
       }
     }),
   );
-
   if (tagsNotRemoved.length) {
     githubActionCore.error(
       `The following tags and/or their respective releases are not removed from Github. Please manually remove them on Github:\n${tagsNotRemoved

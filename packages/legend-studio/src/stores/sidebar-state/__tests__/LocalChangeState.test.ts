@@ -134,7 +134,9 @@ test(unitTest('Load entity changes'), async () => {
   const changes = entityChanges.entityChanges.map((e) =>
     EntityChange.serialization.fromJson(e),
   );
-  await flowResult(editorStore.graphState.loadEntityChangesToGraph(changes));
+  await flowResult(
+    editorStore.graphState.loadEntityChangesToGraph(changes, undefined),
+  );
   const graph = editorStore.graphManagerState.graph;
   graph.getClass('model::ToAdd');
   expect(graph.getNullableClass('model::ToDelete')).toBeUndefined();

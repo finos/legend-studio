@@ -275,8 +275,15 @@ export class SDLCServerClient extends AbstractServerClient {
   getRevisions = (
     projectId: string,
     workspace: Workspace | undefined,
+    since: Date | undefined,
+    until: Date | undefined,
   ): Promise<PlainObject<Revision>[]> =>
-    this.get(this._revisions(projectId, workspace));
+    this.get(
+      this._revisions(projectId, workspace),
+      {},
+      {},
+      { since: since?.toISOString(), until: until?.toISOString() },
+    );
   getRevision = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -329,6 +336,14 @@ export class SDLCServerClient extends AbstractServerClient {
     versionId: string,
   ): Promise<PlainObject<ProjectConfiguration>> =>
     this.get(`${this._version(projectId, versionId)}/configuration`);
+  getConfigurationByRevision = (
+    projectId: string,
+    workspace: Workspace | undefined,
+    revisionId: string,
+  ): Promise<PlainObject<ProjectConfiguration>> =>
+    this.get(
+      `${this._revision(projectId, workspace, revisionId)}/configuration`,
+    );
   updateConfiguration = (
     projectId: string,
     workspace: Workspace | undefined,
@@ -482,6 +497,142 @@ export class SDLCServerClient extends AbstractServerClient {
         workflowJob.id,
       )}/run`,
     );
+
+  private _workflowsByVersion = (
+    projectId: string,
+    versionId: string,
+  ): string => `${this._version(projectId, versionId)}/workflows`;
+  private _workflowByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowId: string,
+  ): string =>
+    `${this._workflowsByVersion(projectId, versionId)}/${encodeURIComponent(
+      workflowId,
+    )}`;
+  private _workflowJobsByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowId: string,
+  ): string =>
+    `${this._workflowByVersion(projectId, versionId, workflowId)}/jobs`;
+  private _workflowJobByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowId: string,
+    workflowJobId: string,
+  ): string =>
+    `${this._workflowJobsByVersion(
+      projectId,
+      versionId,
+      workflowId,
+    )}/${encodeURIComponent(workflowJobId)}`;
+
+  getWorkflowByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowId: string,
+  ): Promise<PlainObject<Workflow>> =>
+    this.get(this._workflowByVersion(projectId, versionId, workflowId));
+  getWorkflowsByVersion = (
+    projectId: string,
+    versionId: string,
+    status: WorkflowStatus | undefined,
+    revisionIds: string[] | undefined,
+    limit: number | undefined,
+  ): Promise<PlainObject<Workflow>[]> =>
+    this.get(
+      this._workflowsByVersion(projectId, versionId),
+      undefined,
+      undefined,
+      {
+        status,
+        revisionIds,
+        limit,
+      },
+    );
+  getWorkflowJobsByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowId: string,
+    status: WorkflowStatus | undefined,
+    revisionIds: string[] | undefined,
+    limit: number | undefined,
+  ): Promise<PlainObject<WorkflowJob>[]> =>
+    this.get(
+      this._workflowJobsByVersion(projectId, versionId, workflowId),
+      undefined,
+      undefined,
+      { status, revisionIds, limit },
+    );
+  getWorkflowJobByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowJob: WorkflowJob,
+  ): Promise<PlainObject<WorkflowJob>> =>
+    this.get(
+      `${this._workflowJobByVersion(
+        projectId,
+        versionId,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}`,
+    );
+  getWorkflowJobLogsByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowJob: WorkflowJob,
+  ): Promise<string> =>
+    this.get(
+      `${this._workflowJobByVersion(
+        projectId,
+        versionId,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}/logs`,
+      {},
+      { Accept: ContentType.TEXT_PLAIN },
+    );
+  cancelWorkflowJobByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowJob: WorkflowJob,
+  ): Promise<PlainObject<WorkflowJob>> =>
+    this.post(
+      `${this._workflowJobByVersion(
+        projectId,
+        versionId,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}/cancel`,
+    );
+  retryWorkflowJobByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowJob: WorkflowJob,
+  ): Promise<PlainObject<WorkflowJob>> =>
+    this.post(
+      `${this._workflowJobByVersion(
+        projectId,
+        versionId,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}/retry`,
+    );
+  runManualWorkflowJobByVersion = (
+    projectId: string,
+    versionId: string,
+    workflowJob: WorkflowJob,
+  ): Promise<PlainObject<WorkflowJob>> =>
+    this.post(
+      `${this._workflowJobByVersion(
+        projectId,
+        versionId,
+        workflowJob.workflowId,
+        workflowJob.id,
+      )}/run`,
+    );
+
   // ------------------------------------------- Entity -------------------------------------------
 
   private _entities = (
@@ -509,7 +660,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     command: PlainObject<UpdateEntitiesCommand>,
-  ): Promise<PlainObject<Revision>> =>
+  ): Promise<PlainObject<Revision> | undefined> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.UPDATE_ENTITIES),
       this._entities(projectId, workspace),
@@ -519,7 +670,7 @@ export class SDLCServerClient extends AbstractServerClient {
     projectId: string,
     workspace: Workspace | undefined,
     command: PerformEntitiesChangesCommand,
-  ): Promise<PlainObject<Revision>> =>
+  ): Promise<PlainObject<Revision> | undefined> =>
     this.postWithTracing(
       this.getTraceData(SDLC_TRACER_SPAN.PERFORM_ENTITY_CHANGES),
       `${this._adaptiveWorkspace(projectId, workspace)}/entityChanges`,

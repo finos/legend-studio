@@ -1,5 +1,73 @@
 # @finos/legend-query
 
+## 0.8.1
+
+### Patch Changes
+
+- [#881](https://github.com/finos/legend-studio/pull/881) [`b38d8200`](https://github.com/finos/legend-studio/commit/b38d8200d0c1e32556c51cf2537b3456731a76c9) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Update the display order of query builder explorer tree nodes' children to show `subtype` nodes last.
+
+## 0.8.0
+
+### Minor Changes
+
+- [#874](https://github.com/finos/legend-studio/pull/874) [`12f61a84`](https://github.com/finos/legend-studio/commit/12f61a840df60708ec062bab6397ec5981de33e6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add attestation confirmation before exporting query data.
+
+## 0.7.0
+
+### Minor Changes
+
+- [#836](https://github.com/finos/legend-studio/pull/836) [`4e08df9a`](https://github.com/finos/legend-studio/commit/4e08df9ae59e50cd5400d5d9bdcf43f1c7d2b423) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for exporting query result.
+
+* [#836](https://github.com/finos/legend-studio/pull/836) [`4e08df9a`](https://github.com/finos/legend-studio/commit/4e08df9ae59e50cd5400d5d9bdcf43f1c7d2b423) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `RawExecutionResult` in result panel for string result types.
+
+## 0.6.3
+
+## 0.6.2
+
+## 0.6.1
+
+### Patch Changes
+
+- [#831](https://github.com/finos/legend-studio/pull/831) [`2637ad6d`](https://github.com/finos/legend-studio/commit/2637ad6d4b3f62daa065c6a4348796dda3968b6d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add parameter instance values when executing unsupported queries.
+
+* [#822](https://github.com/finos/legend-studio/pull/822) [`333c846d`](https://github.com/finos/legend-studio/commit/333c846df6f8eb7f0d5c5e7c156458b61955fc47) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display properties mapped through inheritance mapping in the explorer tree
+
+## 0.6.0
+
+### Minor Changes
+
+- [#787](https://github.com/finos/legend-studio/pull/787) [`cf4be129`](https://github.com/finos/legend-studio/commit/cf4be12998af8931b27f8cbac9e2da57f251dfe0) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support subtype in the filter panel
+
+* [#789](https://github.com/finos/legend-studio/pull/789) [`4cfb5298`](https://github.com/finos/legend-studio/commit/4cfb529843ccee4f0dbbc73777c1d2a1b262733a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Subtype support for graph fetch structure.
+
+## 0.5.0
+
+### Minor Changes
+
+- [#766](https://github.com/finos/legend-studio/pull/766) [`ab7ae357`](https://github.com/finos/legend-studio/commit/ab7ae357be8dbbb8d72a727ccaa18d7d2b140f68) ([@gayathrir11](https://github.com/gayathrir11)) - Allow drag and drop of parameters in Derived Property editor.
+
+## 0.4.1
+
+### Patch Changes
+
+- [#800](https://github.com/finos/legend-studio/pull/800) [`2eba0b37`](https://github.com/finos/legend-studio/commit/2eba0b370ece84968ddde6e236f2f9f9a639f733) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix loading of dependencies for project with version `HEAD` ([#798](https://github.com/finos/legend-studio/issues/798)).
+
+## 0.4.0
+
+### Minor Changes
+
+- [#740](https://github.com/finos/legend-studio/pull/740) [`947e10e4`](https://github.com/finos/legend-studio/commit/947e10e4fabb0a18c31222aa76166c04763f085d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add processing support for subtype in projection fetch structure.
+
+* [#784](https://github.com/finos/legend-studio/pull/784) [`18b60b42`](https://github.com/finos/legend-studio/commit/18b60b42d2a9b2d2c195e80bb6d80be192e7a605) ([@gayathrir11](https://github.com/gayathrir11)) - Support relational operations in filter panel for properties of type `Date`.
+
+- [#737](https://github.com/finos/legend-studio/pull/737) [`81f87eb3`](https://github.com/finos/legend-studio/commit/81f87eb38083981bce556b4c5a3a143beb59e9f6) ([@gayathrir11](https://github.com/gayathrir11)) - Allow configuring query parameters in `unsupported` mode.
+
+* [#741](https://github.com/finos/legend-studio/pull/741) [`eaa1650b`](https://github.com/finos/legend-studio/commit/eaa1650bc33d9d5283502d4e5bfb514c2272854a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display subclasses in explorer tree and add DnD support for these nodes to help build fetch structure.
+
+### Patch Changes
+
+- [#768](https://github.com/finos/legend-studio/pull/768) [`f2927570`](https://github.com/finos/legend-studio/commit/f2927570b2afdc2954912bdbb20058606d2cf8bc) ([@gayathrir11](https://github.com/gayathrir11)) - Handle empty error messages from Engine.
+
 ## 0.3.0
 
 ### Minor Changes

@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-import React, { Fragment, useRef, useEffect, useState } from 'react';
+import { Fragment, useRef, useEffect, useState, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  FaChevronDown,
-  FaChevronRight,
-  FaCompress,
-  FaFolder,
-  FaFolderOpen,
-  FaPlus,
-  FaSearch,
-  FaLock,
-  FaExclamationTriangle,
-  FaFileImport,
-} from 'react-icons/fa';
 import {
   type TreeNodeContainerProps,
   clsx,
+  Dialog,
   MenuContent,
   MenuContentItem,
   MenuContentItemBlankIcon,
@@ -42,6 +31,16 @@ import {
   BlankPanelContent,
   TreeView,
   ProjectConfigurationIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CompressIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  PlusIcon,
+  LockIcon,
+  ExclamationTriangleIcon,
+  SearchIcon,
+  FileImportIcon,
 } from '@finos/legend-art';
 import {
   getElementIcon,
@@ -64,7 +63,6 @@ import {
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
 import { toTitleCase } from '@finos/legend-shared';
-import { Dialog } from '@material-ui/core';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
@@ -175,13 +173,13 @@ const ElementRenamer = observer(() => {
 });
 
 const ExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       node?: PackageTreeNodeData | undefined;
       nodeIsImmutable?: boolean | undefined;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function ExplorerContextMenu(props, ref) {
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore<LegendStudioConfig>();
@@ -288,6 +286,7 @@ const ExplorerContextMenu = observer(
         </MenuContent>
       );
     }
+
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         {extraExplorerContextMenuItems}
@@ -311,8 +310,7 @@ const ExplorerContextMenu = observer(
         )}
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const ProjectConfig = observer(() => {
@@ -374,9 +372,9 @@ const PackageTreeNodeContainer = observer(
     const expandIcon = !isPackage ? (
       <div />
     ) : node.isOpen ? (
-      <FaChevronDown />
+      <ChevronDownIcon />
     ) : (
-      <FaChevronRight />
+      <ChevronRightIcon />
     );
     const iconPackageColor = isGeneratedPackageTreeNode(node)
       ? 'color--generated'
@@ -388,11 +386,11 @@ const PackageTreeNodeContainer = observer(
     const nodeIcon = isPackage ? (
       node.isOpen ? (
         <div className={iconPackageColor}>
-          <FaFolderOpen />
+          <FolderOpenIcon />
         </div>
       ) : (
         <div className={iconPackageColor}>
-          <FaFolder />
+          <FolderIcon />
         </div>
       )
     ) : (
@@ -455,41 +453,38 @@ const PackageTreeNodeContainer = observer(
   },
 );
 
-const ExplorerDropdownMenu = observer(
-  () => {
-    const editorStore = useEditorStore();
-    const _package = editorStore.explorerTreeState.getSelectedNodePackage();
-    const createNewElement =
-      (type: string): (() => void) =>
-      (): void =>
-        editorStore.newElementState.openModal(type, _package);
+const ExplorerDropdownMenu = observer(() => {
+  const editorStore = useEditorStore();
+  const _package = editorStore.explorerTreeState.getSelectedNodePackage();
+  const createNewElement =
+    (type: string): (() => void) =>
+    (): void =>
+      editorStore.newElementState.openModal(type, _package);
 
-    const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
-      .concat(editorStore.getSupportedElementTypes())
-      .filter(
-        // NOTE: we can only create package in root
-        (type) =>
-          _package !== editorStore.graphManagerState.graph.root ||
-          type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
-      );
-
-    return (
-      <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
-        {elementTypes.map((type) => (
-          <MenuContentItem key={type} onClick={createNewElement(type)}>
-            <MenuContentItemIcon>
-              {getElementTypeIcon(editorStore, type)}
-            </MenuContentItemIcon>
-            <MenuContentItemLabel>
-              New {toTitleCase(getElementTypeLabel(editorStore, type))}...
-            </MenuContentItemLabel>
-          </MenuContentItem>
-        ))}
-      </MenuContent>
+  const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
+    .concat(editorStore.getSupportedElementTypes())
+    .filter(
+      // NOTE: we can only create package in root
+      (type) =>
+        _package !== editorStore.graphManagerState.graph.root ||
+        type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
     );
-  },
-  { forwardRef: true },
-);
+
+  return (
+    <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+      {elementTypes.map((type) => (
+        <MenuContentItem key={type} onClick={createNewElement(type)}>
+          <MenuContentItemIcon>
+            {getElementTypeIcon(editorStore, type)}
+          </MenuContentItemIcon>
+          <MenuContentItemLabel>
+            New {toTitleCase(getElementTypeLabel(editorStore, type))}...
+          </MenuContentItemLabel>
+        </MenuContentItem>
+      ))}
+    </MenuContent>
+  );
+});
 
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
@@ -715,7 +710,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           title="Open Model Loader (F2)"
           onClick={showModelLoader}
         >
-          <FaFileImport />
+          <FileImportIcon />
         </button>
       )}
       <DropdownMenu
@@ -742,7 +737,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
             tabIndex={-1}
             title="New Element... (Ctrl + Shift + N)"
           >
-            <FaPlus />
+            <PlusIcon />
           </button>
         )}
       </DropdownMenu>
@@ -753,7 +748,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         tabIndex={-1}
         title="Collapse All"
       >
-        <FaCompress />
+        <CompressIcon />
       </button>
       <button
         className="panel__header__action"
@@ -762,7 +757,7 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         onClick={showSearchModal}
         title="Open Element... (Ctrl + P)"
       >
-        <FaSearch />
+        <SearchIcon />
       </button>
     </div>
   );
@@ -803,7 +798,7 @@ export const Explorer = observer(() => {
         </div>
         {editorStore.isInViewerMode && (
           <div className="panel__header__title side-bar__header__title__viewer-mode-badge">
-            <FaLock />
+            <LockIcon />
             READ-ONLY
           </div>
         )}
@@ -880,7 +875,7 @@ export const Explorer = observer(() => {
                     <BlankPanelContent>
                       <div className="explorer__content__failure-notice">
                         <div className="explorer__content__failure-notice__icon">
-                          <FaExclamationTriangle />
+                          <ExclamationTriangleIcon />
                         </div>
                         <div className="explorer__content__failure-notice__text">
                           Failed to build graph

@@ -22,7 +22,6 @@ import {
   type GenerationSpecNodeDropTarget,
   type GenerationTreeNodeState,
 } from '../../../stores/editor-state/GenerationSpecificationEditorState';
-import { FaFire, FaTimes, FaPlus, FaLongArrowAltRight } from 'react-icons/fa';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import {
   type DropTargetMonitor,
@@ -32,7 +31,6 @@ import {
   useDrop,
 } from 'react-dnd';
 import { getElementIcon } from '../../shared/ElementIconUtils';
-import { MdRefresh } from 'react-icons/md';
 import {
   clsx,
   BlankPanelContent,
@@ -41,7 +39,12 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  FileGenerationIcon,
+  PURE_FileGenerationIcon,
+  RefreshIcon,
+  FireIcon,
+  TimesIcon,
+  PlusIcon,
+  LongArrowRightIcon,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -70,7 +73,7 @@ const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType(),
-      item: monitor.getItem() as GenerationSpecNodeDragSource | null,
+      item: monitor.getItem<GenerationSpecNodeDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
@@ -238,7 +241,7 @@ const ModelGenerationItem = observer(
               tabIndex={-1}
               title={'See mapping'}
             >
-              <FaLongArrowAltRight />
+              <LongArrowRightIcon />
             </button>
             <button
               className="generation-spec-model-generation-editor__item__remove-btn"
@@ -246,7 +249,7 @@ const ModelGenerationItem = observer(
               tabIndex={-1}
               title={'Remove'}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           </>
         )}
@@ -333,7 +336,7 @@ const ModelGenerationSpecifications = observer(
               tabIndex={-1}
               title="Add File Generation"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>
@@ -398,7 +401,7 @@ const FileGenerationItem = observer(
     return (
       <div className="panel__content__form__section__list__item generation-spec-file-generation-editor__item">
         <div className="btn--sm generation-spec-file-generation-editor__item__label">
-          <FileGenerationIcon />
+          <PURE_FileGenerationIcon />
         </div>
         <CustomSelectorInput
           className="generation-spec-file-generation-editor__item__dropdown"
@@ -413,7 +416,7 @@ const FileGenerationItem = observer(
           tabIndex={-1}
           title={'See mapping'}
         >
-          <FaLongArrowAltRight />
+          <LongArrowRightIcon />
         </button>
         <button
           className="generation-spec-file-generation-editor__item__remove-btn"
@@ -421,7 +424,7 @@ const FileGenerationItem = observer(
           tabIndex={-1}
           title={'Remove'}
         >
-          <FaTimes />
+          <TimesIcon />
         </button>
       </div>
     );
@@ -493,7 +496,7 @@ const FileGenerationSpecifications = observer(
               tabIndex={-1}
               title="Add File Generation"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
           </div>
         </div>
@@ -572,7 +575,7 @@ export const GenerationSpecificationEditor = observer(() => {
               onClick={generate}
               title={'Generate'}
             >
-              <FaFire />
+              <FireIcon />
             </button>
             <button
               className={clsx(
@@ -586,7 +589,7 @@ export const GenerationSpecificationEditor = observer(() => {
               tabIndex={-1}
               title="Clear generation entities"
             >
-              <MdRefresh />
+              <RefreshIcon />
             </button>
           </div>
         </div>

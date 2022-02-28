@@ -32,7 +32,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import {
   type MergeEditorComparisonViewInfo,
   type MergeConflict,
-  EntityChangeConflictEditorState,
+  type EntityChangeConflictEditorState,
   ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE,
 } from '../../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import {
@@ -42,7 +42,6 @@ import {
   isNonNullable,
   hashObject,
 } from '@finos/legend-shared';
-import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
 import {
   clsx,
   CustomSelectorInput,
@@ -55,13 +54,14 @@ import {
   resetLineNumberGutterWidth,
   getEditorValue,
   normalizeLineEnding,
+  CompareIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView';
-import { MdCompareArrows } from 'react-icons/md';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
-import { useEditorStore } from '../../EditorStoreProvider';
 
 const getConflictSummaryText = (
   conflictEditorState: EntityChangeConflictEditorState,
@@ -615,7 +615,7 @@ const getMergeEditorViewModeOption = (
             {getPrettyLabelForRevision(modeComparisonViewInfo.fromRevision)}
           </div>
           <div className="entity-change-conflict-editor__header__action__view-dropdown__option__summary__icon">
-            <MdCompareArrows />
+            <CompareIcon />
           </div>
           <div className="entity-change-conflict-editor__header__action__view-dropdown__option__summary__revision">
             {getPrettyLabelForRevision(modeComparisonViewInfo.toRevision)}
@@ -626,173 +626,175 @@ const getMergeEditorViewModeOption = (
   ),
 });
 
-export const EntityChangeConflictEditor = observer(() => {
-  const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const conflictEditorState = editorStore.getCurrentEditorState(
-    EntityChangeConflictEditorState,
-  );
-  const isReadOnly = conflictEditorState.isReadOnly;
-  // this call might be expensive so we debounce it
-  const debouncedUpdateMergeConflicts = useMemo(
-    () => debounce(() => conflictEditorState.refreshMergeConflict(), 20),
-    [conflictEditorState],
-  );
-  // header actions
-  const goToPreviousConflict = (): void => {
-    if (conflictEditorState.previousConflict) {
-      conflictEditorState.setCurrentMergeEditorConflict(
-        conflictEditorState.previousConflict,
-      );
-    }
-  };
-  const goToNextConflict = (): void => {
-    if (conflictEditorState.nextConflict) {
-      conflictEditorState.setCurrentMergeEditorConflict(
-        conflictEditorState.nextConflict,
-      );
-    }
-  };
-  // resolutions
-  const markAsResolved = applicationStore.guaranteeSafeAction(() =>
-    flowResult(conflictEditorState.markAsResolved()),
-  );
-  const useTheirs = applicationStore.guaranteeSafeAction(() =>
-    flowResult(conflictEditorState.useIncomingChanges()),
-  );
-  const useYours = applicationStore.guaranteeSafeAction(() =>
-    flowResult(conflictEditorState.useCurrentChanges()),
-  );
-  // mode
-  const currentMode = conflictEditorState.currentMode;
-  const currentModeComparisonViewInfo =
-    conflictEditorState.getModeComparisonViewInfo(currentMode);
-  const onModeChange = (val: {
-    value: ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE;
-  }): void => conflictEditorState.setCurrentMode(val.value);
-
-  useEffect(() => {
-    flowResult(conflictEditorState.refresh()).catch(
-      applicationStore.alertIllegalUnhandledError,
+export const EntityChangeConflictEditor = observer(
+  (props: { conflictEditorState: EntityChangeConflictEditorState }) => {
+    const applicationStore = useApplicationStore();
+    const { conflictEditorState } = props;
+    const isReadOnly = conflictEditorState.isReadOnly;
+    // this call might be expensive so we debounce it
+    const debouncedUpdateMergeConflicts = useMemo(
+      () => debounce(() => conflictEditorState.refreshMergeConflict(), 20),
+      [conflictEditorState],
     );
-  }, [applicationStore, conflictEditorState]);
+    // header actions
+    const goToPreviousConflict = (): void => {
+      if (conflictEditorState.previousConflict) {
+        conflictEditorState.setCurrentMergeEditorConflict(
+          conflictEditorState.previousConflict,
+        );
+      }
+    };
+    const goToNextConflict = (): void => {
+      if (conflictEditorState.nextConflict) {
+        conflictEditorState.setCurrentMergeEditorConflict(
+          conflictEditorState.nextConflict,
+        );
+      }
+    };
+    // resolutions
+    const markAsResolved = applicationStore.guaranteeSafeAction(() =>
+      flowResult(conflictEditorState.markAsResolved()),
+    );
+    const useTheirs = applicationStore.guaranteeSafeAction(() =>
+      flowResult(conflictEditorState.useIncomingChanges()),
+    );
+    const useYours = applicationStore.guaranteeSafeAction(() =>
+      flowResult(conflictEditorState.useCurrentChanges()),
+    );
+    // mode
+    const currentMode = conflictEditorState.currentMode;
+    const currentModeComparisonViewInfo =
+      conflictEditorState.getModeComparisonViewInfo(currentMode);
+    const onModeChange = (val: {
+      value: ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE;
+    }): void => conflictEditorState.setCurrentMode(val.value);
 
-  useEffect(() => {
-    debouncedUpdateMergeConflicts.cancel();
-    debouncedUpdateMergeConflicts();
-  }, [
-    conflictEditorState,
-    conflictEditorState.mergedText,
-    debouncedUpdateMergeConflicts,
-  ]);
+    useEffect(() => {
+      flowResult(conflictEditorState.refresh()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }, [applicationStore, conflictEditorState]);
 
-  // reset transient merge editor states (e.g. cursor position, current merge conflict, etc.) as we exit the tab
-  useEffect(
-    () => (): void => conflictEditorState.resetMergeEditorStateOnLeave(),
-    [conflictEditorState],
-  );
+    useEffect(() => {
+      debouncedUpdateMergeConflicts.cancel();
+      debouncedUpdateMergeConflicts();
+    }, [
+      conflictEditorState,
+      conflictEditorState.mergedText,
+      debouncedUpdateMergeConflicts,
+    ]);
 
-  return (
-    <div className="entity-change-conflict-editor">
-      <div className="entity-change-conflict-editor__header">
-        <div className="entity-change-conflict-editor__header__info">
-          <div className="entity-change-conflict-editor__header__info__tag">
-            <div className="entity-change-conflict-editor__header__info__tag__text">
-              {isReadOnly
-                ? 'Merge preview'
-                : conflictEditorState.mergeSucceeded
-                ? 'Merged successfully'
-                : 'Merged with conflict(s)'}
+    // reset transient merge editor states (e.g. cursor position, current merge conflict, etc.) as we exit the tab
+    useEffect(
+      () => (): void => conflictEditorState.resetMergeEditorStateOnLeave(),
+      [conflictEditorState],
+    );
+
+    return (
+      <div className="entity-change-conflict-editor">
+        <div className="entity-change-conflict-editor__header">
+          <div className="entity-change-conflict-editor__header__info">
+            <div className="entity-change-conflict-editor__header__info__tag">
+              <div className="entity-change-conflict-editor__header__info__tag__text">
+                {isReadOnly
+                  ? 'Merge preview'
+                  : conflictEditorState.mergeSucceeded
+                  ? 'Merged successfully'
+                  : 'Merged with conflict(s)'}
+              </div>
+            </div>
+            <div className="entity-change-conflict-editor__header__info__comparison-summary">
+              {getConflictSummaryText(conflictEditorState)}
             </div>
           </div>
-          <div className="entity-change-conflict-editor__header__info__comparison-summary">
-            {getConflictSummaryText(conflictEditorState)}
+          <div className="entity-change-conflict-editor__header__info__tag">
+            <div className="entity-change-conflict-editor__header__info__tag__text">
+              {conflictEditorState.mergeConflicts.length} conflict(s)
+            </div>
           </div>
         </div>
-        <div className="entity-change-conflict-editor__header__info__tag">
-          <div className="entity-change-conflict-editor__header__info__tag__text">
-            {conflictEditorState.mergeConflicts.length} conflict(s)
-          </div>
-        </div>
-      </div>
-      <div className="entity-change-conflict-editor__header__actions">
-        <div className="entity-change-conflict-editor__header__actions__main">
-          <button
-            className="btn--dark btn--sm entity-change-conflict-editor__header__action"
-            disabled={!conflictEditorState.previousConflict}
-            onClick={goToPreviousConflict}
-            title={'Previous conflict'}
-          >
-            <FaArrowUp />
-          </button>
-          <button
-            className="btn--dark btn--sm entity-change-conflict-editor__header__action"
-            disabled={!conflictEditorState.nextConflict}
-            onClick={goToNextConflict}
-            title={'Next conflict'}
-          >
-            <FaArrowDown />
-          </button>
-          <CustomSelectorInput
-            className="entity-change-conflict-editor__header__action__view-dropdown"
-            options={Object.values(ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE).map(
-              (mode) =>
+        <div className="entity-change-conflict-editor__header__actions">
+          <div className="entity-change-conflict-editor__header__actions__main">
+            <button
+              className="btn--dark btn--sm entity-change-conflict-editor__header__action"
+              disabled={!conflictEditorState.previousConflict}
+              onClick={goToPreviousConflict}
+              title={'Previous conflict'}
+            >
+              <ArrowUpIcon />
+            </button>
+            <button
+              className="btn--dark btn--sm entity-change-conflict-editor__header__action"
+              disabled={!conflictEditorState.nextConflict}
+              onClick={goToNextConflict}
+              title={'Next conflict'}
+            >
+              <ArrowDownIcon />
+            </button>
+            <CustomSelectorInput
+              className="entity-change-conflict-editor__header__action__view-dropdown"
+              options={Object.values(
+                ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE,
+              ).map((mode) =>
                 getMergeEditorViewModeOption(
                   mode,
                   conflictEditorState.getModeComparisonViewInfo(mode),
                 ),
-            )}
-            isSearchable={false}
-            onChange={onModeChange}
-            value={getMergeEditorViewModeOption(
-              currentMode,
-              conflictEditorState.getModeComparisonViewInfo(currentMode),
-            )}
-            darkMode={true}
-          />
+              )}
+              isSearchable={false}
+              onChange={onModeChange}
+              value={getMergeEditorViewModeOption(
+                currentMode,
+                conflictEditorState.getModeComparisonViewInfo(currentMode),
+              )}
+              darkMode={true}
+            />
+          </div>
         </div>
-      </div>
-      <div
-        className={clsx('entity-change-conflict-editor__content', {
-          'entity-change-conflict-editor__content--read-only': isReadOnly,
-        })}
-      >
-        {currentMode === ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.MERGE_VIEW && (
-          <MergeConflictEditor conflictEditorState={conflictEditorState} />
-        )}
-        {currentMode !== ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.MERGE_VIEW && (
-          <TextDiffView
-            language={EDITOR_LANGUAGE.PURE}
-            from={currentModeComparisonViewInfo.fromGrammarText ?? ''}
-            to={currentModeComparisonViewInfo.toGrammarText ?? ''}
-          />
-        )}
-      </div>
-      {!isReadOnly && (
-        <div className="entity-change-conflict-editor__actions">
-          <button
-            className="btn--dark btn--important  entity-change-conflict-editor__action entity-change-conflict-editor__action__use-yours-btn"
-            disabled={!conflictEditorState.canUseYours}
-            onClick={useYours}
-          >
-            Use yours
-          </button>
-          <button
-            className="btn--dark btn--important entity-change-conflict-editor__action entity-change-conflict-editor__action__use-theirs-btn"
-            disabled={!conflictEditorState.canUseTheirs}
-            onClick={useTheirs}
-          >
-            Use Theirs
-          </button>
-          <button
-            className="btn--dark btn--important entity-change-conflict-editor__action"
-            disabled={!conflictEditorState.canMarkAsResolved}
-            onClick={markAsResolved}
-          >
-            Mark as resolved
-          </button>
+        <div
+          className={clsx('entity-change-conflict-editor__content', {
+            'entity-change-conflict-editor__content--read-only': isReadOnly,
+          })}
+        >
+          {currentMode ===
+            ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.MERGE_VIEW && (
+            <MergeConflictEditor conflictEditorState={conflictEditorState} />
+          )}
+          {currentMode !==
+            ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE.MERGE_VIEW && (
+            <TextDiffView
+              language={EDITOR_LANGUAGE.PURE}
+              from={currentModeComparisonViewInfo.fromGrammarText ?? ''}
+              to={currentModeComparisonViewInfo.toGrammarText ?? ''}
+            />
+          )}
         </div>
-      )}
-    </div>
-  );
-});
+        {!isReadOnly && (
+          <div className="entity-change-conflict-editor__actions">
+            <button
+              className="btn--dark btn--important  entity-change-conflict-editor__action entity-change-conflict-editor__action__use-yours-btn"
+              disabled={!conflictEditorState.canUseYours}
+              onClick={useYours}
+            >
+              Use yours
+            </button>
+            <button
+              className="btn--dark btn--important entity-change-conflict-editor__action entity-change-conflict-editor__action__use-theirs-btn"
+              disabled={!conflictEditorState.canUseTheirs}
+              onClick={useTheirs}
+            >
+              Use Theirs
+            </button>
+            <button
+              className="btn--dark btn--important entity-change-conflict-editor__action"
+              disabled={!conflictEditorState.canMarkAsResolved}
+              onClick={markAsResolved}
+            >
+              Mark as resolved
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  },
+);

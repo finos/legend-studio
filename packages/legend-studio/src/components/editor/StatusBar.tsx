@@ -15,17 +15,19 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  FaFire,
-  FaCodeBranch,
-  FaRegWindowMaximize,
-  FaTerminal,
-  FaUserSecret,
-  FaBrush,
-} from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
-import { clsx, HammerIcon } from '@finos/legend-art';
-import { GoSync } from 'react-icons/go';
+import {
+  clsx,
+  HammerIcon,
+  SyncIcon,
+  FireIcon,
+  CodeBranchIcon,
+  WindowMaximizeIcon,
+  TerminalIcon,
+  HackerIcon,
+  BrushIcon,
+  CloudUploadIcon,
+} from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
 import {
@@ -62,15 +64,17 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         ? ACTIVITY_MODE.CONFLICT_RESOLUTION
         : ACTIVITY_MODE.WORKSPACE_UPDATER,
     );
+  const goToLocalChanges = (): void =>
+    editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
   // Change Detection
   const changes =
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length;
   const configurationState = editorStore.projectConfigurationEditorState;
-  const syncWithWorkspace = applicationStore.guaranteeSafeAction(() =>
-    flowResult(editorStore.localChangesState.syncWithWorkspace()),
+  const pushLocalChanges = applicationStore.guaranteeSafeAction(() =>
+    flowResult(editorStore.localChangesState.pushLocalChanges()),
   );
-  const syncStatusText =
+  const pushStatusText =
     editorStore.graphManagerState.graph.buildState.hasFailed ||
     editorStore.changeDetectionState.forcedStop
       ? 'change detection halted'
@@ -78,16 +82,18 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       ? !editorStore.changeDetectionState.hasChangeDetectionStarted
         ? 'starting change detection...'
         : 'restarting change detection...'
-      : editorStore.changeDetectionState.workspaceLatestRevisionState
+      : editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .isBuildingEntityHashesIndex
       ? 'building indexes...'
-      : editorStore.localChangesState.isSyncingWithWorkspace
-      ? 'syncing with workspace...'
+      : editorStore.localChangesState.pushChangesState.isInProgress
+      ? 'pushing local changes...'
       : configurationState.isUpdatingConfiguration
       ? 'updating configuration...'
       : changes
-      ? `${changes} unsynced changes`
-      : 'synced with workspace';
+      ? `${changes} unpushed changes`
+      : 'no changes detected';
+  const workspaceOutOfSync =
+    !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
   // Conflict resolution
   const conflicts = editorStore.conflictResolutionState.conflicts.length;
   const acceptConflictResolution = applicationStore.guaranteeSafeAction(() =>
@@ -101,7 +107,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       ? !editorStore.changeDetectionState.hasChangeDetectionStarted
         ? 'starting change detection...'
         : 'restarting change detection...'
-      : editorStore.changeDetectionState.workspaceLatestRevisionState
+      : editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .isBuildingEntityHashesIndex
       ? 'building indexes...'
       : editorStore.conflictResolutionState.isAcceptingConflictResolution
@@ -143,7 +149,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       <div className="editor__status-bar__left">
         <div className="editor__status-bar__workspace">
           <div className="editor__status-bar__workspace__icon">
-            <FaCodeBranch />
+            <CodeBranchIcon />
           </div>
           <div className="editor__status-bar__workspace__project">
             <Link
@@ -168,13 +174,25 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               {workspaceId}
             </Link>
           </div>
-          {editorStore.sdlcState.isWorkspaceOutdated && (
+          {workspaceOutOfSync && (
+            <button
+              className="editor__status-bar__workspace__status"
+              tabIndex={-1}
+              onClick={goToLocalChanges}
+              title={
+                'Local workspace is out-of-sync. Click to see incoming changes to your workspace.'
+              }
+            >
+              OUT-OF-SYNC
+            </button>
+          )}
+          {editorStore.sdlcState.isWorkspaceOutdated && !workspaceOutOfSync && (
             <button
               className="editor__status-bar__workspace__status"
               tabIndex={-1}
               onClick={goToWorkspaceUpdater}
               title={
-                'Workspace is outdated. Click to see project latest changes'
+                'Workspace is outdated. Click to see latest changes of the project'
               }
             >
               OUTDATED
@@ -187,13 +205,13 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         className="editor__status-bar__right"
       >
         {isInConflictResolutionMode && (
-          <div className="editor__status-bar__sync">
-            <div className="editor__status-bar__sync__status">
+          <div className="editor__status-bar__workspace-sync">
+            <div className="editor__status-bar__workspace-sync__status">
               {conflictResolutionStatusText}
             </div>
             <button
-              className={clsx('editor__status-bar__sync__btn', {
-                'editor__status-bar__sync__btn--spinning':
+              className={clsx('editor__status-bar__push-changes__btn', {
+                'editor__status-bar__push-changes__btn--loading':
                   editorStore.conflictResolutionState
                     .isAcceptingConflictResolution,
               })}
@@ -201,7 +219,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               disabled={
                 Boolean(conflicts) ||
                 !editorStore.conflictResolutionState.hasResolvedAllConflicts ||
-                editorStore.localChangesState.isSyncingWithWorkspace ||
+                editorStore.localChangesState.pushChangesState.isInProgress ||
                 editorStore.workspaceUpdaterState.isUpdatingWorkspace ||
                 editorStore.conflictResolutionState
                   .isInitializingConflictResolution ||
@@ -214,34 +232,35 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               tabIndex={-1}
               title={'Accept conflict resolution'}
             >
-              <GoSync />
+              <SyncIcon />
             </button>
           </div>
         )}
         {!isInConflictResolutionMode && (
-          <div className="editor__status-bar__sync">
-            <div className="editor__status-bar__sync__status">
-              {syncStatusText}
+          <div className="editor__status-bar__workspace-sync">
+            <div className="editor__status-bar__workspace-sync__status">
+              {pushStatusText}
             </div>
             <button
-              className={clsx('editor__status-bar__sync__btn', {
-                'editor__status-bar__sync__btn--spinning':
-                  editorStore.localChangesState.isSyncingWithWorkspace ||
+              className={clsx('editor__status-bar__push-changes__btn', {
+                'editor__status-bar__push-changes__btn--loading':
+                  editorStore.localChangesState.pushChangesState.isInProgress ||
                   configurationState.isUpdatingConfiguration,
               })}
-              onClick={syncWithWorkspace}
+              onClick={pushLocalChanges}
               disabled={
                 !changes ||
                 configurationState.isUpdatingConfiguration ||
-                editorStore.localChangesState.isSyncingWithWorkspace ||
-                editorStore.changeDetectionState.workspaceLatestRevisionState
+                editorStore.localChangesState.pushChangesState.isInProgress ||
+                editorStore.changeDetectionState
+                  .workspaceLocalLatestRevisionState
                   .isBuildingEntityHashesIndex ||
                 actionsDisabled
               }
               tabIndex={-1}
-              title={'Sync with workspace (Ctrl + S)'}
+              title={'Push local changes (Ctrl + S)'}
             >
-              <GoSync />
+              <CloudUploadIcon />
             </button>
           </div>
         )}
@@ -264,7 +283,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Generate (F10)'}
         >
-          <FaFire />
+          <FireIcon />
         </button>
         <button
           className={clsx(
@@ -283,7 +302,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Clear generation entities'}
         >
-          <FaBrush />
+          <BrushIcon />
         </button>
         <button
           className={clsx(
@@ -315,7 +334,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Maximize/Minimize'}
         >
-          <FaRegWindowMaximize />
+          <WindowMaximizeIcon />
         </button>
         <button
           className={clsx(
@@ -329,7 +348,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Toggle auxiliary panel (Ctrl + `)'}
         >
-          <FaTerminal />
+          <TerminalIcon />
         </button>
         <button
           className={clsx(
@@ -344,7 +363,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           tabIndex={-1}
           title={'Toggle text mode (F8)'}
         >
-          <FaUserSecret />
+          <HackerIcon />
         </button>
       </div>
     </div>

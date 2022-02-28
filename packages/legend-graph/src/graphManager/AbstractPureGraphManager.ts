@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { ExecutionResult } from './action/execution/ExecutionResult';
+import type {
+  ExecutionResult,
+  EXECUTION_SERIALIZATION_FORMAT,
+} from './action/execution/ExecutionResult';
 import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult';
 import type { Service } from '../models/metamodels/pure/packageableElements/service/Service';
 import type {
@@ -71,6 +74,15 @@ export interface GraphBuilderOptions {
   TEMPORARY__keepSectionIndex?: boolean;
   // when we change our handling of section index, we should be able to get rid of this flag.
   TEMPORARY__disableRawLambdaResolver?: boolean;
+}
+
+export interface ExecutionOptions {
+  /**
+   * Use lossless algorithm while parsing the execution result object.
+   * NOTE: This will result in numeric values being stored as object instead of primitive type number values.
+   */
+  useLosslessParse?: boolean | undefined;
+  serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
 export abstract class AbstractPureGraphManager {
@@ -147,7 +159,12 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Grammar -------------------------------------------
 
   abstract graphToPureCode(graph: PureModel): Promise<string>;
-  abstract pureCodeToEntities(code: string): Promise<Entity[]>;
+  abstract pureCodeToEntities(
+    code: string,
+    options?: {
+      TEMPORARY__keepSectionIndex?: boolean;
+    },
+  ): Promise<Entity[]>;
   abstract entitiesToPureCode(entities: Entity[]): Promise<string>;
   abstract pureCodeToLambda(
     lambda: string,
@@ -244,11 +261,7 @@ export abstract class AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-    /**
-     * Use lossless algorithm while parsing the execution result object.
-     * NOTE: This will result in numeric values being stored as object instead of primitive type number values.
-     */
-    lossless: boolean,
+    options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
   abstract generateMappingTestData(

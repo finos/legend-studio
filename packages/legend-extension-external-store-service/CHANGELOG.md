@@ -1,5 +1,35 @@
 # @finos/legend-extension-external-store-service
 
+## 1.0.17
+
+## 1.0.16
+
+## 1.0.15
+
+## 1.0.14
+
+### Patch Changes
+
+- [#854](https://github.com/finos/legend-studio/pull/854) [`da8de4e9`](https://github.com/finos/legend-studio/commit/da8de4e9073c6f42c96cf807fab2354c79f11782) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Add allowReserved config for service store parameters.
+
+## 1.0.13
+
+## 1.0.12
+
+## 1.0.11
+
+## 1.0.10
+
+## 1.0.9
+
+## 1.0.8
+
+### Patch Changes
+
+- [#790](https://github.com/finos/legend-studio/pull/790) [`37dda241`](https://github.com/finos/legend-studio/commit/37dda2415330b7488d7309cb0ea38c9b748bc544) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Added support for specifying pathOffset for service store mapping.
+
+## 1.0.7
+
 ## 1.0.6
 
 ## 1.0.5

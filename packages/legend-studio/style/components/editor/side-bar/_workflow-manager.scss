@@ -1,0 +1,154 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.workflow-manager {
+  &__header__title {
+    width: calc(100% - 3.4rem);
+  }
+
+  &__refresh-btn svg {
+    font-size: 1.7rem;
+  }
+
+  &__refresh-btn--loading svg {
+    animation: spin 1s infinite ease;
+  }
+
+  &__item__link {
+    color: var(--color-dark-grey-500);
+    text-decoration: none;
+  }
+
+  &__item__link__content {
+    @include ellipsisTextOverflow;
+  }
+
+  &__item__link__content__status__indicator {
+    display: inline-flex;
+    vertical-align: middle;
+
+    svg {
+      font-size: 1.5rem;
+    }
+
+    &--succeeded svg {
+      color: var(--color-green-100);
+    }
+
+    &--failed svg {
+      color: var(--color-red-100);
+    }
+
+    &--in-progress svg {
+      animation: spin 1s infinite ease;
+      color: var(--color-blue-100);
+    }
+
+    &--suspended svg {
+      color: var(--color-yellow-400);
+    }
+
+    &--unknown svg,
+    &--canceled svg {
+      color: var(--color-dark-grey-500);
+    }
+  }
+
+  &__item__link__content__id {
+    color: var(--color-light-grey-400);
+  }
+
+  &__item__link__content__created-at {
+    margin-left: 1rem;
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-500);
+  }
+
+  &__explorer {
+    &__workflow-tree__node__container:hover {
+      background: var(--color-dark-blue-shade-100);
+    }
+
+    &__workflow-tree__node__container--selected,
+    &__workflow-tree__node__container--selected:hover {
+      background: var(--color-light-blue-450);
+    }
+
+    &__workflow-tree__node__icon {
+      width: 4rem;
+      min-width: 4rem;
+    }
+
+    &__workflow-tree__node__icon__expand,
+    &__workflow-tree__node__icon__type {
+      width: 2rem;
+
+      @include flexHCenter;
+    }
+
+    &__workflow-tree__node__icon__expand svg {
+      font-size: 1rem;
+    }
+
+    &__workflow-tree__node__label {
+      color: inherit;
+    }
+  }
+}
+
+.workspace-workflow-jobs {
+  &__item__link {
+    color: var(--color-dark-grey-500);
+    text-decoration: none;
+  }
+
+  &__item__link__content {
+    @include ellipsisTextOverflow;
+  }
+
+  &__item__link__content__status__indicator {
+    display: inline-flex;
+    vertical-align: middle;
+
+    svg {
+      font-size: 1.5rem;
+    }
+
+    &--succeeded svg {
+      color: var(--color-green-100);
+    }
+
+    &--failed svg {
+      color: var(--color-red-100);
+    }
+
+    &--in-progress svg {
+      animation: spin 1s infinite ease;
+      color: var(--color-blue-100);
+    }
+
+    &--suspended svg {
+      color: var(--color-yellow-400);
+    }
+
+    &--unknown svg,
+    &--canceled svg {
+      color: var(--color-dark-grey-500);
+    }
+  }
+}

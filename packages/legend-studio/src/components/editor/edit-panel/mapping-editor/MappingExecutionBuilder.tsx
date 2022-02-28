@@ -17,6 +17,7 @@
 import { Fragment, useState, useRef, useCallback } from 'react';
 import { flowResult } from 'mobx';
 import {
+  Dialog,
   type SelectComponent,
   ResizablePanelGroup,
   ResizablePanel,
@@ -34,9 +35,10 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
+  RefreshIcon,
+  PaperScrollIcon,
+  RobotIcon,
 } from '@finos/legend-art';
-import { FaScroll, FaRobot } from 'react-icons/fa';
-import { MdRefresh } from 'react-icons/md';
 import { observer } from 'mobx-react-lite';
 import {
   type MappingEditorState,
@@ -49,7 +51,6 @@ import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
 } from '../../../../stores/shared/DnDUtil';
-import Dialog from '@material-ui/core/Dialog';
 import { guaranteeType, uniq } from '@finos/legend-shared';
 import {
   type MappingExecutionState,
@@ -603,7 +604,7 @@ export const MappingExecutionInputDataBuilder = observer(
               onClick={showClassMappingSelectorModal}
               title={'Regenerate...'}
             >
-              <MdRefresh className="mapping-execution-builder__icon--refresh" />
+              <RefreshIcon className="mapping-execution-builder__icon--refresh" />
             </button>
             <button
               className="panel__header__action"
@@ -684,7 +685,7 @@ export const MappingExecutionBuilder = observer(
               tabIndex={-1}
               title="View Execution Plan"
             >
-              <FaScroll className="mapping-execution-builder__icon__generate-plan" />
+              <PaperScrollIcon className="mapping-execution-builder__icon__generate-plan" />
             </button>
             {!mappingEditorState.isReadOnly && (
               <button
@@ -699,7 +700,7 @@ export const MappingExecutionBuilder = observer(
                 tabIndex={-1}
                 title="Promote to Service..."
               >
-                <FaRobot />
+                <RobotIcon />
               </button>
             )}
             {!mappingEditorState.isReadOnly && (

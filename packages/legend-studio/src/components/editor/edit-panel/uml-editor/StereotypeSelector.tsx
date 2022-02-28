@@ -16,8 +16,12 @@
 
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FaTimes, FaArrowAltCircleRight } from 'react-icons/fa';
-import { CustomSelectorInput, createFilter } from '@finos/legend-art';
+import {
+  CustomSelectorInput,
+  createFilter,
+  TimesIcon,
+  ArrowCircleRightIcon,
+} from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type {
@@ -61,12 +65,10 @@ export const StereotypeSelector = observer(
     const visitProfile = (): void =>
       editorStore.openElement(selectedProfile.value);
     // Stereotype
-    const stereotypeOptions = selectedProfile.value.stereotypes.map(
-      (stereotype) => ({
-        label: stereotype.value,
-        value: stereotype,
-      }),
-    );
+    const stereotypeOptions = selectedProfile.value.stereotypes.map((st) => ({
+      label: st.value,
+      value: st,
+    }));
     const stereotypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
@@ -97,7 +99,7 @@ export const StereotypeSelector = observer(
             tabIndex={-1}
             title={'Visit profile'}
           >
-            <FaArrowAltCircleRight />
+            <ArrowCircleRightIcon />
           </button>
         </div>
         <CustomSelectorInput
@@ -117,7 +119,7 @@ export const StereotypeSelector = observer(
             tabIndex={-1}
             title={'Remove'}
           >
-            <FaTimes />
+            <TimesIcon />
           </button>
         )}
       </div>

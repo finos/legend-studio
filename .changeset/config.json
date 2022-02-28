@@ -1,13 +1,16 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@1.6.1/schema.json",
+  "$schema": "https://unpkg.com/@changesets/config@1.7.0/schema.json",
   "changelog": [
     "@finos/legend-dev-utils/ChangesetChangelogUtils",
     { "repo": "finos/legend-studio" }
   ],
   "commit": false,
-  "linked": [["@finos/legend-*-app", "@finos/legend-*-deployment"]],
+  "fixed": [["@finos/legend-*-app", "@finos/legend-*-deployment"]],
   "access": "public",
   "baseBranch": "master",
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "updateInternalDependents": "always"
+  },
   "updateInternalDependencies": "patch",
   "bumpVersionsWithWorkspaceProtocolOnly": true,
   "ignore": ["@finos/legend-fixture-*", "@finos/legend-internal-*"]

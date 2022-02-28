@@ -17,6 +17,7 @@
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  Dialog,
   type SelectComponent,
   CustomSelectorInput,
   createFilter,
@@ -26,7 +27,6 @@ import {
   type MappingEditorState,
   type MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import Dialog from '@material-ui/core/Dialog';
 import {
   type InstanceSetImplementation,
   type View,

@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  FaChevronDown,
-  FaChevronRight,
-  FaCompress,
-  FaExpand,
-  FaBrush,
-  FaFolderPlus,
-  FaPlus,
-  FaPlusCircle,
-  FaTimes,
-  FaCircle,
-  FaCaretDown,
-} from 'react-icons/fa';
-import { BsFillTriangleFill } from 'react-icons/bs';
 import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
   clsx,
+  ClickAwayListener,
   ContextMenu,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
   BlankPanelPlaceholder,
+  FilledTriangleIcon,
+  RefreshIcon,
+  CompressIcon,
+  ExpandIcon,
+  BrushIcon,
+  NewFolderIcon,
+  CircleIcon,
+  CaretDownIcon,
+  PlusIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PlusCircleIcon,
+  TimesIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -52,7 +52,6 @@ import {
   QueryBuilderFilterTreeBlankConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
 } from '../stores/QueryBuilderFilterState';
-import { ClickAwayListener } from '@material-ui/core';
 import {
   type DropTargetMonitor,
   useDragLayer,
@@ -76,13 +75,12 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
-import { MdRefresh } from 'react-icons/md';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType() as QUERY_BUILDER_FILTER_DND_TYPE,
-      item: monitor.getItem() as QueryBuilderFilterConditionDragSource | null,
+      item: monitor.getItem<QueryBuilderFilterConditionDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
@@ -154,7 +152,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
             {node.groupOperation}
           </div>
           <button className="query-builder-filter-tree__group-node__action">
-            <BsFillTriangleFill />
+            <FilledTriangleIcon />
           </button>
         </div>
       </div>
@@ -249,7 +247,7 @@ const QueryBuilderFilterConditionEditor = observer(
               tabIndex={-1}
               title="Choose Operator..."
             >
-              <FaCaretDown />
+              <CaretDownIcon />
             </button>
           </DropdownMenu>
           {node.condition.value && (
@@ -301,13 +299,13 @@ const QueryBuilderFilterBlankConditionEditor = observer(
 );
 
 const QueryBuilderFilterConditionContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       queryBuilderState: QueryBuilderState;
       node: QueryBuilderFilterTreeNodeData;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function QueryBuilderFilterConditionContextMenu(props, ref) {
     const { queryBuilderState, node } = props;
     const filterState = queryBuilderState.filterState;
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
@@ -347,8 +345,7 @@ const QueryBuilderFilterConditionContextMenu = observer(
         <MenuContentItem onClick={removeNode}>Remove</MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const QueryBuilderFilterTreeNodeContainer = observer(
@@ -524,7 +521,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 className="query-builder-filter-tree__expand-icon"
                 onClick={toggleExpandNode}
               >
-                {node.isOpen ? <FaChevronDown /> : <FaChevronRight />}
+                {node.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
               </div>
             )}
             <div
@@ -564,7 +561,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 title="Reset Filter Value"
                 onClick={resetNode}
               >
-                <MdRefresh style={{ fontSize: '1.6rem' }} />
+                <RefreshIcon style={{ fontSize: '1.6rem' }} />
               </button>
             )}
             <button
@@ -573,7 +570,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
               title="Remove"
               onClick={removeNode}
             >
-              <FaTimes />
+              <TimesIcon />
             </button>
           </div>
         </div>
@@ -780,7 +777,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Create Condition"
             >
-              <FaPlus />
+              <PlusIcon />
             </button>
             <button
               className="panel__header__action"
@@ -794,7 +791,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Create Group From Condition"
             >
-              <FaPlusCircle />
+              <PlusCircleIcon />
             </button>
             <button
               className="panel__header__action"
@@ -803,7 +800,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Create Logical Group"
             >
-              <FaFolderPlus />
+              <NewFolderIcon />
             </button>
             <button
               className="panel__header__action"
@@ -811,7 +808,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Cleanup Tree"
             >
-              <FaBrush />
+              <BrushIcon />
             </button>
             <button
               className="panel__header__action"
@@ -819,7 +816,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Simplify Tree"
             >
-              <FaCircle />
+              <CircleIcon />
             </button>
             <button
               className="panel__header__action"
@@ -827,7 +824,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Collapse Tree"
             >
-              <FaCompress />
+              <CompressIcon />
             </button>
             <button
               className="panel__header__action"
@@ -835,7 +832,7 @@ export const QueryBuilderFilterPanel = observer(
               tabIndex={-1}
               title="Expand Tree"
             >
-              <FaExpand />
+              <ExpandIcon />
             </button>
           </div>
         </div>

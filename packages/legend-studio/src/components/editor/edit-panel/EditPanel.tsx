@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
-import { FaTimes, FaPlus, FaArrowsAltH } from 'react-icons/fa';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -23,6 +22,9 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
+  TimesIcon,
+  PlusIcon,
+  ArrowsAltHIcon,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor';
 import { UMLEditor } from './uml-editor/UMLEditor';
@@ -93,7 +95,7 @@ export const ViewerEditPanelSplashScreen: React.FC = () => {
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>
             <div className="hotkey__plus">
-              <FaPlus />
+              <PlusIcon />
             </div>
             <div className="hotkey__key">P</div>
           </div>
@@ -129,19 +131,19 @@ export const EditPanelSplashScreen: React.FC = () => {
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>
             <div className="hotkey__plus">
-              <FaPlus />
+              <PlusIcon />
             </div>
             <div className="hotkey__key">P</div>
           </div>
         </div>
         <div className="edit-panel__splash-screen__content__item">
           <div className="edit-panel__splash-screen__content__item__label">
-            Sync with Workspace
+            Push Local Changes
           </div>
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>
             <div className="hotkey__plus">
-              <FaPlus />
+              <PlusIcon />
             </div>
             <div className="hotkey__key">S</div>
           </div>
@@ -168,12 +170,12 @@ export const EditPanelSplashScreen: React.FC = () => {
 };
 
 const EditPanelHeaderTabContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       editorState: EditorState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function EditPanelHeaderTabContextMenu(props, ref) {
     const { editorState } = props;
     const editorStore = useEditorStore();
     const close = (): void => editorStore.closeState(editorState);
@@ -204,8 +206,7 @@ const EditPanelHeaderTabContextMenu = observer(
         </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const EditPanel = observer(() => {
@@ -301,9 +302,19 @@ export const EditPanel = observer(() => {
           return null;
       }
     } else if (currentEditorState instanceof EntityDiffViewState) {
-      return <EntityDiffView key={currentEditorState.uuid} />;
+      return (
+        <EntityDiffView
+          key={currentEditorState.uuid}
+          entityDiffViewState={currentEditorState}
+        />
+      );
     } else if (currentEditorState instanceof EntityChangeConflictEditorState) {
-      return <EntityChangeConflictEditor key={currentEditorState.uuid} />;
+      return (
+        <EntityChangeConflictEditor
+          key={currentEditorState.uuid}
+          conflictEditorState={currentEditorState}
+        />
+      );
     } else if (currentEditorState instanceof FileGenerationViewerState) {
       return <FileGenerationViewer key={currentEditorState.uuid} />;
     } else if (currentEditorState instanceof ModelLoaderState) {
@@ -325,7 +336,7 @@ export const EditPanel = observer(() => {
             ({getPrettyLabelForRevision(editorState.fromRevision)}
           </div>
           <div className="edit-panel__header__tab__label__diff__icon">
-            <FaArrowsAltH />
+            <ArrowsAltHIcon />
           </div>
           <div className="edit-panel__header__tab__label__diff__text">
             {getPrettyLabelForRevision(editorState.toRevision)})
@@ -416,7 +427,7 @@ export const EditPanel = observer(() => {
                   tabIndex={-1}
                   title={'Close'}
                 >
-                  <FaTimes />
+                  <TimesIcon />
                 </button>
               </ContextMenu>
             </div>

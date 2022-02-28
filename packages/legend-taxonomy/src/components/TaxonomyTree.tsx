@@ -74,6 +74,18 @@ const TaxonomyTreeNodeContainer = observer(
     };
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
+    const copyGuid = (): void => {
+      if (node.taxonomyData) {
+        applicationStore
+          .copyTextToClipboard(node.taxonomyData.guid)
+          .then(() =>
+            applicationStore.notifySuccess(
+              'Copied taxonomy node ID to clipboard',
+            ),
+          )
+          .catch(applicationStore.alertIllegalUnhandledError);
+      }
+    };
     const copyLink = (): void => {
       applicationStore
         .copyTextToClipboard(
@@ -96,6 +108,9 @@ const TaxonomyTreeNodeContainer = observer(
       <ContextMenu
         content={
           <MenuContent>
+            <MenuContentItem disabled={!node.taxonomyData} onClick={copyGuid}>
+              Copy ID
+            </MenuContentItem>
             <MenuContentItem onClick={copyLink}>Copy Link</MenuContentItem>
           </MenuContent>
         }

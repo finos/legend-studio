@@ -21,6 +21,7 @@ import type { Class } from '../models/metamodels/pure/packageableElements/domain
 import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
+import { RootRelationalInstanceSetImplementation } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 
 export const getAllClassMappings = (mapping: Mapping): SetImplementation[] =>
   uniq(
@@ -117,3 +118,25 @@ export const getEnumerationMappingsByEnumeration = (
     (enumerationMapping) =>
       enumerationMapping.enumeration.value === enumeration,
   );
+
+export const getAllSuperSetImplementations = (
+  currentSetImpl: SetImplementation,
+): SetImplementation[] => {
+  if (
+    currentSetImpl instanceof RootRelationalInstanceSetImplementation &&
+    currentSetImpl.superSetImplementationId
+  ) {
+    const superSetImpl = [
+      getClassMappingById(
+        currentSetImpl.parent,
+        currentSetImpl.superSetImplementationId,
+      ),
+    ];
+    const superSetImplFromParents = superSetImpl
+      .map((s) => getAllSuperSetImplementations(s))
+      .flat();
+    return superSetImpl.concat(superSetImplFromParents);
+  } else {
+    return [];
+  }
+};

@@ -81,6 +81,18 @@ ServiceStore test::ServiceStore1
       response : test::gen::Trade <- test::gen::TestBinding;
       security : [];
     )
+    Service TestService3
+    (
+      path : '/testService3';
+      method : GET;
+      parameters :
+      (
+        param1 : String ( location = query, allowReserved = true ),
+        param2 : String ( location = query, allowReserved = false )
+      );
+      response : test::gen::Trade <- test::gen::TestBinding;
+      security : [];
+    )
   )
 )
 

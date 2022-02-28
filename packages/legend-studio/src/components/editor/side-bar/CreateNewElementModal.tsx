@@ -16,7 +16,6 @@
 
 import { useRef } from 'react';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
-import Dialog from '@material-ui/core/Dialog';
 import { observer } from 'mobx-react-lite';
 import {
   NewPackageableRuntimeDriver,
@@ -26,7 +25,7 @@ import {
   resolvePackageAndElementName,
   CONNECTION_TYPE,
 } from '../../../stores/NewElementState';
-import { compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
+import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';

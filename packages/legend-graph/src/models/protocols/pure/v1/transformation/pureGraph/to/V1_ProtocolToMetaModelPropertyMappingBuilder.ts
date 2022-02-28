@@ -16,7 +16,6 @@
 
 import {
   LogEvent,
-  UnsupportedOperationError,
   assertNonNullable,
   assertNonEmptyString,
   guaranteeType,
@@ -32,7 +31,10 @@ import type { PropertyMappingsImplementation } from '../../../../../../metamodel
 import { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EnumerationMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import type { SetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
+import {
+  TEMPORARY__UnresolvedSetImplementation,
+  type SetImplementation,
+} from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
 import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
 import type { TableAlias } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
@@ -86,6 +88,16 @@ import {
   getClassMappingsByClass,
 } from '../../../../../../../helpers/MappingHelper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
+import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
+import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
+
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
+const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
+  mapping: Mapping,
+  id: string,
+): SetImplementation =>
+  returnUndefOnError(() => getClassMappingById(mapping, id)) ??
+  new TEMPORARY__UnresolvedSetImplementation(id, mapping);
 
 const resolveRelationalPropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
@@ -94,7 +106,10 @@ const resolveRelationalPropertyMappingSource = (
 ): SetImplementation | undefined => {
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
-      return getClassMappingById(immediateParent.parent, value.source);
+      return TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+        immediateParent.parent,
+        value.source,
+      );
     }
     const property = immediateParent.association.value.getProperty(
       value.property.property,
@@ -147,10 +162,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       `Pure instance property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
-      protocol.property.class,
-      `Pure instance property mapping 'property.class' field is missing or empty`,
-    );
-    assertNonEmptyString(
       protocol.property.property,
       `Pure instance property mapping 'property.property' field is missing or empty`,
     );
@@ -190,6 +201,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         localMappingProperty.type,
       ).value;
     } else {
+      assertNonEmptyString(
+        protocol.property.class,
+        `Pure instance property mapping 'property.class' field is missing or empty`,
+      );
       property = this.context.resolveProperty(protocol.property);
     }
     const propertyType = property.value.genericType.value.rawType;
@@ -197,10 +212,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const topParent = guaranteeNonNullable(this.topParent);
     if (propertyType instanceof Class) {
       if (protocol.target) {
-        targetSetImplementation = getClassMappingById(
-          topParent.parent,
-          protocol.target,
-        );
+        targetSetImplementation =
+          TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+            topParent.parent,
+            protocol.target,
+          );
       } else {
         /* @MARKER: ACTION ANALYTICS */
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
@@ -214,11 +230,12 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         );
       }
     }
-    const sourceSetImplementation = returnUndefOnError(() =>
-      protocol.source
-        ? getClassMappingById(topParent.parent, protocol.source)
-        : undefined,
-    );
+    const sourceSetImplementation = protocol.source
+      ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+          topParent.parent,
+          protocol.source,
+        )
+      : undefined;
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
@@ -288,7 +305,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const propertyType = property.genericType.value.rawType;
     if (propertyType instanceof Class && protocol.target) {
       targetSetImplementation = this.topParent
-        ? getClassMappingById(this.topParent.parent, protocol.target)
+        ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+            this.topParent.parent,
+            protocol.target,
+          )
         : undefined;
     }
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
@@ -414,29 +434,59 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       protocol.relationalOperation,
       `Relational property mapping 'relationalOperation' field is missing`,
     );
-    if (protocol.localMappingProperty) {
-      throw new UnsupportedOperationError(
-        'Local mapping property is not supported',
-      );
-    }
     // NOTE: mapping for derived property is not supported
     let propertyOwner: Class | Association;
-    if (this.immediateParent instanceof AssociationImplementation) {
-      propertyOwner = this.immediateParent.association.value;
-    } else if (protocol.property.class) {
-      propertyOwner = this.context.resolveClass(protocol.property.class).value;
-    } else if (
-      this.immediateParent instanceof
-      EmbeddedRelationalInstanceSetImplementation
-    ) {
-      propertyOwner = this.immediateParent.class.value;
-    } else {
-      throw new GraphBuilderError(
-        `Can't find property owner class for property '${protocol.property.property}'`,
+    let property: AbstractProperty;
+    let localMapping: LocalMappingPropertyInfo | undefined;
+    if (protocol.localMappingProperty) {
+      const localMappingProperty = protocol.localMappingProperty;
+      const mappingClass = new MappingClass(
+        `${this.topParent?.parent.path}_${this.topParent?.id}${protocol.property.property}`,
       );
+      const _multiplicity = this.context.graph.getMultiplicity(
+        localMappingProperty.multiplicity.lowerBound,
+        localMappingProperty.multiplicity.upperBound,
+      );
+      const _property = new Property(
+        protocol.property.property,
+        _multiplicity,
+        this.context.resolveGenericType(localMappingProperty.type),
+        mappingClass,
+      );
+      property = PropertyImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          mappingClass,
+          protocol.property.class,
+        ),
+        _property,
+      ).value;
+      localMapping = new LocalMappingPropertyInfo();
+      localMapping.localMappingProperty = true;
+      localMapping.localMappingPropertyMultiplicity = _multiplicity;
+      localMapping.localMappingPropertyType = this.context.resolveType(
+        localMappingProperty.type,
+      ).value;
+      propertyOwner = property.owner;
+    } else {
+      if (this.immediateParent instanceof AssociationImplementation) {
+        propertyOwner = this.immediateParent.association.value;
+      } else if (protocol.property.class) {
+        propertyOwner = this.context.resolveClass(
+          protocol.property.class,
+        ).value;
+      } else if (
+        this.immediateParent instanceof
+        EmbeddedRelationalInstanceSetImplementation
+      ) {
+        propertyOwner = this.immediateParent.class.value;
+      } else {
+        throw new GraphBuilderError(
+          `Can't find property owner class for property '${protocol.property.property}'`,
+        );
+      }
+      property = propertyOwner.getProperty(protocol.property.property);
     }
     // NOTE: mapping for derived property is not supported
-    const property = propertyOwner.getProperty(protocol.property.property);
     // since we are not doing embedded property mappings yet, the target must have already been added to the mapping
     const propertyType = property.genericType.value.rawType;
     let targetSetImplementation: SetImplementation | undefined;
@@ -450,7 +500,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       }
       if (protocol.target) {
         targetSetImplementation = parentMapping
-          ? getClassMappingById(parentMapping, protocol.target)
+          ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+              parentMapping,
+              protocol.target,
+            )
           : undefined;
       } else {
         targetSetImplementation = parentMapping
@@ -526,6 +579,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       }
       relationalPropertyMapping.transformer = enumerationMapping;
     }
+    relationalPropertyMapping.localMappingProperty = localMapping;
     return relationalPropertyMapping;
   }
 
@@ -587,10 +641,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       _class,
       InferableMappingElementIdExplicitValue.create(id, ''),
     );
-    inline.inlineSetImplementation = getClassMappingById(
-      topParent.parent,
-      protocol.setImplementationId,
-    );
+    inline.inlineSetImplementation =
+      TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+        topParent.parent,
+        protocol.setImplementationId,
+      );
     return inline;
   }
 

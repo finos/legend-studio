@@ -432,7 +432,9 @@ export class ServicePureExecutionState extends ServiceExecutionState {
           query,
           this.selectedExecutionConfiguration.runtime,
           PureClientVersion.VX_X_X,
-          true,
+          {
+            useLosslessParse: true,
+          },
         )) as ExecutionResult;
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),

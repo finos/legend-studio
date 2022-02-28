@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { toSentenceCase } from '@finos/legend-shared';
 import {
@@ -28,10 +28,10 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-  UnknownTypeIcon,
-  ClassIcon,
-  EnumerationIcon,
-  AssociationIcon,
+  PURE_UnknownElementTypeIcon,
+  PURE_ClassIcon,
+  PURE_EnumerationIcon,
+  PURE_AssociationIcon,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor';
@@ -87,12 +87,12 @@ export const MappingEditorSplashScreen: React.FC = () => {
 };
 
 const MappingEditorHeaderTabContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       tabState: MappingEditorTabState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function MappingEditorHeaderTabContextMenu(props, ref) {
     const { tabState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -129,8 +129,7 @@ const MappingEditorHeaderTabContextMenu = observer(
         </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const getMappingElementTargetIcon = (
@@ -138,13 +137,13 @@ const getMappingElementTargetIcon = (
 ): React.ReactNode => {
   const target = getMappingElementTarget(mappingElement);
   if (target instanceof Class) {
-    return <ClassIcon />;
+    return <PURE_ClassIcon />;
   } else if (target instanceof Enumeration) {
-    return <EnumerationIcon />;
+    return <PURE_EnumerationIcon />;
   } else if (target instanceof Association) {
-    return <AssociationIcon />;
+    return <PURE_AssociationIcon />;
   }
-  return <UnknownTypeIcon />;
+  return <PURE_UnknownElementTypeIcon />;
 };
 
 export const MappingEditor = observer(() => {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WorkspaceOption } from '../../stores/SetupStore';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
@@ -22,8 +22,10 @@ import {
   type SelectComponent,
   compareLabelFn,
   CustomSelectorInput,
+  PlusIcon,
+  UserIcon,
+  UsersIcon,
 } from '@finos/legend-art';
-import { FaPlus, FaUserFriends, FaUser } from 'react-icons/fa';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
@@ -33,9 +35,9 @@ const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
   <div className="setup__workspace__label">
     <div className="setup__workspace__label-icon">
       {option.value.workspaceType === WorkspaceType.GROUP ? (
-        <FaUserFriends />
+        <UsersIcon />
       ) : (
-        <FaUser />
+        <UserIcon />
       )}
     </div>
     <div className="setup__workspace__label__name">{option.label}</div>
@@ -43,13 +45,13 @@ const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
 );
 
 export const WorkspaceSelector = observer(
-  (
-    props: {
+  forwardRef<
+    SelectComponent,
+    {
       onChange: (focusNext: boolean) => void;
       create: () => void;
-    },
-    ref: React.Ref<SelectComponent>,
-  ) => {
+    }
+  >(function WorkspaceSelector(props, ref) {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore<LegendStudioConfig>();
@@ -88,12 +90,7 @@ export const WorkspaceSelector = observer(
       if (setupStore.currentProjectWorkspaces && !currentWorkspaceCompositeId) {
         onChange(false);
       }
-    }, [
-      setupStore.currentProjectWorkspaces,
-      setupStore.currentProjectId,
-      currentWorkspaceCompositeId,
-      onChange,
-    ]);
+    }, [setupStore.currentProjectWorkspaces, setupStore.currentProjectId, currentWorkspaceCompositeId, onChange]);
 
     const workspaceSelectorPlacerHold = isLoadingOptions
       ? 'Loading workspaces'
@@ -111,7 +108,7 @@ export const WorkspaceSelector = observer(
           tabIndex={-1}
           title={'Create a Workspace'}
         >
-          <FaPlus />
+          <PlusIcon />
         </button>
         <CustomSelectorInput
           className="setup-selector__input"
@@ -130,6 +127,5 @@ export const WorkspaceSelector = observer(
         />
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );

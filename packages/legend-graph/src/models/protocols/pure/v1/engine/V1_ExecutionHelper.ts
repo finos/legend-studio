@@ -27,6 +27,7 @@ import {
   TdsExecutionResult,
   TdsBuilder,
   TDSColumn,
+  RawExecutionResult,
 } from '../../../../../graphManager/action/execution/ExecutionResult';
 import {
   type V1_ExecutionResult,
@@ -35,6 +36,7 @@ import {
   V1_JsonExecutionResult,
   V1_INTERNAL__UnknownExecutionResult,
   V1_TdsExecutionResult,
+  V1_RawExecutionResult,
 } from './execution/V1_ExecutionResult';
 
 const buildJSONExecutionResult = (
@@ -113,6 +115,8 @@ export const V1_buildExecutionResult = (
     return buildTDSExecutionResult(protocol);
   } else if (protocol instanceof V1_JsonExecutionResult) {
     return buildJSONExecutionResult(protocol);
+  } else if (protocol instanceof V1_RawExecutionResult) {
+    return new RawExecutionResult(protocol.value);
   } else if (protocol instanceof V1_INTERNAL__UnknownExecutionResult) {
     return new INTERNAL__UnknownExecutionResult(protocol.content);
   }

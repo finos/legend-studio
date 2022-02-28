@@ -16,6 +16,7 @@
 
 @forward 'base/variables';
 @forward 'base/normalize';
+@forward 'base/fonts';
 @forward 'base/utils';
 @forward 'base/common';
 @forward 'base/button';
@@ -31,5 +32,6 @@
 @forward 'components/tree-view';
 
 // Reset (override library styles)
+@forward 'reset/mui';
 @forward 'reset/react-reflex';
 @forward 'reset/monaco-editor';

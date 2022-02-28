@@ -43,6 +43,7 @@ import {
   AbstractPureGraphManager,
   type TEMP__EngineSetupConfig,
   type GraphBuilderOptions,
+  type ExecutionOptions,
 } from '../../../../graphManager/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/packageableElements/runtime/Runtime';
@@ -1507,10 +1508,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return grammarToJson;
   }
 
-  async pureCodeToEntities(code: string): Promise<Entity[]> {
-    return this.pureModelContextDataToEntities(
-      await this.engine.pureCodeToPureModelContextData(code),
+  async pureCodeToEntities(
+    code: string,
+    options?: {
+      TEMPORARY__keepSectionIndex?: boolean;
+    },
+  ): Promise<Entity[]> {
+    const pmcd = await this.engine.pureCodeToPureModelContextData(code);
+    pmcd.elements = pmcd.elements.filter(
+      (el) =>
+        options?.TEMPORARY__keepSectionIndex ??
+        !(el instanceof V1_SectionIndex),
     );
+    return this.pureModelContextDataToEntities(pmcd);
   }
 
   async pureCodeToLambda(
@@ -1868,7 +1878,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-    useLosslessParse: boolean,
+    options?: ExecutionOptions,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
       await this.engine.executeMapping(
@@ -1879,7 +1889,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           runtime,
           clientVersion,
         ),
-        useLosslessParse,
+        options,
       ),
     );
   }

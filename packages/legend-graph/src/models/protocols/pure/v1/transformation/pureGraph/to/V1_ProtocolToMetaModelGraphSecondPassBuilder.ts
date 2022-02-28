@@ -97,7 +97,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const uniqueStereotypes = new Set<string>();
     profile.stereotypes = element.stereotypes.map((stereotype) => {
       if (uniqueStereotypes.has(stereotype)) {
-        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
         this.context.log.warn(
           LogEvent.create(
             `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`,
@@ -110,7 +110,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const uniqueTags = new Set<string>();
     profile.tags = element.tags.map((tag) => {
       if (uniqueTags.has(tag)) {
-        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
         this.context.log.warn(
           LogEvent.create(
             `Found duplicated tag '${tag}' in profile '${element.path}'`,
@@ -138,7 +138,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
         `Enum value 'value' field is missing or empty`,
       );
       if (uniqueEnumValues.has(enumValue.value)) {
-        /* @MARKER: Temporary until we resolve https://github.com/finos/legend-studio/issues/660 */
+        /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
         this.context.log.warn(
           LogEvent.create(
             `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`,

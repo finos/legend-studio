@@ -126,3 +126,17 @@ export const EXPECTED__MappingData__Relational_Inline = [
     ],
   },
 ];
+
+export const EXPECTED__MappingData__Relational_Inheritance = [
+  { childNodes: [], mappingData: { mapped: true }, name: 'legalName' },
+  {
+    childNodes: [
+      { childNodes: [], mappingData: { mapped: true }, name: 'firstName' },
+      { childNodes: [], mappingData: { mapped: true }, name: 'lastName' },
+    ],
+    mappingData: { mapped: true },
+    name: 'employees',
+  },
+  { childNodes: [], mappingData: { mapped: false }, name: 'incType' },
+  { childNodes: [], mappingData: { mapped: true }, name: 'employeeSize' },
+];

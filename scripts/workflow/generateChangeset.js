@@ -47,7 +47,7 @@ const DEFAULT_BRANCH_NAME = 'master';
 const useOrigin = argv.useOrigin;
 const message = argv.m;
 let targetBranch = argv.v
-  ? argv.v === 'latest'
+  ? argv.v.toString() === 'latest'
     ? DEFAULT_BRANCH_NAME
     : semver.valid(argv.v)
     ? `release/${argv.v}`

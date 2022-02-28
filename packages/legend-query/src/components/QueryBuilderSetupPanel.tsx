@@ -19,10 +19,11 @@ import {
   createFilter,
   ErrorIcon,
   CogIcon,
-  ClassIcon,
-  MappingIcon,
-  RuntimeIcon,
+  PURE_ClassIcon,
+  PURE_MappingIcon,
+  PURE_RuntimeIcon,
   EyeIcon,
+  ClockIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
@@ -40,12 +41,11 @@ import {
   getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
+  VARIABLE_REFERENCE_TOKEN,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor';
 import { useState } from 'react';
-import { FaClock } from 'react-icons/fa';
-import { VARIABLE_REFERENCE_TOKEN } from '../QueryBuilder_Const';
 
 const getParameterValue = (
   parameter: ValueSpecification | undefined,
@@ -243,7 +243,7 @@ export const QueryBuilderSetupPanel = observer(
         <div className="panel__content query-builder__setup__content">
           <div className="query-builder__setup__config__item">
             <div className="btn--sm query-builder__setup__config__item__label">
-              <ClassIcon />
+              <PURE_ClassIcon />
             </div>
             <CustomSelectorInput
               className="panel__content__form__section__dropdown query-builder__setup__config__item__selector query-builder__setup__config__item__selector__milestoned"
@@ -262,12 +262,12 @@ export const QueryBuilderSetupPanel = observer(
               disabled={!isMilestonedClass}
               title="Edit Milestoning Parameters"
             >
-              <FaClock />
+              <ClockIcon />
             </button>
           </div>
           <div className="query-builder__setup__config__item">
             <div className="btn--sm query-builder__setup__config__item__label">
-              <MappingIcon />
+              <PURE_MappingIcon />
             </div>
             <CustomSelectorInput
               className="panel__content__form__section__dropdown query-builder__setup__config__item__selector"
@@ -302,7 +302,7 @@ export const QueryBuilderSetupPanel = observer(
           )}
           <div className="query-builder__setup__config__item">
             <div className="btn--sm query-builder__setup__config__item__label">
-              <RuntimeIcon />
+              <PURE_RuntimeIcon />
             </div>
             <CustomSelectorInput
               className="panel__content__form__section__dropdown query-builder__setup__config__item__selector"

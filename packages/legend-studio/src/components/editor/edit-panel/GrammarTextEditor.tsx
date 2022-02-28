@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
 import {
@@ -29,6 +29,8 @@ import {
   WordWrapIcon,
   getEditorValue,
   normalizeLineEnding,
+  MoreHorizontalIcon,
+  HackerIcon,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -37,8 +39,6 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
-import { FaUserSecret } from 'react-icons/fa';
-import { MdMoreHoriz } from 'react-icons/md';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,
@@ -50,25 +50,26 @@ import { useEditorStore } from '../EditorStoreProvider';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
-  (props, ref: React.Ref<HTMLDivElement>) => {
-    const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-    const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
-      flowResult(editorStore.toggleTextMode()),
-    );
+  forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
+    function GrammarTextEditorHeaderTabContextMenu(props, ref) {
+      const editorStore = useEditorStore();
+      const applicationStore = useApplicationStore();
+      const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
+        flowResult(editorStore.toggleTextMode()),
+      );
 
-    return (
-      <div ref={ref} className="edit-panel__header__tab__context-menu">
-        <button
-          className="edit-panel__header__tab__context-menu__item"
-          onClick={leaveTextMode}
-        >
-          Leave Text Mode
-        </button>
-      </div>
-    );
-  },
-  { forwardRef: true },
+      return (
+        <div ref={ref} className="edit-panel__header__tab__context-menu">
+          <button
+            className="edit-panel__header__tab__context-menu__item"
+            onClick={leaveTextMode}
+          >
+            Leave Text Mode
+          </button>
+        </div>
+      );
+    },
+  ),
 );
 
 export const GrammarTextEditor = observer(() => {
@@ -292,7 +293,7 @@ export const GrammarTextEditor = observer(() => {
               tabIndex={-1}
               title="Click to exit text mode and go back to form mode"
             >
-              <MdMoreHoriz />
+              <MoreHorizontalIcon />
             </button>
           </div>
           <ContextMenu
@@ -300,7 +301,7 @@ export const GrammarTextEditor = observer(() => {
             content={<GrammarTextEditorHeaderTabContextMenu />}
           >
             <div className="edit-panel__header__tab__icon">
-              <FaUserSecret />
+              <HackerIcon />
             </div>
             <div className="edit-panel__header__tab__label">Text Mode</div>
           </ContextMenu>

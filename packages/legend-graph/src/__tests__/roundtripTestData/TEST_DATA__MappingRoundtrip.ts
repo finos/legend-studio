@@ -558,7 +558,6 @@ export const TEST_DATA__LocalPropertyMapping = [
                 type: 'Integer',
               },
               property: {
-                class: 'test::Person',
                 property: 'firmId',
               },
               source: '',
@@ -1081,5 +1080,219 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
       ],
     },
     classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];
+
+export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
+  {
+    path: 'my::models::Product',
+    content: {
+      _type: 'class',
+      name: 'Product',
+      package: 'my::models',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'productId',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'productName',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'description',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'my::database::inMemoryAndRelationalDb',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [],
+      name: 'inMemoryAndRelationalDb',
+      package: 'my::database',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'productId',
+                  nullable: false,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+                {
+                  name: 'productName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+                {
+                  name: 'description',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 1000,
+                  },
+                },
+              ],
+              name: 'productTable',
+              primaryKey: ['productId'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+  {
+    path: 'my::mappings::InMemoryAndRelationalCrossStoreMapping1',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'my::models::Product',
+          distinct: false,
+          id: 'prod_set',
+          mainTable: {
+            _type: 'Table',
+            database: 'my::database::inMemoryAndRelationalDb',
+            mainTableDb: 'my::database::inMemoryAndRelationalDb',
+            schema: 'default',
+            table: 'productTable',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'productId',
+              table: {
+                _type: 'Table',
+                database: 'my::database::inMemoryAndRelationalDb',
+                mainTableDb: 'my::database::inMemoryAndRelationalDb',
+                schema: 'default',
+                table: 'productTable',
+              },
+              tableAlias: 'productTable',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              localMappingProperty: {
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+                type: 'String',
+              },
+              property: {
+                property: 'local',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'productName',
+                table: {
+                  _type: 'Table',
+                  database: 'my::database::inMemoryAndRelationalDb',
+                  mainTableDb: 'my::database::inMemoryAndRelationalDb',
+                  schema: 'default',
+                  table: 'productTable',
+                },
+                tableAlias: 'productTable',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'my::models::Product',
+                property: 'productId',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'productId',
+                table: {
+                  _type: 'Table',
+                  database: 'my::database::inMemoryAndRelationalDb',
+                  mainTableDb: 'my::database::inMemoryAndRelationalDb',
+                  schema: 'default',
+                  table: 'productTable',
+                },
+                tableAlias: 'productTable',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'my::models::Product',
+                property: 'productName',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'productName',
+                table: {
+                  _type: 'Table',
+                  database: 'my::database::inMemoryAndRelationalDb',
+                  mainTableDb: 'my::database::inMemoryAndRelationalDb',
+                  schema: 'default',
+                  table: 'productTable',
+                },
+                tableAlias: 'productTable',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'my::models::Product',
+                property: 'description',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'description',
+                table: {
+                  _type: 'Table',
+                  database: 'my::database::inMemoryAndRelationalDb',
+                  mainTableDb: 'my::database::inMemoryAndRelationalDb',
+                  schema: 'default',
+                  table: 'productTable',
+                },
+                tableAlias: 'productTable',
+              },
+            },
+          ],
+          root: false,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'InMemoryAndRelationalCrossStoreMapping1',
+      package: 'my::mappings',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];

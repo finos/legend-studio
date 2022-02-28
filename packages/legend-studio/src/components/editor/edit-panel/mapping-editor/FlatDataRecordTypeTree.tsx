@@ -21,7 +21,7 @@ import {
   type TreeData,
   clsx,
   TreeView,
-  PrimitiveTypeIcon,
+  PURE_PrimitiveTypeIcon,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -83,7 +83,7 @@ const RecordFieldTreeNodeContainer: React.FC<
     }),
     [node],
   );
-  const nodeTypeIcon = <PrimitiveTypeIcon />;
+  const nodeTypeIcon = <PURE_PrimitiveTypeIcon />;
   const selectNode = (): void => onNodeSelect?.(node);
   const primitiveType = node.field.flatDataDataType.correspondingPrimitiveType;
 

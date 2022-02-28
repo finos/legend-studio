@@ -29,8 +29,11 @@ import type {
   FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import { clsx, CustomSelectorInput } from '@finos/legend-art';
-import { FaArrowAltCircleRight } from 'react-icons/fa';
+import {
+  clsx,
+  CustomSelectorInput,
+  ArrowCircleRightIcon,
+} from '@finos/legend-art';
 import { type ConnectDropTarget, useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { guaranteeType } from '@finos/legend-shared';
@@ -178,7 +181,7 @@ const EnumerationPropertyMappingEditor = observer(
               tabIndex={-1}
               title={'Visit enumeration mapping'}
             >
-              <FaArrowAltCircleRight />
+              <ArrowCircleRightIcon />
             </button>
           </div>
           <StudioLambdaEditor
@@ -236,8 +239,8 @@ export const FlatDataPropertyMappingEditor = observer(
         accept: [CORE_DND_TYPE.TYPE_TREE_PRIMITIVE],
         drop: (droppedItem: FlatDataPropertyMappingTransformDropTarget): void =>
           handleDrop(droppedItem),
-        collect: (monitor): { item: unknown } => ({
-          item: monitor.getItem(),
+        collect: (monitor): { item: FlatDataColumnDragSource | null } => ({
+          item: monitor.getItem<FlatDataColumnDragSource | null>(),
         }),
       }),
       [handleDrop],
@@ -287,7 +290,7 @@ export const FlatDataPropertyMappingEditor = observer(
         //       onClick={visitEmbeddedPropertyMapping}
         //       tabIndex={-1}
         //       title={'Create mapping element'}
-        //     ><FaArrowAltCircleRight /></button>
+        //     ><ArrowCircleRightIcon /></button>
         //     {`to visit the embedded class mapping for property '${flatDataPropertyMappingState.propertyMapping.property.name}'.`}
         //   </div>
         // );

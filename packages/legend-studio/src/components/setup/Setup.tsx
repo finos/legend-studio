@@ -15,26 +15,26 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { FaTimes } from 'react-icons/fa';
 import { ProjectSelector } from './ProjectSelector';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { observer } from 'mobx-react-lite';
 import {
   type SelectComponent,
-  CheckSquareIcon,
   clsx,
+  Dialog,
   SquareIcon,
+  TimesIcon,
   compareLabelFn,
   CustomSelectorInput,
   PanelLoadingIndicator,
+  CheckSquareIcon,
+  PencilIcon,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
-import Dialog from '@material-ui/core/Dialog';
 import { isNumber } from '@finos/legend-shared';
-import { MdModeEdit } from 'react-icons/md';
 import {
   type SetupPathParams,
   generateEditorRoute,
@@ -43,11 +43,7 @@ import {
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import { ProjectType, WorkspaceType } from '@finos/legend-server-sdlc';
-import {
-  useApplicationStore,
-  NotificationSnackbar,
-  AppHeader,
-} from '@finos/legend-application';
+import { useApplicationStore, AppHeader } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const CreateProjectModal = observer(() => {
@@ -383,14 +379,14 @@ const CreateProjectModal = observer(() => {
                               onClick={showEditItemInput(value, idx)}
                               tabIndex={-1}
                             >
-                              <MdModeEdit />
+                              <PencilIcon />
                             </button>
                             <button
                               className="panel__content__form__section__list__item__remove-btn"
                               onClick={deleteValue(idx)}
                               tabIndex={-1}
                             >
-                              <FaTimes />
+                              <TimesIcon />
                             </button>
                           </div>
                         </>
@@ -753,7 +749,6 @@ const SetupSelection = observer(() => {
           {/* We do this to reset the initial state of the modals */}
           {setupStore.showCreateProjectModal && <CreateProjectModal />}
           {setupStore.showCreateWorkspaceModal && <CreateWorkspaceModal />}
-          <NotificationSnackbar />
         </div>
       </div>
     </div>
