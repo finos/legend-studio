@@ -146,8 +146,8 @@
         }
       }
 
-      &:hover .setup__project-option__visit-btn__label,
-      &:hover .setup__project-option__visit-btn__icon {
+      &:hover &__label,
+      &:hover &__icon {
         background: var(--color-light-grey-400);
       }
     }

@@ -44,7 +44,6 @@ import {
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { prettyCONSTName } from '@finos/legend-shared';
 import { PARAMETER_SUBMIT_ACTION } from '../stores/QueryParametersState';
 
 const QueryBuilderResultValues = observer(
@@ -196,7 +195,7 @@ export const QueryBuilderResultPanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
           </div>
-          <div className="panel__header__actions">
+          <div className="panel__header__actions query-builder__result__header__actions">
             {allowSettingPreviewLimit && (
               <div className="query-builder__result__limit">
                 <div className="query-builder__result__limit__label">
@@ -212,33 +211,30 @@ export const QueryBuilderResultPanel = observer(
               </div>
             )}
             <button
-              className="panel__header__action"
+              className="panel__header__action query-builder__result__execute-btn"
               onClick={execute}
               tabIndex={-1}
               title="Execute"
             >
-              <PlayIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={executePlan}
-              tabIndex={-1}
-              title="View Exection Plan"
-            >
-              <PaperScrollIcon />
+              <div className="query-builder__result__execute-btn__icon">
+                <PlayIcon />
+              </div>
+              <div className="query-builder__result__execute-btn__label">
+                Execute
+              </div>
             </button>
             <DropdownMenu
-              className="query-builder__export__dropdown"
+              className="query-builder__result__export__dropdown"
               content={
                 <MenuContent>
                   {Object.values(EXECUTION_SERIALIZATION_FORMAT).map(
                     (format) => (
                       <MenuContentItem
                         key={format}
-                        className="query-builder__export__dropdown__menu__item"
+                        className="query-builder__result__export__dropdown__menu__item"
                         onClick={(): void => confirmExport(format)}
                       >
-                        {prettyCONSTName(format)}
+                        {format}
                       </MenuContentItem>
                     ),
                   )}
@@ -251,16 +247,24 @@ export const QueryBuilderResultPanel = observer(
               }}
             >
               <button
-                className="query-builder__export__dropdown__label"
+                className="query-builder__result__export__dropdown__label"
                 tabIndex={-1}
                 title="Export"
               >
                 Export
               </button>
-              <div className="query-builder__export__dropdown__trigger">
+              <div className="query-builder__result__export__dropdown__trigger">
                 <CaretDownIcon />
               </div>
             </DropdownMenu>
+            <button
+              className="panel__header__action"
+              onClick={executePlan}
+              tabIndex={-1}
+              title="View Exection Plan"
+            >
+              <PaperScrollIcon />
+            </button>
           </div>
         </div>
         <div className="panel__content">
