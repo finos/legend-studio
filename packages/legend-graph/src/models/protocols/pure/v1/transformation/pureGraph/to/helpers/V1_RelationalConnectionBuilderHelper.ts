@@ -39,7 +39,6 @@ import {
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
-  UserPasswordAuthenticationStrategy,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import {
@@ -60,7 +59,6 @@ import {
   V1_DefaultH2AuthenticationStrategy,
   V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
-  V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
@@ -264,19 +262,6 @@ export const V1_buildAuthenticationStrategy = (
         protocol.scopeName,
         `OAuth authentication specification 'scopeName' field is missing or empty`,
       ),
-    );
-  } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
-    assertNonEmptyString(
-      protocol.userName,
-      `User password authentication strategy 'userName' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      protocol.passwordVaultReference,
-      `User password authentication strategy 'passwordVaultReference' field is missing or empty`,
-    );
-    return new UserPasswordAuthenticationStrategy(
-      protocol.userName,
-      protocol.passwordVaultReference,
     );
   } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
     assertNonEmptyString(

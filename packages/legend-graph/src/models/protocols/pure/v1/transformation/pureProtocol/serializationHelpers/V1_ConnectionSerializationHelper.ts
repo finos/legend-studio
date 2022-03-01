@@ -59,7 +59,6 @@ import {
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
-  V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
@@ -304,7 +303,6 @@ enum V1_AuthenticationStrategyType {
   API_TOKEN = 'apiToken',
   H2_DEFAULT = 'h2Default',
   OAUTH = 'oauth',
-  USER_PASSWORD = 'userPassword',
   USERNAME_PASSWORD = 'userNamePassword',
 }
 
@@ -340,17 +338,6 @@ const V1_snowflakePublicAuthenticationStrategyModelSchema = createModelSchema(
     privateKeyVaultReference: primitive(),
     passPhraseVaultReference: primitive(),
     publicUserName: primitive(),
-  },
-);
-
-const V1_userPasswordAuthenticationStrategyModelSchema = createModelSchema(
-  V1_UserPasswordAuthenticationStrategy,
-  {
-    _type: usingConstantValueSchema(
-      V1_AuthenticationStrategyType.USER_PASSWORD,
-    ),
-    userName: primitive(),
-    passwordVaultReference: primitive(),
   },
 );
 
@@ -410,11 +397,6 @@ export const V1_serializeAuthenticationStrategy = (
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
     return serialize(V1_oAuthAuthenticationStrategyModelSchema, protocol);
-  } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
-    return serialize(
-      V1_userPasswordAuthenticationStrategyModelSchema,
-      protocol,
-    );
   } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
     return serialize(
       V1_UsernamePasswordAuthenticationStrategyModelSchema,
@@ -458,11 +440,6 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.SNOWFLAKE_PUBLIC:
       return deserialize(
         V1_snowflakePublicAuthenticationStrategyModelSchema,
-        json,
-      );
-    case V1_AuthenticationStrategyType.USER_PASSWORD:
-      return deserialize(
-        V1_userPasswordAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS:

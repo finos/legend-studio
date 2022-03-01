@@ -35,7 +35,6 @@ import {
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   ApiTokenAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
-  UserPasswordAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
@@ -69,7 +68,6 @@ import {
   type V1_AuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
-  V1_UserPasswordAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
   V1_ApiTokenAuthenticationStrategy,
@@ -231,11 +229,6 @@ const transformAuthenticationStrategy = (
     auth.privateKeyVaultReference = metamodel.privateKeyVaultReference;
     auth.passPhraseVaultReference = metamodel.passPhraseVaultReference;
     auth.publicUserName = metamodel.publicUserName;
-    return auth;
-  } else if (metamodel instanceof UserPasswordAuthenticationStrategy) {
-    const auth = new V1_UserPasswordAuthenticationStrategy();
-    auth.userName = metamodel.userName;
-    auth.passwordVaultReference = metamodel.passwordVaultReference;
     return auth;
   } else if (
     metamodel instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
