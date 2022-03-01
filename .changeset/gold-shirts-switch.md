@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-Display databases and classes from dependency projects in the source options dropdown in the mapping editor.
+Display `database tables/views` and `classes` from dependency projects in the source selector dropdown in the mapping editor.
