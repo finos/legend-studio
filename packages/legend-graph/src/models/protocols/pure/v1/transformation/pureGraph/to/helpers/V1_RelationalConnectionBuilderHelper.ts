@@ -39,7 +39,6 @@ import {
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
-  TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
@@ -61,7 +60,6 @@ import {
   V1_DefaultH2AuthenticationStrategy,
   V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
-  V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
@@ -256,8 +254,6 @@ export const V1_buildAuthenticationStrategy = (
     V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   ) {
     return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
-  } else if (protocol instanceof V1_TestDatabaseAuthenticationStrategy) {
-    return new TestDatabaseAuthenticationStrategy();
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
     return new OAuthAuthenticationStrategy(
       guaranteeNonEmptyString(

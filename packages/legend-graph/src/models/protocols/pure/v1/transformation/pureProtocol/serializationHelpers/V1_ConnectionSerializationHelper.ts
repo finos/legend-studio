@@ -59,7 +59,6 @@ import {
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
-  V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
@@ -304,7 +303,6 @@ enum V1_AuthenticationStrategyType {
   GCP_APPLICATION_DEFAULT_CREDENTIALS = 'gcpApplicationDefaultCredentials',
   API_TOKEN = 'apiToken',
   H2_DEFAULT = 'h2Default',
-  TEST = 'test',
   OAUTH = 'oauth',
   USER_PASSWORD = 'userPassword',
   USERNAME_PASSWORD = 'userNamePassword',
@@ -323,11 +321,6 @@ const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
 const V1_defaultH2AuthenticationStrategyModelSchema = createModelSchema(
   V1_DefaultH2AuthenticationStrategy,
   { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.H2_DEFAULT) },
-);
-
-const V1_testDatabaseAuthenticationStrategyModelSchema = createModelSchema(
-  V1_TestDatabaseAuthenticationStrategy,
-  { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.TEST) },
 );
 
 const V1_apiTokenAuthenticationStrategyModelSchema = createModelSchema(
@@ -400,11 +393,6 @@ export const V1_serializeAuthenticationStrategy = (
     );
   } else if (protocol instanceof V1_DefaultH2AuthenticationStrategy) {
     return serialize(V1_defaultH2AuthenticationStrategyModelSchema, protocol);
-  } else if (protocol instanceof V1_TestDatabaseAuthenticationStrategy) {
-    return serialize(
-      V1_testDatabaseAuthenticationStrategyModelSchema,
-      protocol,
-    );
   } else if (protocol instanceof V1_ApiTokenAuthenticationStrategy) {
     return serialize(V1_apiTokenAuthenticationStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
@@ -480,11 +468,6 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS:
       return deserialize(
         V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
-        json,
-      );
-    case V1_AuthenticationStrategyType.TEST:
-      return deserialize(
-        V1_testDatabaseAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.OAUTH:

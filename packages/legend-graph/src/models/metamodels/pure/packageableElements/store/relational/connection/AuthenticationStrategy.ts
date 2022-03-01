@@ -97,25 +97,6 @@ export class ApiTokenAuthenticationStrategy
   }
 }
 
-export class TestDatabaseAuthenticationStrategy
-  extends DefaultH2AuthenticationStrategy
-  implements Hashable
-{
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.TEST_DATABASE_AUTHENTICATION_STRATEGY,
-    ]);
-  }
-}
-
 export class OAuthAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable

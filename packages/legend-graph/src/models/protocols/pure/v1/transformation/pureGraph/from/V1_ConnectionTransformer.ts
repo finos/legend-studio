@@ -35,7 +35,6 @@ import {
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   ApiTokenAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
-  TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
@@ -75,7 +74,6 @@ import {
   V1_UsernamePasswordAuthenticationStrategy,
   V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
-  V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection';
@@ -222,8 +220,6 @@ const transformAuthenticationStrategy = (
     const auth = new V1_DelegatedKerberosAuthenticationStrategy();
     auth.serverPrincipal = metamodel.serverPrincipal;
     return auth;
-  } else if (metamodel instanceof TestDatabaseAuthenticationStrategy) {
-    return new V1_TestDatabaseAuthenticationStrategy();
   } else if (metamodel instanceof OAuthAuthenticationStrategy) {
     return transformOAuthtAuthenticationStrategy(metamodel);
   } else if (metamodel instanceof ApiTokenAuthenticationStrategy) {
