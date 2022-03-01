@@ -28,9 +28,10 @@ import {
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from './ApplicationLogEvent';
-import type { LegendApplicationConfig } from './ApplicationConfig';
+import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
+import type { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -105,6 +106,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
   config: T;
+  docRegistry: LegendApplicationDocumentationRegistry;
 
   log: Log = new Log();
   telemetryService = new TelemetryService();
@@ -129,6 +131,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     });
 
     this.config = config;
+    this.docRegistry = config.docRegistry;
     this.navigator = navigator;
 
     // Register plugins

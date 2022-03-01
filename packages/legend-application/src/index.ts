@@ -32,7 +32,7 @@ export * from './components/LambdaEditor';
 
 export * from './stores/ApplicationStore';
 export { APPLICATION_LOG_EVENT } from './stores/ApplicationLogEvent';
-export * from './stores/ApplicationConfig';
+export * from './stores/LegendApplicationConfig';
 export { WebApplicationNavigator } from './stores/WebApplicationNavigator';
 export { LambdaEditorState } from './stores/LambdaEditorState';
 export * from './stores/PackageableElementOption';

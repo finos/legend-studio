@@ -33,7 +33,7 @@ import type {
   LegendApplicationConfig,
   LegendApplicationConfigurationData,
   LegendApplicationVersionData,
-} from '../stores/ApplicationConfig';
+} from '../stores/LegendApplicationConfig';
 import {
   type AbstractPlugin,
   type AbstractPreset,

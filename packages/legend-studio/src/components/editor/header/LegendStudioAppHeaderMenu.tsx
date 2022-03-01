@@ -115,7 +115,7 @@ const AboutModal: React.FC<{
 
 export const LegendStudioAppHeaderMenu: React.FC = () => {
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const config = applicationStore.config;
+  const appDocUrl = applicationStore.docRegistry.url;
 
   // menu
   const [openMenuDropdown, setOpenMenuDropdown] = useState(false);
@@ -126,8 +126,11 @@ export const LegendStudioAppHeaderMenu: React.FC = () => {
   const showAboutModal = (): void => setOpenAboutModal(true);
   const hideAboutModal = (): void => setOpenAboutModal(false);
   // documentation
-  const goToDocumentation = (): void =>
-    applicationStore.navigator.openNewWindow(config.documentationUrl);
+  const goToDocumentation = (): void => {
+    if (appDocUrl) {
+      applicationStore.navigator.openNewWindow(appDocUrl);
+    }
+  };
 
   // SDLC server
   const [openSDLCServerDropdown, setOpenSDLCServerDropdown] = useState(false);
@@ -207,6 +210,7 @@ export const LegendStudioAppHeaderMenu: React.FC = () => {
             </MenuContentItem>
             <MenuContentItem
               className="app__header__menu__item"
+              disabled={!appDocUrl}
               onClick={goToDocumentation}
             >
               Documentation
