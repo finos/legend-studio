@@ -38,7 +38,6 @@ import { isNumber } from '@finos/legend-shared';
 import {
   type SetupPathParams,
   generateEditorRoute,
-  generateViewProjectRoute,
 } from '../../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
@@ -243,13 +242,16 @@ const CreateProjectModal = observer(() => {
             <div className="panel__content__form">
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">
-                  {projectType === ProjectType.PROTOTYPE ? 'Name' : 'ID'}
-                </div>
-                <div className="panel__content__form__section__header__prompt">
                   {projectType === ProjectType.PROTOTYPE
-                    ? 'Name used for prototype project'
-                    : 'The supplied ID need not be the same as what the final project id will be; it need only be sufficient to identify the project in the underlying system. '}
+                    ? 'Project Name'
+                    : 'Import Project ID'}
                 </div>
+                {projectType === ProjectType.PRODUCTION && (
+                  <div className="panel__content__form__section__header__prompt">
+                    The ID of the project in the underlying version-control
+                    system
+                  </div>
+                )}
                 <input
                   className="panel__content__form__section__input"
                   spellCheck={false}
@@ -266,9 +268,6 @@ const CreateProjectModal = observer(() => {
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">
                   Description
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  Description of the project
                 </div>
                 <textarea
                   className="panel__content__form__section__textarea"
@@ -544,6 +543,7 @@ const CreateWorkspaceModal = observer(() => {
     event.preventDefault();
     setIsGroupWorkspace(!isGroupWorkspace);
   };
+
   return (
     <Dialog
       open={showCreateWorkspaceModal}
@@ -592,10 +592,9 @@ const CreateWorkspaceModal = observer(() => {
                 ref={workspaceNameInputRef}
                 spellCheck={false}
                 disabled={dispatchingActions}
-                placeholder={'Workspace Name'}
+                placeholder={'MyWorkspace'}
                 value={workspaceName}
                 onChange={changeWorkspaceName}
-                name={`Type workspace name`}
               />
             </div>
             <div className="panel__content__form__section">
@@ -698,6 +697,7 @@ const SetupSelection = observer(() => {
             className="setup__content"
             data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
           >
+            <div className="setup__title">studio setup</div>
             <div>
               <ProjectSelector
                 ref={projectSelectorRef}
@@ -715,23 +715,7 @@ const SetupSelection = observer(() => {
                 onClick={handleProceed}
                 disabled={disableProceedButton}
               >
-                Next
-              </button>
-              <button
-                className="setup__view-project-btn u-pull-right"
-                onClick={(): void => {
-                  if (setupStore.currentProjectId) {
-                    applicationStore.navigator.goTo(
-                      generateViewProjectRoute(
-                        applicationStore.config.currentSDLCServerOption,
-                        setupStore.currentProjectId,
-                      ),
-                    );
-                  }
-                }}
-                disabled={!setupStore.currentProjectId}
-              >
-                View Project
+                Edit Workspace
               </button>
             </div>
             {config.options.TEMPORARY__useSDLCProductionProjectsOnly && (

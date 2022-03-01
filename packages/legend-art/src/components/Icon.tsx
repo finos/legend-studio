@@ -142,6 +142,8 @@ export {
   GoCloudDownload as CloudDownloadIcon,
   GoCloudUpload as CloudUploadIcon,
   GoSync as SyncIcon,
+  GoRepo as RepoIcon,
+  GoGitBranch as GitBranchIcon,
   GoX as XIcon,
 } from 'react-icons/go';
 export { SiSwagger as SwaggerIcon } from 'react-icons/si';

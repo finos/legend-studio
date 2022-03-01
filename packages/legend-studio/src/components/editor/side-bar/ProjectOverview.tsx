@@ -526,10 +526,7 @@ const OverviewViewer = observer(() => {
         <div className="panel__content__form">
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
-              Name
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              Name used for the project
+              Project Name
             </div>
             <input
               className="panel__content__form__section__input"

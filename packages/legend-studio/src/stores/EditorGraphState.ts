@@ -1043,7 +1043,7 @@ export class EditorGraphState {
               );
               if (projectsData.length !== 1) {
                 throw new Error(
-                  `Expected 1 project for project id '${dep.projectId}'. Got ${
+                  `Expected 1 project for project ID '${dep.projectId}'. Got ${
                     projectsData.length
                   } projects with coordinates ${projectsData
                     .map(

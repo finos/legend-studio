@@ -25,6 +25,7 @@ import {
   PlusIcon,
   UserIcon,
   UsersIcon,
+  GitBranchIcon,
 } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
@@ -102,14 +103,9 @@ export const WorkspaceSelector = observer(
 
     return (
       <div className="setup-selector">
-        <button
-          className="setup-selector__action btn--dark"
-          onClick={create}
-          tabIndex={-1}
-          title={'Create a Workspace'}
-        >
-          <PlusIcon />
-        </button>
+        <div className="setup-selector__icon-box">
+          <GitBranchIcon className="setup-selector__icon" />
+        </div>
         <CustomSelectorInput
           className="setup-selector__input"
           allowCreating={false}
@@ -125,6 +121,15 @@ export const WorkspaceSelector = observer(
           escapeClearsValue={true}
           darkMode={true}
         />
+        <button
+          className="setup-selector__action btn--dark"
+          onClick={create}
+          // disabled={!setupStore.currentProject}
+          tabIndex={-1}
+          title="Create a Workspace"
+        >
+          <PlusIcon />
+        </button>
       </div>
     );
   }),

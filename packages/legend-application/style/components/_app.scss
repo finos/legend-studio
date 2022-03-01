@@ -23,6 +23,10 @@
     height: 100%;
   }
 
+  a {
+    text-decoration: none;
+  }
+
   &__header {
     @include flexHSpaceBetween;
 
@@ -101,6 +105,10 @@
       font-weight: 400;
       background: var(--color-blue-200);
       border-radius: 0 0.3rem 0.3rem 0;
+    }
+
+    &__app-name {
+      cursor: pointer;
     }
 
     &__actions {

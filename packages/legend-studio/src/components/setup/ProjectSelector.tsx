@@ -23,26 +23,17 @@ import {
   compareLabelFn,
   CustomSelectorInput,
   PlusIcon,
+  RepoIcon,
+  ArrowCircleRightIcon,
 } from '@finos/legend-art';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
+import {
+  generateSetupRoute,
+  generateViewProjectRoute,
+} from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-
-const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
-  <div className="setup__project__label">
-    <div
-      className={clsx([
-        `setup__project__label__tag setup__project__label__tag--${option.tag.toLowerCase()}`,
-        { 'setup__project__label__tag--disabled': option.disabled },
-      ])}
-    >
-      {option.tag}
-    </div>
-    <div className="setup__project__label__name">{option.label}</div>
-  </div>
-);
 
 export const ProjectSelector = observer(
   forwardRef<
@@ -61,6 +52,47 @@ export const ProjectSelector = observer(
       options.find((option) => option.value === currentProjectId) ?? null;
     const isLoadingOptions = setupStore.loadProjectsState.isInProgress;
 
+    const formatOptionLabel = (option: ProjectOption): React.ReactNode => {
+      const viewProject = (): void =>
+        applicationStore.navigator.goTo(
+          generateViewProjectRoute(
+            applicationStore.config.currentSDLCServerOption,
+            option.value,
+          ),
+        );
+
+      return (
+        <div className="setup__project-option">
+          <div className="setup__project-option__label">
+            <div
+              className={clsx([
+                `setup__project-option__label__tag setup__project-option__label__tag--${option.tag.toLowerCase()}`,
+                {
+                  'setup__project-option__label__tag--disabled':
+                    option.disabled,
+                },
+              ])}
+            >
+              {option.tag}
+            </div>
+            <div className="setup__project-option__label__name">
+              {option.label}
+            </div>
+          </div>
+          <button
+            className="setup__project-option__visit-btn"
+            tabIndex={-1}
+            onClick={viewProject}
+          >
+            <div className="setup__project-option__visit-btn__label">view</div>
+            <div className="setup__project-option__visit-btn__icon">
+              <ArrowCircleRightIcon />
+            </div>
+          </button>
+        </div>
+      );
+    };
+
     const onSelectionChange = (val: ProjectOption | null): void => {
       if (
         (val !== null || selectedOption !== null) &&
@@ -76,7 +108,7 @@ export const ProjectSelector = observer(
         applicationStore.navigator.goTo(
           generateSetupRoute(
             applicationStore.config.currentSDLCServerOption,
-            val?.value ?? '',
+            val?.value,
           ),
         );
       }
@@ -107,18 +139,9 @@ export const ProjectSelector = observer(
 
     return (
       <div className="setup-selector">
-        <button
-          className="setup-selector__action btn--dark"
-          onClick={create}
-          tabIndex={-1}
-          disabled={
-            applicationStore.config.options
-              .TEMPORARY__disableSDLCProjectCreation
-          }
-          title={'Create a Project'}
-        >
-          <PlusIcon />
-        </button>
+        <div className="setup-selector__icon-box">
+          <RepoIcon className="setup-selector__icon" />
+        </div>
         <CustomSelectorInput
           className="setup-selector__input"
           ref={ref}
@@ -135,7 +158,20 @@ export const ProjectSelector = observer(
           isOptionDisabled={(option: { disabled: boolean }): boolean =>
             option.disabled
           }
+          // menuIsOpen={true}
         />
+        <button
+          className="setup-selector__action btn--dark"
+          onClick={create}
+          tabIndex={-1}
+          disabled={
+            applicationStore.config.options
+              .TEMPORARY__disableSDLCProjectCreation
+          }
+          title={'Create a Project'}
+        >
+          <PlusIcon />
+        </button>
       </div>
     );
   }),

@@ -21,6 +21,14 @@
   position: relative;
   background: var(--color-dark-grey-50);
 
+  &__title {
+    font-size: 3.6rem;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    margin-bottom: 3.6rem;
+    color: var(--color-light-grey-200);
+  }
+
   &__content {
     height: 60vh;
     width: 60vw;
@@ -34,13 +42,11 @@
 
   &__next-btn {
     padding: 1rem;
-    margin-top: 0.5rem;
   }
 
   &__view-project-btn {
     padding: 1rem;
     margin-right: 0.5rem;
-    margin-top: 0.5rem;
     background: var(--color-light-grey-300);
     color: var(--color-dark-grey-300);
 
@@ -68,40 +74,82 @@
     }
   }
 
-  &__project__label {
+  &__project-option {
     display: flex;
 
-    &__tag {
-      @include flexCenter;
+    &__label {
+      display: flex;
+      width: calc(100% - 6.5rem);
 
-      width: 8rem;
-      height: 1.8rem;
-      border-radius: 0.2rem;
-      padding: 0 0.5rem;
-      font-size: 1rem;
-      margin-right: 1rem;
-      cursor: default;
+      &__tag {
+        @include flexCenter;
 
-      &--production {
-        color: var(--color-light-grey-100);
-        background: var(--color-magenta-100);
+        width: 8rem;
+        height: 1.8rem;
+        border-radius: 0.2rem;
+        padding: 0 0.5rem;
+        font-size: 1rem;
+        margin-right: 1rem;
+        cursor: default;
+
+        &--production {
+          color: var(--color-light-grey-100);
+          background: var(--color-magenta-100);
+        }
+
+        &--prototype {
+          color: var(--color-light-grey-100);
+          background: var(--color-blue-200);
+        }
+
+        &--disabled {
+          color: var(--color-light-grey-100);
+          background: var(--color-dark-grey-300);
+        }
       }
 
-      &--prototype {
-        color: var(--color-light-grey-100);
-        background: var(--color-blue-200);
-      }
+      &__name {
+        @include flexVCenter;
 
-      &--disabled {
-        color: var(--color-light-grey-100);
-        background: var(--color-dark-grey-300);
+        height: 1.8rem;
       }
     }
 
-    &__name {
-      @include flexVCenter;
+    &__visit-btn {
+      display: flex;
+      width: 6rem;
+      margin-right: 0.5rem;
 
-      height: 1.8rem;
+      &__label {
+        @include flexCenter;
+
+        width: 4.2rem;
+        height: 1.8rem;
+        background: var(--color-dark-grey-500);
+        border-radius: 0.2rem 0 0 0.2rem;
+        font-size: 1.2rem;
+        color: var(--color-dark-grey-200);
+        font-weight: 500;
+      }
+
+      &__icon {
+        @include flexCenter;
+
+        height: 1.8rem;
+        width: 1.8rem;
+        background: var(--color-dark-grey-500);
+        border-radius: 0 50% 50% 0;
+
+        svg {
+          font-size: 1.6rem;
+          color: var(--color-dark-grey-200);
+        }
+      }
+
+      &:hover .setup__project-option__visit-btn__label,
+      &:hover .setup__project-option__visit-btn__icon {
+        background: var(--color-light-grey-400);
+      }
     }
   }
 
@@ -131,6 +179,22 @@
 
 .setup-selector {
   display: flex;
+  margin-bottom: 0.5rem;
+
+  &__icon-box {
+    height: 2.8rem;
+    width: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-dark-grey-200);
+    border-radius: 0.2rem 0 0 0.2rem;
+  }
+
+  &__icon {
+    font-size: 1.8rem;
+    color: var(--color-dark-grey-400);
+  }
 
   &__label {
     width: 3.5rem;
@@ -146,7 +210,7 @@
     height: 2.8rem;
     width: 2.8rem;
     min-width: 2.8rem;
-    border: 0.1rem solid var(--color-dark-grey-300);
+    margin-left: 0.5rem;
   }
 
   &__input {
