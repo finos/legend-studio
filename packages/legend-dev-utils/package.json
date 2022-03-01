@@ -68,7 +68,7 @@
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.6.0",
-    "cssnano": "5.0.17",
+    "cssnano": "5.1.0",
     "html-webpack-plugin": "5.5.0",
     "isbinaryfile": "4.0.8",
     "jest": "27.5.1",
@@ -85,12 +85,12 @@
     "resolve": "1.22.0",
     "sass": "1.49.9",
     "sass-loader": "12.6.0",
-    "typescript": "4.5.5",
+    "typescript": "4.6.2",
     "webpack": "5.69.1"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.9.0",
+    "eslint": "8.10.0",
     "rimraf": "3.0.2"
   },
   "publishConfig": {
