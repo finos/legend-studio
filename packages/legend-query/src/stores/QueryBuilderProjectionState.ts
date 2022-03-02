@@ -389,7 +389,7 @@ export class QueryBuilderProjectionState {
       derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
         false,
       ),
-    ).catch(this.queryBuilderState.applicationStore.alertIllegalUnhandledError);
+    ).catch(this.queryBuilderState.applicationStore.alertUnhandledError);
   }
 
   replaceColumn(

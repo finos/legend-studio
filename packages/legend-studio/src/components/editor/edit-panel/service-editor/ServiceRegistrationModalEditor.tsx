@@ -105,7 +105,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
     event.preventDefault();
     if (selectedEnvOption && selectedServiceType) {
       flowResult(registrationState.registerService()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };

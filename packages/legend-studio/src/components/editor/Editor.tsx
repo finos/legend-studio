@@ -121,7 +121,7 @@ export const EditorInner = observer(() => {
   useEffect(() => {
     flowResult(
       editorStore.initialize(projectId, workspaceId, workspaceType),
-    ).catch(applicationStore.alertIllegalUnhandledError);
+    ).catch(applicationStore.alertUnhandledError);
   }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
 
   // Browser Navigation Blocking (reload, close tab, go to another URL)

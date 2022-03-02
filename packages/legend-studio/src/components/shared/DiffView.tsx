@@ -74,7 +74,7 @@ export const TextDiffView = observer(
             event.preventDefault();
             event.stopPropagation();
             flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertIllegalUnhandledError,
+              applicationStore.alertUnhandledError,
             );
           }
         });
@@ -83,7 +83,7 @@ export const TextDiffView = observer(
             event.preventDefault();
             event.stopPropagation();
             flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertIllegalUnhandledError,
+              applicationStore.alertUnhandledError,
             );
           }
         });

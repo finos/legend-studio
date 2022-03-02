@@ -276,10 +276,10 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
    * When we call store/state functions from the component, we should handle error thrown at these functions instead
    * of throwing them to the UI. This enforces that by throwing `IllegalStateError`
    */
-  alertIllegalUnhandledError = (error: Error): void => {
+  alertUnhandledError = (error: Error): void => {
     this.log.error(
       LogEvent.create(APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
-      'Encountered unhandled rejection in component',
+      'Encountered unhandled error in component tree',
       error,
     );
     this.notifyIllegalState(error.message);
@@ -288,10 +288,11 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   /**
    * Guarantee that the action being used by the component does not throw unhandled errors
    */
-  guaranteeSafeAction =
-    (actionFn: () => Promise<void>): (() => Promise<void>) =>
-    (): Promise<void> =>
-      actionFn().catch(this.alertIllegalUnhandledError);
+  guardUnhandledError =
+    (actionFn: () => Promise<void>): (() => void) =>
+    (): void => {
+      actionFn().catch(this.alertUnhandledError);
+    };
 
   async copyTextToClipboard(text: string): Promise<void> {
     if (typeof navigator.clipboard.writeText === 'function') {

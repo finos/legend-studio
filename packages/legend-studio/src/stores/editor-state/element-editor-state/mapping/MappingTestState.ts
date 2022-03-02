@@ -406,7 +406,7 @@ export class MappingTestState {
       this.test.query,
     );
     flowResult(queryState.updateLamba(this.test.query)).catch(
-      this.editorStore.applicationStore.alertIllegalUnhandledError,
+      this.editorStore.applicationStore.alertUnhandledError,
     );
     return queryState;
   }

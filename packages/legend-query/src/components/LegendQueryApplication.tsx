@@ -45,7 +45,7 @@ const LegendQueryApplicationInner = observer(() => {
 
   useEffect(() => {
     flowResult(queryStore.initialize()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [queryStore, applicationStore]);
 

@@ -57,14 +57,14 @@ export const DataspaceQuerySetup = observer(
     const toggleGetSnapshot = (): void => {
       querySetupState.setToGetSnapShot(!querySetupState.toGetSnapShot);
       flowResult(querySetupState.loadDataSpaces(searchText)).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     };
 
     const next = (): void => {
       if (querySetupState.dataSpaceViewerState) {
         flowResult(querySetupState.proceedToCreateQuery()).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -111,7 +111,7 @@ export const DataspaceQuerySetup = observer(
       () =>
         debounce((input: string): void => {
           flowResult(querySetupState.loadDataSpaces(input)).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }, 500),
       [applicationStore, querySetupState],
@@ -126,7 +126,7 @@ export const DataspaceQuerySetup = observer(
 
     useEffect(() => {
       flowResult(querySetupState.loadDataSpaces('')).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [querySetupState, applicationStore]);
 
@@ -134,7 +134,7 @@ export const DataspaceQuerySetup = observer(
       if (querySetupState.currentDataSpace) {
         flowResult(
           querySetupState.setUpDataSpace(querySetupState.currentDataSpace),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
       }
     }, [querySetupState, applicationStore, querySetupState.currentDataSpace]);
 

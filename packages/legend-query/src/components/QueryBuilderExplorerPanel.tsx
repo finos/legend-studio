@@ -464,7 +464,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           queryBuilderState.fetchStructureState.projectionState.previewData(
             node,
           ),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
       }
     };
     // hide default HTML5 preview image

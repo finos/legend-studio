@@ -430,7 +430,7 @@ const DerivedPropertyBasicEditor = observer(
     };
     const visitOwner = (): void =>
       editorStore.openElement(derivedProperty.owner);
-    const remove = applicationStore.guaranteeSafeAction(async () => {
+    const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(dpState.convertLambdaObjectToGrammarString(false));
       deleteDerivedProperty();
     });
@@ -634,7 +634,7 @@ const ConstraintEditor = observer(
     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       constraint.setName(event.target.value);
     // Actions
-    const remove = applicationStore.guaranteeSafeAction(async () => {
+    const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(
         constraintState.convertLambdaObjectToGrammarString(false),
       );
@@ -1101,10 +1101,10 @@ export const ClassFormEditor = observer(
     useEffect(() => {
       classState.decorate();
       flowResult(classState.convertConstraintLambdaObjects()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
       flowResult(classState.convertDerivedPropertyLambdaObjects()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, classState]);
 

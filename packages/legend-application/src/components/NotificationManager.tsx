@@ -84,8 +84,9 @@ export const NotificationManager = observer(() => {
     applicationStore.setNotification(undefined);
     setIsExpanded(false);
   };
-  const handleCopy = (): Promise<void> =>
-    applicationStore.copyTextToClipboard(message);
+  const handleCopy = applicationStore.guardUnhandledError(() =>
+    applicationStore.copyTextToClipboard(message),
+  );
   const toggleExpansion = (): void => setIsExpanded(!isExpanded);
 
   const onSnackbarAutoHideOrClickAway = (

@@ -102,7 +102,7 @@ export const ProjectSelector = observer(
         setupStore.setCurrentProjectId(val?.value);
         if (val && !setupStore.currentProjectWorkspaces) {
           flowResult(setupStore.fetchWorkspaces(val.value)).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }
         applicationStore.navigator.goTo(

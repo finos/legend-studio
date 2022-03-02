@@ -419,7 +419,7 @@ export const TaxonomyViewer = observer(() => {
   // on the second call when we remove path from the route
   useEffect(() => {
     flowResult(taxonomyStore.initialize()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, taxonomyStore]);
 

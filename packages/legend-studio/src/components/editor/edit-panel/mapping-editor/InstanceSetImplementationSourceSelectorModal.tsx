@@ -184,7 +184,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
         ),
       )
         .then(() => closeModal())
-        .catch(applicationStore.alertIllegalUnhandledError);
+        .catch(applicationStore.alertUnhandledError);
     const handleEnter = (): void => sourceSelectorRef.current?.focus();
 
     return (

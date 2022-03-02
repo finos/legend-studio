@@ -71,7 +71,7 @@ export const WorkspaceUpdater = observer(() => {
             handler: (): void => {
               editorStore.setIgnoreNavigationBlocking(true);
               flowResult(workspaceUpdaterState.updateWorkspace()).catch(
-                applicationStore.alertIllegalUnhandledError,
+                applicationStore.alertUnhandledError,
               );
             },
           },
@@ -84,11 +84,11 @@ export const WorkspaceUpdater = observer(() => {
       });
     } else {
       flowResult(workspaceUpdaterState.updateWorkspace()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };
-  const refreshWorkspaceUpdater = applicationStore.guaranteeSafeAction(() =>
+  const refreshWorkspaceUpdater = applicationStore.guardUnhandledError(() =>
     flowResult(workspaceUpdaterState.refreshWorkspaceUpdater()),
   );
   const isDispatchingAction =
@@ -129,7 +129,7 @@ export const WorkspaceUpdater = observer(() => {
   // since the project latest changes can be affected by other users, we refresh it more proactively
   useEffect(() => {
     flowResult(workspaceUpdaterState.refreshWorkspaceUpdater()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, workspaceUpdaterState]);
 

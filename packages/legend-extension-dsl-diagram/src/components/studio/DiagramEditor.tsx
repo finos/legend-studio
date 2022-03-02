@@ -732,7 +732,7 @@ const DiagramEditorInlineClassRenamerInner = observer(
       if (canRenameClass) {
         diagramEditorState.setInlineClassRenamerState(undefined);
         flowResult(editorStore.renameElement(_class, newClassPath)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };

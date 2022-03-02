@@ -322,7 +322,7 @@ export class EditorStore {
         [LEGEND_STUDIO_HOTKEY_MAP.COMPILE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.graphState.globalCompileInFormMode()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }),
       ),
@@ -332,7 +332,7 @@ export class EditorStore {
         this.createGlobalHotKeyAction(() => {
           flowResult(
             this.graphState.graphGenerationState.globalGenerate(),
-          ).catch(applicationStore.alertIllegalUnhandledError);
+          ).catch(applicationStore.alertUnhandledError);
         }),
       ),
       new HotkeyConfiguration(
@@ -352,7 +352,7 @@ export class EditorStore {
         [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.toggleTextMode()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }),
       ),
@@ -368,7 +368,7 @@ export class EditorStore {
         [LEGEND_STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.localChangesState.pushLocalChanges()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }),
       ),
@@ -665,7 +665,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               createWorkspaceAndRelaunch().catch(
-                this.applicationStore.alertIllegalUnhandledError,
+                this.applicationStore.alertUnhandledError,
               );
             },
           },
@@ -759,7 +759,7 @@ export class EditorStore {
             flowResult(
               this.conflictResolutionState.discardConflictResolutionChanges(),
             ).catch((error) =>
-              this.applicationStore.alertIllegalUnhandledError(error),
+              this.applicationStore.alertUnhandledError(error),
             );
           },
         },

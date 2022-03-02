@@ -111,7 +111,7 @@ const ExistingQuerySetup = observer(
         !querySetupState.showCurrentUserQueriesOnly,
       );
       flowResult(querySetupState.loadQueries(searchText)).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     };
 
@@ -135,10 +135,10 @@ const ExistingQuerySetup = observer(
           .deleteQuery(option.value.id)
           .then(() =>
             flowResult(querySetupState.loadQueries('')).catch(
-              applicationStore.alertIllegalUnhandledError,
+              applicationStore.alertUnhandledError,
             ),
           )
-          .catch(applicationStore.alertIllegalUnhandledError);
+          .catch(applicationStore.alertUnhandledError);
       };
       if (option.value.id === querySetupState.currentQuery?.id) {
         return option.label;
@@ -180,7 +180,7 @@ const ExistingQuerySetup = observer(
       () =>
         debounce((input: string): void => {
           flowResult(querySetupState.loadQueries(input)).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }, 500),
       [applicationStore, querySetupState],
@@ -195,7 +195,7 @@ const ExistingQuerySetup = observer(
 
     useEffect(() => {
       flowResult(querySetupState.loadQueries('')).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [querySetupState, applicationStore]);
 
@@ -375,7 +375,7 @@ const ServiceQuerySetup = observer(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
-          ).catch(applicationStore.alertIllegalUnhandledError);
+          ).catch(applicationStore.alertUnhandledError);
         }
       }
     };
@@ -411,7 +411,7 @@ const ServiceQuerySetup = observer(
 
     useEffect(() => {
       flowResult(querySetupState.loadProjects()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [querySetupState, applicationStore]);
 
@@ -621,7 +621,7 @@ const CreateQuerySetup = observer(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
-          ).catch(applicationStore.alertIllegalUnhandledError);
+          ).catch(applicationStore.alertUnhandledError);
         }
       }
     };
@@ -677,7 +677,7 @@ const CreateQuerySetup = observer(
 
     useEffect(() => {
       flowResult(querySetupState.loadProjects()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [querySetupState, applicationStore]);
 

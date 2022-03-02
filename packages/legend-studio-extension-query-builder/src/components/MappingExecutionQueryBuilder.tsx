@@ -44,67 +44,72 @@ export const MappingExecutionQueryBuilder = observer(
     const queryBuilderExtension = editorStore.getEditorExtensionState(
       QueryBuilder_EditorExtensionState,
     );
-    const editWithQueryBuilder = async (): Promise<void> => {
-      const mapping = executionState.mappingEditorState.mapping;
-      queryBuilderExtension.reset();
-      queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
-        mapping,
-      );
-      queryBuilderExtension.queryBuilderState.querySetupState.setRuntime(
-        undefined,
-      );
-      queryBuilderExtension.queryBuilderState.querySetupState.setMappingIsReadOnly(
-        true,
-      );
-      queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeIsReadOnly(
-        true,
-      );
-      queryBuilderExtension.queryBuilderState.initialize(
-        executionState.queryState.query,
-      );
-      await flowResult(
-        queryBuilderExtension.setEmbeddedQueryBuilderMode({
-          actionConfigs: [
-            {
-              key: 'save-query-btn',
-              renderer: (): React.ReactNode => {
-                const save = async (): Promise<void> => {
-                  try {
-                    const rawLambda =
-                      queryBuilderExtension.queryBuilderState.getQuery();
-                    await flowResult(
-                      executionState.queryState.updateLamba(rawLambda),
-                    );
-                    editorStore.applicationStore.notifySuccess(
-                      `Mapping execution query is updated`,
-                    );
-                    queryBuilderExtension.setEmbeddedQueryBuilderMode(
-                      undefined,
-                    );
-                  } catch (error) {
-                    assertErrorThrown(error);
-                    applicationStore.notifyError(
-                      `Unable to save query: ${error.message}`,
-                    );
-                  }
-                };
-                return (
-                  <button
-                    className="query-builder__dialog__header__custom-action"
-                    tabIndex={-1}
-                    onClick={save}
-                  >
-                    Save Query
-                  </button>
-                );
+    const editWithQueryBuilder = applicationStore.guardUnhandledError(
+      async () => {
+        const mapping = executionState.mappingEditorState.mapping;
+        queryBuilderExtension.reset();
+        queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
+          mapping,
+        );
+        queryBuilderExtension.queryBuilderState.querySetupState.setRuntime(
+          undefined,
+        );
+        queryBuilderExtension.queryBuilderState.querySetupState.setMappingIsReadOnly(
+          true,
+        );
+        queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeIsReadOnly(
+          true,
+        );
+        queryBuilderExtension.queryBuilderState.initialize(
+          executionState.queryState.query,
+        );
+        await flowResult(
+          queryBuilderExtension.setEmbeddedQueryBuilderMode({
+            actionConfigs: [
+              {
+                key: 'save-query-btn',
+                renderer: (): React.ReactNode => {
+                  const save = applicationStore.guardUnhandledError(
+                    async (): Promise<void> => {
+                      try {
+                        const rawLambda =
+                          queryBuilderExtension.queryBuilderState.getQuery();
+                        await flowResult(
+                          executionState.queryState.updateLamba(rawLambda),
+                        );
+                        applicationStore.notifySuccess(
+                          `Mapping execution query is updated`,
+                        );
+                        queryBuilderExtension.setEmbeddedQueryBuilderMode(
+                          undefined,
+                        );
+                      } catch (error) {
+                        assertErrorThrown(error);
+                        applicationStore.notifyError(
+                          `Unable to save query: ${error.message}`,
+                        );
+                      }
+                    },
+                  );
+                  return (
+                    <button
+                      className="query-builder__dialog__header__custom-action"
+                      tabIndex={-1}
+                      onClick={save}
+                    >
+                      Save Query
+                    </button>
+                  );
+                },
               },
-            },
-          ],
-          disableCompile: executionState.queryState.query.isStub,
-          queryBuilderMode: new MappingExecutionQueryBuilderMode(),
-        }),
-      );
-    };
+            ],
+            disableCompile: executionState.queryState.query.isStub,
+            queryBuilderMode: new MappingExecutionQueryBuilderMode(),
+          }),
+        );
+      },
+    );
+
     return (
       <button
         className="panel__header__action"

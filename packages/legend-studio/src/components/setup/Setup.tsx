@@ -85,7 +85,7 @@ const CreateProjectModal = observer(() => {
     setupStore.setShowCreateProjectModal(false);
     setupStore.setImportProjectSuccessReport(undefined);
   };
-  const createProject = applicationStore.guaranteeSafeAction(() =>
+  const createProject = applicationStore.guardUnhandledError(() =>
     flowResult(
       setupStore.createProject(
         projectIdentifier,
@@ -96,7 +96,7 @@ const CreateProjectModal = observer(() => {
       ),
     ),
   );
-  const importProject = applicationStore.guaranteeSafeAction(() =>
+  const importProject = applicationStore.guardUnhandledError(() =>
     flowResult(
       setupStore.importProject(projectIdentifier, groupId, artifactId),
     ),
@@ -112,9 +112,9 @@ const CreateProjectModal = observer(() => {
     } else {
       if (projectIdentifier && groupId && artifactId) {
         if (projectType === ProjectType.PROTOTYPE) {
-          createProject().catch(applicationStore.alertIllegalUnhandledError);
+          createProject();
         } else {
-          importProject().catch(applicationStore.alertIllegalUnhandledError);
+          importProject();
         }
       }
     }
@@ -529,7 +529,7 @@ const CreateWorkspaceModal = observer(() => {
           workspaceName,
           workspaceType,
         ),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      ).catch(applicationStore.alertUnhandledError);
     }
   };
   const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
@@ -773,11 +773,11 @@ export const SetupInner = observer(() => {
 
   useEffect(() => {
     flowResult(setupStore.fetchProjects()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
     if (setupStore.currentProjectId) {
       flowResult(setupStore.fetchWorkspaces(setupStore.currentProjectId)).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   }, [applicationStore, setupStore]);

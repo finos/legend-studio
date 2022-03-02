@@ -56,7 +56,7 @@ const WorkspaceViewerContextMenu = observer(
     const { workspace } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const deleteWorkspace = applicationStore.guaranteeSafeAction(() =>
+    const deleteWorkspace = applicationStore.guardUnhandledError(() =>
       flowResult(editorStore.projectOverviewState.deleteWorkspace(workspace)),
     );
 
@@ -140,7 +140,7 @@ const WorkspacesViewer = observer(() => {
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
     flowResult(projectOverviewState.fetchProjectWorkspaces()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, projectOverviewState]);
 
@@ -191,13 +191,13 @@ const ReleaseEditor = observer(() => {
     projectOverviewState.isCreatingVersion;
   const { latestProjectVersion, currentProjectRevision } = projectOverviewState;
   const revisionInput = projectOverviewState.releaseVersion;
-  const createMajorRelease = applicationStore.guaranteeSafeAction(() =>
+  const createMajorRelease = applicationStore.guardUnhandledError(() =>
     flowResult(projectOverviewState.createVersion(NewVersionType.MAJOR)),
   );
-  const createMinorRelease = applicationStore.guaranteeSafeAction(() =>
+  const createMinorRelease = applicationStore.guardUnhandledError(() =>
     flowResult(projectOverviewState.createVersion(NewVersionType.MINOR)),
   );
-  const createPatchRelease = applicationStore.guaranteeSafeAction(() =>
+  const createPatchRelease = applicationStore.guardUnhandledError(() =>
     flowResult(projectOverviewState.createVersion(NewVersionType.PATCH)),
   );
   const changeNotes: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
@@ -211,7 +211,7 @@ const ReleaseEditor = observer(() => {
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
     flowResult(projectOverviewState.fetchLatestProjectVersion()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, projectOverviewState]);
 
@@ -375,7 +375,7 @@ const VersionsViewer = observer(() => {
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
     flowResult(editorStore.sdlcState.fetchProjectVersions()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, editorStore]);
 
@@ -501,7 +501,7 @@ const OverviewViewer = observer(() => {
         description,
         tagsArray,
       ),
-    ).catch(applicationStore.alertIllegalUnhandledError);
+    ).catch(applicationStore.alertUnhandledError);
   };
 
   return (

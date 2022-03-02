@@ -36,7 +36,7 @@ export const StandaloneDataSpaceViewer = observer(() => {
 
   useEffect(() => {
     flowResult(taxonomyStore.initializeStandaloneDataSpaceViewer(params)).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, params, taxonomyStore]);
   const queryDataSpace = (): void => {

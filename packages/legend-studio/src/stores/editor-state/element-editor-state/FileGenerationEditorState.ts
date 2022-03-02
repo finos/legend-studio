@@ -43,7 +43,7 @@ export class FileGenerationEditorState extends ElementEditorState {
       this.fileGeneration,
     );
     flowResult(this.fileGenerationState.generate()).catch(
-      this.editorStore.applicationStore.alertIllegalUnhandledError,
+      this.editorStore.applicationStore.alertUnhandledError,
     );
     assertType(
       element,

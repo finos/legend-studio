@@ -39,6 +39,7 @@ import {
 import {
   type PackageableElementOption,
   buildElementOption,
+  useApplicationStore,
 } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -48,17 +49,18 @@ import { prettyCONSTName } from '@finos/legend-shared';
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const parameterState = queryBuilderState.queryParametersState;
     const parameterValuesEditorState =
       parameterState.parameterValuesEditorState;
     const close = (): void => parameterValuesEditorState.close();
     const submitAction = parameterValuesEditorState.submitAction;
-    const submit = async (): Promise<void> => {
+    const submit = applicationStore.guardUnhandledError(async () => {
       if (submitAction) {
         close();
         await submitAction.handler();
       }
-    };
+    });
 
     return (
       <Dialog

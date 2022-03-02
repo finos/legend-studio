@@ -144,16 +144,16 @@ export const LocalChanges = observer(() => {
     localChangesState.patchLoaderState.openModal(
       editorStore.graphState.computeLocalEntityChanges(),
     );
-  const pushLocalChanges = applicationStore.guaranteeSafeAction(() =>
+  const pushLocalChanges = applicationStore.guardUnhandledError(() =>
     flowResult(localChangesState.pushLocalChanges()),
   );
-  const refreshLocalChanges = applicationStore.guaranteeSafeAction(() =>
+  const refreshLocalChanges = applicationStore.guardUnhandledError(() =>
     flowResult(localChangesState.refreshLocalChanges()),
   );
   const pullRemoteWorkspace = (): void => {
     if (!localChangesState.refreshWorkspaceSyncStatusState.isInProgress) {
       flowResult(updateState.pullChanges()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };
@@ -201,7 +201,7 @@ export const LocalChanges = observer(() => {
   // check if workspace is still in-sync
   useEffect(() => {
     flowResult(localChangesState.refreshWorkspaceSyncStatus()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, localChangesState]);
   return (

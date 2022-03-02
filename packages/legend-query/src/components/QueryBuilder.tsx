@@ -53,10 +53,9 @@ const QueryBuilderStatusBar = observer(
     const applicationStore = useApplicationStore();
     const openLambdaEditor = (mode: QueryTextEditorMode): void =>
       queryBuilderState.queryTextEditorState.openModal(mode);
-    const compile = (): Promise<void> =>
-      flowResult(queryBuilderState.compileQuery()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
+    const compile = applicationStore.guardUnhandledError(() =>
+      flowResult(queryBuilderState.compileQuery()),
+    );
 
     return (
       <div className="query-builder__status-bar">
@@ -117,7 +116,7 @@ export const QueryBuilder = observer(
       ): void => {
         event?.preventDefault();
         flowResult(queryBuilderState.compileQuery()).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       },
     };

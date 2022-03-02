@@ -91,11 +91,11 @@ const ProjectStructureEditor = observer(
         projectConfig.setArtifactId(event.target.value);
       }
     };
-    const updateVersion = applicationStore.guaranteeSafeAction(() =>
+    const updateVersion = (): void => {
       flowResult(
         editorStore.projectConfigurationEditorState.updateToLatestStructure(),
-      ),
-    );
+      ).catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <div className="panel__content__lists">
@@ -197,7 +197,7 @@ const ProjectDependencyEditor = observer(
     // init
     const { projectDependency, deleteValue, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const logger = editorStore.applicationStore.log;
+    const applicationStore = useApplicationStore();
     const projectSelectorRef = useRef<SelectComponent>(null);
     const versionSelectorRef = useRef<SelectComponent>(null);
     const configState = editorStore.projectConfigurationEditorState;
@@ -249,7 +249,7 @@ const ProjectDependencyEditor = observer(
           projectDependency.setVersionId(val?.value ?? '');
         } catch (error) {
           assertErrorThrown(error);
-          logger.error(
+          applicationStore.log.error(
             LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
             error,
           );
@@ -374,7 +374,7 @@ export const ProjectConfigurationEditor = observer(() => {
             handler: (): void => {
               editorStore.setIgnoreNavigationBlocking(true);
               flowResult(configState.updateConfigs()).catch(
-                applicationStore.alertIllegalUnhandledError,
+                applicationStore.alertUnhandledError,
               );
             },
           },
@@ -387,7 +387,7 @@ export const ProjectConfigurationEditor = observer(() => {
       });
     } else {
       flowResult(configState.updateConfigs()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };
@@ -398,7 +398,7 @@ export const ProjectConfigurationEditor = observer(() => {
       !configState.associatedProjectsAndVersionsFetched
     ) {
       flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   }, [applicationStore, configState, selectedTab]);

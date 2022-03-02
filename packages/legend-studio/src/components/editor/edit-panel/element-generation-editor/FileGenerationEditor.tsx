@@ -221,7 +221,7 @@ export const GenerationResultViewer = observer(
     const applicationStore = useApplicationStore();
     const selectedNode = fileGenerationState.selectedNode;
     const fileNode = selectedNode?.fileNode;
-    const regenerate = applicationStore.guaranteeSafeAction(() =>
+    const regenerate = applicationStore.guardUnhandledError(() =>
       flowResult(fileGenerationState.generate()),
     );
     const extraFileGenerationResultViewerActions =
@@ -364,7 +364,7 @@ const FileGenerationScopeEditor = observer(
       scopeElement: PackageableElementReference<PackageableElement> | string,
     ): void => {
       fileGeneration.deleteScopeElement(scopeElement);
-      regenerate()?.catch(applicationStore.alertIllegalUnhandledError);
+      regenerate()?.catch(applicationStore.alertUnhandledError);
     };
     const changeItemInputValue: React.ChangeEventHandler<HTMLInputElement> = (
       event,
@@ -384,7 +384,7 @@ const FileGenerationScopeEditor = observer(
           true,
         );
         fileGenerationState.addScopeElement(element ?? itemValue);
-        regenerate()?.catch(applicationStore.alertIllegalUnhandledError);
+        regenerate()?.catch(applicationStore.alertUnhandledError);
         hideAddOrEditItemInput();
       }
     };
@@ -411,7 +411,7 @@ const FileGenerationScopeEditor = observer(
               value,
               PackageableElementExplicitReference.create(element),
             );
-            regenerate()?.catch(applicationStore.alertIllegalUnhandledError);
+            regenerate()?.catch(applicationStore.alertUnhandledError);
           }
         }
         hideAddOrEditItemInput();
@@ -1292,7 +1292,7 @@ export const FileGenerationConfigurationEditor = observer(
         generationProperty,
         newValue,
       );
-      debouncedRegenerate()?.catch(applicationStore.alertIllegalUnhandledError);
+      debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
     };
     const showFileGenerationModal = (): void => {
       elementGenerationState?.setShowNewFileGenerationModal(true);
@@ -1300,7 +1300,7 @@ export const FileGenerationConfigurationEditor = observer(
     const resetDefaultConfiguration = (): void => {
       debouncedRegenerate.cancel();
       fileGenerationState.resetFileGeneration();
-      debouncedRegenerate()?.catch(applicationStore.alertIllegalUnhandledError);
+      debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
     };
 
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
@@ -1321,13 +1321,11 @@ export const FileGenerationConfigurationEditor = observer(
           fileGeneration.addScopeElement(
             PackageableElementExplicitReference.create(element),
           );
-          debouncedRegenerate()?.catch(
-            applicationStore.alertIllegalUnhandledError,
-          );
+          debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
         }
       },
       [
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
         debouncedRegenerate,
         elementGenerationState,
         fileGeneration,

@@ -116,18 +116,18 @@ export const QueryBuilderResultPanel = observer(
     const executionResult = resultState.executionResult;
     const USER_ATTESTATION_MESSAGE =
       'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
-    const execute = async (): Promise<void> => {
+    const execute = (): void => {
       if (queryParametersState.parameters.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.execute()).catch(
-              applicationStore.alertIllegalUnhandledError,
+              applicationStore.alertUnhandledError,
             ),
           PARAMETER_SUBMIT_ACTION.EXECUTE,
         );
       } else {
-        await flowResult(resultState.execute()).catch(
-          applicationStore.alertIllegalUnhandledError,
+        flowResult(resultState.execute()).catch(
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -138,13 +138,13 @@ export const QueryBuilderResultPanel = observer(
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.exportData(format)).catch(
-              applicationStore.alertIllegalUnhandledError,
+              applicationStore.alertUnhandledError,
             ),
           PARAMETER_SUBMIT_ACTION.EXPORT,
         );
       } else {
         await flowResult(resultState.exportData(format)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -157,7 +157,9 @@ export const QueryBuilderResultPanel = observer(
           {
             label: 'Accept',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): Promise<void> => exportQueryResults(format),
+            handler: applicationStore.guardUnhandledError(() =>
+              exportQueryResults(format),
+            ),
           },
           {
             label: 'Decline',
@@ -167,10 +169,9 @@ export const QueryBuilderResultPanel = observer(
         ],
       });
     };
-    const executePlan = (): Promise<void> =>
-      flowResult(resultState.generateExecutionPlan()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
+    const executePlan = applicationStore.guardUnhandledError(() =>
+      flowResult(resultState.generateExecutionPlan()),
+    );
     const planText = resultState.executionPlan
       ? JSON.stringify(resultState.executionPlan, undefined, TAB_SIZE)
       : '';

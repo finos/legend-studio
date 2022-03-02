@@ -480,7 +480,7 @@ export class WorkspaceSyncState {
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void => {
                 flowResult(this.forcePull()).catch(
-                  this.editorStore.applicationStore.alertIllegalUnhandledError,
+                  this.editorStore.applicationStore.alertUnhandledError,
                 );
               },
             },
