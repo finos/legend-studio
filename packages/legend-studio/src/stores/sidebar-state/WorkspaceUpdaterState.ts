@@ -47,9 +47,10 @@ import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
+  committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
+
   isUpdatingWorkspace = false;
   isRefreshingWorkspaceUpdater = false;
-  committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
     makeAutoObservable(this, {
@@ -83,13 +84,13 @@ export class WorkspaceUpdaterState {
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)
       ? guaranteeNonNullable(
           fromEntityGetter(diff.getValidatedOldPath()),
-          `Can't find element entity '${diff.oldPath}'`,
+          `Can't find entity with path  '${diff.oldPath}'`,
         )
       : undefined;
     const toEntity = EntityDiff.shouldNewEntityExist(diff)
       ? guaranteeNonNullable(
           toEntityGetter(diff.getValidatedNewPath()),
-          `Can't find element entity '${diff.newPath}'`,
+          `Can't find entity with path  '${diff.newPath}'`,
         )
       : undefined;
     this.editorStore.openEntityDiff(
@@ -120,7 +121,7 @@ export class WorkspaceUpdaterState {
       entityPath: string | undefined,
     ): Entity | undefined =>
       entityPath
-        ? this.editorStore.changeDetectionState.workspaceLatestRevisionState.entities.find(
+        ? this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
             (e) => e.path === entityPath,
           )
         : undefined;
@@ -134,6 +135,7 @@ export class WorkspaceUpdaterState {
         : undefined;
     const conflictEditorState = new EntityChangeConflictEditorState(
       this.editorStore,
+      this.editorStore.conflictResolutionState,
       conflict.entityPath,
       SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,
       SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,

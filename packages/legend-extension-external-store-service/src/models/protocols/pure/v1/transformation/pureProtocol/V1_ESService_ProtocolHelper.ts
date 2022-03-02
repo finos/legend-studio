@@ -180,9 +180,11 @@ const V1_serializationFormatModelSchema = createModelSchema(
 );
 
 const V1_serviceParameterModelSchema = createModelSchema(V1_ServiceParameter, {
+  allowReserved: optional(primitive()),
   enumeration: optional(primitive()),
   location: primitive(),
   name: primitive(),
+  required: optional(primitive()),
   serializationFormat: optional(
     usingModelSchema(V1_serializationFormatModelSchema),
   ),

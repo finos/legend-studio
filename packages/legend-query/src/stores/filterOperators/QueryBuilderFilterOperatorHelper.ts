@@ -78,6 +78,19 @@ const getPropertyExpressionChainVariable = (
     currentExpression = guaranteeNonNullable(
       currentExpression.parametersValues[0],
     );
+    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+    // $x.employees->subType(@Person)->subType(@Staff)
+    while (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      currentExpression = guaranteeNonNullable(
+        currentExpression.parametersValues[0],
+      );
+    }
   }
   return guaranteeType(currentExpression, VariableExpression);
 };
@@ -93,20 +106,35 @@ const buildFilterConditionExpressionWithExists = (
   assertTrue(
     filterConditionState.propertyExpressionState.requiresExistsHandling,
   );
-
   // 1. Decompose property expression
-  const pes: AbstractPropertyExpression[] = [];
+  const expressions: (AbstractPropertyExpression | SimpleFunctionExpression)[] =
+    [];
   let currentPropertyExpression: ValueSpecification =
     filterConditionState.propertyExpressionState.propertyExpression;
-  while (currentPropertyExpression instanceof AbstractPropertyExpression) {
-    const pe = new AbstractPropertyExpression('', multiplicityOne);
-    pe.func = currentPropertyExpression.func;
-    pe.parametersValues =
+  while (
+    currentPropertyExpression instanceof AbstractPropertyExpression ||
+    (currentPropertyExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentPropertyExpression.functionName,
+        SUPPORTED_FUNCTIONS.SUBTYPE,
+      ))
+  ) {
+    let exp: AbstractPropertyExpression | SimpleFunctionExpression;
+    if (currentPropertyExpression instanceof SimpleFunctionExpression) {
+      exp = new SimpleFunctionExpression(
+        extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+        multiplicityOne,
+      );
+    } else {
+      exp = new AbstractPropertyExpression('', multiplicityOne);
+      exp.func = currentPropertyExpression.func;
+    }
+    // NOTE: we must retain the rest of the parameters as those are derived property parameters
+    exp.parametersValues =
       currentPropertyExpression.parametersValues.length > 1
-        ? // NOTE: we must retain the rest of the parameters as those are derived property parameters
-          currentPropertyExpression.parametersValues.slice(1)
+        ? currentPropertyExpression.parametersValues.slice(1)
         : [];
-    pes.push(pe);
+    expressions.push(exp);
     currentPropertyExpression = guaranteeNonNullable(
       currentPropertyExpression.parametersValues[0],
     );
@@ -124,19 +152,22 @@ const buildFilterConditionExpressionWithExists = (
   const existsLambdaPropertyChains: ValueSpecification[] = [rootVariable];
   let currentParamNameIndex = 0;
 
-  for (let i = pes.length - 1; i >= 0; --i) {
-    const pe = pes[i] as AbstractPropertyExpression;
+  for (let i = expressions.length - 1; i >= 0; --i) {
+    const exp = expressions[i] as
+      | AbstractPropertyExpression
+      | SimpleFunctionExpression;
     // just keep adding to the property chain
-    pe.parametersValues.unshift(
+    exp.parametersValues.unshift(
       existsLambdaPropertyChains[
         existsLambdaPropertyChains.length - 1
       ] as ValueSpecification,
     );
-    existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1] = pe;
+    existsLambdaPropertyChains[existsLambdaPropertyChains.length - 1] = exp;
     // ... but if the property is of multiplicity multiple, start a new property chain
     if (
-      pe.func.multiplicity.upperBound === undefined ||
-      pe.func.multiplicity.upperBound > 1
+      exp instanceof AbstractPropertyExpression &&
+      (exp.func.multiplicity.upperBound === undefined ||
+        exp.func.multiplicity.upperBound > 1)
     ) {
       // NOTE: we need to find/generate the property chain variable name
       // here, by doing this, we try our best to respect original/user-input variable name
@@ -256,23 +287,32 @@ export const buildFilterConditionExpression = (
  */
 const buildFilterConditionStateWithExists = (
   filterState: QueryBuilderFilterState,
-  expression: SimpleFunctionExpression,
+  precedingExpression: SimpleFunctionExpression,
   operatorFunctionFullPath: string,
 ): [FilterConditionState | undefined, SimpleFunctionExpression | undefined] => {
-  if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.EXISTS)) {
+  if (
+    matchFunctionName(
+      precedingExpression.functionName,
+      SUPPORTED_FUNCTIONS.EXISTS,
+    )
+  ) {
     // 1. Decompose the exists() lambda chain into property expression chains
     const existsLambdaParameterNames: string[] = [];
-    const propertyExpressions: AbstractPropertyExpression[] = [];
-    let currentExpression: SimpleFunctionExpression = expression;
+
+    // `existsLambdaExpressions` should be a list of `AbstractPropertyExpression`
+    // e.g. |Firm.all()->filter(x|$x.employees->exists(x_1|$x_1->subType(@Develper).id->exists(x_2|$x_2 == 1))
+    // In the first exists() lambda, `$x_1->subType(@Develper).id` is an `AbstractPropertyExpression`.
+    const existsLambdaExpressions: AbstractPropertyExpression[] = [];
+    let mainFilterExpression: SimpleFunctionExpression = precedingExpression;
     while (
       matchFunctionName(
-        currentExpression.functionName,
+        mainFilterExpression.functionName,
         SUPPORTED_FUNCTIONS.EXISTS,
       )
     ) {
       const existsLambda = guaranteeNonNullable(
         guaranteeType(
-          currentExpression.parametersValues[1],
+          mainFilterExpression.parametersValues[1],
           LambdaFunctionInstanceValue,
         ).values[0],
         `Can't process exists() expression: exists() lambda is missing`,
@@ -281,7 +321,7 @@ const buildFilterConditionStateWithExists = (
         existsLambda.expressionSequence.length === 1,
         `Can't process exists() expression: exists() lambda body should hold an expression`,
       );
-      currentExpression = guaranteeType(
+      mainFilterExpression = guaranteeType(
         existsLambda.expressionSequence[0],
         SimpleFunctionExpression,
         `Can't process exists() expression: exists() lambda body should hold an expression`,
@@ -290,7 +330,7 @@ const buildFilterConditionStateWithExists = (
       // record the lambda parameter name
       assertTrue(
         existsLambda.functionType.parameters.length === 1,
-        `Can't process exists() function expression: exists() lambda should have 1 parameter`,
+        `Can't process exists() expression: exists() lambda should have 1 parameter`,
       );
       existsLambdaParameterNames.push(
         guaranteeType(
@@ -302,21 +342,16 @@ const buildFilterConditionStateWithExists = (
 
       // record the lambda property expression
       if (
-        currentExpression.parametersValues[0] instanceof
+        mainFilterExpression.parametersValues[0] instanceof
         AbstractPropertyExpression
       ) {
-        propertyExpressions.push(
-          guaranteeType(
-            currentExpression.parametersValues[0],
-            AbstractPropertyExpression,
-          ),
-        );
+        existsLambdaExpressions.push(mainFilterExpression.parametersValues[0]);
       }
     }
     // NOTE: make sure that the inner most function expression is the one we support
     if (
       !matchFunctionName(
-        currentExpression.functionName,
+        mainFilterExpression.functionName,
         operatorFunctionFullPath,
       )
     ) {
@@ -329,55 +364,96 @@ const buildFilterConditionStateWithExists = (
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const initialPropertyExpression = guaranteeType(
-      expression.parametersValues[0],
+      precedingExpression.parametersValues[0],
       AbstractPropertyExpression,
     );
-    let propertyExpression = new AbstractPropertyExpression(
+    let flattenedPropertyExpressionChain = new AbstractPropertyExpression(
       '',
       multiplicityOne,
     );
-    propertyExpression.func = initialPropertyExpression.func;
-    propertyExpression.parametersValues =
+    flattenedPropertyExpressionChain.func = initialPropertyExpression.func;
+    flattenedPropertyExpressionChain.parametersValues =
       initialPropertyExpression.parametersValues;
-    for (const currentPropertyExpression of propertyExpressions) {
+
+    for (const expression of existsLambdaExpressions) {
       // when rebuilding the property expression chain, disregard the initial variable that starts the chain
-      const pes: AbstractPropertyExpression[] = [];
-      let currentPe: ValueSpecification = currentPropertyExpression;
-      while (currentPe instanceof AbstractPropertyExpression) {
-        const pe = new AbstractPropertyExpression('', multiplicityOne);
-        pe.func = currentPe.func;
-        pe.parametersValues =
-          currentPe.parametersValues.length > 1
-            ? // NOTE: we must retain the rest of the parameters as those are derived property parameters
-              currentPe.parametersValues.slice(1)
-            : [];
-        pes.push(pe);
-        currentPe = guaranteeNonNullable(currentPe.parametersValues[0]);
+      const expressions: (
+        | AbstractPropertyExpression
+        | SimpleFunctionExpression
+      )[] = [];
+      let currentExpression: ValueSpecification = expression;
+      while (
+        currentExpression instanceof AbstractPropertyExpression ||
+        (currentExpression instanceof SimpleFunctionExpression &&
+          matchFunctionName(
+            currentExpression.functionName,
+            SUPPORTED_FUNCTIONS.SUBTYPE,
+          ))
+      ) {
+        if (currentExpression instanceof SimpleFunctionExpression) {
+          const functionExpression = new SimpleFunctionExpression(
+            extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+            multiplicityOne,
+          );
+          functionExpression.parametersValues.unshift(
+            guaranteeNonNullable(currentExpression.parametersValues[1]),
+          );
+          expressions.push(functionExpression);
+        } else if (currentExpression instanceof AbstractPropertyExpression) {
+          const propertyExpression = new AbstractPropertyExpression(
+            '',
+            multiplicityOne,
+          );
+          propertyExpression.func = currentExpression.func;
+          if (currentExpression.parametersValues.length > 1) {
+            // NOTE: we must retain the rest of the parameters as those are derived property parameters
+            propertyExpression.parametersValues =
+              currentExpression.parametersValues.slice(1);
+          } else {
+            propertyExpression.parametersValues = [];
+          }
+          expressions.push(propertyExpression);
+        }
+        currentExpression = guaranteeNonNullable(
+          currentExpression.parametersValues[0],
+        );
       }
       assertTrue(
-        pes.length > 0,
-        `Can't process exists() function expression: exists() usage with non-chain property expression is not supported`,
+        expressions.length > 0,
+        `Can't process exists() expression: exists() usage with non-chain property expression is not supported`,
       );
-      for (let i = 0; i < pes.length - 1; ++i) {
-        (pes[i] as AbstractPropertyExpression).parametersValues.unshift(
-          pes[i + 1] as AbstractPropertyExpression,
+      for (let i = 0; i < expressions.length - 1; ++i) {
+        (
+          expressions[i] as
+            | AbstractPropertyExpression
+            | SimpleFunctionExpression
+        ).parametersValues.unshift(
+          expressions[i + 1] as
+            | AbstractPropertyExpression
+            | SimpleFunctionExpression,
         );
       }
       (
-        pes[pes.length - 1] as AbstractPropertyExpression
-      ).parametersValues.unshift(propertyExpression);
-      propertyExpression = pes[0] as AbstractPropertyExpression;
+        expressions[expressions.length - 1] as
+          | AbstractPropertyExpression
+          | SimpleFunctionExpression
+      ).parametersValues.unshift(flattenedPropertyExpressionChain);
+      flattenedPropertyExpressionChain = guaranteeType(
+        expressions[0],
+        AbstractPropertyExpression,
+        `Can't process exists() expression: can't flatten to a property expression`,
+      );
     }
 
     // 3. Build the filter condition state with the simplified property expression
     const filterConditionState = new FilterConditionState(
       filterState,
-      propertyExpression,
+      flattenedPropertyExpressionChain,
     );
     existsLambdaParameterNames.forEach((paramName) =>
       filterConditionState.addExistsLambdaParamNames(paramName),
     );
-    return [filterConditionState, currentExpression];
+    return [filterConditionState, mainFilterExpression];
   }
   return [undefined, undefined];
 };

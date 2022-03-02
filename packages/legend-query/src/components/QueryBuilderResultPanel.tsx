@@ -21,6 +21,10 @@ import {
   PanelLoadingIndicator,
   PlayIcon,
   PaperScrollIcon,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -29,72 +33,78 @@ import {
   type ExecutionResult,
   extractExecutionResultValues,
   TdsExecutionResult,
+  RawExecutionResult,
+  EXECUTION_SERIALIZATION_FORMAT,
 } from '@finos/legend-graph';
 import {
+  ActionAlertActionType,
+  ActionAlertType,
   EDITOR_LANGUAGE,
   TAB_SIZE,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
+import { prettyCONSTName } from '@finos/legend-shared';
+import { PARAMETER_SUBMIT_ACTION } from '../stores/QueryParametersState';
 
 const QueryBuilderResultValues = observer(
   (props: { executionResult: ExecutionResult }) => {
     const { executionResult } = props;
-    const executionResultString = JSON.stringify(
-      extractExecutionResultValues(executionResult),
-      null,
-      TAB_SIZE,
-    );
-    const columns =
-      executionResult instanceof TdsExecutionResult
-        ? executionResult.result.columns
-        : [];
-    const rowData =
-      executionResult instanceof TdsExecutionResult
-        ? executionResult.result.rows.map((_row) => {
-            const row: Record<PropertyKey, unknown> = {};
-            const cols = executionResult.result.columns;
-            _row.values.forEach((value, idx) => {
-              row[cols[idx] as string] = value;
-            });
-            return row;
-          })
-        : [];
-
-    return (
-      <div className="query-builder__result__values">
-        {!(executionResult instanceof TdsExecutionResult) && (
-          <TextInputEditor
-            language={EDITOR_LANGUAGE.JSON}
-            inputValue={executionResultString}
-            isReadOnly={true}
-          />
-        )}
-        {executionResult instanceof TdsExecutionResult && (
-          <div
-            // NOTE: since we use the column name as the key the column
-            // if we execute once then immediate add another column and execute again
-            // the old columns rendering will be kept the same and the new column
-            // will be pushed to last regardless of its type (aggregation or simple projection)
-            key={executionResult.uuid}
-            className="ag-theme-balham-dark query-builder__result__tds-grid"
-          >
-            <AgGridReact rowData={rowData}>
-              {columns.map((colName) => (
-                <AgGridColumn
-                  minWidth={50}
-                  sortable={true}
-                  resizable={true}
-                  field={colName}
-                  key={colName}
-                  flex={1}
-                />
-              ))}
-            </AgGridReact>
-          </div>
-        )}
-      </div>
-    );
+    if (executionResult instanceof TdsExecutionResult) {
+      const columns = executionResult.result.columns;
+      const rowData = executionResult.result.rows.map((_row) => {
+        const row: Record<PropertyKey, unknown> = {};
+        const cols = executionResult.result.columns;
+        _row.values.forEach((value, idx) => {
+          row[cols[idx] as string] = value;
+        });
+        return row;
+      });
+      return (
+        <div
+          // NOTE: since we use the column name as the key the column
+          // if we execute once then immediate add another column and execute again
+          // the old columns rendering will be kept the same and the new column
+          // will be pushed to last regardless of its type (aggregation or simple projection)
+          key={executionResult.uuid}
+          className="ag-theme-balham-dark query-builder__result__tds-grid"
+        >
+          <AgGridReact rowData={rowData}>
+            {columns.map((colName) => (
+              <AgGridColumn
+                minWidth={50}
+                sortable={true}
+                resizable={true}
+                field={colName}
+                key={colName}
+                flex={1}
+              />
+            ))}
+          </AgGridReact>
+        </div>
+      );
+    } else if (executionResult instanceof RawExecutionResult) {
+      return (
+        <TextInputEditor
+          language={EDITOR_LANGUAGE.TEXT}
+          inputValue={executionResult.value}
+          isReadOnly={true}
+        />
+      );
+    } else {
+      const executionResultString = JSON.stringify(
+        extractExecutionResultValues(executionResult),
+        null,
+        TAB_SIZE,
+      );
+      return (
+        <TextInputEditor
+          language={EDITOR_LANGUAGE.JSON}
+          inputValue={executionResultString}
+          isReadOnly={true}
+        />
+      );
+    }
   },
 );
 
@@ -103,15 +113,60 @@ export const QueryBuilderResultPanel = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const resultState = queryBuilderState.resultState;
+    const queryParametersState = queryBuilderState.queryParametersState;
     const executionResult = resultState.executionResult;
-    const execute = (): void => {
-      if (queryBuilderState.queryParametersState.parameters.length) {
-        queryBuilderState.queryParametersState.setValuesEditorIsOpen(true);
+    const USER_ATTESTATION_MESSAGE =
+      'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
+    const execute = async (): Promise<void> => {
+      if (queryParametersState.parameters.length) {
+        queryParametersState.parameterValuesEditorState.open(
+          (): Promise<void> =>
+            flowResult(resultState.execute()).catch(
+              applicationStore.alertIllegalUnhandledError,
+            ),
+          PARAMETER_SUBMIT_ACTION.EXECUTE,
+        );
       } else {
-        flowResult(resultState.execute()).catch(
+        await flowResult(resultState.execute()).catch(
           applicationStore.alertIllegalUnhandledError,
         );
       }
+    };
+    const exportQueryResults = async (
+      format: EXECUTION_SERIALIZATION_FORMAT,
+    ): Promise<void> => {
+      if (queryBuilderState.queryParametersState.parameters.length) {
+        queryParametersState.parameterValuesEditorState.open(
+          (): Promise<void> =>
+            flowResult(resultState.exportData(format)).catch(
+              applicationStore.alertIllegalUnhandledError,
+            ),
+          PARAMETER_SUBMIT_ACTION.EXPORT,
+        );
+      } else {
+        await flowResult(resultState.exportData(format)).catch(
+          applicationStore.alertIllegalUnhandledError,
+        );
+      }
+    };
+
+    const confirmExport = (format: EXECUTION_SERIALIZATION_FORMAT): void => {
+      applicationStore.setActionAltertInfo({
+        message: USER_ATTESTATION_MESSAGE,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Accept',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): Promise<void> => exportQueryResults(format),
+          },
+          {
+            label: 'Decline',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
     };
     const executePlan = (): Promise<void> =>
       flowResult(resultState.generateExecutionPlan()).catch(
@@ -132,7 +187,9 @@ export const QueryBuilderResultPanel = observer(
       <div className="panel query-builder__result">
         <PanelLoadingIndicator
           isLoading={
-            resultState.isExecutingQuery || resultState.isGeneratingPlan
+            resultState.isExecutingQuery ||
+            resultState.isGeneratingPlan ||
+            resultState.exportDataState.isInProgress
           }
         />
         <div className="panel__header">
@@ -170,6 +227,40 @@ export const QueryBuilderResultPanel = observer(
             >
               <PaperScrollIcon />
             </button>
+            <DropdownMenu
+              className="query-builder__export__dropdown"
+              content={
+                <MenuContent>
+                  {Object.values(EXECUTION_SERIALIZATION_FORMAT).map(
+                    (format) => (
+                      <MenuContentItem
+                        key={format}
+                        className="query-builder__export__dropdown__menu__item"
+                        onClick={(): void => confirmExport(format)}
+                      >
+                        {prettyCONSTName(format)}
+                      </MenuContentItem>
+                    ),
+                  )}
+                </MenuContent>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
+                elevation: 7,
+              }}
+            >
+              <button
+                className="query-builder__export__dropdown__label"
+                tabIndex={-1}
+                title="Export"
+              >
+                Export
+              </button>
+              <div className="query-builder__export__dropdown__trigger">
+                <CaretDownIcon />
+              </div>
+            </DropdownMenu>
           </div>
         </div>
         <div className="panel__content">
@@ -179,7 +270,9 @@ export const QueryBuilderResultPanel = observer(
             </BlankPanelContent>
           )}
           {executionResult && (
-            <QueryBuilderResultValues executionResult={executionResult} />
+            <div className="query-builder__result__values">
+              <QueryBuilderResultValues executionResult={executionResult} />
+            </div>
           )}
         </div>
         <Dialog
@@ -189,9 +282,6 @@ export const QueryBuilderResultPanel = observer(
             root: 'editor-modal__root-container',
             container: 'editor-modal__container',
             paper: 'editor-modal__content',
-          }}
-          TransitionProps={{
-            appear: false, // disable transition
           }}
         >
           <div className="modal modal--dark editor-modal">

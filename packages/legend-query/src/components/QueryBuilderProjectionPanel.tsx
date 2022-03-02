@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -67,7 +67,7 @@ const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType(),
-      item: monitor.getItem() as QueryBuilderProjectionColumnDragSource | null,
+      item: monitor.getItem<QueryBuilderProjectionColumnDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
@@ -103,12 +103,12 @@ const ProjectionColumnDragLayer: React.FC = () => {
 };
 
 const QueryBuilderProjectionColumnContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       projectionColumnState: QueryBuilderProjectionColumnState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function QueryBuilderProjectionColumnContextMenu(props, ref) {
     const { projectionColumnState } = props;
     const convertToDerivation = (): void => {
       if (
@@ -130,8 +130,7 @@ const QueryBuilderProjectionColumnContextMenu = observer(
         )}
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const QueryBuilderSimpleProjectionColumnEditor = observer(
@@ -206,10 +205,6 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { item: unknown; dragItemType: string } => ({
-          item: monitor.getItem(),
-          dragItemType: monitor.getItemType() as string,
-        }),
       }),
       [handleDrop],
     );

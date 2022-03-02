@@ -82,6 +82,7 @@ export class QueryBuilderGraphFetchTreeState {
         this.treeData,
         this.queryBuilderState.explorerState.nonNullableTreeData,
         node,
+        this.queryBuilderState,
       );
       this.setGraphFetchTree({ ...this.treeData });
     }

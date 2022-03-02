@@ -118,10 +118,10 @@ test(
         entities,
       ),
     );
-    expect(graphManagerState.graph.buildState.hasSucceeded).toBe(true),
-      Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
-        expect(dependencyManager.getModel(k)).toBeDefined(),
-      );
+    expect(graphManagerState.graph.buildState.hasSucceeded).toBe(true);
+    Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
+      expect(dependencyManager.getModel(k)).toBeDefined(),
+    );
 
     // check dependency manager
     expect(dependencyManager.getModel(firstDependencyKey)).toBeDefined();

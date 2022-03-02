@@ -1,5 +1,25 @@
 # @finos/legend-taxonomy
 
+## 0.2.7
+
+## 0.2.6
+
+## 0.2.5
+
+## 0.2.4
+
+## 0.2.3
+
+## 0.2.2
+
+## 0.2.1
+
+## 0.2.0
+
+### Minor Changes
+
+- [#821](https://github.com/finos/legend-studio/pull/821) [`9af3076d`](https://github.com/finos/legend-studio/commit/9af3076dee533f55b459cd8698df26f58d7f2309) ([@akphi](https://github.com/akphi)) - Support copying to clipboard taxonomy tree node ID (`guid`) if available.
+
 ## 0.1.3
 
 ## 0.1.2

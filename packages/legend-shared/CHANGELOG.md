@@ -1,5 +1,15 @@
 # @finos/legend-shared
 
+## 1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- [#836](https://github.com/finos/legend-studio/pull/836) [`4e08df9a`](https://github.com/finos/legend-studio/commit/4e08df9ae59e50cd5400d5d9bdcf43f1c7d2b423) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `text/csv` as a `ContentType`.
+
+## 1.1.2
+
 ## 1.1.1
 
 ## 1.1.0

@@ -602,6 +602,318 @@ export const TEST_DATA__getAllWithOneConditionFilter = {
   parameters: [],
 };
 
+export const TEST_DATA__filterQueryWithSubtypeWithoutExists = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'hackedClass',
+                          fullPath:
+                            'model::pure::tests::model::simple::PersonExtension',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'birthdate',
+                },
+                {
+                  _type: 'dateTime',
+                  values: ['2022-01-26'],
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__filterQueryWithSubtypeWithExists = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'exists',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'firm',
+                        },
+                        {
+                          _type: 'hackedClass',
+                          fullPath:
+                            'model::pure::tests::model::simple::FirmExtension',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'employeesExt',
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'equal',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x_1',
+                                },
+                              ],
+                              property: 'address',
+                            },
+                          ],
+                          property: 'comments',
+                        },
+                        {
+                          _type: 'string',
+                          values: [''],
+                          multiplicity: {
+                            lowerBound: 1,
+                            upperBound: 1,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x_1',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__filterQueryWithSubtypeWithExistsChain = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'exists',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'firm',
+                        },
+                        {
+                          _type: 'hackedClass',
+                          fullPath:
+                            'model::pure::tests::model::simple::FirmExtension',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'employeesExt',
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'exists',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x_1',
+                                },
+                              ],
+                              property: 'manager',
+                            },
+                          ],
+                          property: 'locations',
+                        },
+                        {
+                          _type: 'lambda',
+                          body: [
+                            {
+                              _type: 'func',
+                              function: 'equal',
+                              parameters: [
+                                {
+                                  _type: 'property',
+                                  parameters: [
+                                    {
+                                      _type: 'var',
+                                      name: 'x_2',
+                                    },
+                                  ],
+                                  property: 'place',
+                                },
+                                {
+                                  _type: 'string',
+                                  values: [''],
+                                  multiplicity: {
+                                    lowerBound: 1,
+                                    upperBound: 1,
+                                  },
+                                },
+                              ],
+                            },
+                          ],
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x_2',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x_1',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__getAllWithGroupedFilter = {
   _type: 'lambda',
   body: [
@@ -1269,6 +1581,75 @@ export const TEST_DATA__graphFetchWithDerivedPropertyAndParameter = {
               ],
               property: 'myName',
               subTrees: [],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
+export const TEST_DATA__graphFetchWithSubtype = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'serialize',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'graphFetch',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::target::NFirm',
+                },
+              ],
+            },
+            {
+              _type: 'rootGraphFetchTree',
+              class: 'model::target::NFirm',
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [],
+                  property: 'nEmployees',
+                  subTrees: [
+                    {
+                      _type: 'propertyGraphFetchTree',
+                      parameters: [],
+                      property: 'fullAddress',
+                      subTrees: [],
+                    },
+                  ],
+                  subType: 'model::target::NDeveloper',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'rootGraphFetchTree',
+          class: 'model::target::NFirm',
+          subTrees: [
+            {
+              _type: 'propertyGraphFetchTree',
+              parameters: [],
+              property: 'nEmployees',
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [],
+                  property: 'fullAddress',
+                  subTrees: [],
+                },
+              ],
+              subType: 'model::target::NDeveloper',
             },
           ],
         },

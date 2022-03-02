@@ -640,7 +640,6 @@ export class QueryBuilderProjectionState {
               ),
               runtime,
               PureClientVersion.VX_X_X,
-              false,
             )) as ExecutionResult;
           assertType(
             previewResult,
@@ -684,7 +683,6 @@ export class QueryBuilderProjectionState {
               ),
               runtime,
               PureClientVersion.VX_X_X,
-              false,
             )) as ExecutionResult;
           assertType(
             previewResult,

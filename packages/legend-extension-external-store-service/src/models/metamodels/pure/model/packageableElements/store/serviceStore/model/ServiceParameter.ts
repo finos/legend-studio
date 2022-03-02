@@ -29,6 +29,8 @@ export class ServiceParameter implements Hashable {
   name!: string;
   type!: TypeReference;
   location!: LOCATION;
+  allowReserved?: boolean | undefined;
+  required?: boolean | undefined;
   enumeration?: string | undefined;
   serializationFormat?: SerializationFormat | undefined;
 
@@ -37,11 +39,15 @@ export class ServiceParameter implements Hashable {
       name: observable,
       type: observable,
       location: observable,
+      allowReserved: observable,
+      required: observable,
       enumeration: observable,
       serializationFormat: observable,
       setName: action,
       setType: action,
       setLocation: action,
+      setAllowReserved: action,
+      setRequired: action,
       setEnumeration: action,
       setSerializationFormat: action,
       hashCode: computed,
@@ -60,6 +66,14 @@ export class ServiceParameter implements Hashable {
     this.location = value;
   }
 
+  setAllowReserved(value: boolean): void {
+    this.allowReserved = value;
+  }
+
+  setRequired(value: boolean): void {
+    this.required = value;
+  }
+
   setEnumeration(value: string): void {
     this.enumeration = value;
   }
@@ -74,6 +88,8 @@ export class ServiceParameter implements Hashable {
       this.name,
       this.type,
       this.location,
+      this.allowReserved?.toString() ?? '',
+      this.required?.toString() ?? '',
       this.enumeration ?? '',
       this.serializationFormat ?? '',
     ]);

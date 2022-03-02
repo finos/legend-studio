@@ -15,6 +15,7 @@
  */
 
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
+import TEST_DATA__SimpleRelationalInheritanceModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
@@ -41,6 +42,7 @@ import {
   EXPECTED__MappingData_ComplexM2MModel,
   EXPECTED__MappingData__Auto_M2M,
   EXPECTED__MappingData__COVIDDataSimpleModel,
+  EXPECTED__MappingData__Relational_Inheritance,
   EXPECTED__MappingData__Relational_Inline,
 } from './TEST_DATA__Expected_MappingData';
 
@@ -107,6 +109,16 @@ const cases: TestCase[] = [
       expectedMappingData:
         EXPECTED__MappingData__Relational_Inline as TestNodePropertyMappingData[],
       entities: TEST_DATA__Relational_Inline,
+    },
+  ],
+  [
+    'Simple relational mapping with inhertiance class mapping',
+    {
+      mapping: 'model::NewMapping',
+      rootClass: 'model::Firm',
+      expectedMappingData:
+        EXPECTED__MappingData__Relational_Inheritance as TestNodePropertyMappingData[],
+      entities: TEST_DATA__SimpleRelationalInheritanceModel,
     },
   ],
 ];

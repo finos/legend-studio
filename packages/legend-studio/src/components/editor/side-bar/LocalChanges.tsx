@@ -20,20 +20,32 @@ import {
   Dialog,
   PanelLoadingIndicator,
   TimesIcon,
-  SyncIcon,
   RefreshIcon,
   InfoCircleIcon,
   DownloadIcon,
   UploadIcon,
+  CloudDownloadIcon,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
+  CloudUploadIcon,
 } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { flowResult } from 'mobx';
-import type { EntityChange, EntityDiff } from '@finos/legend-server-sdlc';
+import type {
+  EntityChange,
+  EntityChangeConflict,
+  EntityDiff,
+} from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
+import { useEffect } from 'react';
+import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor';
 
 const PatchLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -52,13 +64,7 @@ const PatchLoader = observer(() => {
   const deleteChange = (change: EntityChange): void =>
     patchState.deleteChange(change);
   return (
-    <Dialog
-      onClose={onClose}
-      open={patchState.showModal}
-      TransitionProps={{
-        appear: false, // disable transition
-      }}
-    >
+    <Dialog onClose={onClose} open={patchState.showModal}>
       <div className="modal modal--dark modal--scrollable patch-loader">
         <div className="modal__header">
           <div className="modal__title">
@@ -127,8 +133,10 @@ const PatchLoader = observer(() => {
 
 export const LocalChanges = observer(() => {
   const editorStore = useEditorStore();
+  const sdlcState = editorStore.sdlcState;
   const applicationStore = useApplicationStore();
   const localChangesState = editorStore.localChangesState;
+  const updateState = localChangesState.workspaceSyncState;
   // Actions
   const downloadLocalChanges = (): void =>
     localChangesState.downloadLocalChanges();
@@ -136,15 +144,24 @@ export const LocalChanges = observer(() => {
     localChangesState.patchLoaderState.openModal(
       editorStore.graphState.computeLocalEntityChanges(),
     );
-  const syncingWithWorkspace = applicationStore.guaranteeSafeAction(() =>
-    flowResult(localChangesState.syncWithWorkspace()),
+  const pushLocalChanges = applicationStore.guaranteeSafeAction(() =>
+    flowResult(localChangesState.pushLocalChanges()),
   );
   const refreshLocalChanges = applicationStore.guaranteeSafeAction(() =>
     flowResult(localChangesState.refreshLocalChanges()),
   );
+  const pullRemoteWorkspace = (): void => {
+    if (!localChangesState.refreshWorkspaceSyncStatusState.isInProgress) {
+      flowResult(updateState.pullChanges()).catch(
+        applicationStore.alertIllegalUnhandledError,
+      );
+    }
+  };
   const isDispatchingAction =
-    localChangesState.isSyncingWithWorkspace ||
-    localChangesState.isRefreshingLocalChangesDetector;
+    localChangesState.pushChangesState.isInProgress ||
+    localChangesState.refreshLocalChangesDetectorState.isInProgress ||
+    localChangesState.workspaceSyncState.pullChangesState.isInProgress ||
+    localChangesState.refreshWorkspaceSyncStatusState.isInProgress;
   // Changes
   const currentEditorState = editorStore.currentEditorState;
   const isSelectedDiff = (diff: EntityDiff): boolean =>
@@ -152,12 +169,41 @@ export const LocalChanges = observer(() => {
     diff.oldPath === currentEditorState.fromEntityPath &&
     diff.newPath === currentEditorState.toEntityPath;
   const changes =
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes;
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes;
   const openChange =
     (diff: EntityDiff): (() => void) =>
     (): void =>
       localChangesState.openLocalChange(diff);
+  // Local/Remote Workspace Conflicts
+  const conflicts =
+    editorStore.changeDetectionState.potentialWorkspacePullConflicts;
+  const isSelectedConflict = (conflict: EntityChangeConflict): boolean =>
+    currentEditorState instanceof EntityChangeConflictEditorState &&
+    conflict.entityPath === currentEditorState.entityPath;
+  const openPotentialConflict =
+    (conflict: EntityChangeConflict): (() => void) =>
+    (): void =>
+      localChangesState.openPotentialWorkspacePullConflict(conflict);
+  // Local/Remote Workspace Changes
+  const workspacePullChanges =
+    editorStore.changeDetectionState.aggregatedWorkspaceRemoteChanges;
+  const changesWithoutConflicts = workspacePullChanges.filter(
+    (change) =>
+      !conflicts
+        .map((conflict) => conflict.entityPath)
+        .includes(change.entityPath),
+  );
+  const openWorkspacePullChange =
+    (diff: EntityDiff): (() => void) =>
+    (): void =>
+      localChangesState.openWorkspacePullChange(diff);
 
+  // check if workspace is still in-sync
+  useEffect(() => {
+    flowResult(localChangesState.refreshWorkspaceSyncStatus()).catch(
+      applicationStore.alertIllegalUnhandledError,
+    );
+  }, [applicationStore, localChangesState]);
   return (
     <div className="panel local-changes">
       <div className="panel__header side-bar__header">
@@ -199,7 +245,8 @@ export const LocalChanges = observer(() => {
               'panel__header__action side-bar__header__action local-changes__refresh-btn',
               {
                 'local-changes__refresh-btn--loading':
-                  localChangesState.isRefreshingLocalChangesDetector,
+                  localChangesState.refreshLocalChangesDetectorState
+                    .isInProgress,
               },
             )}
             onClick={refreshLocalChanges}
@@ -211,61 +258,175 @@ export const LocalChanges = observer(() => {
           </button>
           <button
             className={clsx(
-              'panel__header__action side-bar__header__action local-changes__sync-btn',
+              'panel__header__action side-bar__header__action local-changes__push-changes-btn',
               {
-                'local-changes__sync-btn--loading':
-                  localChangesState.isSyncingWithWorkspace,
+                'local-changes__push-changes-btn--loading':
+                  localChangesState.pushChangesState.isInProgress,
               },
             )}
-            onClick={syncingWithWorkspace}
+            onClick={pushLocalChanges}
             disabled={
               isDispatchingAction ||
               editorStore.workspaceUpdaterState.isUpdatingWorkspace
             }
             tabIndex={-1}
-            title="Sync with workspace (Ctrl + S)"
+            title="Push local changes (Ctrl + S)"
           >
-            <SyncIcon />
+            <CloudUploadIcon />
+          </button>
+          <button
+            className="panel__header__action side-bar__header__action workspace-updater__update-btn"
+            onClick={pullRemoteWorkspace}
+            disabled={
+              isDispatchingAction ||
+              !sdlcState.remoteWorkspaceRevision ||
+              !sdlcState.isWorkspaceOutOfSync
+            }
+            tabIndex={-1}
+            title="Pull remote workspace changes"
+          >
+            <CloudDownloadIcon />
           </button>
         </div>
       </div>
       <div className="panel__content side-bar__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         {localChangesState.patchLoaderState.showModal && <PatchLoader />}
-        <div className="panel side-bar__panel">
-          <div className="panel__header">
-            <div className="panel__header__title">
-              <div className="panel__header__title__content">CHANGES</div>
-              <div
-                className="side-bar__panel__title__info"
-                title="All local changes that have not been yet synced with the server"
-              >
-                <InfoCircleIcon />
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={600} minSize={28}>
+            <div className="panel side-bar__panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__content">CHANGES</div>
+                  <div
+                    className="side-bar__panel__title__info"
+                    title="All local changes that have not been yet pushed with the server"
+                  >
+                    <InfoCircleIcon />
+                  </div>
+                </div>
+                <div
+                  className="side-bar__panel__header__changes-count"
+                  data-testid={
+                    LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                  }
+                >
+                  {changes.length}
+                </div>
+              </div>
+              <div className="panel__content">
+                {changes
+                  .slice()
+                  .sort(entityDiffSorter)
+                  .map((diff) => (
+                    <EntityDiffSideBarItem
+                      key={diff.key}
+                      diff={diff}
+                      isSelected={isSelectedDiff(diff)}
+                      openDiff={openChange(diff)}
+                    />
+                  ))}
               </div>
             </div>
-            <div
-              className="side-bar__panel__header__changes-count"
-              data-testid={
-                LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
-              }
-            >
-              {changes.length}
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-100)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={28}>
+            <div className="panel side-bar__panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__content">
+                    INCOMING REMOTE REVISIONS
+                  </div>
+                  <div
+                    className="side-bar__panel__title__info"
+                    title="All incoming remote revisions since last syncing of workspace"
+                  >
+                    <InfoCircleIcon />
+                  </div>
+                </div>
+                <div className="side-bar__panel__header__changes-count">
+                  {updateState.incomingRevisions.length}
+                </div>
+              </div>
+              <div className="panel__content">
+                {updateState.incomingRevisions.map((revision) => (
+                  <div key={revision.id} className="side-bar__panel__item">
+                    <div className="local-changes__revision">
+                      <span className="local-changes__revision__name">
+                        {revision.message}
+                      </span>
+                      <span className="local-changes__revision__info">
+                        {revision.committerName}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="panel__content">
-            {changes
-              .slice()
-              .sort(entityDiffSorter)
-              .map((diff) => (
-                <EntityDiffSideBarItem
-                  key={diff.key}
-                  diff={diff}
-                  isSelected={isSelectedDiff(diff)}
-                  openDiff={openChange(diff)}
-                />
-              ))}
-          </div>
-        </div>
+          </ResizablePanel>
+
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-100)" />
+          </ResizablePanelSplitter>
+
+          <ResizablePanel minSize={28}>
+            <div className="panel side-bar__panel">
+              <div className="panel__header">
+                <div className="panel__header__title">
+                  <div className="panel__header__title__content">
+                    INCOMING REMOTE CHANGES
+                  </div>
+                  <div
+                    className="side-bar__panel__title__info"
+                    title={
+                      'All changes made to remote workspace since last syncing of workspace.\nPotential workspace sync conflicts are also shown if they exist'
+                    }
+                  >
+                    <InfoCircleIcon />
+                  </div>
+                </div>
+                <div
+                  className="side-bar__panel__header__changes-count"
+                  data-testid={
+                    LEGEND_STUDIO_TEST_ID.SIDEBAR_PANEL_HEADER__CHANGES_COUNT
+                  }
+                >
+                  {workspacePullChanges.length}
+                </div>
+              </div>
+              <div className="panel__content">
+                {conflicts
+                  .slice()
+                  .sort((a, b) => a.entityName.localeCompare(b.entityName))
+                  .map((conflict) => (
+                    <EntityChangeConflictSideBarItem
+                      key={`conflict-${conflict.entityPath}`}
+                      conflict={conflict}
+                      isSelected={isSelectedConflict(conflict)}
+                      openConflict={openPotentialConflict(conflict)}
+                    />
+                  ))}
+                {Boolean(conflicts.length) &&
+                  Boolean(changesWithoutConflicts.length) && (
+                    <div className="diff-panel__item-section-separator" />
+                  )}
+                {changesWithoutConflicts
+                  .slice()
+                  .sort(entityDiffSorter)
+                  .map((diff) => (
+                    <EntityDiffSideBarItem
+                      key={diff.key}
+                      diff={diff}
+                      isSelected={isSelectedDiff(diff)}
+                      openDiff={openWorkspacePullChange(diff)}
+                    />
+                  ))}
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );

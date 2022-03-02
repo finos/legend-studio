@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 import { Link } from 'react-router-dom';
@@ -46,13 +46,13 @@ import { useEditorStore } from '../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
-const WorkspaceViewerContextMenu = observer<
-  {
-    workspace: Workspace;
-  },
-  HTMLDivElement
->(
-  (props, ref) => {
+const WorkspaceViewerContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      workspace: Workspace;
+    }
+  >(function WorkspaceViewerContextMenu(props, ref) {
     const { workspace } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -70,8 +70,7 @@ const WorkspaceViewerContextMenu = observer<
         </div>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {

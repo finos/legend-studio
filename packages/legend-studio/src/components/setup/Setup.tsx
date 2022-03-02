@@ -194,7 +194,6 @@ const CreateProjectModal = observer(() => {
       open={setupStore.showCreateProjectModal}
       onClose={closeModal}
       TransitionProps={{
-        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}
@@ -550,7 +549,6 @@ const CreateWorkspaceModal = observer(() => {
       open={showCreateWorkspaceModal}
       onClose={closeModal}
       TransitionProps={{
-        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}

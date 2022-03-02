@@ -36,9 +36,10 @@ import {
   WrenchIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider';
+import { forwardRef } from 'react';
 
 const SettingsMenu = observer(
-  (props, ref: React.Ref<HTMLDivElement>) => {
+  forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
     const editorStore = useEditorStore();
     const toggleDevTool = (): void => {
       editorStore.setDevTool(!editorStore.isDevToolEnabled);
@@ -54,8 +55,7 @@ const SettingsMenu = observer(
         </MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export interface ActivityDisplay {
@@ -73,7 +73,7 @@ export const ActivityBar = observer(() => {
       editorStore.setActiveActivity(activity);
   // local changes
   const localChanges =
-    editorStore.changeDetectionState.workspaceLatestRevisionState.changes
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length;
   const localChangesDisplayLabel = localChanges > 99 ? '99+' : localChanges;
   const localChangesIndicatorStatusIcon =
@@ -81,9 +81,9 @@ export const ActivityBar = observer(() => {
     editorStore.changeDetectionState.forcedStop ? (
       <div />
     ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
-      editorStore.changeDetectionState.workspaceLatestRevisionState
+      editorStore.changeDetectionState.workspaceLocalLatestRevisionState
         .isBuildingEntityHashesIndex ||
-      editorStore.localChangesState.isSyncingWithWorkspace ? (
+      editorStore.localChangesState.pushChangesState.isInProgress ? (
       <div
         className="activity-bar__item__icon__indicator activity-bar__local-change-counter activity-bar__local-change-counter--waiting"
         data-testid={LEGEND_STUDIO_TEST_ID.ACTIVITY_BAR_ITEM_ICON_INDICATOR}
@@ -138,7 +138,7 @@ export const ActivityBar = observer(() => {
   ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
     editorStore.changeDetectionState.workspaceBaseRevisionState
       .isBuildingEntityHashesIndex ||
-    editorStore.changeDetectionState.workspaceLatestRevisionState
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState
       .isBuildingEntityHashesIndex ? (
     <div />
   ) : (
@@ -178,9 +178,9 @@ export const ActivityBar = observer(() => {
       icon: <ListIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.CHANGES,
+      mode: ACTIVITY_MODE.LOCAL_CHANGES,
       title: 'Local Changes (Ctrl + Shift + G)',
-      info: localChanges ? `${localChanges} unsynced changes` : undefined,
+      info: localChanges ? `${localChanges} unpushed changes` : undefined,
       icon: (
         <div className="activity-bar__local-change-icon activity-bar__item__icon-with-indicator">
           <CodeBranchIcon />

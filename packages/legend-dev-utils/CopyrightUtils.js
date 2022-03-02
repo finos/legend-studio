@@ -205,17 +205,15 @@ export const updateCopyrightHeaders = async ({
       pkg: {},
       onlyGenerateCommentContent: false,
     });
-    await Promise.all(
-      files.map((file) =>
-        writeFile(
-          file,
-          `${copyrightComment}\n\n${getFileContent(file)}`,
-          (err) => {
-            console.log(
-              `${err ? chalk.red('\u2717') : chalk.green('\u2713')} ${file}`,
-            );
-          },
-        ),
+    files.forEach((file) =>
+      writeFile(
+        file,
+        `${copyrightComment}\n\n${getFileContent(file)}`,
+        (err) => {
+          console.log(
+            `${err ? chalk.red('\u2717') : chalk.green('\u2713')} ${file}`,
+          );
+        },
       ),
     );
   } else {

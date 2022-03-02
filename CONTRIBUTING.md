@@ -101,7 +101,7 @@ yarn changeset:cli
 
 Make sure to install [Node.js](https://nodejs.org/en/) and [Yarn](https://yarnpkg.com/). For IDE, we highly recommend [Visual Studio Code](https://code.visualstudio.com/). Also, to assist development, don't forget to install [ESLint](https://eslint.org/) and [Stylelint](https://stylelint.io/) plugins to help you catch problems while writing code; and install [Prettier](https://prettier.io/) plugin to help you auto-format code. Last but not least, run the `setup` script.
 
-Studio relies on SDLC and Engine servers as its backend. If you don't have these servers [setup to run locally](https://legend.finos.org/docs/installation/maven-install-guide#installation-steps), you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev) to quickly set them up.
+Studio relies _minimumly_ on SDLC and Engine servers as its backend. To quickly set these up, use our development [Docker compose](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev). If you need to debug and code on the backend at the same time, follow [this guide](./fixtures/legend-docker-setup/studio-dev-setup/README.md) to set them up using `maven`.
 
 ```sh
 # Install dependencies, link and set up the workspaces, and build the workspaces to make sure your project is in good shape.

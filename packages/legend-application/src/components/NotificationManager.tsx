@@ -102,9 +102,6 @@ export const NotificationManager = observer(() => {
 
   return (
     <Notification
-      TransitionProps={{
-        appear: false,
-      }}
       classes={{
         root: 'notification',
         anchorOriginBottomRight: 'notification__position',

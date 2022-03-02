@@ -47,6 +47,8 @@ import {
   TYPE_CAST_TOKEN,
   VARIABLE_REFERENCE_TOKEN,
   ARROW_FUNCTION_TOKEN,
+  Multiplicity,
+  getAllSuperSetImplementations,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
@@ -137,6 +139,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
 export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplorerTreeNodeData {
   subclass: Class;
   parentId: string;
+  multiplicity: Multiplicity;
 
   constructor(
     id: string,
@@ -146,6 +149,7 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
     parentId: string,
     isPartOfDerivedPropertyBranch: boolean,
     mappingData: QueryBuilderPropertyMappingData,
+    multiplicity: Multiplicity,
   ) {
     super(
       id,
@@ -157,6 +161,7 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
     );
     this.subclass = subclass;
     this.parentId = parentId;
+    this.multiplicity = multiplicity;
   }
 }
 
@@ -300,31 +305,36 @@ export const getPropertyNodeMappingData = (
       const propertyMappings = resolvePropertyMappingsForSetImpl(
         graphManagerState,
         parentTargetSetImpl,
+      )
+        // property mappings from super set implementations
+        .concat(
+          getAllSuperSetImplementations(parentTargetSetImpl)
+            .map((s) => resolvePropertyMappingsForSetImpl(graphManagerState, s))
+            .flat(),
+        )
+        .filter((p) => !p.isStub);
+      // NOTE: observe how we scan and prepare the list of property mappings above,
+      // searching for the property mapping to be used takes into account
+      // precedence, i.e. property mappings from super set implementations are of lower precedence
+      const propertyMapping = propertyMappings.find(
+        (pm) => pm.property.value === property,
       );
-      const mappedProperties = propertyMappings
-        .filter((p) => !p.isStub)
-        .map((p) => p.property.value.name);
       // check if property is mapped through defined property mappings
-      if (mappedProperties.includes(property.name)) {
-        // if class we need to resolve the Set Implementation
+      if (propertyMapping) {
+        // if class we need to resolve the set implementation
         if (property.genericType.value.rawType instanceof Class) {
-          const propertyMapping = propertyMappings.find(
-            (p) => p.property.value === property,
-          );
-          if (propertyMapping) {
-            const targetSetImpl =
-              resolveTargetSetImplementationForPropertyMapping(propertyMapping);
-            return {
-              mapped: true,
-              // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
-              // help identifying the mapped properties. However, we would not do that here
-              // as opertion mapping can support more complicated branching logic (right now we just assume
-              // it's always simple union), that Studio should not try to analyze.
-              skipMappingCheck:
-                targetSetImpl instanceof OperationSetImplementation,
-              targetSetImpl,
-            };
-          }
+          const targetSetImpl =
+            resolveTargetSetImplementationForPropertyMapping(propertyMapping);
+          return {
+            mapped: true,
+            // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
+            // help identifying the mapped properties. However, we would not do that here
+            // as opertion mapping can support more complicated branching logic (right now we just assume
+            // it's always simple union), that Studio should not try to analyze.
+            skipMappingCheck:
+              targetSetImpl instanceof OperationSetImplementation,
+            targetSetImpl,
+          };
         }
         return { mapped: true, skipMappingCheck: false };
       }
@@ -433,6 +443,11 @@ export const getQueryBuilderSubTypeNodeData = (
     //Display subclasses, anyway.
     //TODO: Enchance mapping algo to take into account this
     { mapped: true, skipMappingCheck: true },
+    parentNode instanceof QueryBuilderExplorerTreePropertyNodeData
+      ? parentNode.property.multiplicity
+      : parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+      ? parentNode.multiplicity
+      : new Multiplicity(1, 1),
   );
   subTypeNode.childrenIds =
     generateExplorerTreeClassNodeChildrenIDs(subTypeNode);

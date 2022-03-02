@@ -42,14 +42,17 @@ export abstract class WorkflowExplorerTreeNodeData implements TreeNodeData {
   id: string;
   label: string;
   childrenIds: string[] | undefined;
+
   constructor(id: string, label: string) {
     this.id = id;
     this.label = label;
   }
 }
+
 const getWorkflowNodeId = (workflowId: string): string =>
   `workflow_${workflowId}`;
 const getJobId = (jobId: string): string => `job_${jobId}`;
+
 export class WorkflowTreeNodeData extends WorkflowExplorerTreeNodeData {
   workflow: Workflow;
   constructor(workflow: Workflow) {
@@ -57,6 +60,7 @@ export class WorkflowTreeNodeData extends WorkflowExplorerTreeNodeData {
     this.workflow = workflow;
   }
 }
+
 export class WorkflowJobTreeNodeData extends WorkflowExplorerTreeNodeData {
   workflowJob: WorkflowJob;
   constructor(workflowJob: WorkflowJob) {

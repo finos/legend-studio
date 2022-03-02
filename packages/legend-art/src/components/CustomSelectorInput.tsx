@@ -17,10 +17,10 @@
 import { type CSSProperties, useRef, useEffect, forwardRef } from 'react';
 import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './Icon';
 import CreatableSelect, { type Props } from 'react-select/creatable';
-import Select from 'react-select';
+import Select, { createFilter } from 'react-select';
 import { FixedSizeList } from 'react-window';
 
-export { createFilter } from 'react-select';
+export { createFilter };
 
 interface ListChildComponentProps {
   index: number;

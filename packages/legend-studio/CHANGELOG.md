@@ -1,5 +1,39 @@
 # @finos/legend-studio
 
+## 2.4.7
+
+## 2.4.6
+
+## 2.4.5
+
+## 2.4.4
+
+### Patch Changes
+
+- [#860](https://github.com/finos/legend-studio/pull/860) [`640987ad`](https://github.com/finos/legend-studio/commit/640987adc9938b87208bb5e306a3b0c42c1daa89) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - - Handle `204 No content` response when pushing local changes.
+
+## 2.4.3
+
+### Patch Changes
+
+- [#849](https://github.com/finos/legend-studio/pull/849) [`a0db639f`](https://github.com/finos/legend-studio/commit/a0db639fd49243793f14b22f486cc491e96ff2e0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Ensure changes/conflicts have been computed for latest remote version when pulling changes
+
+## 2.4.2
+
+### Patch Changes
+
+- [#845](https://github.com/finos/legend-studio/pull/845) [`29c12a63`](https://github.com/finos/legend-studio/commit/29c12a637d6d5b4eb08f31e2d79ee4bd2a39977a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix editor going in infinity loop when in text mode, engine compile successfully and we fail to build graph for funtcion `updateGraphAndApplication`.
+
+## 2.4.1
+
+## 2.4.0
+
+### Minor Changes
+
+- [#749](https://github.com/finos/legend-studio/pull/749) [`4e2eddbc`](https://github.com/finos/legend-studio/commit/4e2eddbc44760092e79bf22cbac809e6c3d11e35) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Update to workspace head revision when current revision is out of sync. Provide conflict resolution editor when conflicts exists.
+
+* [#778](https://github.com/finos/legend-studio/pull/778) [`b8ee4134`](https://github.com/finos/legend-studio/commit/b8ee4134b62ddfde08993b9d4a327f2f2c5e0d8e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show `Workflow Manager` in viewer mode.
+
 ## 2.3.2
 
 ## 2.3.1

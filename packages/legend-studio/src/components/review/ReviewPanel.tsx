@@ -23,18 +23,19 @@ import {
 import { EntityDiffView } from '../editor/edit-panel/diff-editor/EntityDiffView';
 import type { EditorState } from '../../stores/editor-state/EditorState';
 import { useEditorStore } from '../editor/EditorStoreProvider';
+import { forwardRef } from 'react';
 
 export const ReviewPanelSplashScreen: React.FC = () => (
   <div className="review-panel__splash-screen"></div>
 );
 
 export const ReviewPanelHeaderTabContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       editorState: EditorState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function ReviewPanelHeaderTabContextMenu(props, ref) {
     const { editorState } = props;
     const editorStore = useEditorStore();
     const close = (): void => editorStore.closeState(editorState);
@@ -65,8 +66,7 @@ export const ReviewPanelHeaderTabContextMenu = observer(
         </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const ReviewPanel = observer(() => {
@@ -178,7 +178,7 @@ export const ReviewPanel = observer(() => {
         </div>
       </ContextMenu>
       <div className="panel__content review-panel__content">
-        <EntityDiffView />
+        <EntityDiffView entityDiffViewState={currentEditorState} />
       </div>
     </div>
   );

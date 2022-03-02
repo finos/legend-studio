@@ -1,0 +1,469 @@
+[
+  {
+    "path": "model::MyExtension",
+    "content": {
+      "_type": "profile",
+      "name": "MyExtension",
+      "package": "model",
+      "stereotypes": ["important"],
+      "tags": ["doc"]
+    },
+    "classifierPath": "meta::pure::metamodel::extension::Profile"
+  },
+  {
+    "path": "model::IncType",
+    "content": {
+      "_type": "Enumeration",
+      "name": "IncType",
+      "package": "model",
+      "values": [
+        {
+          "value": "Corp"
+        },
+        {
+          "value": "LLC"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Enumeration"
+  },
+  {
+    "path": "model::LegalEntity",
+    "content": {
+      "_type": "class",
+      "name": "LegalEntity",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "legalName",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Firm",
+    "content": {
+      "_type": "class",
+      "constraints": [
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "startsWith",
+                "parameters": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "this"
+                      }
+                    ],
+                    "property": "legalName"
+                  },
+                  {
+                    "_type": "string",
+                    "multiplicity": {
+                      "lowerBound": 1,
+                      "upperBound": 1
+                    },
+                    "values": ["_"]
+                  }
+                ]
+              }
+            ],
+            "parameters": []
+          },
+          "name": "validName"
+        }
+      ],
+      "name": "Firm",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "employees",
+          "type": "model::Person"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "incType",
+          "type": "model::IncType"
+        }
+      ],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "count",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    {
+                      "_type": "var",
+                      "name": "this"
+                    }
+                  ],
+                  "property": "employees"
+                }
+              ]
+            }
+          ],
+          "name": "employeeSize",
+          "parameters": [],
+          "returnMultiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "returnType": "Number"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "model::MyExtension",
+          "value": "important"
+        }
+      ],
+      "superTypes": ["model::LegalEntity"],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "model::MyExtension",
+            "value": "doc"
+          },
+          "value": "This is a model of a firm"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Test",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [
+        {
+          "name": "FirmPerson",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "firm_id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              },
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "Test",
+      "package": "model",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "Legal_name",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "name": "FirmTable",
+              "primaryKey": ["id"]
+            },
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firm_id",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firstName",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "lastName",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "name": "PersonTable",
+              "primaryKey": ["id"]
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "model::NewMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "model::Firm",
+          "extendsClassMappingId": "model_LegalEntity",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "FirmTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "FirmTable"
+              },
+              "tableAlias": "FirmTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Firm",
+                "property": "employees"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "model::Test",
+                    "name": "FirmPerson"
+                  }
+                ]
+              },
+              "target": "model_Person"
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "model::Person",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "PersonTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "PersonTable"
+              },
+              "tableAlias": "PersonTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "firstName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "firstName",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "lastName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "lastName",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "model::LegalEntity",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "FirmTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "FirmTable"
+              },
+              "tableAlias": "FirmTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::LegalEntity",
+                "property": "legalName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "Legal_name",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "NewMapping",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  }
+]

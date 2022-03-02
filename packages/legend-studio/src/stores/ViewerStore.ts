@@ -241,7 +241,7 @@ export class ViewerStore {
     this.editorStore.projectConfigurationEditorState.setOriginalProjectConfiguration(
       projectConfiguration,
     );
-    this.editorStore.changeDetectionState.workspaceLatestRevisionState.setEntities(
+    this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
       entities,
     );
 

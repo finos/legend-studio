@@ -140,6 +140,7 @@ export {
   GoGitPullRequest as GitPullRequestIcon,
   GoGitMerge as GitMergeIcon,
   GoCloudDownload as CloudDownloadIcon,
+  GoCloudUpload as CloudUploadIcon,
   GoSync as SyncIcon,
   GoX as XIcon,
 } from 'react-icons/go';

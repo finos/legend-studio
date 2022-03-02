@@ -147,6 +147,8 @@ export const V1_transformServiceParameter = (
   serviceParameter.name = metamodel.name;
   serviceParameter.type = V1_transformTypeReference(metamodel.type);
   serviceParameter.location = metamodel.location;
+  serviceParameter.allowReserved = metamodel.allowReserved;
+  serviceParameter.required = metamodel.required;
   serviceParameter.enumeration = metamodel.enumeration;
   serviceParameter.serializationFormat = metamodel.serializationFormat;
   return serviceParameter;

@@ -1,5 +1,41 @@
 # @finos/legend-graph
 
+## 1.1.2
+
+### Patch Changes
+
+- [#883](https://github.com/finos/legend-studio/pull/883) [`05e54011`](https://github.com/finos/legend-studio/commit/05e54011d6e4b5e1cc74375e1e73effdd35f695d) ([@akphi](https://github.com/akphi)) - Add a temporary workaround to not fail graph building when there are unresolved class mapping IDs (see [#880](https://github.com/finos/legend-studio/issues/880) for more details).
+
+## 1.1.1
+
+## 1.1.0
+
+### Minor Changes
+
+- [#836](https://github.com/finos/legend-studio/pull/836) [`4e08df9a`](https://github.com/finos/legend-studio/commit/4e08df9ae59e50cd5400d5d9bdcf43f1c7d2b423) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `RawExecutionResult` to support `string` execution results.
+
+## 1.0.6
+
+### Patch Changes
+
+- [#860](https://github.com/finos/legend-studio/pull/860) [`640987ad`](https://github.com/finos/legend-studio/commit/640987adc9938b87208bb5e306a3b0c42c1daa89) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix hashing of self-join of a database view.
+
+## 1.0.5
+
+### Patch Changes
+
+- [#845](https://github.com/finos/legend-studio/pull/845) [`29c12a63`](https://github.com/finos/legend-studio/commit/29c12a637d6d5b4eb08f31e2d79ee4bd2a39977a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Export `V1_SectionIndex`.
+
+## 1.0.4
+
+### Patch Changes
+
+- [#817](https://github.com/finos/legend-studio/pull/817) [`3da897a2`](https://github.com/finos/legend-studio/commit/3da897a2612420aa70b462f660d87645441d9ada) ([@gayathrir11](https://github.com/gayathrir11)) - Exclude class in property pointer during transformation for local property mapping.
+
+* [#822](https://github.com/finos/legend-studio/pull/822) [`333c846d`](https://github.com/finos/legend-studio/commit/333c846df6f8eb7f0d5c5e7c156458b61955fc47) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display properties mapped through inheritance mapping in the explorer tree
+
+## 1.0.3
+
 ## 1.0.2
 
 ## 1.0.1

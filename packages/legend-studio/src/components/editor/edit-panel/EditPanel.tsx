@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -138,7 +138,7 @@ export const EditPanelSplashScreen: React.FC = () => {
         </div>
         <div className="edit-panel__splash-screen__content__item">
           <div className="edit-panel__splash-screen__content__item__label">
-            Sync with Workspace
+            Push Local Changes
           </div>
           <div className="edit-panel__splash-screen__content__item__hot-keys">
             <div className="hotkey__key">Ctrl</div>
@@ -170,12 +170,12 @@ export const EditPanelSplashScreen: React.FC = () => {
 };
 
 const EditPanelHeaderTabContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       editorState: EditorState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function EditPanelHeaderTabContextMenu(props, ref) {
     const { editorState } = props;
     const editorStore = useEditorStore();
     const close = (): void => editorStore.closeState(editorState);
@@ -206,8 +206,7 @@ const EditPanelHeaderTabContextMenu = observer(
         </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const EditPanel = observer(() => {
@@ -303,9 +302,19 @@ export const EditPanel = observer(() => {
           return null;
       }
     } else if (currentEditorState instanceof EntityDiffViewState) {
-      return <EntityDiffView key={currentEditorState.uuid} />;
+      return (
+        <EntityDiffView
+          key={currentEditorState.uuid}
+          entityDiffViewState={currentEditorState}
+        />
+      );
     } else if (currentEditorState instanceof EntityChangeConflictEditorState) {
-      return <EntityChangeConflictEditor key={currentEditorState.uuid} />;
+      return (
+        <EntityChangeConflictEditor
+          key={currentEditorState.uuid}
+          conflictEditorState={currentEditorState}
+        />
+      );
     } else if (currentEditorState instanceof FileGenerationViewerState) {
       return <FileGenerationViewer key={currentEditorState.uuid} />;
     } else if (currentEditorState instanceof ModelLoaderState) {

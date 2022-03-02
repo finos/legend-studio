@@ -54,6 +54,7 @@ export class ProjectOverviewState {
   latestProjectVersion?: Version | null; // `undefined` if API is not yet called, `null` if fetched but no version exists
   currentProjectRevision?: Revision | undefined;
   projectWorkspaces: Workspace[] = [];
+
   isCreatingVersion = false;
   isFetchingProjectWorkspaces = false;
   isDeletingWorkspace = false;

@@ -31,22 +31,27 @@
   },
   {
     "package": "weapon",
-    "description": "He Protec but He Also Attac",
+    "description": "(no data)",
     "guid": "irrelevant-0"
   },
   {
     "package": "weapon::sword",
-    "description": "S weapon with a long metal blade and a hilt with a hand guard, used for thrusting or striking and now typically worn as part of ceremonial dress",
+    "description": "weapon with a long metal blade and a hilt with a hand guard",
     "guid": "irrelevant-1"
   },
   {
+    "package": "weapon::x::classified",
+    "description": "",
+    "guid": "x-classified"
+  },
+  {
     "package": "weapon::gun",
-    "description": "Gun - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nibh cras pulvinar mattis nunc sed blandit libero volutpat. Accumsan in nisl nisi scelerisque eu. Quis auctor elit sed vulputate mi sit amet. Egestas sed tempus urna et pharetra pharetra massa. Mi sit amet mauris commodo quis imperdiet massa. Suspendisse faucibus interdum posuere lorem ipsum dolor sit amet. Pellentesque dignissim enim sit amet. Orci eu lobortis elementum nibh tellus molestie nunc non blandit. Massa sed elementum tempus egestas sed. Et netus et malesuada fames ac turpis. Purus ut faucibus pulvinar elementum. Nisi scelerisque eu ultrices vitae auctor eu augue. Nisi scelerisque eu ultrices vitae auctor eu augue. Urna neque viverra justo nec ultrices dui sapien eget mi. Purus sit amet luctus venenatis. In eu mi bibendum neque egestas congue quisque.",
+    "description": "(no data)",
     "guid": "irrelevant-2"
   },
   {
     "package": "weapon::gun::m4a1",
-    "description": "Automatic Gun",
+    "description": "an automatic gun",
     "guid": "irrelevant-3"
   }
 ]

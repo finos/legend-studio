@@ -340,9 +340,6 @@ export const ExecutionPlanViewer = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
       >
         <div className="modal modal--dark editor-modal">
           <div className="modal__header">

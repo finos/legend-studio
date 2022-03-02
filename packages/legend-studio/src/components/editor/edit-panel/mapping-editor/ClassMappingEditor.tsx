@@ -283,5 +283,4 @@ export const ClassMappingEditor = observer(
       </div>
     );
   },
-  { forwardRef: true },
 );

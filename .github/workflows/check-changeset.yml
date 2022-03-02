@@ -1,10 +1,15 @@
-name: Changeset
+name: Check Changeset
 
 # NOTE: changeset validation only makes sense in PR pipeline
 on:
   pull_request:
     branches:
       - '**'
+
+# Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
+concurrency:
+  group: ci-pr-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   check-changeset:
@@ -30,7 +35,7 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
       - name: Install dependencies

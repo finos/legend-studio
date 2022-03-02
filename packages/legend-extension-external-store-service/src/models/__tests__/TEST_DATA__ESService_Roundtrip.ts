@@ -175,6 +175,43 @@ export const roundtripTestData = [
               },
               security: [],
             },
+            {
+              _type: 'service',
+              id: 'TestService3',
+              method: 'GET',
+              parameters: [
+                {
+                  allowReserved: true,
+                  location: 'QUERY',
+                  name: 'param1',
+                  required: false,
+                  serializationFormat: {},
+                  type: {
+                    _type: 'boolean',
+                    list: false,
+                  },
+                },
+                {
+                  allowReserved: false,
+                  location: 'QUERY',
+                  name: 'param2',
+                  required: true,
+                  serializationFormat: {},
+                  type: {
+                    _type: 'boolean',
+                    list: false,
+                  },
+                },
+              ],
+              path: '/testService3',
+              response: {
+                _type: 'complex',
+                binding: 'anything::binding1',
+                list: false,
+                type: 'test::A',
+              },
+              security: [],
+            },
           ],
           id: 'TestServiceGroup',
           path: '/testServices',

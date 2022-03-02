@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { toSentenceCase } from '@finos/legend-shared';
 import {
@@ -87,12 +87,12 @@ export const MappingEditorSplashScreen: React.FC = () => {
 };
 
 const MappingEditorHeaderTabContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       tabState: MappingEditorTabState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function MappingEditorHeaderTabContextMenu(props, ref) {
     const { tabState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -129,8 +129,7 @@ const MappingEditorHeaderTabContextMenu = observer(
         </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const getMappingElementTargetIcon = (

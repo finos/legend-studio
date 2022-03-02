@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -80,7 +80,7 @@ const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType() as QUERY_BUILDER_FILTER_DND_TYPE,
-      item: monitor.getItem() as QueryBuilderFilterConditionDragSource | null,
+      item: monitor.getItem<QueryBuilderFilterConditionDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
@@ -299,13 +299,13 @@ const QueryBuilderFilterBlankConditionEditor = observer(
 );
 
 const QueryBuilderFilterConditionContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       queryBuilderState: QueryBuilderState;
       node: QueryBuilderFilterTreeNodeData;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function QueryBuilderFilterConditionContextMenu(props, ref) {
     const { queryBuilderState, node } = props;
     const filterState = queryBuilderState.filterState;
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
@@ -345,8 +345,7 @@ const QueryBuilderFilterConditionContextMenu = observer(
         <MenuContentItem onClick={removeNode}>Remove</MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const QueryBuilderFilterTreeNodeContainer = observer(

@@ -60,9 +60,6 @@ const ServiceExecutionResultViewer = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
       >
         <div className="modal modal--dark editor-modal">
           <div className="modal__header">
@@ -173,7 +170,6 @@ const ServiceExecutionQueryImporter = observer(
         open={queryState.openQueryImporter}
         onClose={closeQueryImporter}
         TransitionProps={{
-          appear: false, // disable transition
           onEnter: handleEnterQueryImporter,
         }}
         classes={{ container: 'search-modal__container' }}

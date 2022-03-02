@@ -558,7 +558,6 @@ export const TEST_DATA__LocalPropertyMapping = [
                 type: 'Integer',
               },
               property: {
-                class: 'test::Person',
                 property: 'firmId',
               },
               source: '',
@@ -1212,7 +1211,6 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
                 type: 'String',
               },
               property: {
-                class: 'my::models::Product',
                 property: 'local',
               },
               relationalOperation: {

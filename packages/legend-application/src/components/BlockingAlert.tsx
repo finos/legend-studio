@@ -39,9 +39,6 @@ export const BlockingAlert = observer(() => {
         root: 'blocking-alert__root-container',
         container: 'blocking-alert__container',
       }}
-      TransitionProps={{
-        appear: false, // disable transition
-      }}
     >
       <div className="modal modal--dark blocking-alert">
         <PanelLoadingIndicator isLoading={Boolean(info.showLoading)} />

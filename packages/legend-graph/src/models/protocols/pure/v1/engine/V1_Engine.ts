@@ -25,6 +25,7 @@ import {
   mergeObjects,
   HttpStatus,
   NetworkClientError,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../graphManager/GraphManagerLogEvent';
 import {
@@ -90,6 +91,7 @@ import { serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText';
 import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
+import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureGraphManager';
 
 class V1_EngineConfig extends TEMP__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -403,20 +405,24 @@ export class V1_Engine {
 
   async executeMapping(
     input: V1_ExecuteInput,
-    useLosslessParse: boolean,
+    options?: ExecutionOptions,
   ): Promise<V1_ExecutionResult> {
     try {
       const executionResultInText = await (
         (await this.engineServerClient.execute(
           V1_ExecuteInput.serialization.toJson(input),
-          true,
+          {
+            returnResultAsText: true,
+            serializationFormat: options?.serializationFormat,
+          },
         )) as Response
       ).text();
-      return V1_serializeExecutionResult(
-        useLosslessParse
+      const rawExecutionResult = (returnUndefOnError(() =>
+        options?.useLosslessParse
           ? losslessParse(executionResultInText)
           : JSON.parse(executionResultInText),
-      );
+      ) ?? executionResultInText) as PlainObject<V1_ExecutionResult> | string;
+      return V1_serializeExecutionResult(rawExecutionResult);
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof NetworkClientError) {

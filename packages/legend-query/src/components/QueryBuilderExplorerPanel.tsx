@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -65,12 +65,12 @@ import { flowResult } from 'mobx';
 import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState';
 import {
   type Type,
+  type Multiplicity,
   Class,
   DerivedProperty,
   PrimitiveType,
   PRIMITIVE_TYPE,
   Enumeration,
-  Multiplicity,
   TYPE_CAST_TOKEN,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
@@ -84,8 +84,9 @@ const QueryBuilderSubclassInfoTooltip: React.FC<{
   isMapped: boolean;
   children: React.ReactElement;
   placement?: TooltipPlacement | undefined;
+  multiplicity: Multiplicity;
 }> = (props) => {
-  const { subclass, path, isMapped, children, placement } = props;
+  const { subclass, path, isMapped, children, placement, multiplicity } = props;
   return (
     <Tooltip
       arrow={true}
@@ -118,7 +119,7 @@ const QueryBuilderSubclassInfoTooltip: React.FC<{
               Multiplicity
             </div>
             <div className="query-builder__tooltip__item__value">
-              {getMultiplicityDescription(new Multiplicity(1, 1))}
+              {getMultiplicityDescription(multiplicity)}
             </div>
           </div>
           <div className="query-builder__tooltip__item">
@@ -149,9 +150,6 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
-        }}
-        TransitionProps={{
-          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__explorer__preview-data-modal">
@@ -207,7 +205,7 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
     const { itemType, item, isDragging, currentPosition } = useDragLayer(
       (monitor) => ({
         itemType: monitor.getItemType() as QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
-        item: monitor.getItem() as QueryBuilderExplorerTreeDragSource | null,
+        item: monitor.getItem<QueryBuilderExplorerTreeDragSource | null>(),
         isDragging: monitor.isDragging(),
         initialOffset: monitor.getInitialSourceClientOffset(),
         currentPosition: monitor.getClientOffset(),
@@ -246,14 +244,14 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
 );
 
 const QueryBuilderExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       queryBuilderState: QueryBuilderState;
       openNode: () => void;
       node: QueryBuilderExplorerTreeNodeData;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function QueryBuilderExplorerContextMenu(props, ref) {
     const { queryBuilderState, openNode, node } = props;
     const applicationStore = useApplicationStore();
     const viewType = (): void =>
@@ -311,6 +309,7 @@ const QueryBuilderExplorerContextMenu = observer(
                 graphFetchTreeData,
                 queryBuilderState.explorerState.nonNullableTreeData,
                 nodeToAdd,
+                queryBuilderState,
               ),
             );
             queryBuilderState.fetchStructureState.graphFetchTreeState.setGraphFetchTree(
@@ -354,8 +353,7 @@ const QueryBuilderExplorerContextMenu = observer(
         <MenuContentItem onClick={viewType}>View Type</MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
@@ -427,9 +425,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
       node.property instanceof DerivedProperty;
     const isMultiple =
-      node instanceof QueryBuilderExplorerTreePropertyNodeData &&
-      (node.property.multiplicity.upperBound === undefined ||
-        node.property.multiplicity.upperBound > 1);
+      (node instanceof QueryBuilderExplorerTreePropertyNodeData &&
+        (node.property.multiplicity.upperBound === undefined ||
+          node.property.multiplicity.upperBound > 1)) ||
+      (node instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
+        (node.multiplicity.upperBound === undefined ||
+          node.multiplicity.upperBound > 1));
     const allowPreview =
       node.mappingData.mapped &&
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
@@ -608,6 +609,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                     subclass={node.subclass}
                     path={node.id}
                     isMapped={node.mappingData.mapped}
+                    multiplicity={node.multiplicity}
                   >
                     <div className="query-builder-explorer-tree__node__action query-builder-explorer-tree__node__info">
                       <InfoCircleIcon />
@@ -731,16 +733,20 @@ const QueryBuilderExplorerTree = observer(
         .sort((a, b) => a.label.localeCompare(b.label))
         .sort(
           (a, b) =>
-            (b.type instanceof Class
-              ? 2
+            (b instanceof QueryBuilderExplorerTreeSubTypeNodeData
+              ? 0
+              : b.type instanceof Class
+              ? 3
               : b.type instanceof Enumeration
-              ? 1
-              : 0) -
-            (a.type instanceof Class
               ? 2
+              : 1) -
+            (a instanceof QueryBuilderExplorerTreeSubTypeNodeData
+              ? 0
+              : a.type instanceof Class
+              ? 3
               : a.type instanceof Enumeration
-              ? 1
-              : 0),
+              ? 2
+              : 1),
         );
 
     return (

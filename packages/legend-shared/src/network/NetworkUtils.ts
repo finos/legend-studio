@@ -47,6 +47,7 @@ export enum ContentType {
   APPLICATION_XML = 'application/xml',
   APPLICATION_ZLIB = 'application/zlib',
   TEXT_PLAIN = 'text/plain',
+  TEXT_CSV = 'text/csv',
   ALL = '*/*',
 }
 

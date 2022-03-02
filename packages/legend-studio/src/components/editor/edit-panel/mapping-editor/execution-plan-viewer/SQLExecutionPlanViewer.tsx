@@ -112,11 +112,10 @@ const QueryViewer: React.FC<{
   </div>
 );
 
-interface labelprops {
+const ResultColumnsDataViewer: React.FC<{
   label: string;
   dataType: string;
-}
-const ResultColumnsDataViewer: React.FC<labelprops> = ({ label, dataType }) => (
+}> = ({ label, dataType }) => (
   <div className="property-basic-editor">
     <div className="property-basic-editor__type ">
       <input

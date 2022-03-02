@@ -73,7 +73,7 @@ const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType(),
-      item: monitor.getItem() as GenerationSpecNodeDragSource | null,
+      item: monitor.getItem<GenerationSpecNodeDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),

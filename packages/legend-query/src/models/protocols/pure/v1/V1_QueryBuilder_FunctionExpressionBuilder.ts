@@ -145,7 +145,9 @@ const buildProjectionColumnLambda = (
     );
     currentPropertyExpression = currentPropertyExpression
       .parameters[0] as V1_ValueSpecification;
-    if (
+    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+    // $x.employees->subType(@Person)->subType(@Staff)
+    while (
       currentPropertyExpression instanceof V1_AppliedFunction &&
       matchFunctionName(
         currentPropertyExpression.function,

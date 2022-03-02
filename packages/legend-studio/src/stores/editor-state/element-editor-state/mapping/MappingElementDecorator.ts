@@ -53,6 +53,7 @@ import {
   createStubRelationalOperationElement,
   EmbeddedRelationalInstanceSetImplementation,
   getEnumerationMappingsByEnumeration,
+  type TEMPORARY__UnresolvedSetImplementation,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
@@ -499,6 +500,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       decorator(setImplementation);
     }
   }
+
+  visit_TEMPORARY__UnresolvedSetImplementation(
+    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  ): void {
+    return;
+  }
 }
 
 /* @MARKER: ACTION ANALYTICS */
@@ -607,5 +614,11 @@ export class MappingElementDecorationCleaner
     for (const decorationCleaner of extraSetImplementationDecorationCleaners) {
       decorationCleaner(setImplementation);
     }
+  }
+
+  visit_TEMPORARY__UnresolvedSetImplementation(
+    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  ): void {
+    return;
   }
 }

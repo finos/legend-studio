@@ -1,5 +1,19 @@
 # @finos/legend-server-sdlc
 
+## 0.1.4
+
+## 0.1.3
+
+## 0.1.2
+
+## 0.1.1
+
+## 0.1.0
+
+### Minor Changes
+
+- [#778](https://github.com/finos/legend-studio/pull/778) [`b8ee4134`](https://github.com/finos/legend-studio/commit/b8ee4134b62ddfde08993b9d4a327f2f2c5e0d8e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add workflow APIs for project versions.
+
 ## 0.0.17
 
 ## 0.0.16

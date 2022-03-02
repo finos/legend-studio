@@ -23,6 +23,8 @@ export class V1_ServiceParameter implements Hashable {
   name!: string;
   type!: V1_TypeReference;
   location!: string;
+  allowReserved?: boolean | undefined;
+  required?: boolean | undefined;
   enumeration?: string | undefined;
   serializationFormat?: V1_SerializationFormat | undefined;
 
@@ -32,6 +34,8 @@ export class V1_ServiceParameter implements Hashable {
       this.name,
       this.type,
       this.location,
+      this.allowReserved?.toString() ?? '',
+      this.required?.toString() ?? '',
       this.enumeration ?? '',
       this.serializationFormat ?? '',
     ]);

@@ -379,7 +379,6 @@ export const CreateNewElementModal = observer(() => {
       open={newElementState.showModal}
       onClose={closeModal}
       TransitionProps={{
-        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}

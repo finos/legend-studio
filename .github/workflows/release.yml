@@ -8,7 +8,7 @@ on:
       # Release branches are meant for recovery releases, i.e. patch version bumps (e.g. 1.6.1, 1.7.1)
       - 'release/**'
 
-# This job is meant for both standard and path release process
+# This job is shared by both standard and recovery release processes
 # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md
 jobs:
   release:
@@ -32,7 +32,7 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
       - name: Install dependencies

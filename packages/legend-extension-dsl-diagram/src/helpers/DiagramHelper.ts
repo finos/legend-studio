@@ -45,10 +45,10 @@ export const cleanUpDeadReferencesInDiagram = (
 ): void => {
   // Delete orphan property views
   const propertyViewsToRemove = diagram.propertyViews.filter(
-    (p) =>
-      !p.property.ownerReference.value.properties
-        .map((p) => p.name)
-        .includes(p.property.value.name),
+    (propertyView) =>
+      !propertyView.property.ownerReference.value.properties
+        .map((property) => property.name)
+        .includes(propertyView.property.value.name),
   );
   propertyViewsToRemove.forEach((propertyView) =>
     diagram.deletePropertyView(propertyView),

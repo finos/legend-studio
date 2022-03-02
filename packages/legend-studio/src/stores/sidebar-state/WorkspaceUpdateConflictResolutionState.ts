@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, flowResult } from 'mobx';
+import { action, flowResult, makeObservable, observable, flow } from 'mobx';
 import type { EditorStore } from '../EditorStore';
 import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
@@ -47,41 +47,53 @@ import {
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
 import type { GraphBuilderReport } from '../EditorGraphState';
+import { AbstractConflictResolutionState } from '../AbstractConflictResolutionState';
 
-export class ConflictResolutionState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+export class WorkspaceUpdateConflictResolutionState extends AbstractConflictResolutionState {
   isInitializingConflictResolution = false;
+  hasResolvedAllConflicts = false;
   isAcceptingConflictResolution = false;
   isDiscardingConflictResolutionChanges = false;
   isAbortingConflictResolution = false;
-  hasResolvedAllConflicts = false;
-  /**
-   * This helps maintain the current merge text that the user is working on.
-   * If we just use editor store to keep track of the current tab, what happens
-   * is when the user closes the merge-conflict tab and re-open it, they will lose
-   * their current progress because we will make network call again to recompute
-   * the three way merge.
-   */
-  mergeEditorStates: EntityChangeConflictEditorState[] = [];
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
+    super(editorStore, sdlcState);
+    makeObservable<
+      WorkspaceUpdateConflictResolutionState,
+      | 'initProjectConfigurationInConflictResolutionMode'
+      | 'initChangeDetectionInConflictResolutionMode'
+    >(this, {
       editorStore: false,
       sdlcState: false,
-      removeMergeEditorState: action,
-      confirmHasResolvedAllConflicts: action,
+      mergeEditorStates: observable,
+      isInitializingConflictResolution: observable,
+      isAcceptingConflictResolution: observable,
+      isDiscardingConflictResolutionChanges: observable,
+      isAbortingConflictResolution: observable,
+      hasResolvedAllConflicts: observable,
       openConflict: action,
+      closeConflict: action,
+      resolveConflict: action,
+      markConflictAsResolved: flow,
+      initialize: flow,
+      buildGraphInConflictResolutionMode: flow,
+      buildConflictResolutionLatestRevisionEntityHashesIndex: flow,
+      initProjectConfigurationInConflictResolutionMode: flow,
+      acceptConflictResolution: flow,
+      buildConflictResolutionBaseRevisionEntityHashesIndex: flow,
+      initChangeDetectionInConflictResolutionMode: flow,
+      discardConflictResolutionChanges: flow,
+      abortConflictResolution: flow,
+      promptBuildGraphAfterAllConflictsResolved: flow,
+      confirmHasResolvedAllConflicts: action,
       openConflictResolutionChange: action,
     });
-
-    this.editorStore = editorStore;
-    this.sdlcState = sdlcState;
   }
 
   get resolutions(): EntityChangeConflictResolution[] {
     return this.editorStore.changeDetectionState.resolutions;
   }
+
   get conflicts(): EntityChangeConflict[] {
     return this.editorStore.changeDetectionState.conflicts.filter(
       (conflict) =>
@@ -92,7 +104,7 @@ export class ConflictResolutionState {
   }
 
   get resolvedChanges(): EntityDiff[] {
-    return this.editorStore.changeDetectionState.resolutions
+    return this.resolutions
       .map((resolution) => {
         const path = resolution.entityPath;
         const fromEntity =
@@ -140,17 +152,6 @@ export class ConflictResolutionState {
           .concat(this.resolvedChanges);
   }
 
-  removeMergeEditorState(
-    mergeEditorState: EntityChangeConflictEditorState,
-  ): void {
-    deleteEntry(this.mergeEditorStates, mergeEditorState);
-  }
-
-  confirmHasResolvedAllConflicts(): void {
-    this.hasResolvedAllConflicts = true;
-    this.mergeEditorStates = []; // make sure we clean this to avoid any potential memory-leak
-  }
-
   openConflict(conflict: EntityChangeConflict): void {
     const existingMergeEditorState = this.mergeEditorStates.find(
       (state) => state.entityPath === conflict.entityPath,
@@ -171,7 +172,7 @@ export class ConflictResolutionState {
       entityPath: string | undefined,
     ): Entity | undefined =>
       entityPath
-        ? this.editorStore.changeDetectionState.workspaceLatestRevisionState.entities.find(
+        ? this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
             (e) => e.path === entityPath,
           )
         : undefined;
@@ -185,6 +186,7 @@ export class ConflictResolutionState {
         : undefined;
     const mergeEditorState = new EntityChangeConflictEditorState(
       this.editorStore,
+      this,
       conflict.entityPath,
       SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,
       SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,
@@ -198,6 +200,35 @@ export class ConflictResolutionState {
     );
     this.mergeEditorStates.push(mergeEditorState);
     this.editorStore.openEntityChangeConflict(mergeEditorState);
+  }
+
+  closeConflict(conflict: EntityChangeConflictEditorState): void {
+    this.editorStore.closeState(conflict);
+  }
+
+  resolveConflict(resolution: EntityChangeConflictResolution): void {
+    this.editorStore.changeDetectionState.resolutions.push(resolution);
+  }
+
+  *markConflictAsResolved(
+    conflictState: EntityChangeConflictEditorState,
+  ): GeneratorFn<void> {
+    // swap out the current conflict editor with a normal diff editor
+    const resolvedChange = this.resolvedChanges.find(
+      (change) => change.entityPath === conflictState.entityPath,
+    );
+    if (resolvedChange) {
+      this.openConflictResolutionChange(resolvedChange);
+    }
+    this.closeConflict(conflictState);
+    deleteEntry(this.mergeEditorStates, conflictState);
+    // check for remaining conflicts, if none left, prompt the users for the next action
+    yield flowResult(this.promptBuildGraphAfterAllConflictsResolved());
+  }
+
+  confirmHasResolvedAllConflicts(): void {
+    this.hasResolvedAllConflicts = true;
+    this.mergeEditorStates = []; // make sure we clean this to avoid any potential memory-leak
   }
 
   private *initProjectConfigurationInConflictResolutionMode(): GeneratorFn<void> {
@@ -297,10 +328,10 @@ export class ConflictResolutionState {
       this.editorStore.graphState.isInitializingGraph = true;
       this.editorStore.changeDetectionState.stop(); // stop change detection (because it is alreayd running) so we can build the graph
       // NOTE: here we patch conflict resolution workspace HEAD entities with the entities from resolved conflicts to build graph with those
-      const workspaceHeadEntities =
+      const workspaceLatestEntities =
         this.editorStore.changeDetectionState
           .conflictResolutionHeadRevisionState.entities;
-      const entities = workspaceHeadEntities
+      const entities = workspaceLatestEntities
         .filter(
           (entity) =>
             !this.resolutions
@@ -654,13 +685,13 @@ export class ConflictResolutionState {
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)
       ? guaranteeNonNullable(
           fromEntityGetter(diff.getValidatedOldPath()),
-          `Can't find element entity '${diff.oldPath}'`,
+          `Can't find entity with path  '${diff.oldPath}'`,
         )
       : undefined;
     const toEntity = EntityDiff.shouldNewEntityExist(diff)
       ? guaranteeNonNullable(
           toEntityGetter(diff.getValidatedNewPath()),
-          `Can't find element entity '${diff.newPath}'`,
+          `Can't find entity with path  '${diff.newPath}'`,
         )
       : undefined;
     this.editorStore.openEntityDiff(

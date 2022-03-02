@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export class Entity {
-  classifierPath!: string;
-  path!: string;
-  content!: Record<PropertyKey, unknown>;
+export interface Entity {
+  classifierPath: string;
+  path: string;
+  content: Record<PropertyKey, unknown>;
 }

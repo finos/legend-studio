@@ -54,6 +54,75 @@ export const TEST_DATA__malformedFilterExpression = {
   parameters: [],
 };
 
+export const TEST_DATA_malformedFilterExpressionWithSubtype = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subTypes',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                        {
+                          _type: 'hackedClass',
+                          fullPath:
+                            'model::pure::tests::model::simple::PersonExtension',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'birthdate',
+                },
+                {
+                  _type: 'strictDate',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: ['2022-01-26'],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__unsupportedFunction = {
   _type: 'lambda',
   body: [
