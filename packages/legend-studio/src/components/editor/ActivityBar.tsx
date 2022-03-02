@@ -21,7 +21,7 @@ import {
   CheckIcon,
   clsx,
   DropdownMenu,
-  EyeIcon,
+  RepoIcon,
   MenuContent,
   MenuContentItem,
   MenuContentItemIcon,
@@ -236,7 +236,7 @@ export const ActivityBar = observer(() => {
       title: 'Project',
       icon: (
         <div className="activity-bar__project-overview-icon">
-          <EyeIcon />
+          <RepoIcon />
         </div>
       ),
     },

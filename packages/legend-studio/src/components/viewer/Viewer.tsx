@@ -35,7 +35,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
-  EyeIcon,
+  RepoIcon,
   ListIcon,
   CodeBranchIcon,
   WindowMaximizeIcon,
@@ -205,7 +205,7 @@ const ViewerActivityBar = observer(() => {
       title: 'Project',
       icon: (
         <div className="activity-bar__project-overview-icon">
-          <EyeIcon />
+          <RepoIcon />
         </div>
       ),
     },
