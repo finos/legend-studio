@@ -2,4 +2,4 @@
 '@finos/legend-studio': patch
 ---
 
-Display mapping element from the included mapping in its corresponding mapping editor tab
+Correctly display mapping elements from the included mappings in their corresponding mapping editor tab
