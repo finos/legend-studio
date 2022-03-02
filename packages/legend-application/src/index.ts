@@ -27,6 +27,7 @@ export * from './components/ApplicationStoreProviderTestUtils';
 export * from './components/WebApplicationNavigatorProviderTestUtils';
 
 export { AppHeader } from './components/AppHeader';
+export { DocumentationLink } from './components/DocumentationLink';
 export * from './components/TextInputEditor';
 export * from './components/LambdaEditor';
 

@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-// Dependencies
-@forward 'extensions';
-
-// Components
-@forward 'components/app';
-@forward 'components/blocking-alert';
-@forward 'components/documentation-link';
-@forward 'components/backdrop';
-@forward 'components/lambda-editor';
-@forward 'components/notification';
-@forward 'components/text-editor';
+.documentation-link {
+  cursor: pointer;
+}

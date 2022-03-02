@@ -42,8 +42,13 @@ import {
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import { ProjectType, WorkspaceType } from '@finos/legend-server-sdlc';
-import { useApplicationStore, AppHeader } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  AppHeader,
+  DocumentationLink,
+} from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentationKey';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
@@ -202,6 +207,10 @@ const CreateProjectModal = observer(() => {
         <div className="setup-create__modal__heading">
           <div className="setup-create__modal__heading__label">
             {modalTitle}
+            <DocumentationLink
+              className="setup__doc__create-project"
+              documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT}
+            />
           </div>
         </div>
         <form onSubmit={handleSubmit}>
@@ -555,7 +564,13 @@ const CreateWorkspaceModal = observer(() => {
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <div className="modal modal--dark setup-create__modal">
-        <div className="modal__title">Create Workspace</div>
+        <div className="modal__title">
+          Create Workspace
+          <DocumentationLink
+            className="setup__doc__create-workspace"
+            documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_WORKSPACE}
+          />
+        </div>
         <form onSubmit={handleSubmit}>
           <PanelLoadingIndicator
             isLoading={setupStore.createWorkspaceState.isInProgress}
@@ -697,7 +712,15 @@ const SetupSelection = observer(() => {
             className="setup__content"
             data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
           >
-            <div className="setup__title">studio setup</div>
+            <div className="setup__title">
+              Setup Workspace
+              <DocumentationLink
+                className="setup__doc__setup-workspace"
+                documentationKey={
+                  LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
+                }
+              />
+            </div>
             <div>
               <ProjectSelector
                 ref={projectSelectorRef}

@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-// Dependencies
-@forward 'extensions';
-
-// Components
-@forward 'components/app';
-@forward 'components/blocking-alert';
-@forward 'components/documentation-link';
-@forward 'components/backdrop';
-@forward 'components/lambda-editor';
-@forward 'components/notification';
-@forward 'components/text-editor';
+export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
+  SETUP_WORKSPACE = 'setup-workspace',
+  CREATE_PROJECT = 'create-project',
+  CREATE_WORKSPACE = 'create-workspace',
+}
