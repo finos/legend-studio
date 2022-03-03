@@ -21,7 +21,6 @@ import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecifi
 import {
   fillDerivedPropertyArguments,
   getPropertyPath,
-  isDatePropagationSupported,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState';
@@ -37,7 +36,6 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
-import { MdRefresh } from 'react-icons/md';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
@@ -51,6 +49,7 @@ import {
   getMilestoneTemporalStereotype,
   MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
+import { isDatePropagationSupported } from '../stores/QueryBuilderMilestoningHelper';
 
 const DerivedPropertyParameterEditor = observer(
   (props: {
@@ -168,10 +167,10 @@ const DerivedPropertyParameterEditor = observer(
               derivedPropertyExpressionState.queryBuilderState.graphManagerState
                 .graph
             }
-            expectedType={
-              derivedPropertyExpressionState.propertyExpression.func.genericType
-                .value.rawType
-            }
+            expectedType={guaranteeNonNullable(
+              derivedPropertyExpressionState.parameters[idx]?.genericType
+                ?.ownerReference.value,
+            )}
             derivedPropertyExpressionStates={derivedPropertyExpressionStates}
           />
           <button
@@ -180,7 +179,7 @@ const DerivedPropertyParameterEditor = observer(
             title="Reset Parameter Value"
             onClick={resetParameterValue}
           >
-            <MdRefresh style={{ fontSize: '1.6rem' }} />
+            <RefreshIcon style={{ fontSize: '1.6rem' }} />
           </button>
         </div>
         <div className="panel__content__form__section__list"></div>
