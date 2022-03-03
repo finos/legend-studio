@@ -44,10 +44,11 @@ import {
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState';
 import { flowResult } from 'mobx';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const WorkspaceSyncConflictResolver = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = editorStore.applicationStore;
+  const applicationStore = useApplicationStore();
   const updateState = editorStore.localChangesState.workspaceSyncState;
   const updateConflictState = updateState.workspaceSyncConflictResolutionState;
   const currentDiffEditorState = updateConflictState.currentDiffEditorState;
@@ -90,7 +91,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
   const applyResolutions = (): void => {
     if (!conflicts.length) {
       flowResult(updateState.applyResolutionChanges()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };

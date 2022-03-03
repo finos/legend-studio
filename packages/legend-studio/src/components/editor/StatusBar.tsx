@@ -71,7 +71,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length;
   const configurationState = editorStore.projectConfigurationEditorState;
-  const pushLocalChanges = applicationStore.guaranteeSafeAction(() =>
+  const pushLocalChanges = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.localChangesState.pushLocalChanges()),
   );
   const pushStatusText =
@@ -96,7 +96,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
   // Conflict resolution
   const conflicts = editorStore.conflictResolutionState.conflicts.length;
-  const acceptConflictResolution = applicationStore.guaranteeSafeAction(() =>
+  const acceptConflictResolution = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.conflictResolutionState.acceptConflictResolution()),
   );
   const conflictResolutionStatusText =
@@ -122,20 +122,18 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
-  const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
+  const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
-  const compile = applicationStore.guaranteeSafeAction(
+  const compile = applicationStore.guardUnhandledError(() =>
     editorStore.isInGrammarTextMode
-      ? (): Promise<void> =>
-          flowResult(editorStore.graphState.globalCompileInTextMode())
-      : (): Promise<void> =>
-          flowResult(editorStore.graphState.globalCompileInFormMode()),
+      ? flowResult(editorStore.graphState.globalCompileInTextMode())
+      : flowResult(editorStore.graphState.globalCompileInFormMode()),
   );
-  const generate = applicationStore.guaranteeSafeAction(() =>
+  const generate = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.graphState.graphGenerationState.globalGenerate()),
   );
-  const emptyGenerationEntities = applicationStore.guaranteeSafeAction(() =>
+  const emptyGenerationEntities = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.graphState.graphGenerationState.clearGenerations()),
   );
 

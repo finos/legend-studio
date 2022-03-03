@@ -43,7 +43,6 @@ import {
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   ApiTokenAuthenticationStrategy,
-  UserPasswordAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
@@ -790,35 +789,6 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
   },
 );
 
-const UserPasswordAuthenticationStrategyEditor = observer(
-  (props: {
-    authSpec: UserPasswordAuthenticationStrategy;
-    isReadOnly: boolean;
-  }) => {
-    const { authSpec, isReadOnly } = props;
-    return (
-      <>
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.userName}
-          propertyName={'userName'}
-          update={(value: string | undefined): void =>
-            authSpec.setUserName(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.passwordVaultReference}
-          propertyName={'passwordVaultReference'}
-          update={(value: string | undefined): void =>
-            authSpec.setPasswordVaultReference(value ?? '')
-          }
-        />
-      </>
-    );
-  },
-);
-
 const OAuthAuthenticationStrategyEditor = observer(
   (props: { authSpec: OAuthAuthenticationStrategy; isReadOnly: boolean }) => {
     const { authSpec, isReadOnly } = props;
@@ -1050,13 +1020,6 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof ApiTokenAuthenticationStrategy) {
     return (
       <ApiTokenAuthenticationStrategyEditor
-        authSpec={authSpec}
-        isReadOnly={isReadOnly}
-      />
-    );
-  } else if (authSpec instanceof UserPasswordAuthenticationStrategy) {
-    return (
-      <UserPasswordAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

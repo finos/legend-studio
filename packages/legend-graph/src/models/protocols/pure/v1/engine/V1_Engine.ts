@@ -37,7 +37,7 @@ import {
   GenerationMode,
   type GenerationConfigurationDescription,
 } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import { TEMP__AbstractEngineConfig } from '../../../../../graphManager/action/TEMP__AbstractEngineConfig';
+import { TEMPORARY__AbstractEngineConfig } from '../../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import { V1_EngineServerClient } from './V1_EngineServerClient';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult';
@@ -93,7 +93,7 @@ import { V1_PureModelContextText } from '../model/context/V1_PureModelContextTex
 import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
 import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureGraphManager';
 
-class V1_EngineConfig extends TEMP__AbstractEngineConfig {
+class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
 
   override setEnv(val: string | undefined): void {

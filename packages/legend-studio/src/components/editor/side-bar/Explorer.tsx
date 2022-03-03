@@ -123,7 +123,7 @@ const ElementRenamer = observer(() => {
     if (element && canRenameElement) {
       explorerTreeState.setElementToRename(undefined);
       flowResult(editorStore.renameElement(element, path)).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };
@@ -205,7 +205,7 @@ const ExplorerContextMenu = observer(
     const deleteElement = (): void => {
       if (node) {
         flowResult(editorStore.deleteElement(node.packageableElement)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -242,7 +242,7 @@ const ExplorerContextMenu = observer(
           .then(() =>
             applicationStore.notifySuccess('Copied element link to clipboard'),
           )
-          .catch(applicationStore.alertIllegalUnhandledError);
+          .catch(applicationStore.alertUnhandledError);
       }
     };
 
@@ -785,7 +785,7 @@ export const Explorer = observer(() => {
     editorStore.conflictResolutionState.confirmHasResolvedAllConflicts();
     flowResult(
       editorStore.conflictResolutionState.buildGraphInConflictResolutionMode(),
-    ).catch(applicationStore.alertIllegalUnhandledError);
+    ).catch(applicationStore.alertUnhandledError);
   };
 
   return (

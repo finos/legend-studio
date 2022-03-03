@@ -18,6 +18,7 @@ import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
+import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
 
 export interface LegendApplicationVersionData {
   buildTime: string;
@@ -28,6 +29,10 @@ export interface LegendApplicationVersionData {
 export interface LegendApplicationConfigurationData {
   appName: string;
   env: string;
+  documentation?: {
+    url: string;
+    entries?: Record<string, string>;
+  };
   // TODO: when we support vault-like settings
   // See https://github.com/finos/legend-studio/issues/407
   // settingOverrides
@@ -38,6 +43,8 @@ export abstract class LegendApplicationConfig {
   readonly appName: string;
   readonly baseUrl: string;
   readonly env: string;
+
+  readonly docRegistry: LegendApplicationDocumentationRegistry;
 
   readonly appVersion: string;
   readonly appVersionBuildTime: string;
@@ -56,6 +63,13 @@ export abstract class LegendApplicationConfig {
     this.env = guaranteeNonEmptyString(
       configData.env,
       `Can't configure application: 'env' field is missing or empty`,
+    );
+
+    // Documentation
+    this.docRegistry = new LegendApplicationDocumentationRegistry();
+    this.docRegistry.url = configData.documentation?.url;
+    Object.entries(configData.documentation?.entries ?? []).forEach((entry) =>
+      this.docRegistry.registerEntry(entry[0], entry[1]),
     );
 
     // Version

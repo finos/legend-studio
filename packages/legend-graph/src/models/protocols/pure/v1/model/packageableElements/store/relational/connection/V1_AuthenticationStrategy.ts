@@ -45,17 +45,6 @@ export class V1_DefaultH2AuthenticationStrategy
   }
 }
 
-export class V1_TestDatabaseAuthenticationStrategy
-  extends V1_DefaultH2AuthenticationStrategy
-  implements Hashable
-{
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.TEST_DATABASE_AUTHENTICATION_STRATEGY,
-    ]);
-  }
-}
-
 export class V1_OAuthAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable
@@ -100,22 +89,6 @@ export class V1_SnowflakePublicAuthenticationStrategy
       this.privateKeyVaultReference,
       this.passPhraseVaultReference,
       this.publicUserName,
-    ]);
-  }
-}
-
-export class V1_UserPasswordAuthenticationStrategy
-  extends V1_AuthenticationStrategy
-  implements Hashable
-{
-  userName!: string;
-  passwordVaultReference!: string;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.USER_PASSWORD_AUTHENTICATION_STRATEGY,
-      this.userName,
-      this.passwordVaultReference,
     ]);
   }
 }

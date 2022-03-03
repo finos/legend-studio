@@ -49,7 +49,6 @@ const TagBasicEditor = observer(
           value={tag.value}
           onChange={changeValue}
           placeholder={`Tag value`}
-          name={`Tag value`}
           validationErrorMessage={
             isTagDuplicated(tag) ? 'Duplicated tag' : undefined
           }
@@ -94,7 +93,6 @@ const StereotypeBasicEditor = observer(
           value={stereotype.value}
           onChange={changeValue}
           placeholder={`Stereotype value`}
-          name={`Stereotype value`}
           validationErrorMessage={
             isStereotypeDuplicated(stereotype)
               ? 'Duplicated stereotype'

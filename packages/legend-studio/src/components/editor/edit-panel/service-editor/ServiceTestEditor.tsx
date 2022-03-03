@@ -262,7 +262,7 @@ export const ServiceTestEditorEditPanel = observer(
     const testResult = selectedTestContainerState.testResult;
     const testExecutionResult =
       selectedTestContainerState.textExecutionTextResult;
-    const generateAssertion = applicationStore.guaranteeSafeAction(() =>
+    const generateAssertion = applicationStore.guardUnhandledError(() =>
       flowResult(selectedTestContainerState.generateAssertion()),
     );
     // tab
@@ -315,7 +315,7 @@ export const ServiceTestEditorEditPanel = observer(
     );
     const showDiff =
       !testState.testSuiteRunError && testResult && !testResult.result;
-    const fetchActualResult = applicationStore.guaranteeSafeAction(() =>
+    const fetchActualResult = applicationStore.guardUnhandledError(() =>
       flowResult(selectedTestContainerState.fetchActualResultForComparison()),
     );
 
@@ -532,7 +532,7 @@ export const ServiceTestAssertEditor = observer(
     const isReadOnly = executionState.serviceEditorState.isReadOnly;
     const selectedTestContainerState = testState.selectedTestContainerState;
     const addTestContainer = (): void => testState.addNewTestContainer();
-    const runAsserts = applicationStore.guaranteeSafeAction(() =>
+    const runAsserts = applicationStore.guardUnhandledError(() =>
       flowResult(testState.runTestSuite()),
     );
     // all test run report summary
@@ -666,7 +666,7 @@ export const ServiceTestEditor = observer(
     const generateTestData = (): void => {
       if (!isReadOnly) {
         flowResult(selectedTestState.generateTestData()).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };

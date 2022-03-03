@@ -530,7 +530,7 @@ export const QueryBuilderProjectionPanel = observer(
 
     useEffect(() => {
       flowResult(projectionState.convertDerivationProjectionObjects()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, projectionState]);
 

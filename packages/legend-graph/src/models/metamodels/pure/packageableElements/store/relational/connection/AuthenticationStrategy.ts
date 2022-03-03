@@ -97,25 +97,6 @@ export class ApiTokenAuthenticationStrategy
   }
 }
 
-export class TestDatabaseAuthenticationStrategy
-  extends DefaultH2AuthenticationStrategy
-  implements Hashable
-{
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.TEST_DATABASE_AUTHENTICATION_STRATEGY,
-    ]);
-  }
-}
-
 export class OAuthAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
@@ -202,45 +183,6 @@ export class SnowflakePublicAuthenticationStrategy
       this.privateKeyVaultReference,
       this.passPhraseVaultReference,
       this.publicUserName,
-    ]);
-  }
-}
-
-export class UserPasswordAuthenticationStrategy
-  extends AuthenticationStrategy
-  implements Hashable
-{
-  userName: string;
-  passwordVaultReference: string;
-
-  constructor(userName: string, passwordVaultReference: string) {
-    super();
-
-    makeObservable(this, {
-      userName: observable,
-      passwordVaultReference: observable,
-      setUserName: action,
-      setPasswordVaultReference: action,
-      hashCode: computed,
-    });
-
-    this.userName = userName;
-    this.passwordVaultReference = passwordVaultReference;
-  }
-
-  setUserName(val: string): void {
-    this.userName = val;
-  }
-
-  setPasswordVaultReference(val: string): void {
-    this.passwordVaultReference = val;
-  }
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.USER_PASSWORD_AUTHENTICATION_STRATEGY,
-      this.userName,
-      this.passwordVaultReference,
     ]);
   }
 }

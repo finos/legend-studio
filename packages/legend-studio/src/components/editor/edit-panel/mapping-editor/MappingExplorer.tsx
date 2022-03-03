@@ -89,7 +89,7 @@ export const MappingExplorerContextMenu = observer(
       if (mappingElement) {
         flowResult(
           mappingEditorState.deleteMappingElement(mappingElement),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
       }
       if (currentMappingElement instanceof EnumerationMapping) {
         new MappingElementDecorator(editorStore).visitEnumerationMapping(
@@ -109,14 +109,14 @@ export const MappingExplorerContextMenu = observer(
     const executeMappingElement = (): void => {
       if (mappingElement instanceof SetImplementation) {
         flowResult(mappingEditorState.buildExecution(mappingElement)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
     const createTestForMappingElement = (): void => {
       if (mappingElement instanceof SetImplementation) {
         flowResult(mappingEditorState.createNewTest(mappingElement)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -139,7 +139,7 @@ export const MappingExplorerContextMenu = observer(
         }
       }
     };
-    const removeMappingFilter = applicationStore.guaranteeSafeAction(
+    const removeMappingFilter = applicationStore.guardUnhandledError(
       async () => {
         if (
           mappingEditorState.currentTabState instanceof

@@ -54,7 +54,7 @@ export const GrammarTextEditorHeaderTabContextMenu = observer(
     function GrammarTextEditorHeaderTabContextMenu(props, ref) {
       const editorStore = useEditorStore();
       const applicationStore = useApplicationStore();
-      const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
+      const leaveTextMode = applicationStore.guardUnhandledError(() =>
         flowResult(editorStore.toggleTextMode()),
       );
 
@@ -85,7 +85,7 @@ export const GrammarTextEditor = observer(() => {
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
 
-  const leaveTextMode = applicationStore.guaranteeSafeAction(() =>
+  const leaveTextMode = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
 
@@ -120,13 +120,13 @@ export const GrammarTextEditor = observer(() => {
           event.preventDefault();
           event.stopPropagation();
           flowResult(editorStore.graphState.globalCompileInTextMode()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         } else if (event.keyCode === KeyCode.F8) {
           event.preventDefault();
           event.stopPropagation();
           flowResult(editorStore.toggleTextMode()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }
       });

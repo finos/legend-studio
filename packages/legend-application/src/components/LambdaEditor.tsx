@@ -55,7 +55,7 @@ export type LambdaEditorOnKeyDownEventHandler = {
 
 const LambdaErrorFeedback: React.FC<{
   error?: EngineError | undefined;
-  discardChanges: () => Promise<void>;
+  discardChanges: () => void;
 }> = (props) => {
   const { error, discardChanges } = props;
 
@@ -138,15 +138,15 @@ const LambdaEditorInline = observer(
       transformStringToLambda?.cancel();
       return await flowResult(
         lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      ).catch(applicationStore.alertUnhandledError);
     };
-    const discardChanges = applicationStore.guaranteeSafeAction(() =>
+    const discardChanges = applicationStore.guardUnhandledError(() =>
       transformLambdaToString(isExpanded),
     );
     const toggleExpandedMode = (): void => {
       if (!forceExpansion && !parserError) {
         transformLambdaToString(!isExpanded).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
         setExpanded(!isExpanded);
       }
@@ -273,7 +273,7 @@ const LambdaEditorInline = observer(
             const stringToLambdaTransformation = transformStringToLambda();
             if (stringToLambdaTransformation) {
               flowResult(stringToLambdaTransformation).catch(
-                applicationStore.alertIllegalUnhandledError,
+                applicationStore.alertUnhandledError,
               );
             }
           }
@@ -461,9 +461,9 @@ const LambdaEditorPopUp = observer(
       transformStringToLambda?.cancel();
       return await flowResult(
         lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      ).catch(applicationStore.alertUnhandledError);
     };
-    const discardChanges = applicationStore.guaranteeSafeAction(() =>
+    const discardChanges = applicationStore.guardUnhandledError(() =>
       transformLambdaToString(true),
     );
 
@@ -531,7 +531,7 @@ const LambdaEditorPopUp = observer(
             const stringToLambdaTransformation = transformStringToLambda();
             if (stringToLambdaTransformation) {
               flowResult(stringToLambdaTransformation).catch(
-                applicationStore.alertIllegalUnhandledError,
+                applicationStore.alertUnhandledError,
               );
             }
           }
@@ -598,7 +598,7 @@ const LambdaEditorPopUp = observer(
     useEffect(() => {
       flowResult(
         lambdaEditorState.convertLambdaObjectToGrammarString(true),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, lambdaEditorState]);
 
     useEffect(

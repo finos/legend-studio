@@ -39,8 +39,6 @@ import {
   ApiTokenAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  TestDatabaseAuthenticationStrategy,
-  UserPasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   DatabricksDatasourceSpecification,
@@ -85,9 +83,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   SNOWFLAKE_PUBLIC = 'SNOWFLAKE_PUBLIC',
   GCP_APPLICATION_DEFAULT_CREDENTIALS = 'GCP_APPLICATION_DEFAULT_CREDENTIALS',
   API_TOKEN = 'API_TOKEN',
-  TEST = 'TEST',
   OAUTH = 'OAUTH',
-  USER_PASSWORD = 'USER_PASSWORD',
   USERNAME_PASSWORD = 'USERNAME_PASSWORD',
 }
 
@@ -236,8 +232,6 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     const auth = this.connection.authenticationStrategy;
     if (auth instanceof DelegatedKerberosAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS;
-    } else if (auth instanceof TestDatabaseAuthenticationStrategy) {
-      return CORE_AUTHENTICATION_STRATEGY_TYPE.TEST;
     } else if (auth instanceof DefaultH2AuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT;
     } else if (auth instanceof OAuthAuthenticationStrategy) {
@@ -246,8 +240,6 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.API_TOKEN;
     } else if (auth instanceof SnowflakePublicAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
-    } else if (auth instanceof UserPasswordAuthenticationStrategy) {
-      return CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD;
     } else if (auth instanceof UsernamePasswordAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD;
     } else if (
@@ -309,21 +301,9 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
-      case CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD: {
-        this.connection.setAuthenticationStrategy(
-          new UserPasswordAuthenticationStrategy('', ''),
-        );
-        return;
-      }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD: {
         this.connection.setAuthenticationStrategy(
           new UsernamePasswordAuthenticationStrategy('', ''),
-        );
-        return;
-      }
-      case CORE_AUTHENTICATION_STRATEGY_TYPE.TEST: {
-        this.connection.setAuthenticationStrategy(
-          new TestDatabaseAuthenticationStrategy(),
         );
         return;
       }

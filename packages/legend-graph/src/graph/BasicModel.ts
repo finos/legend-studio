@@ -194,7 +194,7 @@ export abstract class BasicModel {
       setOwnFileGeneration: action,
       deleteOwnElement: action,
       renameOwnElement: action,
-      TEMP__deleteOwnSectionIndex: action,
+      TEMPORARY__deleteOwnSectionIndex: action,
     });
 
     this.root = new Package(rootPackageName);
@@ -693,7 +693,7 @@ export abstract class BasicModel {
    * TODO: this will be removed once we fully support section index in SDLC flow
    * @deprecated
    */
-  TEMP__deleteOwnSectionIndex(): void {
+  TEMPORARY__deleteOwnSectionIndex(): void {
     this.sectionIndicesIndex.forEach((sectionIndex) => {
       sectionIndex.setIsDeleted(true);
       this.sectionIndicesIndex.delete(sectionIndex.path);

@@ -83,7 +83,7 @@ const TaxonomyTreeNodeContainer = observer(
               'Copied taxonomy node ID to clipboard',
             ),
           )
-          .catch(applicationStore.alertIllegalUnhandledError);
+          .catch(applicationStore.alertUnhandledError);
       }
     };
     const copyLink = (): void => {
@@ -101,7 +101,7 @@ const TaxonomyTreeNodeContainer = observer(
             'Copied taxonomy node link to clipboard',
           ),
         )
-        .catch(applicationStore.alertIllegalUnhandledError);
+        .catch(applicationStore.alertUnhandledError);
     };
 
     return (

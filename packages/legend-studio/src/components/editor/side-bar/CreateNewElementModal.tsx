@@ -413,7 +413,6 @@ export const CreateNewElementModal = observer(() => {
               getElementTypeLabel(editorStore, newElementState.type) ??
               'element'
             }`}
-            name={`Element name`}
           />
           {renderNewElementDriver(newElementState.type, editorStore)}
         </div>

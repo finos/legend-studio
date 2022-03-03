@@ -94,8 +94,8 @@
     "chalk": "5.0.0",
     "cross-env": "7.0.3",
     "envinfo": "7.8.1",
-    "eslint": "8.9.0",
-    "fs-extra": "10.0.0",
+    "eslint": "8.10.0",
+    "fs-extra": "10.0.1",
     "husky": "7.0.4",
     "inquirer": "8.2.0",
     "jest": "27.5.1",
@@ -107,7 +107,7 @@
     "semver": "7.3.5",
     "sort-package-json": "1.54.0",
     "stylelint": "14.5.3",
-    "typescript": "4.5.5",
+    "typescript": "4.6.2",
     "yargs": "17.3.1"
   },
   "engines": {

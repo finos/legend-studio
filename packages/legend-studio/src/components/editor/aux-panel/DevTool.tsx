@@ -23,7 +23,7 @@ export const DevTool = observer(() => {
   const editorStore = useEditorStore();
   // Engine
   const engineConfig =
-    editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
+    editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
   const changeEngineClientBaseUrl: React.ChangeEventHandler<
     HTMLInputElement
   > = (event) =>

@@ -195,7 +195,7 @@ const WorkflowJobLogsViewer = observer(
     const closeLogViewer = (): void => {
       logState.closeModal();
       flowResult(workflowState.fetchAllWorkflows()).catch(
-        workflowState.editorStore.applicationStore.alertIllegalUnhandledError,
+        workflowState.editorStore.applicationStore.alertUnhandledError,
       );
     };
     const refreshLogs = (): void => {
@@ -262,6 +262,7 @@ const WorkflowExplorerContextMenu = observer(
     }
   >(function WorkflowExplorerContextMenu(props, ref) {
     const { node, workflowManagerState, workflowState, treeData } = props;
+    const applicationStore = useApplicationStore();
     const retryJob = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
         workflowState.retryJob(node.workflowJob, treeData);
@@ -279,13 +280,9 @@ const WorkflowExplorerContextMenu = observer(
     };
     const visitWeburl = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
-        workflowState.editorStore.applicationStore.navigator.openNewWindow(
-          node.workflowJob.webURL,
-        );
+        applicationStore.navigator.openNewWindow(node.workflowJob.webURL);
       } else if (node instanceof WorkflowTreeNodeData) {
-        workflowState.editorStore.applicationStore.navigator.openNewWindow(
-          node.workflow.webURL,
-        );
+        applicationStore.navigator.openNewWindow(node.workflow.webURL);
       }
     };
 
@@ -473,12 +470,12 @@ export const WorkflowManager = observer(
       </>
     );
 
-    const refresh = applicationStore.guaranteeSafeAction(() =>
+    const refresh = applicationStore.guardUnhandledError(() =>
       flowResult(workflowManagerState.fetchAllWorkflows()),
     );
     useEffect(() => {
       flowResult(workflowManagerState.fetchAllWorkflows()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, workflowManagerState]);
 
