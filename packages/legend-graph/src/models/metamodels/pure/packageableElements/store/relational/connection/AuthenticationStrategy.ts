@@ -67,6 +67,36 @@ export class DefaultH2AuthenticationStrategy
   }
 }
 
+export class ApiTokenAuthenticationStrategy
+  extends AuthenticationStrategy
+  implements Hashable
+{
+  apiToken: string;
+
+  constructor(apiToken: string) {
+    super();
+
+    makeObservable(this, {
+      apiToken: observable,
+      setApiToken: action,
+      hashCode: computed,
+    });
+
+    this.apiToken = apiToken;
+  }
+
+  setApiToken(val: string): void {
+    this.apiToken = val;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.API_TOKEN_AUTHENTICATION_STRATEGY,
+      this.apiToken,
+    ]);
+  }
+}
+
 export class TestDatabaseAuthenticationStrategy
   extends DefaultH2AuthenticationStrategy
   implements Hashable

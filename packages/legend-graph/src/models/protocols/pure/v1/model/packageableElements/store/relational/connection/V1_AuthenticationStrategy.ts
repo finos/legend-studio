@@ -72,6 +72,20 @@ export class V1_OAuthAuthenticationStrategy
   }
 }
 
+export class V1_ApiTokenAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  apiToken!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.API_TOKEN_AUTHENTICATION_STRATEGY,
+      this.apiToken,
+    ]);
+  }
+}
+
 export class V1_SnowflakePublicAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable

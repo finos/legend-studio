@@ -42,11 +42,13 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  DatabricksDatasourceSpecification,
   StaticDatasourceSpecification,
   BigQueryDatasourceSpecification,
   RedshiftDatasourceSpecification,
@@ -476,6 +478,51 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
   },
 );
 
+const DatabricksDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: DatabricksDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.hostname}
+          propertyName="hostname"
+          update={(value: string | undefined): void =>
+            sourceSpec.setHostName(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.port}
+          propertyName="port"
+          update={(value: string | undefined): void =>
+            sourceSpec.setPort(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.protocol}
+          propertyName="protocol"
+          update={(value: string | undefined): void =>
+            sourceSpec.setProtocol(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.httpPath}
+          propertyName="httpPath"
+          update={(value: string | undefined): void =>
+            sourceSpec.setHttpPath(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 const SnowflakeDatasourceSpecificationEditor = observer(
   (props: {
     sourceSpec: SnowflakeDatasourceSpecification;
@@ -678,6 +725,27 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
           propertyName={'server principal'}
           update={(value: string | undefined): void =>
             authSpec.setServerPrincipal(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
+const ApiTokenAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: ApiTokenAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.apiToken}
+          propertyName={'apiTokenRef'}
+          update={(value: string | undefined): void =>
+            authSpec.setApiToken(value ?? '')
           }
         />
       </>
@@ -906,6 +974,13 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec instanceof DatabricksDatasourceSpecification) {
+    return (
+      <DatabricksDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else if (sourceSpec instanceof SnowflakeDatasourceSpecification) {
     return (
       <SnowflakeDatasourceSpecificationEditor
@@ -968,6 +1043,13 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof SnowflakePublicAuthenticationStrategy) {
     return (
       <SnowflakePublicAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (authSpec instanceof ApiTokenAuthenticationStrategy) {
+    return (
+      <ApiTokenAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

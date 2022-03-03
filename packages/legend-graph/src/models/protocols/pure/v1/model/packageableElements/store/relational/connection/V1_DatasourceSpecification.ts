@@ -24,6 +24,7 @@ export enum V1_DatasourceSpecificationType {
   BIGQUERY = 'bigQuery',
   H2_LOCAL = 'h2Local',
   REDSHIFT = 'redshift',
+  DATABRICKS = 'databricks',
 }
 
 export abstract class V1_DatasourceSpecification implements Hashable {
@@ -64,6 +65,26 @@ export class V1_EmbeddedH2DatasourceSpecification
       this.databaseName,
       this.directory,
       this.autoServerMode.toString(),
+    ]);
+  }
+}
+
+export class V1_DatabricksDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  hostname!: string;
+  port!: string;
+  protocol!: string;
+  httpPath!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
+      this.hostname,
+      this.port,
+      this.protocol,
+      this.httpPath,
     ]);
   }
 }

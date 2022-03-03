@@ -38,6 +38,7 @@ export enum DatabaseType {
   SqlServer = 'SqlServer',
   Hive = 'Hive',
   Snowflake = 'Snowflake',
+  Databricks = 'Databricks',
   Presto = 'Presto',
   Redshift = 'Redshift',
   BigQuery = 'BigQuery',

@@ -33,6 +33,7 @@ import {
   DefaultH2AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
@@ -44,6 +45,7 @@ import {
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
+  DatabricksDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
@@ -60,6 +62,7 @@ import {
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
+  V1_DatabricksDatasourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
@@ -70,6 +73,7 @@ import {
   V1_UserPasswordAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
+  V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
@@ -106,6 +110,17 @@ const transformEmbeddedH2DatasourceSpecification = (
   source.databaseName = metamodel.databaseName;
   source.directory = metamodel.directory;
   source.autoServerMode = metamodel.autoServerMode;
+  return source;
+};
+
+const transformDatabricksDatasourceSpecification = (
+  metamodel: DatabricksDatasourceSpecification,
+): V1_DatabricksDatasourceSpecification => {
+  const source = new V1_DatabricksDatasourceSpecification();
+  source.hostname = metamodel.hostname;
+  source.port = metamodel.port;
+  source.protocol = metamodel.protocol;
+  source.httpPath = metamodel.httpPath;
   return source;
 };
 
@@ -155,6 +170,8 @@ const transformDatasourceSpecification = (
     return transformStaticDatasourceSpecification(metamodel);
   } else if (metamodel instanceof EmbeddedH2DatasourceSpecification) {
     return transformEmbeddedH2DatasourceSpecification(metamodel);
+  } else if (metamodel instanceof DatabricksDatasourceSpecification) {
+    return transformDatabricksDatasourceSpecification(metamodel);
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof BigQueryDatasourceSpecification) {
@@ -209,6 +226,10 @@ const transformAuthenticationStrategy = (
     return new V1_TestDatabaseAuthenticationStrategy();
   } else if (metamodel instanceof OAuthAuthenticationStrategy) {
     return transformOAuthtAuthenticationStrategy(metamodel);
+  } else if (metamodel instanceof ApiTokenAuthenticationStrategy) {
+    const auth = new V1_ApiTokenAuthenticationStrategy();
+    auth.apiToken = metamodel.apiToken;
+    return auth;
   } else if (metamodel instanceof SnowflakePublicAuthenticationStrategy) {
     const auth = new V1_SnowflakePublicAuthenticationStrategy();
     auth.privateKeyVaultReference = metamodel.privateKeyVaultReference;

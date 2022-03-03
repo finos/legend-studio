@@ -36,6 +36,7 @@ export enum V1_DatabaseType {
   Hive = 'Hive',
   Snowflake = 'Snowflake',
   BigQuery = 'BigQuery',
+  Databricks = 'Databricks',
   Presto = 'Presto',
   Redshift = 'Redshift',
 }

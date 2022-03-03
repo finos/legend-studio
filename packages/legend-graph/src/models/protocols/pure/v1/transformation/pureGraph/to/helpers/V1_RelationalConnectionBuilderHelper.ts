@@ -25,6 +25,7 @@ import {
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
+  DatabricksDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
@@ -34,6 +35,7 @@ import {
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
@@ -46,6 +48,7 @@ import {
   V1_LocalH2DataSourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
+  V1_DatabricksDatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
@@ -56,6 +59,7 @@ import {
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
+  V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
@@ -105,6 +109,30 @@ export const V1_buildDatasourceSpecification = (
       protocol.autoServerMode,
     );
     return embeddedSpec;
+  } else if (protocol instanceof V1_DatabricksDatasourceSpecification) {
+    assertNonEmptyString(
+      protocol.hostname,
+      'Databricks hostname specification is missing',
+    );
+    assertNonEmptyString(
+      protocol.port,
+      'Databricks port specification is missing',
+    );
+    assertNonEmptyString(
+      protocol.protocol,
+      'Databricks protocol specification is missing',
+    );
+    assertNonEmptyString(
+      protocol.httpPath,
+      'Databricks httpPath specification is missing',
+    );
+    const databricksSpec = new DatabricksDatasourceSpecification(
+      protocol.hostname,
+      protocol.port,
+      protocol.protocol,
+      protocol.httpPath,
+    );
+    return databricksSpec;
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     assertNonEmptyString(
       protocol.accountName,
@@ -202,6 +230,9 @@ export const V1_buildAuthenticationStrategy = (
     const metamodel = new DelegatedKerberosAuthenticationStrategy();
     metamodel.serverPrincipal = protocol.serverPrincipal;
     return metamodel;
+  } else if (protocol instanceof V1_ApiTokenAuthenticationStrategy) {
+    assertNonEmptyString(protocol.apiToken, 'API token is missing or empty');
+    return new ApiTokenAuthenticationStrategy(protocol.apiToken);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     assertNonEmptyString(
       protocol.privateKeyVaultReference,

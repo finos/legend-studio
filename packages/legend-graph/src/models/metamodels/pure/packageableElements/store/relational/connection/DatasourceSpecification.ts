@@ -71,6 +71,63 @@ export class StaticDatasourceSpecification
   }
 }
 
+export class DatabricksDatasourceSpecification
+  extends DatasourceSpecification
+  implements Hashable
+{
+  hostname: string;
+  port: string;
+  protocol: string;
+  httpPath: string;
+
+  constructor(
+    hostname: string,
+    port: string,
+    protocol: string,
+    httpPath: string,
+  ) {
+    super();
+
+    makeObservable(this, {
+      hostname: observable,
+      port: observable,
+      protocol: observable,
+      httpPath: observable,
+      hashCode: computed,
+    });
+    this.hostname = hostname;
+    this.port = port;
+    this.protocol = protocol;
+    this.httpPath = httpPath;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
+      this.hostname,
+      this.port,
+      this.protocol,
+      this.httpPath,
+    ]);
+  }
+
+  setHostName(val: string): void {
+    this.hostname = val;
+  }
+
+  setPort(val: string): void {
+    this.port = val;
+  }
+
+  setProtocol(val: string): void {
+    this.protocol = val;
+  }
+
+  setHttpPath(val: string): void {
+    this.httpPath = val;
+  }
+}
+
 export class EmbeddedH2DatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
