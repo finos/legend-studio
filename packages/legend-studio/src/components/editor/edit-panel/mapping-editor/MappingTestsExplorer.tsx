@@ -27,7 +27,7 @@ import {
   clsx,
   ContextMenu,
   ProgressBar,
-  MdVerticalAlignBottom,
+  VerticalAlignBottomIcon,
   AddIcon,
   PlayIcon,
   EmptyCircleIcon,
@@ -489,7 +489,7 @@ export const MappingTestsExplorer = observer(
                     addTestPromps[0]}
                 </div>
                 <div className="mapping-test-explorer__content__adder__action">
-                  <MdVerticalAlignBottom className="mapping-test-explorer__content__adder__action__dnd-icon" />
+                  <VerticalAlignBottomIcon className="mapping-test-explorer__content__adder__action__dnd-icon" />
                   <AddIcon className="mapping-test-explorer__content__adder__action__add-icon" />
                 </div>
               </div>

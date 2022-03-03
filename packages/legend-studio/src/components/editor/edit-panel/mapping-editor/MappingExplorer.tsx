@@ -27,7 +27,7 @@ import {
   clsx,
   TreeView,
   ContextMenu,
-  MdVerticalAlignBottom,
+  VerticalAlignBottomIcon,
   AddIcon,
   PlusIcon,
   LockIcon,
@@ -567,7 +567,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
                 {'Add a mapping element'}
               </div>
               <div className="mapping-explorer__content__adder__action">
-                <MdVerticalAlignBottom className="mapping-explorer__content__adder__action__dnd-icon" />
+                <VerticalAlignBottomIcon className="mapping-explorer__content__adder__action__dnd-icon" />
                 <AddIcon className="mapping-explorer__content__adder__action__add-icon" />
               </div>
             </div>
