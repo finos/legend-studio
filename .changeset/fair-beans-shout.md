@@ -3,4 +3,5 @@
 '@finos/legend-graph': minor
 ---
 
-Supporting delta lake JDBC
+pr: #330
+Supporting Delta Lake JDBC connection.
