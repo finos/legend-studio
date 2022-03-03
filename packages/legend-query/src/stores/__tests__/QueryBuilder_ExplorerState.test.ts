@@ -125,7 +125,7 @@ const cases: TestCase[] = [
     },
   ],
   [
-    'Simple association mapping',
+    'Simple association mapping with inlcudes',
     {
       mapping: 'model::parentMapping',
       rootClass: 'model::Person',
