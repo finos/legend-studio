@@ -7072,11 +7072,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "eslint@npm:8.11.0":
   version: 8.11.0
   resolution: "eslint@npm:8.11.0"
   dependencies:
     "@eslint/eslintrc": ^1.2.1
+=======
+"eslint@npm:8.10.0":
+  version: 8.10.0
+  resolution: "eslint@npm:8.10.0"
+  dependencies:
+    "@eslint/eslintrc": ^1.2.0
     "@humanwhocodes/config-array": ^0.9.2
     ajv: ^6.10.0
     chalk: ^4.0.0
