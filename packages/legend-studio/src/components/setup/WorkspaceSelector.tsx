@@ -124,7 +124,6 @@ export const WorkspaceSelector = observer(
         <button
           className="setup-selector__action btn--dark"
           onClick={create}
-          // disabled={!setupStore.currentProject}
           tabIndex={-1}
           title="Create a Workspace"
         >
