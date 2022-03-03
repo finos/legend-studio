@@ -788,7 +788,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={authSpec.baseVaultReference}
-          propertyName={'base valut reference'}
+          propertyName={'base vault reference'}
           update={(value: string | undefined): void =>
             authSpec.setBaseVaultReference(value)
           }
@@ -804,7 +804,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={authSpec.passwordVaultReference}
-          propertyName={'password valut reference'}
+          propertyName={'password vault reference'}
           update={(value: string | undefined): void =>
             authSpec.setPasswordVaultReference(value ?? '')
           }
