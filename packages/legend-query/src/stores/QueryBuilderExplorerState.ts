@@ -246,6 +246,7 @@ const resolveTargetSetImplementationForPropertyMapping = (
 const resolvePropertyMappingsForSetImpl = (
   graphManagerState: GraphManagerState,
   setImpl: SetImplementation,
+  rootMapping: Mapping,
 ): PropertyMapping[] => {
   const propertyMappings =
     graphManagerState.getMappingElementPropertyMappings(setImpl);
@@ -256,7 +257,8 @@ const resolvePropertyMappingsForSetImpl = (
     graphManagerState.isInstanceSetImplementation(setImpl) &&
     setImpl.class.value.propertiesFromAssociations.length
   ) {
-    setImpl.parent.associationMappings
+    // Always choose the mapping used in the query builder setup panel
+    rootMapping.associationMappings
       .map((am) => am.propertyMappings)
       .flat()
       .forEach((pm) => {
@@ -287,6 +289,7 @@ export const getPropertyNodeMappingData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentMappingData: QueryBuilderPropertyMappingData,
+  rootMapping: Mapping,
 ): QueryBuilderPropertyMappingData => {
   const parentTargetSetImpl = parentMappingData.targetSetImpl;
   // For now, derived properties will be considered mapped if its parent class is mapped.
@@ -305,11 +308,18 @@ export const getPropertyNodeMappingData = (
       const propertyMappings = resolvePropertyMappingsForSetImpl(
         graphManagerState,
         parentTargetSetImpl,
+        rootMapping,
       )
         // property mappings from super set implementations
         .concat(
           getAllSuperSetImplementations(parentTargetSetImpl)
-            .map((s) => resolvePropertyMappingsForSetImpl(graphManagerState, s))
+            .map((s) =>
+              resolvePropertyMappingsForSetImpl(
+                graphManagerState,
+                s,
+                rootMapping,
+              ),
+            )
             .flat(),
         )
         .filter((p) => !p.isStub);
@@ -380,11 +390,13 @@ export const getQueryBuilderPropertyNodeData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
+  rootMapping: Mapping,
 ): QueryBuilderExplorerTreePropertyNodeData => {
   const mappingNodeData = getPropertyNodeMappingData(
     graphManagerState,
     property,
     parentNode.mappingData,
+    rootMapping,
   );
   const isPartOfDerivedPropertyBranch =
     property instanceof DerivedProperty ||
@@ -457,11 +469,11 @@ export const getQueryBuilderSubTypeNodeData = (
 const getQueryBuilderTreeData = (
   graphManagerState: GraphManagerState,
   rootClass: Class,
-  mapping: Mapping,
+  rootMapping: Mapping,
 ): TreeData<QueryBuilderExplorerTreeNodeData> => {
   const rootIds = [];
   const nodes = new Map<string, QueryBuilderExplorerTreeNodeData>();
-  const mappingData = getRootMappingData(mapping, rootClass);
+  const mappingData = getRootMappingData(rootMapping, rootClass);
   const treeRootNode = new QueryBuilderExplorerTreeRootNodeData(
     '@dummy_rootNode',
     rootClass.name,
@@ -488,6 +500,7 @@ const getQueryBuilderTreeData = (
         graphManagerState,
         property,
         treeRootNode,
+        rootMapping,
       );
       addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
       nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
