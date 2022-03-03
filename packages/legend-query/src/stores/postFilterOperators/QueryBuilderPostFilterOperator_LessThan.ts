@@ -15,38 +15,28 @@
  */
 
 import {
-  QueryBuilderFilterOperator,
-  type QueryBuilderFilterState,
-  type FilterConditionState,
-} from '../QueryBuilderFilterState';
-import {
-  PRIMITIVE_TYPE,
+  type Type,
   type ValueSpecification,
-  type SimpleFunctionExpression,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import {
-  buildFilterConditionState,
-  buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
 import {
   buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
 } from '../QueryBuilderLogicalHelper';
+import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
+import type { PostFilterConditionState } from '../QueryBuilderPostFilterState';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
 
-export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilterOperator {
-  getLabel(filterConditionState: FilterConditionState): string {
-    return '<=';
+export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFilterOperator {
+  getLabel(): string {
+    return '<';
   }
-
-  isCompatibleWithFilterConditionProperty(
-    filterConditionState: FilterConditionState,
-  ): boolean {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
-        .genericType.value.rawType;
+  getPureFunction(): SUPPORTED_FUNCTIONS {
+    return SUPPORTED_FUNCTIONS.LESS_THAN;
+  }
+  isCompatibleWithType(type: Type): boolean {
     return (
       [
         PRIMITIVE_TYPE.NUMBER,
@@ -57,14 +47,13 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
         PRIMITIVE_TYPE.STRICTDATE,
         PRIMITIVE_TYPE.DATETIME,
       ] as string[]
-    ).includes(propertyType.path);
+    ).includes(type.path);
   }
-
-  isCompatibleWithFilterConditionValue(
-    filterConditionState: FilterConditionState,
+  isCompatibleWithConditionValue(
+    postFilterConditionState: PostFilterConditionState,
   ): boolean {
-    const type = filterConditionState.value
-      ? getNonCollectionValueSpecificationType(filterConditionState.value)
+    const type = postFilterConditionState.value
+      ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
       : undefined;
     return (
       type !== undefined &&
@@ -81,14 +70,11 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
       ).includes(type.path)
     );
   }
-
   getDefaultFilterConditionValue(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification | undefined {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
-        .genericType.value.rawType;
-    switch (propertyType.path) {
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification {
+    const propertyType = postFilterConditionState.columnState.getReturnType();
+    switch (propertyType?.path) {
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL:
       case PRIMITIVE_TYPE.FLOAT:
@@ -97,38 +83,17 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME: {
         return buildPrimitiveInstanceValue(
-          filterConditionState.filterState.queryBuilderState,
+          postFilterConditionState.postFilterState.queryBuilderState,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for filter operator '${this.getLabel(
-            filterConditionState,
-          )}' when the LHS property is of type '${propertyType.path}'`,
+          `Can't get default value for filter operator '${this.getLabel()}' when the LHS property is of type '${
+            propertyType?.path
+          }'`,
         );
     }
-  }
-
-  buildFilterConditionExpression(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification {
-    return buildFilterConditionExpression(
-      filterConditionState,
-      SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
-    );
-  }
-
-  buildFilterConditionState(
-    filterState: QueryBuilderFilterState,
-    expression: SimpleFunctionExpression,
-  ): FilterConditionState | undefined {
-    return buildFilterConditionState(
-      filterState,
-      expression,
-      SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
-      this,
-    );
   }
 }

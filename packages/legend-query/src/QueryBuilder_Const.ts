@@ -52,6 +52,7 @@ export enum SUPPORTED_FUNCTIONS {
   GREATER_THAN_EQUAL = 'meta::pure::functions::lang::tests::greaterThanEqual',
   IN = 'meta::pure::functions::collection::in',
   IS_EMPTY = 'meta::pure::functions::collection::isEmpty',
+
   LESS_THAN = 'meta::pure::functions::lang::tests::lessThan',
   LESS_THAN_EQUAL = 'meta::pure::functions::lang::tests::lessThanEqual',
   STARTS_WITH = 'meta::pure::functions::string::startsWith',
@@ -75,3 +76,7 @@ export enum SUPPORTED_FUNCTIONS {
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
+
+// TDS
+export const DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME = 'row';
+export const TDS_ROW = 'meta::pure::tds::TDSRow';

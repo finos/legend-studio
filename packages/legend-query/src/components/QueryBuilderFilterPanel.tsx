@@ -45,7 +45,6 @@ import {
   type QueryBuilderFilterDropTarget,
   type QueryBuilderFilterTreeNodeData,
   type QueryBuilderFilterOperator,
-  QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QUERY_BUILDER_FILTER_DND_TYPE,
   FilterConditionState,
   QueryBuilderFilterTreeConditionNodeData,
@@ -75,6 +74,7 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
+import { QUERY_BUILDER_LOGICAL_GROUP_OPERATION } from '../stores/QueryBuilderLogicalHelper';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -126,9 +126,9 @@ const QueryBuilderFilterGroupConditionEditor = observer(
     ): void => {
       event.stopPropagation(); // prevent triggering selecting the node
       node.setGroupOperation(
-        node.groupOperation === QUERY_BUILDER_FILTER_GROUP_OPERATION.AND
-          ? QUERY_BUILDER_FILTER_GROUP_OPERATION.OR
-          : QUERY_BUILDER_FILTER_GROUP_OPERATION.AND,
+        node.groupOperation === QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND
+          ? QUERY_BUILDER_LOGICAL_GROUP_OPERATION.OR
+          : QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
       );
     };
     return (
@@ -141,9 +141,9 @@ const QueryBuilderFilterGroupConditionEditor = observer(
         <div
           className={clsx('query-builder-filter-tree__group-node', {
             'query-builder-filter-tree__group-node--and':
-              node.groupOperation === QUERY_BUILDER_FILTER_GROUP_OPERATION.AND,
+              node.groupOperation === QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
             'query-builder-filter-tree__group-node--or':
-              node.groupOperation === QUERY_BUILDER_FILTER_GROUP_OPERATION.OR,
+              node.groupOperation === QUERY_BUILDER_LOGICAL_GROUP_OPERATION.OR,
           })}
           title="Switch Operation"
           onClick={switchOperation}

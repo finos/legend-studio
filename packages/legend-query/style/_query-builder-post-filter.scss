@@ -1,0 +1,380 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.query-builder-post-filter-tree {
+  &__root {
+    padding: 0.5rem 0;
+  }
+
+  &__expand-icon {
+    @include flexVCenter;
+
+    justify-content: flex-start;
+    width: 1.5rem;
+    min-width: 1.5rem;
+    margin-right: 0.5rem;
+  }
+
+  &__expand-icon svg {
+    font-size: 1rem;
+  }
+
+  &__node__container {
+    height: 3.3rem;
+  }
+
+  &__node__container:hover {
+    background: var(--color-dark-blue-shade-100);
+  }
+
+  &__node__container--selected,
+  &__node__container--selected:hover {
+    background: var(--color-blue-500);
+  }
+
+  &__node__container--selected-from-context-menu {
+    background: var(--color-dark-blue-shade-100);
+  }
+
+  &__node__container--no-hover:hover {
+    background: transparent !important;
+  }
+
+  &__node__content {
+    @include flexVCenter;
+
+    height: 100%;
+    width: calc(100% - 3.9rem);
+  }
+
+  &__node__actions {
+    @include flexVCenter;
+
+    height: 100%;
+    width: 5.6rem;
+  }
+
+  &__node__action {
+    @include flexCenter;
+
+    height: 100%;
+    width: 2.8rem;
+
+    svg {
+      color: var(--color-light-grey-400);
+    }
+
+    &:hover svg {
+      color: var(--color-light-grey-200);
+    }
+  }
+
+  &__node__label {
+    width: 100%;
+    height: 3.4rem;
+    line-height: 3.4rem;
+    display: flex;
+    min-width: 0;
+    white-space: normal;
+    flex: 0 0 auto;
+    color: var(--color-light-grey-400);
+    user-select: none;
+  }
+
+  &__node__label--expandable {
+    width: calc(100% - 1.5rem);
+  }
+
+  &__node__label__content {
+    @include flexVCenter;
+
+    width: 100%;
+    height: 100%;
+  }
+
+  &__drag-preview-layer {
+    position: fixed;
+    pointer-events: none;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__drag-preview {
+    @include flexCenter;
+
+    display: inline-flex;
+    height: 2rem;
+    padding: 0 0.5rem;
+    font-size: 1.2rem;
+    background: var(--color-blue-200);
+    border-radius: 0.2rem;
+  }
+
+  &__group-node {
+    @include flexVCenter;
+
+    height: 2.2rem;
+    border-radius: 0.2rem;
+
+    &__label {
+      @include flexVCenter;
+
+      width: 4.5rem;
+      min-width: 4.5rem;
+      font-weight: 700;
+      font-size: 1.2rem;
+      padding-left: 1rem;
+      text-transform: uppercase;
+      color: var(--color-light-grey-50);
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 100%;
+      min-width: 2rem;
+      width: 2rem;
+      background: var(--color-dark-shade-200);
+      padding: 0 0.2rem;
+
+      svg {
+        font-size: 1rem;
+        color: var(--color-light-grey-200);
+      }
+
+      &:hover svg {
+        color: var(--color-light-grey-50);
+      }
+    }
+
+    &--and {
+      background: var(--color-dark-grey-280);
+    }
+
+    &--or {
+      background: var(--color-magenta-300);
+    }
+  }
+
+  &__blank-node {
+    @include flexCenter;
+
+    margin: 0.3rem 0;
+    width: 100%;
+    border: 0.2rem dashed var(--color-dark-grey-100);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-dark-grey-300);
+    height: 2.8rem;
+  }
+
+  &__node__container--selected &__blank-node,
+  &__node__container--selected:hover &__blank-node,
+  &__node__container:hover &__blank-node {
+    border: 0.2rem dashed var(--color-dark-grey-300);
+    color: var(--color-dark-grey-400);
+  }
+
+  &__condition-node {
+    @include flexVCenter;
+
+    width: 100%;
+    height: 100%;
+
+    &__property {
+      @include flexVCenter;
+
+      width: calc(50% - 3rem);
+      height: 2.8rem;
+    }
+
+    &__operator {
+      @include flexVCenter;
+
+      margin: 0 0.5rem;
+    }
+
+    &__operator__label {
+      padding: 0 0.5rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-280);
+      height: 2.2rem;
+      color: var(--color-light-grey-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+      font-size: 1.2rem;
+      line-height: 2.2rem;
+      white-space: nowrap;
+    }
+
+    &__operator__dropdown__trigger {
+      @include flexCenter;
+
+      padding: 0 0.3rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-200);
+      height: 2.2rem;
+      border-radius: 0 0.2rem 0.2rem 0;
+
+      & svg {
+        color: var(--color-light-grey-100);
+        font-size: 1.2rem;
+      }
+    }
+
+    &__operator__dropdown__option {
+      font-size: 1.1rem;
+      height: 2.8rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__value {
+      @include flexCenter;
+
+      flex-grow: 1;
+      height: 2.8rem;
+      border-radius: 0.2rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+  }
+
+  &__node__dnd__overlay {
+    @include flexCenter;
+
+    border: 0.2rem dashed var(--color-dark-grey-100);
+    margin: 0.3rem 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-dark-grey-300);
+    height: 2.8rem;
+    position: absolute;
+    width: 100%;
+    pointer-events: none;
+    background: var(--color-dark-grey-50);
+  }
+}
+
+.query-builder-column-badge {
+  @include flexVCenter;
+
+  width: 100%;
+  height: 100%;
+
+  &__dnd__placeholder {
+    @include flexCenter;
+
+    height: 2.8rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-dark-grey-300);
+  }
+
+  &__content {
+    @include flexVCenter;
+
+    width: 100%;
+    height: 2.2rem;
+    border-radius: 0.2rem;
+    background: var(--color-dark-grey-100);
+  }
+
+  &__icon {
+    color: var(--color-dark-shade-230);
+  }
+
+  &__type {
+    height: 2.2rem;
+    width: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    border-radius: 0.2rem 0 0 0.2rem;
+
+    &--class {
+      background: var(--color-purple-200);
+    }
+
+    &--enumeration {
+      background: var(--color-medium-green-450);
+    }
+
+    &--primitive {
+      background: var(--color-blue-200);
+    }
+  }
+
+  &__property {
+    @include ellipsisTextOverflow;
+
+    padding: 0 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    width: 100%;
+  }
+
+  &__property__info {
+    @include flexCenter;
+
+    height: 2.2rem;
+    width: 2.2rem;
+    margin: 0.3rem;
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-dark-shade-230);
+    }
+  }
+
+  &__action {
+    width: 4.6rem;
+    min-width: 4.6rem;
+    height: 2.2rem;
+    line-height: 2.2rem;
+    font-weight: 700;
+    font-size: 1rem;
+    font-family: 'Roboto Mono', monospace;
+    color: var(--color-light-grey-200);
+    background: var(--color-dark-shade-230);
+
+    &:hover {
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  &__action--error {
+    background: var(--color-red-200);
+    color: var(--color-light-grey-50);
+    width: 6rem;
+    min-width: 6rem;
+
+    @include flexCenter;
+
+    svg {
+      font-size: 1rem;
+      margin-right: 0.3rem;
+    }
+
+    &:hover {
+      color: var(--color-light-grey-0);
+    }
+  }
+}

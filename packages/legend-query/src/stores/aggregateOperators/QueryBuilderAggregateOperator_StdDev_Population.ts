@@ -15,6 +15,7 @@
  */
 
 import {
+  type Type,
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
@@ -86,5 +87,14 @@ export class QueryBuilderAggregateOperator_StdDev_Population extends QueryBuilde
       SUPPORTED_FUNCTIONS.STD_DEV_POPULATION,
       this,
     );
+  }
+
+  override getReturnType(
+    aggregateColumnState: QueryBuilderAggregateColumnState,
+  ): Type {
+    const graph =
+      aggregateColumnState.projectionColumnState.projectionState
+        .queryBuilderState.graphManagerState.graph;
+    return graph.getType(PRIMITIVE_TYPE.NUMBER);
   }
 }

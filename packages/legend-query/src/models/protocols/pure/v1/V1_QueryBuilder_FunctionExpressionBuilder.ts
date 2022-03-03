@@ -21,7 +21,7 @@ import {
   guaranteeType,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const';
+import { SUPPORTED_FUNCTIONS, TDS_ROW } from '../../../../QueryBuilder_Const';
 import {
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,
@@ -336,7 +336,6 @@ export const V1_buildFilterFunctionExpression = (
     parameters.length === 2,
     `Can't build filter() expression: filter() expects 1 argument`,
   );
-
   const precedingExpression = (
     parameters[0] as V1_ValueSpecification
   ).accept_ValueSpecificationVisitor(
@@ -478,6 +477,9 @@ export const V1_buildProjectFunctionExpression = (
     functionName,
     compileContext,
   );
+  expression.genericType = GenericTypeExplicitReference.create(
+    new GenericType(compileContext.resolveType(TDS_ROW).value),
+  );
   return [expression, processedParams];
 };
 
@@ -615,6 +617,9 @@ export const V1_buildGroupByFunctionExpression = (
     processedParams,
     functionName,
     compileContext,
+  );
+  expression.genericType = GenericTypeExplicitReference.create(
+    new GenericType(compileContext.resolveType(TDS_ROW).value),
   );
   return [expression, processedParams];
 };

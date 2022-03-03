@@ -24,6 +24,7 @@ import {
   extractElementNameFromPath,
   matchFunctionName,
   PRIMITIVE_TYPE,
+  type Type,
 } from '@finos/legend-graph';
 import { assertTrue, guaranteeType } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
@@ -153,5 +154,14 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
     }
 
     return undefined;
+  }
+
+  override getReturnType(
+    aggregateColumnState: QueryBuilderAggregateColumnState,
+  ): Type {
+    const graph =
+      aggregateColumnState.aggregationState.projectionState.queryBuilderState
+        .graphManagerState.graph;
+    return graph.getType(PRIMITIVE_TYPE.INTEGER);
   }
 }

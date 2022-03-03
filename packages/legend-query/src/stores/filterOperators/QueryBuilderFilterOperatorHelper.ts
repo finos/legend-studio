@@ -15,21 +15,13 @@
  */
 
 import {
-  type Enumeration,
-  type PrimitiveType,
-  type Type,
   type ValueSpecification,
   extractElementNameFromPath,
   matchFunctionName,
   LambdaFunctionInstanceValue,
   VariableExpression,
   AbstractPropertyExpression,
-  GenericType,
-  GenericTypeExplicitReference,
-  PrimitiveInstanceValue,
-  EnumValueInstanceValue,
   SimpleFunctionExpression,
-  PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import {
@@ -37,7 +29,6 @@ import {
   guaranteeNonNullable,
   assertTrue,
   generateEnumerableNameFromToken,
-  addUniqueEntry,
 } from '@finos/legend-shared';
 import {
   FilterConditionState,
@@ -46,29 +37,6 @@ import {
 } from '../QueryBuilderFilterState';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from '../QueryBuilderValueSpecificationBuilderHelper';
-
-export const buildPrimitiveInstanceValue = (
-  filterConditionState: FilterConditionState,
-  type: PRIMITIVE_TYPE,
-  value: unknown,
-): PrimitiveInstanceValue => {
-  const multiplicityOne =
-    filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  const instance = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(
-      new GenericType(
-        filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-          type,
-        ),
-      ),
-    ),
-    multiplicityOne,
-  );
-  instance.values = [value];
-  return instance;
-};
 
 const getPropertyExpressionChainVariable = (
   propertyExpression: AbstractPropertyExpression,
@@ -540,100 +508,6 @@ export const buildFilterConditionState = (
       );
     }
     return filterConditionState;
-  }
-  return undefined;
-};
-
-export const buildNotExpression = (
-  filterConditionState: FilterConditionState,
-  expression: ValueSpecification,
-): ValueSpecification => {
-  const multiplicityOne =
-    filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  const expressionNot = new SimpleFunctionExpression(
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.NOT),
-    multiplicityOne,
-  );
-  expressionNot.parametersValues.push(expression);
-  return expressionNot;
-};
-
-export const unwrapNotExpression = (
-  expression: SimpleFunctionExpression,
-): SimpleFunctionExpression | undefined => {
-  if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.NOT)) {
-    return guaranteeType(
-      expression.parametersValues[0],
-      SimpleFunctionExpression,
-    );
-  }
-  return undefined;
-};
-
-export const getNonCollectionValueSpecificationType = (
-  valueSpecification: ValueSpecification,
-): Type | undefined => {
-  if (valueSpecification instanceof PrimitiveInstanceValue) {
-    return valueSpecification.genericType.value.rawType;
-  } else if (valueSpecification instanceof EnumValueInstanceValue) {
-    return guaranteeNonNullable(valueSpecification.values[0]).value.owner;
-  } else if (valueSpecification instanceof VariableExpression) {
-    return valueSpecification.genericType?.value.rawType;
-  }
-  return undefined;
-};
-
-export const getCollectionValueSpecificationType = (
-  filterConditionState: FilterConditionState,
-  values: ValueSpecification[],
-): Type | undefined => {
-  if (values.every((val) => val instanceof PrimitiveInstanceValue)) {
-    const valuePrimitiveTypes: (PrimitiveType | undefined)[] = [];
-    (values as PrimitiveInstanceValue[]).forEach((val) => {
-      const primitiveType = val.genericType.value.rawType;
-      switch (primitiveType.path) {
-        case PRIMITIVE_TYPE.STRING:
-          addUniqueEntry(
-            valuePrimitiveTypes,
-            filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
-          );
-          break;
-        case PRIMITIVE_TYPE.INTEGER:
-        case PRIMITIVE_TYPE.DECIMAL:
-        case PRIMITIVE_TYPE.FLOAT:
-        case PRIMITIVE_TYPE.NUMBER:
-          addUniqueEntry(
-            valuePrimitiveTypes,
-            filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.NUMBER,
-            ),
-          );
-          break;
-        default:
-          valuePrimitiveTypes.push(undefined);
-          break;
-      }
-    });
-    if (valuePrimitiveTypes.length > 1) {
-      return undefined;
-    }
-    return valuePrimitiveTypes[0] as PrimitiveType;
-  } else if (values.every((val) => val instanceof EnumValueInstanceValue)) {
-    const valueEnumerationTypes: Enumeration[] = [];
-    (values as EnumValueInstanceValue[]).forEach((val) => {
-      addUniqueEntry(
-        valueEnumerationTypes,
-        guaranteeNonNullable(val.values[0]).value.owner,
-      );
-    });
-    if (valueEnumerationTypes.length > 1) {
-      return undefined;
-    }
-    return valueEnumerationTypes[0];
   }
   return undefined;
 };

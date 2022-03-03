@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QueryBuilderPostFilterOperator_GreaterThan } from './QueryBuilderPostFilterOperator_GreaterThan';
 
-@forward 'deps';
-@forward 'query-builder';
-@forward 'query-builder-explorer';
-@forward 'query-builder-filter';
-@forward 'query-builder-post-filter';
-@forward 'query-builder-projection';
-@forward 'graph-fetch-tree';
-@forward 'query-setup';
-@forward 'query-editor';
+export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilderPostFilterOperator_GreaterThan {
+  override getLabel(): string {
+    return '>=';
+  }
+  override getPureFunction(): SUPPORTED_FUNCTIONS {
+    return SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL;
+  }
+}

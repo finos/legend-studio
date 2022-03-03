@@ -33,7 +33,6 @@ import {
   addUniqueEntry,
   deleteEntry,
   assertErrorThrown,
-  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
 import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState';
@@ -50,11 +49,10 @@ import {
   SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
-
-export enum QUERY_BUILDER_FILTER_GROUP_OPERATION {
-  AND = 'and',
-  OR = 'or',
-}
+import {
+  fromGroupOperation,
+  QUERY_BUILDER_LOGICAL_GROUP_OPERATION,
+} from './QueryBuilderLogicalHelper';
 
 export abstract class QueryBuilderFilterOperator {
   uuid = uuid();
@@ -218,12 +216,12 @@ export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
 }
 
 export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeNodeData {
-  groupOperation: QUERY_BUILDER_FILTER_GROUP_OPERATION;
+  groupOperation: QUERY_BUILDER_LOGICAL_GROUP_OPERATION;
   childrenIds: string[] = [];
 
   constructor(
     parentId: string | undefined,
-    groupOperation: QUERY_BUILDER_FILTER_GROUP_OPERATION,
+    groupOperation: QUERY_BUILDER_LOGICAL_GROUP_OPERATION,
   ) {
     super(parentId);
 
@@ -244,7 +242,7 @@ export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeN
     return `${this.groupOperation.toUpperCase()} group`;
   }
 
-  setGroupOperation(val: QUERY_BUILDER_FILTER_GROUP_OPERATION): void {
+  setGroupOperation(val: QUERY_BUILDER_LOGICAL_GROUP_OPERATION): void {
     this.groupOperation = val;
   }
   addChildNode(node: QueryBuilderFilterTreeNodeData): void {
@@ -296,21 +294,6 @@ export class QueryBuilderFilterTreeBlankConditionNodeData extends QueryBuilderFi
     return '<blank>';
   }
 }
-
-const fromGroupOperation = (
-  operation: QUERY_BUILDER_FILTER_GROUP_OPERATION,
-): string => {
-  switch (operation) {
-    case QUERY_BUILDER_FILTER_GROUP_OPERATION.AND:
-      return SUPPORTED_FUNCTIONS.AND;
-    case QUERY_BUILDER_FILTER_GROUP_OPERATION.OR:
-      return SUPPORTED_FUNCTIONS.OR;
-    default:
-      throw new UnsupportedOperationError(
-        `Can't derive function name from group operation '${operation}'`,
-      );
-  }
-};
 
 const buildFilterConditionExpression = (
   filterState: QueryBuilderFilterState,
@@ -502,7 +485,7 @@ export class QueryBuilderFilterState
       // if the root node is condition node, form a group between the root node and the new node and nominate the group node as the new root
       const groupNode = new QueryBuilderFilterTreeGroupNodeData(
         undefined,
-        QUERY_BUILDER_FILTER_GROUP_OPERATION.AND,
+        QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
       );
       groupNode.addChildNode(rootNode);
       groupNode.addChildNode(node);
@@ -561,7 +544,7 @@ export class QueryBuilderFilterState
   ): void {
     const newGroupNode = new QueryBuilderFilterTreeGroupNodeData(
       undefined,
-      QUERY_BUILDER_FILTER_GROUP_OPERATION.AND,
+      QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
     );
     const newBlankConditionNode1 =
       new QueryBuilderFilterTreeBlankConditionNodeData(undefined);
@@ -589,7 +572,7 @@ export class QueryBuilderFilterState
         fromNodeParent.removeChildNode(fromNode);
         const newGroupNode = new QueryBuilderFilterTreeGroupNodeData(
           undefined,
-          QUERY_BUILDER_FILTER_GROUP_OPERATION.AND,
+          QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
         );
         this.nodes.set(newNode.id, newNode);
         this.nodes.set(newGroupNode.id, newGroupNode);

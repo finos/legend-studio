@@ -35,7 +35,6 @@ import {
 import {
   type QueryBuilderFilterState,
   QueryBuilderFilterTreeGroupNodeData,
-  QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QueryBuilderFilterTreeConditionNodeData,
 } from './QueryBuilderFilterState';
 import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState';
@@ -79,6 +78,8 @@ import {
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
+import { toGroupOperation } from './QueryBuilderLogicalHelper';
+import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -102,19 +103,6 @@ const getNullableNumberValueFromValueSpec = (
     return valueSpec.values[0];
   }
   return undefined;
-};
-
-const toGroupOperation = (
-  functionName: string,
-): QUERY_BUILDER_FILTER_GROUP_OPERATION => {
-  if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.AND)) {
-    return QUERY_BUILDER_FILTER_GROUP_OPERATION.AND;
-  } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.OR)) {
-    return QUERY_BUILDER_FILTER_GROUP_OPERATION.OR;
-  }
-  throw new UnsupportedOperationError(
-    `Can't derive group operation from function name '${functionName}'`,
-  );
 };
 
 const processFilterExpression = (
@@ -452,31 +440,54 @@ export class QueryBuilderLambdaProcessor
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
       );
 
-      // check caller
-      assertTrue(
+      if (
         matchFunctionName(
           precedingExpression.functionName,
           SUPPORTED_FUNCTIONS.GET_ALL,
-        ),
-        `Can't process filter() expression: only support filter() immediately following getAll()`,
-      );
+        )
+      ) {
+        const filterLambda = valueSpecification.parametersValues[1];
+        assertType(
+          filterLambda,
+          LambdaFunctionInstanceValue,
+          `Can't process filter() expression: filter() expects argument #1 to be a lambda function`,
+        );
+        processFilterLambda(filterLambda, filterState);
+        /**
+         * NOTE: Since group operations like and/or do not take more than 2 parameters, if there are
+         * more than 2 clauses in each group operations, then these clauses are converted into an
+         * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
+         * After building the filter state.
+         */
+        filterState.simplifyTree();
 
-      const filterLambda = valueSpecification.parametersValues[1];
-      assertType(
-        filterLambda,
-        LambdaFunctionInstanceValue,
-        `Can't process filter() expression: filter() expects argument #1 to be a lambda function`,
-      );
-      processFilterLambda(filterLambda, filterState);
-      /**
-       * NOTE: Since group operations like and/or do not take more than 2 parameters, if there are
-       * more than 2 clauses in each group operations, then these clauses are converted into an
-       * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
-       * After building the filter state.
-       */
-      filterState.simplifyTree();
-
-      return;
+        return;
+      } else if (
+        matchFunctionName(
+          precedingExpression.functionName,
+          SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        ) ||
+        matchFunctionName(
+          precedingExpression.functionName,
+          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        )
+      ) {
+        const postFilterState = this.queryBuilderState.postFilterState;
+        const postFilterLambda = valueSpecification.parametersValues[1];
+        assertType(
+          postFilterLambda,
+          LambdaFunctionInstanceValue,
+          `Can't process post filter() expression: filter() expects argument #1 to be a lambda function`,
+        );
+        processPostFilterLambda(postFilterLambda, postFilterState);
+        postFilterState.setShowPostFilterPanel(true);
+        postFilterState.simplifyTree();
+        return;
+      } else {
+        throw new UnsupportedOperationError(
+          "`Can't process filter() expression: only support filter() immediately following getAll() or TDS project()/groupBy()",
+        );
+      }
     } else if (
       matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
     ) {

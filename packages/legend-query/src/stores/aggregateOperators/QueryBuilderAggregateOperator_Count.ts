@@ -16,6 +16,7 @@
 
 import {
   PRIMITIVE_TYPE,
+  type Type,
   type ValueSpecification,
   type SimpleFunctionExpression,
   type VariableExpression,
@@ -91,5 +92,14 @@ export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOp
       SUPPORTED_FUNCTIONS.COUNT,
       this,
     );
+  }
+
+  override getReturnType(
+    aggregateColumnState: QueryBuilderAggregateColumnState,
+  ): Type {
+    const graph =
+      aggregateColumnState.aggregationState.projectionState.queryBuilderState
+        .graphManagerState.graph;
+    return graph.getType(PRIMITIVE_TYPE.INTEGER);
   }
 }

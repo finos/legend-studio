@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-@forward 'deps';
-@forward 'query-builder';
-@forward 'query-builder-explorer';
-@forward 'query-builder-filter';
-@forward 'query-builder-post-filter';
-@forward 'query-builder-projection';
-@forward 'graph-fetch-tree';
-@forward 'query-setup';
-@forward 'query-editor';
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QueryBuilderPostFilterOperator_LessThan } from './QueryBuilderPostFilterOperator_LessThan';
+
+export class QueryBuilderPostFilterOperator_LessThanEqual extends QueryBuilderPostFilterOperator_LessThan {
+  override getLabel(): string {
+    return '<=';
+  }
+
+  override getPureFunction(): SUPPORTED_FUNCTIONS {
+    return SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL;
+  }
+}

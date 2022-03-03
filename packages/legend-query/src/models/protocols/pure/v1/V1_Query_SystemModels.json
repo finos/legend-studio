@@ -1,0 +1,399 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "TDSRow",
+      "originalMilestonedProperties": [],
+      "package": "meta::pure::tds",
+      "properties": [],
+      "qualifiedProperties": [
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "cast",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    { "_type": "var", "name": "this" },
+                    { "_type": "var", "name": "colName" }
+                  ],
+                  "property": "get"
+                },
+                { "_type": "hackedClass", "fullPath": "String" }
+              ]
+            }
+          ],
+          "name": "getString",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "String",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "cast",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    { "_type": "var", "name": "this" },
+                    { "_type": "var", "name": "colName" }
+                  ],
+                  "property": "get"
+                },
+                { "_type": "hackedClass", "fullPath": "Number" }
+              ]
+            }
+          ],
+          "name": "getNumber",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "Number",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "cast",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    { "_type": "var", "name": "this" },
+                    { "_type": "var", "name": "colName" }
+                  ],
+                  "property": "get"
+                },
+                { "_type": "hackedClass", "fullPath": "Integer" }
+              ]
+            }
+          ],
+          "name": "getInteger",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "Integer",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "toFloat",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "cast",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        { "_type": "var", "name": "this" },
+                        { "_type": "var", "name": "colName" }
+                      ],
+                      "property": "get"
+                    },
+                    { "_type": "hackedClass", "fullPath": "Number" }
+                  ]
+                }
+              ]
+            }
+          ],
+          "name": "getFloat",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "Float",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "toDecimal",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "cast",
+                  "parameters": [
+                    {
+                      "_type": "property",
+                      "parameters": [
+                        { "_type": "var", "name": "this" },
+                        { "_type": "var", "name": "colName" }
+                      ],
+                      "property": "get"
+                    },
+                    { "_type": "hackedClass", "fullPath": "Number" }
+                  ]
+                }
+              ]
+            }
+          ],
+          "name": "getDecimal",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "Decimal",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "cast",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    { "_type": "var", "name": "this" },
+                    { "_type": "var", "name": "colName" }
+                  ],
+                  "property": "get"
+                },
+                { "_type": "hackedClass", "fullPath": "Date" }
+              ]
+            }
+          ],
+          "name": "getDate",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "Date",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "cast",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    { "_type": "var", "name": "this" },
+                    { "_type": "var", "name": "colName" }
+                  ],
+                  "property": "get"
+                },
+                { "_type": "hackedClass", "fullPath": "DateTime" }
+              ]
+            }
+          ],
+          "name": "getDateTime",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "DateTime",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "cast",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    { "_type": "var", "name": "this" },
+                    { "_type": "var", "name": "colName" }
+                  ],
+                  "property": "get"
+                },
+                { "_type": "hackedClass", "fullPath": "StrictDate" }
+              ]
+            }
+          ],
+          "name": "getStrictDate",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "StrictDate",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "cast",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    { "_type": "var", "name": "this" },
+                    { "_type": "var", "name": "colName" }
+                  ],
+                  "property": "get"
+                },
+                { "_type": "hackedClass", "fullPath": "Boolean" }
+              ]
+            }
+          ],
+          "name": "getBoolean",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "Boolean",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "func",
+              "function": "not",
+              "parameters": [
+                {
+                  "_type": "property",
+                  "parameters": [
+                    { "_type": "var", "name": "this" },
+                    { "_type": "var", "name": "colName" }
+                  ],
+                  "property": "isNull"
+                }
+              ]
+            }
+          ],
+          "name": "isNotNull",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "Boolean",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "boolean",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [true]
+            }
+          ],
+          "name": "isNull",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "Boolean",
+          "stereotypes": [],
+          "taggedValues": []
+        },
+        {
+          "body": [
+            {
+              "_type": "boolean",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "values": [true]
+            }
+          ],
+          "name": "getEnum",
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "String",
+              "multiplicity": { "lowerBound": 1, "upperBound": 1 },
+              "name": "colName"
+            }
+          ],
+          "returnMultiplicity": { "lowerBound": 1, "upperBound": 1 },
+          "returnType": "meta::pure::metamodel::type::Any",
+          "stereotypes": [],
+          "taggedValues": []
+        }
+      ],
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    }
+  ]
+}

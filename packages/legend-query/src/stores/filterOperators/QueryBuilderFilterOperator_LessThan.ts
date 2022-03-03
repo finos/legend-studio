@@ -27,12 +27,14 @@ import {
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
-  buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
-  getNonCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+import {
+  buildPrimitiveInstanceValue,
+  getNonCollectionValueSpecificationType,
+} from '../QueryBuilderLogicalHelper';
 
 export class QueryBuilderFilterOperator_LessThan extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -95,7 +97,7 @@ export class QueryBuilderFilterOperator_LessThan extends QueryBuilderFilterOpera
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME: {
         return buildPrimitiveInstanceValue(
-          filterConditionState,
+          filterConditionState.filterState.queryBuilderState,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
