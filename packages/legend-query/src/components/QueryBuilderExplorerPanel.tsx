@@ -77,6 +77,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
@@ -700,6 +701,7 @@ const QueryBuilderExplorerTree = observer(
               queryBuilderState.graphManagerState,
               property,
               node,
+              guaranteeNonNullable(queryBuilderState.querySetupState.mapping),
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
           });
