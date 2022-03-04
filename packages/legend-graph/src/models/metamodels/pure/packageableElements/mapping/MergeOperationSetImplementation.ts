@@ -15,11 +15,7 @@
  */
 
 import { observable, action, makeObservable } from 'mobx';
-import {
-  type Hashable,
-  hashArray,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { Mapping } from './Mapping';
@@ -27,18 +23,13 @@ import type { Class } from '../domain/Class';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 import {
+  type OperationType,
   OperationSetImplementation,
-  OperationType,
 } from './OperationSetImplementation';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { SetImplementationVisitor } from './SetImplementation';
-
-export const getClassMappingOperationType = (value: string): OperationType =>
-  guaranteeNonNullable(
-    Object.values(OperationType).find((type) => type === value),
-    `Encountered unsupported class mapping operation type '${value}'`,
-  );
+import { hashLambda } from '../../../../../MetaModelUtils';
 
 export class MergeOperationSetImplementation
   extends OperationSetImplementation
@@ -74,6 +65,10 @@ export class MergeOperationSetImplementation
       this.operation,
       hashArray(
         this.parameters.map((param) => param.setImplementation.value.id.value),
+      ),
+      hashLambda(
+        this.validationFunction.parameters,
+        this.validationFunction.body,
       ),
     ]);
   }

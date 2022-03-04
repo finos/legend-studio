@@ -1,5 +1,7 @@
 ---
-'@finos/legend-graph': patch
+'@finos/legend-graph': minor
 '@finos/legend-studio': patch
-'@finos/legend-studio-app': patch
+'@finos/legend-manual-tests': patch
 ---
+
+Add support for Merge Operation
