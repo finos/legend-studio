@@ -28,6 +28,7 @@ import {
   TimesIcon,
   UsersIcon,
   UserIcon,
+  ExternalLinkIcon,
 } from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
 import {
@@ -730,7 +731,12 @@ export const ProjectOverviewActivityBar = observer(() => {
 
 export const ProjectOverview = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const projectOverviewState = editorStore.projectOverviewState;
+  const openProjectWebUrl = (): void =>
+    applicationStore.navigator.openNewWindow(
+      editorStore.sdlcState.activeProject.webUrl,
+    );
   const renderOverview = (): React.ReactNode => {
     switch (projectOverviewState.activityMode) {
       case PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW:
@@ -753,6 +759,16 @@ export const ProjectOverview = observer(() => {
           <div className="panel__header__title__content side-bar__header__title__content">
             PROJECT
           </div>
+        </div>
+        <div className="panel__header__actions side-bar__header__actions">
+          <button
+            className="panel__header__action side-bar__header__action"
+            onClick={openProjectWebUrl}
+            tabIndex={-1}
+            title="Go to project in underlying VCS system"
+          >
+            <ExternalLinkIcon />
+          </button>
         </div>
       </div>
       <div className="panel__content side-bar__content project-overview__content">

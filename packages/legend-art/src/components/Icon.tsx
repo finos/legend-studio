@@ -122,7 +122,6 @@ export {
   MdRefresh as RefreshIcon,
   MdFunctions as SigmaIcon,
   MdCompareArrows as CompareIcon,
-  MdVerticalAlignBottom,
   MdPlaylistAddCheck as CheckListIcon,
   MdAdd as AddIcon, // to be reviewed
   MdEdit as EditIcon, // to be reviewed
