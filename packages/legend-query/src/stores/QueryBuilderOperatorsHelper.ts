@@ -40,18 +40,18 @@ import {
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderState } from './QueryBuilderState';
 
-export enum QUERY_BUILDER_LOGICAL_GROUP_OPERATION {
+export enum QUERY_BUILDER_GROUP_OPERATION {
   AND = 'and',
   OR = 'or',
 }
 
 export const fromGroupOperation = (
-  operation: QUERY_BUILDER_LOGICAL_GROUP_OPERATION,
+  operation: QUERY_BUILDER_GROUP_OPERATION,
 ): string => {
   switch (operation) {
-    case QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND:
+    case QUERY_BUILDER_GROUP_OPERATION.AND:
       return SUPPORTED_FUNCTIONS.AND;
-    case QUERY_BUILDER_LOGICAL_GROUP_OPERATION.OR:
+    case QUERY_BUILDER_GROUP_OPERATION.OR:
       return SUPPORTED_FUNCTIONS.OR;
     default:
       throw new UnsupportedOperationError(
@@ -62,11 +62,11 @@ export const fromGroupOperation = (
 
 export const toGroupOperation = (
   functionName: string,
-): QUERY_BUILDER_LOGICAL_GROUP_OPERATION => {
+): QUERY_BUILDER_GROUP_OPERATION => {
   if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.AND)) {
-    return QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND;
+    return QUERY_BUILDER_GROUP_OPERATION.AND;
   } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.OR)) {
-    return QUERY_BUILDER_LOGICAL_GROUP_OPERATION.OR;
+    return QUERY_BUILDER_GROUP_OPERATION.OR;
   }
   throw new UnsupportedOperationError(
     `Can't derive group operation from function name '${functionName}'`,

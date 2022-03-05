@@ -32,7 +32,7 @@ import {
 } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState';
-import { toGroupOperation } from './QueryBuilderLogicalHelper';
+import { toGroupOperation } from './QueryBuilderOperatorsHelper';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator';
 import {
   type QueryBuilderPostFilterState,
@@ -59,7 +59,7 @@ export const findTdsColumnState = (
     Object.values(TDS_COLUMN_GETTERS).includes(
       properyExpressionName as TDS_COLUMN_GETTERS,
     ),
-    `Tds column property '${properyExpressionName}' not supported. Supported types are ${Object.values(
+    `Can't process TDS column expression: TDS column property '${properyExpressionName}' not supported. Supported types are ${Object.values(
       TDS_COLUMN_GETTERS,
     ).join(',')}`,
   );
@@ -69,9 +69,9 @@ export const findTdsColumnState = (
     guaranteeType(
       columnNameExpression,
       PrimitiveInstanceValue,
-      'Can`t process column name expression. Column should be a primitive instance value',
+      'Can`t process TDS column expression: Column should be a primitive instance value',
     ).values[0],
-    'Can`t process column name expression. Column should be a string primitive instance value',
+    'Can`t process TDS column expression: Column should be a string primitive instance value',
   );
   const columnStates = [
     ...fetchStructureState.projectionState.aggregationState.columns,
@@ -98,9 +98,9 @@ export const findTdsColumnState = (
     assertTrue(
       (getTDSColumnDerivedProperyFromType(columnType) as string) ===
         tdsColumnGetter,
-      `Can't process column name expression: column type expected ${getTDSColumnDerivedProperyFromType(
+      `Can't process TDS column expression: expected column type ${getTDSColumnDerivedProperyFromType(
         columnType,
-      )} got ${tdsColumnGetter}`,
+      )} (got ${tdsColumnGetter})`,
     );
   }
   return columnState;
@@ -167,7 +167,7 @@ export const buildPostFilterConditionState = (
       operator.isCompatibleWithPostFilterColumn(postConditionState),
       `Can't process ${extractElementNameFromPath(
         operatorFunctionFullPath,
-      )}() expression: property is not compatible with post filter operator`,
+      )}() expression: property is not compatible with post-filter operator`,
     );
     assertTrue(
       operator.isCompatibleWithConditionValue(postConditionState),
@@ -200,7 +200,7 @@ const processPostFilterExpression = (
         guaranteeType(
           postFilterExpression,
           FunctionExpression,
-          `Can't process post filter group expression: each child expression must be a function expression`,
+          `Can't process post-filter group expression: each child expression must be a function expression`,
         ),
         postFilterState,
         groupNode.id,
@@ -226,7 +226,7 @@ const processPostFilterExpression = (
       }
     }
     throw new UnsupportedOperationError(
-      `Can't process post filter expression: no compatible post filter operator processer available from plugins`,
+      `Can't process post-filter expression: no compatible post-filter operator processer available from plugins`,
     );
   }
 };
@@ -239,34 +239,34 @@ export const processPostFilterLambda = (
     postFilterState.queryBuilderState.fetchStructureState;
   assertTrue(
     fetchStructureState.isProjectionMode(),
-    `Can't process post filter() lambda: post filter() lambda must use projection fetch structure`,
+    `Can't process post-filter lambda: post-filter lambda must use projection fetch structure`,
   );
   assertTrue(
     Boolean(fetchStructureState.projectionState.columns.length),
-    `Can't process post filter() lambda: post filter() lambda must have at least one projection column `,
+    `Can't process post-filter lambda: post-filter lambda must have at least one projection column `,
   );
   const lambdaFunc = guaranteeNonNullable(
     postFilterLambda.values[0],
-    `Can't process post filter() lambda: post filter() lambda function is missing`,
+    `Can't process post-filter lambda: post-filter lambda function is missing`,
   );
   assertTrue(
     lambdaFunc.expressionSequence.length === 1,
-    `Can't process post filter() lambda: only support post filter() lambda body with 1 expression`,
+    `Can't process post-filter lambda: only support post-filter lambda body with 1 expression`,
   );
   const rootExpression = guaranteeType(
     lambdaFunc.expressionSequence[0],
     FunctionExpression,
-    `Can't process post filter() lambda: only support post filter() lambda body of type 'FunctionExpression'`,
+    `Can't process post-filter lambda: only support post-filter lambda body of type 'FunctionExpression'`,
   );
   assertTrue(
     lambdaFunc.functionType.parameters.length === 1,
-    `Can't process post filter() lambda: only support post filter() lambda with 1 parameter`,
+    `Can't process post-filter lambda: only support post-filter lambda with 1 parameter`,
   );
   postFilterState.setLambdaParameterName(
     guaranteeType(
       lambdaFunc.functionType.parameters[0],
       VariableExpression,
-      `Can't process filter() lambda: only support filter() lambda with 1 parameter of type 'VariableExpression'`,
+      `Can't process post-filter lambda: only support filter() lambda with 1 parameter of type 'VariableExpression'`,
     ).name,
   );
   processPostFilterExpression(rootExpression, postFilterState, undefined);

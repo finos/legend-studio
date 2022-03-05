@@ -46,7 +46,7 @@ import {
 } from 'mobx';
 import { DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState';
-import { QUERY_BUILDER_LOGICAL_GROUP_OPERATION } from './QueryBuilderLogicalHelper';
+import { QUERY_BUILDER_GROUP_OPERATION } from './QueryBuilderOperatorsHelper';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator';
 import {
   type QueryBuilderProjectionColumnDragSource,
@@ -103,7 +103,7 @@ export const getTDSColumnDerivedProperyFromType = (
       return TDS_COLUMN_GETTERS.GET_BOOLEAN;
     default:
       throw new UnsupportedOperationError(
-        `Can't find tds column derived property name for type: '${type.path}'`,
+        `Can't find TDS column derived property name for type: '${type.path}'`,
       );
   }
 };
@@ -174,12 +174,12 @@ export type QueryBuilderPostFilterDropTarget =
   | QueryBuilderPostFilterConditionDragSource;
 
 export class QueryBuilderPostFilterTreeGroupNodeData extends QueryBuilderPostFilterTreeNodeData {
-  groupOperation: QUERY_BUILDER_LOGICAL_GROUP_OPERATION;
+  groupOperation: QUERY_BUILDER_GROUP_OPERATION;
   childrenIds: string[] = [];
 
   constructor(
     parentId: string | undefined,
-    groupOperation: QUERY_BUILDER_LOGICAL_GROUP_OPERATION,
+    groupOperation: QUERY_BUILDER_GROUP_OPERATION,
   ) {
     super(parentId);
     makeObservable(this, {
@@ -198,7 +198,7 @@ export class QueryBuilderPostFilterTreeGroupNodeData extends QueryBuilderPostFil
     return `${this.groupOperation.toUpperCase()} group`;
   }
 
-  setGroupOperation(val: QUERY_BUILDER_LOGICAL_GROUP_OPERATION): void {
+  setGroupOperation(val: QUERY_BUILDER_GROUP_OPERATION): void {
     this.groupOperation = val;
   }
   addChildNode(node: QueryBuilderPostFilterTreeNodeData): void {
@@ -313,7 +313,7 @@ export class PostFilterConditionState {
         );
       const colState = aggregateColumnState ?? columnState;
       if (colState instanceof QueryBuilderDerivationProjectionColumnState) {
-        yield flowResult(colState.fetchLambaReturnType());
+        yield flowResult(colState.fetchDerivationLambdaReturnType());
       }
       //column
       this.setColumnState(colState);
@@ -401,7 +401,7 @@ export class QueryBuilderPostFilterState
   getNode(id: string): QueryBuilderPostFilterTreeNodeData {
     return guaranteeNonNullable(
       this.nodes.get(id),
-      `Can't find query builder post filter tree node with ID '${id}'`,
+      `Can't find query builder post-filter tree node with ID '${id}'`,
     );
   }
 
@@ -422,7 +422,7 @@ export class QueryBuilderPostFilterState
   getRootNode(): QueryBuilderPostFilterTreeNodeData | undefined {
     assertTrue(
       this.rootIds.length < 2,
-      'Query builder post filter tree cannot have more than 1 root',
+      'Query builder post-filter tree cannot have more than 1 root',
     );
     const rootId = getNullableFirstElement(this.rootIds);
     return rootId ? this.getNode(rootId) : undefined;
@@ -440,7 +440,7 @@ export class QueryBuilderPostFilterState
       // if the root node is condition node, form a group between the root node and the new node and nominate the group node as the new root
       const groupNode = new QueryBuilderPostFilterTreeGroupNodeData(
         undefined,
-        QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
+        QUERY_BUILDER_GROUP_OPERATION.AND,
       );
       groupNode.addChildNode(rootNode);
       groupNode.addChildNode(node);
@@ -478,7 +478,7 @@ export class QueryBuilderPostFilterState
   ): void {
     const newGroupNode = new QueryBuilderPostFilterTreeGroupNodeData(
       undefined,
-      QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
+      QUERY_BUILDER_GROUP_OPERATION.AND,
     );
     const newBlankConditionNode1 =
       new QueryBuilderPostFilterTreeBlankConditionNodeData(undefined);
@@ -506,7 +506,7 @@ export class QueryBuilderPostFilterState
         fromNodeParent.removeChildNode(fromNode);
         const newGroupNode = new QueryBuilderPostFilterTreeGroupNodeData(
           undefined,
-          QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
+          QUERY_BUILDER_GROUP_OPERATION.AND,
         );
         this.nodes.set(newNode.id, newNode);
         this.nodes.set(newGroupNode.id, newGroupNode);
@@ -582,13 +582,13 @@ export class QueryBuilderPostFilterState
         if (currentParentNode.childrenIds.length >= 2) {
           break;
         }
-        // this.squashGroupNode(currentParentNode);
+        this.squashGroupNode(currentParentNode);
         currentParentNode = this.getParentNode(currentParentNode);
       }
     } else {
       deleteEntry(this.rootIds, node.id);
     }
-    // this.pruneOrphanNodes();
+    this.pruneOrphanNodes();
     // check if selected node is still around, if not, unset the selected node
     if (this.selectedNode && !this.nodes.get(this.selectedNode.id)) {
       this.setSelectedNode(undefined);
@@ -692,7 +692,7 @@ export class QueryBuilderPostFilterState
           .filter((node) => {
             if (!node.childrenIds.length) {
               throw new IllegalStateError(
-                'Query builder post filter tree found unexpected childless group nodes',
+                'Query builder post-filter tree found unexpected childless group nodes',
               );
             }
             const firstChildNodeId = node.childrenIds[0] as string;
@@ -702,7 +702,7 @@ export class QueryBuilderPostFilterState
               QueryBuilderPostFilterTreeBlankConditionNodeData
             ) {
               throw new IllegalStateError(
-                'Query builder post filter tree found unexpected blank nodes',
+                'Query builder post-filter tree found unexpected blank nodes',
               );
             }
             return (

@@ -32,7 +32,7 @@ import {
   buildNotExpression,
   getCollectionValueSpecificationType,
   unwrapNotExpression,
-} from '../QueryBuilderLogicalHelper';
+} from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
 import type {
   PostFilterConditionState,

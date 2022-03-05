@@ -37,7 +37,7 @@ import {
   buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from '../QueryBuilderLogicalHelper';
+} from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
 import type {
   PostFilterConditionState,
@@ -143,13 +143,13 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(
-            `Can't get default value for post filter operator '${this.getLabel()}' since enumeration '${
+            `Can't get default value for post-filter operator '${this.getLabel()}' since enumeration '${
               propertyType.path
             }' has no value`,
           );
         }
         throw new UnsupportedOperationError(
-          `Can't get default value for post filter operator '${this.getLabel()}' when the LHS property is of type '${
+          `Can't get default value for post-filter operator '${this.getLabel()}' when the LHS property is of type '${
             propertyType.path
           }'`,
         );

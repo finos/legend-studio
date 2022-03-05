@@ -51,8 +51,8 @@ import {
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
 import {
   fromGroupOperation,
-  QUERY_BUILDER_LOGICAL_GROUP_OPERATION,
-} from './QueryBuilderLogicalHelper';
+  QUERY_BUILDER_GROUP_OPERATION,
+} from './QueryBuilderOperatorsHelper';
 
 export abstract class QueryBuilderFilterOperator {
   uuid = uuid();
@@ -216,12 +216,12 @@ export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
 }
 
 export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeNodeData {
-  groupOperation: QUERY_BUILDER_LOGICAL_GROUP_OPERATION;
+  groupOperation: QUERY_BUILDER_GROUP_OPERATION;
   childrenIds: string[] = [];
 
   constructor(
     parentId: string | undefined,
-    groupOperation: QUERY_BUILDER_LOGICAL_GROUP_OPERATION,
+    groupOperation: QUERY_BUILDER_GROUP_OPERATION,
   ) {
     super(parentId);
 
@@ -242,7 +242,7 @@ export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeN
     return `${this.groupOperation.toUpperCase()} group`;
   }
 
-  setGroupOperation(val: QUERY_BUILDER_LOGICAL_GROUP_OPERATION): void {
+  setGroupOperation(val: QUERY_BUILDER_GROUP_OPERATION): void {
     this.groupOperation = val;
   }
   addChildNode(node: QueryBuilderFilterTreeNodeData): void {
@@ -485,7 +485,7 @@ export class QueryBuilderFilterState
       // if the root node is condition node, form a group between the root node and the new node and nominate the group node as the new root
       const groupNode = new QueryBuilderFilterTreeGroupNodeData(
         undefined,
-        QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
+        QUERY_BUILDER_GROUP_OPERATION.AND,
       );
       groupNode.addChildNode(rootNode);
       groupNode.addChildNode(node);
@@ -544,7 +544,7 @@ export class QueryBuilderFilterState
   ): void {
     const newGroupNode = new QueryBuilderFilterTreeGroupNodeData(
       undefined,
-      QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
+      QUERY_BUILDER_GROUP_OPERATION.AND,
     );
     const newBlankConditionNode1 =
       new QueryBuilderFilterTreeBlankConditionNodeData(undefined);
@@ -572,7 +572,7 @@ export class QueryBuilderFilterState
         fromNodeParent.removeChildNode(fromNode);
         const newGroupNode = new QueryBuilderFilterTreeGroupNodeData(
           undefined,
-          QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
+          QUERY_BUILDER_GROUP_OPERATION.AND,
         );
         this.nodes.set(newNode.id, newNode);
         this.nodes.set(newGroupNode.id, newGroupNode);

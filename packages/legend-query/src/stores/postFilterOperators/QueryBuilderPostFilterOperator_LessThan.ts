@@ -24,7 +24,7 @@ import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
-} from '../QueryBuilderLogicalHelper';
+} from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
 import type { PostFilterConditionState } from '../QueryBuilderPostFilterState';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
@@ -90,7 +90,7 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't get default value for filter operator '${this.getLabel()}' when the LHS property is of type '${
+          `Can't get default value for post-filter operator '${this.getLabel()}' when the LHS property is of type '${
             propertyType?.path
           }'`,
         );

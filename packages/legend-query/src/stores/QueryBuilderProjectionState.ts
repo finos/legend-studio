@@ -128,9 +128,7 @@ export abstract class QueryBuilderProjectionColumnState {
     this.columnName = val;
   }
 
-  getReturnType(): Type | undefined {
-    return undefined;
-  }
+  abstract getReturnType(): Type | undefined;
 }
 
 export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProjectionColumnState {
@@ -289,7 +287,7 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
       lambda: observable,
       returnType: observable,
       setLambda: action,
-      fetchLambaReturnType: flow,
+      fetchDerivationLambdaReturnType: flow,
     });
 
     this.derivationLambdaEditorState =
@@ -308,55 +306,53 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
     this.returnType = val;
   }
 
-  *fetchLambaReturnType(): GeneratorFn<void> {
-    try {
-      assertTrue(Array.isArray(this.lambda.parameters));
-      const projectionParameter = this.lambda.parameters as object[];
-      const graph =
-        this.projectionState.queryBuilderState.graphManagerState.graph;
-      const multiplicityOne = graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
-      assertTrue(projectionParameter.length === 1);
-      const variable = projectionParameter[0] as VariableExpression;
-      assertNonEmptyString(variable.name);
-      // assign variable to query class
-      const rawVariableExpression = new RawVariableExpression(
-        variable.name,
-        multiplicityOne,
-        PackageableElementExplicitReference.create(
-          guaranteeNonNullable(
-            this.projectionState.queryBuilderState.querySetupState._class,
-          ),
+  /**
+   * Fetches lambda return type for derivation column.
+   * Throws error if unable to fetch type or if type is not primitive or an enumeration
+   * as expected by a projection column
+   */
+  *fetchDerivationLambdaReturnType(): GeneratorFn<void> {
+    assertTrue(Array.isArray(this.lambda.parameters));
+    const projectionParameter = this.lambda.parameters as object[];
+    const graph =
+      this.projectionState.queryBuilderState.graphManagerState.graph;
+    const multiplicityOne = graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+    assertTrue(projectionParameter.length === 1);
+    const variable = projectionParameter[0] as VariableExpression;
+    assertNonEmptyString(variable.name);
+    // assign variable to query class
+    const rawVariableExpression = new RawVariableExpression(
+      variable.name,
+      multiplicityOne,
+      PackageableElementExplicitReference.create(
+        guaranteeNonNullable(
+          this.projectionState.queryBuilderState.querySetupState._class,
         ),
+      ),
+    );
+    const _rawVariableExpression =
+      this.projectionState.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        rawVariableExpression,
       );
-      const _rawVariableExpression =
-        this.projectionState.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
-          rawVariableExpression,
-        );
-      const isolatedLambda = new RawLambda(
-        [_rawVariableExpression],
-        this.lambda.body,
-      );
-      const type =
-        (yield this.projectionState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
-          isolatedLambda,
-          graph,
-        )) as string;
-      const resolvedType = graph.getType(type);
-      assertTrue(
-        Object.values(PRIMITIVE_TYPE).includes(
-          resolvedType.path as PRIMITIVE_TYPE,
-        ) || resolvedType instanceof Enumeration,
-        'Derived column must have a primitive return type',
-      );
-      this.setReturnType(resolvedType);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.projectionState.queryBuilderState.applicationStore.notifyError(
-        `Unable to generate post filter from derived column: ${error.message}`,
-      );
-    }
+    const isolatedLambda = new RawLambda(
+      [_rawVariableExpression],
+      this.lambda.body,
+    );
+    const type =
+      (yield this.projectionState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
+        isolatedLambda,
+        graph,
+      )) as string;
+    const resolvedType = graph.getType(type);
+    assertTrue(
+      Object.values(PRIMITIVE_TYPE).includes(
+        resolvedType.path as PRIMITIVE_TYPE,
+      ) || resolvedType instanceof Enumeration,
+      'projection column must have primitive return type',
+    );
+    this.setReturnType(resolvedType);
   }
 
   override getReturnType(): Type | undefined {
@@ -369,6 +365,7 @@ export class QueryBuilderProjectionState {
   columns: QueryBuilderProjectionColumnState[] = [];
   aggregationState: QueryBuilderAggregationState;
   isConvertDerivationProjectionObjects = false;
+
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,

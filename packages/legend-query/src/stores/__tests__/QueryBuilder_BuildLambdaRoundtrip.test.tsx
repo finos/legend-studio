@@ -287,21 +287,21 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__lambda_output_filterWithFullPathFunctions,
     TEST_DATA__lambda_input_filterWithFullPathFunctions,
   ],
-  // post filter()
+  // post-filter
   [
-    'Simple project() and post filter() on primitives',
+    'Post-filter on primitives',
     postFilterCtx,
     TEST_DATA__lambda_simpleConditionPostFilter,
     undefined,
   ],
   [
-    'Project() and post filter() on aggregation column',
+    'Post-filter on aggregation column',
     postFilterCtx,
     TEST_DATA__lambda_aggregationPostFilter,
     undefined,
   ],
   [
-    'Project() and post filter() on derivation column',
+    'Post-filter on derivation column',
     postFilterCtx,
     TEST_DATA__lambda_derivationPostFilter,
     undefined,

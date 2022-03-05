@@ -36,7 +36,7 @@ import {
   unwrapNotExpression,
   buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
-} from '../QueryBuilderLogicalHelper';
+} from '../QueryBuilderOperatorsHelper';
 
 export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

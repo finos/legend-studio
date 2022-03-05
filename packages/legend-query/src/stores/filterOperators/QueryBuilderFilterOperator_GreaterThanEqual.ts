@@ -34,7 +34,7 @@ import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecif
 import {
   buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
-} from '../QueryBuilderLogicalHelper';
+} from '../QueryBuilderOperatorsHelper';
 
 export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

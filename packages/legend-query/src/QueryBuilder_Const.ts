@@ -35,6 +35,7 @@ export enum SUPPORTED_FUNCTIONS {
   SERIALIZE = 'meta::pure::graphFetch::execution::serialize',
 
   // TDS
+  TDS_FILTER = 'meta::pure::tds::filter',
   TDS_ASC = 'meta::pure::tds::asc',
   TDS_DESC = 'meta::pure::tds::desc',
   TDS_AGG = 'meta::pure::tds::agg',

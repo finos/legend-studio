@@ -59,7 +59,7 @@ import {
   QueryBuilderPostFilterTreeConditionNodeData,
   QueryBuilderPostFilterTreeGroupNodeData,
 } from './QueryBuilderPostFilterState';
-import { fromGroupOperation } from './QueryBuilderLogicalHelper';
+import { fromGroupOperation } from './QueryBuilderOperatorsHelper';
 
 export const buildGetAllFunction = (
   _class: Class,
@@ -187,7 +187,7 @@ export const processPostFilterOnLambda = (
   }
   assertTrue(
     postFilterState.queryBuilderState.fetchStructureState.isProjectionMode(),
-    'Can only apply post filter while fetching projection columns',
+    'Can only apply post-filter while fetching projection columns',
   );
   const multiplicityOne =
     postFilterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
@@ -496,7 +496,7 @@ export const buildLambdaFunction = (
     serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
     lambdaFunction.expressionSequence[0] = serializeFunction;
   }
-  // build post filter
+  // build post-filter
   processPostFilterOnLambda(queryBuilderState.postFilterState, lambdaFunction);
   // build result set modifiers
   queryBuilderState.resultSetModifierState.processModifiersOnLambda(

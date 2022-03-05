@@ -78,7 +78,7 @@ import {
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
-import { toGroupOperation } from './QueryBuilderLogicalHelper';
+import { toGroupOperation } from './QueryBuilderOperatorsHelper';
 import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor';
 
 const getNullableStringValueFromValueSpec = (
@@ -155,7 +155,7 @@ const processFilterExpression = (
       }
     }
     throw new UnsupportedOperationError(
-      `Can't process filter expression: no compatible filter operator processer available from plugins`,
+      `Can't process filter() expression: no compatible filter operator processer available from plugins`,
     );
   }
 };
@@ -424,7 +424,10 @@ export class QueryBuilderLambdaProcessor
       }
 
       return;
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)) {
+    } else if (
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER) ||
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER)
+    ) {
       assertTrue(
         valueSpecification.parametersValues.length === 2,
         `Can't process filter() expression: filter() expects 1 argument`,
@@ -446,6 +449,10 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.GET_ALL,
         )
       ) {
+        assertTrue(
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER),
+          `Can't process filter() expression: only supports ${SUPPORTED_FUNCTIONS.FILTER}() immediately following getAll() (got '${functionName}')`,
+        );
         const filterLambda = valueSpecification.parametersValues[1];
         assertType(
           filterLambda,
@@ -472,12 +479,16 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         )
       ) {
+        assertTrue(
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER),
+          `Can't process post-filter expression: only supports ${SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following TDS project()/groupBy() (got '${functionName}')`,
+        );
         const postFilterState = this.queryBuilderState.postFilterState;
         const postFilterLambda = valueSpecification.parametersValues[1];
         assertType(
           postFilterLambda,
           LambdaFunctionInstanceValue,
-          `Can't process post filter() expression: filter() expects argument #1 to be a lambda function`,
+          `Can't process post-filter expression: expects argument #1 to be a lambda function`,
         );
         processPostFilterLambda(postFilterLambda, postFilterState);
         postFilterState.setShowPostFilterPanel(true);

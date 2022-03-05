@@ -70,8 +70,7 @@ import {
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper';
 import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState';
-
-import { QUERY_BUILDER_LOGICAL_GROUP_OPERATION } from '../stores/QueryBuilderLogicalHelper';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
 import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator';
 import {
   type QueryBuilderPostFilterTreeNodeData,
@@ -200,9 +199,9 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
     ): void => {
       event.stopPropagation(); // prevent triggering selecting the node
       node.setGroupOperation(
-        node.groupOperation === QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND
-          ? QUERY_BUILDER_LOGICAL_GROUP_OPERATION.OR
-          : QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
+        node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND
+          ? QUERY_BUILDER_GROUP_OPERATION.OR
+          : QUERY_BUILDER_GROUP_OPERATION.AND,
       );
     };
     return (
@@ -215,9 +214,9 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
         <div
           className={clsx('query-builder-post-filter-tree__group-node', {
             'query-builder-post-filter-tree__group-node--and':
-              node.groupOperation === QUERY_BUILDER_LOGICAL_GROUP_OPERATION.AND,
+              node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
             'query-builder-post-filter-tree__group-node--or':
-              node.groupOperation === QUERY_BUILDER_LOGICAL_GROUP_OPERATION.OR,
+              node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
           })}
           title="Switch Operation"
           onClick={switchOperation}
@@ -914,9 +913,8 @@ export const QueryBuilderPostFilterPanel = observer(
             !aggregateColumnState &&
             columnState instanceof QueryBuilderDerivationProjectionColumnState
           ) {
-            await columnState.fetchLambaReturnType();
+            await flowResult(columnState.fetchDerivationLambdaReturnType());
           }
-
           postFilterConditionState = new PostFilterConditionState(
             postFilterState,
             aggregateColumnState ?? columnState,
@@ -930,7 +928,7 @@ export const QueryBuilderPostFilterPanel = observer(
           );
         } catch (error) {
           assertErrorThrown(error);
-          applicationStore.notifyWarning(error.message);
+          applicationStore.notifyError(error.message);
           return;
         }
         // NOTE: unfocus the current node when DnD a new node to the tree
@@ -1051,7 +1049,7 @@ export const QueryBuilderPostFilterPanel = observer(
           <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
           {postFilterState.isEmpty && (
             <BlankPanelPlaceholder
-              placeholderText="Add a post filter condition"
+              placeholderText="Add a post-filter condition"
               tooltipText="Drag and drop properties here"
             />
           )}
