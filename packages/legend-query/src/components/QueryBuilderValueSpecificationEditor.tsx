@@ -250,6 +250,31 @@ export const DatePrimitiveInstanceValueEditor = observer(
   },
 );
 
+export const DateTimePrimitiveInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, className } = props;
+    const value = valueSpecification.values[0] as string;
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      valueSpecification.changeValue(event.target.value, 0);
+    };
+
+    return (
+      <div className={clsx('query-builder-value-spec-editor', className)}>
+        <input
+          className="panel__content__form__section__input query-builder-value-spec-editor__input"
+          type="datetime-local"
+          spellCheck={false}
+          value={value}
+          onChange={changeValue}
+        />
+      </div>
+    );
+  },
+);
+
 const EnumValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: EnumValueInstanceValue;
@@ -544,9 +569,14 @@ export const DateInstanceValueEditor = observer(
 
     return (
       <div className="query-builder-value-spec-editor__date">
-        {(valueSpecification.genericType.value.rawType === strictDate ||
-          valueSpecification.genericType.value.rawType === dateTime) && (
+        {valueSpecification.genericType.value.rawType === strictDate && (
           <DatePrimitiveInstanceValueEditor
+            valueSpecification={valueSpecification}
+            className={className}
+          />
+        )}
+        {valueSpecification.genericType.value.rawType === dateTime && (
+          <DateTimePrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
             className={className}
           />
