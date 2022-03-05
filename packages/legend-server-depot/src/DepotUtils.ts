@@ -91,3 +91,12 @@ export const parseGAVCoordinates = (
     ),
   };
 };
+
+/**
+ * Compare semver versions.
+ * Note: localeCompare with numeric setting to true will be the same as compareVersions function in https://www.npmjs.com/package/compare-versions
+ * See https://stackoverflow.com/questions/55466274/simplify-semver-version-compare-logic/55466325#55466325
+ * See omichelsen/compare-versions#45
+ */
+export const compareVersions = (version1: string, version2: string): number =>
+  version1.localeCompare(version2, undefined, { numeric: true });
