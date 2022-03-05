@@ -47,7 +47,10 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../../stores/LegendStudioLogEvent';
-import { type ProjectData, compareVersions } from '@finos/legend-server-depot';
+import {
+  type ProjectData,
+  compareSemVerVersions,
+} from '@finos/legend-server-depot';
 
 interface VersionOption {
   label: string;
@@ -232,7 +235,7 @@ const ProjectDependencyEditor = observer(
     const versions = selectedProject?.versions ?? [];
     const versionOptions = versions
       .slice()
-      .sort((v1, v2) => compareVersions(v2, v1))
+      .sort((v1, v2) => compareSemVerVersions(v2, v1))
       .map((v) => ({ value: v, label: v }));
     const selectedVersionOption: VersionOption | null =
       versionOptions.find((v) => v.value === version.id) ?? null;
