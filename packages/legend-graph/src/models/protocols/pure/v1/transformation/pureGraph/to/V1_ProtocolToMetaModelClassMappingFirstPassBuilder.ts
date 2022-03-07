@@ -115,15 +115,15 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   ): SetImplementation {
     assertNonEmptyString(
       classMapping.class,
-      `Operation class mapping 'class' field is missing or empty`,
+      `Merge Operation class mapping 'class' field is missing or empty`,
     );
     assertNonNullable(
       classMapping.root,
-      `Operation class mapping 'root' field is missing`,
+      `Merge Operation class mapping 'root' field is missing`,
     );
     assertNonNullable(
       classMapping.operation,
-      `Operation class mapping operation is missing`,
+      `Merge Operation class mapping operation is missing`,
     );
     const targetClass = this.context.resolveClass(classMapping.class);
     return new MergeOperationSetImplementation(

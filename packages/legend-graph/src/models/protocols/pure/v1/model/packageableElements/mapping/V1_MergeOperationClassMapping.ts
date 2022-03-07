@@ -25,7 +25,7 @@ export class V1_MergeOperationClassMapping
   extends V1_OperationClassMapping
   implements Hashable
 {
-  validationFunction!: V1_RawLambda;
+  validationFunction!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   override get hashCode(): string {
     return hashArray([

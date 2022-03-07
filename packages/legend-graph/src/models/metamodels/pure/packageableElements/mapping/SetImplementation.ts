@@ -140,11 +140,11 @@ export enum BASIC_SET_IMPLEMENTATION_TYPE {
 
 export enum SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
+  MERGE_OPERATION = 'mergeOperation',
   PUREINSTANCE = 'pureInstance',
   FLAT_DATA = 'flatData',
   EMBEDDED_FLAT_DATA = 'embeddedFlatData',
   RELATIONAL = 'relational',
   EMBEDDED_RELATIONAL = 'embeddedRelational',
   AGGREGATION_AWARE = 'aggregationAware',
-  MERGE_OPERATION = 'mergeOperation',
 }

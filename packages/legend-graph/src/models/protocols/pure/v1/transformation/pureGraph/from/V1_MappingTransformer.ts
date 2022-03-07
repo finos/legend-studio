@@ -1075,6 +1075,7 @@ export class V1_SetImplementationTransformer
       return transformOperationSetImplementation(setImplementation);
     }
   }
+
   visit_MergeOperationSetImplementation(
     setImplementation: MergeOperationSetImplementation,
   ): V1_ClassMapping | undefined {

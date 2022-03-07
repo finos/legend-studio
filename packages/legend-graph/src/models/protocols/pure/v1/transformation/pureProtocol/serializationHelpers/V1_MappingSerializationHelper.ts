@@ -102,12 +102,12 @@ import { V1_MergeOperationClassMapping } from '../../../model/packageableElement
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
+  MERGE_OPERATION = 'mergeOperation',
   PUREINSTANCE = 'pureInstance',
   ROOT_FLAT_DATA = 'flatData',
   ROOT_RELATIONAL = 'relational',
   RELATIONAL = 'embedded',
   AGGREGATION_AWARE = 'aggregationAware',
-  MERGE_OPERATION = 'mergeOperation',
 }
 
 enum V1_PropertyMappingType {
