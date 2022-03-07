@@ -94,9 +94,9 @@ const ParameterValuesEditor = observer(
                       {variableType.name}
                     </div>
                   </div>
-                  {paramState.values && (
+                  {paramState.value && (
                     <QueryBuilderValueSpecificationEditor
-                      valueSpecification={paramState.values}
+                      valueSpecification={paramState.value}
                       graph={queryBuilderState.graphManagerState.graph}
                       expectedType={variableType}
                       className="query-builder__parameters__value__editor"
@@ -412,7 +412,7 @@ export const QueryBuilderParameterPanel = observer(
         const parmaterState =
           QueryParameterState.createDefault(queryParameterState);
         queryParameterState.setSelectedParameter(parmaterState);
-        parmaterState.mockParameterValues();
+        parmaterState.mockParameterValue();
       }
     };
 

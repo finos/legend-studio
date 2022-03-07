@@ -1041,7 +1041,7 @@ export const processQueryParameters = (
       queryParameterState,
       parameter,
     );
-    variableState.mockParameterValues();
+    variableState.mockParameterValue();
     queryParameterState.addParameter(variableState);
   });
 };

@@ -265,6 +265,8 @@ export const DateTimePrimitiveInstanceValueEditor = observer(
       <div className={clsx('query-builder-value-spec-editor', className)}>
         <input
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
+          // Despite its name this would actually allow us to register time in UTC
+          // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
           type="datetime-local"
           spellCheck={false}
           value={value}
