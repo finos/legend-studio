@@ -18,6 +18,7 @@ import {
   type AbstractPropertyExpression,
   type PureModel,
   type ValueSpecification,
+  type Type,
   matchFunctionName,
   SimpleFunctionExpression,
   VariableExpression,
@@ -140,5 +141,14 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
     }
 
     return undefined;
+  }
+
+  override getReturnType(
+    aggregateColumnState: QueryBuilderAggregateColumnState,
+  ): Type {
+    const graph =
+      aggregateColumnState.aggregationState.projectionState.queryBuilderState
+        .graphManagerState.graph;
+    return graph.getType(PRIMITIVE_TYPE.STRING);
   }
 }

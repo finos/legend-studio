@@ -1,0 +1,197 @@
+[
+  {
+    "path": "model::postFilter::MyEnum",
+    "content": {
+      "_type": "Enumeration",
+      "name": "MyEnum",
+      "package": "model::postFilter",
+      "values": [
+        {
+          "value": "Enum1"
+        },
+        {
+          "value": "Enum2"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Enumeration"
+  },
+  {
+    "path": "model::postFilter::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model::postFilter",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fullName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "myOptionalBoolean",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "myNumber",
+          "type": "Number"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "age",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "myFloat",
+          "type": "Float"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "myDecimal",
+          "type": "Decimal"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "myStrictDate",
+          "type": "StrictDate"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "myDateTime",
+          "type": "DateTime"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "myStrictTime",
+          "type": "StrictTime"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "myEnum",
+          "type": "model::postFilter::MyEnum"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "myBinary",
+          "type": "Binary"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "myOptionalEnum",
+          "type": "model::postFilter::MyEnum"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::postFilter::M2MMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "model::postFilter::Person",
+          "propertyMappings": [],
+          "root": true,
+          "srcClass": "model::postFilter::Person"
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "M2MMapping",
+      "package": "model::postFilter",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "model::postFilter::MyRuntime",
+    "content": {
+      "_type": "runtime",
+      "name": "MyRuntime",
+      "package": "model::postFilter",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "ModelStore",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "model::postFilter::MyConnection"
+                },
+                "id": "connection_1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "model::postFilter::M2MMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    "classifierPath": "meta::pure::runtime::PackageableRuntime"
+  },
+  {
+    "path": "model::postFilter::MyConnection",
+    "content": {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "JsonModelConnection",
+        "class": "model::postFilter::Person",
+        "element": "ModelStore",
+        "url": "data:application/json,%7B%7D"
+      },
+      "name": "MyConnection",
+      "package": "model::postFilter"
+    },
+    "classifierPath": "meta::pure::runtime::PackageableConnection"
+  }
+]

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-export enum QUERY_BUILDER_TEST_ID {
-  QUERY_BUILDER = 'query__builder',
-  QUERY_BUILDER_SETUP = 'query__builder__setup',
-  QUERY_BUILDER_PROJECTION = 'query__builder__projection',
-  QUERY_BUILDER_GRAPH_FETCH = 'query__builder__graph__fetch',
-  QUERY_BUILDER_FILTER = 'query__builder__filter',
-  QUERY_BUILDER_POST_FILTER = 'query__builder__post-filter',
-  QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
+import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QueryBuilderPostFilterOperator_LessThan } from './QueryBuilderPostFilterOperator_LessThan';
+
+export class QueryBuilderPostFilterOperator_LessThanEqual extends QueryBuilderPostFilterOperator_LessThan {
+  override getLabel(): string {
+    return '<=';
+  }
+
+  override getPureFunction(): SUPPORTED_FUNCTIONS {
+    return SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL;
+  }
 }

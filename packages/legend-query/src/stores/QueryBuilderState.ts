@@ -98,6 +98,36 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { QueryParametersState } from './QueryParametersState';
+import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState';
+import {
+  QueryBuilderPostFilterOperator_Equal,
+  QueryBuilderPostFilterOperator_NotEqual,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_Equal';
+import { QueryBuilderPostFilterOperator_LessThan } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThan';
+import { QueryBuilderPostFilterOperator_LessThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThanEqual';
+import { QueryBuilderPostFilterOperator_GreaterThan } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThan';
+import { QueryBuilderPostFilterOperator_GreaterThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThanEqual';
+import {
+  QueryBuilderPostFilterOperator_NotStartWith,
+  QueryBuilderPostFilterOperator_StartWith,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_StartWith';
+import {
+  QueryBuilderPostFilterOperator_Contain,
+  QueryBuilderPostFilterOperator_NotContain,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_Contain';
+import {
+  QueryBuilderPostFilterOperator_EndWith,
+  QueryBuilderPostFilterOperator_NotEndWith,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_EndWith';
+import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator';
+import {
+  QueryBuilderPostFilterOperator_In,
+  QueryBuilderPostFilterOperator_NotIn,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_In';
+import {
+  QueryBuilderPostFilterOperator_IsEmpty,
+  QueryBuilderPostFilterOperator_IsNotEmpty,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -125,6 +155,7 @@ export class QueryBuilderState {
   queryParametersState: QueryParametersState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
+  postFilterState: QueryBuilderPostFilterState;
   resultSetModifierState: QueryResultSetModifierState;
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
@@ -147,6 +178,24 @@ export class QueryBuilderState {
     new QueryBuilderFilterOperator_IsEmpty(),
     new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
+  postFilterOperators: QueryBuilderPostFilterOperator[] = [
+    new QueryBuilderPostFilterOperator_Equal(),
+    new QueryBuilderPostFilterOperator_NotEqual(),
+    new QueryBuilderPostFilterOperator_LessThan(),
+    new QueryBuilderPostFilterOperator_LessThanEqual(),
+    new QueryBuilderPostFilterOperator_GreaterThan(),
+    new QueryBuilderPostFilterOperator_GreaterThanEqual(),
+    new QueryBuilderPostFilterOperator_StartWith(),
+    new QueryBuilderPostFilterOperator_NotStartWith(),
+    new QueryBuilderPostFilterOperator_Contain(),
+    new QueryBuilderPostFilterOperator_NotContain(),
+    new QueryBuilderPostFilterOperator_EndWith(),
+    new QueryBuilderPostFilterOperator_NotEndWith(),
+    new QueryBuilderPostFilterOperator_In(),
+    new QueryBuilderPostFilterOperator_NotIn(),
+    new QueryBuilderPostFilterOperator_IsEmpty(),
+    new QueryBuilderPostFilterOperator_IsNotEmpty(),
+  ];
   isCompiling = false;
   backdrop = false;
 
@@ -161,6 +210,7 @@ export class QueryBuilderState {
       queryParametersState: observable,
       fetchStructureState: observable,
       filterState: observable,
+      postFilterState: observable,
       resultSetModifierState: observable,
       resultState: observable,
       queryTextEditorState: observable,
@@ -191,6 +241,10 @@ export class QueryBuilderState {
     this.queryParametersState = new QueryParametersState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.postFilterState = new QueryBuilderPostFilterState(
+      this,
+      this.postFilterOperators,
+    );
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
@@ -243,6 +297,10 @@ export class QueryBuilderState {
     );
     this.fetchStructureState = fetchStructureState;
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.postFilterState = new QueryBuilderPostFilterState(
+      this,
+      this.postFilterOperators,
+    );
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.fetchStructureState.graphFetchTreeState.initialize();
   }

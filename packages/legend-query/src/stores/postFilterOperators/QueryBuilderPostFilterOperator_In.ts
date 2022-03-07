@@ -15,43 +15,39 @@
  */
 
 import {
-  QueryBuilderFilterOperator,
-  type QueryBuilderFilterState,
-  type FilterConditionState,
-} from '../QueryBuilderFilterState';
-import {
+  type Type,
   type ValueSpecification,
   type SimpleFunctionExpression,
-  VariableExpression,
   CollectionInstanceValue,
+  Enumeration,
+  PRIMITIVE_TYPE,
+  VariableExpression,
   GenericTypeExplicitReference,
   GenericType,
   TYPICAL_MULTIPLICITY_TYPE,
-  Enumeration,
-  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import {
-  buildFilterConditionState,
-  buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildNotExpression,
-  unwrapNotExpression,
   getCollectionValueSpecificationType,
+  unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
+import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
+import type {
+  PostFilterConditionState,
+  QueryBuilderPostFilterState,
+} from '../QueryBuilderPostFilterState';
 
-export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
-  getLabel(filterConditionState: FilterConditionState): string {
+export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOperator {
+  getLabel(): string {
     return 'is in';
   }
+  getPureFunction(): SUPPORTED_FUNCTIONS {
+    return SUPPORTED_FUNCTIONS.IN;
+  }
 
-  isCompatibleWithFilterConditionProperty(
-    filterConditionState: FilterConditionState,
-  ): boolean {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
-        .genericType.value.rawType;
+  isCompatibleWithType(type: Type): boolean {
     return (
       (
         [
@@ -61,26 +57,26 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
           PRIMITIVE_TYPE.DECIMAL,
           PRIMITIVE_TYPE.FLOAT,
         ] as string[]
-      ).includes(propertyType.path) ||
+      ).includes(type.path) ||
       // TODO: do we care if the enumeration type has no value (like in the case of `==` operator)?
-      propertyType instanceof Enumeration
+      type instanceof Enumeration
     );
   }
 
-  isCompatibleWithFilterConditionValue(
-    filterConditionState: FilterConditionState,
+  isCompatibleWithConditionValue(
+    postFilterConditionState: PostFilterConditionState,
   ): boolean {
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
-        .genericType.value.rawType;
-    const valueSpec = filterConditionState.value;
+    const propertyType = guaranteeNonNullable(
+      postFilterConditionState.columnState.getReturnType(),
+    );
+    const valueSpec = postFilterConditionState.value;
     if (valueSpec instanceof CollectionInstanceValue) {
       if (valueSpec.values.length === 0) {
         return true;
       }
       const collectionType = getCollectionValueSpecificationType(
-        filterConditionState.filterState.queryBuilderState.graphManagerState
-          .graph,
+        postFilterConditionState.postFilterState.queryBuilderState
+          .graphManagerState.graph,
         valueSpec.values,
       );
       if (!collectionType) {
@@ -117,65 +113,49 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   }
 
   getDefaultFilterConditionValue(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification | undefined {
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification {
     const multiplicityOne =
-      filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      postFilterConditionState.postFilterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
-    const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
-        .genericType.value.rawType;
+    const propertyType = guaranteeNonNullable(
+      postFilterConditionState.columnState.getReturnType(),
+    );
     return new CollectionInstanceValue(
       multiplicityOne,
       GenericTypeExplicitReference.create(new GenericType(propertyType)),
     );
   }
-
-  buildFilterConditionExpression(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification {
-    return buildFilterConditionExpression(
-      filterConditionState,
-      SUPPORTED_FUNCTIONS.IN,
-    );
-  }
-
-  buildFilterConditionState(
-    filterState: QueryBuilderFilterState,
-    expression: SimpleFunctionExpression,
-  ): FilterConditionState | undefined {
-    return buildFilterConditionState(
-      filterState,
-      expression,
-      SUPPORTED_FUNCTIONS.IN,
-      this,
-    );
-  }
 }
 
-export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator_In {
-  override getLabel(filterConditionState: FilterConditionState): string {
+export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilterOperator_In {
+  override getLabel(): string {
     return `is not in`;
   }
 
-  override buildFilterConditionExpression(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification {
-    return buildNotExpression(
-      filterConditionState.filterState.queryBuilderState.graphManagerState
-        .graph,
-      super.buildFilterConditionExpression(filterConditionState),
+  override buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    const expression = super.buildPostFilterConditionExpression(
+      postFilterConditionState,
     );
+    return expression
+      ? buildNotExpression(
+          postFilterConditionState.postFilterState.queryBuilderState
+            .graphManagerState.graph,
+          expression,
+        )
+      : undefined;
   }
 
-  override buildFilterConditionState(
-    filterState: QueryBuilderFilterState,
+  override buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
     expression: SimpleFunctionExpression,
-  ): FilterConditionState | undefined {
+  ): PostFilterConditionState | undefined {
     const innerExpression = unwrapNotExpression(expression);
     return innerExpression
-      ? super.buildFilterConditionState(filterState, innerExpression)
+      ? super.buildPostFilterConditionState(postFilterState, innerExpression)
       : undefined;
   }
 }

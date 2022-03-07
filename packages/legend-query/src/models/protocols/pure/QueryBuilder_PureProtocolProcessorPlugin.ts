@@ -24,7 +24,9 @@ import {
   V1_buildGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
 } from './v1/V1_QueryBuilder_FunctionExpressionBuilder';
+import V1_QUERY_SYSTEM_MODELS from './v1/V1_Query_SystemModels.json';
 import {
+  type V1_PureModelContextData,
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,
   type V1_FunctionExpressionBuilder,
@@ -38,6 +40,7 @@ import {
   extractElementNameFromPath,
 } from '@finos/legend-graph';
 import { V1_buildSubTypePropertyExpressionTypeInference } from './v1/V1_QueryBuilder_PropertyExpressionTypeInferenceBuilder';
+import type { PlainObject } from '@finos/legend-shared';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -65,7 +68,8 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER) ||
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER)
         ) {
           return V1_buildFilterFunctionExpression(
             functionName,
@@ -143,5 +147,9 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
         return inferredType;
       },
     ];
+  }
+
+  override V1_getExtraSystemModels(): PlainObject<V1_PureModelContextData>[] {
+    return [V1_QUERY_SYSTEM_MODELS];
   }
 }
