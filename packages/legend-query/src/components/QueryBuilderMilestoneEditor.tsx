@@ -22,7 +22,6 @@ import {
 } from '../stores/QueryParametersState';
 import { useCallback } from 'react';
 import {
-  type Type,
   GenericType,
   GenericTypeExplicitReference,
   MILESTONING_STEROTYPES,
@@ -32,25 +31,13 @@ import {
   VariableExpression,
 } from '@finos/legend-graph';
 import {
-  DatePrimitiveInstanceValueEditor,
-  LatestDatePrimitiveInstanceValueEditor,
+  DateInstanceValueEditor,
   VariableExpressionParameterEditor,
 } from './QueryBuilderValueSpecificationEditor';
-import {
-  guaranteeNonNullable,
-  guaranteeType,
-  Randomizer,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
-import {
-  type PackageableElementOption,
-  buildElementOption,
-  DATE_FORMAT,
-} from '@finos/legend-application';
-import { Dialog, CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
-import format from 'date-fns/format/index';
-import { addDays } from 'date-fns';
+import { Dialog, RefreshIcon } from '@finos/legend-art';
 
 const MilestoningParameterEditor = observer(
   (props: { queryBuilderState: QueryBuilderState; parameterIndex: number }) => {
@@ -95,7 +82,7 @@ const MilestoningParameterEditor = observer(
         GenericTypeExplicitReference.create(
           new GenericType(
             queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.LATESTDATE,
+              PRIMITIVE_TYPE.DATE,
             ),
           ),
         ),
@@ -104,42 +91,9 @@ const MilestoningParameterEditor = observer(
         ),
       );
     };
-    const latestType =
-      queryBuilderState.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.LATESTDATE,
-      );
-    const variableType =
-      milestoningParameter?.genericType?.value.rawType ?? latestType;
-
-    const selectedType = buildElementOption(variableType);
-    const typeOptions: PackageableElementOption<Type>[] =
-      queryBuilderState.graphManagerState.graph.primitiveTypes
-        .filter(
-          (p) =>
-            p.name === PRIMITIVE_TYPE.STRICTDATE ||
-            p.name === PRIMITIVE_TYPE.LATESTDATE,
-        )
-        .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
-    const changeType = (val: PackageableElementOption<Type>): void => {
-      if (variableType !== val.value) {
-        milestoningParameter?.genericType?.value.setRawType(val.value);
-      }
-      if (
-        milestoningParameter instanceof PrimitiveInstanceValue &&
-        milestoningParameter.genericType.value.rawType.name ===
-          PRIMITIVE_TYPE.STRICTDATE
-      ) {
-        milestoningParameter.values = [
-          format(
-            new Randomizer().getRandomDate(
-              new Date(Date.now()),
-              addDays(Date.now(), 100),
-            ),
-            DATE_FORMAT,
-          ),
-        ];
-      }
-    };
+    const date = queryBuilderState.graphManagerState.graph.getPrimitiveType(
+      PRIMITIVE_TYPE.DATE,
+    );
     return (
       <div
         ref={dropConnector}
@@ -151,27 +105,11 @@ const MilestoningParameterEditor = observer(
           </div>
         )}
         {milestoningParameter instanceof PrimitiveInstanceValue && (
-          <div className="query-builder__parameter-editor__parameter">
-            {milestoningParameter.genericType.value.rawType.name ===
-              PRIMITIVE_TYPE.STRICTDATE && (
-              <DatePrimitiveInstanceValueEditor
-                valueSpecification={milestoningParameter}
-              />
-            )}
-            {milestoningParameter.genericType.value.rawType.name ===
-              PRIMITIVE_TYPE.LATESTDATE && (
-              <LatestDatePrimitiveInstanceValueEditor />
-            )}
-            <div className="query-builder__parameter-editor__parameter">
-              <CustomSelectorInput
-                placeholder="Choose a type..."
-                options={typeOptions}
-                onChange={changeType}
-                value={selectedType}
-                darkMode={true}
-              />
-            </div>
-          </div>
+          <DateInstanceValueEditor
+            valueSpecification={milestoningParameter}
+            graph={queryBuilderState.graphManagerState.graph}
+            expectedType={date}
+          />
         )}
         {queryBuilderState.querySetupState.classMilestoningTemporalValues[
           parameterIndex

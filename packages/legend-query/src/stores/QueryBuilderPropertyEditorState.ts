@@ -145,7 +145,7 @@ export const fillDerivedPropertyArguments = (
     if (temporalTarget) {
       if (
         !isDatePropagationSupported(
-          derivedPropertyExpressionState.derivedProperty,
+          derivedPropertyExpressionState,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,
         ) ||

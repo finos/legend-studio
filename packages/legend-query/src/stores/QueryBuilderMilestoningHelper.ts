@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import {
   Class,
   type PureModel,
@@ -23,6 +27,7 @@ import {
   getMilestoneTemporalStereotype,
   MILESTONING_STEROTYPES,
   DEFAULT_MILESTONING_PARAMETERS,
+  type AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import type { QueryBuilderDerivedPropertyExpressionState } from './QueryBuilderPropertyEditorState';
 
@@ -32,10 +37,17 @@ export const milestoningParameters = {
 };
 
 export const isDatePropagationSupported = (
-  property: DerivedProperty,
+  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
   graph: PureModel,
+  prevPropertyExpression?:
+    | QueryBuilderDerivedPropertyExpressionState
+    | undefined,
 ): boolean => {
+  const property = derivedPropertyExpressionState.derivedProperty;
   const owner = property.owner;
+  if (prevPropertyExpression && prevPropertyExpression.parameterValues.length) {
+    return false;
+  }
   if (
     owner instanceof Class &&
     property.genericType.value.rawType instanceof Class
@@ -65,7 +77,7 @@ export const removePropagatedDates = (
       .classMilestoningTemporalValues;
   const graph = currentExpression.queryBuilderState.graphManagerState.graph;
   if (
-    isDatePropagationSupported(currentExpression.derivedProperty, graph) &&
+    isDatePropagationSupported(currentExpression, graph) &&
     currentExpression.derivedProperty.owner instanceof Class
   ) {
     const stereotype = getMilestoneTemporalStereotype(
@@ -127,7 +139,7 @@ export const removePropagatedDates = (
         derivedPropertyExpressionStates[i],
       );
       if (
-        isDatePropagationSupported(currentExpression.derivedProperty, graph) &&
+        isDatePropagationSupported(currentExpression, graph) &&
         !prevExpression.derivedProperty.name.endsWith('AllVersions') &&
         !prevExpression.derivedProperty.name.endsWith('AllVersionsInRange') &&
         prevExpression.propertyExpression.parametersValues ===
@@ -236,4 +248,106 @@ export const fillMilestonedDerivedPropertyArguments = (
     default:
       return undefined;
   }
+};
+
+export const isValidMilestoningLambda = (
+  propertyExpression: AbstractPropertyExpression,
+  targetStereotype: MILESTONING_STEROTYPES,
+  generatedMilestoningProperty: DerivedProperty,
+  graph: PureModel,
+): void => {
+  const sourceStereotype = getMilestoneTemporalStereotype(
+    guaranteeType(generatedMilestoningProperty.owner, Class),
+    graph,
+  );
+  if (
+    sourceStereotype !== MILESTONING_STEROTYPES.BITEMPORAL &&
+    targetStereotype !== sourceStereotype
+  ) {
+    if (targetStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+      if (
+        propertyExpression.parametersValues.length !== 3 &&
+        !sourceStereotype
+      ) {
+        throw new UnsupportedOperationError(
+          "Property of milestoning sterotype 'Bitemporal' should have two parameters",
+        );
+      } else if (propertyExpression.parametersValues.length < 2) {
+        throw new UnsupportedOperationError(
+          "Property of milestoning sterotype 'Bitemporal' should have atleast one parameter",
+        );
+      }
+    } else if (propertyExpression.parametersValues.length !== 2) {
+      throw new UnsupportedOperationError(
+        `Property of milestoning sterotype '${targetStereotype}' should have one parameters`,
+      );
+    }
+  }
+};
+
+export const getPropagatedDate = (
+  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
+  derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[],
+  idx: number,
+): ValueSpecification | undefined => {
+  const index = derivedPropertyExpressionStates.findIndex(
+    (propertyState: QueryBuilderDerivedPropertyExpressionState) =>
+      propertyState === derivedPropertyExpressionState,
+  );
+  const queryBuilderState = derivedPropertyExpressionState.queryBuilderState;
+  const sourceStereotype = getMilestoneTemporalStereotype(
+    guaranteeType(derivedPropertyExpressionState.derivedProperty.owner, Class),
+    queryBuilderState.graphManagerState.graph,
+  );
+  const targetStereotype = getMilestoneTemporalStereotype(
+    guaranteeType(
+      derivedPropertyExpressionState.derivedProperty.genericType.value.rawType,
+      Class,
+    ),
+    queryBuilderState.graphManagerState.graph,
+  );
+  if (
+    index === 0 ||
+    !derivedPropertyExpressionStates[index - 1]?.parameterValues.length
+  ) {
+    switch (targetStereotype) {
+      case MILESTONING_STEROTYPES.BITEMPORAL:
+        return guaranteeNonNullable(
+          queryBuilderState.querySetupState.classMilestoningTemporalValues[idx],
+        );
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+        if (
+          queryBuilderState.querySetupState.classMilestoningTemporalValues
+            .length === 2
+        ) {
+          return guaranteeNonNullable(
+            queryBuilderState.querySetupState.classMilestoningTemporalValues[1],
+          );
+        } else {
+          return guaranteeNonNullable(
+            queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+          );
+        }
+      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+        return guaranteeNonNullable(
+          queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+        );
+      default:
+        return undefined;
+    }
+  } else {
+    const prevPropertyExpression = guaranteeNonNullable(
+      derivedPropertyExpressionStates[index - 1],
+    );
+    if (sourceStereotype === targetStereotype) {
+      return guaranteeNonNullable(prevPropertyExpression.parameterValues[idx]);
+    } else if (
+      targetStereotype === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL
+    ) {
+      return guaranteeNonNullable(prevPropertyExpression.parameterValues[0]);
+    } else if (targetStereotype === MILESTONING_STEROTYPES.BUSINESS_TEMPORAL) {
+      return guaranteeNonNullable(prevPropertyExpression.parameterValues[1]);
+    }
+  }
+  return undefined;
 };

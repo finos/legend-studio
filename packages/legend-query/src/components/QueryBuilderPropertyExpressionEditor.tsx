@@ -49,7 +49,10 @@ import {
   getMilestoneTemporalStereotype,
   MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
-import { isDatePropagationSupported } from '../stores/QueryBuilderMilestoningHelper';
+import {
+  getPropagatedDate,
+  isDatePropagationSupported,
+} from '../stores/QueryBuilderMilestoningHelper';
 
 const DerivedPropertyParameterEditor = observer(
   (props: {
@@ -106,7 +109,7 @@ const DerivedPropertyParameterEditor = observer(
       }
       if (
         isDatePropagationSupported(
-          derivedPropertyExpressionState.derivedProperty,
+          derivedPropertyExpressionState,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,
         )
@@ -154,11 +157,15 @@ const DerivedPropertyParameterEditor = observer(
           <QueryBuilderValueSpecificationEditor
             valueSpecification={
               (isDatePropagationSupported(
-                derivedPropertyExpressionState.derivedProperty,
+                derivedPropertyExpressionState,
                 derivedPropertyExpressionState.queryBuilderState
                   .graphManagerState.graph,
               ) && derivedPropertyExpressionState.parameterValues.length === 0
-                ? derivedPropertyExpressionState.parameters[idx]
+                ? getPropagatedDate(
+                    derivedPropertyExpressionState,
+                    derivedPropertyExpressionStates,
+                    idx,
+                  )
                 : derivedPropertyExpressionState.parameterValues[
                     idx
                   ]) as ValueSpecification
@@ -171,6 +178,8 @@ const DerivedPropertyParameterEditor = observer(
               derivedPropertyExpressionState.parameters[idx]?.genericType
                 ?.ownerReference.value,
             )}
+            idx={idx}
+            derivedPropertyExpressionState={derivedPropertyExpressionState}
             derivedPropertyExpressionStates={derivedPropertyExpressionStates}
           />
           <button
@@ -203,7 +212,7 @@ const DerivedPropertyExpressionEditor = observer(
           {derivedPropertyExpressionState.title}
         </div>
         {(isDatePropagationSupported(
-          derivedPropertyExpressionState.derivedProperty,
+          derivedPropertyExpressionState,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,
         )

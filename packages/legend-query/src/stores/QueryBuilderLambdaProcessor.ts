@@ -79,6 +79,7 @@ import {
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
+import { isValidMilestoningLambda } from './QueryBuilderMilestoningHelper';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -122,6 +123,37 @@ const processFilterExpression = (
   filterState: QueryBuilderFilterState,
   parentFilterNodeId: string | undefined,
 ): void => {
+  const propertyExpression = expression.parametersValues[0];
+  if (propertyExpression instanceof AbstractPropertyExpression) {
+    const currentPropertyExpression = propertyExpression.parametersValues[0];
+    if (
+      currentPropertyExpression instanceof AbstractPropertyExpression &&
+      currentPropertyExpression.func.genericType.value.rawType instanceof
+        Class &&
+      currentPropertyExpression.func.owner._generatedMilestonedProperties
+        .length !== 0
+    ) {
+      const name = currentPropertyExpression.func.name;
+      const func =
+        currentPropertyExpression.func.owner._generatedMilestonedProperties.find(
+          (e) => e.name === name,
+        );
+      if (func) {
+        const targetStereotype = getMilestoneTemporalStereotype(
+          currentPropertyExpression.func.genericType.value.rawType,
+          filterState.queryBuilderState.graphManagerState.graph,
+        );
+        if (targetStereotype) {
+          isValidMilestoningLambda(
+            currentPropertyExpression,
+            targetStereotype,
+            guaranteeType(func, DerivedProperty),
+            filterState.queryBuilderState.graphManagerState.graph,
+          );
+        }
+      }
+    }
+  }
   const parentNode = parentFilterNodeId
     ? filterState.getNode(parentFilterNodeId)
     : undefined;
@@ -949,6 +981,32 @@ export class QueryBuilderLambdaProcessor
       let currentPropertyExpression: ValueSpecification = valueSpecification;
       while (currentPropertyExpression instanceof AbstractPropertyExpression) {
         const propertyExpression = currentPropertyExpression;
+        if (
+          currentPropertyExpression.func.genericType.value.rawType instanceof
+            Class &&
+          currentPropertyExpression.func.owner._generatedMilestonedProperties
+            .length !== 0
+        ) {
+          const name = currentPropertyExpression.func.name;
+          const func =
+            currentPropertyExpression.func.owner._generatedMilestonedProperties.find(
+              (e) => e.name === name,
+            );
+          if (func) {
+            const targetStereotype = getMilestoneTemporalStereotype(
+              currentPropertyExpression.func.genericType.value.rawType,
+              this.queryBuilderState.graphManagerState.graph,
+            );
+            if (targetStereotype) {
+              isValidMilestoningLambda(
+                currentPropertyExpression,
+                targetStereotype,
+                guaranteeType(func, DerivedProperty),
+                this.queryBuilderState.graphManagerState.graph,
+              );
+            }
+          }
+        }
         currentPropertyExpression = guaranteeNonNullable(
           currentPropertyExpression.parametersValues[0],
         );

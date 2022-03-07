@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
+  guaranteeType,
   isNonNullable,
   Randomizer,
   returnUndefOnError,
@@ -53,6 +54,8 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  getMilestoneTemporalStereotype,
+  Class,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -62,8 +65,14 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
-import type { QueryBuilderDerivedPropertyExpressionState } from '../stores/QueryBuilderPropertyEditorState';
-import { removePropagatedDates } from '../stores/QueryBuilderMilestoningHelper';
+import {
+  fillDerivedPropertyArguments,
+  type QueryBuilderDerivedPropertyExpressionState,
+} from '../stores/QueryBuilderPropertyEditorState';
+import {
+  isDatePropagationSupported,
+  removePropagatedDates,
+} from '../stores/QueryBuilderMilestoningHelper';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -577,6 +586,10 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   graph: PureModel;
   expectedType: Type;
   className?: string | undefined;
+  idx?: number | undefined;
+  derivedPropertyExpressionState?:
+    | QueryBuilderDerivedPropertyExpressionState
+    | undefined;
   derivedPropertyExpressionStates?:
     | QueryBuilderDerivedPropertyExpressionState[]
     | undefined;
@@ -586,6 +599,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
     graph,
     expectedType,
     className,
+    idx,
+    derivedPropertyExpressionState,
     derivedPropertyExpressionStates,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
@@ -620,6 +635,57 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.LATESTDATE:
+        if (
+          derivedPropertyExpressionState &&
+          idx &&
+          derivedPropertyExpressionStates
+        ) {
+          const index = derivedPropertyExpressionStates.findIndex(
+            (propertyState: QueryBuilderDerivedPropertyExpressionState) =>
+              propertyState === derivedPropertyExpressionState,
+          );
+          if (
+            index + 1 !== derivedPropertyExpressionStates.length &&
+            !isDatePropagationSupported(
+              guaranteeNonNullable(derivedPropertyExpressionStates[index + 1]),
+              derivedPropertyExpressionState?.queryBuilderState
+                .graphManagerState.graph,
+              derivedPropertyExpressionState,
+            ) &&
+            guaranteeNonNullable(derivedPropertyExpressionStates[index + 1])
+              .propertyExpression.func.genericType.value.rawType instanceof
+              Class &&
+            derivedPropertyExpressionState.propertyExpression.func.owner
+              ._generatedMilestonedProperties.length !== 0
+          ) {
+            const temporalTarget = getMilestoneTemporalStereotype(
+              guaranteeType(
+                guaranteeNonNullable(derivedPropertyExpressionStates[index + 1])
+                  .propertyExpression.func.genericType.value.rawType,
+                Class,
+              ),
+              derivedPropertyExpressionState.queryBuilderState.graphManagerState
+                .graph,
+            );
+            if (temporalTarget) {
+              if (
+                derivedPropertyExpressionStates[index + 1]?.parameterValues &&
+                guaranteeNonNullable(
+                  derivedPropertyExpressionStates[index + 1]?.parameterValues,
+                ).length <= idx
+              ) {
+                fillDerivedPropertyArguments(
+                  guaranteeNonNullable(
+                    derivedPropertyExpressionStates[index + 1],
+                  ),
+                  derivedPropertyExpressionState.queryBuilderState
+                    .graphManagerState.graph,
+                  true,
+                );
+              }
+            }
+          }
+        }
         return (
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
