@@ -125,6 +125,8 @@ export {
   MdPlaylistAddCheck as CheckListIcon,
   MdAdd as AddIcon, // to be reviewed
   MdEdit as EditIcon, // to be reviewed
+  MdSubject as SubjectIcon,
+  MdViewHeadline as ViewHeadlineIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,

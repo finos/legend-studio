@@ -128,6 +128,7 @@ import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty';
+import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -153,6 +154,7 @@ export class QueryBuilderState {
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
   queryParametersState: QueryParametersState;
+  queryFunctionsExplorerState: QueryFunctionsExplorerState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   postFilterState: QueryBuilderPostFilterState;
@@ -198,6 +200,8 @@ export class QueryBuilderState {
   ];
   isCompiling = false;
   backdrop = false;
+  showFunctionPanel = false;
+  showParameterPanel = true;
 
   constructor(
     applicationStore: ApplicationStore<LegendApplicationConfig>,
@@ -208,6 +212,7 @@ export class QueryBuilderState {
       querySetupState: observable,
       explorerState: observable,
       queryParametersState: observable,
+      queryFunctionsExplorerState: observable,
       fetchStructureState: observable,
       filterState: observable,
       postFilterState: observable,
@@ -218,6 +223,8 @@ export class QueryBuilderState {
       isCompiling: observable,
       backdrop: observable,
       mode: observable,
+      showFunctionPanel: observable,
+      showParameterPanel: observable,
       classOptions: computed,
       mappingOptions: computed,
       runtimeOptions: computed,
@@ -228,6 +235,8 @@ export class QueryBuilderState {
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
+      setShowFunctionPanel: action,
+      setShowParameterPanel: action,
       changeClass: action,
       changeFetchStructure: action,
       compileQuery: flow,
@@ -239,6 +248,7 @@ export class QueryBuilderState {
     this.querySetupState = new QueryBuilderSetupState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.queryParametersState = new QueryParametersState(this);
+    this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.postFilterState = new QueryBuilderPostFilterState(
@@ -258,6 +268,13 @@ export class QueryBuilderState {
 
   setBackdrop(val: boolean): void {
     this.backdrop = val;
+  }
+
+  setShowFunctionPanel(val: boolean): void {
+    this.showFunctionPanel = val;
+  }
+  setShowParameterPanel(val: boolean): void {
+    this.showParameterPanel = val;
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
@@ -291,6 +308,7 @@ export class QueryBuilderState {
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
+    this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
