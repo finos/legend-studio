@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 1.2.1
+
+### Patch Changes
+
+- [#923](https://github.com/finos/legend-studio/pull/923) [`966fb26a`](https://github.com/finos/legend-studio/commit/966fb26af90b120272d79389a539099828c74851) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TDSRow` system classes.
+
 ## 1.2.0
 
 ### Minor Changes

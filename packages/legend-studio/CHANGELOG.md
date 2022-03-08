@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 3.0.1
+
+### Patch Changes
+
+- [#924](https://github.com/finos/legend-studio/pull/924) [`4e258277`](https://github.com/finos/legend-studio/commit/4e258277de6ef51dd5cdfe1b0412d2842ae5787b) ([@akphi](https://github.com/akphi)) - Fix a regression with project selector `view` button launching a link without base URL.
+
 ## 3.0.0
 
 ### Major Changes
