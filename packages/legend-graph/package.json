@@ -40,6 +40,7 @@
   "dependencies": {
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "date-fns": "2.28.0",
     "mobx": "6.4.2",
     "mobx-react-lite": "3.3.0",
     "react": "17.0.2",

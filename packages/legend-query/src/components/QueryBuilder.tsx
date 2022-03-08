@@ -24,6 +24,13 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
   HackerIcon,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  MenuContentItemIcon,
+  MenuContentItemLabel,
+  CheckIcon,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
@@ -39,6 +46,7 @@ import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQue
 import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
 import { QueryBuilderPostFilterPanel } from './QueryBuilderPostFilterPanel';
+import { QueryBuilderFunctionsExplorerPanel } from './QueryBuilderFunctionsExplorerPanel';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',
@@ -122,11 +130,66 @@ export const QueryBuilder = observer(
         );
       },
     };
+    const toggleShowFunctionPanel = (): void => {
+      queryBuilderState.setShowFunctionPanel(
+        !queryBuilderState.showFunctionPanel,
+      );
+    };
+    const toggleShowParameterPanel = (): void => {
+      queryBuilderState.setShowParameterPanel(
+        !queryBuilderState.showParameterPanel,
+      );
+    };
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
       >
+        <div className="query-builder__sub-header">
+          <div className="query-builder__sub-header__actions">
+            <DropdownMenu
+              className="query-builder__sub-header__custom-action"
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={toggleShowFunctionPanel}>
+                    <MenuContentItemIcon>
+                      {queryBuilderState.showFunctionPanel ? (
+                        <CheckIcon />
+                      ) : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                      Show Functions Explorer Panel
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={toggleShowParameterPanel}>
+                    <MenuContentItemIcon>
+                      {queryBuilderState.showParameterPanel ? (
+                        <CheckIcon />
+                      ) : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                      Show Parameter Panel
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                </MenuContent>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                transformOrigin: { vertical: 'top', horizontal: 'left' },
+                elevation: 7,
+              }}
+            >
+              <button
+                className="query-builder__sub-header__custom-action-content"
+                title="Show Advanced Menu..."
+              >
+                Advanced
+                <CaretDownIcon />
+              </button>
+            </DropdownMenu>
+          </div>
+        </div>
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
           <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
           <div className="query-builder__content">
@@ -157,11 +220,31 @@ export const QueryBuilder = observer(
                           />
                         </ResizablePanel>
                         <ResizablePanelSplitter />
-                        <ResizablePanel minSize={40} direction={-1}>
-                          <QueryBuilderParameterPanel
-                            queryBuilderState={queryBuilderState}
-                          />
-                        </ResizablePanel>
+                        {queryBuilderState.showFunctionPanel && (
+                          <ResizablePanel
+                            minSize={40}
+                            direction={
+                              queryBuilderState.showParameterPanel
+                                ? [1, -1]
+                                : -1
+                            }
+                          >
+                            <QueryBuilderFunctionsExplorerPanel
+                              queryBuilderState={queryBuilderState}
+                            />
+                          </ResizablePanel>
+                        )}
+                        {queryBuilderState.showFunctionPanel &&
+                        queryBuilderState.showParameterPanel ? (
+                          <ResizablePanelSplitter />
+                        ) : null}
+                        {queryBuilderState.showParameterPanel && (
+                          <ResizablePanel minSize={40} direction={-1}>
+                            <QueryBuilderParameterPanel
+                              queryBuilderState={queryBuilderState}
+                            />
+                          </ResizablePanel>
+                        )}
                       </ResizablePanelGroup>
                     </ResizablePanel>
                     <ResizablePanelSplitter />

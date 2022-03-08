@@ -2324,6 +2324,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     cross-env: 7.0.3
+    date-fns: 2.28.0
     eslint: 8.10.0
     jest: 27.5.1
     mobx: 6.4.2
