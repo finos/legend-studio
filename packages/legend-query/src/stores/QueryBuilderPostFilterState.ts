@@ -349,7 +349,7 @@ export class PostFilterConditionState {
 export class QueryBuilderPostFilterState
   implements TreeData<QueryBuilderPostFilterTreeNodeData>
 {
-  showPostFilterPanel = true;
+  showPostFilterPanel = false;
   queryBuilderState: QueryBuilderState;
   lambdaParameterName = DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME;
   selectedNode?: QueryBuilderPostFilterTreeNodeData | undefined;
