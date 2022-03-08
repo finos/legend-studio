@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 1.0.1
+
+### Patch Changes
+
+- [#919](https://github.com/finos/legend-studio/pull/919) [`ae5d88f7`](https://github.com/finos/legend-studio/commit/ae5d88f713f9e98b9e13ea8b8f04d05c900bc3a1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle unsupported queries in stand-alone query builder (i.e. `Legend Query`).
+
+* [#923](https://github.com/finos/legend-studio/pull/923) [`966fb26a`](https://github.com/finos/legend-studio/commit/966fb26af90b120272d79389a539099828c74851) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove `TDSRow` system class.
+
 ## 1.0.0
 
 ### Major Changes
