@@ -2,4 +2,4 @@
 "@finos/legend-graph": patch
 ---
 
-ADd TDS system classes.
+Add `TDSRow` system classes.
