@@ -140,6 +140,11 @@ export const QueryBuilder = observer(
         !queryBuilderState.showParameterPanel,
       );
     };
+    const toggleShowPostFilterPanel = (): void => {
+      postFilterState.setShowPostFilterPanel(
+        !postFilterState.showPostFilterPanel,
+      );
+    };
 
     return (
       <div
@@ -170,6 +175,16 @@ export const QueryBuilder = observer(
                     </MenuContentItemIcon>
                     <MenuContentItemLabel className="query-builder__sub-header__menu-content">
                       Show Parameter Panel
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={toggleShowPostFilterPanel}>
+                    <MenuContentItemIcon>
+                      {postFilterState.showPostFilterPanel ? (
+                        <CheckIcon />
+                      ) : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                      Show Post-Filter Panel
                     </MenuContentItemLabel>
                   </MenuContentItem>
                 </MenuContent>
