@@ -1,5 +1,7 @@
 # @finos/stylelint-config-legend-studio
 
+## 1.0.10
+
 ## 1.0.9
 
 ## 1.0.8

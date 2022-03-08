@@ -1,5 +1,11 @@
 # @finos/legend-taxonomy
 
+## 1.0.0
+
+### Major Changes
+
+- [#899](https://github.com/finos/legend-studio/pull/899) [`d4f0aec5`](https://github.com/finos/legend-studio/commit/d4f0aec5d536b3ad167ac702cc5c2070c265ed51) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `TEMP__useLegacyDepotServerAPIRoutes` to `TEMPORARY__useLegacyDepotServerAPIRoutes`
+
 ## 0.2.7
 
 ## 0.2.6

@@ -1,5 +1,25 @@
 # @finos/legend-query
 
+## 1.0.0
+
+### Major Changes
+
+- [#899](https://github.com/finos/legend-studio/pull/899) [`d4f0aec5`](https://github.com/finos/legend-studio/commit/d4f0aec5d536b3ad167ac702cc5c2070c265ed51) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `TEMP__useLegacyDepotServerAPIRoutes` to `TEMPORARY__useLegacyDepotServerAPIRoutes`
+
+### Minor Changes
+
+- [#888](https://github.com/finos/legend-studio/pull/888) [`aab22647`](https://github.com/finos/legend-studio/commit/aab22647524a4da0fd8cd0c7934c1a4a94a17797) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add functions explorer panel to show user-defined functions
+
+* [#902](https://github.com/finos/legend-studio/pull/902) [`81857614`](https://github.com/finos/legend-studio/commit/81857614bcf9d1335b4da1ae08569008f9ef11dd) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add post-filter support for query builder.
+
+### Patch Changes
+
+- [#907](https://github.com/finos/legend-studio/pull/907) [`4efb5909`](https://github.com/finos/legend-studio/commit/4efb59094bfc2e9a79ac0b1ef8fee6b6a1c6c3bc) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display properties mapped through association mappings for the class defined in the included mapping in query builder explorer tree ([#406](https://github.com/finos/legend-studio/issues/406))
+
+* [#915](https://github.com/finos/legend-studio/pull/915) [`cb0ea76f`](https://github.com/finos/legend-studio/commit/cb0ea76f6b1a623b3d9da3ade4f2c08f9f682fa1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add option to toggle post-filter panel and default to hide panel.
+
+- [#909](https://github.com/finos/legend-studio/pull/909) [`a7cb9f94`](https://github.com/finos/legend-studio/commit/a7cb9f942b16a48810b3a13c9ed91ffe030e9dac) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for `DateTime` valueSpecification editor
+
 ## 0.8.1
 
 ### Patch Changes
