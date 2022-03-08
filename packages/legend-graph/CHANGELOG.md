@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 1.2.0
+
+### Minor Changes
+
+- [#330](https://github.com/finos/legend-studio/pull/330) [`0b9263c`](https://github.com/finos/legend-studio/commit/0b9263c887753473a217e7b1c4a325dfdc3084aa) ([@aamend](https://github.com/aamend)) - Supporting Delta Lake JDBC connection.
+
+### Patch Changes
+
+- [#888](https://github.com/finos/legend-studio/pull/888) [`aab22647`](https://github.com/finos/legend-studio/commit/aab22647524a4da0fd8cd0c7934c1a4a94a17797) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Added helper to generate function signature in text.
+
+* [#899](https://github.com/finos/legend-studio/pull/899) [`d4f0aec5`](https://github.com/finos/legend-studio/commit/d4f0aec5d536b3ad167ac702cc5c2070c265ed51) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Deprecate and remove `TestDatabase`, and `UserPassword` authentication strategies for relational database connection.
+
+- [#901](https://github.com/finos/legend-studio/pull/901) [`58d25ea1`](https://github.com/finos/legend-studio/commit/58d25ea122ffab5a28b4b36aa93fc0ec44762b46) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Properly list enumeration mappings from dependencies ([#867](https://github.com/finos/legend-studio/issues/867)).
+
 ## 1.1.2
 
 ### Patch Changes
