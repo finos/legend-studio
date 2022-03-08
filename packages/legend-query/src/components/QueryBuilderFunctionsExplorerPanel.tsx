@@ -224,15 +224,13 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
           </div>
         </div>
         <div className="query-builder__functions-explorer__function__actions">
-          <div className="query-builder__functions-explorer__function__action">
-            <QueryBuilderFunctionInfoTooltip
-              element={node.packageableElement as ConcreteFunctionDefinition}
-            >
-              <div className="query-builder__functions-explorer__function__action query-builder__functions-explorer__function__node__info">
-                <InfoCircleIcon />
-              </div>
-            </QueryBuilderFunctionInfoTooltip>
-          </div>
+          <QueryBuilderFunctionInfoTooltip
+            element={node.packageableElement as ConcreteFunctionDefinition}
+          >
+            <div className="query-builder__functions-explorer__function__action query-builder__functions-explorer__function__node__info">
+              <InfoCircleIcon />
+            </div>
+          </QueryBuilderFunctionInfoTooltip>
         </div>
       </div>
     );
