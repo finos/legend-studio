@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import TEST_DATA__simpleGraphEntities from './data/TEST_DATA__SimpleModel.json';
+import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGeneration.json';
 import { unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
@@ -24,24 +24,25 @@ import {
   generateFunctionSignature,
 } from '../../helpers/PureLanguageHelper';
 
-const graphManagerState = TEST__getTestGraphManagerState();
+afterEach(() => {
+  // running all pending timers and switching to real timers using Jest
+  // See https://testing-library.com/docs/using-fake-timers/
+  jest.runOnlyPendingTimers();
+  // NOTE: since `jest.useFakeTimers()` is global, it can leak across tests, we need to reset after every test
+  jest.useRealTimers();
+});
 
-beforeAll(async () => {
+test(unitTest('Generate default parameter value for type'), async () => {
+  const graphManagerState = TEST__getTestGraphManagerState();
   await flowResult(
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__simpleGraphEntities as Entity[],
     ),
   );
-  jest.useFakeTimers('modern');
+  // NOTE: this will leak
+  jest.useFakeTimers();
   jest.setSystemTime(new Date(2020, 10, 1));
-});
-
-afterAll(() => {
-  jest.useRealTimers();
-});
-
-test(unitTest('Generate default parameter value for type'), () => {
   const setFunction = graphManagerState.graph.getFunction(
     'model::functions::set',
   );
