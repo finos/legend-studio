@@ -190,18 +190,18 @@ export const QueryBuilder = observer(
                 </MenuContent>
               }
               menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-                transformOrigin: { vertical: 'top', horizontal: 'left' },
+                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                transformOrigin: { vertical: 'top', horizontal: 'right' },
                 elevation: 7,
               }}
             >
               <button
-                className="query-builder__sub-header__custom-action-content"
+                className="query-builder__sub-header__custom-action__label"
                 title="Show Advanced Menu..."
               >
                 Advanced
-                <CaretDownIcon />
               </button>
+              <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
             </DropdownMenu>
           </div>
         </div>

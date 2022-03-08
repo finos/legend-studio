@@ -23,7 +23,7 @@ export class V1_ParameterIndexedParameterMapping
   extends V1_ServiceParameterMapping
   implements Hashable
 {
-  transform!: V1_RawLambda;
+  transform!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   override get hashCode(): string {
     return hashArray([

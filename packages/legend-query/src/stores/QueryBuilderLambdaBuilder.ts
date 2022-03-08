@@ -96,8 +96,8 @@ export const buildParametersLetLambdaFunc = (
   );
   letlambdaFunction.expressionSequence =
     queryBuilderState.queryParametersState.parameters
-      .map((_var) => {
-        if (_var.values) {
+      .map((queryParamState) => {
+        if (queryParamState.value) {
           const letFunc = new SimpleFunctionExpression(
             extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
             multiplicityOne,
@@ -106,9 +106,9 @@ export const buildParametersLetLambdaFunc = (
             GenericTypeExplicitReference.create(new GenericType(typeString)),
             multiplicityOne,
           );
-          letVar.values = [_var.variableName];
+          letVar.values = [queryParamState.variableName];
           letFunc.parametersValues.push(letVar);
-          letFunc.parametersValues.push(_var.values);
+          letFunc.parametersValues.push(queryParamState.value);
           return letFunc;
         }
         return undefined;
