@@ -553,7 +553,7 @@ export class LegendQueryStore {
       }
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
       this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-      // Leveage queryBuilderState's `initialize` to ensure we handle unsupported queries
+      // leverage initialization of query builder state to ensure we handle unsupported queries
       this.queryBuilderState.initialize(queryInfoState.service.execution.func, {
         notifyError: true,
       });
