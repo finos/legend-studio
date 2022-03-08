@@ -55,9 +55,11 @@ export const ProjectSelector = observer(
     const formatOptionLabel = (option: ProjectOption): React.ReactNode => {
       const viewProject = (): void =>
         applicationStore.navigator.openNewWindow(
-          generateViewProjectRoute(
-            applicationStore.config.currentSDLCServerOption,
-            option.value,
+          applicationStore.navigator.generateLocation(
+            generateViewProjectRoute(
+              applicationStore.config.currentSDLCServerOption,
+              option.value,
+            ),
           ),
         );
 

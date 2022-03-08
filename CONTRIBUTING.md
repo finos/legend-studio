@@ -170,8 +170,8 @@ yarn check:copyright
 # See https://www.typescriptlang.org/docs/handbook/project-references.html
 yarn check:project-ref
 
-# Check constraints on `package.json` and dependencies.
-yarn check:pkg-constraints
+# Check package manifests
+yarn check:pkg
 
 # To run all the checks we have in our CI build.
 yarn check:ci

@@ -9,5 +9,23 @@
     "src/**/__tests__/**/*.tsx",
     "src/**/__mocks__/**/*.ts",
     "src/**/__mocks__/**/*.tsx"
+  ],
+  "references": [
+    { "path": "../legend-application/tsconfig.build.json" },
+    { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-studio/tsconfig.build.json" },
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-graph-extension-collection/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-serializer/tsconfig.build.json" },
+    {
+      "path": "../legend-extension-external-store-service/tsconfig.build.json"
+    },
+    { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
+    { "path": "../legend-studio-extension-query-builder/tsconfig.build.json" },
+    {
+      "path": "../legend-extension-external-language-morphir/tsconfig.build.json"
+    }
   ]
 }

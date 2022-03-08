@@ -9,5 +9,13 @@
     "src/**/__tests__/**/*.tsx",
     "src/**/__mocks__/**/*.ts",
     "src/**/__mocks__/**/*.tsx"
+  ],
+  "references": [
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-application/tsconfig.build.json" },
+    { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-query/tsconfig.build.json" },
+    { "path": "../legend-graph-extension-collection/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" }
   ]
 }
