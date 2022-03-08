@@ -28,7 +28,7 @@
     { "path": "packages/legend-taxonomy" },
     { "path": "packages/legend-taxonomy-app" },
     { "path": "packages/legend-taxonomy-deployment" },
-    // extension
+    // extensions
     {
       "path": "packages/legend-graph-extension-collection"
     },
