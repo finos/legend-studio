@@ -60,7 +60,7 @@ import {
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import {
   type DropTargetMonitor,
   useDragLayer,
@@ -137,13 +137,13 @@ const PostFilterConditionDragLayer: React.FC = () => {
 };
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       queryBuilderState: QueryBuilderState;
       node: QueryBuilderPostFilterTreeNodeData;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function QueryBuilderPostFilterConditionContextMenu(props, ref) {
     const { queryBuilderState, node } = props;
     const postFilterState = queryBuilderState.postFilterState;
     const removeNode = (): void =>
@@ -184,8 +184,7 @@ const QueryBuilderPostFilterConditionContextMenu = observer(
         <MenuContentItem onClick={removeNode}>Remove</MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const QueryBuilderPostFilterGroupConditionEditor = observer(
