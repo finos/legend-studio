@@ -454,7 +454,7 @@ export class LegendQueryStore {
         (yield this.graphManagerState.graphManager.pureCodeToLambda(
           query.content,
         )) as RawLambda;
-      // Leveage queryBuilderState's `initialize` to ensure we handle unsupported queries
+      // leverage initialization of query builder state to ensure we handle unsupported queries
       this.queryBuilderState.initialize(lambda, {
         notifyError: true,
       });
