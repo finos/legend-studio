@@ -159,9 +159,10 @@
 
     &__content {
       @include flexVCenter;
+      @include ellipsisTextOverflow;
 
       height: 100%;
-      width: calc(100% - 3.3rem);
+      width: 100%;
     }
 
     &__icon {
@@ -190,23 +191,6 @@
       min-width: 0;
       color: var(--color-light-grey-400);
       user-select: none;
-    }
-
-    &__type {
-      @include flexVCenter;
-
-      &__label {
-        @include flexVCenter;
-
-        background: var(--color-dark-grey-250);
-        color: var(--color-light-grey-200);
-        margin-left: 0.5rem;
-        border-radius: 0.2rem;
-        font-size: 1rem;
-        padding: 0 0.5rem;
-        height: 1.6rem;
-        font-weight: 500;
-      }
     }
   }
 
