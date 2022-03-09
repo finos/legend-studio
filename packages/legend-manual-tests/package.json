@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "axios": "0.26.0",
+    "axios": "0.26.1",
     "cross-env": "7.0.3",
     "eslint": "8.10.0",
     "jest": "27.5.1",

@@ -1010,6 +1010,7 @@ export class QueryBuilderLambdaProcessor
       const columnState = new QueryBuilderSimpleProjectionColumnState(
         projectionState,
         valueSpecification,
+        false,
       );
 
       projectionState.addColumn(columnState, { skipSorting: true });

@@ -149,7 +149,12 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
     const { projectionColumnState } = props;
     const onPropertyExpressionChange = (
       node: QueryBuilderExplorerTreePropertyNodeData,
-    ): void => projectionColumnState.changeProperty(node);
+    ): void =>
+      projectionColumnState.changeProperty(
+        node,
+        projectionColumnState.projectionState.queryBuilderState.explorerState
+          .humanizePropertyName,
+      );
 
     return (
       <div className="query-builder__projection__column__value__property">
@@ -558,6 +563,7 @@ export const QueryBuilderProjectionPanel = observer(
                   (item as QueryBuilderExplorerTreeDragSource).node,
                   projectionState.queryBuilderState.graphManagerState.graph,
                 ),
+                queryBuilderState.explorerState.humanizePropertyName,
               ),
             );
             break;

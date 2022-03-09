@@ -16,18 +16,18 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "build:ts": "tsc --project ./tsconfig.build.json",
     "clean": "npm-run-all clean:cache clean:lib",
     "clean:cache": "rimraf \"build\"",
     "clean:lib": "rimraf \"lib\"",
-    "dev": "npm-run-all --parallel dev:tsc dev:server",
-    "dev:server": "yarn build:tsc && nodemon --experimental-json-modules --watch lib lib/index.js",
-    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "dev": "npm-run-all --parallel dev:ts dev:server",
+    "dev:server": "yarn build:ts && nodemon --experimental-json-modules --watch lib lib/index.js",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "start": "node --experimental-json-modules lib/index.js"
   },
   "dependencies": {
-    "fastify": "3.27.3",
+    "fastify": "3.27.4",
     "fastify-cors": "6.0.3"
   },
   "devDependencies": {
