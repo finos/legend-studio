@@ -109,7 +109,7 @@ export class V1_BatchPersister extends V1_Persister implements Hashable {
 
 export abstract class V1_TargetShape implements Hashable {
   get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.TARGET_SPECIFICATION]);
+    return hashArray([PERSISTENCE_HASH_STRUCTURE.TARGET_SHAPE]);
   }
 }
 
