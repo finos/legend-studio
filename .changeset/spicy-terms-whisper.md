@@ -2,4 +2,4 @@
 "@finos/legend-query": patch
 ---
 
-Remove notify error on unsupported query for Legend Query to avoid confusion for execution/edition.
+Stop notifying errors for unsupported query in `Legend Query` to avoid confusion during execution/edition.
