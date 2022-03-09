@@ -15,8 +15,10 @@ import {
   DeleteIndicatorMergeStrategy,
   FlatTargetSpecification,
   GroupedFlatTargetSpecification,
+  ManualTrigger,
   MaxVersionDeduplicationStrategy,
   MergeStrategy,
+  MultiFlatTarget,
   NestedTargetSpecification,
   NoAuditing,
   NoDeduplicationStrategy,
@@ -26,17 +28,21 @@ import {
   OpaqueAuditing,
   OpaqueDeduplicationStrategy,
   OpaqueMergeStrategy,
+  OpaqueTarget,
   OpaqueTransactionMilestoning,
   OpaqueTrigger,
   OpaqueValidityMilestoning,
   Persistence,
   Persister,
   PropertyAndFlatTargetSpecification,
+  PropertyAndSingleFlatTarget,
   Reader,
   ServiceReader,
+  SingleFlatTarget,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
+  TargetShape,
   TargetSpecification,
   TransactionMilestoning,
   TransactionScope,
@@ -63,8 +69,10 @@ import {
   V1_DeleteIndicatorMergeStrategy,
   V1_FlatTargetSpecification,
   V1_GroupedFlatTargetSpecification,
+  V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
+  V1_MultiFlatTarget,
   V1_NestedTargetSpecification,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
@@ -74,17 +82,21 @@ import {
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
+  V1_OpaqueTarget,
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
   V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTargetSpecification,
+  V1_PropertyAndSingleFlatTarget,
   V1_Reader,
   V1_ServiceReader,
+  V1_SingleFlatTarget,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
+  V1_TargetShape,
   V1_TargetSpecification,
   V1_TransactionMilestoning,
   V1_TransactionScope,
@@ -129,6 +141,8 @@ export const V1_transformTrigger = (
 ): V1_Trigger => {
   if (element instanceof OpaqueTrigger) {
     return new V1_OpaqueTrigger();
+  } else if (element instanceof ManualTrigger) {
+    return new V1_ManualTrigger();
   }
   throw new UnsupportedOperationError(
     `Unable to transform trigger '${element}'`,
@@ -165,16 +179,120 @@ export const V1_transformPersister = (
     return new V1_StreamingPersister();
   } else if (element instanceof BatchPersister) {
     const protocol = new V1_BatchPersister();
-    protocol.targetSpecification = V1_transformTargetSpecification(
-      element.targetSpecification,
-      context,
-    );
+    if (element.targetSpecification) {
+      protocol.targetSpecification = V1_transformTargetSpecification(
+        element.targetSpecification,
+        context,
+      );
+    } else if (element.targetShape) {
+      protocol.targetShape = V1_transformTargetShape(
+        element.targetShape,
+        context,
+      );
+    } else {
+      throw new UnsupportedOperationError(
+        `Persister has neither a target specification nor a target shape '${element}'`,
+      );
+    }
     return protocol;
   }
   throw new UnsupportedOperationError(
     `Unable to transform persister '${element}'`,
   );
 };
+
+/**********
+ * target shape
+ **********/
+
+export const V1_transformTargetShape = (
+  element: TargetShape,
+  context: V1_GraphTransformerContext,
+): V1_TargetShape => {
+  if (element instanceof MultiFlatTarget) {
+    return V1_transformMultiFlatTarget(element, context);
+  } else if (element instanceof SingleFlatTarget) {
+    return V1_transformSingleFlatTarget(element, context);
+  } else if (element instanceof OpaqueTarget) {
+    return V1_transformOpaqueTarget(element, context);
+  }
+  throw new UnsupportedOperationError(
+    `Unable to transform target shape '${element}'`,
+  );
+};
+
+export const V1_transformMultiFlatTarget = (
+  element: MultiFlatTarget,
+  context: V1_GraphTransformerContext,
+): V1_MultiFlatTarget => {
+  const protocol = new V1_MultiFlatTarget();
+  protocol.modelClass = V1_transformElementReference(element.modelClass);
+  protocol.transactionScope = V1_transformTransactionScope(
+    element.transactionScope,
+    context,
+  );
+  protocol.parts = element.parts.map((p) =>
+    V1_transformPropertyAndSingleFlatTarget(p, context),
+  );
+  return protocol;
+};
+
+export const V1_transformPropertyAndSingleFlatTarget = (
+  element: PropertyAndSingleFlatTarget,
+  context: V1_GraphTransformerContext,
+): V1_PropertyAndSingleFlatTarget => {
+  const protocol = new V1_PropertyAndSingleFlatTarget();
+  protocol.property = element.property;
+  protocol.singleFlatTarget = V1_transformSingleFlatTarget(
+    element.singleFlatTarget,
+    context,
+  );
+  return protocol;
+};
+
+export const V1_transformSingleFlatTarget = (
+  element: SingleFlatTarget,
+  context: V1_GraphTransformerContext,
+): V1_SingleFlatTarget => {
+  const protocol = new V1_SingleFlatTarget();
+  protocol.modelClass = V1_transformElementReference(element.modelClass);
+  protocol.targetName = element.targetName;
+  protocol.partitionProperties = element.partitionProperties;
+  protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(
+    element.deduplicationStrategy,
+    context,
+  );
+  protocol.batchMode = V1_transformBatchMilestoningMode(
+    element.batchMode,
+    context,
+  );
+  return protocol;
+};
+
+export const V1_transformOpaqueTarget = (
+  element: OpaqueTarget,
+  context: V1_GraphTransformerContext,
+): V1_OpaqueTarget => {
+  const protocol = new V1_OpaqueTarget();
+  protocol.targetName = element.targetName;
+  return protocol;
+};
+
+export const V1_transformTransactionScope = (
+  element: TransactionScope,
+  context: V1_GraphTransformerContext,
+): V1_TransactionScope => {
+  if (element == TransactionScope.SINGLE_TARGET) {
+    return V1_TransactionScope.SINGLE_TARGET;
+  } else if (element == TransactionScope.ALL_TARGETS) {
+    return V1_TransactionScope.ALL_TARGETS;
+  }
+  throw new UnsupportedOperationError(
+    `Unable to transform transaction scope '${element}'`,
+  );
+};
+
+//TODO: ledav -- remove post migration to updated model [START]
 
 /**********
  * target specification
@@ -238,7 +356,7 @@ export const V1_transformFlatTargetSpecification = (
     context,
   );
   protocol.batchMode = V1_transformBatchMilestoningMode(
-    element.batchMilestoningMode,
+    element.batchMode,
     context,
   );
   return protocol;
@@ -254,19 +372,7 @@ export const V1_transformNestedTargetSpecification = (
   return protocol;
 };
 
-export const V1_transformTransactionScope = (
-  element: TransactionScope,
-  context: V1_GraphTransformerContext,
-): V1_TransactionScope => {
-  if (element == TransactionScope.SINGLE_TARGET) {
-    return V1_TransactionScope.SINGLE_TARGET;
-  } else if (element == TransactionScope.ALL_TARGETS) {
-    return V1_TransactionScope.ALL_TARGETS;
-  }
-  throw new UnsupportedOperationError(
-    `Unable to transform transaction scope '${element}'`,
-  );
-};
+//TODO: ledav -- remove post migration to updated model [END]
 
 /**********
  * deduplication strategy
