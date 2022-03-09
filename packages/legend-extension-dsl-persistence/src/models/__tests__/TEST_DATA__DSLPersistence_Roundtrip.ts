@@ -168,7 +168,7 @@ export const TEST_DATA__roundtrip = [
   },
   {
     path: 'org::dxl::ZooPersistence',
-    classifierPath: 'meta::pure::persistence::metamodel::PersistencePipe',
+    classifierPath: 'meta::pure::persistence::metamodel::Persistence',
     content: {
       _type: 'persistence',
       name: 'ZooPersistence',

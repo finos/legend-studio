@@ -29,7 +29,7 @@ import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_P
 
 //TODO: ledav -- update value once Pure model is updated
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
-  'meta::pure::persistence::metamodel::PersistencePipe';
+  'meta::pure::persistence::metamodel::Persistence';
 
 export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
