@@ -131,11 +131,11 @@ Each workspace in the monorepo should have a `dev` script. Run these (in separat
 yarn dev
 
 # have other terminal tabs for auto-building code and style
-yarn dev:tsc
+yarn dev:ts
 yarn dev:sass
 ```
 
-> Note that `dev:tsc` is convenient as it watches for changes in the whole project, but sometimes, it might take long time or cause Webpack recompilation to take a long time. So there are times when it's better to focus the watcher in a particular workspace using the command `yarn workspace <workspace-name> <workspace-script>`, e.g. to call `dev` script of workspace `lib1`, use the command `yarn workspace lib1 dev`.
+> Note that `dev:ts` is convenient as it watches for changes in the whole project, but sometimes, it might take long time or cause Webpack recompilation to take a long time. So there are times when it's better to focus the watcher in a particular workspace using the command `yarn workspace <workspace-name> <workspace-script>`, e.g. to call `dev` script of workspace `lib1`, use the command `yarn workspace lib1 dev`.
 
 #### :construction: Testing your code
 
@@ -166,9 +166,9 @@ Don't forget to keep your code nice and tidy. We run `prettier` when you commit 
 # Make sure your code file has proper copyright header.
 yarn check:copyright
 
-# Check problems with Typescript project reference.
+# Check problems with typings and Typescript project reference setup.
 # See https://www.typescriptlang.org/docs/handbook/project-references.html
-yarn check:project-ref
+yarn check:ts
 
 # Check package manifests
 yarn check:pkg
