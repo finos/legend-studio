@@ -277,6 +277,7 @@ const QueryBuilderExplorerContextMenu = observer(
                 node,
                 projectionState.queryBuilderState.graphManagerState.graph,
               ),
+              projectionState.queryBuilderState.explorerState.humanizePropertyName,
             ),
           );
         }
@@ -331,6 +332,7 @@ const QueryBuilderExplorerContextMenu = observer(
                   nodeToAdd,
                   projectionState.queryBuilderState.graphManagerState.graph,
                 ),
+                projectionState.queryBuilderState.explorerState.humanizePropertyName,
               ),
             );
           });

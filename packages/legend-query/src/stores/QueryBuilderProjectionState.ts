@@ -138,6 +138,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
   constructor(
     projectionState: QueryBuilderProjectionState,
     propertyExpression: AbstractPropertyExpression,
+    humanizePropertyName: boolean,
   ) {
     super(projectionState, '');
 
@@ -153,6 +154,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     );
     this.columnName = getPropertyChainName(
       this.propertyExpressionState.propertyExpression,
+      humanizePropertyName,
     );
   }
 
@@ -160,7 +162,10 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     this.lambdaParameterName = val;
   }
 
-  changeProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
+  changeProperty(
+    node: QueryBuilderExplorerTreePropertyNodeData,
+    humanizePropertyName: boolean,
+  ): void {
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.projectionState.queryBuilderState,
       buildPropertyExpressionFromExplorerTreeNodeData(
@@ -172,6 +177,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     );
     this.columnName = getPropertyChainName(
       this.propertyExpressionState.propertyExpression,
+      humanizePropertyName,
     );
   }
 
