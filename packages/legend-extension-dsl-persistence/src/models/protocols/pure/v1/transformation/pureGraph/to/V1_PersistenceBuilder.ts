@@ -15,8 +15,10 @@ import {
   V1_DeleteIndicatorMergeStrategy,
   V1_FlatTargetSpecification,
   V1_GroupedFlatTargetSpecification,
+  V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
+  V1_MultiFlatTarget,
   V1_NestedTargetSpecification,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
@@ -26,17 +28,21 @@ import {
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
+  V1_OpaqueTarget,
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
   type V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTargetSpecification,
+  V1_PropertyAndSingleFlatTarget,
   V1_Reader,
   V1_ServiceReader,
+  V1_SingleFlatTarget,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
+  V1_TargetShape,
   V1_TargetSpecification,
   V1_TransactionMilestoning,
   V1_TransactionScope,
@@ -63,8 +69,10 @@ import {
   DeleteIndicatorMergeStrategy,
   FlatTargetSpecification,
   GroupedFlatTargetSpecification,
+  ManualTrigger,
   MaxVersionDeduplicationStrategy,
   MergeStrategy,
+  MultiFlatTarget,
   NestedTargetSpecification,
   NoAuditing,
   NoDeduplicationStrategy,
@@ -74,16 +82,20 @@ import {
   OpaqueAuditing,
   OpaqueDeduplicationStrategy,
   OpaqueMergeStrategy,
+  OpaqueTarget,
   OpaqueTransactionMilestoning,
   OpaqueTrigger,
   OpaqueValidityMilestoning,
   Persister,
   PropertyAndFlatTargetSpecification,
+  PropertyAndSingleFlatTarget,
   Reader,
   ServiceReader,
+  SingleFlatTarget,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
+  TargetShape,
   TargetSpecification,
   TransactionMilestoning,
   TransactionScope,
@@ -130,8 +142,10 @@ export const V1_buildTrigger = (
 ): Trigger => {
   if (protocol instanceof V1_OpaqueTrigger) {
     return new OpaqueTrigger();
+  } else if (protocol instanceof V1_ManualTrigger) {
+    return new ManualTrigger();
   }
-  throw new GraphBuilderError(`Unrecognized trigger '${typeof protocol}'`);
+  throw new GraphBuilderError(`Unrecognized trigger '${protocol}'`);
 };
 
 /**********
@@ -147,7 +161,7 @@ export const V1_buildReader = (
     reader.service = context.resolveService(protocol.service);
     return reader;
   }
-  throw new GraphBuilderError(`Unrecognized reader '${typeof protocol}'`);
+  throw new GraphBuilderError(`Unrecognized reader '${protocol}'`);
 };
 
 /**********
@@ -162,14 +176,130 @@ export const V1_buildPersister = (
     return new StreamingPersister();
   } else if (protocol instanceof V1_BatchPersister) {
     const persister = new BatchPersister();
-    persister.targetSpecification = V1_buildTargetSpecification(
-      protocol.targetSpecification,
-      context,
-    );
+    if (protocol.targetSpecification) {
+      persister.targetSpecification = V1_buildTargetSpecification(
+        protocol.targetSpecification,
+        context,
+      );
+    } else if (protocol.targetShape) {
+      persister.targetShape = V1_buildTargetShape(
+        protocol.targetShape,
+        context,
+      );
+    } else {
+      throw new GraphBuilderError(
+        `Persister has neither a target specification nor a target shape '${protocol}'`,
+      );
+    }
     return persister;
   }
-  throw new GraphBuilderError(`Unrecognized persister '${typeof protocol}'`);
+  throw new GraphBuilderError(`Unrecognized persister '${protocol}'`);
 };
+
+/**********
+ * target shape
+ **********/
+
+export const V1_buildTargetShape = (
+  protocol: V1_TargetShape,
+  context: V1_GraphBuilderContext,
+): TargetShape => {
+  if (protocol instanceof V1_MultiFlatTarget) {
+    return V1_buildMultiFlatTarget(protocol, context);
+  } else if (protocol instanceof V1_SingleFlatTarget) {
+    return V1_buildSingleFlatTarget(protocol, protocol.modelClass, context);
+  } else if (protocol instanceof V1_OpaqueTarget) {
+    return V1_buildOpaqueTarget(protocol, context);
+  }
+  throw new GraphBuilderError(`Unrecognized target shape '${protocol}'`);
+};
+
+export const V1_buildMultiFlatTarget = (
+  protocol: V1_MultiFlatTarget,
+  context: V1_GraphBuilderContext,
+): MultiFlatTarget => {
+  const targetShape = new MultiFlatTarget();
+  targetShape.modelClass = context.resolveClass(protocol.modelClass);
+  targetShape.transactionScope = V1_buildTransactionScope(
+    protocol.transactionScope,
+    context,
+  );
+  targetShape.parts = protocol.parts.map((p) =>
+    V1_buildPropertyAndSingleFlatTarget(p, protocol.modelClass, context),
+  );
+  return targetShape;
+};
+
+export const V1_buildSingleFlatTarget = (
+  protocol: V1_SingleFlatTarget,
+  modelClass: string,
+  context: V1_GraphBuilderContext,
+): SingleFlatTarget => {
+  const targetShape = new SingleFlatTarget();
+
+  // Flat: modelClass will match protocol.modelClass
+  // GroupedFlat: protocol.modelClass will not be populated;
+  //              instead infer it from rootModelClass.property target type
+
+  targetShape.modelClass = context.resolveClass(modelClass);
+  targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
+  targetShape.partitionProperties = protocol.partitionProperties;
+  targetShape.deduplicationStrategy = V1_buildDeduplicationStrategy(
+    protocol.deduplicationStrategy,
+    context,
+  );
+  targetShape.batchMode = V1_buildBatchMilestoningMode(
+    protocol.batchMode,
+    context,
+  );
+  return targetShape;
+};
+
+export const V1_buildOpaqueTarget = (
+  protocol: V1_OpaqueTarget,
+  context: V1_GraphBuilderContext,
+): OpaqueTarget => {
+  const targetShape = new OpaqueTarget();
+  targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
+  return targetShape;
+};
+
+export const V1_buildPropertyAndSingleFlatTarget = (
+  protocol: V1_PropertyAndSingleFlatTarget,
+  groupModelClass: string,
+  context: V1_GraphBuilderContext,
+): PropertyAndSingleFlatTarget => {
+  const element = new PropertyAndSingleFlatTarget();
+  element.property = protocol.property;
+
+  // resolve target type of property to populate model class in single flat target
+  const property = context.graph
+    .getClass(groupModelClass)
+    .getProperty(protocol.property);
+  const targetModelClass = property.genericType.value.rawType.path;
+
+  element.singleFlatTarget = V1_buildSingleFlatTarget(
+    protocol.singleFlatTarget,
+    targetModelClass,
+    context,
+  );
+
+  return element;
+};
+
+export const V1_buildTransactionScope = (
+  protocol: V1_TransactionScope,
+  context: V1_GraphBuilderContext,
+): TransactionScope => {
+  if (protocol === V1_TransactionScope.SINGLE_TARGET) {
+    return TransactionScope.SINGLE_TARGET;
+  } else if (protocol === V1_TransactionScope.ALL_TARGETS) {
+    return TransactionScope.ALL_TARGETS;
+  }
+  throw new GraphBuilderError(`Unrecognized transaction scope '${protocol}'`);
+};
+
+//TODO: ledav -- remove post migration to updated model [START]
 
 /**********
  * target specification
@@ -191,7 +321,7 @@ export const V1_buildTargetSpecification = (
     return V1_buildNestedTargetSpecification(protocol, context);
   }
   throw new GraphBuilderError(
-    `Unrecognized target specification '${typeof protocol}'`,
+    `Unrecognized target specification '${protocol}'`,
   );
 };
 
@@ -229,7 +359,7 @@ export const V1_buildFlatTargetSpecification = (
     protocol.deduplicationStrategy,
     context,
   );
-  targetSpecification.batchMilestoningMode = V1_buildBatchMilestoningMode(
+  targetSpecification.batchMode = V1_buildBatchMilestoningMode(
     protocol.batchMode,
     context,
   );
@@ -244,18 +374,6 @@ export const V1_buildNestedTargetSpecification = (
   targetSpecification.modelClass = context.resolveClass(protocol.modelClass);
   targetSpecification.targetName = guaranteeNonEmptyString(protocol.targetName);
   return targetSpecification;
-};
-
-export const V1_buildTransactionScope = (
-  protocol: V1_TransactionScope,
-  context: V1_GraphBuilderContext,
-): TransactionScope => {
-  if (protocol === V1_TransactionScope.SINGLE_TARGET) {
-    return TransactionScope.SINGLE_TARGET;
-  } else if (protocol === V1_TransactionScope.ALL_TARGETS) {
-    return TransactionScope.ALL_TARGETS;
-  }
-  throw new GraphBuilderError(`Unrecognized transaction scope '${protocol}'`);
 };
 
 export const V1_buildPropertyAndFlatTargetSpecification = (
@@ -280,6 +398,8 @@ export const V1_buildPropertyAndFlatTargetSpecification = (
 
   return specification;
 };
+
+//TODO: ledav -- remove post migration to updated model [END]
 
 /**********
  * deduplication strategy

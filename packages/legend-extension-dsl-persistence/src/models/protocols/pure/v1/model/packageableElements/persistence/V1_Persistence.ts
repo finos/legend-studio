@@ -44,6 +44,12 @@ export abstract class V1_Trigger implements Hashable {
   abstract get hashCode(): string;
 }
 
+export class V1_ManualTrigger extends V1_Trigger implements Hashable {
+  override get hashCode(): string {
+    return hashArray([PERSISTENCE_HASH_STRUCTURE.MANUAL_TRIGGER]);
+  }
+}
+
 export class V1_OpaqueTrigger extends V1_Trigger implements Hashable {
   override get hashCode(): string {
     return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_TRIGGER]);
@@ -85,14 +91,92 @@ export class V1_StreamingPersister extends V1_Persister implements Hashable {
 }
 
 export class V1_BatchPersister extends V1_Persister implements Hashable {
-  targetSpecification!: V1_TargetSpecification;
+  targetSpecification?: V1_TargetSpecification | undefined;
+  targetShape?: V1_TargetShape | undefined;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
-      this.targetSpecification,
+      this.targetSpecification ?? '',
+      this.targetShape ?? '',
     ]);
   }
+}
+
+/**********
+ * target shape
+ **********/
+
+export abstract class V1_TargetShape implements Hashable {
+  get hashCode(): string {
+    return hashArray([PERSISTENCE_HASH_STRUCTURE.TARGET_SPECIFICATION]);
+  }
+}
+
+export class V1_MultiFlatTarget extends V1_TargetShape implements Hashable {
+  modelClass!: string;
+  transactionScope!: V1_TransactionScope;
+  parts: V1_PropertyAndSingleFlatTarget[] = [];
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.MULTI_FLAT_TARGET,
+      super.hashCode,
+      this.modelClass,
+      this.transactionScope,
+      hashArray(this.parts),
+    ]);
+  }
+}
+
+export class V1_SingleFlatTarget extends V1_TargetShape implements Hashable {
+  modelClass!: string;
+  targetName!: string;
+  partitionProperties: string[] = [];
+  deduplicationStrategy!: V1_DeduplicationStrategy;
+  batchMode!: V1_BatchMilestoningMode;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.SINGLE_FLAT_TARGET,
+      super.hashCode,
+      this.modelClass,
+      this.targetName,
+      hashArray(this.partitionProperties),
+      this.deduplicationStrategy,
+      this.batchMode,
+    ]);
+  }
+}
+
+export class V1_OpaqueTarget extends V1_TargetShape implements Hashable {
+  targetName!: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.OPAQUE_TARGET,
+      super.hashCode,
+      this.targetName,
+    ]);
+  }
+}
+
+export class V1_PropertyAndSingleFlatTarget implements Hashable {
+  property!: string;
+  singleFlatTarget!: V1_SingleFlatTarget;
+
+  get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.PROPERTY_AND_SINGLE_FLAT_TARGET,
+      this.property,
+      this.singleFlatTarget,
+    ]);
+  }
+}
+
+export enum V1_TransactionScope {
+  SINGLE_TARGET = 'SINGLE_TARGET',
+  ALL_TARGETS = 'ALL_TARGETS',
 }
 
 /**********
@@ -161,11 +245,6 @@ export class V1_NestedTargetSpecification
       this.targetName,
     ]);
   }
-}
-
-export enum V1_TransactionScope {
-  SINGLE_TARGET = 'SINGLE_TARGET',
-  ALL_TARGETS = 'ALL_TARGETS',
 }
 
 export class V1_PropertyAndFlatTargetSpecification implements Hashable {
