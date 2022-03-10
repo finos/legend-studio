@@ -3823,7 +3823,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
           endpointURL: 'endpoint',
           host: 'myserver',
           port: 5439,
-          region: 'us-east-1',
+          region: 'region-1',
         },
         element: 'apps::pure::studio::relational::tests::dbInc',
         type: 'H2',
