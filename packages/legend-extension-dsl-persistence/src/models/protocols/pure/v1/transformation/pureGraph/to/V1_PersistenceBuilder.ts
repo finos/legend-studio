@@ -201,7 +201,7 @@ export const V1_buildMultiFlatTarget = (
     context,
   );
   targetShape.parts = protocol.parts.map((p) =>
-    V1_buildPropertyAndSingleFlatTarget(p, protocol.modelClass, context),
+    V1_buildPropertyAndFlatTarget(p, protocol.modelClass, context),
   );
   return targetShape;
 };
@@ -240,7 +240,7 @@ export const V1_buildOpaqueTarget = (
   return targetShape;
 };
 
-export const V1_buildPropertyAndSingleFlatTarget = (
+export const V1_buildPropertyAndFlatTarget = (
   protocol: V1_PropertyAndFlatTarget,
   groupModelClass: string,
   context: V1_GraphBuilderContext,

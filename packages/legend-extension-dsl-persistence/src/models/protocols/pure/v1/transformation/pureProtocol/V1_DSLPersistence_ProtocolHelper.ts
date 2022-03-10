@@ -228,13 +228,13 @@ const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
     (val) =>
       serializeArray(
         val,
-        (v) => serialize(V1_propertyAndSingleFlatTargetSchema, v),
+        (v) => serialize(V1_propertyAndFlatTargetSchema, v),
         true,
       ),
     (val) =>
       deserializeArray(
         val,
-        (v) => deserialize(V1_propertyAndSingleFlatTargetSchema, v),
+        (v) => deserialize(V1_propertyAndFlatTargetSchema, v),
         false,
       ),
   ),
@@ -302,11 +302,11 @@ const V1_deserializeTargetShape = (
   }
 };
 
-const V1_propertyAndSingleFlatTargetSchema = createModelSchema(
+const V1_propertyAndFlatTargetSchema = createModelSchema(
   V1_PropertyAndFlatTarget,
   {
     property: primitive(),
-    singleFlatTarget: custom(
+    flatTarget: custom(
       (val) => serialize(V1_flatTargetModelSchema, val),
       (val) => deserialize(V1_flatTargetModelSchema, val),
     ),
