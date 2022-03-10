@@ -2,4 +2,4 @@
 '@finos/legend-query': patch
 ---
 
-Sort dependency project versions in descending order.
+Sort project versions in descending order in query setup.
