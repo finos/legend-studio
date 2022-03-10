@@ -3,4 +3,4 @@
 '@finos/legend-studio': minor
 ---
 
-Add support for redshift connector
+Add support for `Redshift` connector
