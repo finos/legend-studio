@@ -248,7 +248,7 @@ export const V1_buildPropertyAndFlatTarget = (
   const element = new PropertyAndFlatTarget();
   element.property = protocol.property;
 
-  // resolve target type of property to populate model class in single flat target
+  // resolve target type of property to populate model class in flat target
   const property = context.graph
     .getClass(groupModelClass)
     .getProperty(protocol.property);

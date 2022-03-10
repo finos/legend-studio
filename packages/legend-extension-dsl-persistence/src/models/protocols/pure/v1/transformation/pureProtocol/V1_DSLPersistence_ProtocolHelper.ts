@@ -224,6 +224,7 @@ enum V1_TargetShapeType {
 
 const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
   _type: usingConstantValueSchema(V1_TargetShapeType.MULTI_FLAT_TARGET),
+  modelClass: primitive(),
   parts: custom(
     (val) =>
       serializeArray(
@@ -238,7 +239,6 @@ const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
         false,
       ),
   ),
-  modelClass: primitive(),
   transactionScope: primitive(),
 });
 

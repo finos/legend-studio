@@ -177,13 +177,13 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       persister: {
         _type: 'batchPersister',
-        targetSpecification: {
-          _type: 'groupedFlatTargetSpecification',
-          components: [
+        targetShape: {
+          _type: 'multiFlatTarget',
+          parts: [
             {
               property: 'zookeeper',
-              targetSpecification: {
-                _type: 'flatTargetSpecification',
+              flatTarget: {
+                _type: 'flatTarget',
                 batchMode: {
                   _type: 'appendOnly',
                   auditing: {
@@ -201,8 +201,8 @@ export const TEST_DATA__roundtrip = [
             },
             {
               property: 'owner',
-              targetSpecification: {
-                _type: 'flatTargetSpecification',
+              flatTarget: {
+                _type: 'flatTarget',
                 batchMode: {
                   _type: 'bitemporalSnapshot',
                   transactionMilestoning: {
