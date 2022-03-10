@@ -13,13 +13,10 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
-  V1_FlatTargetSpecification,
-  V1_GroupedFlatTargetSpecification,
   V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
   V1_MultiFlatTarget,
-  V1_NestedTargetSpecification,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
@@ -34,16 +31,14 @@ import {
   V1_OpaqueValidityMilestoning,
   V1_Persistence,
   V1_Persister,
-  V1_PropertyAndFlatTargetSpecification,
-  V1_PropertyAndSingleFlatTarget,
+  V1_PropertyAndFlatTarget,
   V1_Reader,
   V1_ServiceReader,
-  V1_SingleFlatTarget,
+  V1_FlatTarget,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
   V1_TargetShape,
-  V1_TargetSpecification,
   V1_TransactionMilestoning,
   V1_Trigger,
   V1_UnitemporalDelta,
@@ -182,10 +177,6 @@ const V1_streamingPersisterModelSchema = createModelSchema(
 
 const V1_batchPersisterModelSchema = createModelSchema(V1_BatchPersister, {
   _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
-  targetSpecification: custom(
-    (val) => V1_serializeTargetSpecification(val),
-    (val) => V1_deserializeTargetSpecification(val),
-  ),
   targetShape: custom(
     (val) => V1_serializeTargetShape(val),
     (val) => V1_deserializeTargetShape(val),
@@ -227,7 +218,7 @@ const V1_deserializePersister = (
 
 enum V1_TargetShapeType {
   MULTI_FLAT_TARGET = 'multiFlatTarget',
-  SINGLE_FLAT_TARGET = 'singleFlatTarget',
+  FLAT_TARGET = 'flatTarget',
   OPAQUE_TARGET = 'opaqueTarget',
 }
 
@@ -251,8 +242,8 @@ const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
   transactionScope: primitive(),
 });
 
-const V1_singleFlatTargetModelSchema = createModelSchema(V1_SingleFlatTarget, {
-  _type: usingConstantValueSchema(V1_TargetShapeType.SINGLE_FLAT_TARGET),
+const V1_flatTargetModelSchema = createModelSchema(V1_FlatTarget, {
+  _type: usingConstantValueSchema(V1_TargetShapeType.FLAT_TARGET),
   batchMode: custom(
     (val) => V1_serializeBatchMilestoningMode(val),
     (val) => V1_deserializeBatchMilestoningMode(val),
@@ -280,8 +271,8 @@ const V1_serializeTargetShape = (
   }
   if (protocol instanceof V1_MultiFlatTarget) {
     return serialize(V1_multiFlatTargetModelSchema, protocol);
-  } else if (protocol instanceof V1_SingleFlatTarget) {
-    return serialize(V1_singleFlatTargetModelSchema, protocol);
+  } else if (protocol instanceof V1_FlatTarget) {
+    return serialize(V1_flatTargetModelSchema, protocol);
   } else if (protocol instanceof V1_OpaqueTarget) {
     return serialize(V1_opaqueTargetModelSchema, protocol);
   }
@@ -300,8 +291,8 @@ const V1_deserializeTargetShape = (
   switch (json._type) {
     case V1_TargetShapeType.MULTI_FLAT_TARGET:
       return deserialize(V1_multiFlatTargetModelSchema, json);
-    case V1_TargetShapeType.SINGLE_FLAT_TARGET:
-      return deserialize(V1_singleFlatTargetModelSchema, json);
+    case V1_TargetShapeType.FLAT_TARGET:
+      return deserialize(V1_flatTargetModelSchema, json);
     case V1_TargetShapeType.OPAQUE_TARGET:
       return deserialize(V1_opaqueTargetModelSchema, json);
     default:
@@ -312,135 +303,15 @@ const V1_deserializeTargetShape = (
 };
 
 const V1_propertyAndSingleFlatTargetSchema = createModelSchema(
-  V1_PropertyAndSingleFlatTarget,
+  V1_PropertyAndFlatTarget,
   {
     property: primitive(),
     singleFlatTarget: custom(
-      (val) => serialize(V1_singleFlatTargetModelSchema, val),
-      (val) => deserialize(V1_singleFlatTargetModelSchema, val),
+      (val) => serialize(V1_flatTargetModelSchema, val),
+      (val) => deserialize(V1_flatTargetModelSchema, val),
     ),
   },
 );
-
-//TODO: ledav -- remove post migration to updated model [START]
-
-/**********
- * target specification
- **********/
-
-enum V1_TargetSpecificationType {
-  GROUPED_FLAT_TARGET_SPECIFICATION = 'groupedFlatTargetSpecification',
-  FLAT_TARGET_SPECIFICATION = 'flatTargetSpecification',
-  NESTED_TARGET_SPECIFICATION = 'nestedTargetSpecification',
-}
-
-const V1_groupedFlatTargetSpecificationModelSchema = createModelSchema(
-  V1_GroupedFlatTargetSpecification,
-  {
-    _type: usingConstantValueSchema(
-      V1_TargetSpecificationType.GROUPED_FLAT_TARGET_SPECIFICATION,
-    ),
-    components: custom(
-      (val) =>
-        serializeArray(
-          val,
-          (v) => serialize(V1_propertyAndFlatTargetSpecificationSchema, v),
-          true,
-        ),
-      (val) =>
-        deserializeArray(
-          val,
-          (v) => deserialize(V1_propertyAndFlatTargetSpecificationSchema, v),
-          false,
-        ),
-    ),
-    modelClass: primitive(),
-    transactionScope: primitive(),
-  },
-);
-
-const V1_flatTargetSpecificationModelSchema = createModelSchema(
-  V1_FlatTargetSpecification,
-  {
-    _type: usingConstantValueSchema(
-      V1_TargetSpecificationType.FLAT_TARGET_SPECIFICATION,
-    ),
-    batchMode: custom(
-      (val) => V1_serializeBatchMilestoningMode(val),
-      (val) => V1_deserializeBatchMilestoningMode(val),
-    ),
-    deduplicationStrategy: custom(
-      (val) => V1_serializeDeduplicationStrategy(val),
-      (val) => V1_deserializeDeduplicationStrategy(val),
-    ),
-    modelClass: primitive(),
-    partitionProperties: list(primitive()),
-    targetName: primitive(),
-  },
-);
-
-const V1_nestedTargetSpecificationModelSchema = createModelSchema(
-  V1_NestedTargetSpecification,
-  {
-    _type: usingConstantValueSchema(
-      V1_TargetSpecificationType.NESTED_TARGET_SPECIFICATION,
-    ),
-    modelClass: primitive(),
-    targetName: primitive(),
-  },
-);
-
-const V1_serializeTargetSpecification = (
-  protocol: V1_TargetSpecification | undefined,
-): PlainObject<V1_TargetSpecification> | typeof SKIP => {
-  if (!protocol) {
-    return SKIP;
-  }
-  if (protocol instanceof V1_GroupedFlatTargetSpecification) {
-    return serialize(V1_groupedFlatTargetSpecificationModelSchema, protocol);
-  } else if (protocol instanceof V1_FlatTargetSpecification) {
-    return serialize(V1_flatTargetSpecificationModelSchema, protocol);
-  } else if (protocol instanceof V1_NestedTargetSpecification) {
-    return serialize(V1_nestedTargetSpecificationModelSchema, protocol);
-  }
-  throw new UnsupportedOperationError(
-    `Unable to serialize target specification`,
-    protocol,
-  );
-};
-
-const V1_deserializeTargetSpecification = (
-  json: PlainObject<V1_TargetSpecification> | undefined,
-): V1_TargetSpecification | undefined => {
-  if (!json) {
-    return undefined;
-  }
-  switch (json._type) {
-    case V1_TargetSpecificationType.GROUPED_FLAT_TARGET_SPECIFICATION:
-      return deserialize(V1_groupedFlatTargetSpecificationModelSchema, json);
-    case V1_TargetSpecificationType.FLAT_TARGET_SPECIFICATION:
-      return deserialize(V1_flatTargetSpecificationModelSchema, json);
-    case V1_TargetSpecificationType.NESTED_TARGET_SPECIFICATION:
-      return deserialize(V1_nestedTargetSpecificationModelSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Unable to deserialize target specification '${json._type}'`,
-      );
-  }
-};
-
-const V1_propertyAndFlatTargetSpecificationSchema = createModelSchema(
-  V1_PropertyAndFlatTargetSpecification,
-  {
-    property: primitive(),
-    targetSpecification: custom(
-      (val) => serialize(V1_flatTargetSpecificationModelSchema, val),
-      (val) => deserialize(V1_flatTargetSpecificationModelSchema, val),
-    ),
-  },
-);
-
-//TODO: ledav -- remove post migration to updated model [END]
 
 /**********
  * deduplication strategy

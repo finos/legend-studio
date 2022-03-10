@@ -111,14 +111,12 @@ export class StreamingPersister extends Persister implements Hashable {
 }
 
 export class BatchPersister extends Persister implements Hashable {
-  targetSpecification?: TargetSpecification;
-  targetShape?: TargetShape | undefined;
+  targetShape!: TargetShape;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
-      this.targetSpecification ?? '',
-      this.targetShape ?? '',
+      this.targetShape,
     ]);
   }
 }
@@ -136,7 +134,7 @@ export abstract class TargetShape implements Hashable {
 export class MultiFlatTarget extends TargetShape implements Hashable {
   modelClass!: PackageableElementReference<Class>;
   transactionScope!: TransactionScope;
-  parts: PropertyAndSingleFlatTarget[] = [];
+  parts: PropertyAndFlatTarget[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -149,7 +147,7 @@ export class MultiFlatTarget extends TargetShape implements Hashable {
   }
 }
 
-export class SingleFlatTarget extends TargetShape implements Hashable {
+export class FlatTarget extends TargetShape implements Hashable {
   modelClass!: PackageableElementReference<Class>;
   targetName!: string;
   partitionProperties: string[] = [];
@@ -158,7 +156,7 @@ export class SingleFlatTarget extends TargetShape implements Hashable {
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.SINGLE_FLAT_TARGET,
+      PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET,
       super.hashCode,
       this.modelClass.hashValue,
       this.targetName,
@@ -181,15 +179,15 @@ export class OpaqueTarget extends TargetShape implements Hashable {
   }
 }
 
-export class PropertyAndSingleFlatTarget implements Hashable {
+export class PropertyAndFlatTarget implements Hashable {
   property!: string;
-  singleFlatTarget!: SingleFlatTarget;
+  flatTarget!: FlatTarget;
 
   get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.PROPERTY_AND_SINGLE_FLAT_TARGET,
+      PERSISTENCE_HASH_STRUCTURE.PROPERTY_AND_FLAT_TARGET,
       this.property,
-      this.singleFlatTarget,
+      this.flatTarget,
     ]);
   }
 }
@@ -198,91 +196,6 @@ export enum TransactionScope {
   SINGLE_TARGET = 'SINGLE_TARGET',
   ALL_TARGETS = 'ALL_TARGETS',
 }
-
-//TODO: ledav -- remove post migration to updated model [START]
-
-/**********
- * target specification
- **********/
-
-export abstract class TargetSpecification implements Hashable {
-  modelClass!: PackageableElementReference<Class>;
-
-  get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.TARGET_SPECIFICATION,
-      this.modelClass.hashValue,
-    ]);
-  }
-}
-
-export class GroupedFlatTargetSpecification
-  extends TargetSpecification
-  implements Hashable
-{
-  transactionScope!: TransactionScope;
-  components: PropertyAndFlatTargetSpecification[] = [];
-
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.GROUPED_FLAT_TARGET_SPECIFICATION,
-      super.hashCode,
-      this.transactionScope,
-      hashArray(this.components),
-    ]);
-  }
-}
-
-export class FlatTargetSpecification
-  extends TargetSpecification
-  implements Hashable
-{
-  targetName!: string;
-  partitionProperties: string[] = [];
-  deduplicationStrategy!: DeduplicationStrategy;
-  batchMode!: BatchMilestoningMode;
-
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET_SPECIFICATION,
-      super.hashCode,
-      this.targetName,
-      hashArray(this.partitionProperties),
-      this.deduplicationStrategy,
-      this.batchMode,
-    ]);
-  }
-}
-
-export class NestedTargetSpecification
-  extends TargetSpecification
-  implements Hashable
-{
-  targetName!: string;
-
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.NESTED_TARGET_SPECIFICATION,
-      super.hashCode,
-      this.targetName,
-    ]);
-  }
-}
-
-export class PropertyAndFlatTargetSpecification implements Hashable {
-  property!: string;
-  targetSpecification!: FlatTargetSpecification;
-
-  get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.PROPERTY_AND_FLAT_TARGET_SPECIFICATION,
-      this.property,
-      this.targetSpecification,
-    ]);
-  }
-}
-
-//TODO: ledav -- remove post migration to updated model [END]
 
 /**********
  * deduplication strategy

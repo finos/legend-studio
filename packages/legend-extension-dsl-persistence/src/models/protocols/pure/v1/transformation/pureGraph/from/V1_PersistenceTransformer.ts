@@ -13,13 +13,10 @@ import {
   DateTimeValidityMilestoning,
   DeduplicationStrategy,
   DeleteIndicatorMergeStrategy,
-  FlatTargetSpecification,
-  GroupedFlatTargetSpecification,
   ManualTrigger,
   MaxVersionDeduplicationStrategy,
   MergeStrategy,
   MultiFlatTarget,
-  NestedTargetSpecification,
   NoAuditing,
   NoDeduplicationStrategy,
   NoDeletesMergeStrategy,
@@ -34,16 +31,14 @@ import {
   OpaqueValidityMilestoning,
   Persistence,
   Persister,
-  PropertyAndFlatTargetSpecification,
-  PropertyAndSingleFlatTarget,
+  PropertyAndFlatTarget,
   Reader,
   ServiceReader,
-  SingleFlatTarget,
+  FlatTarget,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
   TargetShape,
-  TargetSpecification,
   TransactionMilestoning,
   TransactionScope,
   Trigger,
@@ -67,13 +62,10 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
-  V1_FlatTargetSpecification,
-  V1_GroupedFlatTargetSpecification,
   V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
   V1_MultiFlatTarget,
-  V1_NestedTargetSpecification,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
@@ -88,16 +80,14 @@ import {
   V1_OpaqueValidityMilestoning,
   V1_Persistence,
   V1_Persister,
-  V1_PropertyAndFlatTargetSpecification,
-  V1_PropertyAndSingleFlatTarget,
+  V1_PropertyAndFlatTarget,
   V1_Reader,
   V1_ServiceReader,
-  V1_SingleFlatTarget,
+  V1_FlatTarget,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
   V1_TargetShape,
-  V1_TargetSpecification,
   V1_TransactionMilestoning,
   V1_TransactionScope,
   V1_Trigger,
@@ -179,21 +169,10 @@ export const V1_transformPersister = (
     return new V1_StreamingPersister();
   } else if (element instanceof BatchPersister) {
     const protocol = new V1_BatchPersister();
-    if (element.targetSpecification) {
-      protocol.targetSpecification = V1_transformTargetSpecification(
-        element.targetSpecification,
-        context,
-      );
-    } else if (element.targetShape) {
-      protocol.targetShape = V1_transformTargetShape(
-        element.targetShape,
-        context,
-      );
-    } else {
-      throw new UnsupportedOperationError(
-        `Persister has neither a target specification nor a target shape '${element}'`,
-      );
-    }
+    protocol.targetShape = V1_transformTargetShape(
+      element.targetShape,
+      context,
+    );
     return protocol;
   }
   throw new UnsupportedOperationError(
@@ -211,8 +190,8 @@ export const V1_transformTargetShape = (
 ): V1_TargetShape => {
   if (element instanceof MultiFlatTarget) {
     return V1_transformMultiFlatTarget(element, context);
-  } else if (element instanceof SingleFlatTarget) {
-    return V1_transformSingleFlatTarget(element, context);
+  } else if (element instanceof FlatTarget) {
+    return V1_transformFlatTarget(element, context);
   } else if (element instanceof OpaqueTarget) {
     return V1_transformOpaqueTarget(element, context);
   }
@@ -232,29 +211,26 @@ export const V1_transformMultiFlatTarget = (
     context,
   );
   protocol.parts = element.parts.map((p) =>
-    V1_transformPropertyAndSingleFlatTarget(p, context),
+    V1_transformPropertyAndFlatTarget(p, context),
   );
   return protocol;
 };
 
-export const V1_transformPropertyAndSingleFlatTarget = (
-  element: PropertyAndSingleFlatTarget,
+export const V1_transformPropertyAndFlatTarget = (
+  element: PropertyAndFlatTarget,
   context: V1_GraphTransformerContext,
-): V1_PropertyAndSingleFlatTarget => {
-  const protocol = new V1_PropertyAndSingleFlatTarget();
+): V1_PropertyAndFlatTarget => {
+  const protocol = new V1_PropertyAndFlatTarget();
   protocol.property = element.property;
-  protocol.singleFlatTarget = V1_transformSingleFlatTarget(
-    element.singleFlatTarget,
-    context,
-  );
+  protocol.flatTarget = V1_transformFlatTarget(element.flatTarget, context);
   return protocol;
 };
 
-export const V1_transformSingleFlatTarget = (
-  element: SingleFlatTarget,
+export const V1_transformFlatTarget = (
+  element: FlatTarget,
   context: V1_GraphTransformerContext,
-): V1_SingleFlatTarget => {
-  const protocol = new V1_SingleFlatTarget();
+): V1_FlatTarget => {
+  const protocol = new V1_FlatTarget();
   protocol.modelClass = V1_transformElementReference(element.modelClass);
   protocol.targetName = element.targetName;
   protocol.partitionProperties = element.partitionProperties;
@@ -291,88 +267,6 @@ export const V1_transformTransactionScope = (
     `Unable to transform transaction scope '${element}'`,
   );
 };
-
-//TODO: ledav -- remove post migration to updated model [START]
-
-/**********
- * target specification
- **********/
-
-export const V1_transformTargetSpecification = (
-  element: TargetSpecification,
-  context: V1_GraphTransformerContext,
-): V1_TargetSpecification => {
-  if (element instanceof GroupedFlatTargetSpecification) {
-    return V1_transformGroupedFlatTargetSpecification(element, context);
-  } else if (element instanceof FlatTargetSpecification) {
-    return V1_transformFlatTargetSpecification(element, context);
-  } else if (element instanceof NestedTargetSpecification) {
-    return V1_transformNestedTargetSpecification(element, context);
-  }
-  throw new UnsupportedOperationError(
-    `Unable to transform target specification '${element}'`,
-  );
-};
-
-export const V1_transformGroupedFlatTargetSpecification = (
-  element: GroupedFlatTargetSpecification,
-  context: V1_GraphTransformerContext,
-): V1_GroupedFlatTargetSpecification => {
-  const protocol = new V1_GroupedFlatTargetSpecification();
-  protocol.modelClass = V1_transformElementReference(element.modelClass);
-  protocol.transactionScope = V1_transformTransactionScope(
-    element.transactionScope,
-    context,
-  );
-  protocol.components = element.components.map((c) =>
-    V1_transformPropertyAndFlatTargetSpecification(c, context),
-  );
-  return protocol;
-};
-
-export const V1_transformPropertyAndFlatTargetSpecification = (
-  element: PropertyAndFlatTargetSpecification,
-  context: V1_GraphTransformerContext,
-): V1_PropertyAndFlatTargetSpecification => {
-  const protocol = new V1_PropertyAndFlatTargetSpecification();
-  protocol.property = element.property;
-  protocol.targetSpecification = V1_transformFlatTargetSpecification(
-    element.targetSpecification,
-    context,
-  );
-  return protocol;
-};
-
-export const V1_transformFlatTargetSpecification = (
-  element: FlatTargetSpecification,
-  context: V1_GraphTransformerContext,
-): V1_FlatTargetSpecification => {
-  const protocol = new V1_FlatTargetSpecification();
-  protocol.modelClass = V1_transformElementReference(element.modelClass);
-  protocol.targetName = element.targetName;
-  protocol.partitionProperties = element.partitionProperties;
-  protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(
-    element.deduplicationStrategy,
-    context,
-  );
-  protocol.batchMode = V1_transformBatchMilestoningMode(
-    element.batchMode,
-    context,
-  );
-  return protocol;
-};
-
-export const V1_transformNestedTargetSpecification = (
-  element: NestedTargetSpecification,
-  context: V1_GraphTransformerContext,
-): V1_NestedTargetSpecification => {
-  const protocol = new V1_NestedTargetSpecification();
-  protocol.modelClass = V1_transformElementReference(element.modelClass);
-  protocol.targetName = element.targetName;
-  return protocol;
-};
-
-//TODO: ledav -- remove post migration to updated model [END]
 
 /**********
  * deduplication strategy

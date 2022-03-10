@@ -91,14 +91,12 @@ export class V1_StreamingPersister extends V1_Persister implements Hashable {
 }
 
 export class V1_BatchPersister extends V1_Persister implements Hashable {
-  targetSpecification?: V1_TargetSpecification | undefined;
-  targetShape?: V1_TargetShape | undefined;
+  targetShape!: V1_TargetShape;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
-      this.targetSpecification ?? '',
-      this.targetShape ?? '',
+      this.targetShape,
     ]);
   }
 }
@@ -116,7 +114,7 @@ export abstract class V1_TargetShape implements Hashable {
 export class V1_MultiFlatTarget extends V1_TargetShape implements Hashable {
   modelClass!: string;
   transactionScope!: V1_TransactionScope;
-  parts: V1_PropertyAndSingleFlatTarget[] = [];
+  parts: V1_PropertyAndFlatTarget[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -129,7 +127,7 @@ export class V1_MultiFlatTarget extends V1_TargetShape implements Hashable {
   }
 }
 
-export class V1_SingleFlatTarget extends V1_TargetShape implements Hashable {
+export class V1_FlatTarget extends V1_TargetShape implements Hashable {
   modelClass!: string;
   targetName!: string;
   partitionProperties: string[] = [];
@@ -138,7 +136,7 @@ export class V1_SingleFlatTarget extends V1_TargetShape implements Hashable {
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.SINGLE_FLAT_TARGET,
+      PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET,
       super.hashCode,
       this.modelClass,
       this.targetName,
@@ -161,15 +159,15 @@ export class V1_OpaqueTarget extends V1_TargetShape implements Hashable {
   }
 }
 
-export class V1_PropertyAndSingleFlatTarget implements Hashable {
+export class V1_PropertyAndFlatTarget implements Hashable {
   property!: string;
-  singleFlatTarget!: V1_SingleFlatTarget;
+  flatTarget!: V1_FlatTarget;
 
   get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.PROPERTY_AND_SINGLE_FLAT_TARGET,
+      PERSISTENCE_HASH_STRUCTURE.PROPERTY_AND_FLAT_TARGET,
       this.property,
-      this.singleFlatTarget,
+      this.flatTarget,
     ]);
   }
 }
@@ -177,87 +175,6 @@ export class V1_PropertyAndSingleFlatTarget implements Hashable {
 export enum V1_TransactionScope {
   SINGLE_TARGET = 'SINGLE_TARGET',
   ALL_TARGETS = 'ALL_TARGETS',
-}
-
-/**********
- * target specification
- **********/
-
-export abstract class V1_TargetSpecification implements Hashable {
-  modelClass!: string;
-
-  get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.TARGET_SPECIFICATION,
-      this.modelClass,
-    ]);
-  }
-}
-
-export class V1_GroupedFlatTargetSpecification
-  extends V1_TargetSpecification
-  implements Hashable
-{
-  transactionScope!: V1_TransactionScope;
-  components: V1_PropertyAndFlatTargetSpecification[] = [];
-
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.GROUPED_FLAT_TARGET_SPECIFICATION,
-      super.hashCode,
-      this.transactionScope,
-      hashArray(this.components),
-    ]);
-  }
-}
-
-export class V1_FlatTargetSpecification
-  extends V1_TargetSpecification
-  implements Hashable
-{
-  targetName!: string;
-  partitionProperties: string[] = [];
-  deduplicationStrategy!: V1_DeduplicationStrategy;
-  batchMode!: V1_BatchMilestoningMode;
-
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET_SPECIFICATION,
-      super.hashCode,
-      this.targetName,
-      hashArray(this.partitionProperties),
-      this.deduplicationStrategy,
-      this.batchMode,
-    ]);
-  }
-}
-
-export class V1_NestedTargetSpecification
-  extends V1_TargetSpecification
-  implements Hashable
-{
-  targetName!: string;
-
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.NESTED_TARGET_SPECIFICATION,
-      super.hashCode,
-      this.targetName,
-    ]);
-  }
-}
-
-export class V1_PropertyAndFlatTargetSpecification implements Hashable {
-  property!: string;
-  targetSpecification!: V1_FlatTargetSpecification;
-
-  get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.PROPERTY_AND_FLAT_TARGET_SPECIFICATION,
-      this.property,
-      this.targetSpecification,
-    ]);
-  }
 }
 
 /**********
