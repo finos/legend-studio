@@ -13,13 +13,10 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
-  V1_FlatTargetSpecification,
-  V1_GroupedFlatTargetSpecification,
   V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
   V1_MultiFlatTarget,
-  V1_NestedTargetSpecification,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
@@ -34,16 +31,14 @@ import {
   V1_OpaqueValidityMilestoning,
   type V1_Persistence,
   V1_Persister,
-  V1_PropertyAndFlatTargetSpecification,
-  V1_PropertyAndSingleFlatTarget,
+  V1_PropertyAndFlatTarget,
   V1_Reader,
   V1_ServiceReader,
-  V1_SingleFlatTarget,
+  V1_FlatTarget,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
   V1_TargetShape,
-  V1_TargetSpecification,
   V1_TransactionMilestoning,
   V1_TransactionScope,
   V1_Trigger,
@@ -67,13 +62,10 @@ import {
   DateTimeValidityMilestoning,
   DeduplicationStrategy,
   DeleteIndicatorMergeStrategy,
-  FlatTargetSpecification,
-  GroupedFlatTargetSpecification,
   ManualTrigger,
   MaxVersionDeduplicationStrategy,
   MergeStrategy,
   MultiFlatTarget,
-  NestedTargetSpecification,
   NoAuditing,
   NoDeduplicationStrategy,
   NoDeletesMergeStrategy,
@@ -87,16 +79,14 @@ import {
   OpaqueTrigger,
   OpaqueValidityMilestoning,
   Persister,
-  PropertyAndFlatTargetSpecification,
-  PropertyAndSingleFlatTarget,
+  PropertyAndFlatTarget,
   Reader,
   ServiceReader,
-  SingleFlatTarget,
+  FlatTarget,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
   TargetShape,
-  TargetSpecification,
   TransactionMilestoning,
   TransactionScope,
   Trigger,
@@ -176,21 +166,7 @@ export const V1_buildPersister = (
     return new StreamingPersister();
   } else if (protocol instanceof V1_BatchPersister) {
     const persister = new BatchPersister();
-    if (protocol.targetSpecification) {
-      persister.targetSpecification = V1_buildTargetSpecification(
-        protocol.targetSpecification,
-        context,
-      );
-    } else if (protocol.targetShape) {
-      persister.targetShape = V1_buildTargetShape(
-        protocol.targetShape,
-        context,
-      );
-    } else {
-      throw new GraphBuilderError(
-        `Persister has neither a target specification nor a target shape '${protocol}'`,
-      );
-    }
+    persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
     return persister;
   }
   throw new GraphBuilderError(`Unrecognized persister '${protocol}'`);
@@ -206,8 +182,8 @@ export const V1_buildTargetShape = (
 ): TargetShape => {
   if (protocol instanceof V1_MultiFlatTarget) {
     return V1_buildMultiFlatTarget(protocol, context);
-  } else if (protocol instanceof V1_SingleFlatTarget) {
-    return V1_buildSingleFlatTarget(protocol, protocol.modelClass, context);
+  } else if (protocol instanceof V1_FlatTarget) {
+    return V1_buildFlatTarget(protocol, protocol.modelClass, context);
   } else if (protocol instanceof V1_OpaqueTarget) {
     return V1_buildOpaqueTarget(protocol, context);
   }
@@ -230,16 +206,16 @@ export const V1_buildMultiFlatTarget = (
   return targetShape;
 };
 
-export const V1_buildSingleFlatTarget = (
-  protocol: V1_SingleFlatTarget,
+export const V1_buildFlatTarget = (
+  protocol: V1_FlatTarget,
   modelClass: string,
   context: V1_GraphBuilderContext,
-): SingleFlatTarget => {
-  const targetShape = new SingleFlatTarget();
+): FlatTarget => {
+  const targetShape = new FlatTarget();
 
   // Flat: modelClass will match protocol.modelClass
-  // GroupedFlat: protocol.modelClass will not be populated;
-  //              instead infer it from rootModelClass.property target type
+  // MultiFlat: protocol.modelClass will not be populated;
+  //            instead infer it from rootModelClass.property target type
 
   targetShape.modelClass = context.resolveClass(modelClass);
   targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
@@ -265,11 +241,11 @@ export const V1_buildOpaqueTarget = (
 };
 
 export const V1_buildPropertyAndSingleFlatTarget = (
-  protocol: V1_PropertyAndSingleFlatTarget,
+  protocol: V1_PropertyAndFlatTarget,
   groupModelClass: string,
   context: V1_GraphBuilderContext,
-): PropertyAndSingleFlatTarget => {
-  const element = new PropertyAndSingleFlatTarget();
+): PropertyAndFlatTarget => {
+  const element = new PropertyAndFlatTarget();
   element.property = protocol.property;
 
   // resolve target type of property to populate model class in single flat target
@@ -278,8 +254,8 @@ export const V1_buildPropertyAndSingleFlatTarget = (
     .getProperty(protocol.property);
   const targetModelClass = property.genericType.value.rawType.path;
 
-  element.singleFlatTarget = V1_buildSingleFlatTarget(
-    protocol.singleFlatTarget,
+  element.flatTarget = V1_buildFlatTarget(
+    protocol.flatTarget,
     targetModelClass,
     context,
   );
@@ -298,108 +274,6 @@ export const V1_buildTransactionScope = (
   }
   throw new GraphBuilderError(`Unrecognized transaction scope '${protocol}'`);
 };
-
-//TODO: ledav -- remove post migration to updated model [START]
-
-/**********
- * target specification
- **********/
-
-export const V1_buildTargetSpecification = (
-  protocol: V1_TargetSpecification,
-  context: V1_GraphBuilderContext,
-): TargetSpecification => {
-  if (protocol instanceof V1_GroupedFlatTargetSpecification) {
-    return V1_buildGroupedFlatTargetSpecification(protocol, context);
-  } else if (protocol instanceof V1_FlatTargetSpecification) {
-    return V1_buildFlatTargetSpecification(
-      protocol,
-      protocol.modelClass,
-      context,
-    );
-  } else if (protocol instanceof V1_NestedTargetSpecification) {
-    return V1_buildNestedTargetSpecification(protocol, context);
-  }
-  throw new GraphBuilderError(
-    `Unrecognized target specification '${protocol}'`,
-  );
-};
-
-export const V1_buildGroupedFlatTargetSpecification = (
-  protocol: V1_GroupedFlatTargetSpecification,
-  context: V1_GraphBuilderContext,
-): GroupedFlatTargetSpecification => {
-  const targetSpecification = new GroupedFlatTargetSpecification();
-  targetSpecification.modelClass = context.resolveClass(protocol.modelClass);
-  targetSpecification.transactionScope = V1_buildTransactionScope(
-    protocol.transactionScope,
-    context,
-  );
-  targetSpecification.components = protocol.components.map((c) =>
-    V1_buildPropertyAndFlatTargetSpecification(c, protocol.modelClass, context),
-  );
-  return targetSpecification;
-};
-
-export const V1_buildFlatTargetSpecification = (
-  protocol: V1_FlatTargetSpecification,
-  modelClass: string,
-  context: V1_GraphBuilderContext,
-): FlatTargetSpecification => {
-  const targetSpecification = new FlatTargetSpecification();
-
-  // Flat: modelClass will match protocol.modelClass
-  // GroupedFlat: protocol.modelClass will not be populated;
-  //              instead infer it from rootModelClass.property target type
-
-  targetSpecification.modelClass = context.resolveClass(modelClass);
-  targetSpecification.targetName = guaranteeNonEmptyString(protocol.targetName);
-  targetSpecification.partitionProperties = protocol.partitionProperties;
-  targetSpecification.deduplicationStrategy = V1_buildDeduplicationStrategy(
-    protocol.deduplicationStrategy,
-    context,
-  );
-  targetSpecification.batchMode = V1_buildBatchMilestoningMode(
-    protocol.batchMode,
-    context,
-  );
-  return targetSpecification;
-};
-
-export const V1_buildNestedTargetSpecification = (
-  protocol: V1_NestedTargetSpecification,
-  context: V1_GraphBuilderContext,
-): NestedTargetSpecification => {
-  const targetSpecification = new NestedTargetSpecification();
-  targetSpecification.modelClass = context.resolveClass(protocol.modelClass);
-  targetSpecification.targetName = guaranteeNonEmptyString(protocol.targetName);
-  return targetSpecification;
-};
-
-export const V1_buildPropertyAndFlatTargetSpecification = (
-  protocol: V1_PropertyAndFlatTargetSpecification,
-  groupModelClass: string,
-  context: V1_GraphBuilderContext,
-): PropertyAndFlatTargetSpecification => {
-  const specification = new PropertyAndFlatTargetSpecification();
-  specification.property = protocol.property;
-
-  // resolve target type of property to populate model class in target specification
-  const property = context.graph
-    .getClass(groupModelClass)
-    .getProperty(protocol.property);
-  const targetModelClass = property.genericType.value.rawType.path;
-
-  specification.targetSpecification = V1_buildFlatTargetSpecification(
-    protocol.targetSpecification,
-    targetModelClass,
-    context,
-  );
-
-  return specification;
-};
-
-//TODO: ledav -- remove post migration to updated model [END]
 
 /**********
  * deduplication strategy
