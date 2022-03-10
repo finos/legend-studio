@@ -345,25 +345,43 @@ export class RedshiftDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
+  clusterID: string;
   databaseName: string;
-  endpoint: string;
+  host: string;
   port: number;
+  region: string;
+  endpointURL: string;
 
-  constructor(databaseName: string, endpoint: string, port: number) {
+  constructor(
+    databaseName: string,
+    endpointURL: string,
+    port: number,
+    host: string,
+    clusterID: string,
+    region: string,
+  ) {
     super();
 
     makeObservable(this, {
       databaseName: observable,
-      endpoint: observable,
+      endpointURL: observable,
       port: observable,
+      region: observable,
+      clusterID: observable,
+      host: observable,
       hashCode: computed,
       setDatabaseName: action,
-      setEndpoint: action,
+      setEndpointURL: action,
       setPort: action,
+      setRegion: action,
+      setClusterID: action,
+      setHost: action,
     });
-
+    this.clusterID = clusterID;
+    this.region = region;
+    this.host = host;
     this.databaseName = databaseName;
-    this.endpoint = endpoint;
+    this.endpointURL = endpointURL;
     this.port = port;
   }
 
@@ -371,20 +389,33 @@ export class RedshiftDatasourceSpecification
     this.databaseName = val;
   }
 
-  setEndpoint(val: string): void {
-    this.endpoint = val;
+  setEndpointURL(val: string): void {
+    this.endpointURL = val;
   }
 
   setPort(val: number): void {
     this.port = val;
   }
+  setRegion(val: string): void {
+    this.region = val;
+  }
 
+  setHost(val: string): void {
+    this.host = val;
+  }
+
+  setClusterID(val: string): void {
+    this.clusterID = val;
+  }
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.REDSHIFT_DATASOURCE_SPECIFICATION,
       this.databaseName,
-      this.endpoint,
+      this.endpointURL,
       this.port.toString(),
+      this.clusterID,
+      this.host,
+      this.region,
     ]);
   }
 }

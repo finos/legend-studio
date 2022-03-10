@@ -199,9 +199,12 @@ const redshiftDatasourceSpecificationModelSchema = createModelSchema(
   V1_RedshiftDatasourceSpecification,
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.REDSHIFT),
+    clusterID: primitive(),
     databaseName: primitive(),
-    endpoint: primitive(),
+    endpointURL: optional(primitive()),
+    host: primitive(),
     port: primitive(),
+    region: primitive(),
   },
 );
 

@@ -647,18 +647,10 @@ const RedshiftDatasourceSpecificationEditor = observer(
       <>
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
-          value={sourceSpec.databaseName}
-          propertyName="database"
+          value={sourceSpec.host}
+          propertyName="host"
           update={(value: string | undefined): void =>
-            sourceSpec.setDatabaseName(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={sourceSpec.endpoint}
-          propertyName="endpoint"
-          update={(value: string | undefined): void =>
-            sourceSpec.setEndpoint(value ?? '')
+            sourceSpec.setHost(value ?? '')
           }
         />
         <div className="panel__content__form__section">
@@ -674,6 +666,39 @@ const RedshiftDatasourceSpecificationEditor = observer(
             onChange={changePort}
           />
         </div>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.databaseName}
+          propertyName="database"
+          update={(value: string | undefined): void =>
+            sourceSpec.setDatabaseName(value ?? '')
+          }
+        />
+
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.region}
+          propertyName="region"
+          update={(value: string | undefined): void =>
+            sourceSpec.setRegion(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.clusterID}
+          propertyName="cluster"
+          update={(value: string | undefined): void =>
+            sourceSpec.setClusterID(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.endpointURL}
+          propertyName="endpointURL"
+          update={(value: string | undefined): void =>
+            sourceSpec.setEndpointURL(value ?? '')
+          }
+        />
       </>
     );
   },
