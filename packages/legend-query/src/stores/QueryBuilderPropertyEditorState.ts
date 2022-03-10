@@ -51,6 +51,7 @@ import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import {
   fillMilestonedDerivedPropertyArguments,
+  getSourceTemporalStereotype,
   isDatePropagationSupported,
   milestoningParameters,
   removePropagatedDates,
@@ -122,25 +123,47 @@ export const fillDerivedPropertyArguments = (
   graph: PureModel,
   fillMilestonedProperties?: boolean | undefined,
 ): void => {
-  const propertyArguments: ValueSpecification[] =
+  let propertyArguments: ValueSpecification[] =
     derivedPropertyExpressionState.parameterValues;
+  let parameterValues: ValueSpecification[] = [];
+  let temporalTarget: MILESTONING_STEROTYPES | undefined;
+  if (
+    derivedPropertyExpressionState.propertyExpression.func.genericType.value
+      .rawType instanceof Class &&
+    derivedPropertyExpressionState.propertyExpression.func.owner
+      ._generatedMilestonedProperties.length !== 0
+  ) {
+    temporalTarget = getMilestoneTemporalStereotype(
+      derivedPropertyExpressionState.propertyExpression.func.genericType.value
+        .rawType,
+      derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
+    );
+  }
+  const temporalSource = getSourceTemporalStereotype(
+    derivedPropertyExpressionState.derivedProperty,
+    derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
+  );
+  if (
+    temporalSource === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL &&
+    temporalTarget === MILESTONING_STEROTYPES.BITEMPORAL &&
+    propertyArguments.length === 1
+  ) {
+    parameterValues = propertyArguments;
+    propertyArguments = [];
+  }
   derivedPropertyExpressionState.parameters.forEach((parameter, idx) => {
     if (idx < derivedPropertyExpressionState.parameterValues.length) {
+      //Helps in building the milestoningParameters state when you toggle between text mode and form mode. Gets the information
+      // about the processingDate and businessDate from the getAll function. If the top level class is not temporal then
+      // the processingDate and businessDate is set to default values while building the QueryBuilderState again.
+      if (temporalTarget) {
+        fillMilestonedDerivedPropertyArguments(
+          derivedPropertyExpressionState,
+          temporalTarget,
+          idx,
+        );
+      }
       return;
-    }
-    let temporalTarget;
-    if (
-      derivedPropertyExpressionState.propertyExpression.func.genericType.value
-        .rawType instanceof Class &&
-      derivedPropertyExpressionState.propertyExpression.func.owner
-        ._generatedMilestonedProperties.length !== 0
-    ) {
-      temporalTarget = getMilestoneTemporalStereotype(
-        derivedPropertyExpressionState.propertyExpression.func.genericType.value
-          .rawType,
-        derivedPropertyExpressionState.queryBuilderState.graphManagerState
-          .graph,
-      );
     }
     if (temporalTarget) {
       if (
@@ -156,7 +179,9 @@ export const fillDerivedPropertyArguments = (
           temporalTarget,
           idx,
         );
-        propertyArguments.push(guaranteeNonNullable(milestoningParameter));
+        if (milestoningParameter) {
+          propertyArguments.push(milestoningParameter);
+        }
       }
     } else {
       let argument: ValueSpecification | undefined;
@@ -215,6 +240,19 @@ export const fillDerivedPropertyArguments = (
       );
     }
   });
+  if (
+    temporalSource === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL &&
+    temporalTarget === MILESTONING_STEROTYPES.BITEMPORAL &&
+    parameterValues.length
+  ) {
+    propertyArguments = [
+      guaranteeNonNullable(
+        derivedPropertyExpressionState.queryBuilderState.querySetupState
+          .classMilestoningTemporalValues[0],
+      ),
+      guaranteeNonNullable(parameterValues[0]),
+    ];
+  }
   derivedPropertyExpressionState.propertyExpression.setParametersValues([
     guaranteeNonNullable(
       derivedPropertyExpressionState.propertyExpression.parametersValues[0],

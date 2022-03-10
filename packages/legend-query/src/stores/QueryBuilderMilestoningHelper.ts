@@ -28,12 +28,33 @@ import {
   MILESTONING_STEROTYPES,
   DEFAULT_MILESTONING_PARAMETERS,
   type AbstractPropertyExpression,
+  Association,
 } from '@finos/legend-graph';
 import type { QueryBuilderDerivedPropertyExpressionState } from './QueryBuilderPropertyEditorState';
 
 export const milestoningParameters = {
   BUSINESS_TEMPORAL: false,
   PROCESSING_TEMPORAL: false,
+};
+
+export const getSourceTemporalStereotype = (
+  property: DerivedProperty,
+  graph: PureModel,
+): MILESTONING_STEROTYPES | undefined => {
+  const owner = property.owner;
+  if (owner instanceof Class) {
+    return getMilestoneTemporalStereotype(owner, graph);
+  } else if (owner instanceof Association) {
+    if (owner._generatedMilestonedProperties.length) {
+      const ownerClass =
+        owner._generatedMilestonedProperties[0]?.genericType.value.rawType;
+      return getMilestoneTemporalStereotype(
+        guaranteeType(ownerClass, Class),
+        graph,
+      );
+    }
+  }
+  return undefined;
 };
 
 export const isDatePropagationSupported = (
@@ -44,15 +65,11 @@ export const isDatePropagationSupported = (
     | undefined,
 ): boolean => {
   const property = derivedPropertyExpressionState.derivedProperty;
-  const owner = property.owner;
   if (prevPropertyExpression && prevPropertyExpression.parameterValues.length) {
     return false;
   }
-  if (
-    owner instanceof Class &&
-    property.genericType.value.rawType instanceof Class
-  ) {
-    const sourceStereotype = getMilestoneTemporalStereotype(owner, graph);
+  if (property.genericType.value.rawType instanceof Class) {
+    const sourceStereotype = getSourceTemporalStereotype(property, graph);
     if (sourceStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
       return true;
     }
@@ -256,8 +273,8 @@ export const isValidMilestoningLambda = (
   generatedMilestoningProperty: DerivedProperty,
   graph: PureModel,
 ): void => {
-  const sourceStereotype = getMilestoneTemporalStereotype(
-    guaranteeType(generatedMilestoningProperty.owner, Class),
+  const sourceStereotype = getSourceTemporalStereotype(
+    generatedMilestoningProperty,
     graph,
   );
   if (
@@ -295,8 +312,8 @@ export const getPropagatedDate = (
       propertyState === derivedPropertyExpressionState,
   );
   const queryBuilderState = derivedPropertyExpressionState.queryBuilderState;
-  const sourceStereotype = getMilestoneTemporalStereotype(
-    guaranteeType(derivedPropertyExpressionState.derivedProperty.owner, Class),
+  const sourceStereotype = getSourceTemporalStereotype(
+    derivedPropertyExpressionState.derivedProperty,
     queryBuilderState.graphManagerState.graph,
   );
   const targetStereotype = getMilestoneTemporalStereotype(

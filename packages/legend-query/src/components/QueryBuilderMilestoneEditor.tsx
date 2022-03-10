@@ -209,28 +209,35 @@ const TemporalMilestoneEditor: React.FC<{
 }> = (props) => {
   const { queryBuilderState, stereotype } = props;
 
-  switch (stereotype) {
-    case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-      return (
-        <BusinessTemporalMilestoneEditor
-          queryBuilderState={queryBuilderState}
-        />
-      );
+  if (
+    queryBuilderState.querySetupState.classMilestoningTemporalValues.length ===
+    2
+  ) {
+    return <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />;
+  } else {
+    switch (stereotype) {
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+        return (
+          <BusinessTemporalMilestoneEditor
+            queryBuilderState={queryBuilderState}
+          />
+        );
 
-    case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-      return (
-        <ProcessingTemporalMilestoneEditor
-          queryBuilderState={queryBuilderState}
-        />
-      );
+      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+        return (
+          <ProcessingTemporalMilestoneEditor
+            queryBuilderState={queryBuilderState}
+          />
+        );
 
-    case MILESTONING_STEROTYPES.BITEMPORAL:
-      return (
-        <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
-      );
+      case MILESTONING_STEROTYPES.BITEMPORAL:
+        return (
+          <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
+        );
 
-    default:
-      return null;
+      default:
+        return null;
+    }
   }
 };
 
