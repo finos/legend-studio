@@ -59,6 +59,7 @@ import {
   type ProjectData,
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
+  compareSemVerVersions,
 } from '@finos/legend-server-depot';
 import type {
   LightQuery,
@@ -598,7 +599,10 @@ const CreateQuerySetup = observer(
       LATEST_VERSION_ALIAS,
       SNAPSHOT_VERSION_ALIAS,
       ...(querySetupState.currentProject?.versions ?? []),
-    ].map(buildVersionOption);
+    ]
+      .slice()
+      .sort((v1, v2) => compareSemVerVersions(v2, v1))
+      .map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
       ? buildVersionOption(querySetupState.currentVersionId)
       : null;
