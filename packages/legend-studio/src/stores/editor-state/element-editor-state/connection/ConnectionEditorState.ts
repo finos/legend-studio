@@ -195,7 +195,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_DATASOURCE_SPEC_TYPE.REDSHIFT: {
         this.connection.setDatasourceSpecification(
-          new RedshiftDatasourceSpecification('', '', 5439),
+          new RedshiftDatasourceSpecification('', '', 5439, '', '', ''),
         );
         return;
       }

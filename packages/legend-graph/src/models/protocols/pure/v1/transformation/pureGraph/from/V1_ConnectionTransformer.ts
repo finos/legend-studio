@@ -144,8 +144,11 @@ const transformRedshiftDatasourceSpecification = (
 ): V1_RedshiftDatasourceSpecification => {
   const source = new V1_RedshiftDatasourceSpecification();
   source.databaseName = metamodel.databaseName;
-  source.endpoint = metamodel.endpoint;
+  source.endpointURL = metamodel.endpointURL;
   source.port = metamodel.port;
+  source.clusterID = metamodel.clusterID;
+  source.host = metamodel.host;
+  source.region = metamodel.region;
   return source;
 };
 

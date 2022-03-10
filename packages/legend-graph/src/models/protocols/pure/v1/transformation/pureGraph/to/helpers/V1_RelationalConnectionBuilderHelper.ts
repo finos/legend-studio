@@ -183,17 +183,30 @@ export const V1_buildDatasourceSpecification = (
       `Redshift datasource specification 'databaseName' field is missing or empty`,
     );
     assertNonEmptyString(
-      protocol.endpoint,
-      `Redshift datasource specification 'endpoint' field is missing or empty`,
+      protocol.host,
+      `Redshift datasource specification 'host' field is missing or empty`,
     );
-    assertNonNullable(
-      protocol.port,
+    assertNonEmptyString(
+      protocol.port.toString(),
       `Redshift datasource specification 'port' field is missing or empty`,
     );
+    assertNonEmptyString(
+      protocol.clusterID,
+      `Redshift datasource specification 'clusterID' field is missing or empty`,
+    );
+
+    assertNonEmptyString(
+      protocol.region,
+      `Redshift datasource specification 'region' field is missing or empty`,
+    );
+
     const redshiftSpec = new RedshiftDatasourceSpecification(
       protocol.databaseName,
-      protocol.endpoint,
+      protocol.endpointURL,
       protocol.port,
+      protocol.host,
+      protocol.clusterID,
+      protocol.region,
     );
     return redshiftSpec;
   }

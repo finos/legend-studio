@@ -129,16 +129,22 @@ export class V1_RedshiftDatasourceSpecification
   extends V1_DatasourceSpecification
   implements Hashable
 {
+  clusterID!: string;
   databaseName!: string;
-  endpoint!: string;
+  host!: string;
   port!: number;
+  region!: string;
+  endpointURL!: string;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.REDSHIFT_DATASOURCE_SPECIFICATION,
       this.databaseName,
-      this.endpoint,
+      this.endpointURL,
       this.port.toString(),
+      this.clusterID,
+      this.host,
+      this.region,
     ]);
   }
 }
