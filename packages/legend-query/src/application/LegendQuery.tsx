@@ -31,7 +31,10 @@ import { LegendQueryApplication } from '../components/LegendQueryApplication';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager';
 import { Query_GraphPreset } from '../models/Query_GraphPreset';
 import { getRootElement } from '@finos/legend-art';
-import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import {
+  CorePureGraphManagerPlugin,
+  DSLExternalFormat_GraphPreset,
+} from '@finos/legend-graph';
 import {
   type LegendQueryConfigurationData,
   LegendQueryConfig,
@@ -56,7 +59,10 @@ export class LegendQuery extends LegendApplication {
   static create(): LegendQuery {
     const application = new LegendQuery(LegendQueryPluginManager.create());
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
-    application.withBasePresets([new Query_GraphPreset()]);
+    application.withBasePresets([
+      new Query_GraphPreset(),
+      new DSLExternalFormat_GraphPreset(),
+    ]);
     return application;
   }
 

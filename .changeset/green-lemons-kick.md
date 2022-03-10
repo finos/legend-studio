@@ -3,7 +3,6 @@
 '@finos/legend-art': patch
 '@finos/legend-extension-dsl-data-space': patch
 '@finos/legend-extension-dsl-diagram': patch
-'@finos/legend-extension-dsl-serializer': patch
 '@finos/legend-extension-dsl-text': patch
 '@finos/legend-extension-external-format-json-schema': patch
 '@finos/legend-extension-external-language-morphir': patch

@@ -267,6 +267,7 @@ const NewFileGenerationDriverEditor = observer(() => {
   const options =
     editorStore.graphState.graphGenerationState
       .fileGenerationConfigurationOptions;
+  console.log(options);
   const onTypeSelectionChange = (
     val: FileGenerationTypeOption | null,
   ): void => {

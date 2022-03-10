@@ -41,7 +41,6 @@
   },
   "dependencies": {
     "@finos/legend-art": "workspace:*",
-    "@finos/legend-extension-dsl-serializer": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",

@@ -18,7 +18,6 @@ import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
 import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
 import type { AbstractPreset } from '@finos/legend-shared';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
 import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 
@@ -26,7 +25,6 @@ export const getLegendGraphExtensionCollection = (): AbstractPreset[] => [
   new DSLText_GraphPreset(),
   new DSLDiagram_GraphPreset(),
   new DSLDataSpace_GraphPreset(),
-  new DSLSerializer_GraphPreset(),
   new EFJSONSchema_GraphPreset(),
   new ESService_GraphPreset(),
 ];

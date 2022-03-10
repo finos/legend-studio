@@ -48,6 +48,8 @@ import type { V1_ServiceStorage } from './service/V1_ServiceStorage';
 import type { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
 import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
 import type { EXECUTION_SERIALIZATION_FORMAT } from '../../../../../graphManager/action/execution/ExecutionResult';
+import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
+import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -185,6 +187,26 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
+  // ------------------------------------------- External Format ---------------------------------------
+
+  _externalFormats = (): string => `${this._pure()}/external/format`;
+
+  getAvailableExternalFormatsDescriptions = (): Promise<
+    PlainObject<V1_ExternalFormatDescription>[]
+  > => this.get(`${this._externalFormats()}/availableFormats`);
+
+  generateModel = (
+    input: PlainObject<V1_ExternalFormatModelGenerationInput>,
+  ): Promise<PlainObject<V1_GenerationOutput>[]> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_FILE),
+      `${this._externalFormats()}/generateModel`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
   // ------------------------------------------- Code Import -------------------------------------------
 
   getAvailableCodeImportDescriptions = (): Promise<

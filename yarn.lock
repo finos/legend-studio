@@ -2152,36 +2152,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-extension-dsl-serializer@workspace:*, @finos/legend-extension-dsl-serializer@workspace:packages/legend-extension-dsl-serializer":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-extension-dsl-serializer@workspace:packages/legend-extension-dsl-serializer"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    "@types/react": 17.0.39
-    cross-env: 7.0.3
-    eslint: 8.10.0
-    jest: 27.5.1
-    mobx: 6.4.2
-    mobx-react-lite: 3.3.0
-    monaco-editor: 0.32.1
-    npm-run-all: 4.1.5
-    react: 17.0.2
-    react-dnd: 15.1.1
-    rimraf: 3.0.2
-    sass: 1.49.9
-    serializr: 2.0.5
-    typescript: 4.6.2
-  peerDependencies:
-    react: ^17.0.0
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-extension-dsl-text@workspace:*, @finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text":
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text"
@@ -2256,7 +2226,6 @@ __metadata:
   dependencies:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-dsl-serializer": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2302,7 +2271,6 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-serializer": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
@@ -2355,7 +2323,6 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-serializer": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2554,7 +2521,6 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-serializer": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-language-morphir": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"

@@ -73,7 +73,6 @@ import { useEditorStore } from '../../EditorStoreProvider';
 import {
   type GenerationProperty,
   type PackageableElement,
-  type FileGenerationSpecification,
   GenerationPropertyItemType,
   PackageableElementReference,
   PackageableElementExplicitReference,
@@ -567,20 +566,19 @@ const FileGenerationScopeEditor = observer(
 const GenerationStringPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
-    fileGeneration: FileGenerationSpecification;
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
       newValue: Record<PropertyKey, unknown>,
     ) => void;
+    getConfigValue: (name: string) => unknown | undefined;
   }) => {
-    const { property, fileGeneration, isReadOnly, update } = props;
+    const { property, getConfigValue, isReadOnly, update } = props;
     // FIXME: If there is no default value the string will be 'null'. We will treat it as an empty string
     const defaultValue =
       property.defaultValue === 'null' ? '' : property.defaultValue;
     const value =
-      (fileGeneration.getConfigValue(property.name) as string | undefined) ??
-      defaultValue;
+      (getConfigValue(property.name) as string | undefined) ?? defaultValue;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       update(
         property,
@@ -609,20 +607,19 @@ const GenerationStringPropertyEditor = observer(
 const GenerationIntegerPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
-    fileGeneration: FileGenerationSpecification;
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
       newValue: Record<PropertyKey, unknown>,
     ) => void;
+    getConfigValue: (name: string) => unknown | undefined;
   }) => {
-    const { property, fileGeneration, isReadOnly, update } = props;
+    const { property, getConfigValue, isReadOnly, update } = props;
     const defaultValue = JSON.parse(property.defaultValue) as
       | number
       | undefined;
     const value =
-      (fileGeneration.getConfigValue(property.name) as number | undefined) ??
-      defaultValue;
+      (getConfigValue(property.name) as number | undefined) ?? defaultValue;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       update(
         property,
@@ -652,20 +649,19 @@ const GenerationIntegerPropertyEditor = observer(
 const GenerationBooleanPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
-    fileGeneration: FileGenerationSpecification;
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
       newValue: Record<PropertyKey, unknown>,
     ) => void;
+    getConfigValue: (name: string) => unknown | undefined;
   }) => {
-    const { property, fileGeneration, isReadOnly, update } = props;
+    const { property, getConfigValue, isReadOnly, update } = props;
     const defaultValue = JSON.parse(property.defaultValue) as
       | boolean
       | undefined;
     const value =
-      (fileGeneration.getConfigValue(property.name) as boolean | undefined) ??
-      defaultValue;
+      (getConfigValue(property.name) as boolean | undefined) ?? defaultValue;
     const toggle = (): void => {
       if (!isReadOnly) {
         update(property, !value as unknown as Record<PropertyKey, unknown>);
@@ -703,14 +699,14 @@ const GenerationBooleanPropertyEditor = observer(
 const GenerationEnumPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
-    fileGeneration: FileGenerationSpecification;
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
       newValue: Record<PropertyKey, unknown>,
     ) => void;
+    getConfigValue: (name: string) => unknown | undefined;
   }) => {
-    const { property, fileGeneration, isReadOnly, update } = props;
+    const { property, getConfigValue, isReadOnly, update } = props;
     const getEnumLabel = (_enum: string): string =>
       isValidFullPath(_enum)
         ? resolvePackagePathAndElementName(_enum)[1]
@@ -720,7 +716,7 @@ const GenerationEnumPropertyEditor = observer(
       'Generation configuration description items for enum property item type is missing',
     ).enums.map((_enum) => ({ label: getEnumLabel(_enum), value: _enum }));
     const value =
-      (fileGeneration.getConfigValue(property.name) as string | undefined) ??
+      (getConfigValue(property.name) as string | undefined) ??
       property.defaultValue;
     const onChange = (val: { label: string; value: string } | null): void => {
       if (val !== null && val.value !== value) {
@@ -753,14 +749,14 @@ const GenerationEnumPropertyEditor = observer(
 const GenerationArrayPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
-    fileGeneration: FileGenerationSpecification;
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
       newValue: object,
     ) => void;
+    getConfigValue: (name: string) => unknown | undefined;
   }) => {
-    const { property, fileGeneration, isReadOnly, update } = props;
+    const { property, getConfigValue, isReadOnly, update } = props;
     let defaultValue: string[] = [];
     // FIXME: hacking this because the backend send corrupted array string
     if (property.defaultValue !== '' && property.defaultValue !== '[]') {
@@ -769,8 +765,7 @@ const GenerationArrayPropertyEditor = observer(
         .split(',');
     }
     const arrayValues =
-      (fileGeneration.getConfigValue(property.name) as string[] | undefined) ??
-      defaultValue;
+      (getConfigValue(property.name) as string[] | undefined) ?? defaultValue;
     // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
     const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
     const [itemValue, setItemValue] = useState<string>('');
@@ -949,18 +944,18 @@ const GenerationArrayPropertyEditor = observer(
 const GenerationMapPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
-    fileGeneration: FileGenerationSpecification;
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
       newValue: object,
     ) => void;
+    getConfigValue: (name: string) => unknown | undefined;
   }) => {
-    const { property, fileGeneration, isReadOnly, update } = props;
+    const { property, getConfigValue, isReadOnly, update } = props;
     // Right now, always assume this is a map between STRING and STRING (might need to support STRING - INTEGER and STRING - BOOLEAN)
     const nonNullableDefaultValue =
       property.defaultValue === 'null' ? '{}' : property.defaultValue;
-    const mapValues = ((fileGeneration.getConfigValue(property.name) as
+    const mapValues = ((getConfigValue(property.name) as
       | Record<string, string>
       | undefined) ?? JSON.parse(nonNullableDefaultValue)) as Record<
       string,
@@ -1181,27 +1176,22 @@ const GenerationMapPropertyEditor = observer(
   },
 );
 
-const GenerationPropertyEditor = observer(
+export const GenerationPropertyEditor = observer(
   (props: {
     property: GenerationProperty;
-    fileGeneration: FileGenerationSpecification;
+    getConfigValue: (name: string) => unknown | undefined;
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
       newValue: object,
     ) => void;
   }) => {
-    const {
-      property,
-      fileGeneration: fileGeneration,
-      isReadOnly,
-      update,
-    } = props;
+    const { property, getConfigValue, isReadOnly, update } = props;
     switch (property.type) {
       case GenerationPropertyItemType.STRING:
         return (
           <GenerationStringPropertyEditor
-            fileGeneration={fileGeneration}
+            getConfigValue={getConfigValue}
             isReadOnly={isReadOnly}
             update={update}
             property={property}
@@ -1210,7 +1200,7 @@ const GenerationPropertyEditor = observer(
       case GenerationPropertyItemType.INTEGER:
         return (
           <GenerationIntegerPropertyEditor
-            fileGeneration={fileGeneration}
+            getConfigValue={getConfigValue}
             isReadOnly={isReadOnly}
             update={update}
             property={property}
@@ -1219,7 +1209,7 @@ const GenerationPropertyEditor = observer(
       case GenerationPropertyItemType.BOOLEAN:
         return (
           <GenerationBooleanPropertyEditor
-            fileGeneration={fileGeneration}
+            getConfigValue={getConfigValue}
             isReadOnly={isReadOnly}
             update={update}
             property={property}
@@ -1228,7 +1218,7 @@ const GenerationPropertyEditor = observer(
       case GenerationPropertyItemType.ENUM:
         return (
           <GenerationEnumPropertyEditor
-            fileGeneration={fileGeneration}
+            getConfigValue={getConfigValue}
             isReadOnly={isReadOnly}
             update={update}
             property={property}
@@ -1237,7 +1227,7 @@ const GenerationPropertyEditor = observer(
       case GenerationPropertyItemType.ARRAY:
         return (
           <GenerationArrayPropertyEditor
-            fileGeneration={fileGeneration}
+            getConfigValue={getConfigValue}
             isReadOnly={isReadOnly}
             update={update}
             property={property}
@@ -1246,7 +1236,7 @@ const GenerationPropertyEditor = observer(
       case GenerationPropertyItemType.MAP:
         return (
           <GenerationMapPropertyEditor
-            fileGeneration={fileGeneration}
+            getConfigValue={getConfigValue}
             isReadOnly={isReadOnly}
             update={update}
             property={property}
@@ -1348,6 +1338,9 @@ export const FileGenerationConfigurationEditor = observer(
       [handleDrop],
     );
 
+    const getConfigValue = (name: string): unknown | undefined =>
+      fileGeneration.getConfigValue(name);
+
     return (
       <div className="panel file-generation-editor__configuration">
         <div className="panel__header">
@@ -1418,7 +1411,7 @@ export const FileGenerationConfigurationEditor = observer(
                 }
                 update={update}
                 isReadOnly={isReadOnly}
-                fileGeneration={fileGeneration}
+                getConfigValue={getConfigValue}
                 property={abstractGenerationProperty}
               />
             ))}{' '}
@@ -1466,6 +1459,7 @@ export const FileGenerationEditor = observer(() => {
             <ResizablePanelSplitter>
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
+
             <ResizablePanel>
               <GenerationResultViewer
                 fileGenerationState={

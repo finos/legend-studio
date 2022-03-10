@@ -28,12 +28,16 @@ import {
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
 } from '@finos/legend-application';
-import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import {
+  CorePureGraphManagerPlugin,
+  DSLExternalFormat_GraphPreset,
+} from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
 import {
   type LegendStudioConfigurationData,
   LegendStudioConfig,
 } from './LegendStudioConfig';
+import { DSLExternalFormat_LegendStudioPlugin } from '../components/editor/edit-panel/externalFormat-editor/DSLExternalFormat_LegendStudioPlugin';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: LegendStudioPluginManager,
@@ -62,7 +66,11 @@ export class LegendStudio extends LegendApplication {
 
   static create(): LegendStudio {
     const application = new LegendStudio(LegendStudioPluginManager.create());
-    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
+    application.withBasePlugins([
+      new CorePureGraphManagerPlugin(),
+      new DSLExternalFormat_LegendStudioPlugin(),
+    ]);
+    application.withBasePresets([new DSLExternalFormat_GraphPreset()]);
     return application;
   }
 

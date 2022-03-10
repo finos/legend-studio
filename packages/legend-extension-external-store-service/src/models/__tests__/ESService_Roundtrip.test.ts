@@ -18,15 +18,18 @@ import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import { roundtripTestData } from './TEST_DATA__ESService_Roundtrip';
 import { ESService_GraphPreset } from '../../ESService_Extension';
-import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import {
   TEST__GraphPluginManager,
   TEST__checkBuildingElementsRoundtrip,
+  DSLExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
 
 const pluginManager = new TEST__GraphPluginManager();
 pluginManager
-  .usePresets([new ESService_GraphPreset(), new DSLSerializer_GraphPreset()])
+  .usePresets([
+    new ESService_GraphPreset(),
+    new DSLExternalFormat_GraphPreset(),
+  ])
   .install();
 
 test(unitTest('Service store import resolution roundtrip'), async () => {

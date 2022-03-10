@@ -62,6 +62,7 @@ import {
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
+import { ExternalFormatState } from './ExternalFormatState';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -76,6 +77,7 @@ export class GraphGenerationState {
   isRunningGlobalGenerate = false;
   generatedEntities = new Map<string, Entity[]>();
   isClearingGenerationEntities = false;
+  externalFormatState: ExternalFormatState;
   fileGenerationConfigurations: GenerationConfigurationDescription[] = [];
   // File generation output
   rootFileDirectory: GenerationDirectory;
@@ -88,6 +90,7 @@ export class GraphGenerationState {
       generatedEntities: observable.shallow,
       isClearingGenerationEntities: observable,
       fileGenerationConfigurations: observable,
+      externalFormatState: observable,
       rootFileDirectory: observable,
       filesIndex: observable,
       selectedNode: observable.ref,
@@ -110,6 +113,7 @@ export class GraphGenerationState {
 
     this.editorStore = editorStore;
     this.rootFileDirectory = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
+    this.externalFormatState = new ExternalFormatState(editorStore);
   }
 
   get fileGenerationConfigurationOptions(): FileGenerationTypeOption[] {

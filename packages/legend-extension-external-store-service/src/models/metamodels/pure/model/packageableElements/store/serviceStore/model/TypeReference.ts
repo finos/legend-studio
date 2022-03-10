@@ -17,8 +17,11 @@
 import { observable, action, makeObservable, computed } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import type { Class, PackageableElementReference } from '@finos/legend-graph';
-import type { Binding } from '@finos/legend-extension-dsl-serializer';
+import type {
+  Binding,
+  Class,
+  PackageableElementReference,
+} from '@finos/legend-graph';
 
 export abstract class TypeReference implements Hashable {
   private readonly _$nominalTypeBrand!: 'TypeReference';
