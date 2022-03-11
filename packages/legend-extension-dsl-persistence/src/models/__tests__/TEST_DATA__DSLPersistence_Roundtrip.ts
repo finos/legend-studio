@@ -33,6 +33,14 @@ export const TEST_DATA__roundtrip = [
         },
         {
           multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'admin',
+          type: 'org::dxl::Person',
+        },
+        {
+          multiplicity: {
             lowerBound: 0,
           },
           name: 'animals',
@@ -167,18 +175,18 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
-    path: 'org::dxl::ZooPersistence',
     classifierPath: 'meta::pure::persistence::metamodel::Persistence',
     content: {
       _type: 'persistence',
-      name: 'ZooPersistence',
       documentation: 'A persistence specification for Zoos.',
+      name: 'ZooPersistence',
       owners: [],
       package: 'org::dxl',
       persister: {
         _type: 'batchPersister',
         targetShape: {
           _type: 'multiFlatTarget',
+          modelClass: 'org::dxl::Zoo',
           parts: [
             {
               property: 'zookeeper',
@@ -200,6 +208,32 @@ export const TEST_DATA__roundtrip = [
               },
             },
             {
+              property: 'admin',
+              flatTarget: {
+                _type: 'flatTarget',
+                batchMode: {
+                  _type: 'unitemporalDelta',
+                  mergeStrategy: {
+                    _type: 'deleteIndicatorMergeStrategy',
+                    deleteProperty: 'deleted',
+                    deleteValues: ['T'],
+                  },
+                  transactionMilestoning: {
+                    _type: 'batchIdTransactionMilestoning',
+                    batchIdInFieldName: 'BATCH_IN_Z',
+                    batchIdOutFieldName: 'BATCH_OUT_Z',
+                  },
+                },
+                deduplicationStrategy: {
+                  _type: 'maxVersionDeduplicationStrategy',
+                  versionProperty: 'version',
+                },
+                modelClass: 'org::dxl::Person',
+                partitionProperties: [],
+                targetName: 'PersonDataset2',
+              },
+            },
+            {
               property: 'owner',
               flatTarget: {
                 _type: 'flatTarget',
@@ -207,19 +241,19 @@ export const TEST_DATA__roundtrip = [
                   _type: 'bitemporalSnapshot',
                   transactionMilestoning: {
                     _type: 'batchIdAndDateTimeTransactionMilestoning',
-                    batchIdInFieldName: 'BATCH_ID_IN',
-                    batchIdOutFieldName: 'BATCH_ID_OUT',
+                    batchIdInFieldName: 'batchIdIn',
+                    batchIdOutFieldName: 'batchIdOut',
                     dateTimeInFieldName: 'IN_Z',
                     dateTimeOutFieldName: 'OUT_Z',
                   },
                   validityMilestoning: {
                     _type: 'dateTimeValidityMilestoning',
-                    dateTimeFromFieldName: 'IN_Z',
-                    dateTimeThruFieldName: 'OUT_Z',
+                    dateTimeFromFieldName: 'FROM_Z',
+                    dateTimeThruFieldName: 'THRU_Z',
                     derivation: {
                       _type: 'sourceSpecifiesFromAndThruDateTime',
-                      sourceDateTimeFromProperty: 'effectiveDateFrom',
-                      sourceDateTimeThruProperty: 'effectiveDateThru',
+                      sourceDateTimeFromProperty: 'effectiveFrom',
+                      sourceDateTimeThruProperty: 'effectiveThru',
                     },
                   },
                 },
@@ -228,11 +262,10 @@ export const TEST_DATA__roundtrip = [
                 },
                 modelClass: 'org::dxl::Person',
                 partitionProperties: [],
-                targetName: 'PersonDataset2',
+                targetName: 'PersonDataset3',
               },
             },
           ],
-          modelClass: 'org::dxl::Zoo',
           transactionScope: 'ALL_TARGETS',
         },
       },

@@ -305,11 +305,11 @@ const V1_deserializeTargetShape = (
 const V1_propertyAndFlatTargetSchema = createModelSchema(
   V1_PropertyAndFlatTarget,
   {
-    property: primitive(),
     flatTarget: custom(
       (val) => serialize(V1_flatTargetModelSchema, val),
       (val) => deserialize(V1_flatTargetModelSchema, val),
     ),
+    property: primitive(),
   },
 );
 
