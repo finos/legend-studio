@@ -175,12 +175,12 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
+    path: 'org::dxl::ZooPersistence',
     classifierPath: 'meta::pure::persistence::metamodel::Persistence',
     content: {
       _type: 'persistence',
       documentation: 'A persistence specification for Zoos.',
       name: 'ZooPersistence',
-      owners: [],
       package: 'org::dxl',
       persister: {
         _type: 'batchPersister',
@@ -192,15 +192,15 @@ export const TEST_DATA__roundtrip = [
               property: 'zookeeper',
               flatTarget: {
                 _type: 'flatTarget',
-                batchMode: {
+                deduplicationStrategy: {
+                  _type: 'noDeduplicationStrategy',
+                },
+                ingestMode: {
                   _type: 'appendOnly',
                   auditing: {
                     _type: 'noAuditing',
                   },
                   filterDuplicates: false,
-                },
-                deduplicationStrategy: {
-                  _type: 'noDeduplicationStrategy',
                 },
                 modelClass: 'org::dxl::Person',
                 partitionProperties: [],
@@ -211,7 +211,11 @@ export const TEST_DATA__roundtrip = [
               property: 'admin',
               flatTarget: {
                 _type: 'flatTarget',
-                batchMode: {
+                deduplicationStrategy: {
+                  _type: 'maxVersionDeduplicationStrategy',
+                  versionProperty: 'version',
+                },
+                ingestMode: {
                   _type: 'unitemporalDelta',
                   mergeStrategy: {
                     _type: 'deleteIndicatorMergeStrategy',
@@ -224,10 +228,6 @@ export const TEST_DATA__roundtrip = [
                     batchIdOutFieldName: 'BATCH_OUT_Z',
                   },
                 },
-                deduplicationStrategy: {
-                  _type: 'maxVersionDeduplicationStrategy',
-                  versionProperty: 'version',
-                },
                 modelClass: 'org::dxl::Person',
                 partitionProperties: [],
                 targetName: 'PersonDataset2',
@@ -237,7 +237,10 @@ export const TEST_DATA__roundtrip = [
               property: 'owner',
               flatTarget: {
                 _type: 'flatTarget',
-                batchMode: {
+                deduplicationStrategy: {
+                  _type: 'noDeduplicationStrategy',
+                },
+                ingestMode: {
                   _type: 'bitemporalSnapshot',
                   transactionMilestoning: {
                     _type: 'batchIdAndDateTimeTransactionMilestoning',
@@ -256,9 +259,6 @@ export const TEST_DATA__roundtrip = [
                       sourceDateTimeThruProperty: 'effectiveThru',
                     },
                   },
-                },
-                deduplicationStrategy: {
-                  _type: 'noDeduplicationStrategy',
                 },
                 modelClass: 'org::dxl::Person',
                 partitionProperties: [],

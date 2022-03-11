@@ -15,7 +15,6 @@ import { makeObservable, observable, override } from 'mobx';
 
 export class Persistence extends PackageableElement implements Hashable {
   documentation!: string;
-  owners: string[] = [];
   trigger!: Trigger;
   reader!: Reader;
   persister!: Persister;
@@ -25,7 +24,6 @@ export class Persistence extends PackageableElement implements Hashable {
 
     makeObservable<Persistence, '_elementHashCode'>(this, {
       documentation: observable,
-      owners: observable,
       trigger: observable,
       reader: observable,
       persister: observable,
@@ -37,7 +35,6 @@ export class Persistence extends PackageableElement implements Hashable {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
-      hashArray(this.owners),
       this.trigger,
       this.reader,
       this.persister,
@@ -105,8 +102,13 @@ export abstract class Persister implements Hashable {
 }
 
 export class StreamingPersister extends Persister implements Hashable {
+  targetShape!: TargetShape;
+
   override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.STREAMING_PERSISTER]);
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.STREAMING_PERSISTER,
+      this.targetShape,
+    ]);
   }
 }
 
@@ -126,9 +128,9 @@ export class BatchPersister extends Persister implements Hashable {
  **********/
 
 export abstract class TargetShape implements Hashable {
-  get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.TARGET_SHAPE]);
-  }
+  private readonly _$nominalTypeBrand!: 'TargetShape';
+
+  abstract get hashCode(): string;
 }
 
 export class MultiFlatTarget extends TargetShape implements Hashable {
@@ -139,7 +141,6 @@ export class MultiFlatTarget extends TargetShape implements Hashable {
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.MULTI_FLAT_TARGET,
-      super.hashCode,
       this.modelClass.hashValue,
       this.transactionScope,
       hashArray(this.parts),
@@ -152,17 +153,16 @@ export class FlatTarget extends TargetShape implements Hashable {
   targetName!: string;
   partitionProperties: string[] = [];
   deduplicationStrategy!: DeduplicationStrategy;
-  batchMode!: BatchMilestoningMode;
+  ingestMode!: IngestMode;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET,
-      super.hashCode,
       this.modelClass.hashValue,
       this.targetName,
       hashArray(this.partitionProperties),
       this.deduplicationStrategy,
-      this.batchMode,
+      this.ingestMode,
     ]);
   }
 }
@@ -173,7 +173,6 @@ export class OpaqueTarget extends TargetShape implements Hashable {
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.OPAQUE_TARGET,
-      super.hashCode,
       this.targetName,
     ]);
   }
@@ -253,37 +252,31 @@ export class OpaqueDeduplicationStrategy
 }
 
 /**********
- * batch mode
+ * ingest mode
  **********/
 
-export abstract class BatchMilestoningMode implements Hashable {
-  private readonly _$nominalTypeBrand!: 'BatchMilestoningMode';
+export abstract class IngestMode implements Hashable {
+  private readonly _$nominalTypeBrand!: 'IngestMode';
 
   abstract get hashCode(): string;
 }
 
 /**********
- * batch mode - snapshot
+ * ingest mode - snapshot
  **********/
 
-export class NonMilestonedSnapshot
-  extends BatchMilestoningMode
-  implements Hashable
-{
+export class NontemporalSnapshot extends IngestMode implements Hashable {
   auditing!: Auditing;
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.NON_MILESTONED_SNAPSHOT,
+      PERSISTENCE_HASH_STRUCTURE.NONTEMPORAL_SNAPSHOT,
       this.auditing,
     ]);
   }
 }
 
-export class UnitemporalSnapshot
-  extends BatchMilestoningMode
-  implements Hashable
-{
+export class UnitemporalSnapshot extends IngestMode implements Hashable {
   transactionMilestoning!: TransactionMilestoning;
 
   override get hashCode(): string {
@@ -294,10 +287,7 @@ export class UnitemporalSnapshot
   }
 }
 
-export class BitemporalSnapshot
-  extends BatchMilestoningMode
-  implements Hashable
-{
+export class BitemporalSnapshot extends IngestMode implements Hashable {
   transactionMilestoning!: TransactionMilestoning;
   validityMilestoning!: ValidityMilestoning;
 
@@ -311,24 +301,23 @@ export class BitemporalSnapshot
 }
 
 /**********
- * batch mode - delta
+ * ingest mode - delta
  **********/
 
-export class NonMilestonedDelta
-  extends BatchMilestoningMode
-  implements Hashable
-{
+export class NontemporalDelta extends IngestMode implements Hashable {
+  mergeStrategy!: MergeStrategy;
   auditing!: Auditing;
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.NON_MILESTONED_DELTA,
+      PERSISTENCE_HASH_STRUCTURE.NONTEMPORAL_DELTA,
+      this.mergeStrategy,
       this.auditing,
     ]);
   }
 }
 
-export class UnitemporalDelta extends BatchMilestoningMode implements Hashable {
+export class UnitemporalDelta extends IngestMode implements Hashable {
   mergeStrategy!: MergeStrategy;
   transactionMilestoning!: TransactionMilestoning;
 
@@ -341,7 +330,7 @@ export class UnitemporalDelta extends BatchMilestoningMode implements Hashable {
   }
 }
 
-export class BitemporalDelta extends BatchMilestoningMode implements Hashable {
+export class BitemporalDelta extends IngestMode implements Hashable {
   mergeStrategy!: MergeStrategy;
   transactionMilestoning!: TransactionMilestoning;
   validityMilestoning!: ValidityMilestoning;
@@ -393,10 +382,10 @@ export class OpaqueMergeStrategy extends MergeStrategy implements Hashable {
 }
 
 /**********
- * batch mode - append only
+ * ingest mode - append only
  **********/
 
-export class AppendOnly extends BatchMilestoningMode implements Hashable {
+export class AppendOnly extends IngestMode implements Hashable {
   auditing!: Auditing;
   filterDuplicates!: boolean;
 
@@ -425,12 +414,12 @@ export class NoAuditing extends Auditing implements Hashable {
   }
 }
 
-export class BatchDateTimeAuditing extends Auditing implements Hashable {
+export class DateTimeAuditing extends Auditing implements Hashable {
   dateTimeProperty!: string;
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.BATCH_DATE_TIME_AUDITING,
+      PERSISTENCE_HASH_STRUCTURE.DATE_TIME_AUDITING,
       this.dateTimeProperty,
     ]);
   }

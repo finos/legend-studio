@@ -2,17 +2,18 @@ import {
   V1_AnyVersionDeduplicationStrategy,
   V1_AppendOnly,
   V1_Auditing,
-  V1_BatchDateTimeAuditing,
   V1_BatchIdAndDateTimeTransactionMilestoning,
   V1_BatchIdTransactionMilestoning,
-  V1_BatchMilestoningMode,
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
+  V1_DateTimeAuditing,
   V1_DateTimeTransactionMilestoning,
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_FlatTarget,
+  V1_IngestMode,
   V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
@@ -20,8 +21,8 @@ import {
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
-  V1_NonMilestonedDelta,
-  V1_NonMilestonedSnapshot,
+  V1_NontemporalDelta,
+  V1_NontemporalSnapshot,
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
@@ -34,7 +35,6 @@ import {
   V1_PropertyAndFlatTarget,
   V1_Reader,
   V1_ServiceReader,
-  V1_FlatTarget,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -51,17 +51,18 @@ import {
   AnyVersionDeduplicationStrategy,
   AppendOnly,
   Auditing,
-  BatchDateTimeAuditing,
   BatchIdAndDateTimeTransactionMilestoning,
   BatchIdTransactionMilestoning,
-  BatchMilestoningMode,
   BatchPersister,
   BitemporalDelta,
   BitemporalSnapshot,
+  DateTimeAuditing,
   DateTimeTransactionMilestoning,
   DateTimeValidityMilestoning,
   DeduplicationStrategy,
   DeleteIndicatorMergeStrategy,
+  FlatTarget,
+  IngestMode,
   ManualTrigger,
   MaxVersionDeduplicationStrategy,
   MergeStrategy,
@@ -69,8 +70,8 @@ import {
   NoAuditing,
   NoDeduplicationStrategy,
   NoDeletesMergeStrategy,
-  NonMilestonedDelta,
-  NonMilestonedSnapshot,
+  NontemporalDelta,
+  NontemporalSnapshot,
   OpaqueAuditing,
   OpaqueDeduplicationStrategy,
   OpaqueMergeStrategy,
@@ -82,7 +83,6 @@ import {
   PropertyAndFlatTarget,
   Reader,
   ServiceReader,
-  FlatTarget,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
@@ -116,7 +116,6 @@ export const V1_buildPersistence = (
     protocol.documentation,
     `Persistence 'documentation' field is missing or empty`,
   );
-  persistence.owners = protocol.owners;
   persistence.trigger = V1_buildTrigger(protocol.trigger, context);
   persistence.reader = V1_buildReader(protocol.reader, context);
   persistence.persister = V1_buildPersister(protocol.persister, context);
@@ -163,7 +162,9 @@ export const V1_buildPersister = (
   context: V1_GraphBuilderContext,
 ): Persister => {
   if (protocol instanceof V1_StreamingPersister) {
-    return new StreamingPersister();
+    const persister = new StreamingPersister();
+    persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
+    return persister;
   } else if (protocol instanceof V1_BatchPersister) {
     const persister = new BatchPersister();
     persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
@@ -224,10 +225,7 @@ export const V1_buildFlatTarget = (
     protocol.deduplicationStrategy,
     context,
   );
-  targetShape.batchMode = V1_buildBatchMilestoningMode(
-    protocol.batchMode,
-    context,
-  );
+  targetShape.ingestMode = V1_buildIngestMode(protocol.ingestMode, context);
   return targetShape;
 };
 
@@ -288,7 +286,6 @@ export const V1_buildDeduplicationStrategy = (
   } else if (protocol instanceof V1_AnyVersionDeduplicationStrategy) {
     return new AnyVersionDeduplicationStrategy();
   } else if (protocol instanceof V1_MaxVersionDeduplicationStrategy) {
-    //TODO: ledav -- validate property exists on model class
     const strategy = new MaxVersionDeduplicationStrategy();
     strategy.versionProperty = protocol.versionProperty;
     return strategy;
@@ -301,74 +298,76 @@ export const V1_buildDeduplicationStrategy = (
 };
 
 /**********
- * batch mode
+ * ingest mode
  **********/
 
-export const V1_buildBatchMilestoningMode = (
-  protocol: V1_BatchMilestoningMode,
+export const V1_buildIngestMode = (
+  protocol: V1_IngestMode,
   context: V1_GraphBuilderContext,
-): BatchMilestoningMode => {
-  if (protocol instanceof V1_NonMilestonedSnapshot) {
-    const batchMode = new NonMilestonedSnapshot();
-    batchMode.auditing = V1_buildAuditing(protocol.auditing, context);
-    return batchMode;
+): IngestMode => {
+  if (protocol instanceof V1_NontemporalSnapshot) {
+    const ingestMode = new NontemporalSnapshot();
+    ingestMode.auditing = V1_buildAuditing(protocol.auditing, context);
+    return ingestMode;
   } else if (protocol instanceof V1_UnitemporalSnapshot) {
-    const batchMode = new UnitemporalSnapshot();
-    batchMode.transactionMilestoning = V1_buildTransactionMilestoning(
+    const ingestMode = new UnitemporalSnapshot();
+    ingestMode.transactionMilestoning = V1_buildTransactionMilestoning(
       protocol.transactionMilestoning,
       context,
     );
-    return batchMode;
+    return ingestMode;
   } else if (protocol instanceof V1_BitemporalSnapshot) {
-    const batchMode = new BitemporalSnapshot();
-    batchMode.transactionMilestoning = V1_buildTransactionMilestoning(
+    const ingestMode = new BitemporalSnapshot();
+    ingestMode.transactionMilestoning = V1_buildTransactionMilestoning(
       protocol.transactionMilestoning,
       context,
     );
-    batchMode.validityMilestoning = V1_buildValidityMilestoning(
+    ingestMode.validityMilestoning = V1_buildValidityMilestoning(
       protocol.validityMilestoning,
       context,
     );
-    return batchMode;
-  } else if (protocol instanceof V1_NonMilestonedDelta) {
-    const batchMode = new NonMilestonedDelta();
-    batchMode.auditing = V1_buildAuditing(protocol.auditing, context);
-    return batchMode;
+    return ingestMode;
+  } else if (protocol instanceof V1_NontemporalDelta) {
+    const ingestMode = new NontemporalDelta();
+    ingestMode.mergeStrategy = V1_buildMergeStrategy(
+      protocol.mergeStrategy,
+      context,
+    );
+    ingestMode.auditing = V1_buildAuditing(protocol.auditing, context);
+    return ingestMode;
   } else if (protocol instanceof V1_UnitemporalDelta) {
-    const batchMode = new UnitemporalDelta();
-    batchMode.mergeStrategy = V1_buildMergeStrategy(
+    const ingestMode = new UnitemporalDelta();
+    ingestMode.mergeStrategy = V1_buildMergeStrategy(
       protocol.mergeStrategy,
       context,
     );
-    batchMode.transactionMilestoning = V1_buildTransactionMilestoning(
+    ingestMode.transactionMilestoning = V1_buildTransactionMilestoning(
       protocol.transactionMilestoning,
       context,
     );
-    return batchMode;
+    return ingestMode;
   } else if (protocol instanceof V1_BitemporalDelta) {
-    const batchMode = new BitemporalDelta();
-    batchMode.mergeStrategy = V1_buildMergeStrategy(
+    const ingestMode = new BitemporalDelta();
+    ingestMode.mergeStrategy = V1_buildMergeStrategy(
       protocol.mergeStrategy,
       context,
     );
-    batchMode.transactionMilestoning = V1_buildTransactionMilestoning(
+    ingestMode.transactionMilestoning = V1_buildTransactionMilestoning(
       protocol.transactionMilestoning,
       context,
     );
-    batchMode.validityMilestoning = V1_buildValidityMilestoning(
+    ingestMode.validityMilestoning = V1_buildValidityMilestoning(
       protocol.validityMilestoning,
       context,
     );
-    return batchMode;
+    return ingestMode;
   } else if (protocol instanceof V1_AppendOnly) {
-    const batchMode = new AppendOnly();
-    batchMode.auditing = V1_buildAuditing(protocol.auditing, context);
-    batchMode.filterDuplicates = protocol.filterDuplicates;
-    return batchMode;
+    const ingestMode = new AppendOnly();
+    ingestMode.auditing = V1_buildAuditing(protocol.auditing, context);
+    ingestMode.filterDuplicates = protocol.filterDuplicates;
+    return ingestMode;
   }
-  throw new GraphBuilderError(
-    `Unrecognized batch milestoning mode '${protocol}'`,
-  );
+  throw new GraphBuilderError(`Unrecognized ingest mode '${protocol}'`);
 };
 
 // merge strategy
@@ -380,7 +379,6 @@ export const V1_buildMergeStrategy = (
   if (protocol instanceof V1_NoDeletesMergeStrategy) {
     return new NoDeletesMergeStrategy();
   } else if (protocol instanceof V1_DeleteIndicatorMergeStrategy) {
-    //TODO: ledav -- validate property exists on model class
     const strategy = new DeleteIndicatorMergeStrategy();
     strategy.deleteProperty = protocol.deleteProperty;
     strategy.deleteValues = protocol.deleteValues;
@@ -401,9 +399,8 @@ export const V1_buildAuditing = (
 ): Auditing => {
   if (protocol instanceof V1_NoAuditing) {
     return new NoAuditing();
-  } else if (protocol instanceof V1_BatchDateTimeAuditing) {
-    //TODO: ledav -- validate property exists on model class
-    const auditing = new BatchDateTimeAuditing();
+  } else if (protocol instanceof V1_DateTimeAuditing) {
+    const auditing = new DateTimeAuditing();
     auditing.dateTimeProperty = protocol.dateTimeProperty;
     return auditing;
   } else if (protocol instanceof V1_OpaqueAuditing) {
@@ -420,7 +417,6 @@ export const V1_buildTransactionMilestoning = (
   protocol: V1_TransactionMilestoning,
   context: V1_GraphBuilderContext,
 ): TransactionMilestoning => {
-  //TODO: ledav -- validate property exists on model class
   if (protocol instanceof V1_BatchIdTransactionMilestoning) {
     const milestoning = new BatchIdTransactionMilestoning();
     milestoning.batchIdInFieldName = protocol.batchIdInFieldName;
@@ -454,7 +450,6 @@ export const V1_buildValidityMilestoning = (
   protocol: V1_ValidityMilestoning,
   context: V1_GraphBuilderContext,
 ): ValidityMilestoning => {
-  //TODO: ledav -- validate property exists on model class
   if (protocol instanceof V1_DateTimeValidityMilestoning) {
     const milestoning = new DateTimeValidityMilestoning();
     milestoning.dateTimeFromFieldName = protocol.dateTimeFromFieldName;
