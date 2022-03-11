@@ -2,17 +2,18 @@ import {
   V1_AnyVersionDeduplicationStrategy,
   V1_AppendOnly,
   V1_Auditing,
-  V1_BatchDateTimeAuditing,
   V1_BatchIdAndDateTimeTransactionMilestoning,
   V1_BatchIdTransactionMilestoning,
-  V1_BatchMilestoningMode,
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
+  V1_DateTimeAuditing,
   V1_DateTimeTransactionMilestoning,
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_FlatTarget,
+  V1_IngestMode,
   V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
@@ -20,8 +21,8 @@ import {
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
-  V1_NonMilestonedDelta,
-  V1_NonMilestonedSnapshot,
+  V1_NontemporalDelta,
+  V1_NontemporalSnapshot,
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
@@ -34,7 +35,6 @@ import {
   V1_PropertyAndFlatTarget,
   V1_Reader,
   V1_ServiceReader,
-  V1_FlatTarget,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -73,7 +73,6 @@ export const V1_persistenceModelSchema = createModelSchema(V1_Persistence, {
   _type: usingConstantValueSchema(V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE),
   documentation: primitive(),
   name: primitive(),
-  owners: list(primitive()),
   package: primitive(),
   persister: custom(
     (val) => V1_serializePersister(val),
@@ -172,6 +171,10 @@ const V1_streamingPersisterModelSchema = createModelSchema(
   V1_StreamingPersister,
   {
     _type: usingConstantValueSchema(V1_PersisterType.STREAMING_PERSISTER),
+    targetShape: custom(
+      (val) => V1_serializeTargetShape(val),
+      (val) => V1_deserializeTargetShape(val),
+    ),
   },
 );
 
@@ -244,13 +247,13 @@ const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
 
 const V1_flatTargetModelSchema = createModelSchema(V1_FlatTarget, {
   _type: usingConstantValueSchema(V1_TargetShapeType.FLAT_TARGET),
-  batchMode: custom(
-    (val) => V1_serializeBatchMilestoningMode(val),
-    (val) => V1_deserializeBatchMilestoningMode(val),
-  ),
   deduplicationStrategy: custom(
     (val) => V1_serializeDeduplicationStrategy(val),
     (val) => V1_deserializeDeduplicationStrategy(val),
+  ),
+  ingestMode: custom(
+    (val) => V1_serializeIngestMode(val),
+    (val) => V1_deserializeIngestMode(val),
   ),
   modelClass: primitive(),
   partitionProperties: list(primitive()),
@@ -403,19 +406,19 @@ const V1_deserializeDeduplicationStrategy = (
  **********/
 
 enum V1_BatchModeType {
-  NON_MILESTONED_SNAPSHOT = 'nonMilestonedSnapshot',
+  NONTEMPORAL_SNAPSHOT = 'nontemporalSnapshot',
   UNITEMPORAL_SNAPSHOT = 'unitemporalSnapshot',
   BITEMPORAL_SNAPSHOT = 'bitemporalSnapshot',
-  NON_MILESTONED_DELTA = 'nonMilestonedDelta',
+  NONTEMPORAL_DELTA = 'nontemporalDelta',
   UNITEMPORAL_DELTA = 'unitemporalDelta',
   BITEMPORAL_DELTA = 'bitemporalDelta',
   APPEND_ONLY = 'appendOnly',
 }
 
-const V1_nonMilestonedSnapshotModelSchema = createModelSchema(
-  V1_NonMilestonedSnapshot,
+const V1_nontemporalSnapshotModelSchema = createModelSchema(
+  V1_NontemporalSnapshot,
   {
-    _type: usingConstantValueSchema(V1_BatchModeType.NON_MILESTONED_SNAPSHOT),
+    _type: usingConstantValueSchema(V1_BatchModeType.NONTEMPORAL_SNAPSHOT),
     auditing: custom(
       (val) => V1_serializeAuditing(val),
       (val) => V1_deserializeAuditing(val),
@@ -449,16 +452,17 @@ const V1_bitemporalSnapshotModelSchema = createModelSchema(
   },
 );
 
-const V1_nonMilestonedDeltaModelSchema = createModelSchema(
-  V1_NonMilestonedDelta,
-  {
-    _type: usingConstantValueSchema(V1_BatchModeType.NON_MILESTONED_DELTA),
-    auditing: custom(
-      (val) => V1_serializeAuditing(val),
-      (val) => V1_deserializeAuditing(val),
-    ),
-  },
-);
+const V1_nontemporalDeltaModelSchema = createModelSchema(V1_NontemporalDelta, {
+  _type: usingConstantValueSchema(V1_BatchModeType.NONTEMPORAL_DELTA),
+  auditing: custom(
+    (val) => V1_serializeAuditing(val),
+    (val) => V1_deserializeAuditing(val),
+  ),
+  mergeStrategy: custom(
+    (val) => V1_serializeMergeStrategy(val),
+    (val) => V1_deserializeMergeStrategy(val),
+  ),
+});
 
 const V1_unitemporalDeltaModelSchema = createModelSchema(V1_UnitemporalDelta, {
   _type: usingConstantValueSchema(V1_BatchModeType.UNITEMPORAL_DELTA),
@@ -497,17 +501,17 @@ const V1_appendOnlyModelSchema = createModelSchema(V1_AppendOnly, {
   filterDuplicates: primitive(),
 });
 
-const V1_serializeBatchMilestoningMode = (
-  protocol: V1_BatchMilestoningMode,
-): PlainObject<V1_BatchMilestoningMode> => {
-  if (protocol instanceof V1_NonMilestonedSnapshot) {
-    return serialize(V1_nonMilestonedSnapshotModelSchema, protocol);
+const V1_serializeIngestMode = (
+  protocol: V1_IngestMode,
+): PlainObject<V1_IngestMode> => {
+  if (protocol instanceof V1_NontemporalSnapshot) {
+    return serialize(V1_nontemporalSnapshotModelSchema, protocol);
   } else if (protocol instanceof V1_UnitemporalSnapshot) {
     return serialize(V1_unitemporalSnapshotModelSchema, protocol);
   } else if (protocol instanceof V1_BitemporalSnapshot) {
     return serialize(V1_bitemporalSnapshotModelSchema, protocol);
-  } else if (protocol instanceof V1_NonMilestonedDelta) {
-    return serialize(V1_nonMilestonedDeltaModelSchema, protocol);
+  } else if (protocol instanceof V1_NontemporalDelta) {
+    return serialize(V1_nontemporalDeltaModelSchema, protocol);
   } else if (protocol instanceof V1_UnitemporalDelta) {
     return serialize(V1_unitemporalDeltaModelSchema, protocol);
   } else if (protocol instanceof V1_BitemporalDelta) {
@@ -521,18 +525,18 @@ const V1_serializeBatchMilestoningMode = (
   );
 };
 
-const V1_deserializeBatchMilestoningMode = (
-  json: PlainObject<V1_BatchMilestoningMode>,
-): V1_BatchMilestoningMode => {
+const V1_deserializeIngestMode = (
+  json: PlainObject<V1_IngestMode>,
+): V1_IngestMode => {
   switch (json._type) {
-    case V1_BatchModeType.NON_MILESTONED_SNAPSHOT:
-      return deserialize(V1_nonMilestonedSnapshotModelSchema, json);
+    case V1_BatchModeType.NONTEMPORAL_SNAPSHOT:
+      return deserialize(V1_nontemporalSnapshotModelSchema, json);
     case V1_BatchModeType.UNITEMPORAL_SNAPSHOT:
       return deserialize(V1_unitemporalSnapshotModelSchema, json);
     case V1_BatchModeType.BITEMPORAL_SNAPSHOT:
       return deserialize(V1_bitemporalSnapshotModelSchema, json);
-    case V1_BatchModeType.NON_MILESTONED_DELTA:
-      return deserialize(V1_nonMilestonedDeltaModelSchema, json);
+    case V1_BatchModeType.NONTEMPORAL_DELTA:
+      return deserialize(V1_nontemporalDeltaModelSchema, json);
     case V1_BatchModeType.UNITEMPORAL_DELTA:
       return deserialize(V1_unitemporalDeltaModelSchema, json);
     case V1_BatchModeType.BITEMPORAL_DELTA:
@@ -620,7 +624,7 @@ const V1_deserializeMergeStrategy = (
 
 enum V1_AuditingType {
   NO_AUDITING = 'noAuditing',
-  BATCH_DATE_TIME_AUDITING = 'batchDateTimeAuditing',
+  DATE_TIME_AUDITING = 'batchDateTimeAuditing',
   OPAQUE_AUDITING = 'opaqueAuditing',
 }
 
@@ -628,13 +632,10 @@ const V1_noAuditingModelSchema = createModelSchema(V1_NoAuditing, {
   _type: usingConstantValueSchema(V1_AuditingType.NO_AUDITING),
 });
 
-const V1_batchDateTimeAuditingModelSchema = createModelSchema(
-  V1_BatchDateTimeAuditing,
-  {
-    _type: usingConstantValueSchema(V1_AuditingType.BATCH_DATE_TIME_AUDITING),
-    dateTimeFieldName: primitive(),
-  },
-);
+const V1_dateTimeAuditingModelSchema = createModelSchema(V1_DateTimeAuditing, {
+  _type: usingConstantValueSchema(V1_AuditingType.DATE_TIME_AUDITING),
+  dateTimeFieldName: primitive(),
+});
 
 const V1_opaqueAuditingModelSchema = createModelSchema(V1_OpaqueAuditing, {
   _type: usingConstantValueSchema(V1_AuditingType.OPAQUE_AUDITING),
@@ -645,8 +646,8 @@ const V1_serializeAuditing = (
 ): PlainObject<V1_Auditing> => {
   if (protocol instanceof V1_NoAuditing) {
     return serialize(V1_noAuditingModelSchema, protocol);
-  } else if (protocol instanceof V1_BatchDateTimeAuditing) {
-    return serialize(V1_batchDateTimeAuditingModelSchema, protocol);
+  } else if (protocol instanceof V1_DateTimeAuditing) {
+    return serialize(V1_dateTimeAuditingModelSchema, protocol);
   } else if (protocol instanceof V1_OpaqueAuditing) {
     return serialize(V1_opaqueAuditingModelSchema, protocol);
   }
@@ -659,8 +660,8 @@ const V1_deserializeAuditing = (
   switch (json._type) {
     case V1_AuditingType.NO_AUDITING:
       return deserialize(V1_noAuditingModelSchema, json);
-    case V1_AuditingType.BATCH_DATE_TIME_AUDITING:
-      return deserialize(V1_batchDateTimeAuditingModelSchema, json);
+    case V1_AuditingType.DATE_TIME_AUDITING:
+      return deserialize(V1_dateTimeAuditingModelSchema, json);
     case V1_AuditingType.OPAQUE_AUDITING:
       return deserialize(V1_opaqueAuditingModelSchema, json);
     default:

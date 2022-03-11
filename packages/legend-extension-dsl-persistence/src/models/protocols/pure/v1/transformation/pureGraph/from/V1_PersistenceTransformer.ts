@@ -2,17 +2,18 @@ import {
   AnyVersionDeduplicationStrategy,
   AppendOnly,
   Auditing,
-  BatchDateTimeAuditing,
   BatchIdAndDateTimeTransactionMilestoning,
   BatchIdTransactionMilestoning,
-  BatchMilestoningMode,
   BatchPersister,
   BitemporalDelta,
   BitemporalSnapshot,
+  DateTimeAuditing,
   DateTimeTransactionMilestoning,
   DateTimeValidityMilestoning,
   DeduplicationStrategy,
   DeleteIndicatorMergeStrategy,
+  FlatTarget,
+  IngestMode,
   ManualTrigger,
   MaxVersionDeduplicationStrategy,
   MergeStrategy,
@@ -20,8 +21,8 @@ import {
   NoAuditing,
   NoDeduplicationStrategy,
   NoDeletesMergeStrategy,
-  NonMilestonedDelta,
-  NonMilestonedSnapshot,
+  NontemporalDelta,
+  NontemporalSnapshot,
   OpaqueAuditing,
   OpaqueDeduplicationStrategy,
   OpaqueMergeStrategy,
@@ -34,7 +35,6 @@ import {
   PropertyAndFlatTarget,
   Reader,
   ServiceReader,
-  FlatTarget,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
@@ -51,10 +51,10 @@ import {
   V1_AnyVersionDeduplicationStrategy,
   V1_AppendOnly,
   V1_Auditing,
-  V1_BatchDateTimeAuditing,
+  V1_DateTimeAuditing,
   V1_BatchIdAndDateTimeTransactionMilestoning,
   V1_BatchIdTransactionMilestoning,
-  V1_BatchMilestoningMode,
+  V1_IngestMode,
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
@@ -62,6 +62,7 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_FlatTarget,
   V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
@@ -69,8 +70,8 @@ import {
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
-  V1_NonMilestonedDelta,
-  V1_NonMilestonedSnapshot,
+  V1_NontemporalDelta,
+  V1_NontemporalSnapshot,
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
@@ -83,7 +84,6 @@ import {
   V1_PropertyAndFlatTarget,
   V1_Reader,
   V1_ServiceReader,
-  V1_FlatTarget,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -114,7 +114,6 @@ export const V1_transformPersistence = (
   const protocol = new V1_Persistence();
   V1_initPackageableElement(protocol, element);
   protocol.documentation = element.documentation;
-  protocol.owners = element.owners;
   protocol.trigger = V1_transformTrigger(element.trigger, context);
   protocol.reader = V1_transformReader(element.reader, context);
   protocol.persister = V1_transformPersister(element.persister, context);
@@ -166,7 +165,12 @@ export const V1_transformPersister = (
   context: V1_GraphTransformerContext,
 ): V1_Persister => {
   if (element instanceof StreamingPersister) {
-    return new V1_StreamingPersister();
+    let protocol = new V1_StreamingPersister();
+    protocol.targetShape = V1_transformTargetShape(
+      element.targetShape,
+      context,
+    );
+    return protocol;
   } else if (element instanceof BatchPersister) {
     const protocol = new V1_BatchPersister();
     protocol.targetShape = V1_transformTargetShape(
@@ -238,10 +242,7 @@ export const V1_transformFlatTarget = (
     element.deduplicationStrategy,
     context,
   );
-  protocol.batchMode = V1_transformBatchMilestoningMode(
-    element.batchMode,
-    context,
-  );
+  protocol.ingestMode = V1_transformIngestMode(element.ingestMode, context);
   return protocol;
 };
 
@@ -293,15 +294,15 @@ export const V1_transformDeduplicationStrategy = (
 };
 
 /**********
- * batch mode
+ * ingest mode
  **********/
 
-export const V1_transformBatchMilestoningMode = (
-  element: BatchMilestoningMode,
+export const V1_transformIngestMode = (
+  element: IngestMode,
   context: V1_GraphTransformerContext,
-): V1_BatchMilestoningMode => {
-  if (element instanceof NonMilestonedSnapshot) {
-    const protocol = new V1_NonMilestonedSnapshot();
+): V1_IngestMode => {
+  if (element instanceof NontemporalSnapshot) {
+    const protocol = new V1_NontemporalSnapshot();
     protocol.auditing = V1_transformAuditing(element.auditing, context);
     return protocol;
   } else if (element instanceof UnitemporalSnapshot) {
@@ -322,8 +323,12 @@ export const V1_transformBatchMilestoningMode = (
       context,
     );
     return protocol;
-  } else if (element instanceof NonMilestonedDelta) {
-    const protocol = new V1_NonMilestonedDelta();
+  } else if (element instanceof NontemporalDelta) {
+    const protocol = new V1_NontemporalDelta();
+    protocol.mergeStrategy = V1_transformMergeStrategy(
+      element.mergeStrategy,
+      context,
+    );
     protocol.auditing = V1_transformAuditing(element.auditing, context);
     return protocol;
   } else if (element instanceof UnitemporalDelta) {
@@ -359,7 +364,7 @@ export const V1_transformBatchMilestoningMode = (
     return protocol;
   }
   throw new UnsupportedOperationError(
-    `Unable to transform batch milestoning mode '${element}'`,
+    `Unable to transform ingest mode '${element}'`,
   );
 };
 
@@ -394,8 +399,8 @@ export const V1_transformAuditing = (
 ): V1_Auditing => {
   if (element instanceof NoAuditing) {
     return new V1_NoAuditing();
-  } else if (element instanceof BatchDateTimeAuditing) {
-    const protocol = new V1_BatchDateTimeAuditing();
+  } else if (element instanceof DateTimeAuditing) {
+    const protocol = new V1_DateTimeAuditing();
     protocol.dateTimeProperty = element.dateTimeProperty;
     return protocol;
   } else if (element instanceof OpaqueAuditing) {
