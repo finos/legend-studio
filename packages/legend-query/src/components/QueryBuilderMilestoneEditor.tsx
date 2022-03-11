@@ -28,13 +28,9 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
-  VariableExpression,
 } from '@finos/legend-graph';
-import {
-  DateInstanceValueEditor,
-  VariableExpressionParameterEditor,
-} from './QueryBuilderValueSpecificationEditor';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
 import { Dialog, RefreshIcon } from '@finos/legend-art';
@@ -71,10 +67,11 @@ const MilestoningParameterEditor = observer(
       }),
       [handleDrop],
     );
-    const milestoningParameter =
+    const milestoningParameter = guaranteeNonNullable(
       queryBuilderState.querySetupState.classMilestoningTemporalValues[
         parameterIndex
-      ];
+      ],
+    );
     const resetMilestoningParameter = (): void => {
       queryBuilderState.querySetupState.classMilestoningTemporalValues[
         parameterIndex
@@ -91,9 +88,6 @@ const MilestoningParameterEditor = observer(
         ),
       );
     };
-    const date = queryBuilderState.graphManagerState.graph.getPrimitiveType(
-      PRIMITIVE_TYPE.DATE,
-    );
     return (
       <div
         ref={dropConnector}
@@ -104,28 +98,14 @@ const MilestoningParameterEditor = observer(
             Change Milestoning Parameter Value
           </div>
         )}
-        {milestoningParameter instanceof PrimitiveInstanceValue && (
-          <DateInstanceValueEditor
-            valueSpecification={milestoningParameter}
-            graph={queryBuilderState.graphManagerState.graph}
-            expectedType={date}
-          />
-        )}
-        {queryBuilderState.querySetupState.classMilestoningTemporalValues[
-          parameterIndex
-        ] instanceof VariableExpression && (
-          <>
-            <VariableExpressionParameterEditor
-              valueSpecification={guaranteeType(
-                guaranteeNonNullable(
-                  queryBuilderState.querySetupState
-                    .classMilestoningTemporalValues[parameterIndex],
-                ),
-                VariableExpression,
-              )}
-            />
-          </>
-        )}
+        <QueryBuilderValueSpecificationEditor
+          valueSpecification={milestoningParameter}
+          graph={queryBuilderState.graphManagerState.graph}
+          expectedType={
+            guaranteeNonNullable(milestoningParameter.genericType)
+              .ownerReference.value
+          }
+        />
         <button
           className="query-builder__parameter-editor__node__action"
           tabIndex={-1}
@@ -278,7 +258,11 @@ export const MilestoningParametersEditor = observer(
                     parameter.parameter.genericType?.value.rawType.name ===
                       PRIMITIVE_TYPE.STRICTDATE ||
                     parameter.parameter.genericType?.value.rawType.name ===
-                      PRIMITIVE_TYPE.LATESTDATE,
+                      PRIMITIVE_TYPE.LATESTDATE ||
+                    parameter.parameter.genericType?.value.rawType.name ===
+                      PRIMITIVE_TYPE.DATE ||
+                    parameter.parameter.genericType?.value.rawType.name ===
+                      PRIMITIVE_TYPE.DATETIME,
                 )
                 .map((parameter) => (
                   <VariableExpressionViewer

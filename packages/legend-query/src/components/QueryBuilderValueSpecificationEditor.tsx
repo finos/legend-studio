@@ -637,7 +637,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.LATESTDATE:
         if (
           derivedPropertyExpressionState &&
-          idx &&
+          idx !== undefined &&
           derivedPropertyExpressionStates
         ) {
           const index = derivedPropertyExpressionStates.findIndex(

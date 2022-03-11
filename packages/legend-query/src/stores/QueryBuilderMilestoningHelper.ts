@@ -93,14 +93,11 @@ export const removePropagatedDates = (
     currentExpression.queryBuilderState.querySetupState
       .classMilestoningTemporalValues;
   const graph = currentExpression.queryBuilderState.graphManagerState.graph;
-  if (
-    isDatePropagationSupported(currentExpression, graph) &&
-    currentExpression.derivedProperty.owner instanceof Class
-  ) {
-    const stereotype = getMilestoneTemporalStereotype(
-      currentExpression.derivedProperty.owner,
-      graph,
-    );
+  const stereotype = getSourceTemporalStereotype(
+    currentExpression.derivedProperty,
+    graph,
+  );
+  if (isDatePropagationSupported(currentExpression, graph)) {
     switch (stereotype) {
       case MILESTONING_STEROTYPES.BITEMPORAL: {
         if (
@@ -150,26 +147,27 @@ export const removePropagatedDates = (
       }
       default:
     }
-    prevExpression = currentExpression;
-    for (let i = 1; i < derivedPropertyExpressionStates.length; i++) {
-      currentExpression = guaranteeNonNullable(
-        derivedPropertyExpressionStates[i],
-      );
-      if (
-        isDatePropagationSupported(currentExpression, graph) &&
-        !prevExpression.derivedProperty.name.endsWith('AllVersions') &&
-        !prevExpression.derivedProperty.name.endsWith('AllVersionsInRange') &&
-        prevExpression.propertyExpression.parametersValues ===
-          currentExpression.propertyExpression.parametersValues
-      ) {
-        currentExpression.propertyExpression.parametersValues = [
-          guaranteeNonNullable(
-            currentExpression.propertyExpression.parametersValues[0],
-          ),
-        ];
-      }
-      prevExpression = currentExpression;
+  }
+  prevExpression = currentExpression;
+  for (let i = 1; i < derivedPropertyExpressionStates.length; i++) {
+    currentExpression = guaranteeNonNullable(
+      derivedPropertyExpressionStates[i],
+    );
+    if (
+      isDatePropagationSupported(currentExpression, graph) &&
+      !prevExpression.derivedProperty.name.endsWith('AllVersions') &&
+      !prevExpression.derivedProperty.name.endsWith('AllVersionsInRange') &&
+      prevExpression.parameterValues.every(
+        (p, index) => p === currentExpression.parameterValues[index],
+      )
+    ) {
+      currentExpression.propertyExpression.parametersValues = [
+        guaranteeNonNullable(
+          currentExpression.propertyExpression.parametersValues[0],
+        ),
+      ];
     }
+    prevExpression = currentExpression;
   }
 };
 
