@@ -16,34 +16,31 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import {
-  type V1_ClassMappingVisitor,
-  V1_ClassMapping,
-} from './V1_ClassMapping';
+import { hashLambda } from '../../../../../../../MetaModelUtils';
+import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda';
+import type { V1_ClassMappingVisitor } from './V1_ClassMapping';
+import { V1_OperationClassMapping } from './V1_OperationClassMapping';
 
-export enum V1_MappingOperationType {
-  STORE_UNION = 'STORE_UNION',
-  ROUTER_UNION = 'ROUTER_UNION',
-  INHERITANCE = 'INHERITANCE',
-  MERGE = 'MERGE',
-}
-
-export class V1_OperationClassMapping
-  extends V1_ClassMapping
+export class V1_MergeOperationClassMapping
+  extends V1_OperationClassMapping
   implements Hashable
 {
-  parameters: string[] = [];
-  operation!: V1_MappingOperationType;
+  validationFunction!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OPERATION_SET_IMPLEMENTATION,
       this.operation,
       hashArray(this.parameters),
+      hashLambda(
+        this.validationFunction.parameters,
+        this.validationFunction.body,
+      ),
     ]);
   }
-
-  accept_ClassMappingVisitor<T>(visitor: V1_ClassMappingVisitor<T>): T {
-    return visitor.visit_OperationClassMapping(this);
+  override accept_ClassMappingVisitor<T>(
+    visitor: V1_ClassMappingVisitor<T>,
+  ): T {
+    return visitor.visit_MergeOperationClassMapping(this);
   }
 }

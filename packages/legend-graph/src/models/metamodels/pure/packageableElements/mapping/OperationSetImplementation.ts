@@ -40,7 +40,7 @@ export enum OperationType {
   STORE_UNION = 'STORE_UNION',
   ROUTER_UNION = 'ROUTER_UNION',
   INHERITANCE = 'INHERITANCE',
-  // MERGE = 'MERGE',
+  MERGE = 'MERGE',
 }
 
 export const getClassMappingOperationType = (value: string): OperationType =>
