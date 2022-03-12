@@ -5,4 +5,4 @@
 '@finos/legend-studio': patch
 '@finos/legend-studio-app': patch
 ---
-Rename dsl `serializer` to `externalFormat` and move to core.
+Rename  `DSL Serializer` to `DSL  External Format` and move it to core.
