@@ -737,6 +737,7 @@ export class EditorStore {
       this.workspaceUpdaterState.fetchLatestCommittedReviews(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
@@ -775,6 +776,7 @@ export class EditorStore {
       this.sdlcState.checkIfWorkspaceIsOutdated(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);

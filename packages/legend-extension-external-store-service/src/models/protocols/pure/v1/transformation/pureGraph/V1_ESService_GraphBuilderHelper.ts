@@ -18,6 +18,7 @@ import { getServiceStore } from '../../../../../../graphManager/ESService_GraphM
 import type { ServiceStore } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
 import {
   RawLambda,
+  V1_resolveBinding,
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
 } from '@finos/legend-graph';
@@ -44,7 +45,6 @@ import {
   IntegerTypeReference,
   StringTypeReference,
 } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
-import { V1_resolveBinding } from '@finos/legend-extension-dsl-serializer';
 import {
   assertNonNullable,
   guaranteeNonEmptyString,

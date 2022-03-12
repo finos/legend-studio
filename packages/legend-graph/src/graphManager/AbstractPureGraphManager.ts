@@ -59,6 +59,8 @@ import type { LightQuery, Query } from './action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification';
+import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription';
+import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -237,6 +239,17 @@ export abstract class AbstractPureGraphManager {
     generationElement: PackageableElement,
     graph: PureModel,
   ): Promise<Entity[]>;
+
+  // ------------------------------------------- External Format ----------------------------------
+
+  abstract getAvailableExternalFormatsDescriptions(): Promise<
+    ExternalFormatDescription[]
+  >;
+
+  abstract generateModelFromExternalFormat(
+    configs: ConfigurationProperty[],
+    graph: PureModel,
+  ): Promise<string>;
 
   // ------------------------------------------- Import -------------------------------------------
 

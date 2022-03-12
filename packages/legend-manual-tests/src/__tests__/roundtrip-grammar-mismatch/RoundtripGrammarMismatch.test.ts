@@ -46,10 +46,10 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   TEST__GraphPluginManager,
+  DSLExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
 import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
 
 const engineConfig = JSON.parse(
@@ -112,7 +112,7 @@ const checkGrammarRoundtripMismatch = async (
   pluginManager.usePresets([
     new DSLText_GraphPreset(),
     new DSLDiagram_GraphPreset(),
-    new DSLSerializer_GraphPreset(),
+    new DSLExternalFormat_GraphPreset(),
     new DSLDataSpace_GraphPreset(),
   ]);
   pluginManager.install();

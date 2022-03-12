@@ -209,6 +209,9 @@ import {
 import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { GraphPluginManager } from '../../../../GraphPluginManager';
 import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification';
+import type { ExternalFormatDescription } from '../../../../graphManager/action/externalFormat/ExternalFormatDescription';
+import type { ConfigurationProperty } from '../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
+import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1722,6 +1725,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
+  }
+
+  // ------------------------------------------- External Format --------------------------------
+  getAvailableExternalFormatsDescriptions(): Promise<
+    ExternalFormatDescription[]
+  > {
+    return this.engine.getAvailableExternalFormatsDescriptions();
+  }
+
+  generateModelFromExternalFormat(
+    configurationProperties: ConfigurationProperty[],
+    graph: PureModel,
+  ): Promise<string> {
+    const config: Record<PropertyKey, unknown> = {};
+    configurationProperties.forEach((property) => {
+      config[property.name] = property.value as Record<PropertyKey, unknown>;
+    });
+    const model = this.getFullGraphModelData(graph);
+    const input = new V1_ExternalFormatModelGenerationInput(model, config);
+    return this.engine.generateModel(input);
   }
 
   // ------------------------------------------- Import -------------------------------------------

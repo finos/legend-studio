@@ -252,6 +252,9 @@ export class ViewerStore {
     yield flowResult(
       this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
     );
+    yield flowResult(
+      this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
+    );
 
     // generate
     if (
