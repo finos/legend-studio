@@ -181,6 +181,18 @@ export const TEST_DATA__roundtrip = [
       _type: 'persistence',
       documentation: 'A persistence specification for Zoos.',
       name: 'ZooPersistence',
+      notifier: {
+        notifyees: [
+          {
+            _type: 'emailNotifyee',
+            address: 'abc@xyz.com',
+          },
+          {
+            _type: 'pagerDutyNotifyee',
+            url: 'https://xyz.com',
+          },
+        ],
+      },
       package: 'org::dxl',
       persister: {
         _type: 'batchPersister',

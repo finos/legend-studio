@@ -12,6 +12,7 @@ import {
   DateTimeValidityMilestoning,
   DeduplicationStrategy,
   DeleteIndicatorMergeStrategy,
+  EmailNotifyee,
   FlatTarget,
   IngestMode,
   ManualTrigger,
@@ -23,6 +24,8 @@ import {
   NoDeletesMergeStrategy,
   NontemporalDelta,
   NontemporalSnapshot,
+  Notifier,
+  Notifyee,
   OpaqueAuditing,
   OpaqueDeduplicationStrategy,
   OpaqueMergeStrategy,
@@ -30,6 +33,7 @@ import {
   OpaqueTransactionMilestoning,
   OpaqueTrigger,
   OpaqueValidityMilestoning,
+  PagerDutyNotifyee,
   Persistence,
   Persister,
   PropertyAndFlatTarget,
@@ -51,18 +55,19 @@ import {
   V1_AnyVersionDeduplicationStrategy,
   V1_AppendOnly,
   V1_Auditing,
-  V1_DateTimeAuditing,
   V1_BatchIdAndDateTimeTransactionMilestoning,
   V1_BatchIdTransactionMilestoning,
-  V1_IngestMode,
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
+  V1_DateTimeAuditing,
   V1_DateTimeTransactionMilestoning,
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_EmailNotifyee,
   V1_FlatTarget,
+  V1_IngestMode,
   V1_ManualTrigger,
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
@@ -72,6 +77,8 @@ import {
   V1_NoDeletesMergeStrategy,
   V1_NontemporalDelta,
   V1_NontemporalSnapshot,
+  V1_Notifier,
+  V1_Notifyee,
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
@@ -79,6 +86,7 @@ import {
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
+  V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTarget,
@@ -117,6 +125,7 @@ export const V1_transformPersistence = (
   protocol.trigger = V1_transformTrigger(element.trigger, context);
   protocol.reader = V1_transformReader(element.reader, context);
   protocol.persister = V1_transformPersister(element.persister, context);
+  protocol.notifier = V1_transformNotifier(element.notifier, context);
   return protocol;
 };
 
@@ -181,6 +190,39 @@ export const V1_transformPersister = (
   }
   throw new UnsupportedOperationError(
     `Unable to transform persister '${element}'`,
+  );
+};
+
+/**********
+ * notifier
+ **********/
+
+export const V1_transformNotifier = (
+  element: Notifier,
+  context: V1_GraphTransformerContext,
+): V1_Notifier => {
+  const notifier = new V1_Notifier();
+  notifier.notifyees = element.notifyees.map((n) =>
+    V1_transformNotifyee(n, context),
+  );
+  return notifier;
+};
+
+export const V1_transformNotifyee = (
+  element: Notifyee,
+  context: V1_GraphTransformerContext,
+): V1_Notifyee => {
+  if (element instanceof EmailNotifyee) {
+    const protocol = new V1_EmailNotifyee();
+    protocol.address = element.address;
+    return protocol;
+  } else if (element instanceof PagerDutyNotifyee) {
+    const protocol = new V1_PagerDutyNotifyee();
+    protocol.url = element.url;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Unable to transform notifyee '${element}'`,
   );
 };
 

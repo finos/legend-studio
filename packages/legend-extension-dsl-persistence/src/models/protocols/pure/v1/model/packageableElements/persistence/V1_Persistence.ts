@@ -14,6 +14,7 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
   trigger!: V1_Trigger;
   reader!: V1_Reader;
   persister!: V1_Persister;
+  notifier!: V1_Notifier;
 
   override get hashCode(): string {
     return hashArray([
@@ -22,6 +23,7 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
       this.trigger,
       this.reader,
       this.persister,
+      this.notifier,
     ]);
   }
 
@@ -100,6 +102,46 @@ export class V1_BatchPersister extends V1_Persister implements Hashable {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
       this.targetShape,
+    ]);
+  }
+}
+
+/**********
+ * notifier
+ **********/
+
+export class V1_Notifier implements Hashable {
+  notifyees: V1_Notifyee[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.NOTIFIER,
+      hashArray(this.notifyees),
+    ]);
+  }
+}
+
+export abstract class V1_Notifyee implements Hashable {
+  private readonly _$nominalTypeBrand!: 'Notifyee';
+
+  abstract get hashCode(): string;
+}
+
+export class V1_EmailNotifyee extends V1_Notifyee implements Hashable {
+  address!: string;
+
+  override get hashCode(): string {
+    return hashArray([PERSISTENCE_HASH_STRUCTURE.EMAIL_NOTIFYEE, this.address]);
+  }
+}
+
+export class V1_PagerDutyNotifyee extends V1_Notifyee implements Hashable {
+  url!: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.PAGER_DUTY_NOTIFYEE,
+      this.url,
     ]);
   }
 }
