@@ -2,5 +2,5 @@
 '@finos/legend-studio': patch
 ---
 
-Leverage `externalFormats` apis to dynamically fetch available `externalFormat` types.
+Leverage `External Format` APIs to dynamically fetch available `external format` types.
 `WIP` Add model generation flow to `SchemaSet` editor to allow schema imports.
