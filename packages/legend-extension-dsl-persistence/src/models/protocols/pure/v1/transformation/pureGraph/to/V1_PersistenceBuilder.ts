@@ -12,6 +12,7 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_EmailNotifyee,
   V1_FlatTarget,
   V1_IngestMode,
   V1_ManualTrigger,
@@ -23,6 +24,8 @@ import {
   V1_NoDeletesMergeStrategy,
   V1_NontemporalDelta,
   V1_NontemporalSnapshot,
+  V1_Notifier,
+  V1_Notifyee,
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
@@ -30,6 +33,7 @@ import {
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
+  V1_PagerDutyNotifyee,
   type V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTarget,
@@ -61,6 +65,7 @@ import {
   DateTimeValidityMilestoning,
   DeduplicationStrategy,
   DeleteIndicatorMergeStrategy,
+  EmailNotifyee,
   FlatTarget,
   IngestMode,
   ManualTrigger,
@@ -72,6 +77,8 @@ import {
   NoDeletesMergeStrategy,
   NontemporalDelta,
   NontemporalSnapshot,
+  Notifier,
+  Notifyee,
   OpaqueAuditing,
   OpaqueDeduplicationStrategy,
   OpaqueMergeStrategy,
@@ -79,6 +86,7 @@ import {
   OpaqueTransactionMilestoning,
   OpaqueTrigger,
   OpaqueValidityMilestoning,
+  PagerDutyNotifyee,
   Persister,
   PropertyAndFlatTarget,
   Reader,
@@ -119,6 +127,7 @@ export const V1_buildPersistence = (
   persistence.trigger = V1_buildTrigger(protocol.trigger, context);
   persistence.reader = V1_buildReader(protocol.reader, context);
   persistence.persister = V1_buildPersister(protocol.persister, context);
+  persistence.notifier = V1_buildNotifier(protocol.notifier, context);
 };
 
 /**********
@@ -171,6 +180,37 @@ export const V1_buildPersister = (
     return persister;
   }
   throw new GraphBuilderError(`Unrecognized persister '${protocol}'`);
+};
+
+/**********
+ * notifier
+ **********/
+
+export const V1_buildNotifier = (
+  protocol: V1_Notifier,
+  context: V1_GraphBuilderContext,
+): Notifier => {
+  const notifier = new Notifier();
+  notifier.notifyees = protocol.notifyees.map((n) =>
+    V1_buildNotifyee(n, context),
+  );
+  return notifier;
+};
+
+export const V1_buildNotifyee = (
+  protocol: V1_Notifyee,
+  context: V1_GraphBuilderContext,
+): Notifyee => {
+  if (protocol instanceof V1_EmailNotifyee) {
+    const notifyee = new EmailNotifyee();
+    notifyee.address = protocol.address;
+    return notifyee;
+  } else if (protocol instanceof V1_PagerDutyNotifyee) {
+    const notifyee = new PagerDutyNotifyee();
+    notifyee.url = protocol.url;
+    return notifyee;
+  }
+  throw new GraphBuilderError(`Unrecognized notifier '${protocol}'`);
 };
 
 /**********

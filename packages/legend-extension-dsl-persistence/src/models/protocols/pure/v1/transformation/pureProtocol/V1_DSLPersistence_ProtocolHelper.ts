@@ -12,6 +12,7 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_EmailNotifyee,
   V1_FlatTarget,
   V1_IngestMode,
   V1_ManualTrigger,
@@ -23,6 +24,8 @@ import {
   V1_NoDeletesMergeStrategy,
   V1_NontemporalDelta,
   V1_NontemporalSnapshot,
+  V1_Notifier,
+  V1_Notifyee,
   V1_OpaqueAuditing,
   V1_OpaqueDeduplicationStrategy,
   V1_OpaqueMergeStrategy,
@@ -30,6 +33,7 @@ import {
   V1_OpaqueTransactionMilestoning,
   V1_OpaqueTrigger,
   V1_OpaqueValidityMilestoning,
+  V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTarget,
@@ -73,6 +77,10 @@ export const V1_persistenceModelSchema = createModelSchema(V1_Persistence, {
   _type: usingConstantValueSchema(V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE),
   documentation: primitive(),
   name: primitive(),
+  notifier: custom(
+    (val) => serialize(V1_notifierModelSchema, val),
+    (val) => deserialize(V1_notifierModelSchema, val),
+  ),
   package: primitive(),
   persister: custom(
     (val) => V1_serializePersister(val),
@@ -216,6 +224,61 @@ const V1_deserializePersister = (
 };
 
 /**********
+ * notifier
+ **********/
+
+enum V1_NotifyeeType {
+  EMAIL_NOTIFYEE = 'emailNotifyee',
+  PAGER_DUTY_NOTIFYEE = 'pagerDutyNotifyee',
+}
+
+const V1_notifierModelSchema = createModelSchema(V1_Notifier, {
+  notifyees: custom(
+    (val) => serializeArray(val, (val) => V1_serializeNotifyee(val), true),
+    (val) => deserializeArray(val, (val) => V1_deserializeNotifyee(val), false),
+  ),
+});
+
+const V1_emailNotifyeeModelSchema = createModelSchema(V1_EmailNotifyee, {
+  _type: usingConstantValueSchema(V1_NotifyeeType.EMAIL_NOTIFYEE),
+  address: primitive(),
+});
+
+const V1_pagerDutyNotifyeeModelSchema = createModelSchema(
+  V1_PagerDutyNotifyee,
+  {
+    _type: usingConstantValueSchema(V1_NotifyeeType.PAGER_DUTY_NOTIFYEE),
+    url: primitive(),
+  },
+);
+
+const V1_serializeNotifyee = (
+  protocol: V1_Notifyee,
+): PlainObject<V1_Notifyee> => {
+  if (protocol instanceof V1_EmailNotifyee) {
+    return serialize(V1_emailNotifyeeModelSchema, protocol);
+  } else if (protocol instanceof V1_PagerDutyNotifyee) {
+    return serialize(V1_pagerDutyNotifyeeModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(`Unable to serialize notifyee`, protocol);
+};
+
+const V1_deserializeNotifyee = (
+  json: PlainObject<V1_Notifyee>,
+): V1_Notifyee => {
+  switch (json._type) {
+    case V1_NotifyeeType.EMAIL_NOTIFYEE:
+      return deserialize(V1_emailNotifyeeModelSchema, json);
+    case V1_NotifyeeType.PAGER_DUTY_NOTIFYEE:
+      return deserialize(V1_pagerDutyNotifyeeModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Unable to deserialize notifyee '${json._type}'`,
+      );
+  }
+};
+
+/**********
  * target shape
  **********/
 
@@ -267,11 +330,8 @@ const V1_opaqueTargetModelSchema = createModelSchema(V1_OpaqueTarget, {
 });
 
 const V1_serializeTargetShape = (
-  protocol: V1_TargetShape | undefined,
-): PlainObject<V1_TargetShape> | typeof SKIP => {
-  if (!protocol) {
-    return SKIP;
-  }
+  protocol: V1_TargetShape,
+): PlainObject<V1_TargetShape> => {
   if (protocol instanceof V1_MultiFlatTarget) {
     return serialize(V1_multiFlatTargetModelSchema, protocol);
   } else if (protocol instanceof V1_FlatTarget) {
@@ -286,11 +346,8 @@ const V1_serializeTargetShape = (
 };
 
 const V1_deserializeTargetShape = (
-  json: PlainObject<V1_TargetShape> | undefined,
-): V1_TargetShape | undefined => {
-  if (!json) {
-    return undefined;
-  }
+  json: PlainObject<V1_TargetShape>,
+): V1_TargetShape => {
   switch (json._type) {
     case V1_TargetShapeType.MULTI_FLAT_TARGET:
       return deserialize(V1_multiFlatTargetModelSchema, json);
