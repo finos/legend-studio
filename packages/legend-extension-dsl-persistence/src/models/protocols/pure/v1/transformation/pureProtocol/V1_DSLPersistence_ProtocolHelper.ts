@@ -234,8 +234,8 @@ enum V1_NotifyeeType {
 
 const V1_notifierModelSchema = createModelSchema(V1_Notifier, {
   notifyees: custom(
-    (val) => serializeArray(val, (val) => V1_serializeNotifyee(val), true),
-    (val) => deserializeArray(val, (val) => V1_deserializeNotifyee(val), false),
+    (val) => serializeArray(val, (v) => V1_serializeNotifyee(v), true),
+    (val) => deserializeArray(val, (v) => V1_deserializeNotifyee(v), false),
   ),
 });
 

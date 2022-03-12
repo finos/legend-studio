@@ -122,7 +122,7 @@ export class V1_Notifier implements Hashable {
 }
 
 export abstract class V1_Notifyee implements Hashable {
-  private readonly _$nominalTypeBrand!: 'Notifyee';
+  private readonly _$nominalTypeBrand!: 'V1_Notifyee';
 
   abstract get hashCode(): string;
 }
