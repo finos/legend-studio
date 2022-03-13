@@ -56,6 +56,7 @@ import {
   VariableExpression,
   getMilestoneTemporalStereotype,
   Class,
+  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -603,6 +604,60 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
     derivedPropertyExpressionState,
     derivedPropertyExpressionStates,
   } = props;
+  if (derivedPropertyExpressionState && idx !== undefined) {
+    // const temporalTarget = getMilestoneTemporalStereotype(
+    //   guaranteeType(
+    //     derivedPropertyExpressionState.propertyExpression.func.genericType.value
+    //       .rawType,
+    //     Class,
+    //   ),
+    //   derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
+    // );
+    // const paramLength =
+    //   derivedPropertyExpressionState.propertyExpression.parametersValues.length;
+    // switch (temporalTarget) {
+    //   case MILESTONING_STEROTYPES.BITEMPORAL:
+    //     if (paramLength === 3) {
+    //       derivedPropertyExpressionState.propertyExpression.parametersValues[2] =
+    //         guaranteeNonNullable(
+    //           derivedPropertyExpressionState.queryBuilderState.querySetupState
+    //             .businessDate,
+    //         );
+    //       derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+    //         guaranteeNonNullable(
+    //           derivedPropertyExpressionState.queryBuilderState.querySetupState
+    //             .processingDate,
+    //         );
+    //     }
+    //     break;
+    //   case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+    //     if (paramLength === 2) {
+    //       derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+    //         guaranteeNonNullable(
+    //           derivedPropertyExpressionState.queryBuilderState.querySetupState
+    //             .businessDate,
+    //         );
+    //     }
+    //     break;
+    //   case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+    //     if (paramLength === 2) {
+    //       derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+    //         guaranteeNonNullable(
+    //           derivedPropertyExpressionState.queryBuilderState.querySetupState
+    //             .processingDate,
+    //         );
+    //     }
+    //     break;
+    //   default:
+    // }
+    //store a variable state to know whether two states are connected or not and then update accordingly leveraging that variable
+    // console.log(idx);
+    // derivedPropertyExpressionState.propertyExpression.parametersValues[idx] =
+    //   guaranteeNonNullable(
+    //     derivedPropertyExpressionState.queryBuilderState.querySetupState
+    //       .milestoning,
+    //   );
+  }
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
     switch (_type.path) {
@@ -635,6 +690,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.LATESTDATE:
+        // To populate default dates to the next level in the property chain if the date values of the current
+        // level are changed when date propagation is supported to the next level.
         if (
           derivedPropertyExpressionState &&
           idx !== undefined &&

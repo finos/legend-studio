@@ -79,7 +79,7 @@ const MilestoningParameterEditor = observer(
         GenericTypeExplicitReference.create(
           new GenericType(
             queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.DATE,
+              PRIMITIVE_TYPE.STRICTDATE,
             ),
           ),
         ),
@@ -101,10 +101,9 @@ const MilestoningParameterEditor = observer(
         <QueryBuilderValueSpecificationEditor
           valueSpecification={milestoningParameter}
           graph={queryBuilderState.graphManagerState.graph}
-          expectedType={
-            guaranteeNonNullable(milestoningParameter.genericType)
-              .ownerReference.value
-          }
+          expectedType={queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.DATE,
+          )}
         />
         <button
           className="query-builder__parameter-editor__node__action"

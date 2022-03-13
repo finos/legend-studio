@@ -56,6 +56,9 @@ import {
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
+  getMilestoneTemporalStereotype,
+  MILESTONING_STEROTYPES,
+  Class,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -162,6 +165,58 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     this.columnName = getPropertyChainName(
       this.propertyExpressionState.propertyExpression,
     );
+  }
+
+  get propertyExpression(): QueryBuilderPropertyExpressionState {
+    const derivedPropertyExpressionStates =
+      this.propertyExpressionState.derivedPropertyExpressionStates;
+    for (let i = 0; i < derivedPropertyExpressionStates.length; i++) {
+      const derivedPropertyExpressionState = guaranteeNonNullable(
+        derivedPropertyExpressionStates[i],
+      );
+      const temporalTarget = getMilestoneTemporalStereotype(
+        guaranteeType(
+          derivedPropertyExpressionState.propertyExpression.func.genericType
+            .value.rawType,
+          Class,
+        ),
+        derivedPropertyExpressionState.queryBuilderState.graphManagerState
+          .graph,
+      );
+      const processingDate =
+        derivedPropertyExpressionState.queryBuilderState.querySetupState
+          .processingDate;
+      const businessDate =
+        derivedPropertyExpressionState.queryBuilderState.querySetupState
+          .businessDate;
+      const paramLength =
+        derivedPropertyExpressionState.propertyExpression.parametersValues
+          .length;
+      switch (temporalTarget) {
+        case MILESTONING_STEROTYPES.BITEMPORAL:
+          if (paramLength === 3) {
+            derivedPropertyExpressionState.propertyExpression.parametersValues[2] =
+              guaranteeNonNullable(businessDate);
+            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+              guaranteeNonNullable(processingDate);
+          }
+          break;
+        case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+          if (paramLength === 2) {
+            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+              guaranteeNonNullable(businessDate);
+          }
+          break;
+        case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+          if (paramLength === 2) {
+            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+              guaranteeNonNullable(processingDate);
+          }
+          break;
+        default:
+      }
+    }
+    return this.propertyExpressionState;
   }
 }
 

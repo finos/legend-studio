@@ -203,6 +203,7 @@ const QueryBuilderFilterConditionEditor = observer(
       }),
       [handleDrop],
     );
+    const propertyExpressionState = node.condition.propertyExpression;
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__overlay__container">
@@ -214,7 +215,7 @@ const QueryBuilderFilterConditionEditor = observer(
         <div className="query-builder-filter-tree__condition-node">
           <div className="query-builder-filter-tree__condition-node__property">
             <QueryBuilderPropertyExpressionBadge
-              propertyExpressionState={node.condition.propertyExpressionState}
+              propertyExpressionState={propertyExpressionState}
               onPropertyExpressionChange={changeProperty}
             />
           </div>

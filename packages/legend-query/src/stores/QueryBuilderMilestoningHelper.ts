@@ -302,18 +302,9 @@ export const isValidMilestoningLambda = (
 
 export const getPropagatedDate = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
-  derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[],
   idx: number,
 ): ValueSpecification | undefined => {
-  const index = derivedPropertyExpressionStates.findIndex(
-    (propertyState: QueryBuilderDerivedPropertyExpressionState) =>
-      propertyState === derivedPropertyExpressionState,
-  );
   const queryBuilderState = derivedPropertyExpressionState.queryBuilderState;
-  const sourceStereotype = getSourceTemporalStereotype(
-    derivedPropertyExpressionState.derivedProperty,
-    queryBuilderState.graphManagerState.graph,
-  );
   const targetStereotype = getMilestoneTemporalStereotype(
     guaranteeType(
       derivedPropertyExpressionState.derivedProperty.genericType.value.rawType,
@@ -321,48 +312,18 @@ export const getPropagatedDate = (
     ),
     queryBuilderState.graphManagerState.graph,
   );
-  if (
-    index === 0 ||
-    !derivedPropertyExpressionStates[index - 1]?.parameterValues.length
-  ) {
-    switch (targetStereotype) {
-      case MILESTONING_STEROTYPES.BITEMPORAL:
-        return guaranteeNonNullable(
-          queryBuilderState.querySetupState.classMilestoningTemporalValues[idx],
-        );
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-        if (
-          queryBuilderState.querySetupState.classMilestoningTemporalValues
-            .length === 2
-        ) {
-          return guaranteeNonNullable(
-            queryBuilderState.querySetupState.classMilestoningTemporalValues[1],
-          );
-        } else {
-          return guaranteeNonNullable(
-            queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
-          );
-        }
-      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-        return guaranteeNonNullable(
-          queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
-        );
-      default:
-        return undefined;
-    }
-  } else {
-    const prevPropertyExpression = guaranteeNonNullable(
-      derivedPropertyExpressionStates[index - 1],
-    );
-    if (sourceStereotype === targetStereotype) {
-      return guaranteeNonNullable(prevPropertyExpression.parameterValues[idx]);
-    } else if (
-      targetStereotype === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL
-    ) {
-      return guaranteeNonNullable(prevPropertyExpression.parameterValues[0]);
-    } else if (targetStereotype === MILESTONING_STEROTYPES.BUSINESS_TEMPORAL) {
-      return guaranteeNonNullable(prevPropertyExpression.parameterValues[1]);
-    }
+  switch (targetStereotype) {
+    case MILESTONING_STEROTYPES.BITEMPORAL:
+      if (idx === 0) {
+        return queryBuilderState.querySetupState.processingDate;
+      } else {
+        return queryBuilderState.querySetupState.businessDate;
+      }
+    case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+      return queryBuilderState.querySetupState.businessDate;
+    case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+      return queryBuilderState.querySetupState.processingDate;
+    default:
+      return undefined;
   }
-  return undefined;
 };

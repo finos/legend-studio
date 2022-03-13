@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, computed, makeAutoObservable } from 'mobx';
 import {
   addUniqueEntry,
   getNullableFirstElement,
+  guaranteeNonNullable,
   isNonNullable,
   uniq,
 } from '@finos/legend-shared';
@@ -31,6 +32,12 @@ import {
   getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
+  PrimitiveInstanceValue,
+  TYPICAL_MULTIPLICITY_TYPE,
+  PRIMITIVE_TYPE,
+  GenericType,
+  GenericTypeExplicitReference,
+  VariableExpression,
 } from '@finos/legend-graph';
 
 export class QueryBuilderSetupState {
@@ -46,6 +53,8 @@ export class QueryBuilderSetupState {
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
+      processingDate: computed,
+      businessDate: computed,
       addClassMilestoningTemporalValues: action,
       setQueryBuilderState: action,
       setClass: action,
@@ -93,6 +102,150 @@ export class QueryBuilderSetupState {
       return this.possibleMappings.includes(this.mapping);
     }
     return false;
+  }
+
+  get processingDate(): ValueSpecification | undefined {
+    return this.getMilestoningDate(
+      guaranteeNonNullable(this.classMilestoningTemporalValues[0]),
+    );
+  }
+
+  get businessDate(): ValueSpecification | undefined {
+    if (this.classMilestoningTemporalValues.length === 1) {
+      return this.getMilestoningDate(
+        guaranteeNonNullable(this.classMilestoningTemporalValues[0]),
+      );
+    } else {
+      return this.getMilestoningDate(
+        guaranteeNonNullable(this.classMilestoningTemporalValues[1]),
+      );
+    }
+  }
+
+  // get milestoning(): ValueSpecification | undefined {
+  //   //create new valuespecification instead of fetching the existing value to disconnect mobx states
+  //   let value;
+  //   if (
+  //     this.classMilestoningTemporalValues[0] instanceof PrimitiveInstanceValue
+  //   ) {
+  //     value = this.classMilestoningTemporalValues[0].values[0];
+  //   }
+  //   if (
+  //     this.classMilestoningTemporalValues[0]?.genericType?.value.rawType ===
+  //     this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+  //       PRIMITIVE_TYPE.LATESTDATE,
+  //     )
+  //   ) {
+  //     const x = new PrimitiveInstanceValue(
+  //       GenericTypeExplicitReference.create(
+  //         new GenericType(
+  //           this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+  //             PRIMITIVE_TYPE.LATESTDATE,
+  //           ),
+  //         ),
+  //       ),
+  //       this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+  //         TYPICAL_MULTIPLICITY_TYPE.ONE,
+  //       ),
+  //     );
+  //     return x;
+  //   } else if (
+  //     this.classMilestoningTemporalValues[0]?.genericType?.value.rawType ===
+  //     this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+  //       PRIMITIVE_TYPE.STRICTDATE,
+  //     )
+  //   ) {
+  //     const x = new PrimitiveInstanceValue(
+  //       GenericTypeExplicitReference.create(
+  //         new GenericType(
+  //           this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+  //             PRIMITIVE_TYPE.STRICTDATE,
+  //           ),
+  //         ),
+  //       ),
+  //       this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+  //         TYPICAL_MULTIPLICITY_TYPE.ONE,
+  //       ),
+  //     );
+  //     x.addValue(value);
+  //     return x;
+  //   }
+  //   return undefined;
+  // }
+
+  getMilestoningDate(
+    milestoningParameter: ValueSpecification,
+  ): ValueSpecification | undefined {
+    const type = milestoningParameter.genericType?.value.rawType;
+    const graph = this.queryBuilderState.graphManagerState.graph;
+    const multiplicity = graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+    let value;
+    if (milestoningParameter instanceof PrimitiveInstanceValue) {
+      value = milestoningParameter.values[0];
+    }
+    if (
+      type ===
+      this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+        PRIMITIVE_TYPE.LATESTDATE,
+      )
+    ) {
+      const parameter = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.LATESTDATE,
+            ),
+          ),
+        ),
+        multiplicity,
+      );
+      return parameter;
+    } else if (
+      type ===
+      this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+        PRIMITIVE_TYPE.STRICTDATE,
+      )
+    ) {
+      const parameter = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.STRICTDATE,
+            ),
+          ),
+        ),
+        multiplicity,
+      );
+      parameter.addValue(value);
+      return parameter;
+    } else if (
+      type ===
+      this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+        PRIMITIVE_TYPE.DATETIME,
+      )
+    ) {
+      const parameter = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.DATETIME,
+            ),
+          ),
+        ),
+        multiplicity,
+      );
+      parameter.addValue(value);
+      return parameter;
+    } else if (milestoningParameter instanceof VariableExpression) {
+      const parameter = new VariableExpression(
+        milestoningParameter.name,
+        multiplicity,
+      );
+      return parameter;
+    }
+    return undefined;
   }
 
   addClassMilestoningTemporalValues(val: ValueSpecification): void {

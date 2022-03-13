@@ -141,13 +141,12 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
     const onPropertyExpressionChange = (
       node: QueryBuilderExplorerTreePropertyNodeData,
     ): void => projectionColumnState.changeProperty(node);
+    const propertyExpressionState = projectionColumnState.propertyExpression;
 
     return (
       <div className="query-builder__projection__column__value__property">
         <QueryBuilderPropertyExpressionBadge
-          propertyExpressionState={
-            projectionColumnState.propertyExpressionState
-          }
+          propertyExpressionState={propertyExpressionState}
           onPropertyExpressionChange={onPropertyExpressionChange}
         />
       </div>

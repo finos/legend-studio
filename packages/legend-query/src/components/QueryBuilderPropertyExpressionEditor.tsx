@@ -161,11 +161,7 @@ const DerivedPropertyParameterEditor = observer(
                 derivedPropertyExpressionState.queryBuilderState
                   .graphManagerState.graph,
               ) && derivedPropertyExpressionState.parameterValues.length === 0
-                ? getPropagatedDate(
-                    derivedPropertyExpressionState,
-                    derivedPropertyExpressionStates,
-                    idx,
-                  )
+                ? getPropagatedDate(derivedPropertyExpressionState, idx)
                 : derivedPropertyExpressionState.parameterValues[
                     idx
                   ]) as ValueSpecification
