@@ -151,7 +151,7 @@ const IdentifiedConnectionsPerStoreExplorerContextMenu = observer(
     return (
       <MenuContent ref={ref}>
         {identifiedConnection && (
-          <MenuContentItem onClick={remove}>Delete</MenuContentItem>
+          <MenuContentItem onClick={remove}>Remove</MenuContentItem>
         )}
         {!identifiedConnection && (
           <MenuContentItem onClick={createNewIdentifiedConnection}>

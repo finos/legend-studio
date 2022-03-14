@@ -195,7 +195,7 @@ const DiagramRendererHotkeyInfosModal = observer(
                   Remove selected element(s)
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">Delete</div>
+                  <div className="hotkey__key">Remove</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
