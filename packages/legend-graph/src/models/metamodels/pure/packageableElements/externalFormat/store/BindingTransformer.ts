@@ -38,7 +38,7 @@ export class BindingTransformer implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.BINDING_TRANSFORMER,
-      this.binding.value.path,
+      this.binding.hashValue,
     ]);
   }
 }

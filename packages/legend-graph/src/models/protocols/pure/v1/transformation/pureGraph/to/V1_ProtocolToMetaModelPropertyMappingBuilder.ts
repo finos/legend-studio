@@ -91,7 +91,7 @@ import { GraphBuilderError } from '../../../../../../../graphManager/GraphManage
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/BindingTransformer';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import { V1_resolveBinding } from '../../../../../../..';
+import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
 const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (

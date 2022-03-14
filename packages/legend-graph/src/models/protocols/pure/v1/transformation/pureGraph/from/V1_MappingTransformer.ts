@@ -15,6 +15,7 @@
  */
 
 import {
+  guaranteeNonEmptyString,
   IllegalStateError,
   isNonNullable,
   recursiveOmit,
@@ -491,9 +492,11 @@ const transformRelationalPropertyMapping = (
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
-  if (element.bindingTransformer?.binding !== undefined) {
+  if (element.bindingTransformer?.binding) {
     const bindingTransformer = new V1_BindingTransformer();
-    bindingTransformer.binding = element.bindingTransformer.binding.value.path;
+    bindingTransformer.binding = guaranteeNonEmptyString(
+      element.bindingTransformer.binding.valueForSerialization,
+    );
     propertyMapping.bindingTransformer = bindingTransformer;
   }
   if (element.localMappingProperty) {
