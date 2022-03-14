@@ -65,7 +65,7 @@ body:
     attributes:
       label: Environment
       description: |
-        **Tip:** you can run `yarn run check:env-info` and paste the result below
+        **Tip:** you can run `yarn run info:env` and paste the result below
       placeholder: |
         System:
           OS: macOS 11.6
