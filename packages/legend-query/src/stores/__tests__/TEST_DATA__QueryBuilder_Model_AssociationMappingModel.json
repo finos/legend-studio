@@ -1,0 +1,376 @@
+[
+  {
+    "path": "model::Firm",
+    "content": {
+      "_type": "class",
+      "name": "Firm",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "model::Person_Firm",
+    "content": {
+      "_type": "association",
+      "name": "Person_Firm",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firm",
+          "type": "model::Firm"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "employee",
+          "type": "model::Person"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::relationship::Association"
+  },
+  {
+    "path": "model::Test",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [
+        {
+          "name": "FirmPerson",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "firm_id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              },
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "Test",
+      "package": "model",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "Legal_name",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "name": "FirmTable",
+              "primaryKey": ["id"]
+            },
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firm_id",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "firstName",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "lastName",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "name": "PersonTable",
+              "primaryKey": ["id"]
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "model::parentMapping",
+    "content": {
+      "_type": "mapping",
+      "associationMappings": [
+        {
+          "_type": "relational",
+          "association": "model::Person_Firm",
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "firm"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "model::Test",
+                    "name": "FirmPerson"
+                  }
+                ]
+              },
+              "source": "model_Person",
+              "target": "model_Firm"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "employee"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "model::Test",
+                    "name": "FirmPerson"
+                  }
+                ]
+              },
+              "source": "model_Firm",
+              "target": "model_Person"
+            }
+          ],
+          "stores": []
+        }
+      ],
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "model::Firm",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "FirmTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "FirmTable"
+              },
+              "tableAlias": "FirmTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Firm",
+                "property": "name"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "Legal_name",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [
+        {
+          "includedMapping": "model::subMapping"
+        }
+      ],
+      "name": "parentMapping",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "model::subMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "model::Person",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "model::Test",
+            "mainTableDb": "model::Test",
+            "schema": "default",
+            "table": "PersonTable"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "model::Test",
+                "mainTableDb": "model::Test",
+                "schema": "default",
+                "table": "PersonTable"
+              },
+              "tableAlias": "PersonTable"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "firstName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "firstName",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::Person",
+                "property": "lastName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "lastName",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "subMapping",
+      "package": "model",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  }
+]

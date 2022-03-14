@@ -122,10 +122,11 @@ export {
   MdRefresh as RefreshIcon,
   MdFunctions as SigmaIcon,
   MdCompareArrows as CompareIcon,
-  MdVerticalAlignBottom,
   MdPlaylistAddCheck as CheckListIcon,
   MdAdd as AddIcon, // to be reviewed
   MdEdit as EditIcon, // to be reviewed
+  MdSubject as SubjectIcon,
+  MdViewHeadline as ViewHeadlineIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,
@@ -142,6 +143,8 @@ export {
   GoCloudDownload as CloudDownloadIcon,
   GoCloudUpload as CloudUploadIcon,
   GoSync as SyncIcon,
+  GoRepo as RepoIcon,
+  GoGitBranch as GitBranchIcon,
   GoX as XIcon,
 } from 'react-icons/go';
 export { SiSwagger as SwaggerIcon } from 'react-icons/si';

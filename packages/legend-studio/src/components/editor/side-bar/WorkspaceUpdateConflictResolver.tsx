@@ -50,16 +50,16 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
     conflictResolutionState.isAcceptingConflictResolution ||
     conflictResolutionState.isDiscardingConflictResolutionChanges ||
     conflictResolutionState.isAbortingConflictResolution;
-  const updateWorkspace = applicationStore.guaranteeSafeAction(() =>
+  const updateWorkspace = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.workspaceUpdaterState.updateWorkspace()),
   );
-  const accept = applicationStore.guaranteeSafeAction(() =>
+  const accept = applicationStore.guardUnhandledError(() =>
     flowResult(conflictResolutionState.acceptConflictResolution()),
   );
-  const discardChanges = applicationStore.guaranteeSafeAction(() =>
+  const discardChanges = applicationStore.guardUnhandledError(() =>
     flowResult(conflictResolutionState.discardConflictResolutionChanges()),
   );
-  const abort = applicationStore.guaranteeSafeAction(() =>
+  const abort = applicationStore.guardUnhandledError(() =>
     flowResult(conflictResolutionState.abortConflictResolution()),
   );
   // Conflicts

@@ -25,7 +25,7 @@ export enum V1_MappingOperationType {
   STORE_UNION = 'STORE_UNION',
   ROUTER_UNION = 'ROUTER_UNION',
   INHERITANCE = 'INHERITANCE',
-  // MERGE = 'MERGE',
+  MERGE = 'MERGE',
 }
 
 export class V1_OperationClassMapping

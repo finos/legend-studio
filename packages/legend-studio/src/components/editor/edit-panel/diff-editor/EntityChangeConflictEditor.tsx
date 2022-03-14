@@ -652,13 +652,13 @@ export const EntityChangeConflictEditor = observer(
       }
     };
     // resolutions
-    const markAsResolved = applicationStore.guaranteeSafeAction(() =>
+    const markAsResolved = applicationStore.guardUnhandledError(() =>
       flowResult(conflictEditorState.markAsResolved()),
     );
-    const useTheirs = applicationStore.guaranteeSafeAction(() =>
+    const useTheirs = applicationStore.guardUnhandledError(() =>
       flowResult(conflictEditorState.useIncomingChanges()),
     );
-    const useYours = applicationStore.guaranteeSafeAction(() =>
+    const useYours = applicationStore.guardUnhandledError(() =>
       flowResult(conflictEditorState.useCurrentChanges()),
     );
     // mode
@@ -671,7 +671,7 @@ export const EntityChangeConflictEditor = observer(
 
     useEffect(() => {
       flowResult(conflictEditorState.refresh()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, conflictEditorState]);
 

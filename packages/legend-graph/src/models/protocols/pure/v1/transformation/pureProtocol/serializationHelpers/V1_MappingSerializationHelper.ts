@@ -99,10 +99,12 @@ import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
-import { V1_BindingTransformer } from '../../../model/packageableElements/store/relational/mapping/V1_BindingTransformer';
+import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_BindingTransformer';
+import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
+  MERGE_OPERATION = 'mergeOperation',
   PUREINSTANCE = 'pureInstance',
   ROOT_FLAT_DATA = 'flatData',
   ROOT_RELATIONAL = 'relational',
@@ -159,6 +161,19 @@ const operationClassMappingModelSchema = createModelSchema(
     operation: primitive(),
     parameters: list(primitive()),
     root: primitive(),
+  },
+);
+
+const mergeOperationClassMappingModelSchema = createModelSchema(
+  V1_MergeOperationClassMapping,
+  {
+    _type: usingConstantValueSchema(V1_ClassMappingType.MERGE_OPERATION),
+    class: primitive(),
+    id: optional(primitive()),
+    operation: primitive(),
+    parameters: list(primitive()),
+    root: primitive(),
+    validationFunction: usingModelSchema(V1_rawLambdaModelSchema),
   },
 );
 
@@ -574,7 +589,9 @@ function V1_serializeClassMapping(
   value: V1_ClassMapping,
   plugins?: PureProtocolProcessorPlugin[] | undefined,
 ): V1_ClassMapping {
-  if (value instanceof V1_OperationClassMapping) {
+  if (value instanceof V1_MergeOperationClassMapping) {
+    return serialize(mergeOperationClassMappingModelSchema, value);
+  } else if (value instanceof V1_OperationClassMapping) {
     return serialize(operationClassMappingModelSchema, value);
   } else if (value instanceof V1_PureInstanceClassMapping) {
     return serialize(pureInstanceClassMappingModelSchema, value);
@@ -612,6 +629,8 @@ function V1_deserializeClassMapping(
   plugins?: PureProtocolProcessorPlugin[],
 ): V1_ClassMapping {
   switch (json._type) {
+    case V1_ClassMappingType.MERGE_OPERATION:
+      return deserialize(mergeOperationClassMappingModelSchema, json);
     case V1_ClassMappingType.OPERATION:
       return deserialize(operationClassMappingModelSchema, json);
     case V1_ClassMappingType.PUREINSTANCE:

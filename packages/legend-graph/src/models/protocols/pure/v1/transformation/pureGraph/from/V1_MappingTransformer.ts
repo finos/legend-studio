@@ -146,7 +146,9 @@ import { toJS } from 'mobx';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 import type { SubstituteStore } from '../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
-import { V1_BindingTransformer } from '../../../model/packageableElements/store/relational/mapping/V1_BindingTransformer';
+import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_BindingTransformer';
+import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
+import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -491,7 +493,7 @@ const transformRelationalPropertyMapping = (
   );
   if (element.bindingTransformer?.binding !== undefined) {
     const bindingTransformer = new V1_BindingTransformer();
-    bindingTransformer.binding = element.bindingTransformer.binding;
+    bindingTransformer.binding = element.bindingTransformer.binding.value.path;
     propertyMapping.bindingTransformer = bindingTransformer;
   }
   if (element.localMappingProperty) {
@@ -750,6 +752,8 @@ const transformOperationType = (
       return V1_MappingOperationType.STORE_UNION;
     case OperationType.INHERITANCE:
       return V1_MappingOperationType.INHERITANCE;
+    case OperationType.MERGE:
+      return V1_MappingOperationType.MERGE;
     default:
       throw new UnsupportedOperationError(
         `Can't transform operation type`,
@@ -765,6 +769,28 @@ const transformOperationSetImplementation = (
   classMapping.class = V1_transformElementReference(element.class);
   classMapping.id = mappingElementIdSerializer(element.id);
   classMapping.operation = transformOperationType(element.operation);
+  classMapping.parameters = element.parameters.map(
+    (e) => e.setImplementation.value.id.value,
+  );
+  const root = transformMappingElementRoot(element.root);
+  if (root !== undefined) {
+    classMapping.root = root;
+  }
+  return classMapping;
+};
+
+const transformMergeOperationSetImplementation = (
+  element: MergeOperationSetImplementation,
+  context: V1_GraphTransformerContext,
+): V1_MergeOperationClassMapping => {
+  const classMapping = new V1_MergeOperationClassMapping();
+  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.id = mappingElementIdSerializer(element.id);
+  classMapping.operation = transformOperationType(element.operation);
+  classMapping.validationFunction =
+    element.validationFunction.accept_RawValueSpecificationVisitor(
+      new V1_RawValueSpecificationTransformer(context),
+    ) as V1_RawLambda;
   classMapping.parameters = element.parameters.map(
     (e) => e.setImplementation.value.id.value,
   );
@@ -1048,8 +1074,25 @@ export class V1_SetImplementationTransformer
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): V1_ClassMapping | undefined {
-    return transformOperationSetImplementation(setImplementation);
+    if (setImplementation instanceof MergeOperationSetImplementation) {
+      return transformMergeOperationSetImplementation(
+        setImplementation,
+        this.context,
+      );
+    } else {
+      return transformOperationSetImplementation(setImplementation);
+    }
   }
+
+  visit_MergeOperationSetImplementation(
+    setImplementation: MergeOperationSetImplementation,
+  ): V1_ClassMapping | undefined {
+    return transformMergeOperationSetImplementation(
+      setImplementation,
+      this.context,
+    );
+  }
+
   visit_PureInstanceSetImplementation(
     setImplementation: PureInstanceSetImplementation,
   ): V1_ClassMapping | undefined {

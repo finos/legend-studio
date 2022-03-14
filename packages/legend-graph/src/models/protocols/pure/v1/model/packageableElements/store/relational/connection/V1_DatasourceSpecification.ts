@@ -24,6 +24,7 @@ export enum V1_DatasourceSpecificationType {
   BIGQUERY = 'bigQuery',
   H2_LOCAL = 'h2Local',
   REDSHIFT = 'redshift',
+  DATABRICKS = 'databricks',
 }
 
 export abstract class V1_DatasourceSpecification implements Hashable {
@@ -68,6 +69,26 @@ export class V1_EmbeddedH2DatasourceSpecification
   }
 }
 
+export class V1_DatabricksDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  hostname!: string;
+  port!: string;
+  protocol!: string;
+  httpPath!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATABRICKS_DATASOURCE_SPECIFICATION,
+      this.hostname,
+      this.port,
+      this.protocol,
+      this.httpPath,
+    ]);
+  }
+}
+
 export class V1_SnowflakeDatasourceSpecification
   extends V1_DatasourceSpecification
   implements Hashable
@@ -108,16 +129,22 @@ export class V1_RedshiftDatasourceSpecification
   extends V1_DatasourceSpecification
   implements Hashable
 {
+  clusterID!: string;
   databaseName!: string;
-  endpoint!: string;
+  host!: string;
   port!: number;
+  region!: string;
+  endpointURL!: string;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.REDSHIFT_DATASOURCE_SPECIFICATION,
       this.databaseName,
-      this.endpoint,
+      this.endpointURL,
       this.port.toString(),
+      this.clusterID,
+      this.host,
+      this.region,
     ]);
   }
 }

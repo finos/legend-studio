@@ -41,7 +41,7 @@ import type {
 import type { ValueSpecification } from '../models/metamodels/pure/valueSpecification/ValueSpecification';
 import type { RawValueSpecification } from '../models/metamodels/pure/rawValueSpecification/RawValueSpecification';
 import type { ServiceExecutionMode } from './action/service/ServiceExecutionMode';
-import type { TEMP__AbstractEngineConfig } from './action/TEMP__AbstractEngineConfig';
+import type { TEMPORARY__AbstractEngineConfig } from './action/TEMPORARY__AbstractEngineConfig';
 import type { DatabaseBuilderInput } from './action/generation/DatabaseBuilderInput';
 import type { RawRelationalOperationElement } from '../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type {
@@ -59,8 +59,10 @@ import type { LightQuery, Query } from './action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification';
+import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription';
+import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 
-export interface TEMP__EngineSetupConfig {
+export interface TEMPORARY__EngineSetupConfig {
   env: string;
   tabSize: number;
   clientConfig: ServerClientConfig & {
@@ -102,10 +104,10 @@ export abstract class AbstractPureGraphManager {
    * As such, we should expose a generic config instead.
    * See https://github.com/finos/legend-studio/issues/407
    */
-  abstract TEMP__getEngineConfig(): TEMP__AbstractEngineConfig;
+  abstract TEMPORARY__getEngineConfig(): TEMPORARY__AbstractEngineConfig;
 
   abstract initialize(
-    config: TEMP__EngineSetupConfig,
+    config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
     },
@@ -237,6 +239,17 @@ export abstract class AbstractPureGraphManager {
     generationElement: PackageableElement,
     graph: PureModel,
   ): Promise<Entity[]>;
+
+  // ------------------------------------------- External Format ----------------------------------
+
+  abstract getAvailableExternalFormatsDescriptions(): Promise<
+    ExternalFormatDescription[]
+  >;
+
+  abstract generateModelFromExternalFormat(
+    configs: ConfigurationProperty[],
+    graph: PureModel,
+  ): Promise<string>;
 
   // ------------------------------------------- Import -------------------------------------------
 

@@ -181,9 +181,10 @@ export const roundtripTestData = [
               method: 'GET',
               parameters: [
                 {
+                  allowReserved: true,
                   location: 'QUERY',
                   name: 'param1',
-                  allowReserved: true,
+                  required: false,
                   serializationFormat: {},
                   type: {
                     _type: 'boolean',
@@ -191,9 +192,10 @@ export const roundtripTestData = [
                   },
                 },
                 {
+                  allowReserved: false,
                   location: 'QUERY',
                   name: 'param2',
-                  allowReserved: false,
+                  required: true,
                   serializationFormat: {},
                   type: {
                     _type: 'boolean',

@@ -450,11 +450,12 @@ export class LegendQueryStore {
       );
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
       this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-      this.queryBuilderState.buildStateFromRawLambda(
+      const lambda =
         (yield this.graphManagerState.graphManager.pureCodeToLambda(
           query.content,
-        )) as RawLambda,
-      );
+        )) as RawLambda;
+      // leverage initialization of query builder state to ensure we handle unsupported queries
+      this.queryBuilderState.initialize(lambda);
       this.setOnSaveQuery(async (lambda: RawLambda) => {
         this.setQueryExportState(
           new QueryExportState(
@@ -550,9 +551,8 @@ export class LegendQueryStore {
       }
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
       this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-      this.queryBuilderState.buildStateFromRawLambda(
-        queryInfoState.service.execution.func,
-      );
+      // leverage initialization of query builder state to ensure we handle unsupported queries
+      this.queryBuilderState.initialize(queryInfoState.service.execution.func);
       this.setOnSaveQuery(async (lambda: RawLambda) => {
         this.setQueryExportState(
           new QueryExportState(this, lambda, false, undefined),

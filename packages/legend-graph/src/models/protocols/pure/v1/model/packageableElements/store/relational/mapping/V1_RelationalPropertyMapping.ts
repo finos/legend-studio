@@ -22,7 +22,7 @@ import {
 } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
 import { hashObjectWithoutSourceInformation } from '../../../../../../../../../MetaModelUtils';
 import type { V1_RawRelationalOperationElement } from '../model/V1_RawRelationalOperationElement';
-import type { V1_BindingTransformer } from './V1_BindingTransformer';
+import type { V1_BindingTransformer } from '../../../externalFormat/store/V1_BindingTransformer';
 
 export class V1_RelationalPropertyMapping
   extends V1_PropertyMapping

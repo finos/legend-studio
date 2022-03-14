@@ -28,6 +28,7 @@ import {
   TimesIcon,
   UsersIcon,
   UserIcon,
+  ExternalLinkIcon,
 } from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
 import {
@@ -56,7 +57,7 @@ const WorkspaceViewerContextMenu = observer(
     const { workspace } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const deleteWorkspace = applicationStore.guaranteeSafeAction(() =>
+    const deleteWorkspace = applicationStore.guardUnhandledError(() =>
       flowResult(editorStore.projectOverviewState.deleteWorkspace(workspace)),
     );
 
@@ -140,7 +141,7 @@ const WorkspacesViewer = observer(() => {
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
     flowResult(projectOverviewState.fetchProjectWorkspaces()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, projectOverviewState]);
 
@@ -191,13 +192,13 @@ const ReleaseEditor = observer(() => {
     projectOverviewState.isCreatingVersion;
   const { latestProjectVersion, currentProjectRevision } = projectOverviewState;
   const revisionInput = projectOverviewState.releaseVersion;
-  const createMajorRelease = applicationStore.guaranteeSafeAction(() =>
+  const createMajorRelease = applicationStore.guardUnhandledError(() =>
     flowResult(projectOverviewState.createVersion(NewVersionType.MAJOR)),
   );
-  const createMinorRelease = applicationStore.guaranteeSafeAction(() =>
+  const createMinorRelease = applicationStore.guardUnhandledError(() =>
     flowResult(projectOverviewState.createVersion(NewVersionType.MINOR)),
   );
-  const createPatchRelease = applicationStore.guaranteeSafeAction(() =>
+  const createPatchRelease = applicationStore.guardUnhandledError(() =>
     flowResult(projectOverviewState.createVersion(NewVersionType.PATCH)),
   );
   const changeNotes: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
@@ -211,7 +212,7 @@ const ReleaseEditor = observer(() => {
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
     flowResult(projectOverviewState.fetchLatestProjectVersion()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, projectOverviewState]);
 
@@ -375,7 +376,7 @@ const VersionsViewer = observer(() => {
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
     flowResult(editorStore.sdlcState.fetchProjectVersions()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, editorStore]);
 
@@ -501,7 +502,7 @@ const OverviewViewer = observer(() => {
         description,
         tagsArray,
       ),
-    ).catch(applicationStore.alertIllegalUnhandledError);
+    ).catch(applicationStore.alertUnhandledError);
   };
 
   return (
@@ -526,10 +527,7 @@ const OverviewViewer = observer(() => {
         <div className="panel__content__form">
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
-              Name
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              Name used for the project
+              Project Name
             </div>
             <input
               className="panel__content__form__section__input"
@@ -733,7 +731,12 @@ export const ProjectOverviewActivityBar = observer(() => {
 
 export const ProjectOverview = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const projectOverviewState = editorStore.projectOverviewState;
+  const openProjectWebUrl = (): void =>
+    applicationStore.navigator.openNewWindow(
+      editorStore.sdlcState.activeProject.webUrl,
+    );
   const renderOverview = (): React.ReactNode => {
     switch (projectOverviewState.activityMode) {
       case PROJECT_OVERVIEW_ACTIVITY_MODE.OVERVIEW:
@@ -756,6 +759,16 @@ export const ProjectOverview = observer(() => {
           <div className="panel__header__title__content side-bar__header__title__content">
             PROJECT
           </div>
+        </div>
+        <div className="panel__header__actions side-bar__header__actions">
+          <button
+            className="panel__header__action side-bar__header__action"
+            onClick={openProjectWebUrl}
+            tabIndex={-1}
+            title="Go to project in underlying VCS system"
+          >
+            <ExternalLinkIcon />
+          </button>
         </div>
       </div>
       <div className="panel__content side-bar__content project-overview__content">

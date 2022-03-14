@@ -65,7 +65,8 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER) ||
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER)
         ) {
           return V1_buildFilterFunctionExpression(
             functionName,

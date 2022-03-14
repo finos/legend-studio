@@ -141,7 +141,7 @@ export const ElementGenerationEditor = observer(
 
     useEffect(() => {
       flowResult(elementGenerationState.regenerate()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, currentElementState, elementGenerationState]);
 

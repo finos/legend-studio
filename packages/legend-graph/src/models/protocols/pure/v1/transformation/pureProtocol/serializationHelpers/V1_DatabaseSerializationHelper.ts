@@ -209,6 +209,7 @@ const V1_varCharRelationalDataTypeModelSchema = createModelSchema(V1_VarChar, {
   _type: usingConstantValueSchema(V1_RelationalDataTypeType.VARCHAR),
   size: primitive(),
 });
+
 const V1_semiStructuredRelationalDataTypeModelSchema = createModelSchema(
   V1_SemiStructured,
   {

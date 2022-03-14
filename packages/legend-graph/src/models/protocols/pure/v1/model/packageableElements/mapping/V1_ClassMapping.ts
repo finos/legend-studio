@@ -23,9 +23,13 @@ import type { V1_MappingClass } from './V1_MappingClass';
 import type { V1_OperationClassMapping } from './V1_OperationClassMapping';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
 import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
+import type { V1_MergeOperationClassMapping } from './V1_MergeOperationClassMapping';
 
 export interface V1_ClassMappingVisitor<T> {
   visit_ClassMapping(classMapping: V1_ClassMapping): T;
+  visit_MergeOperationClassMapping(
+    classMapping: V1_MergeOperationClassMapping,
+  ): T;
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): T;
   visit_PureInstanceClassMapping(classMapping: V1_PureInstanceClassMapping): T;
   visit_RootFlatDataClassMapping(classMapping: V1_RootFlatDataClassMapping): T;

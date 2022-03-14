@@ -20,8 +20,26 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+console.log(
+  'Checking Typescript project references [DEVEVELOPMENT - tsconfig.json]...',
+);
+
 checkProjectReferenceConfig({
   rootDir: resolve(__dirname, '../../'),
   excludePackagePatterns: [],
+  excludeReferencePatterns: ['**/tsconfig.package.json'],
+});
+
+console.log(
+  'Checking Typescript project references [BUILD - tsconfig.build.json]...',
+);
+
+checkProjectReferenceConfig({
+  rootDir: resolve(__dirname, '../../'),
+  tsConfigFileName: 'tsconfig.build.json',
+  excludePackagePatterns: [
+    '@finos/legend-manual-tests',
+    '@finos/legend-*-deployment',
+  ],
   excludeReferencePatterns: ['**/tsconfig.package.json'],
 });

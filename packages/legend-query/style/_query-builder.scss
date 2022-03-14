@@ -31,8 +31,51 @@
   &__content {
     display: flex;
     padding: 0.3rem;
-    height: calc(100% - 2.2rem);
+    height: calc(100% - 5.4rem);
     background: var(--color-dark-grey-50);
+  }
+
+  &__sub-header {
+    @include flexVCenter;
+
+    height: 3.2rem;
+    background: var(--color-dark-grey-80);
+    justify-content: flex-end;
+  }
+
+  &__sub-header__custom-action {
+    @include flexCenter;
+
+    height: 2.2rem;
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    margin-right: 0.5rem;
+    font-weight: 500;
+    border: 0.1rem solid var(--color-dark-grey-500);
+
+    &__label {
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-500);
+    }
+
+    &__icon {
+      margin-left: 1rem;
+      color: var(--color-dark-grey-500);
+    }
+  }
+
+  &__sub-header__menu-content {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__sub-header__custom-action-content {
+    @include flexCenter;
+
+    svg {
+      font-size: 1rem;
+      margin-left: 1rem;
+    }
   }
 
   .panel {
@@ -200,7 +243,6 @@
 
     height: 100%;
     padding: 0.5rem;
-    padding-right: 1rem;
 
     &__label {
       @include flexCenter;
@@ -215,6 +257,10 @@
 
     &__input {
       height: 2.2rem;
+
+      &:not(:focus) {
+        border: 0.1rem solid var(--color-dark-grey-250);
+      }
     }
   }
 
@@ -240,45 +286,76 @@
     --ag-row-hover-color: var(--color-dark-blue-shade-100);
     --ag-row-border-color: var(--color-dark-grey-200);
   }
-}
 
-.query-builder__export__dropdown {
-  @include flexVCenter;
-
-  margin-left: 0.3rem;
-  margin-right: 1rem;
-  height: 2.8rem;
-  border: 0.1rem solid var(--color-dark-grey-300);
-
-  &__label {
-    @include flexCenter;
-    @include flexConstantDimension;
-
-    height: 100%;
-    color: var(--color-dark-grey-500);
-    font-weight: 600;
-    font-size: 1.5rem;
-    width: 5rem;
+  &__header__actions {
+    @include flexVCenter;
   }
 
-  &__trigger {
-    @include flexCenter;
-    @include flexConstantDimension;
+  &__execute-btn {
+    @include flexVCenter;
 
-    height: 100%;
-    cursor: pointer;
-    width: 2.2rem;
+    height: 2.2rem;
+    width: 10rem;
+    background: var(--color-blue-200);
+    border-radius: 0.2rem;
 
-    svg {
-      color: var(--color-dark-grey-500);
+    &__label {
+      margin-left: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--color-light-grey-200);
+    }
+
+    &__icon {
+      svg {
+        font-size: 1rem;
+        color: var(--color-light-grey-200) !important;
+      }
+    }
+
+    &:hover &__label,
+    &:hover &__icon svg {
+      color: var(--color-light-grey-50) !important;
     }
   }
 
-  &__menu__item {
-    @include flexCenter;
+  &__export__dropdown {
+    @include flexVCenter;
 
-    width: 7rem;
-    height: 2rem;
+    margin: 0 0.5rem;
+    height: 2.2rem;
+    border: 0.1rem solid var(--color-dark-grey-250);
+
+    &__label {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      color: var(--color-dark-grey-500);
+      font-weight: 500;
+      font-size: 1.2rem;
+      width: 5rem;
+    }
+
+    &__trigger {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 100%;
+      cursor: pointer;
+      width: 2.2rem;
+
+      svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+
+    &__menu__item {
+      @include flexCenter;
+
+      width: 7rem;
+      height: 2rem;
+    }
   }
 }
 

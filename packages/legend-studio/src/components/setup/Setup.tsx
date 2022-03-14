@@ -38,13 +38,17 @@ import { isNumber } from '@finos/legend-shared';
 import {
   type SetupPathParams,
   generateEditorRoute,
-  generateViewProjectRoute,
 } from '../../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import { ProjectType, WorkspaceType } from '@finos/legend-server-sdlc';
-import { useApplicationStore, AppHeader } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  AppHeader,
+  DocumentationLink,
+} from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentationKey';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
@@ -81,7 +85,7 @@ const CreateProjectModal = observer(() => {
     setupStore.setShowCreateProjectModal(false);
     setupStore.setImportProjectSuccessReport(undefined);
   };
-  const createProject = applicationStore.guaranteeSafeAction(() =>
+  const createProject = applicationStore.guardUnhandledError(() =>
     flowResult(
       setupStore.createProject(
         projectIdentifier,
@@ -92,7 +96,7 @@ const CreateProjectModal = observer(() => {
       ),
     ),
   );
-  const importProject = applicationStore.guaranteeSafeAction(() =>
+  const importProject = applicationStore.guardUnhandledError(() =>
     flowResult(
       setupStore.importProject(projectIdentifier, groupId, artifactId),
     ),
@@ -108,9 +112,9 @@ const CreateProjectModal = observer(() => {
     } else {
       if (projectIdentifier && groupId && artifactId) {
         if (projectType === ProjectType.PROTOTYPE) {
-          createProject().catch(applicationStore.alertIllegalUnhandledError);
+          createProject();
         } else {
-          importProject().catch(applicationStore.alertIllegalUnhandledError);
+          importProject();
         }
       }
     }
@@ -203,6 +207,10 @@ const CreateProjectModal = observer(() => {
         <div className="setup-create__modal__heading">
           <div className="setup-create__modal__heading__label">
             {modalTitle}
+            <DocumentationLink
+              className="setup__doc__create-project"
+              documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT}
+            />
           </div>
         </div>
         <form onSubmit={handleSubmit}>
@@ -243,13 +251,16 @@ const CreateProjectModal = observer(() => {
             <div className="panel__content__form">
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">
-                  {projectType === ProjectType.PROTOTYPE ? 'Name' : 'ID'}
-                </div>
-                <div className="panel__content__form__section__header__prompt">
                   {projectType === ProjectType.PROTOTYPE
-                    ? 'Name used for prototype project'
-                    : 'The supplied ID need not be the same as what the final project id will be; it need only be sufficient to identify the project in the underlying system. '}
+                    ? 'Project Name'
+                    : 'Import Project ID'}
                 </div>
+                {projectType === ProjectType.PRODUCTION && (
+                  <div className="panel__content__form__section__header__prompt">
+                    The ID of the project in the underlying version-control
+                    system
+                  </div>
+                )}
                 <input
                   className="panel__content__form__section__input"
                   spellCheck={false}
@@ -266,9 +277,6 @@ const CreateProjectModal = observer(() => {
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">
                   Description
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  Description of the project
                 </div>
                 <textarea
                   className="panel__content__form__section__textarea"
@@ -521,7 +529,7 @@ const CreateWorkspaceModal = observer(() => {
           workspaceName,
           workspaceType,
         ),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      ).catch(applicationStore.alertUnhandledError);
     }
   };
   const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
@@ -544,6 +552,7 @@ const CreateWorkspaceModal = observer(() => {
     event.preventDefault();
     setIsGroupWorkspace(!isGroupWorkspace);
   };
+
   return (
     <Dialog
       open={showCreateWorkspaceModal}
@@ -555,7 +564,13 @@ const CreateWorkspaceModal = observer(() => {
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
       <div className="modal modal--dark setup-create__modal">
-        <div className="modal__title">Create Workspace</div>
+        <div className="modal__title">
+          Create Workspace
+          <DocumentationLink
+            className="setup__doc__create-workspace"
+            documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_WORKSPACE}
+          />
+        </div>
         <form onSubmit={handleSubmit}>
           <PanelLoadingIndicator
             isLoading={setupStore.createWorkspaceState.isInProgress}
@@ -592,10 +607,9 @@ const CreateWorkspaceModal = observer(() => {
                 ref={workspaceNameInputRef}
                 spellCheck={false}
                 disabled={dispatchingActions}
-                placeholder={'Workspace Name'}
+                placeholder={'MyWorkspace'}
                 value={workspaceName}
                 onChange={changeWorkspaceName}
-                name={`Type workspace name`}
               />
             </div>
             <div className="panel__content__form__section">
@@ -698,6 +712,15 @@ const SetupSelection = observer(() => {
             className="setup__content"
             data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
           >
+            <div className="setup__title">
+              Setup Workspace
+              <DocumentationLink
+                className="setup__doc__setup-workspace"
+                documentationKey={
+                  LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
+                }
+              />
+            </div>
             <div>
               <ProjectSelector
                 ref={projectSelectorRef}
@@ -715,23 +738,7 @@ const SetupSelection = observer(() => {
                 onClick={handleProceed}
                 disabled={disableProceedButton}
               >
-                Next
-              </button>
-              <button
-                className="setup__view-project-btn u-pull-right"
-                onClick={(): void => {
-                  if (setupStore.currentProjectId) {
-                    applicationStore.navigator.goTo(
-                      generateViewProjectRoute(
-                        applicationStore.config.currentSDLCServerOption,
-                        setupStore.currentProjectId,
-                      ),
-                    );
-                  }
-                }}
-                disabled={!setupStore.currentProjectId}
-              >
-                View Project
+                Edit Workspace
               </button>
             </div>
             {config.options.TEMPORARY__useSDLCProductionProjectsOnly && (
@@ -766,11 +773,11 @@ export const SetupInner = observer(() => {
 
   useEffect(() => {
     flowResult(setupStore.fetchProjects()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
     if (setupStore.currentProjectId) {
       flowResult(setupStore.fetchWorkspaces(setupStore.currentProjectId)).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   }, [applicationStore, setupStore]);

@@ -58,7 +58,7 @@ export const NewServiceModal = observer(
       if (servicePath && !isReadOnly && !elementAlreadyExists) {
         promoteToService(packagePath, serviceName)
           .then(() => close())
-          .catch(applicationStore.alertIllegalUnhandledError);
+          .catch(applicationStore.alertUnhandledError);
       }
     };
     const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {

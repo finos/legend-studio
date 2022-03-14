@@ -32,9 +32,11 @@ export const AppHeader: React.FC<{
           <Link to="/">
             <LegendLogo className="app__header__logo" />
           </Link>
-          <div className="app__header__tag app__header__app-name">
-            {config.appName.toUpperCase()}
-          </div>
+          <Link to="/">
+            <div className="app__header__tag app__header__app-name">
+              {config.appName.toUpperCase()}
+            </div>
+          </Link>
           <div className="app__header__tag app__header__tag__name">env</div>
           <div className="app__header__tag app__header__tag__value app__header__env">
             {config.env ? config.env.toUpperCase() : 'UNKNOWN'}

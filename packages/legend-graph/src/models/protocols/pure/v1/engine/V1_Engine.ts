@@ -37,7 +37,7 @@ import {
   GenerationMode,
   type GenerationConfigurationDescription,
 } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import { TEMP__AbstractEngineConfig } from '../../../../../graphManager/action/TEMP__AbstractEngineConfig';
+import { TEMPORARY__AbstractEngineConfig } from '../../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import { V1_EngineServerClient } from './V1_EngineServerClient';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult';
@@ -70,6 +70,7 @@ import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlu
 import {
   V1_buildCompilationError,
   V1_buildExecutionError,
+  V1_buildExternalFormatDescription,
   V1_buildGenerationConfigurationDescription,
   V1_buildImportConfigurationDescription,
   V1_buildParserError,
@@ -92,8 +93,11 @@ import { V1_ExecutionError } from './execution/V1_ExecutionError';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText';
 import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
 import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureGraphManager';
+import type { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription';
+import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
+import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
 
-class V1_EngineConfig extends TEMP__AbstractEngineConfig {
+class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
 
   override setEnv(val: string | undefined): void {
@@ -499,6 +503,34 @@ export class V1_Engine {
         ),
       )
     ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
+  }
+  // ------------------------------------------- External Format -----------------------------------------
+
+  async getAvailableExternalFormatsDescriptions(): Promise<
+    ExternalFormatDescription[]
+  > {
+    const externalFormatDescriptions =
+      await this.engineServerClient.getAvailableExternalFormatsDescriptions();
+    return externalFormatDescriptions.map((des) =>
+      V1_buildExternalFormatDescription(
+        V1_ExternalFormatDescription.serialization.fromJson(des),
+      ),
+    );
+  }
+
+  async generateModel(
+    input: V1_ExternalFormatModelGenerationInput,
+  ): Promise<string> {
+    const pmcd = (await this.engineServerClient.generateModel(
+      V1_ExternalFormatModelGenerationInput.serialization.toJson(input),
+    )) as unknown as PlainObject<V1_PureModelContextData>;
+    const pureCode =
+      ((
+        await this.engineServerClient.transformJSONToGrammar({
+          modelDataContext: pmcd,
+        })
+      ).code as string | undefined) ?? '';
+    return pureCode;
   }
 
   // ------------------------------------------- Schema Import -------------------------------------------

@@ -30,7 +30,7 @@ import {
   isStubRelationalOperationElement,
   type RawRelationalOperationElement,
 } from '../model/RawRelationalOperationElement';
-import type { BindingTransformer } from './BindingTransformer';
+import type { BindingTransformer } from '../../../externalFormat/store/BindingTransformer';
 
 export class RelationalPropertyMapping
   extends PropertyMapping

@@ -36,12 +36,12 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  TestDatabaseAuthenticationStrategy,
-  UserPasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
+  DatabricksDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   BigQueryDatasourceSpecification,
   StaticDatasourceSpecification,
@@ -71,6 +71,7 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   STATIC = 'STATIC',
   H2_LOCAL = 'H2_LOCAL',
   H2_EMBEDDED = 'H2_EMBEDDED',
+  DATABRICKS = 'DATABRICKS',
   SNOWFLAKE = 'SNOWFLAKE',
   REDSHIFT = 'REDSHIFT',
   BIGQUERY = 'BIGQUERY',
@@ -81,9 +82,8 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   H2_DEFAULT = 'H2_DEFAULT',
   SNOWFLAKE_PUBLIC = 'SNOWFLAKE_PUBLIC',
   GCP_APPLICATION_DEFAULT_CREDENTIALS = 'GCP_APPLICATION_DEFAULT_CREDENTIALS',
-  TEST = 'TEST',
+  API_TOKEN = 'API_TOKEN',
   OAUTH = 'OAUTH',
-  USER_PASSWORD = 'USER_PASSWORD',
   USERNAME_PASSWORD = 'USERNAME_PASSWORD',
 }
 
@@ -129,6 +129,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.STATIC;
     } else if (spec instanceof EmbeddedH2DatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.H2_EMBEDDED;
+    } else if (spec instanceof DatabricksDatasourceSpecification) {
+      return CORE_DATASOURCE_SPEC_TYPE.DATABRICKS;
     } else if (spec instanceof SnowflakeDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE;
     } else if (spec instanceof BigQueryDatasourceSpecification) {
@@ -179,6 +181,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
+      case CORE_DATASOURCE_SPEC_TYPE.DATABRICKS: {
+        this.connection.setDatasourceSpecification(
+          new DatabricksDatasourceSpecification('', '', '', ''),
+        );
+        return;
+      }
       case CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE: {
         this.connection.setDatasourceSpecification(
           new SnowflakeDatasourceSpecification('', '', '', ''),
@@ -187,7 +195,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_DATASOURCE_SPEC_TYPE.REDSHIFT: {
         this.connection.setDatasourceSpecification(
-          new RedshiftDatasourceSpecification('', '', 5439),
+          new RedshiftDatasourceSpecification('', '', 5439, '', '', ''),
         );
         return;
       }
@@ -224,16 +232,14 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     const auth = this.connection.authenticationStrategy;
     if (auth instanceof DelegatedKerberosAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS;
-    } else if (auth instanceof TestDatabaseAuthenticationStrategy) {
-      return CORE_AUTHENTICATION_STRATEGY_TYPE.TEST;
     } else if (auth instanceof DefaultH2AuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT;
     } else if (auth instanceof OAuthAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH;
+    } else if (auth instanceof ApiTokenAuthenticationStrategy) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.API_TOKEN;
     } else if (auth instanceof SnowflakePublicAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC;
-    } else if (auth instanceof UserPasswordAuthenticationStrategy) {
-      return CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD;
     } else if (auth instanceof UsernamePasswordAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD;
     } else if (
@@ -271,6 +277,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.API_TOKEN: {
+        this.connection.setAuthenticationStrategy(
+          new ApiTokenAuthenticationStrategy(''),
+        );
+        return;
+      }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC: {
         this.connection.setAuthenticationStrategy(
           new SnowflakePublicAuthenticationStrategy('', '', ''),
@@ -289,21 +301,9 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         );
         return;
       }
-      case CORE_AUTHENTICATION_STRATEGY_TYPE.USER_PASSWORD: {
-        this.connection.setAuthenticationStrategy(
-          new UserPasswordAuthenticationStrategy('', ''),
-        );
-        return;
-      }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD: {
         this.connection.setAuthenticationStrategy(
           new UsernamePasswordAuthenticationStrategy('', ''),
-        );
-        return;
-      }
-      case CORE_AUTHENTICATION_STRATEGY_TYPE.TEST: {
-        this.connection.setAuthenticationStrategy(
-          new TestDatabaseAuthenticationStrategy(),
         );
         return;
       }

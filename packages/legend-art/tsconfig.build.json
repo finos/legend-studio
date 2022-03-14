@@ -9,5 +9,6 @@
     "src/**/__tests__/**/*.tsx",
     "src/**/__mocks__/**/*.ts",
     "src/**/__mocks__/**/*.tsx"
-  ]
+  ],
+  "references": [{ "path": "../legend-shared/tsconfig.build.json" }]
 }

@@ -543,10 +543,10 @@ export const GenerationSpecificationEditor = observer(() => {
   );
   const modelGenerationState = editorStore.graphState.graphGenerationState;
   const generationSpec = generationSpecificationState.spec;
-  const generate = applicationStore.guaranteeSafeAction(() =>
+  const generate = applicationStore.guardUnhandledError(() =>
     flowResult(modelGenerationState.globalGenerate()),
   );
-  const emptyGenerationEntities = applicationStore.guaranteeSafeAction(() =>
+  const emptyGenerationEntities = applicationStore.guardUnhandledError(() =>
     flowResult(modelGenerationState.clearGenerations()),
   );
 

@@ -77,6 +77,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
@@ -276,6 +277,7 @@ const QueryBuilderExplorerContextMenu = observer(
                 node,
                 projectionState.queryBuilderState.graphManagerState.graph,
               ),
+              projectionState.queryBuilderState.explorerState.humanizePropertyName,
             ),
           );
         }
@@ -330,6 +332,7 @@ const QueryBuilderExplorerContextMenu = observer(
                   nodeToAdd,
                   projectionState.queryBuilderState.graphManagerState.graph,
                 ),
+                projectionState.queryBuilderState.explorerState.humanizePropertyName,
               ),
             );
           });
@@ -464,7 +467,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           queryBuilderState.fetchStructureState.projectionState.previewData(
             node,
           ),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
       }
     };
     // hide default HTML5 preview image
@@ -700,6 +703,7 @@ const QueryBuilderExplorerTree = observer(
               queryBuilderState.graphManagerState,
               property,
               node,
+              guaranteeNonNullable(queryBuilderState.querySetupState.mapping),
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
           });

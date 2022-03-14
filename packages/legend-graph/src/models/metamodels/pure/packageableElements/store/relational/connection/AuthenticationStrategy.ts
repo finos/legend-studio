@@ -67,21 +67,32 @@ export class DefaultH2AuthenticationStrategy
   }
 }
 
-export class TestDatabaseAuthenticationStrategy
-  extends DefaultH2AuthenticationStrategy
+export class ApiTokenAuthenticationStrategy
+  extends AuthenticationStrategy
   implements Hashable
 {
-  constructor() {
+  apiToken: string;
+
+  constructor(apiToken: string) {
     super();
 
     makeObservable(this, {
+      apiToken: observable,
+      setApiToken: action,
       hashCode: computed,
     });
+
+    this.apiToken = apiToken;
   }
 
-  override get hashCode(): string {
+  setApiToken(val: string): void {
+    this.apiToken = val;
+  }
+
+  get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.TEST_DATABASE_AUTHENTICATION_STRATEGY,
+      CORE_HASH_STRUCTURE.API_TOKEN_AUTHENTICATION_STRATEGY,
+      this.apiToken,
     ]);
   }
 }
@@ -172,45 +183,6 @@ export class SnowflakePublicAuthenticationStrategy
       this.privateKeyVaultReference,
       this.passPhraseVaultReference,
       this.publicUserName,
-    ]);
-  }
-}
-
-export class UserPasswordAuthenticationStrategy
-  extends AuthenticationStrategy
-  implements Hashable
-{
-  userName: string;
-  passwordVaultReference: string;
-
-  constructor(userName: string, passwordVaultReference: string) {
-    super();
-
-    makeObservable(this, {
-      userName: observable,
-      passwordVaultReference: observable,
-      setUserName: action,
-      setPasswordVaultReference: action,
-      hashCode: computed,
-    });
-
-    this.userName = userName;
-    this.passwordVaultReference = passwordVaultReference;
-  }
-
-  setUserName(val: string): void {
-    this.userName = val;
-  }
-
-  setPasswordVaultReference(val: string): void {
-    this.passwordVaultReference = val;
-  }
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.USER_PASSWORD_AUTHENTICATION_STRATEGY,
-      this.userName,
-      this.passwordVaultReference,
     ]);
   }
 }

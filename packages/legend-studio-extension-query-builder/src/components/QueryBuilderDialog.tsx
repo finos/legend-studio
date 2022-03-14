@@ -45,7 +45,7 @@ export const QueryBuilderDialog = observer(() => {
   const closeQueryBuilder = (): void => {
     flowResult(
       queryBuilderExtensionState.setEmbeddedQueryBuilderMode(undefined),
-    ).catch(applicationStore.alertIllegalUnhandledError);
+    ).catch(applicationStore.alertUnhandledError);
     queryBuilderExtensionState.reset();
   };
 

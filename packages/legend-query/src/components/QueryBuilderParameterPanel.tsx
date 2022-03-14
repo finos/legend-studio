@@ -39,6 +39,7 @@ import {
 import {
   type PackageableElementOption,
   buildElementOption,
+  useApplicationStore,
 } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -48,17 +49,18 @@ import { prettyCONSTName } from '@finos/legend-shared';
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const parameterState = queryBuilderState.queryParametersState;
     const parameterValuesEditorState =
       parameterState.parameterValuesEditorState;
     const close = (): void => parameterValuesEditorState.close();
     const submitAction = parameterValuesEditorState.submitAction;
-    const submit = async (): Promise<void> => {
+    const submit = applicationStore.guardUnhandledError(async () => {
       if (submitAction) {
         close();
         await submitAction.handler();
       }
-    };
+    });
 
     return (
       <Dialog
@@ -92,9 +94,9 @@ const ParameterValuesEditor = observer(
                       {variableType.name}
                     </div>
                   </div>
-                  {paramState.values && (
+                  {paramState.value && (
                     <QueryBuilderValueSpecificationEditor
-                      valueSpecification={paramState.values}
+                      valueSpecification={paramState.value}
                       graph={queryBuilderState.graphManagerState.graph}
                       expectedType={variableType}
                       className="query-builder__parameters__value__editor"
@@ -410,7 +412,7 @@ export const QueryBuilderParameterPanel = observer(
         const parmaterState =
           QueryParameterState.createDefault(queryParameterState);
         queryParameterState.setSelectedParameter(parmaterState);
-        parmaterState.mockParameterValues();
+        parmaterState.mockParameterValue();
       }
     };
 

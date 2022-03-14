@@ -51,10 +51,10 @@ import {
   TEST__buildGraphWithEntities,
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
+  DSLExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
 import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
 import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 
@@ -80,6 +80,9 @@ const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // post processor mismatch between engine (undefined) vs studio ([])
   'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'relational-connection-databricks.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
 
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
@@ -96,6 +99,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'relational-property-mapping-local-property.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
+  'merge-operation-mapping.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
   // TODO: remove this when https://github.com/finos/legend-engine/pull/519 is merged.
   'ESService-path-offset.pure': SKIP,
@@ -153,7 +157,7 @@ const checkGrammarRoundtrip = async (
   pluginManager.usePresets([
     new DSLText_GraphPreset(),
     new DSLDiagram_GraphPreset(),
-    new DSLSerializer_GraphPreset(),
+    new DSLExternalFormat_GraphPreset(),
     new DSLDataSpace_GraphPreset(),
     new ESService_GraphPreset(),
   ]);

@@ -60,7 +60,7 @@ export const StudioTextInputEditor: React.FC<{
             event.keyCode === KeyCode.F8,
           action: (event: IKeyboardEvent): void => {
             flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertIllegalUnhandledError,
+              applicationStore.alertUnhandledError,
             );
           },
         },

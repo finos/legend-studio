@@ -42,9 +42,13 @@ import {
 } from './InferableMappingElementRoot';
 import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
 import type { InstanceSetImplementation } from './InstanceSetImplementation';
+import type { MergeOperationSetImplementation } from './MergeOperationSetImplementation';
 
 export interface SetImplementationVisitor<T> {
   visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
+  visit_MergeOperationSetImplementation(
+    setImplementation: MergeOperationSetImplementation,
+  ): T;
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): T;
@@ -148,6 +152,7 @@ export enum BASIC_SET_IMPLEMENTATION_TYPE {
 
 export enum SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
+  MERGE_OPERATION = 'mergeOperation',
   PUREINSTANCE = 'pureInstance',
   FLAT_DATA = 'flatData',
   EMBEDDED_FLAT_DATA = 'embeddedFlatData',
