@@ -35,14 +35,15 @@ export class ExternalFormatState {
   fetchingDescriptionsState = ActionState.create();
   editorStore: EditorStore;
   externalFormatsDescriptions: ExternalFormatDescription[] = [];
-  constructor(editorStore: EditorStore) {
-    this.editorStore = editorStore;
 
+  constructor(editorStore: EditorStore) {
     makeObservable<ExternalFormatState>(this, {
       externalFormatsDescriptions: observable,
       setExternalFormatsDescriptions: action,
       fetchExternalFormatsDescriptions: flow,
     });
+
+    this.editorStore = editorStore;
   }
 
   get formatTypes(): string[] {

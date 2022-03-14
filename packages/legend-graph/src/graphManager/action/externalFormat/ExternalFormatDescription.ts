@@ -23,6 +23,7 @@ export class ExternalFormatDescription {
   schemaGenerationProperties: GenerationProperty[] = [];
   supportsModelGeneration = false;
   modelGenerationProperties: GenerationProperty[] = [];
+
   constructor(name: string) {
     this.name = name;
   }

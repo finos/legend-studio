@@ -24,7 +24,7 @@ import { SchemaSet } from '../models/metamodels/pure/packageableElements/externa
 export class DSLExternalFormat_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
     super(
-      '@finos/legend-graph-plugin-dsl-externalFormat-pure-graph',
+      packageJson.extensions.dsl_external_format_pureGraphPlugin,
       packageJson.version,
     );
   }

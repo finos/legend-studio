@@ -98,7 +98,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
 {
   constructor() {
     super(
-      '@finos/legend-graph-plugin-dsl-externalFormat-pure-protocol-processor',
+      packageJson.extensions.dsl_external_format_pureProtocolProcessorPlugin,
       packageJson.version,
     );
   }

@@ -40,7 +40,7 @@ export class DSLExternalFormat_PureGraphManagerPlugin
 {
   constructor() {
     super(
-      '@finos/legend-graph-plugin-dsl-externalFormat-pure-graph-manager',
+      packageJson.extensions.dsl_external_format_pureGraphManagerPlugin,
       packageJson.version,
     );
   }
