@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import type { ClassView } from '../../../../../metamodels/pure/packageableElements/diagram/ClassView';
-import type { Diagram } from '../../../../../metamodels/pure/packageableElements/diagram/Diagram';
-import type { GeneralizationView } from '../../../../../metamodels/pure/packageableElements/diagram/GeneralizationView';
-import type { PropertyView } from '../../../../../metamodels/pure/packageableElements/diagram/PropertyView';
-import type { RelationShipEdgeView } from '../../../../../metamodels/pure/packageableElements/diagram/RelationshipEdgeView';
-import { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_Point';
-import { V1_ClassView } from '../../model/packageableElements/diagram/V1_ClassView';
-import { V1_Diagram } from '../../model/packageableElements/diagram/V1_Diagram';
-import { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_GeneralizationView';
-import { V1_Line } from '../../model/packageableElements/diagram/geometry/V1_Line';
-import { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_Rectangle';
-import { V1_PropertyView } from '../../model/packageableElements/diagram/V1_PropertyView';
+import type { ClassView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
+import type { Diagram } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
+import type { GeneralizationView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
+import type { PropertyView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
+import type { RelationShipEdgeView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
+import { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Point';
+import { V1_ClassView } from '../../model/packageableElements/diagram/V1_DSLDiagram_ClassView';
+import { V1_Diagram } from '../../model/packageableElements/diagram/V1_DSLDiagram_Diagram';
+import { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_DSLDiagram_GeneralizationView';
+import { V1_Line } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Line';
+import { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Rectangle';
+import { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSLDiagram_PropertyView';
 import {
   V1_initPackageableElement,
   V1_transformElementReference,

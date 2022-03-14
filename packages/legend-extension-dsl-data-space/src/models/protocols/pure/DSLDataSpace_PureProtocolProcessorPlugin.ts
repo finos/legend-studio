@@ -20,7 +20,7 @@ import {
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
-} from './v1/model/packageableElements/dataSpace/V1_DataSpace';
+} from './v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace';
 import {
   type PlainObject,
   uuid,
@@ -41,7 +41,7 @@ import {
   DataSpace,
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
-} from '../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+} from '../../metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
 import {
   type Mapping,
   type PackageableElement,

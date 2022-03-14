@@ -36,12 +36,12 @@ import {
   toOptionalPackageableElementReference,
 } from '../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { Runtime } from '../../metamodels/pure/packageableElements/runtime/Runtime';
-import { ExternalFormatConnection } from '../../metamodels/pure/packageableElements/externalFormat/connection/ExternalFormatConnection';
-import { UrlStream } from '../../metamodels/pure/packageableElements/externalFormat/connection/UrlStream';
-import { Schema } from '../../metamodels/pure/packageableElements/externalFormat/schemaSet/Schema';
-import { SchemaSet } from '../../metamodels/pure/packageableElements/externalFormat/schemaSet/SchemaSet';
-import { Binding } from '../../metamodels/pure/packageableElements/externalFormat/store/Binding';
-import { ModelUnit } from '../../metamodels/pure/packageableElements/externalFormat/store/ModelUnit';
+import { ExternalFormatConnection } from '../../metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
+import { UrlStream } from '../../metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
+import { Schema } from '../../metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema';
+import { SchemaSet } from '../../metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
+import { Binding } from '../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
+import { ModelUnit } from '../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit';
 import type { Store } from '../../metamodels/pure/packageableElements/store/Store';
 import type {
   DSLMapping_PureProtocolProcessorPlugin_Extension,
@@ -60,12 +60,12 @@ import {
 } from './PureProtocolProcessorPlugin';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData';
 import type { V1_Connection } from './v1/model/packageableElements/connection/V1_Connection';
-import { V1_ExternalFormatConnection } from './v1/model/packageableElements/externalFormat/connection/V1_ExternalFormatConnection';
-import { V1_UrlStream } from './v1/model/packageableElements/externalFormat/connection/V1_UrlStream';
-import { V1_Schema } from './v1/model/packageableElements/externalFormat/schemaSet/V1_Schema';
-import { V1_SchemaSet } from './v1/model/packageableElements/externalFormat/schemaSet/V1_SchemaSet';
-import { V1_Binding } from './v1/model/packageableElements/externalFormat/store/V1_Binding';
-import { V1_ModelUnit } from './v1/model/packageableElements/externalFormat/store/V1_ModelUnit';
+import { V1_ExternalFormatConnection } from './v1/model/packageableElements/externalFormat/connection/V1_DSLExternalFormat_ExternalFormatConnection';
+import { V1_UrlStream } from './v1/model/packageableElements/externalFormat/connection/V1_DSLExternalFormat_UrlStream';
+import { V1_Schema } from './v1/model/packageableElements/externalFormat/schemaSet/V1_DSLExternalFormat_Schema';
+import { V1_SchemaSet } from './v1/model/packageableElements/externalFormat/schemaSet/V1_DSLExternalFormat_SchemaSet';
+import { V1_Binding } from './v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding';
+import { V1_ModelUnit } from './v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_ModelUnit';
 import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement';
 import {
   V1_initPackageableElement,

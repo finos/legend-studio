@@ -102,7 +102,7 @@ import {
   useEditorStore,
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
-import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
+import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
 
 const DiagramEditorContextMenu = observer(

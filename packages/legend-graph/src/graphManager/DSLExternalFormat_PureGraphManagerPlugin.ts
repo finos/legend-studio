@@ -15,9 +15,9 @@
  */
 
 import packageJson from '../../package.json';
-import { ExternalFormatConnection } from '../models/metamodels/pure/packageableElements/externalFormat/connection/ExternalFormatConnection';
-import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/SchemaSet';
-import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/Binding';
+import { ExternalFormatConnection } from '../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
+import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
+import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
 import type {
   DSLMapping_PureGraphManagerPlugin_Extension,
   PureGrammarConnectionLabeler,

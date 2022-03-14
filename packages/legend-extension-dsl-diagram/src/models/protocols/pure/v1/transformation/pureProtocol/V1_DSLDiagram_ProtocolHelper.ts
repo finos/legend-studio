@@ -19,13 +19,13 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_ClassView } from '../../model/packageableElements/diagram/V1_ClassView';
-import { V1_Diagram } from '../../model/packageableElements/diagram/V1_Diagram';
-import { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_Point';
-import { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_Rectangle';
-import { V1_Line } from '../../model/packageableElements/diagram/geometry/V1_Line';
-import { V1_PropertyView } from '../../model/packageableElements/diagram/V1_PropertyView';
-import { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_GeneralizationView';
+import { V1_ClassView } from '../../model/packageableElements/diagram/V1_DSLDiagram_ClassView';
+import { V1_Diagram } from '../../model/packageableElements/diagram/V1_DSLDiagram_Diagram';
+import { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Point';
+import { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Rectangle';
+import { V1_Line } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Line';
+import { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSLDiagram_PropertyView';
+import { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_DSLDiagram_GeneralizationView';
 import { V1_propertyPointerModelSchema } from '@finos/legend-graph';
 
 export const V1_DIAGRAM_ELEMENT_PROTOCOL_TYPE = 'diagram';
