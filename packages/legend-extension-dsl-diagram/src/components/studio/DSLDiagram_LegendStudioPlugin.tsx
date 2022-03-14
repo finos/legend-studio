@@ -33,7 +33,7 @@ import {
 } from '@finos/legend-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
-import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/Diagram';
+import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
 import { DiagramEditorState } from '../../stores/studio/DiagramEditorState';
 import { DiagramEditor } from './DiagramEditor';
 import { ClassDiagramPreview } from './ClassDiagramPreview';

@@ -1,5 +1,5 @@
 name: '💡 Propose an RFC'
-description: 'To suggest a refactor or a functionality with substantial change.'
+description: 'To suggest a refactor or a functionality with substantial change'
 title: 'RFC: <title>'
 labels: ['Type: Discussion']
 body:

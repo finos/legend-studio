@@ -34,11 +34,11 @@ import {
   object,
   raw,
 } from 'serializr';
-import { V1_ServiceStore } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStore';
-import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreService';
-import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroup';
-import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
-import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
+import { V1_ServiceStore } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStore';
+import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreService';
+import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroup';
+import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreElement';
+import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceParameter';
 import {
   type V1_TypeReference,
   V1_BooleanTypeReference,
@@ -46,23 +46,23 @@ import {
   V1_FloatTypeReference,
   V1_IntegerTypeReference,
   V1_StringTypeReference,
-} from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
-import { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_SerializationFormat';
-import { V1_ServiceStoreConnection } from '../../model/packageableElements/store/serviceStore/connection/V1_ServicestoreConnection';
-import { V1_RootServiceStoreClassMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_RootServiceStoreClassMapping';
-import { V1_LocalMappingProperty } from '../../model/packageableElements/store/serviceStore/mapping/V1_LocalMappingProperty';
-import { V1_ServiceMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceMapping';
-import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
-import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
-import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
+} from '../../model/packageableElements/store/serviceStore/model/V1_ESService_TypeReference';
+import { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SerializationFormat';
+import { V1_ServiceStoreConnection } from '../../model/packageableElements/store/serviceStore/connection/V1_ESService_ServicestoreConnection';
+import { V1_RootServiceStoreClassMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_RootServiceStoreClassMapping';
+import { V1_LocalMappingProperty } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_LocalMappingProperty';
+import { V1_ServiceMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceMapping';
+import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreServicePtr';
+import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroupPtr';
+import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceParameterMapping';
 import {
   type PureProtocolProcessorPlugin,
   V1_Multiplicity,
   V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
-import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
-import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
-import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
+import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ParameterIndexedParameterMapping';
+import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_PropertyIndexedParameterMapping';
+import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
 import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
 
 export const V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE = 'serviceStore';

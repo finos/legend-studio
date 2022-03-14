@@ -19,8 +19,8 @@ import {
   getBinding,
 } from '../../../../../../../graphManager/DSLExternalFormat_GraphManagerHelper';
 import type { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { SchemaSet } from '../../../../../../metamodels/pure/packageableElements/externalFormat/schemaSet/SchemaSet';
-import type { Binding } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/Binding';
+import type { SchemaSet } from '../../../../../../metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
+import type { Binding } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
 
 export const V1_resolveSchemaSet = (

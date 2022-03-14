@@ -18,13 +18,13 @@ import packageJson from '../../package.json';
 import type { Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import { PureGraphPlugin } from './PureGraphPlugin';
-import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/Binding';
-import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/SchemaSet';
+import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
+import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
 
 export class DSLExternalFormat_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
     super(
-      '@finos/legend-graph-plugin-dsl-externalFormat-pure-graph',
+      packageJson.extensions.dsl_external_format_pureGraphPlugin,
       packageJson.version,
     );
   }

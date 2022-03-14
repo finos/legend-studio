@@ -38,20 +38,20 @@ import {
   Multiplicity,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
-import type { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
-import { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/Rectangle';
-import { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/Point';
-import { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/PositionedRectangle';
-import { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
-import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
-import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/GeneralizationView';
+import type { Diagram } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
+import { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
+import { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
+import { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
+import { ClassView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
+import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView';
+import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
 import {
   type RelationshipView,
   manageInsidePointsDynamically,
-} from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
-import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/PropertyView';
+} from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
+import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
 import { getElementPosition } from './helpers/DiagramHelper';
-import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/AssociationView';
+import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,

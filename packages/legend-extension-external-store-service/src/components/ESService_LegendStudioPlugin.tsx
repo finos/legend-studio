@@ -42,9 +42,9 @@ import type {
   PackageableElement,
   SetImplementation,
 } from '@finos/legend-graph';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
-import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/RootServiceInstanceSetImplementation';
-import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ServiceStoreConnection';
+import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
+import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
+import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

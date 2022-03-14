@@ -26,7 +26,7 @@ import { DSLExternalFormat_GraphPreset } from '../../graph/DSLExternalFormat_Ext
 const pluginManager = new TEST__GraphPluginManager();
 pluginManager.usePresets([new DSLExternalFormat_GraphPreset()]).install();
 
-test(unitTest('DSL Extrernal Format import resolution roundtrip'), async () => {
+test(unitTest('DSL External Format import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     roundtripTestData as Entity[],
     pluginManager,

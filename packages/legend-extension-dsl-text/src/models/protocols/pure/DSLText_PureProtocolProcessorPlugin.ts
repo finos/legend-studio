@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../../package.json';
-import { V1_Text } from './v1/model/packageableElements/text/V1_Text';
+import { V1_Text } from './v1/model/packageableElements/text/V1_DSLText_Text';
 import {
   type PlainObject,
   guaranteeNonNullable,
@@ -30,7 +30,7 @@ import { getText } from '../../../graphManager/DSLText_GraphManagerHelper';
 import {
   Text,
   TEXT_TYPE,
-} from '../../metamodels/pure/model/packageableElements/text/Text';
+} from '../../metamodels/pure/model/packageableElements/text/DSLText_Text';
 import {
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,

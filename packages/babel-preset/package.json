@@ -38,12 +38,12 @@
     "@babel/preset-env": "7.16.11",
     "@babel/preset-react": "7.16.7",
     "@babel/preset-typescript": "7.16.7",
-    "@babel/runtime": "7.17.2",
+    "@babel/runtime": "7.17.7",
     "react-refresh": "0.11.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.10.0",
+    "eslint": "8.11.0",
     "rimraf": "3.0.2",
     "typescript": "4.6.2"
   },

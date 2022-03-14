@@ -202,7 +202,7 @@ const ExplorerContextMenu = observer(
         ? node.packageableElement
         : undefined
       : editorStore.graphManagerState.graph.root;
-    const deleteElement = (): void => {
+    const removeElement = (): void => {
       if (node) {
         flowResult(editorStore.deleteElement(node.packageableElement)).catch(
           applicationStore.alertUnhandledError,
@@ -278,9 +278,9 @@ const ExplorerContextMenu = observer(
             <MenuContentItemLabel>Rename</MenuContentItemLabel>
           </MenuContentItem>
           {node && (
-            <MenuContentItem onClick={deleteElement}>
+            <MenuContentItem onClick={removeElement}>
               <MenuContentItemBlankIcon />
-              <MenuContentItemLabel>Delete</MenuContentItemLabel>
+              <MenuContentItemLabel>Remove</MenuContentItemLabel>
             </MenuContentItem>
           )}
         </MenuContent>
@@ -293,7 +293,7 @@ const ExplorerContextMenu = observer(
         {!isReadOnly && node && (
           <>
             <MenuContentItem onClick={renameElement}>Rename</MenuContentItem>
-            <MenuContentItem onClick={deleteElement}>Delete</MenuContentItem>
+            <MenuContentItem onClick={removeElement}>Remove</MenuContentItem>
           </>
         )}
         {node && (

@@ -15,8 +15,8 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import type { V1_SecurityScheme } from './v1/model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
-import type { SecurityScheme } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
+import type { V1_SecurityScheme } from './v1/model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
+import type { SecurityScheme } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme';
 import type {
   V1_GraphBuilderContext,
   V1_GraphTransformerContext,

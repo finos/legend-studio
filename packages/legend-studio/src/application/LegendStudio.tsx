@@ -68,6 +68,10 @@ export class LegendStudio extends LegendApplication {
     const application = new LegendStudio(LegendStudioPluginManager.create());
     application.withBasePlugins([
       new CorePureGraphManagerPlugin(),
+      // NOTE: This makes it easier to eventually modularize `DSL External Format`,
+      // but it makes the layering a bit strange since core graph has DSLs depending on
+      // `DSL External Format` like generation and relational, which ideally we could move out later
+      // See https://github.com/finos/legend-studio/issues/65
       new DSLExternalFormat_LegendStudioPlugin(),
     ]);
     application.withBasePresets([new DSLExternalFormat_GraphPreset()]);

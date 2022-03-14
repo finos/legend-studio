@@ -70,12 +70,12 @@ export {
   TagExplicitReference,
 } from './models/metamodels/pure/packageableElements/domain/TagReference';
 // metamodel external formats
-export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/Binding';
-export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/ModelUnit';
-export { SchemaSet } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/SchemaSet';
-export { Schema as ExternalFormatSchema } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/Schema';
-export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/externalFormat/connection/ExternalFormatConnection';
-export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/UrlStream';
+export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
+export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit';
+export { SchemaSet } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
+export { Schema as ExternalFormatSchema } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema';
+export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
+export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
 export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';

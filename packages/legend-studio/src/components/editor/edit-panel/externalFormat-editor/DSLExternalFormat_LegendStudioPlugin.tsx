@@ -80,7 +80,8 @@ export class DSLExternalFormat_LegendStudioPlugin
   implements DSLMapping_LegendStudioPlugin_Extension
 {
   constructor() {
-    super('@finos/legend-studio-plugin-dsl-externalFormat', 'workspace:*');
+    // TODO: when we move this out to its own module, we will move this to `package.json`
+    super('@finos/legend-studio-plugin-dsl-external-format', '0.0.0');
   }
 
   getExtraSupportedElementTypes(): string[] {

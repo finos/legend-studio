@@ -78,8 +78,10 @@ export class GraphGenerationState {
   generatedEntities = new Map<string, Entity[]>();
   isClearingGenerationEntities = false;
   externalFormatState: ExternalFormatState;
+  // NOTE: this will eventually be removed once we also do model/schema import using external format
+  // See https://github.com/finos/legend-studio/issues/866
   fileGenerationConfigurations: GenerationConfigurationDescription[] = [];
-  // File generation output
+  // file generation output
   rootFileDirectory: GenerationDirectory;
   filesIndex = new Map<string, GenerationFile>();
   selectedNode?: GenerationTreeNodeData | undefined;
