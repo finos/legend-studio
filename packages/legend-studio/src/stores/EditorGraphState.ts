@@ -797,7 +797,6 @@ export class EditorGraphState {
       // Backup and reset editor states info
       const openedEditorStates = this.editorStore.openedEditorStates;
       const currentEditorState = this.editorStore.currentEditorState;
-      this.editorStore.openedEditorStates = [];
       /**
        * We remove the current editor state so that we no longer let React displays the element that belongs to the old graph
        * NOTE: this causes an UI flash, but this is in many way, acceptable since the user probably should know that we are
@@ -807,7 +806,7 @@ export class EditorGraphState {
        * e.g. if the current editor is a class, we stub the class, create a new class editor state around it and copy over
        * navigation information, etc.
        */
-      this.editorStore.setCurrentEditorState(undefined);
+      this.editorStore.closeAllEditorTabs();
 
       /* @MARKER: MEMORY-SENSITIVE */
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
@@ -891,8 +890,7 @@ export class EditorGraphState {
           prompt: 'Refreshing full application',
           showLoading: true,
         });
-        this.editorStore.openedEditorStates = [];
-        this.editorStore.setCurrentEditorState(undefined);
+        this.editorStore.closeAllEditorTabs();
         this.editorStore.cleanUp();
         yield flowResult(this.editorStore.buildGraph(entities));
       } else {
@@ -923,8 +921,7 @@ export class EditorGraphState {
       // Backup and reset editor states info
       const openedEditorStates = this.editorStore.openedEditorStates;
       const currentEditorState = this.editorStore.currentEditorState;
-      this.editorStore.openedEditorStates = [];
-      this.editorStore.setCurrentEditorState(undefined);
+      this.editorStore.closeAllEditorTabs();
 
       /* @MARKER: MEMORY-SENSITIVE */
       yield flowResult(
