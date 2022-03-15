@@ -24,17 +24,17 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { Diagram } from '../../../../../metamodels/pure/packageableElements/diagram/Diagram';
-import { ClassView } from '../../../../../metamodels/pure/packageableElements/diagram/ClassView';
-import { Point } from '../../../../../metamodels/pure/packageableElements/diagram/geometry/Point';
-import { Rectangle } from '../../../../../metamodels/pure/packageableElements/diagram/geometry/Rectangle';
-import { PropertyView } from '../../../../../metamodels/pure/packageableElements/diagram/PropertyView';
-import { GeneralizationView } from '../../../../../metamodels/pure/packageableElements/diagram/GeneralizationView';
-import type { V1_ClassView } from '../../model/packageableElements/diagram/V1_ClassView';
-import type { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_Point';
-import type { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_Rectangle';
-import type { V1_PropertyView } from '../../model/packageableElements/diagram/V1_PropertyView';
-import type { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_GeneralizationView';
+import type { Diagram } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
+import { ClassView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
+import { Point } from '../../../../../metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
+import { Rectangle } from '../../../../../metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
+import { PropertyView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
+import { GeneralizationView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
+import type { V1_ClassView } from '../../model/packageableElements/diagram/V1_DSLDiagram_ClassView';
+import type { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Point';
+import type { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Rectangle';
+import type { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSLDiagram_PropertyView';
+import type { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_DSLDiagram_GeneralizationView';
 import { getClassView } from '../../../../../../helpers/DiagramHelper';
 
 const buildPoint = (point: V1_Point): Point => {

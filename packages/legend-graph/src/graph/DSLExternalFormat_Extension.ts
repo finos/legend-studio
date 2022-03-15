@@ -23,7 +23,10 @@ import { DSLExternalFormat_PureGraphPlugin } from './DSLExternalFormat_PureGraph
 
 export class DSLExternalFormat_GraphPreset extends AbstractPreset {
   constructor() {
-    super('@finos/legend-graph-preset-dsl-externalFormat', packageJson.version);
+    super(
+      packageJson.extensions.dsl_external_format_graphPreset,
+      packageJson.version,
+    );
   }
 
   install(pluginManager: GraphPluginManager): void {

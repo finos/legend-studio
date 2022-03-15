@@ -43,7 +43,7 @@ import {
 import {
   DataSpaceSupportEmail,
   type DataSpaceSupportInfo,
-} from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+} from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
 import type { ResolvedDataSpaceExecutionContext } from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
 import type { PackageableRuntime } from '@finos/legend-graph';
 import {

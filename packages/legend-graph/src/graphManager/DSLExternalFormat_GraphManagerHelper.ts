@@ -16,8 +16,8 @@
 
 import { guaranteeType } from '@finos/legend-shared';
 import type { PureModel } from '../graph/PureModel';
-import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/SchemaSet';
-import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/Binding';
+import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
+import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
 
 export const getSchemaSet = (path: string, graph: PureModel): SchemaSet =>
   graph.getExtensionElement(

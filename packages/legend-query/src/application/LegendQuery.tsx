@@ -61,6 +61,10 @@ export class LegendQuery extends LegendApplication {
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
     application.withBasePresets([
       new Query_GraphPreset(),
+      // NOTE: This makes it easier to eventually modularize `DSL External Format`,
+      // but it makes the layering a bit strange since core graph has DSLs depending on
+      // `DSL External Format` like generation and relational, which ideally we could move out later
+      // See https://github.com/finos/legend-studio/issues/65
       new DSLExternalFormat_GraphPreset(),
     ]);
     return application;

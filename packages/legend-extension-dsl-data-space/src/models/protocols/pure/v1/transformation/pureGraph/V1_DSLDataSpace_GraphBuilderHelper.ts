@@ -15,7 +15,7 @@
  */
 
 import { getDataSpace } from '../../../../../../graphManager/DSLDataSpace_GraphManagerHelper';
-import type { DataSpace } from '../../../../../metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import type { DataSpace } from '../../../../../metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
 import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,

@@ -44,7 +44,7 @@ import {
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
-} from '../../model/packageableElements/dataSpace/V1_DataSpace';
+} from '../../model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace';
 
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
 export const V1_DATA_SPACE_SUPPORT_EMAIL_TYPE = 'email';

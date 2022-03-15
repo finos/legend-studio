@@ -119,6 +119,8 @@ const QueryBuilderProjectionColumnContextMenu = observer(
     }
   >(function QueryBuilderProjectionColumnContextMenu(props, ref) {
     const { projectionColumnState } = props;
+    const removeColumn = (): void =>
+      projectionColumnState.projectionState.removeColumn(projectionColumnState);
     const convertToDerivation = (): void => {
       if (
         projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
@@ -137,6 +139,7 @@ const QueryBuilderProjectionColumnContextMenu = observer(
             Convert To Derivation
           </MenuContentItem>
         )}
+        <MenuContentItem onClick={removeColumn}>Remove</MenuContentItem>
       </MenuContent>
     );
   }),
