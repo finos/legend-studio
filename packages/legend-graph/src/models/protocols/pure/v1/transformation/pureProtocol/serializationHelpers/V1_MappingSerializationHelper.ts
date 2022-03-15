@@ -39,6 +39,7 @@ import {
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
+  optionalCustom,
 } from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
 import type { V1_InputData } from '../../../model/packageableElements/mapping/V1_InputData';
@@ -98,6 +99,7 @@ import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_BindingTransformer';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 
 enum V1_ClassMappingType {
@@ -280,10 +282,18 @@ const relationalClassMappingModelSchema = createModelSchema(
   },
 );
 
+const bindingTransformerModelSchema = createModelSchema(V1_BindingTransformer, {
+  binding: primitive(),
+});
+
 const relationalPropertyMappingModelSchema = createModelSchema(
   V1_RelationalPropertyMapping,
   {
     _type: usingConstantValueSchema(V1_PropertyMappingType.RELATIONAL),
+    bindingTransformer: optionalCustom(
+      (val) => serialize(bindingTransformerModelSchema, val),
+      (val) => deserialize(bindingTransformerModelSchema, val),
+    ),
     enumMappingId: optional(primitive()),
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,

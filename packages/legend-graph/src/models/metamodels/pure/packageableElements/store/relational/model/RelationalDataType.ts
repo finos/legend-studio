@@ -315,3 +315,17 @@ export class Real extends RelationalDataType {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_REAL]);
   }
 }
+
+export class SemiStructured extends RelationalDataType {
+  constructor() {
+    super();
+
+    makeObservable(this, {
+      hashCode: computed,
+    });
+  }
+
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_SEMISTRUCTURED]);
+  }
+}

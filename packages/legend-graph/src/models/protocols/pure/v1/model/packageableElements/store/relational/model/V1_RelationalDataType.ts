@@ -158,3 +158,12 @@ export class V1_Other extends V1_RelationalDataType implements Hashable {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_VARCHAR]);
   }
 }
+
+export class V1_SemiStructured
+  extends V1_RelationalDataType
+  implements Hashable
+{
+  get hashCode(): string {
+    return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_SEMISTRUCTURED]);
+  }
+}

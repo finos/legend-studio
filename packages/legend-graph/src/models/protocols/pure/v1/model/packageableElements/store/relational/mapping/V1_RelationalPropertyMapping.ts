@@ -22,6 +22,7 @@ import {
 } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
 import { hashObjectWithoutSourceInformation } from '../../../../../../../../../MetaModelUtils';
 import type { V1_RawRelationalOperationElement } from '../model/V1_RawRelationalOperationElement';
+import type { V1_BindingTransformer } from '../../../externalFormat/store/V1_BindingTransformer';
 
 export class V1_RelationalPropertyMapping
   extends V1_PropertyMapping
@@ -29,6 +30,7 @@ export class V1_RelationalPropertyMapping
 {
   enumMappingId?: string | undefined;
   relationalOperation!: V1_RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
+  bindingTransformer?: V1_BindingTransformer | undefined;
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {
     return visitor.visit_RelationalPropertyMapping(this);
@@ -39,6 +41,7 @@ export class V1_RelationalPropertyMapping
       CORE_HASH_STRUCTURE.REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
       this.enumMappingId ?? '',
+      this.bindingTransformer ?? '',
       hashObjectWithoutSourceInformation(this.relationalOperation),
     ]);
   }

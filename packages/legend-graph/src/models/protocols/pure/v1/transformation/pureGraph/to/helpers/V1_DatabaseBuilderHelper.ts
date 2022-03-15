@@ -70,6 +70,7 @@ import {
   TinyInt,
   SmallInt,
   BigInt,
+  SemiStructured,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import { ColumnMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnMapping';
 import { GroupByMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/GroupByMapping';
@@ -103,6 +104,7 @@ import {
   V1_VarBinary,
   V1_Binary,
   V1_Other,
+  V1_SemiStructured,
 } from '../../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
 import type { V1_View } from '../../../../model/packageableElements/store/relational/model/V1_View';
 import type { V1_Join } from '../../../../model/packageableElements/store/relational/model/V1_Join';
@@ -405,6 +407,8 @@ export const V1_transformDatabaseDataType = (
     return new Timestamp();
   } else if (dataType instanceof V1_Other) {
     return new Other();
+  } else if (dataType instanceof V1_SemiStructured) {
+    return new SemiStructured();
   }
   throw new UnsupportedOperationError(
     `Can't transform relational data type`,
