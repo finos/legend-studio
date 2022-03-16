@@ -1,9 +1,10 @@
-import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   V1_PackageableElement,
   type V1_PackageableElementVisitor,
 } from '@finos/legend-graph';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils';
+import type { V1_IdentifiedConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
 
 /**********
  * persistence
@@ -12,7 +13,7 @@ import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_Mod
 export class V1_Persistence extends V1_PackageableElement implements Hashable {
   documentation!: string;
   trigger!: V1_Trigger;
-  reader!: V1_Reader;
+  service!: string;
   persister!: V1_Persister;
   notifier!: V1_Notifier;
 
@@ -21,7 +22,7 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
       this.trigger,
-      this.reader,
+      this.service,
       this.persister,
       this.notifier,
     ]);
@@ -50,27 +51,22 @@ export class V1_ManualTrigger extends V1_Trigger implements Hashable {
   }
 }
 
-export class V1_OpaqueTrigger extends V1_Trigger implements Hashable {
-  override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_TRIGGER]);
-  }
-}
-
-/**********
- * reader
- **********/
-
-export abstract class V1_Reader implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_Reader';
-
-  abstract get hashCode(): string;
-}
-
-export class V1_ServiceReader extends V1_Reader implements Hashable {
-  service!: string;
+export class V1_CronTrigger extends V1_Trigger implements Hashable {
+  minutes!: string;
+  hours!: string;
+  dayOfMonth!: string;
+  month!: string;
+  dayOfWeek!: string;
 
   override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.SERVICE_READER, this.service]);
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.CRON_TRIGGER,
+      this.minutes,
+      this.hours,
+      this.dayOfMonth,
+      this.month,
+      this.dayOfWeek,
+    ]);
   }
 }
 
@@ -85,22 +81,24 @@ export abstract class V1_Persister implements Hashable {
 }
 
 export class V1_StreamingPersister extends V1_Persister implements Hashable {
-  targetShape!: V1_TargetShape;
+  connections: V1_IdentifiedConnection[] = [];
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.STREAMING_PERSISTER,
-      this.targetShape,
+      hashArray(this.connections),
     ]);
   }
 }
 
 export class V1_BatchPersister extends V1_Persister implements Hashable {
+  connections: V1_IdentifiedConnection[] = [];
   targetShape!: V1_TargetShape;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
+      hashArray(this.connections),
       this.targetShape,
     ]);
   }
@@ -263,17 +261,6 @@ export class V1_MaxVersionDeduplicationStrategy
   }
 }
 
-export class V1_OpaqueDeduplicationStrategy
-  extends V1_DeduplicationStrategy
-  implements Hashable
-{
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.OPAQUE_DEDUPLICATION_STRATEGY,
-    ]);
-  }
-}
-
 /**********
  * ingest mode
  **********/
@@ -401,15 +388,6 @@ export class V1_DeleteIndicatorMergeStrategy
   }
 }
 
-export class V1_OpaqueMergeStrategy
-  extends V1_MergeStrategy
-  implements Hashable
-{
-  override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_MERGE_STRATEGY]);
-  }
-}
-
 /**********
  * ingest mode - append only
  **********/
@@ -451,12 +429,6 @@ export class V1_DateTimeAuditing extends V1_Auditing implements Hashable {
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_AUDITING,
       this.dateTimeProperty,
     ]);
-  }
-}
-
-export class V1_OpaqueAuditing extends V1_Auditing implements Hashable {
-  override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_AUDITING]);
   }
 }
 
@@ -522,17 +494,6 @@ export class V1_BatchIdAndDateTimeTransactionMilestoning
   }
 }
 
-export class V1_OpaqueTransactionMilestoning
-  extends V1_TransactionMilestoning
-  implements Hashable
-{
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.OPAQUE_TRANSACTION_MILESTONING,
-    ]);
-  }
-}
-
 /**********
  * validity milestoning
  **********/
@@ -558,15 +519,6 @@ export class V1_DateTimeValidityMilestoning
       this.dateTimeThruFieldName,
       this.derivation,
     ]);
-  }
-}
-
-export class V1_OpaqueValidityMilestoning
-  extends V1_ValidityMilestoning
-  implements Hashable
-{
-  override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_VALIDITY_MILESTONING]);
   }
 }
 
