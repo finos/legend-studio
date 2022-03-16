@@ -1,6 +1,7 @@
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils';
 import {
   Class,
+  IdentifiedConnection,
   PackageableElement,
   PackageableElementReference,
   PackageableElementVisitor,
@@ -16,7 +17,7 @@ import { makeObservable, observable, override } from 'mobx';
 export class Persistence extends PackageableElement implements Hashable {
   documentation!: string;
   trigger!: Trigger;
-  reader!: Reader;
+  service!: PackageableElementReference<Service>;
   persister!: Persister;
   notifier!: Notifier;
 
@@ -26,7 +27,7 @@ export class Persistence extends PackageableElement implements Hashable {
     makeObservable<Persistence, '_elementHashCode'>(this, {
       documentation: observable,
       trigger: observable,
-      reader: observable,
+      service: observable,
       persister: observable,
       notifier: observable,
       _elementHashCode: override,
@@ -38,7 +39,7 @@ export class Persistence extends PackageableElement implements Hashable {
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
       this.trigger,
-      this.reader,
+      this.service.hashValue,
       this.persister,
       this.notifier,
     ]);
@@ -67,29 +68,21 @@ export class ManualTrigger extends Trigger implements Hashable {
   }
 }
 
-export class OpaqueTrigger extends Trigger implements Hashable {
-  override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_TRIGGER]);
-  }
-}
-
-/**********
- * reader
- **********/
-
-export abstract class Reader implements Hashable {
-  private readonly _$nominalTypeBrand!: 'Reader';
-
-  abstract get hashCode(): string;
-}
-
-export class ServiceReader extends Reader implements Hashable {
-  service!: PackageableElementReference<Service>;
+export class CronTrigger extends Trigger implements Hashable {
+  minutes!: string;
+  hours!: string;
+  dayOfMonth!: string;
+  month!: string;
+  dayOfWeek!: string;
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.SERVICE_READER,
-      this.service.hashValue,
+      PERSISTENCE_HASH_STRUCTURE.CRON_TRIGGER,
+      this.minutes,
+      this.hours,
+      this.dayOfMonth,
+      this.month,
+      this.dayOfWeek,
     ]);
   }
 }
@@ -105,22 +98,24 @@ export abstract class Persister implements Hashable {
 }
 
 export class StreamingPersister extends Persister implements Hashable {
-  targetShape!: TargetShape;
+  connections: IdentifiedConnection[] = [];
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.STREAMING_PERSISTER,
-      this.targetShape,
+      hashArray(this.connections),
     ]);
   }
 }
 
 export class BatchPersister extends Persister implements Hashable {
+  connections: IdentifiedConnection[] = [];
   targetShape!: TargetShape;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
+      hashArray(this.connections),
       this.targetShape,
     ]);
   }
@@ -283,17 +278,6 @@ export class MaxVersionDeduplicationStrategy
   }
 }
 
-export class OpaqueDeduplicationStrategy
-  extends DeduplicationStrategy
-  implements Hashable
-{
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.OPAQUE_DEDUPLICATION_STRATEGY,
-    ]);
-  }
-}
-
 /**********
  * ingest mode
  **********/
@@ -418,12 +402,6 @@ export class DeleteIndicatorMergeStrategy
   }
 }
 
-export class OpaqueMergeStrategy extends MergeStrategy implements Hashable {
-  override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_MERGE_STRATEGY]);
-  }
-}
-
 /**********
  * ingest mode - append only
  **********/
@@ -465,12 +443,6 @@ export class DateTimeAuditing extends Auditing implements Hashable {
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_AUDITING,
       this.dateTimeProperty,
     ]);
-  }
-}
-
-export class OpaqueAuditing extends Auditing implements Hashable {
-  override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_AUDITING]);
   }
 }
 
@@ -536,17 +508,6 @@ export class BatchIdAndDateTimeTransactionMilestoning
   }
 }
 
-export class OpaqueTransactionMilestoning
-  extends TransactionMilestoning
-  implements Hashable
-{
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.OPAQUE_TRANSACTION_MILESTONING,
-    ]);
-  }
-}
-
 /**********
  * validity milestoning
  **********/
@@ -572,15 +533,6 @@ export class DateTimeValidityMilestoning
       this.dateTimeThruFieldName,
       this.derivation,
     ]);
-  }
-}
-
-export class OpaqueValidityMilestoning
-  extends ValidityMilestoning
-  implements Hashable
-{
-  override get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.OPAQUE_VALIDITY_MILESTONING]);
   }
 }
 

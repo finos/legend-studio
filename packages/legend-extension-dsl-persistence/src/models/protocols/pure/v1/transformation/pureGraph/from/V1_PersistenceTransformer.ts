@@ -7,6 +7,7 @@ import {
   BatchPersister,
   BitemporalDelta,
   BitemporalSnapshot,
+  CronTrigger,
   DateTimeAuditing,
   DateTimeTransactionMilestoning,
   DateTimeValidityMilestoning,
@@ -26,19 +27,11 @@ import {
   NontemporalSnapshot,
   Notifier,
   Notifyee,
-  OpaqueAuditing,
-  OpaqueDeduplicationStrategy,
-  OpaqueMergeStrategy,
   OpaqueTarget,
-  OpaqueTransactionMilestoning,
-  OpaqueTrigger,
-  OpaqueValidityMilestoning,
   PagerDutyNotifyee,
   Persistence,
   Persister,
   PropertyAndFlatTarget,
-  Reader,
-  ServiceReader,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
@@ -60,6 +53,7 @@ import {
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
+  V1_CronTrigger,
   V1_DateTimeAuditing,
   V1_DateTimeTransactionMilestoning,
   V1_DateTimeValidityMilestoning,
@@ -79,19 +73,11 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
-  V1_OpaqueAuditing,
-  V1_OpaqueDeduplicationStrategy,
-  V1_OpaqueMergeStrategy,
   V1_OpaqueTarget,
-  V1_OpaqueTransactionMilestoning,
-  V1_OpaqueTrigger,
-  V1_OpaqueValidityMilestoning,
   V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTarget,
-  V1_Reader,
-  V1_ServiceReader,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -106,10 +92,13 @@ import {
 } from '../../../model/packageableElements/persistence/V1_Persistence';
 import type { V1_GraphTransformerContext } from '@finos/legend-graph';
 import {
+  IdentifiedConnection,
   V1_initPackageableElement,
   V1_transformElementReference,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
+import { V1_IdentifiedConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
+import { V1_transformConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer';
 
 /**********
  * persistence
@@ -123,7 +112,7 @@ export const V1_transformPersistence = (
   V1_initPackageableElement(protocol, element);
   protocol.documentation = element.documentation;
   protocol.trigger = V1_transformTrigger(element.trigger, context);
-  protocol.reader = V1_transformReader(element.reader, context);
+  protocol.service = V1_transformElementReference(element.service);
   protocol.persister = V1_transformPersister(element.persister, context);
   protocol.notifier = V1_transformNotifier(element.notifier, context);
   return protocol;
@@ -137,31 +126,14 @@ export const V1_transformTrigger = (
   element: Trigger,
   context: V1_GraphTransformerContext,
 ): V1_Trigger => {
-  if (element instanceof OpaqueTrigger) {
-    return new V1_OpaqueTrigger();
+  if (element instanceof CronTrigger) {
+    //TODO: ledav -- fill props
+    return new V1_CronTrigger();
   } else if (element instanceof ManualTrigger) {
     return new V1_ManualTrigger();
   }
   throw new UnsupportedOperationError(
     `Unable to transform trigger '${element}'`,
-  );
-};
-
-/**********
- * reader
- **********/
-
-export const V1_transformReader = (
-  element: Reader,
-  context: V1_GraphTransformerContext,
-): V1_Reader => {
-  if (element instanceof ServiceReader) {
-    const protocol = new V1_ServiceReader();
-    protocol.service = V1_transformElementReference(element.service);
-    return protocol;
-  }
-  throw new UnsupportedOperationError(
-    `Unable to transform reader '${element}'`,
   );
 };
 
@@ -175,13 +147,19 @@ export const V1_transformPersister = (
 ): V1_Persister => {
   if (element instanceof StreamingPersister) {
     let protocol = new V1_StreamingPersister();
-    protocol.targetShape = V1_transformTargetShape(
-      element.targetShape,
-      context,
-    );
+    if (element.connections) {
+      protocol.connections = element.connections.map((c) =>
+        V1_transformIdentifiedConnection(c, context),
+      );
+    }
     return protocol;
   } else if (element instanceof BatchPersister) {
     const protocol = new V1_BatchPersister();
+    if (element.connections) {
+      protocol.connections = element.connections.map((c) =>
+        V1_transformIdentifiedConnection(c, context),
+      );
+    }
     protocol.targetShape = V1_transformTargetShape(
       element.targetShape,
       context,
@@ -224,6 +202,24 @@ export const V1_transformNotifyee = (
   throw new UnsupportedOperationError(
     `Unable to transform notifyee '${element}'`,
   );
+};
+
+/**********
+ * connection
+ **********/
+
+export const V1_transformIdentifiedConnection = (
+  element: IdentifiedConnection,
+  context: V1_GraphTransformerContext,
+): V1_IdentifiedConnection => {
+  const connection = new V1_IdentifiedConnection();
+  connection.id = element.id;
+  connection.connection = V1_transformConnection(
+    element.connection,
+    true,
+    context,
+  );
+  return connection;
 };
 
 /**********
@@ -327,8 +323,6 @@ export const V1_transformDeduplicationStrategy = (
     const protocol = new V1_MaxVersionDeduplicationStrategy();
     protocol.versionProperty = element.versionProperty;
     return protocol;
-  } else if (element instanceof OpaqueDeduplicationStrategy) {
-    return new V1_OpaqueDeduplicationStrategy();
   }
   throw new UnsupportedOperationError(
     `Unable to transform deduplicationStrategy '${element}'`,
@@ -423,8 +417,6 @@ export const V1_transformMergeStrategy = (
     protocol.deleteProperty = element.deleteProperty;
     protocol.deleteValues = element.deleteValues;
     return protocol;
-  } else if (element instanceof OpaqueMergeStrategy) {
-    return new V1_OpaqueMergeStrategy();
   }
   throw new UnsupportedOperationError(
     `Unable to transform merge strategy '${element}'`,
@@ -445,8 +437,6 @@ export const V1_transformAuditing = (
     const protocol = new V1_DateTimeAuditing();
     protocol.dateTimeProperty = element.dateTimeProperty;
     return protocol;
-  } else if (element instanceof OpaqueAuditing) {
-    return new V1_OpaqueAuditing();
   }
   throw new UnsupportedOperationError(
     `Unable to transform auditing '${element}'`,
@@ -478,8 +468,6 @@ export const V1_transformTransactionMilestoning = (
     protocol.dateTimeInFieldName = element.dateTimeInFieldName;
     protocol.dateTimeOutFieldName = element.dateTimeOutFieldName;
     return protocol;
-  } else if (element instanceof OpaqueTransactionMilestoning) {
-    return new V1_OpaqueTransactionMilestoning();
   }
   throw new UnsupportedOperationError(
     `Unable to transform transaction milestoning '${element}'`,
@@ -503,8 +491,6 @@ export const V1_transformValidityMilestoning = (
       context,
     );
     return protocol;
-  } else if (element instanceof OpaqueValidityMilestoning) {
-    return new V1_OpaqueValidityMilestoning();
   }
   throw new UnsupportedOperationError(
     `Unable to transform validity milestoning '${element}'`,

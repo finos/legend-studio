@@ -7,6 +7,7 @@ import {
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
+  V1_CronTrigger,
   V1_DateTimeAuditing,
   V1_DateTimeTransactionMilestoning,
   V1_DateTimeValidityMilestoning,
@@ -26,19 +27,11 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
-  V1_OpaqueAuditing,
-  V1_OpaqueDeduplicationStrategy,
-  V1_OpaqueMergeStrategy,
   V1_OpaqueTarget,
-  V1_OpaqueTransactionMilestoning,
-  V1_OpaqueTrigger,
-  V1_OpaqueValidityMilestoning,
   V1_PagerDutyNotifyee,
   type V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTarget,
-  V1_Reader,
-  V1_ServiceReader,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -60,6 +53,7 @@ import {
   BatchPersister,
   BitemporalDelta,
   BitemporalSnapshot,
+  CronTrigger,
   DateTimeAuditing,
   DateTimeTransactionMilestoning,
   DateTimeValidityMilestoning,
@@ -79,18 +73,10 @@ import {
   NontemporalSnapshot,
   Notifier,
   Notifyee,
-  OpaqueAuditing,
-  OpaqueDeduplicationStrategy,
-  OpaqueMergeStrategy,
   OpaqueTarget,
-  OpaqueTransactionMilestoning,
-  OpaqueTrigger,
-  OpaqueValidityMilestoning,
   PagerDutyNotifyee,
   Persister,
   PropertyAndFlatTarget,
-  Reader,
-  ServiceReader,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
@@ -106,9 +92,12 @@ import {
 import { getPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
 import {
   GraphBuilderError,
+  IdentifiedConnection,
   type V1_GraphBuilderContext,
 } from '@finos/legend-graph';
 import { guaranteeNonEmptyString } from '@finos/legend-shared';
+import type { V1_IdentifiedConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
+import { V1_ProtocolToMetaModelConnectionBuilder } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
 
 /**********
  * persistence
@@ -125,7 +114,7 @@ export const V1_buildPersistence = (
     `Persistence 'documentation' field is missing or empty`,
   );
   persistence.trigger = V1_buildTrigger(protocol.trigger, context);
-  persistence.reader = V1_buildReader(protocol.reader, context);
+  persistence.service = context.resolveService(protocol.service);
   persistence.persister = V1_buildPersister(protocol.persister, context);
   persistence.notifier = V1_buildNotifier(protocol.notifier, context);
 };
@@ -138,28 +127,13 @@ export const V1_buildTrigger = (
   protocol: V1_Trigger,
   context: V1_GraphBuilderContext,
 ): Trigger => {
-  if (protocol instanceof V1_OpaqueTrigger) {
-    return new OpaqueTrigger();
+  if (protocol instanceof V1_CronTrigger) {
+    //TODO: ledav -- fill props
+    return new CronTrigger();
   } else if (protocol instanceof V1_ManualTrigger) {
     return new ManualTrigger();
   }
   throw new GraphBuilderError(`Unrecognized trigger '${protocol}'`);
-};
-
-/**********
- * reader
- **********/
-
-export const V1_buildReader = (
-  protocol: V1_Reader,
-  context: V1_GraphBuilderContext,
-): Reader => {
-  if (protocol instanceof V1_ServiceReader) {
-    const reader = new ServiceReader();
-    reader.service = context.resolveService(protocol.service);
-    return reader;
-  }
-  throw new GraphBuilderError(`Unrecognized reader '${protocol}'`);
 };
 
 /**********
@@ -172,10 +146,19 @@ export const V1_buildPersister = (
 ): Persister => {
   if (protocol instanceof V1_StreamingPersister) {
     const persister = new StreamingPersister();
-    persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
+    if (protocol.connections) {
+      persister.connections = protocol.connections.map((c) =>
+        V1_buildIdentifiedConnection(c, context),
+      );
+    }
     return persister;
   } else if (protocol instanceof V1_BatchPersister) {
     const persister = new BatchPersister();
+    if (protocol.connections) {
+      persister.connections = protocol.connections.map((c) =>
+        V1_buildIdentifiedConnection(c, context),
+      );
+    }
     persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
     return persister;
   }
@@ -211,6 +194,20 @@ export const V1_buildNotifyee = (
     return notifyee;
   }
   throw new GraphBuilderError(`Unrecognized notifier '${protocol}'`);
+};
+
+/**********
+ * connection
+ **********/
+
+export const V1_buildIdentifiedConnection = (
+  protocol: V1_IdentifiedConnection,
+  context: V1_GraphBuilderContext,
+): IdentifiedConnection => {
+  const connection = protocol.connection.accept_ConnectionVisitor(
+    new V1_ProtocolToMetaModelConnectionBuilder(context),
+  );
+  return new IdentifiedConnection(protocol.id, connection);
 };
 
 /**********
@@ -329,8 +326,6 @@ export const V1_buildDeduplicationStrategy = (
     const strategy = new MaxVersionDeduplicationStrategy();
     strategy.versionProperty = protocol.versionProperty;
     return strategy;
-  } else if (protocol instanceof V1_OpaqueDeduplicationStrategy) {
-    return new OpaqueDeduplicationStrategy();
   }
   throw new GraphBuilderError(
     `Unrecognized deduplication strategy '${protocol}'`,
@@ -423,8 +418,6 @@ export const V1_buildMergeStrategy = (
     strategy.deleteProperty = protocol.deleteProperty;
     strategy.deleteValues = protocol.deleteValues;
     return strategy;
-  } else if (protocol instanceof V1_OpaqueMergeStrategy) {
-    return new OpaqueMergeStrategy();
   }
   throw new GraphBuilderError(`Unrecognized merge strategy '${protocol}'`);
 };
@@ -443,8 +436,6 @@ export const V1_buildAuditing = (
     const auditing = new DateTimeAuditing();
     auditing.dateTimeProperty = protocol.dateTimeProperty;
     return auditing;
-  } else if (protocol instanceof V1_OpaqueAuditing) {
-    return new OpaqueAuditing();
   }
   throw new GraphBuilderError(`Unrecognized auditing mode '${protocol}'`);
 };
@@ -474,8 +465,6 @@ export const V1_buildTransactionMilestoning = (
     milestoning.dateTimeInFieldName = protocol.dateTimeInFieldName;
     milestoning.dateTimeOutFieldName = protocol.dateTimeOutFieldName;
     return milestoning;
-  } else if (protocol instanceof V1_OpaqueTransactionMilestoning) {
-    return new OpaqueTransactionMilestoning();
   }
   throw new GraphBuilderError(
     `Unrecognized transaction milestoning mode '${protocol}'`,
@@ -499,8 +488,6 @@ export const V1_buildValidityMilestoning = (
       context,
     );
     return milestoning;
-  } else if (protocol instanceof V1_OpaqueValidityMilestoning) {
-    return new OpaqueValidityMilestoning();
   }
   throw new GraphBuilderError(
     `Unrecognized validity milestoning mode '${protocol}'`,

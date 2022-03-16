@@ -7,6 +7,7 @@ import {
   V1_BatchPersister,
   V1_BitemporalDelta,
   V1_BitemporalSnapshot,
+  V1_CronTrigger,
   V1_DateTimeAuditing,
   V1_DateTimeTransactionMilestoning,
   V1_DateTimeValidityMilestoning,
@@ -26,19 +27,11 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
-  V1_OpaqueAuditing,
-  V1_OpaqueDeduplicationStrategy,
-  V1_OpaqueMergeStrategy,
   V1_OpaqueTarget,
-  V1_OpaqueTransactionMilestoning,
-  V1_OpaqueTrigger,
-  V1_OpaqueValidityMilestoning,
   V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
   V1_PropertyAndFlatTarget,
-  V1_Reader,
-  V1_ServiceReader,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -62,10 +55,11 @@ import {
   custom,
   deserialize,
   list,
+  object,
   primitive,
   serialize,
-  SKIP,
 } from 'serializr';
+import { V1_IdentifiedConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
 
 /**********
  * persistence
@@ -86,10 +80,7 @@ export const V1_persistenceModelSchema = createModelSchema(V1_Persistence, {
     (val) => V1_serializePersister(val),
     (val) => V1_deserializePersister(val),
   ),
-  reader: custom(
-    (val) => V1_serializeReader(val),
-    (val) => V1_deserializeReader(val),
-  ),
+  service: primitive(),
   trigger: custom(
     (val) => V1_serializeTrigger(val),
     (val) => V1_deserializeTrigger(val),
@@ -102,66 +93,40 @@ export const V1_persistenceModelSchema = createModelSchema(V1_Persistence, {
 
 enum V1_TriggerType {
   MANUAL_TRIGGER = 'manualTrigger',
-  OPAQUE_TRIGGER = 'opaqueTrigger',
+  CRON_TRIGGER = 'cronTrigger',
 }
-
-const V1_opaqueTriggerModelSchema = createModelSchema(V1_OpaqueTrigger, {
-  _type: usingConstantValueSchema(V1_TriggerType.OPAQUE_TRIGGER),
-});
 
 const V1_manualTriggerModelSchema = createModelSchema(V1_ManualTrigger, {
   _type: usingConstantValueSchema(V1_TriggerType.MANUAL_TRIGGER),
 });
 
+const V1_cronTriggerModelSchema = createModelSchema(V1_CronTrigger, {
+  _type: usingConstantValueSchema(V1_TriggerType.CRON_TRIGGER),
+  minutes: primitive(),
+  hours: primitive(),
+  dayOfMonth: primitive(),
+  month: primitive(),
+  dayOfWeek: primitive(),
+});
+
 const V1_serializeTrigger = (protocol: V1_Trigger): PlainObject<V1_Trigger> => {
-  if (protocol instanceof V1_OpaqueTrigger) {
-    return serialize(V1_opaqueTriggerModelSchema, protocol);
-  } else if (protocol instanceof V1_ManualTrigger) {
+  if (protocol instanceof V1_ManualTrigger) {
     return serialize(V1_manualTriggerModelSchema, protocol);
+  } else if (protocol instanceof V1_CronTrigger) {
+    return serialize(V1_cronTriggerModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Unable to serialize trigger`, protocol);
 };
 
 const V1_deserializeTrigger = (json: PlainObject<V1_Trigger>): V1_Trigger => {
   switch (json._type) {
-    case V1_TriggerType.OPAQUE_TRIGGER:
-      return deserialize(V1_opaqueTriggerModelSchema, json);
     case V1_TriggerType.MANUAL_TRIGGER:
       return deserialize(V1_manualTriggerModelSchema, json);
+    case V1_TriggerType.CRON_TRIGGER:
+      return deserialize(V1_cronTriggerModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize trigger '${json._type}'`,
-      );
-  }
-};
-
-/**********
- * reader
- **********/
-
-enum V1_ReaderType {
-  SERVICE_READER = 'serviceReader',
-}
-
-const V1_serviceReaderModelSchema = createModelSchema(V1_ServiceReader, {
-  _type: usingConstantValueSchema(V1_ReaderType.SERVICE_READER),
-  service: primitive(),
-});
-
-const V1_serializeReader = (protocol: V1_Reader): PlainObject<V1_Trigger> => {
-  if (protocol instanceof V1_ServiceReader) {
-    return serialize(V1_serviceReaderModelSchema, protocol);
-  }
-  throw new UnsupportedOperationError(`Unable to serialize reader`, protocol);
-};
-
-const V1_deserializeReader = (json: PlainObject<V1_Reader>): V1_Reader => {
-  switch (json._type) {
-    case V1_ReaderType.SERVICE_READER:
-      return deserialize(V1_serviceReaderModelSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Unable to deserialize reader '${json._type}'`,
       );
   }
 };
@@ -179,15 +144,13 @@ const V1_streamingPersisterModelSchema = createModelSchema(
   V1_StreamingPersister,
   {
     _type: usingConstantValueSchema(V1_PersisterType.STREAMING_PERSISTER),
-    targetShape: custom(
-      (val) => V1_serializeTargetShape(val),
-      (val) => V1_deserializeTargetShape(val),
-    ),
+    connections: list(object(V1_IdentifiedConnection)),
   },
 );
 
 const V1_batchPersisterModelSchema = createModelSchema(V1_BatchPersister, {
   _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
+  connections: list(object(V1_IdentifiedConnection)),
   targetShape: custom(
     (val) => V1_serializeTargetShape(val),
     (val) => V1_deserializeTargetShape(val),
@@ -412,15 +375,6 @@ const V1_maxVersionDeduplicationStrategyModelSchema = createModelSchema(
   },
 );
 
-const V1_opaqueDeduplicationStrategyModelSchema = createModelSchema(
-  V1_OpaqueDeduplicationStrategy,
-  {
-    _type: usingConstantValueSchema(
-      V1_DeduplicationStrategyType.OPAQUE_DEDUPLICATION_STRATEGY,
-    ),
-  },
-);
-
 const V1_serializeDeduplicationStrategy = (
   protocol: V1_DeduplicationStrategy,
 ): PlainObject<V1_DeduplicationStrategy> => {
@@ -430,8 +384,6 @@ const V1_serializeDeduplicationStrategy = (
     return serialize(V1_anyVersionDeduplicationStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_MaxVersionDeduplicationStrategy) {
     return serialize(V1_maxVersionDeduplicationStrategyModelSchema, protocol);
-  } else if (protocol instanceof V1_OpaqueDeduplicationStrategy) {
-    return serialize(V1_opaqueDeduplicationStrategyModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Unable to serialize deduplication strategy`,
@@ -449,8 +401,6 @@ const V1_deserializeDeduplicationStrategy = (
       return deserialize(V1_anyVersionDeduplicationStrategyModelSchema, json);
     case V1_DeduplicationStrategyType.MAX_VERSION_DEDUPLICATION_STRATEGY:
       return deserialize(V1_maxVersionDeduplicationStrategyModelSchema, json);
-    case V1_DeduplicationStrategyType.OPAQUE_DEDUPLICATION_STRATEGY:
-      return deserialize(V1_opaqueDeduplicationStrategyModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize deduplicationStrategy '${json._type}'`,
@@ -635,13 +585,6 @@ const V1_deleteIndicatorMergeStrategyModelSchema = createModelSchema(
   },
 );
 
-const V1_opaqueMergeStrategyModelSchema = createModelSchema(
-  V1_OpaqueMergeStrategy,
-  {
-    _type: usingConstantValueSchema(V1_MergeStrategyType.OPAQUE_MERGE_STRATEGY),
-  },
-);
-
 const V1_serializeMergeStrategy = (
   protocol: V1_MergeStrategy,
 ): PlainObject<V1_MergeStrategy> => {
@@ -649,8 +592,6 @@ const V1_serializeMergeStrategy = (
     return serialize(V1_noDeletesMergeStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_DeleteIndicatorMergeStrategy) {
     return serialize(V1_deleteIndicatorMergeStrategyModelSchema, protocol);
-  } else if (protocol instanceof V1_OpaqueMergeStrategy) {
-    return serialize(V1_opaqueMergeStrategyModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Unable to serialize merge strategy`,
@@ -666,8 +607,6 @@ const V1_deserializeMergeStrategy = (
       return deserialize(V1_noDeletesMergeStrategyModelSchema, json);
     case V1_MergeStrategyType.DELETE_INDICATOR_MERGE_STRATEGY:
       return deserialize(V1_deleteIndicatorMergeStrategyModelSchema, json);
-    case V1_MergeStrategyType.OPAQUE_MERGE_STRATEGY:
-      return deserialize(V1_opaqueMergeStrategyModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize merge strategy '${json._type}'`,
@@ -694,10 +633,6 @@ const V1_dateTimeAuditingModelSchema = createModelSchema(V1_DateTimeAuditing, {
   dateTimeFieldName: primitive(),
 });
 
-const V1_opaqueAuditingModelSchema = createModelSchema(V1_OpaqueAuditing, {
-  _type: usingConstantValueSchema(V1_AuditingType.OPAQUE_AUDITING),
-});
-
 const V1_serializeAuditing = (
   protocol: V1_Auditing,
 ): PlainObject<V1_Auditing> => {
@@ -705,8 +640,6 @@ const V1_serializeAuditing = (
     return serialize(V1_noAuditingModelSchema, protocol);
   } else if (protocol instanceof V1_DateTimeAuditing) {
     return serialize(V1_dateTimeAuditingModelSchema, protocol);
-  } else if (protocol instanceof V1_OpaqueAuditing) {
-    return serialize(V1_opaqueAuditingModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Unable to serialize auditing`, protocol);
 };
@@ -719,8 +652,6 @@ const V1_deserializeAuditing = (
       return deserialize(V1_noAuditingModelSchema, json);
     case V1_AuditingType.DATE_TIME_AUDITING:
       return deserialize(V1_dateTimeAuditingModelSchema, json);
-    case V1_AuditingType.OPAQUE_AUDITING:
-      return deserialize(V1_opaqueAuditingModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize auditing '${json._type}'`,
@@ -772,15 +703,6 @@ const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
     dateTimeOutFieldName: primitive(),
   });
 
-const V1_opaqueTransactionMilestoningModelSchema = createModelSchema(
-  V1_OpaqueTransactionMilestoning,
-  {
-    _type: usingConstantValueSchema(
-      V1_TransactionMilestoningType.OPAQUE_TRANSACTION_MILESTONING,
-    ),
-  },
-);
-
 const V1_serializeTransactionMilestoning = (
   protocol: V1_TransactionMilestoning,
 ): PlainObject<V1_TransactionMilestoning> => {
@@ -793,8 +715,6 @@ const V1_serializeTransactionMilestoning = (
       V1_batchIdAndDateTimeTransactionMilestoningModelSchema,
       protocol,
     );
-  } else if (protocol instanceof V1_OpaqueTransactionMilestoning) {
-    return serialize(V1_opaqueTransactionMilestoningModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Unable to serialize transaction milestoning`,
@@ -815,8 +735,6 @@ const V1_deserializeTransactionMilestoning = (
         V1_batchIdAndDateTimeTransactionMilestoningModelSchema,
         json,
       );
-    case V1_TransactionMilestoningType.OPAQUE_TRANSACTION_MILESTONING:
-      return deserialize(V1_opaqueTransactionMilestoningModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize transaction milestoning '${json._type}'`,
@@ -848,22 +766,11 @@ const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
   },
 );
 
-const V1_opaqueValidityMilestoningModelSchema = createModelSchema(
-  V1_OpaqueValidityMilestoning,
-  {
-    _type: usingConstantValueSchema(
-      V1_ValidityMilestoningType.OPAQUE_VALIDITY_MILESTONING,
-    ),
-  },
-);
-
 const V1_serializeValidityMilestoning = (
   protocol: V1_ValidityMilestoning,
 ): PlainObject<V1_ValidityMilestoning> => {
   if (protocol instanceof V1_DateTimeValidityMilestoning) {
     return serialize(V1_dateTimeValidityMilestoningModelSchema, protocol);
-  } else if (protocol instanceof V1_OpaqueValidityMilestoning) {
-    return serialize(V1_opaqueValidityMilestoningModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Unable to serialize validity milestoning`,
@@ -877,8 +784,6 @@ const V1_deserializeValidityMilestoning = (
   switch (json._type) {
     case V1_ValidityMilestoningType.DATE_TIME_VALIDITY_MILESTONING:
       return deserialize(V1_dateTimeValidityMilestoningModelSchema, json);
-    case V1_ValidityMilestoningType.OPAQUE_VALIDITY_MILESTONING:
-      return deserialize(V1_opaqueValidityMilestoningModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize validity milestoning '${json._type}'`,
