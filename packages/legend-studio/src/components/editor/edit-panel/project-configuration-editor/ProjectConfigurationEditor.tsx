@@ -19,6 +19,7 @@ import {
   LogEvent,
   prettyCONSTName,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
@@ -34,6 +35,7 @@ import {
   TimesIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
+  ExternalLinkSquareIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -50,6 +52,7 @@ import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../../stores/LegendStudioLog
 import {
   type ProjectData,
   compareSemVerVersions,
+  generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 
 interface VersionOption {
@@ -262,6 +265,17 @@ const ProjectDependencyEditor = observer(
         }
       }
     };
+    const openProject = (): void => {
+      if (!projectDependency.isLegacyDependency) {
+        applicationStore.navigator.openNewWindow(
+          `${applicationStore.config.baseUrl}view/${generateGAVCoordinates(
+            guaranteeNonNullable(projectDependency.groupId),
+            guaranteeNonNullable(projectDependency.artifactId),
+            projectDependency.versionId.id,
+          )}`,
+        );
+      }
+    };
     const projectSelectorPlaceholder = !projectDependency.projectId.length
       ? 'Choose project'
       : versionDisabled
@@ -299,6 +313,19 @@ const ProjectDependencyEditor = observer(
           }
           darkMode={true}
         />
+        <button
+          className="project-dependency-editor__visit-btn btn--dark btn--sm"
+          disabled={
+            projectDependency.isLegacyDependency ||
+            !selectedProject ||
+            !selectedVersionOption
+          }
+          onClick={openProject}
+          tabIndex={-1}
+          title={'Open Project'}
+        >
+          <ExternalLinkSquareIcon />
+        </button>
         <button
           className="project-dependency-editor__remove-btn"
           disabled={isReadOnly}

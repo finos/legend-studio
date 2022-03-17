@@ -76,6 +76,12 @@ enum CORE_ENGINE_TRACER_SPAN {
   DELETE_QUERY = 'delete query',
 }
 
+export enum V1_ENGINE_LOG_EVENT {
+  GRAMMAR_TO_JSON = 'GRAMMAR_TO_JSON',
+  JSON_TO_GRAMMAR = 'JSON_TO_GRAMMAR',
+  COMPILATION = 'COMPILATION',
+}
+
 export class V1_EngineServerClient extends AbstractServerClient {
   currentUserId?: string | undefined;
   private env?: string | undefined;

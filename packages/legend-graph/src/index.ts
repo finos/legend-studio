@@ -239,7 +239,10 @@ export {
   V1_serializeRawValueSpecification,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_transformPropertyReference } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_MappingTransformer';
-export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
+export {
+  V1_EngineServerClient,
+  V1_ENGINE_LOG_EVENT,
+} from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
 export { V1_deserializePureModelContextData as V1_jsonToPureModelContextData } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
 export {
