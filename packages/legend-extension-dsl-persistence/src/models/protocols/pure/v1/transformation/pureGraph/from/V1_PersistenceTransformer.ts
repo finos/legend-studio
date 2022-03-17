@@ -127,8 +127,13 @@ export const V1_transformTrigger = (
   context: V1_GraphTransformerContext,
 ): V1_Trigger => {
   if (element instanceof CronTrigger) {
-    //TODO: ledav -- fill props
-    return new V1_CronTrigger();
+    const protocol = new V1_CronTrigger();
+    protocol.minutes = element.minutes;
+    protocol.hours = element.hours;
+    protocol.dayOfMonth = element.dayOfMonth;
+    protocol.month = element.month;
+    protocol.dayOfWeek = element.dayOfWeek;
+    return protocol;
   } else if (element instanceof ManualTrigger) {
     return new V1_ManualTrigger();
   }
@@ -146,7 +151,7 @@ export const V1_transformPersister = (
   context: V1_GraphTransformerContext,
 ): V1_Persister => {
   if (element instanceof StreamingPersister) {
-    let protocol = new V1_StreamingPersister();
+    const protocol = new V1_StreamingPersister();
     if (element.connections) {
       protocol.connections = element.connections.map((c) =>
         V1_transformIdentifiedConnection(c, context),
