@@ -30,7 +30,10 @@ import {
   PureModel,
   SystemModel,
 } from './graph/PureModel';
-import type { AbstractPureGraphManager } from './graphManager/AbstractPureGraphManager';
+import type {
+  AbstractPureGraphManager,
+  GraphBuilderOptions,
+} from './graphManager/AbstractPureGraphManager';
 import { GRAPH_MANAGER_LOG_EVENT } from './graphManager/GraphManagerLogEvent';
 import type { GraphPluginManager } from './GraphPluginManager';
 import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
@@ -81,14 +84,18 @@ export class GraphManagerState {
    * Right now the essential profiles have been extracted from Pure to load the minimum system models.
    * We might add more system entities as needed until the SDLC project is setup.
    */
-  *initializeSystem(): GeneratorFn<void> {
+  *initializeSystem(options?: GraphBuilderOptions): GeneratorFn<void> {
     if (!this.initSystemState.isInInitialState) {
       return;
     }
     try {
       this.initSystemState.inProgress();
       yield flowResult(
-        this.graphManager.buildSystem(this.coreModel, this.systemModel),
+        this.graphManager.buildSystem(
+          this.coreModel,
+          this.systemModel,
+          options,
+        ),
       );
       this.systemModel.initializeAutoImports();
       this.initSystemState.pass();
