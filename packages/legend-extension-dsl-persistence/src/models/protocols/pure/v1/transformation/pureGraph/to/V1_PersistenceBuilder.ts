@@ -128,7 +128,12 @@ export const V1_buildTrigger = (
   context: V1_GraphBuilderContext,
 ): Trigger => {
   if (protocol instanceof V1_CronTrigger) {
-    //TODO: ledav -- fill props
+    const trigger = new CronTrigger();
+    trigger.minutes = protocol.minutes;
+    trigger.hours = protocol.hours;
+    trigger.dayOfMonth = protocol.dayOfMonth;
+    trigger.month = protocol.month;
+    trigger.dayOfWeek = protocol.dayOfWeek;
     return new CronTrigger();
   } else if (protocol instanceof V1_ManualTrigger) {
     return new ManualTrigger();

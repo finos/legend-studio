@@ -5,7 +5,7 @@ import {
   TEST__GraphPluginManager,
 } from '@finos/legend-graph';
 import { unitTest } from '@finos/legend-shared';
-import { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-model-storage';
 
 const pluginManager = new TEST__GraphPluginManager();
 pluginManager.usePresets([new DSLPersistence_GraphPreset()]).install();
