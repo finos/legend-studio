@@ -196,6 +196,16 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       persister: {
         _type: 'batchPersister',
+        connections: [
+          {
+            connection: {
+              _type: 'JsonModelConnection',
+              class: 'org::dxl::Animal',
+              url: 'file:///foo',
+            },
+            id: 'c1',
+          },
+        ],
         targetShape: {
           _type: 'multiFlatTarget',
           modelClass: 'org::dxl::Zoo',
@@ -281,12 +291,9 @@ export const TEST_DATA__roundtrip = [
           transactionScope: 'ALL_TARGETS',
         },
       },
-      reader: {
-        _type: 'serviceReader',
-        service: 'org::dxl::ZooService',
-      },
+      service: 'org::dxl::ZooService',
       trigger: {
-        _type: 'opaqueTrigger',
+        _type: 'manualTrigger',
       },
     },
   },
