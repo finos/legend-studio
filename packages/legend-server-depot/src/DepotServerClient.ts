@@ -29,6 +29,10 @@ export interface DepotServerClientConfig {
   TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 }
 
+export enum DEPOT_SERVER_LOG_EVENT {
+  DEPENDENCY_ENTITIES_FETCH = 'DEPENDENCY_ENTITIES_FETCH',
+}
+
 export class DepotServerClient extends AbstractServerClient {
   private TEMPORARY__useLegacyDepotServerAPIRoutes = false;
 

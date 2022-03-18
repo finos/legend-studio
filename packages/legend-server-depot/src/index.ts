@@ -19,7 +19,7 @@ export * from './models/ProjectVersionEntities';
 export { StoredEntity } from './models/StoredEntity';
 export { DepotScope } from './models/DepotScope';
 
-export { DepotServerClient } from './DepotServerClient';
+export { DepotServerClient, DEPOT_SERVER_LOG_EVENT } from './DepotServerClient';
 export * from './DepotServerClientProvider';
 
 export * from './DepotServerClientTestUtils';

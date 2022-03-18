@@ -483,7 +483,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SYSTEM_BUILT),
           Date.now() - startTime,
           'ms',
-          `[profile: ${systemModel.ownProfiles.length}, enumeration: ${systemModel.ownEnumerations.length}]`,
+          `[class: ${systemModel.ownClasses.length}, profile: ${systemModel.ownProfiles.length}, enumeration: ${systemModel.ownEnumerations.length}, [TOTAL]: ${systemModel.allOwnElements.length}]`,
         );
       }
       systemModel.buildState.pass();
@@ -510,6 +510,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): GeneratorFn<void> {
     const startTime = Date.now();
+    if (!options?.quiet) {
+      this.log.info(
+        LogEvent.create(
+          GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_ENTITIES_FETCHED,
+        ),
+        Date.now() - startTime,
+        'ms',
+        `[projects: ${dependencyEntitiesMap.size}, entities: ${
+          Array.from(dependencyEntitiesMap.values()).flat().length
+        }]`,
+      );
+    }
     dependencyManager.buildState.reset();
     // Create a dummy graph for system processing. This is to ensure dependency models do not depend on the main graph
     const graph = new PureModel(
@@ -594,6 +606,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           '[TOTAL]',
           Date.now() - startTime,
           'ms',
+        );
+        this.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_BUILT,
+          ),
+          Date.now() - startTime,
+          'ms',
+          `[elements: ${
+            Array.from(dependencyManager.projectDependencyModelsIndex.values())
+              .map((v) => v.allOwnElements)
+              .flat().length
+          }]`,
         );
       }
     } catch (error) {
