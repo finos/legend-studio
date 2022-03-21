@@ -960,9 +960,9 @@ export class EditorGraphState {
     }
   }
 
-  *getConfigurationProjectDependencyEntities(): GeneratorFn<
-    Map<string, Entity[]>
-  > {
+  *getConfigurationProjectDependencyEntities(options?: {
+    quiet?: boolean;
+  }): GeneratorFn<Map<string, Entity[]>> {
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
@@ -974,6 +974,7 @@ export class EditorGraphState {
             currentConfiguration.projectDependencies,
           ),
         )) as ProjectDependencyCoordinates[];
+        const startTime = Date.now();
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
@@ -984,6 +985,15 @@ export class EditorGraphState {
             true,
             true,
           )) as PlainObject<ProjectVersionEntities>[];
+        if (!options?.quiet) {
+          this.editorStore.applicationStore.log.info(
+            LogEvent.create(
+              GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_ENTITIES_FETCHED,
+            ),
+            Date.now() - startTime,
+            'ms',
+          );
+        }
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
           ProjectVersionEntities.serialization.fromJson(e),
         );

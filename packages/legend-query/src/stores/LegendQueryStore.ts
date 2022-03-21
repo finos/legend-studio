@@ -49,6 +49,7 @@ import {
   PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
+  GRAPH_MANAGER_LOG_EVENT,
 } from '@finos/legend-graph';
 import {
   QueryBuilderState,
@@ -716,10 +717,15 @@ export class LegendQueryStore {
     }
   }
 
-  *buildGraph(project: ProjectData, versionId: string): GeneratorFn<void> {
+  *buildGraph(
+    project: ProjectData,
+    versionId: string,
+    options?: { quiet?: boolean },
+  ): GeneratorFn<void> {
     try {
       this.buildGraphState.inProgress();
       let entities: Entity[] = [];
+      const startTime = Date.now();
 
       if (versionId === SNAPSHOT_VERSION_ALIAS) {
         entities = (yield this.depotServerClient.getLatestRevisionEntities(
@@ -735,6 +741,13 @@ export class LegendQueryStore {
             : versionId,
         )) as Entity[];
       }
+      if (!options?.quiet) {
+        this.graphManagerState.graphManager.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+          Date.now() - startTime,
+          'ms',
+        );
+      }
 
       this.graphManagerState.resetGraph();
       // build dependencies
@@ -746,7 +759,7 @@ export class LegendQueryStore {
           this.graphManagerState.systemModel,
           dependencyManager,
           (yield flowResult(
-            this.getProjectDependencyEntities(project, versionId),
+            this.getProjectDependencyEntities(project, versionId, options),
           )) as Map<string, Entity[]>,
         ),
       );
@@ -774,9 +787,12 @@ export class LegendQueryStore {
   *getProjectDependencyEntities(
     project: ProjectData,
     versionId: string,
+    options?: { quiet?: boolean },
   ): GeneratorFn<Map<string, Entity[]>> {
     this.buildGraphState.inProgress();
     const dependencyEntitiesMap = new Map<string, Entity[]>();
+    const startTime = Date.now();
+
     try {
       let dependencyEntitiesJson: PlainObject<ProjectVersionEntities>[] = [];
       if (versionId === SNAPSHOT_VERSION_ALIAS) {
@@ -798,6 +814,15 @@ export class LegendQueryStore {
             true,
             false,
           )) as PlainObject<ProjectVersionEntities>[];
+      }
+      if (!options?.quiet) {
+        this.graphManagerState.graphManager.log.info(
+          LogEvent.create(
+            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_ENTITIES_FETCHED,
+          ),
+          Date.now() - startTime,
+          'ms',
+        );
       }
       dependencyEntitiesJson
         .map((e) => ProjectVersionEntities.serialization.fromJson(e))
