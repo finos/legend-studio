@@ -58,7 +58,7 @@ export const getColumnMultiplicity = (
       .multiplicity;
   }
   throw new UnsupportedOperationError(
-    'Unable to get multiplicity from column state',
+    `Can't get multiplicity for column`,
     columnState,
   );
 };

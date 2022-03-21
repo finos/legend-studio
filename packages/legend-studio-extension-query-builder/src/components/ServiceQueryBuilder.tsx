@@ -84,7 +84,7 @@ export const ServiceQueryBuilder = observer(
                           } catch (error) {
                             assertErrorThrown(error);
                             applicationStore.notifyError(
-                              `Unable to save query: ${error.message}`,
+                              `Can't save query: ${error.message}`,
                             );
                           }
                         },
