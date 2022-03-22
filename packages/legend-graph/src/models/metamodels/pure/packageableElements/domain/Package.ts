@@ -23,7 +23,6 @@ import {
   type Hashable,
   hashArray,
   assertTrue,
-  addUniqueEntry,
   AssertionError,
 } from '@finos/legend-shared';
 import {
@@ -58,7 +57,9 @@ export class Package extends PackageableElement implements Hashable {
   }
 
   addChild(value: PackageableElement): void {
-    addUniqueEntry(this.children, value);
+    // We prefer to push the element to the children array rather than use `addUniqueEntry` for performance reasons.
+    // The latter scans all elements in the array before pushing the element.
+    this.children.push(value);
   }
 
   addElement(element: PackageableElement): void {
