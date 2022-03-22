@@ -451,12 +451,12 @@ export class LegendQueryStore {
       );
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
       this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-      const lambda =
+      // leverage initialization of query builder state to ensure we handle unsupported queries
+      this.queryBuilderState.initialize(
         (yield this.graphManagerState.graphManager.pureCodeToLambda(
           query.content,
-        )) as RawLambda;
-      // leverage initialization of query builder state to ensure we handle unsupported queries
-      this.queryBuilderState.initialize(lambda);
+        )) as RawLambda,
+      );
       this.setOnSaveQuery(async (lambda: RawLambda) => {
         this.setQueryExportState(
           new QueryExportState(

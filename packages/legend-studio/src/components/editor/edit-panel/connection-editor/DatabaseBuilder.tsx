@@ -99,13 +99,13 @@ const DatabaseBuilderTreeNodeContainer: React.FC<
   };
 
   const renderCheckedIcon = (
-    node: DatabaseBuilderTreeNodeData,
+    _node: DatabaseBuilderTreeNodeData,
   ): React.ReactNode => {
-    if (node instanceof ColumnDatabaseBuilderTreeNodeData) {
+    if (_node instanceof ColumnDatabaseBuilderTreeNodeData) {
       return null;
-    } else if (isPartiallySelected(node)) {
+    } else if (isPartiallySelected(_node)) {
       return <CircleIcon />;
-    } else if (node.isChecked) {
+    } else if (_node.isChecked) {
       return <CheckCircleIcon />;
     }
     return <EmptyCircleIcon />;

@@ -866,8 +866,7 @@ export function V1_processProperty(
   } else {
     inferredVariable = processedParameters[0];
   }
-  let inferredType: Type | undefined =
-    inferredVariable?.genericType?.value.rawType;
+  let inferredType = inferredVariable?.genericType?.value.rawType;
   if (inferredVariable instanceof AbstractPropertyExpression) {
     inferredType = inferredVariable.func.genericType.value.rawType;
   } else {

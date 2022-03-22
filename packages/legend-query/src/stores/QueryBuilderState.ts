@@ -417,12 +417,7 @@ export class QueryBuilderState {
       ),
     );
     switch (stereotype) {
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-        this.querySetupState.addClassMilestoningTemporalValues(
-          milestoningParameter,
-        );
-        break;
-      }
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
       case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
         this.querySetupState.addClassMilestoningTemporalValues(
           milestoningParameter,

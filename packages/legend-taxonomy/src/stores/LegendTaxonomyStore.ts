@@ -265,17 +265,19 @@ export class TaxonomyNodeViewerState {
         resolvedDataSpace,
         {
           viewProject: (
-            groupId: string,
-            artifactId: string,
-            versionId: string,
+            _groupId: string,
+            _artifactId: string,
+            _versionId: string,
             entityPath: string | undefined,
           ): void => {
             this.taxonomyStore.applicationStore.navigator.openNewWindow(
               `${
                 this.taxonomyStore.applicationStore.config.studioUrl
-              }/view/${generateGAVCoordinates(groupId, artifactId, versionId)}${
-                entityPath ? `/entity/${entityPath}` : ''
-              }`,
+              }/view/${generateGAVCoordinates(
+                _groupId,
+                _artifactId,
+                _versionId,
+              )}${entityPath ? `/entity/${entityPath}` : ''}`,
             );
           },
         },
@@ -789,17 +791,19 @@ export class LegendTaxonomyStore {
         resolvedDataSpace,
         {
           viewProject: (
-            groupId: string,
-            artifactId: string,
-            versionId: string,
+            _groupId: string,
+            _artifactId: string,
+            _versionId: string,
             entityPath: string | undefined,
           ): void => {
             this.applicationStore.navigator.openNewWindow(
               `${
                 this.applicationStore.config.studioUrl
-              }/view/${generateGAVCoordinates(groupId, artifactId, versionId)}${
-                entityPath ? `/entity/${entityPath}` : ''
-              }`,
+              }/view/${generateGAVCoordinates(
+                _groupId,
+                _artifactId,
+                _versionId,
+              )}${entityPath ? `/entity/${entityPath}` : ''}`,
             );
           },
         },

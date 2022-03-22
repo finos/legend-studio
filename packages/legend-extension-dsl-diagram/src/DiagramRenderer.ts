@@ -2543,7 +2543,6 @@ export class DiagramRenderer {
     if (this.onBackgroundDoubleClick) {
       this.onBackgroundDoubleClick(eventPointInModelCoordinate);
     }
-    return;
   }
 
   mousedown(e: MouseEvent): void {
@@ -3249,7 +3248,7 @@ export class DiagramRenderer {
     });
 
     const generalizationViews = (
-      superType ? classViewLevels : classViewLevels.reverse()
+      superType ? classViewLevels : classViewLevels.slice().reverse()
     )
       .slice(0, classViewLevels.length - 1)
       .flatMap((level, idx) =>

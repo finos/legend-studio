@@ -96,8 +96,7 @@ const PropertyBasicEditor = observer(
     const isPropertyFromAssociation = property.owner instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
     const isPropertyDuplicated = (val: Property): boolean =>
-      _class.properties.filter((property) => property.name === val.name)
-        .length >= 2;
+      _class.properties.filter((p) => p.name === val.name).length >= 2;
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property.setName(event.target.value);

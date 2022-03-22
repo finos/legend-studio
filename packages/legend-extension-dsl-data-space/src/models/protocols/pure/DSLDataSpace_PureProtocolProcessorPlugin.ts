@@ -139,26 +139,26 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
             elementProtocol.executionContexts,
             `Data space 'executionContexts' field is missing`,
           ).map((contextProtocol) => {
-            const context = new DataSpaceExecutionContext();
-            context.name = guaranteeNonEmptyString(
+            const execContext = new DataSpaceExecutionContext();
+            execContext.name = guaranteeNonEmptyString(
               contextProtocol.name,
               `Data space execution context 'name' field is missing or empty`,
             );
-            context.description = contextProtocol.description;
-            context.mapping = guaranteeNonNullable(
+            execContext.description = contextProtocol.description;
+            execContext.mapping = guaranteeNonNullable(
               contextProtocol.mapping,
               `Data space execution context 'mapping' field is missing or empty`,
             ).path;
-            context.defaultRuntime = guaranteeNonNullable(
+            execContext.defaultRuntime = guaranteeNonNullable(
               contextProtocol.defaultRuntime,
               `Data space execution context 'defaultRuntime' field is missing or empty`,
             ).path;
-            return context;
+            return execContext;
           });
           element.defaultExecutionContext = guaranteeNonNullable(
             element.executionContexts.find(
-              (context) =>
-                context.name ===
+              (execContext) =>
+                execContext.name ===
                 guaranteeNonEmptyString(
                   elementProtocol.defaultExecutionContext,
                   `Data space 'defaultExecutionContext' field is missing or empty`,
@@ -256,17 +256,17 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           protocol.artifactId = metamodel.artifactId;
           protocol.versionId = metamodel.versionId;
           protocol.executionContexts = metamodel.executionContexts.map(
-            (context) => {
+            (execContext) => {
               const contextProtocol = new V1_DataSpaceExecutionContext();
-              contextProtocol.name = context.name;
-              contextProtocol.description = context.description;
+              contextProtocol.name = execContext.name;
+              contextProtocol.description = execContext.description;
               contextProtocol.mapping = new V1_PackageableElementPointer(
                 V1_PackageableElementPointerType.MAPPING,
-                context.mapping,
+                execContext.mapping,
               );
               contextProtocol.defaultRuntime = new V1_PackageableElementPointer(
                 V1_PackageableElementPointerType.RUNTIME,
-                context.defaultRuntime,
+                execContext.defaultRuntime,
               );
               return contextProtocol;
             },

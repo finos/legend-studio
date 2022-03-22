@@ -292,10 +292,10 @@ export const BindingEditor = observer(() => {
   const elements = allowedElements.filter(
     (element) =>
       !modelUnit.packageableElementIncludes
-        .map((element) => element.value)
+        .map((e) => e.value)
         .includes(element) &&
       !modelUnit.packageableElementExcludes
-        .map((element) => element.value)
+        .map((e) => e.value)
         .includes(element),
   );
   const allowAddingElement = !isReadOnly && Boolean(elements.length);
@@ -329,7 +329,7 @@ export const BindingEditor = observer(() => {
       if (
         !isReadOnly &&
         !modelUnit.packageableElementIncludes
-          .map((element) => element.value)
+          .map((e) => e.value)
           .includes(element)
       ) {
         modelUnit.addPackageableElementIncludes(
@@ -345,7 +345,7 @@ export const BindingEditor = observer(() => {
       if (
         !isReadOnly &&
         !modelUnit.packageableElementExcludes
-          .map((element) => element.value)
+          .map((e) => e.value)
           .includes(element)
       ) {
         modelUnit.addPackageableElementExcludes(

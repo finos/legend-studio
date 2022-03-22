@@ -106,12 +106,12 @@ export class ELMorphir_LegendStudioPlugin
           const applicationStore =
             fileGenerationState.editorStore.applicationStore;
           const visualizeMorphir =
-            (fileNode: GenerationFile): (() => void) =>
+            (file: GenerationFile): (() => void) =>
             async (): Promise<void> => {
               try {
                 await this.networkClient.post(
                   this.morphirVisualizerUrl,
-                  fileNode.content,
+                  file.content,
                 );
                 applicationStore.navigator.openNewWindow(
                   this.morphirVisualizerUrl,
@@ -151,17 +151,17 @@ export class ELMorphir_LegendStudioPlugin
             fileGenerationState.editorStore.applicationStore;
           const visualizeBosque =
             (
-              fileGenerationState: FileGenerationState,
-              fileNode: GenerationFile,
+              fileGenState: FileGenerationState,
+              file: GenerationFile,
             ): (() => void) =>
             async (): Promise<void> => {
               try {
                 const code =
-                  fileGenerationState.editorStore.graphManagerState.graphManager.graphToPureCode(
-                    fileGenerationState.editorStore.graphManagerState.graph,
+                  fileGenState.editorStore.graphManagerState.graphManager.graphToPureCode(
+                    fileGenState.editorStore.graphManagerState.graph,
                   );
                 await this.networkClient.post(this.linterServerUrl, {
-                  ir: fileNode.content,
+                  ir: file.content,
                   src: await code,
                 });
                 applicationStore.navigator.openNewWindow(this.linterAppUrl);
