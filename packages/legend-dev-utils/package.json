@@ -68,7 +68,7 @@
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.7.1",
-    "cssnano": "5.1.4",
+    "cssnano": "5.1.5",
     "html-webpack-plugin": "5.5.0",
     "isbinaryfile": "4.0.8",
     "jest": "27.5.1",
