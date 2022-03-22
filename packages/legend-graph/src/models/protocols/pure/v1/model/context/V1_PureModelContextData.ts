@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { GenericClazz } from '@finos/legend-shared';
 import { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
 import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement';
 import type { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';
@@ -24,12 +23,4 @@ export class V1_PureModelContextData extends V1_PureModelContext {
   origin?: V1_PureModelContextPointer | undefined;
   serializer?: V1_Protocol | undefined;
   elements: V1_PackageableElement[] = [];
-
-  getElementsOfType<T extends V1_PackageableElement>(
-    clazz: GenericClazz<T>,
-  ): T[] {
-    return this.elements.filter(
-      (type: V1_PackageableElement): type is T => type instanceof clazz,
-    );
-  }
 }

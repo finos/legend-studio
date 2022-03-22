@@ -1982,8 +1982,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<ServiceTestResult[]> {
     const protocolGraph = this.getFullGraphModelData(graph);
     const targetService = guaranteeNonNullable(
-      protocolGraph
-        .getElementsOfType(V1_Service)
+      protocolGraph.elements
+        .filter(
+          (element: V1_PackageableElement): element is V1_Service =>
+            element instanceof V1_Service,
+        )
         .find((element) => element.path === service.path),
       `Can't run service test: service '${service.path}' not found`,
     );
