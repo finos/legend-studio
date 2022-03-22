@@ -57,7 +57,7 @@ export class Package extends PackageableElement implements Hashable {
   }
 
   addChild(value: PackageableElement): void {
-    // We prefer to push the element to the children array rather than use `addUniqueEntry` for performance reasons.
+    // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
     // The latter scans all elements in the array before pushing the element.
     this.children.push(value);
   }
