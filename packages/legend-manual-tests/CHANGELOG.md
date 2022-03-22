@@ -1,5 +1,15 @@
 # @finos/legend-manual-tests
 
+## 0.1.0
+
+### Minor Changes
+
+- [#963](https://github.com/finos/legend-studio/pull/963) [`b138cf17`](https://github.com/finos/legend-studio/commit/b138cf17e5d761d570a64453d3a0c4911edbcbe0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enable logging in grammar roundtrip tests.
+
+### Patch Changes
+
+- [#974](https://github.com/finos/legend-studio/pull/974) [`75214a77`](https://github.com/finos/legend-studio/commit/75214a7796faa97b5e430bb943f8db89a57f4ac7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add profiling graph building test. Default to skip as currently we run in dev mode for specific profiling of graph building steps.
+
 ## 0.0.37
 
 ## 0.0.36
