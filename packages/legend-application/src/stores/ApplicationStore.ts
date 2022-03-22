@@ -259,10 +259,10 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
    * ever occurs, it still shows very apparently in the UI, as such, printing out in the console is not good enough,
    * but crashing the app is bad too, so this is a good balance.
    */
-  notifyAndReturnAlternativeOnError = <T extends SuperGenericFunction, W>(
-    fn: T,
+  notifyAndReturnAlternativeOnError = <U extends SuperGenericFunction, W>(
+    fn: U,
     alternative: W,
-  ): ReturnType<T> | W | undefined => {
+  ): ReturnType<U> | W | undefined => {
     try {
       return fn();
     } catch (error) {

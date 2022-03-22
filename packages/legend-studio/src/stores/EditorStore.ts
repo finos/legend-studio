@@ -1131,8 +1131,8 @@ export class EditorStore {
             plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostDeleteActions?.() ?? [],
       );
-    for (const action of extraElementEditorPostDeleteActions) {
-      action(this, element);
+    for (const postDeleteAction of extraElementEditorPostDeleteActions) {
+      postDeleteAction(this, element);
     }
 
     // reprocess project explorer tree
@@ -1162,8 +1162,8 @@ export class EditorStore {
             plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostRenameActions?.() ?? [],
       );
-    for (const action of extraElementEditorPostRenameActions) {
-      action(this, element);
+    for (const postRenameAction of extraElementEditorPostRenameActions) {
+      postRenameAction(this, element);
     }
 
     // reprocess project explorer tree

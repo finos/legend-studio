@@ -150,12 +150,12 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           );
           const modelUnit = new ModelUnit();
           modelUnit.packageableElementIncludes =
-            elementProtocol.modelUnit.packageableElementIncludes.map(
-              (element) => context.resolveElement(element, true),
+            elementProtocol.modelUnit.packageableElementIncludes.map((e) =>
+              context.resolveElement(e, true),
             );
           modelUnit.packageableElementExcludes =
-            elementProtocol.modelUnit.packageableElementExcludes.map(
-              (element) => context.resolveElement(element, true),
+            elementProtocol.modelUnit.packageableElementExcludes.map((e) =>
+              context.resolveElement(e, true),
             );
           element.modelUnit = modelUnit;
         },

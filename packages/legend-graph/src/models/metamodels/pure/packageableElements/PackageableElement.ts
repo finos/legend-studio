@@ -90,7 +90,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
       isDeleted: computed,
       path: computed,
       _elementHashCode: computed,
-      // We need to enable `keepAlive` to facillitate precomutation of element hash code
+      // We need to enable `keepAlive` to facillitate precomputation of element hash code
       hashCode: computed({ keepAlive: true }),
       setName: action,
       setPackage: action,

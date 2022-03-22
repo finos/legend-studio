@@ -328,7 +328,7 @@ export class PostFilterConditionState {
     } catch (error) {
       assertErrorThrown(error);
       this.postFilterState.queryBuilderState.applicationStore.notifyError(
-        `Unable to drag column '${columnState.columnName}' due to: ${error.message}`,
+        `Can't drag column '${columnState.columnName}' due to: ${error.message}`,
       );
     }
   }

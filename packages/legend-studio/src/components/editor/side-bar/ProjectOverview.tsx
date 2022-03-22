@@ -492,9 +492,7 @@ const OverviewViewer = observer(() => {
         setShowEditInput(showEditInput - 1);
       }
     };
-  const handleUpdate = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ): void => {
+  const handleUpdate = (event: React.MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
     flowResult(
       projectOverviewState.updateProject(

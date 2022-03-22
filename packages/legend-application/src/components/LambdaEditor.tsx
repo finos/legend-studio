@@ -136,7 +136,7 @@ const LambdaEditorInline = observer(
 
     const transformLambdaToString = async (pretty: boolean): Promise<void> => {
       transformStringToLambda?.cancel();
-      return await flowResult(
+      return flowResult(
         lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
       ).catch(applicationStore.alertUnhandledError);
     };
@@ -459,7 +459,7 @@ const LambdaEditorPopUp = observer(
 
     const transformLambdaToString = async (pretty: boolean): Promise<void> => {
       transformStringToLambda?.cancel();
-      return await flowResult(
+      return flowResult(
         lambdaEditorState.convertLambdaObjectToGrammarString(pretty),
       ).catch(applicationStore.alertUnhandledError);
     };

@@ -349,7 +349,7 @@ export class QueryBuilderState {
       );
       if (options?.notifyError) {
         this.applicationStore.notifyError(
-          `Unable to initialize query builder: ${error.message}`,
+          `Can't initialize query builder: ${error.message}`,
         );
       }
       this.queryUnsupportedState.setLambdaError(error);
@@ -417,12 +417,7 @@ export class QueryBuilderState {
       ),
     );
     switch (stereotype) {
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-        this.querySetupState.addClassMilestoningTemporalValues(
-          milestoningParameter,
-        );
-        break;
-      }
+      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
       case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
         this.querySetupState.addClassMilestoningTemporalValues(
           milestoningParameter,
@@ -463,9 +458,7 @@ export class QueryBuilderState {
       await onSaveQuery(rawLambda);
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(
-        `Unable to save query: ${error.message}`,
-      );
+      this.applicationStore.notifyError(`Can't save query: ${error.message}`);
     }
   }
 

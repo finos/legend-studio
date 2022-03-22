@@ -14,13 +14,4 @@
  * limitations under the License.
  */
 
-import { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
-import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement';
-import type { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';
-import type { V1_Protocol } from '../../model/V1_Protocol';
-
-export class V1_PureModelContextData extends V1_PureModelContext {
-  origin?: V1_PureModelContextPointer | undefined;
-  serializer?: V1_Protocol | undefined;
-  elements: V1_PackageableElement[] = [];
-}
+export class GraphBuilderReport {}

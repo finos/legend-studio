@@ -38,7 +38,7 @@ const TagBasicEditor = observer(
       tag.setValue(event.target.value);
     };
     const isTagDuplicated = (val: Tag): boolean =>
-      tag.owner.tags.filter((tag) => tag.value === val.value).length >= 2;
+      tag.owner.tags.filter((t) => t.value === val.value).length >= 2;
 
     return (
       <div className="tag-basic-editor">
@@ -80,9 +80,8 @@ const StereotypeBasicEditor = observer(
       stereotype.setValue(event.target.value);
     };
     const isStereotypeDuplicated = (val: Stereotype): boolean =>
-      stereotype.owner.stereotypes.filter(
-        (stereotype) => stereotype.value === val.value,
-      ).length >= 2;
+      stereotype.owner.stereotypes.filter((s) => s.value === val.value)
+        .length >= 2;
 
     return (
       <div className="stereotype-basic-editor">

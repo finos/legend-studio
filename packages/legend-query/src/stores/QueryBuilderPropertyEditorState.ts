@@ -338,6 +338,6 @@ export class QueryBuilderPropertyExpressionState {
       }
     }
     this.requiresExistsHandling = requiresExistsHandling;
-    this.derivedPropertyExpressionStates = result.reverse();
+    this.derivedPropertyExpressionStates = result.slice().reverse();
   }
 }
