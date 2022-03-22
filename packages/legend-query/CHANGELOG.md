@@ -1,5 +1,19 @@
 # @finos/legend-query
 
+## 1.1.0
+
+### Minor Changes
+
+- [#925](https://github.com/finos/legend-studio/pull/925) [`80de7171`](https://github.com/finos/legend-studio/commit/80de71714c943b577169f336660534f94dba4d6f) ([@akphi](https://github.com/akphi)) - Projections created by DnD from explorer tree will now have names complying with `humanize property name` setting of the explorer tree.
+
+### Patch Changes
+
+- [#930](https://github.com/finos/legend-studio/pull/930) [`f7a792eb`](https://github.com/finos/legend-studio/commit/f7a792eb203804ea51ee1380a84d98c9955ca609) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Sort project versions in descending order in query setup.
+
+* [#926](https://github.com/finos/legend-studio/pull/926) [`080a31d6`](https://github.com/finos/legend-studio/commit/080a31d66fe3ac48ed44d86cf9301af0a78c70fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Stop notifying errors for unsupported query in `Legend Query` to avoid confusion during execution/edition.
+
+- [#838](https://github.com/finos/legend-studio/pull/838) [`854d8aa5`](https://github.com/finos/legend-studio/commit/854d8aa58ff31f67f698d99a498e0d51bfd668a2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rename `DSL Serializer` to `DSL External Format` and move it to core.
+
 ## 1.0.1
 
 ### Patch Changes

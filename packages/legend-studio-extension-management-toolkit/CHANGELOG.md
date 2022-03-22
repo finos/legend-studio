@@ -1,5 +1,7 @@
 # @finos/legend-studio-extension-management-toolkit
 
+## 0.0.30
+
 ## 0.0.29
 
 ## 0.0.28

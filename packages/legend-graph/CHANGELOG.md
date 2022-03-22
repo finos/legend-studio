@@ -1,5 +1,23 @@
 # @finos/legend-graph
 
+## 1.3.0
+
+### Minor Changes
+
+- [#885](https://github.com/finos/legend-studio/pull/885) [`b921da54`](https://github.com/finos/legend-studio/commit/b921da548336581e86ec84d8254f252538c7bb8b) ([@AFine-gs](https://github.com/AFine-gs)) - Add support for `Merge` operation class mapping.
+
+* [#889](https://github.com/finos/legend-studio/pull/889) [`de29c049`](https://github.com/finos/legend-studio/commit/de29c0499dfc11480fb7801cfa180d2131e65c00) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for `SemiStructured` relational type.
+
+- [#931](https://github.com/finos/legend-studio/pull/931) [`9b133f6b`](https://github.com/finos/legend-studio/commit/9b133f6bfaf5f845831f8772180ce6c1cc1a07eb) ([@AFine-gs](https://github.com/AFine-gs)) - Add support for `Redshift` connector
+
+### Patch Changes
+
+- [#973](https://github.com/finos/legend-studio/pull/973) [`93fbe86f`](https://github.com/finos/legend-studio/commit/93fbe86fd07eb92e62044ea94236c45b642caa67) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Optimize graph builder indexing.
+
+* [#971](https://github.com/finos/legend-studio/pull/971) [`1fe4f871`](https://github.com/finos/legend-studio/commit/1fe4f871a80ea1a76354665fff153fcfb2e1d58c) ([@akphi](https://github.com/akphi)) - Run duplication check before adding new element to the graph using `PureModel.addElement()`.
+
+- [#838](https://github.com/finos/legend-studio/pull/838) [`854d8aa5`](https://github.com/finos/legend-studio/commit/854d8aa58ff31f67f698d99a498e0d51bfd668a2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rename `DSL Serializer` to `DSL External Format` and move it to core.
+
 ## 1.2.1
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @finos/legend-studio
 
+## 3.1.0
+
+### Minor Changes
+
+- [#931](https://github.com/finos/legend-studio/pull/931) [`9b133f6b`](https://github.com/finos/legend-studio/commit/9b133f6bfaf5f845831f8772180ce6c1cc1a07eb) ([@AFine-gs](https://github.com/AFine-gs)) - Add support for `Redshift` connector
+
+### Patch Changes
+
+- [#838](https://github.com/finos/legend-studio/pull/838) [`854d8aa5`](https://github.com/finos/legend-studio/commit/854d8aa58ff31f67f698d99a498e0d51bfd668a2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Leverage `External Format` APIs to dynamically fetch available `external format` types.
+
+* [#838](https://github.com/finos/legend-studio/pull/838) [`854d8aa5`](https://github.com/finos/legend-studio/commit/854d8aa58ff31f67f698d99a498e0d51bfd668a2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rename `DSL Serializer` to `DSL External Format` and move it to core.
+
+- [#963](https://github.com/finos/legend-studio/pull/963) [`b138cf17`](https://github.com/finos/legend-studio/commit/b138cf17e5d761d570a64453d3a0c4911edbcbe0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support opening dependency project in configuration editor.
+
 ## 3.0.1
 
 ### Patch Changes
