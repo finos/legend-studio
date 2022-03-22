@@ -16,23 +16,18 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
-import { V1_ServiceParameterMapping } from './V1_ESService_ServiceParameterMapping';
+import type { V1_ServiceRequestParametersBuildInfo } from './V1_ESService_ServiceRequestParametersBuildInfo';
+import type { V1_ServiceRequestBodyBuildInfo } from './V1_ESService_ServiceRequestBodyBuildInfo';
 
-/**
- * TODO: this will be removed in upcoming releases
- * @deprecated
- */
-export class V1_PropertyIndexedParameterMapping
-  extends V1_ServiceParameterMapping
-  implements Hashable
-{
-  property!: string;
+export class V1_ServiceRequestBuildInfo implements Hashable {
+  requestBodyBuildInfo?: V1_ServiceRequestBodyBuildInfo | undefined;
+  requestParametersBuildInfo?: V1_ServiceRequestParametersBuildInfo | undefined;
 
-  override get hashCode(): string {
+  get hashCode(): string {
     return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.PROPERTY_INDEXED_PARAMETER_MAPPING,
-      this.serviceParameter,
-      this.property,
+      SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_BUILD_INFO,
+      this.requestBodyBuildInfo?.toString() ?? '',
+      this.requestParametersBuildInfo?.toString() ?? '',
     ]);
   }
 }

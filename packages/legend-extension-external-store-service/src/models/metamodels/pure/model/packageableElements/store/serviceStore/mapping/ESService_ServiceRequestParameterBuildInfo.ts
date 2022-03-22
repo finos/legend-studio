@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import type { RawLambda } from '@finos/legend-graph';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
+import type { ServiceParameter } from '../model/ESService_ServiceParameter';
 
-/**
- * TODO: this will be removed in upcoming releases
- * @deprecated
- */
-export abstract class V1_ServiceParameterMapping implements Hashable {
-  serviceParameter!: string;
+export class ServiceRequestParameterBuildInfo implements Hashable {
+  serviceParameter!: ServiceParameter;
+  transform!: RawLambda;
 
-  abstract get hashCode(): string;
+  get hashCode(): string {
+    return hashArray([
+      SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_PARAMETER_BUILD_INFO,
+      this.serviceParameter,
+      this.transform,
+    ]);
+  }
 }
