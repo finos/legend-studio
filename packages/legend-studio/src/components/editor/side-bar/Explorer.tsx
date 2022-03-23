@@ -871,6 +871,19 @@ export const Explorer = observer(() => {
                 <PanelLoadingIndicator isLoading={isLoading} />
                 {showExplorerTrees && <ExplorerTrees />}
                 {!showExplorerTrees &&
+                  !editorStore.graphManagerState.graph.buildState.hasFailed && (
+                    <div className="explorer__content__progress-msg">
+                      {editorStore.initState.message ??
+                        editorStore.graphManagerState.graph.systemModel
+                          .buildState.message ??
+                        editorStore.graphManagerState.graph.dependencyManager
+                          .buildState.message ??
+                        editorStore.graphManagerState.graph.generationModel
+                          .buildState.message ??
+                        editorStore.graphManagerState.graph.buildState.message}
+                    </div>
+                  )}
+                {!showExplorerTrees &&
                   editorStore.graphManagerState.graph.buildState.hasFailed && (
                     <BlankPanelContent>
                       <div className="explorer__content__failure-notice">

@@ -136,6 +136,10 @@ export class SystemModel extends BasicModel {
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.SYSTEM, extensionElementClasses);
+
+    this.buildState.setMessageFormatter(
+      (message: string) => `[system] ${message}`,
+    );
   }
 
   /**
@@ -157,6 +161,10 @@ export class SystemModel extends BasicModel {
 export class GenerationModel extends BasicModel {
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.MODEL_GENERATION, extensionElementClasses);
+
+    this.buildState.setMessageFormatter(
+      (message: string) => `[generation] ${message}`,
+    );
   }
 }
 

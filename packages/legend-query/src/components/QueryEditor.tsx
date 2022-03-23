@@ -22,6 +22,7 @@ import {
   PanelLoadingIndicator,
   RobotIcon,
   SaveIcon,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -230,6 +231,18 @@ const QueryEditorInner = observer(() => {
         <PanelLoadingIndicator isLoading={isLoadingEditor} />
         {!isLoadingEditor && (
           <QueryBuilder queryBuilderState={queryStore.queryBuilderState} />
+        )}
+        {isLoadingEditor && (
+          <BlankPanelContent>
+            {queryStore.buildGraphState.message ??
+              queryStore.graphManagerState.graph.systemModel.buildState
+                .message ??
+              queryStore.graphManagerState.graph.dependencyManager.buildState
+                .message ??
+              queryStore.graphManagerState.graph.generationModel.buildState
+                .message ??
+              queryStore.graphManagerState.graph.buildState.message}
+          </BlankPanelContent>
         )}
       </div>
     </div>

@@ -65,6 +65,14 @@
     margin: 0.5rem 0;
   }
 
+  &__content__progress-msg {
+    margin: 1rem;
+    line-height: 2rem;
+    color: var(--color-dark-grey-500);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.2rem;
+  }
+
   &__content__failure-notice {
     @include flexVCenter;
 

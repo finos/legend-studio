@@ -46,7 +46,7 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import type { GraphBuilderReport } from '../EditorGraphState';
+import type { GraphBuilderResult } from '../EditorGraphState';
 import { AbstractConflictResolutionState } from '../AbstractConflictResolutionState';
 
 export class WorkspaceUpdateConflictResolutionState extends AbstractConflictResolutionState {
@@ -325,8 +325,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
       keepShowingIfMatchedCurrent: true,
     });
     try {
-      this.editorStore.graphState.isInitializingGraph = true;
-      this.editorStore.changeDetectionState.stop(); // stop change detection (because it is alreayd running) so we can build the graph
+      this.editorStore.changeDetectionState.stop(); // stop change detection (because it is already running) so we can build the graph
       // NOTE: here we patch conflict resolution workspace HEAD entities with the entities from resolved conflicts to build graph with those
       const workspaceLatestEntities =
         this.editorStore.changeDetectionState
@@ -344,13 +343,17 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
             .filter(isNonNullable),
         );
       // build graph
-      const graphBuilderReport = (yield flowResult(
+      const result = (yield flowResult(
         this.editorStore.graphState.buildGraph(entities),
-      )) as GraphBuilderReport;
+      )) as GraphBuilderResult;
 
-      if (graphBuilderReport.error) {
-        throw graphBuilderReport.error;
+      if (result.error) {
+        throw result.error;
       }
+
+      // build explorer tree
+      this.editorStore.explorerTreeState.buildImmutableModelTrees();
+      this.editorStore.explorerTreeState.build();
 
       // NOTE: since we have already started change detection engine when we entered conflict resolution mode, we just need
       // to restart local change detection here

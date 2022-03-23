@@ -61,6 +61,7 @@ import type { GraphPluginManager } from '../GraphPluginManager';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription';
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
+import type { GraphBuilderReport } from './GraphBuilderReport';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -71,7 +72,6 @@ export interface TEMPORARY__EngineSetupConfig {
 }
 
 export interface GraphBuilderOptions {
-  quiet?: boolean;
   // the `keepSectionIndex` flag is kept until we have stable support and enable usage of section index.
   TEMPORARY__keepSectionIndex?: boolean;
   // when we change our handling of section index, we should be able to get rid of this flag.
@@ -125,7 +125,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void>;
+  ): GeneratorFn<GraphBuilderReport>;
 
   /**
    * Process entities and build the main graph.
@@ -134,7 +134,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     entities: Entity[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void>;
+  ): GeneratorFn<GraphBuilderReport>;
 
   /**
    * Build immutable models which holds dependencies.
@@ -150,13 +150,13 @@ export abstract class AbstractPureGraphManager {
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void>;
+  ): GeneratorFn<GraphBuilderReport>;
 
   abstract buildGenerations(
     graph: PureModel,
     generationEntities: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void>;
+  ): GeneratorFn<GraphBuilderReport>;
 
   // ------------------------------------------- Grammar -------------------------------------------
 

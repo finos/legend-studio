@@ -28,7 +28,7 @@ import {
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import {
-  type GraphBuilderReport,
+  type GraphBuilderResult,
   EditorGraphState,
   GraphBuilderStatus,
 } from './EditorGraphState';
@@ -551,8 +551,10 @@ export class EditorStore {
     this.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
       this.initState.complete(hasBuildSucceeded);
+      this.initState.setMessage(undefined);
     };
 
+    this.initState.setMessage(`Setting up workspace...`);
     yield flowResult(
       this.sdlcState.fetchCurrentProject(projectId, {
         suppressNotification: true,
@@ -786,7 +788,8 @@ export class EditorStore {
     const startTime = Date.now();
     let entities: Entity[];
     let projectConfiguration: PlainObject<ProjectConfiguration>;
-    this.graphState.isInitializingGraph = true;
+
+    this.initState.setMessage(`Fetching entities...`);
     try {
       // fetch workspace entities and config at the same time
       const result = (yield Promise.all([
@@ -818,21 +821,20 @@ export class EditorStore {
       );
     } catch {
       return;
+    } finally {
+      this.initState.setMessage(undefined);
     }
 
     try {
-      const graphBuilderReport = (yield flowResult(
+      const result = (yield flowResult(
         // NOTE: if graph entities are provided, we will use that to build the graph.
         // We use this method as a way to fully reset the application with the entities, but we still use
         // the workspace entities for hashing as those are the base entities.
         this.graphState.buildGraph(graphEntities ?? entities),
-      )) as GraphBuilderReport;
+      )) as GraphBuilderResult;
 
-      if (graphBuilderReport.error) {
-        if (
-          graphBuilderReport.status ===
-          GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE
-        ) {
+      if (result.error) {
+        if (result.status === GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE) {
           yield flowResult(
             this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
               entities,
@@ -844,6 +846,10 @@ export class EditorStore {
         }
         return;
       }
+
+      // build explorer tree
+      this.explorerTreeState.buildImmutableModelTrees();
+      this.explorerTreeState.build();
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
