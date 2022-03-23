@@ -60,7 +60,7 @@ import {
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
-  V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
@@ -68,7 +68,7 @@ import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
 import {
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../../../../..';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
@@ -294,7 +294,7 @@ enum V1_AuthenticationStrategyType {
   OAUTH = 'oauth',
   USER_PASSWORD = 'userPassword',
   USERNAME_PASSWORD = 'userNamePassword',
-  GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS = 'gcpWorkloadIdentityFederationWithAWS',
+  GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -347,25 +347,14 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     ),
   });
 
-const V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyModelSchema =
-  createModelSchema(
-    V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
-    {
-      _type: usingConstantValueSchema(
-        V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS,
-      ),
-      additionalGcpScopes: list(primitive()),
-      awsAccessKeyIdVaultReference: primitive(),
-      awsAccountId: primitive(),
-      awsRegion: primitive(),
-      awsRole: primitive(),
-      awsSecretAccessKeyVaultReference: primitive(),
-      serviceAccountEmail: primitive(),
-      workloadPoolId: primitive(),
-      workloadProjectNumber: primitive(),
-      workloadProviderId: primitive(),
-    },
-  );
+const V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema =
+  createModelSchema(V1_GCPWorkloadIdentityFederationAuthenticationStrategy, {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION,
+    ),
+    additionalGcpScopes: list(primitive()),
+    serviceAccountEmail: primitive(),
+  });
 
 const V1_UsernamePasswordAuthenticationStrategyModelSchema = createModelSchema(
   V1_UsernamePasswordAuthenticationStrategy,
@@ -418,11 +407,10 @@ export const V1_serializeAuthenticationStrategy = (
       protocol,
     );
   } else if (
-    protocol instanceof
-    V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy
+    protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
   ) {
     return serialize(
-      V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyModelSchema,
+      V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
       protocol,
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
@@ -485,9 +473,9 @@ export const V1_deserializeAuthenticationStrategy = (
         V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
         json,
       );
-    case V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION_WITH_AWS:
+    case V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION:
       return deserialize(
-        V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategyModelSchema,
+        V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.TEST:

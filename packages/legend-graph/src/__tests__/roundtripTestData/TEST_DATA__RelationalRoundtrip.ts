@@ -4041,17 +4041,9 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
       connectionValue: {
         _type: 'RelationalDatabaseConnection',
         authenticationStrategy: {
-          _type: 'gcpWorkloadIdentityFederationWithAWS',
+          _type: 'gcpWorkloadIdentityFederation',
           additionalGcpScopes: [],
-          awsAccessKeyIdVaultReference: 'awsAccessKeyIdVaultReference',
-          awsAccountId: 'awsAccountId',
-          awsRegion: 'awsRegion',
-          awsRole: 'awsRole',
-          awsSecretAccessKeyVaultReference: 'awsSecretAccessKeyVaultReference',
           serviceAccountEmail: 'serviceAccountEmail',
-          workloadPoolId: 'workloadPoolId',
-          workloadProjectNumber: 'workloadProjectNumber',
-          workloadProviderId: 'workloadProviderId',
         },
         datasourceSpecification: {
           _type: 'bigQuery',

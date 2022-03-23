@@ -38,7 +38,7 @@ import {
   UserPasswordAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
-  GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import {
   type DatasourceSpecification,
@@ -74,7 +74,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
-  V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection';
 import {
@@ -229,22 +229,11 @@ const transformAuthenticationStrategy = (
       new V1_GCPApplicationDefaultCredentialsAuthenticationStrategy();
     return auth;
   } else if (
-    metamodel instanceof
-    GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy
+    metamodel instanceof GCPWorkloadIdentityFederationAuthenticationStrategy
   ) {
-    const auth =
-      new V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy();
-    auth.workloadProjectNumber = metamodel.workloadProjectNumber;
+    const auth = new V1_GCPWorkloadIdentityFederationAuthenticationStrategy();
     auth.serviceAccountEmail = metamodel.serviceAccountEmail;
     auth.additionalGcpScopes = metamodel.additionalGcpScopes;
-    auth.workloadPoolId = metamodel.workloadPoolId;
-    auth.workloadProviderId = metamodel.workloadProviderId;
-    auth.awsAccountId = metamodel.awsAccountId;
-    auth.awsRegion = metamodel.awsRegion;
-    auth.awsRole = metamodel.awsRole;
-    auth.awsAccessKeyIdVaultReference = metamodel.awsAccessKeyIdVaultReference;
-    auth.awsSecretAccessKeyVaultReference =
-      metamodel.awsSecretAccessKeyVaultReference;
     return auth;
   } else if (metamodel instanceof UsernamePasswordAuthenticationStrategy) {
     const auth = new V1_UsernamePasswordAuthenticationStrategy();

@@ -39,7 +39,7 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   TestDatabaseAuthenticationStrategy,
   UserPasswordAuthenticationStrategy,
-  GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import {
@@ -61,7 +61,7 @@ import {
   V1_TestDatabaseAuthenticationStrategy,
   V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
-  V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy,
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
@@ -228,57 +228,16 @@ export const V1_buildAuthenticationStrategy = (
   ) {
     return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
   } else if (
-    protocol instanceof
-    V1_GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy
+    protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
   ) {
     assertNonEmptyString(
-      protocol.workloadProjectNumber,
-      `GCPWorkloadIdentityFederationWithAWS 'workloadProjectNumber' field is missing or empty`,
-    );
-    assertNonEmptyString(
       protocol.serviceAccountEmail,
-      `GCPWorkloadIdentityFederationWithAWS 'serviceAccountEmail' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      protocol.workloadPoolId,
-      `GCPWorkloadIdentityFederationWithAWS 'workloadPoolId' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      protocol.workloadProviderId,
-      `GCPWorkloadIdentityFederationWithAWS 'workloadProviderId' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      protocol.awsAccountId,
-      `GCPWorkloadIdentityFederationWithAWS 'awsAccountId' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      protocol.awsRegion,
-      `GCPWorkloadIdentityFederationWithAWS 'awsRegion' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      protocol.awsRole,
-      `GCPWorkloadIdentityFederationWithAWS 'awsRole' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      protocol.awsAccessKeyIdVaultReference,
-      `GCPWorkloadIdentityFederationWithAWS 'awsAccessKeyIdVaultReference' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      protocol.awsSecretAccessKeyVaultReference,
-      `GCPWorkloadIdentityFederationWithAWS 'awsSecretAccessKeyVaultReference' field is missing or empty`,
+      `GCPWorkloadIdentityFederation 'serviceAccountEmail' field is missing or empty`,
     );
 
-    return new GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy(
-      protocol.workloadProjectNumber,
+    return new GCPWorkloadIdentityFederationAuthenticationStrategy(
       protocol.serviceAccountEmail,
       protocol.additionalGcpScopes,
-      protocol.workloadPoolId,
-      protocol.workloadProviderId,
-      protocol.awsAccountId,
-      protocol.awsRegion,
-      protocol.awsRole,
-      protocol.awsAccessKeyIdVaultReference,
-      protocol.awsSecretAccessKeyVaultReference,
     );
   } else if (protocol instanceof V1_TestDatabaseAuthenticationStrategy) {
     return new TestDatabaseAuthenticationStrategy();
