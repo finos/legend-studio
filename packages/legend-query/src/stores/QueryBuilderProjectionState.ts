@@ -183,34 +183,78 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
         derivedPropertyExpressionState.queryBuilderState.graphManagerState
           .graph,
       );
-      const processingDate =
-        derivedPropertyExpressionState.queryBuilderState.querySetupState
-          .processingDate;
-      const businessDate =
-        derivedPropertyExpressionState.queryBuilderState.querySetupState
-          .businessDate;
       const paramLength =
         derivedPropertyExpressionState.propertyExpression.parametersValues
           .length;
       switch (temporalTarget) {
         case MILESTONING_STEROTYPES.BITEMPORAL:
           if (paramLength === 3) {
-            derivedPropertyExpressionState.propertyExpression.parametersValues[2] =
-              guaranteeNonNullable(businessDate);
-            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-              guaranteeNonNullable(processingDate);
+            if (
+              derivedPropertyExpressionState.businessDate ===
+                derivedPropertyExpressionState.propertyExpression
+                  .parametersValues[2] &&
+              derivedPropertyExpressionState.businessDate !==
+                derivedPropertyExpressionState.queryBuilderState.querySetupState
+                  .businessDate
+            ) {
+              const businessDate = guaranteeNonNullable(
+                derivedPropertyExpressionState.queryBuilderState
+                  .querySetupState.BusinessDate,
+              );
+              derivedPropertyExpressionState.propertyExpression.parametersValues[2] = businessDate;
+              derivedPropertyExpressionState.businessDate = businessDate;
+            }
+            if (
+              derivedPropertyExpressionState.processingDate ===
+                derivedPropertyExpressionState.propertyExpression
+                  .parametersValues[1] &&
+              derivedPropertyExpressionState.processingDate !==
+                derivedPropertyExpressionState.queryBuilderState.querySetupState
+                  .processingDate
+            ) {
+              const processingDate = guaranteeNonNullable(
+                derivedPropertyExpressionState.queryBuilderState
+                  .querySetupState.ProcessingDate,
+              );
+              derivedPropertyExpressionState.propertyExpression.parametersValues[1] = processingDate;
+              derivedPropertyExpressionState.processingDate = processingDate;
+            }
           }
           break;
         case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-          if (paramLength === 2) {
-            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-              guaranteeNonNullable(businessDate);
+          if (
+            paramLength === 2 &&
+            derivedPropertyExpressionState.businessDate ===
+              derivedPropertyExpressionState.propertyExpression
+                .parametersValues[1] &&
+            derivedPropertyExpressionState.businessDate !==
+              derivedPropertyExpressionState.queryBuilderState.querySetupState
+                .businessDate
+          ) {
+            const businessDate = guaranteeNonNullable(
+              derivedPropertyExpressionState.queryBuilderState.querySetupState
+                .BusinessDate,
+            );
+            derivedPropertyExpressionState.propertyExpression.parametersValues[1] = businessDate;
+            derivedPropertyExpressionState.businessDate = businessDate;
           }
           break;
         case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-          if (paramLength === 2) {
-            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-              guaranteeNonNullable(processingDate);
+          if (
+            paramLength === 2 &&
+            derivedPropertyExpressionState.processingDate ===
+              derivedPropertyExpressionState.propertyExpression
+                .parametersValues[1] &&
+            derivedPropertyExpressionState.processingDate !==
+              derivedPropertyExpressionState.queryBuilderState.querySetupState
+                .processingDate
+          ) {
+            const processingDate = guaranteeNonNullable(
+              derivedPropertyExpressionState.queryBuilderState.querySetupState
+                .ProcessingDate,
+            );
+            derivedPropertyExpressionState.propertyExpression.parametersValues[1] = processingDate;
+            derivedPropertyExpressionState.processingDate = processingDate;
           }
           break;
         default:

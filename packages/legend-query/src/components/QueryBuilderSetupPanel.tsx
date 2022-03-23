@@ -81,19 +81,19 @@ const generateClassLabel = (
     switch (milestoneStereotype) {
       case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
         milestoningParameterValues = `Business Date: ${getParameterValue(
-          queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+          queryBuilderState.querySetupState.businessDate,
         )}`;
         break;
       case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
         milestoningParameterValues = `Processing Date: ${getParameterValue(
-          queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+          queryBuilderState.querySetupState.processingDate,
         )}`;
         break;
       case MILESTONING_STEROTYPES.BITEMPORAL:
         milestoningParameterValues = `Processing Date: ${getParameterValue(
-          queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+          queryBuilderState.querySetupState.processingDate,
         )}, Business Date: ${getParameterValue(
-          queryBuilderState.querySetupState.classMilestoningTemporalValues[1],
+          queryBuilderState.querySetupState.businessDate,
         )}`;
         break;
       default:
@@ -223,12 +223,9 @@ export const QueryBuilderSetupPanel = observer(
     const close = (): void => {
       setIsMilestoneEditorOpened(false);
     };
-    const isMilestonedClass = queryBuilderState.querySetupState._class
-      ? getMilestoneTemporalStereotype(
-          queryBuilderState.querySetupState._class,
-          queryBuilderState.graphManagerState.graph,
-        )
-      : undefined;
+    const isMilestonedQuery = (querySetupState.businessDate || querySetupState.processingDate)
+      ? true
+      : false;
 
     return (
       <div
@@ -259,7 +256,7 @@ export const QueryBuilderSetupPanel = observer(
               className="btn--dark btn__icon--dark"
               tabIndex={-1}
               onClick={(): void => setIsMilestoneEditorOpened(true)}
-              disabled={!isMilestonedClass}
+              disabled={!isMilestonedQuery}
               title="Edit Milestoning Parameters"
             >
               <ClockIcon />
@@ -293,11 +290,10 @@ export const QueryBuilderSetupPanel = observer(
               }
             />
           </div>
-          {isMilestoneEditorOpened && isMilestonedClass && (
+          {isMilestoneEditorOpened && isMilestonedQuery && (
             <MilestoningParametersEditor
               queryBuilderState={queryBuilderState}
               close={close}
-              stereotype={isMilestonedClass}
             />
           )}
           <div className="query-builder__setup__config__item">

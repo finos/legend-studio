@@ -248,7 +248,7 @@ export const fillDerivedPropertyArguments = (
     propertyArguments = [
       guaranteeNonNullable(
         derivedPropertyExpressionState.queryBuilderState.querySetupState
-          .classMilestoningTemporalValues[0],
+          .processingDate,
       ),
       guaranteeNonNullable(parameterValues[0]),
     ];
@@ -268,6 +268,8 @@ export class QueryBuilderDerivedPropertyExpressionState {
   propertyExpression: AbstractPropertyExpression;
   derivedProperty: DerivedProperty;
   parameters: VariableExpression[] = [];
+  processingDate: ValueSpecification | undefined;
+  businessDate: ValueSpecification | undefined;
 
   constructor(
     queryBuilderState: QueryBuilderState,

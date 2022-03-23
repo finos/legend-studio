@@ -330,7 +330,7 @@ export class QueryBuilderState {
     );
   }
 
-  buildMilestoningParameter(parameterName: string): void {
+  buildMilestoningParameter(parameterName: string): ValueSpecification {
     const milestoningParameter = new VariableExpression(
       parameterName,
       this.graphManagerState.graph.getTypicalMultiplicity(
@@ -356,36 +356,41 @@ export class QueryBuilderState {
       variableState.mockParameterValues();
       this.queryParametersState.addParameter(variableState);
     }
-    this.querySetupState.addClassMilestoningTemporalValues(
-      milestoningParameter,
-    );
+    return milestoningParameter;
   }
 
   buildClassMilestoningTemporalValue(stereotype: string): void {
     switch (stereotype) {
       case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-        this.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+        this.querySetupState.setBusinessDate(
+          this.buildMilestoningParameter(
+            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+          ),
         );
         break;
       }
       case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
-        this.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+        this.querySetupState.setProcessingDate(
+          this.buildMilestoningParameter(
+            DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+          ),
         );
         break;
       }
       case MILESTONING_STEROTYPES.BITEMPORAL: {
-        this.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+        this.querySetupState.setProcessingDate(
+          this.buildMilestoningParameter(
+            DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+          ),
         );
-        this.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+        this.querySetupState.setBusinessDate(
+          this.buildMilestoningParameter(
+            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+          ),
         );
         break;
       }
       default:
-        this.querySetupState.setClassMilestoningTemporalValues([]);
     }
   }
 

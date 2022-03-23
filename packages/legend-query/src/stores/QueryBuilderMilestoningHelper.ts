@@ -89,9 +89,10 @@ export const removePropagatedDates = (
     derivedPropertyExpressionStates[0],
   );
   let prevExpression;
-  const milestonedParameters =
-    currentExpression.queryBuilderState.querySetupState
-      .classMilestoningTemporalValues;
+  const businessDate =
+    currentExpression.queryBuilderState.querySetupState.businessDate;
+  const processingDate =
+    currentExpression.queryBuilderState.querySetupState.processingDate;
   const graph = currentExpression.queryBuilderState.graphManagerState.graph;
   const stereotype = getSourceTemporalStereotype(
     currentExpression.derivedProperty,
@@ -105,9 +106,9 @@ export const removePropagatedDates = (
         ) {
           if (
             currentExpression.propertyExpression.parametersValues[1] ===
-              milestonedParameters[0] &&
+              processingDate &&
             currentExpression.propertyExpression.parametersValues[2] ===
-              milestonedParameters[1]
+              businessDate
           ) {
             currentExpression.propertyExpression.parametersValues.pop();
             currentExpression.propertyExpression.parametersValues.pop();
@@ -121,7 +122,7 @@ export const removePropagatedDates = (
         ) {
           if (
             currentExpression.propertyExpression.parametersValues[1] ===
-            milestonedParameters[0]
+            processingDate
           ) {
             currentExpression.propertyExpression.parametersValues.pop();
           }
@@ -132,10 +133,6 @@ export const removePropagatedDates = (
         if (
           currentExpression.propertyExpression.parametersValues.length === 2
         ) {
-          const businessDate =
-            milestonedParameters.length === 2
-              ? milestonedParameters[1]
-              : milestonedParameters[0];
           if (
             currentExpression.propertyExpression.parametersValues[1] ===
             businessDate
@@ -180,83 +177,53 @@ export const fillMilestonedDerivedPropertyArguments = (
     derivedPropertyExpressionState.queryBuilderState.querySetupState;
   switch (temporalTarget) {
     case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-      let parameter;
-      if (querySetupState.classMilestoningTemporalValues.length === 0) {
-        derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
-        );
-        parameter = querySetupState.classMilestoningTemporalValues[0];
-      } else if (querySetupState.classMilestoningTemporalValues.length === 1) {
-        if (milestoningParameters.BUSINESS_TEMPORAL) {
-          parameter = querySetupState.classMilestoningTemporalValues[0];
-        } else {
+      if (!querySetupState.businessDate) {
+        querySetupState.setBusinessDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
             DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
-          );
-          parameter = querySetupState.classMilestoningTemporalValues[1];
-        }
-      } else {
-        parameter = querySetupState.classMilestoningTemporalValues[1];
+          ),
+        );
       }
+      const parameter = querySetupState.businessDate;
       milestoningParameters.BUSINESS_TEMPORAL = true;
+      derivedPropertyExpressionState.businessDate = parameter;
       return parameter;
     }
     case MILESTONING_STEROTYPES.BITEMPORAL: {
-      if (querySetupState.classMilestoningTemporalValues.length === 0) {
-        derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
-        );
-        derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
-        );
-      } else if (querySetupState.classMilestoningTemporalValues.length === 1) {
-        if (milestoningParameters.PROCESSING_TEMPORAL) {
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
-          );
-        } else {
-          const businessTemporalMilestoningParameter = guaranteeNonNullable(
-            querySetupState.classMilestoningTemporalValues[0],
-          );
-          querySetupState.setClassMilestoningTemporalValues([]);
+      if (!querySetupState.processingDate) {
+        querySetupState.setProcessingDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
             DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
-          );
-          querySetupState.addClassMilestoningTemporalValues(
-            businessTemporalMilestoningParameter,
-          );
-        }
+          ),
+        );
+      }
+      if (!querySetupState.businessDate) {
+        querySetupState.setBusinessDate(
+          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+          ),
+        );
       }
       milestoningParameters.BUSINESS_TEMPORAL = true;
       milestoningParameters.PROCESSING_TEMPORAL = true;
-      return querySetupState.classMilestoningTemporalValues[idx];
+      derivedPropertyExpressionState.businessDate = querySetupState.businessDate;
+      derivedPropertyExpressionState.processingDate = querySetupState.processingDate;
+      if (idx === 0) {
+        return querySetupState.processingDate;
+      } else {
+        return querySetupState.businessDate;
+      }
     }
     case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
-      let parameter;
-      if (querySetupState.classMilestoningTemporalValues.length === 0) {
-        derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-          DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
-        );
-        parameter = querySetupState.classMilestoningTemporalValues[0];
-      } else if (querySetupState.classMilestoningTemporalValues.length === 1) {
-        if (milestoningParameters.PROCESSING_TEMPORAL) {
-          parameter = querySetupState.classMilestoningTemporalValues[0];
-        } else {
-          const businessTemporalMilestoningParameter = guaranteeNonNullable(
-            querySetupState.classMilestoningTemporalValues[0],
-          );
-          querySetupState.setClassMilestoningTemporalValues([]);
+      if (!querySetupState.processingDate) {
+        querySetupState.setProcessingDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
             DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
-          );
-          parameter = querySetupState.classMilestoningTemporalValues[0];
-          querySetupState.addClassMilestoningTemporalValues(
-            businessTemporalMilestoningParameter,
-          );
-        }
-      } else {
-        parameter = querySetupState.classMilestoningTemporalValues[0];
+          ),
+        );
       }
+      const parameter = querySetupState.processingDate;
+      derivedPropertyExpressionState.processingDate = parameter;
       milestoningParameters.PROCESSING_TEMPORAL = true;
       return parameter;
     }
@@ -315,12 +282,12 @@ export const getPropagatedDate = (
   switch (targetStereotype) {
     case MILESTONING_STEROTYPES.BITEMPORAL:
       if (idx === 0) {
-        return queryBuilderState.querySetupState.processingDate;
+        return queryBuilderState.querySetupState.ProcessingDate;
       } else {
         return queryBuilderState.querySetupState.businessDate;
       }
     case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-      return queryBuilderState.querySetupState.businessDate;
+      return queryBuilderState.querySetupState.BusinessDate;
     case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
       return queryBuilderState.querySetupState.processingDate;
     default:

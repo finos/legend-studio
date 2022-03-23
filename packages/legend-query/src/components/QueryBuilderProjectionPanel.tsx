@@ -146,7 +146,9 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
     return (
       <div className="query-builder__projection__column__value__property">
         <QueryBuilderPropertyExpressionBadge
-          propertyExpressionState={propertyExpressionState}
+          propertyExpressionState={
+            propertyExpressionState
+          }
           onPropertyExpressionChange={onPropertyExpressionChange}
         />
       </div>

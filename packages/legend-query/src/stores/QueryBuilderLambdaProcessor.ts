@@ -431,7 +431,6 @@ export class QueryBuilderLambdaProcessor
         this.queryBuilderState.graphManagerState.graph,
       );
       if (stereotype) {
-        let milestoningParameters;
         if (stereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
           acceptedNoOfParameters = 3;
           assertTrue(
@@ -439,12 +438,21 @@ export class QueryBuilderLambdaProcessor
               acceptedNoOfParameters,
             `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters of type 'Date'`,
           );
-          milestoningParameters = [
-            guaranteeNonNullable(valueSpecification.parametersValues[1]),
-            guaranteeNonNullable(valueSpecification.parametersValues[2]),
-          ];
-          this.queryBuilderState.querySetupState.setClassMilestoningTemporalValues(
-            milestoningParameters,
+          this.queryBuilderState.querySetupState.setProcessingDate(
+            valueSpecification.parametersValues[1],
+          );
+          this.queryBuilderState.querySetupState.setBusinessDate(
+            valueSpecification.parametersValues[2],
+          );
+        } else if (stereotype === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL) {
+          acceptedNoOfParameters = 2;
+          assertTrue(
+            valueSpecification.parametersValues.length ===
+              acceptedNoOfParameters,
+            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter of type 'Date'`,
+          );
+          this.queryBuilderState.querySetupState.setProcessingDate(
+            valueSpecification.parametersValues[1],
           );
         } else {
           acceptedNoOfParameters = 2;
@@ -453,11 +461,8 @@ export class QueryBuilderLambdaProcessor
               acceptedNoOfParameters,
             `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter of type 'Date'`,
           );
-          milestoningParameters = [
-            guaranteeNonNullable(valueSpecification.parametersValues[1]),
-          ];
-          this.queryBuilderState.querySetupState.setClassMilestoningTemporalValues(
-            milestoningParameters,
+          this.queryBuilderState.querySetupState.setBusinessDate(
+            valueSpecification.parametersValues[1],
           );
         }
       } else {

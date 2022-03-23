@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { action, computed, makeAutoObservable } from 'mobx';
+import { action, computed, makeAutoObservable, observable } from 'mobx';
 import {
-  addUniqueEntry,
   getNullableFirstElement,
   guaranteeNonNullable,
   isNonNullable,
@@ -43,7 +42,8 @@ import {
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
-  classMilestoningTemporalValues: ValueSpecification[] = [];
+  businessDate: ValueSpecification | undefined;
+  processingDate: ValueSpecification | undefined;
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
@@ -53,14 +53,16 @@ export class QueryBuilderSetupState {
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
-      processingDate: computed,
-      businessDate: computed,
-      addClassMilestoningTemporalValues: action,
+      processingDate: observable,
+      businessDate: observable,
+      ProcessingDate: computed,
+      BusinessDate: computed,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
       setRuntime: action,
-      setClassMilestoningTemporalValues: action,
+      setProcessingDate: action,
+      setBusinessDate: action,
       setShowSetupPanel: action,
     });
 
@@ -104,74 +106,13 @@ export class QueryBuilderSetupState {
     return false;
   }
 
-  get processingDate(): ValueSpecification | undefined {
-    return this.getMilestoningDate(
-      guaranteeNonNullable(this.classMilestoningTemporalValues[0]),
-    );
+  get ProcessingDate(): ValueSpecification | undefined {
+    return this.getMilestoningDate(guaranteeNonNullable(this.processingDate));
   }
 
-  get businessDate(): ValueSpecification | undefined {
-    if (this.classMilestoningTemporalValues.length === 1) {
-      return this.getMilestoningDate(
-        guaranteeNonNullable(this.classMilestoningTemporalValues[0]),
-      );
-    } else {
-      return this.getMilestoningDate(
-        guaranteeNonNullable(this.classMilestoningTemporalValues[1]),
-      );
-    }
+  get BusinessDate(): ValueSpecification | undefined {
+    return this.getMilestoningDate(guaranteeNonNullable(this.businessDate));
   }
-
-  // get milestoning(): ValueSpecification | undefined {
-  //   //create new valuespecification instead of fetching the existing value to disconnect mobx states
-  //   let value;
-  //   if (
-  //     this.classMilestoningTemporalValues[0] instanceof PrimitiveInstanceValue
-  //   ) {
-  //     value = this.classMilestoningTemporalValues[0].values[0];
-  //   }
-  //   if (
-  //     this.classMilestoningTemporalValues[0]?.genericType?.value.rawType ===
-  //     this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-  //       PRIMITIVE_TYPE.LATESTDATE,
-  //     )
-  //   ) {
-  //     const x = new PrimitiveInstanceValue(
-  //       GenericTypeExplicitReference.create(
-  //         new GenericType(
-  //           this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-  //             PRIMITIVE_TYPE.LATESTDATE,
-  //           ),
-  //         ),
-  //       ),
-  //       this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-  //         TYPICAL_MULTIPLICITY_TYPE.ONE,
-  //       ),
-  //     );
-  //     return x;
-  //   } else if (
-  //     this.classMilestoningTemporalValues[0]?.genericType?.value.rawType ===
-  //     this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-  //       PRIMITIVE_TYPE.STRICTDATE,
-  //     )
-  //   ) {
-  //     const x = new PrimitiveInstanceValue(
-  //       GenericTypeExplicitReference.create(
-  //         new GenericType(
-  //           this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-  //             PRIMITIVE_TYPE.STRICTDATE,
-  //           ),
-  //         ),
-  //       ),
-  //       this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-  //         TYPICAL_MULTIPLICITY_TYPE.ONE,
-  //       ),
-  //     );
-  //     x.addValue(value);
-  //     return x;
-  //   }
-  //   return undefined;
-  // }
 
   getMilestoningDate(
     milestoningParameter: ValueSpecification,
@@ -248,10 +189,6 @@ export class QueryBuilderSetupState {
     return undefined;
   }
 
-  addClassMilestoningTemporalValues(val: ValueSpecification): void {
-    addUniqueEntry(this.classMilestoningTemporalValues, val);
-  }
-
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
     this.queryBuilderState = queryBuilderState;
   }
@@ -284,7 +221,8 @@ export class QueryBuilderSetupState {
         val,
         this.queryBuilderState.graphManagerState.graph,
       );
-      this.setClassMilestoningTemporalValues([]);
+      this.setBusinessDate(undefined);
+      this.setProcessingDate(undefined);
       if (stereotype) {
         this.queryBuilderState.buildClassMilestoningTemporalValue(stereotype);
       }
@@ -306,7 +244,11 @@ export class QueryBuilderSetupState {
     }
   }
 
-  setClassMilestoningTemporalValues(val: ValueSpecification[]): void {
-    this.classMilestoningTemporalValues = val;
+  setProcessingDate(val: ValueSpecification | undefined): void {
+    this.processingDate = val;
+  }
+
+  setBusinessDate(val: ValueSpecification | undefined): void {
+    this.businessDate = val;
   }
 }

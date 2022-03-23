@@ -36,15 +36,24 @@ import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
 import { Dialog, RefreshIcon } from '@finos/legend-art';
 
 const MilestoningParameterEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState; parameterIndex: number }) => {
-    const { queryBuilderState, parameterIndex } = props;
+  (props: {
+    queryBuilderState: QueryBuilderState;
+    stereotype: MILESTONING_STEROTYPES;
+  }) => {
+    const { queryBuilderState, stereotype } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        queryBuilderState.querySetupState.classMilestoningTemporalValues[
-          parameterIndex
-        ] = item.variable.parameter;
+        if (stereotype === MILESTONING_STEROTYPES.BUSINESS_TEMPORAL) {
+          queryBuilderState.querySetupState.setBusinessDate(
+            item.variable.parameter,
+          );
+        } else {
+          queryBuilderState.querySetupState.setProcessingDate(
+            item.variable.parameter,
+          );
+        }
       },
-      [queryBuilderState, parameterIndex],
+      [queryBuilderState, stereotype],
     );
     const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop(
       () => ({
@@ -67,15 +76,18 @@ const MilestoningParameterEditor = observer(
       }),
       [handleDrop],
     );
-    const milestoningParameter = guaranteeNonNullable(
-      queryBuilderState.querySetupState.classMilestoningTemporalValues[
-        parameterIndex
-      ],
-    );
+    let milestoningParameter;
+    if (stereotype === MILESTONING_STEROTYPES.BUSINESS_TEMPORAL) {
+      milestoningParameter = guaranteeNonNullable(
+        queryBuilderState.querySetupState.businessDate,
+      );
+    } else {
+      milestoningParameter = guaranteeNonNullable(
+        queryBuilderState.querySetupState.processingDate,
+      );
+    }
     const resetMilestoningParameter = (): void => {
-      queryBuilderState.querySetupState.classMilestoningTemporalValues[
-        parameterIndex
-      ] = new PrimitiveInstanceValue(
+      const parameter = new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(
           new GenericType(
             queryBuilderState.graphManagerState.graph.getPrimitiveType(
@@ -87,6 +99,11 @@ const MilestoningParameterEditor = observer(
           TYPICAL_MULTIPLICITY_TYPE.ONE,
         ),
       );
+      if (stereotype === MILESTONING_STEROTYPES.BUSINESS_TEMPORAL) {
+        queryBuilderState.querySetupState.setBusinessDate(parameter);
+      } else {
+        queryBuilderState.querySetupState.setProcessingDate(parameter);
+      }
     };
     return (
       <div
@@ -129,7 +146,7 @@ const BiTemporalMilestoneEditor = observer(
           </div>
           <MilestoningParameterEditor
             queryBuilderState={queryBuilderState}
-            parameterIndex={0}
+            stereotype={MILESTONING_STEROTYPES.PROCESSING_TEMPORAL}
           />
         </div>
         <div className="panel__content__form__section">
@@ -138,7 +155,7 @@ const BiTemporalMilestoneEditor = observer(
           </div>
           <MilestoningParameterEditor
             queryBuilderState={queryBuilderState}
-            parameterIndex={1}
+            stereotype={MILESTONING_STEROTYPES.BUSINESS_TEMPORAL}
           />
         </div>
       </>
@@ -157,7 +174,7 @@ const BusinessTemporalMilestoneEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          parameterIndex={0}
+          stereotype={MILESTONING_STEROTYPES.BUSINESS_TEMPORAL}
         />
       </div>
     );
@@ -175,7 +192,7 @@ const ProcessingTemporalMilestoneEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          parameterIndex={0}
+          stereotype={MILESTONING_STEROTYPES.PROCESSING_TEMPORAL}
         />
       </div>
     );
@@ -184,39 +201,26 @@ const ProcessingTemporalMilestoneEditor = observer(
 
 const TemporalMilestoneEditor: React.FC<{
   queryBuilderState: QueryBuilderState;
-  stereotype: string;
 }> = (props) => {
-  const { queryBuilderState, stereotype } = props;
+  const { queryBuilderState } = props;
 
   if (
-    queryBuilderState.querySetupState.classMilestoningTemporalValues.length ===
-    2
+    queryBuilderState.querySetupState.processingDate &&
+    queryBuilderState.querySetupState.businessDate
   ) {
     return <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />;
+  } else if (queryBuilderState.querySetupState.businessDate) {
+    return (
+      <BusinessTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
+    );
+  } else if (queryBuilderState.querySetupState.processingDate) {
+    return (
+      <ProcessingTemporalMilestoneEditor
+        queryBuilderState={queryBuilderState}
+      />
+    );
   } else {
-    switch (stereotype) {
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-        return (
-          <BusinessTemporalMilestoneEditor
-            queryBuilderState={queryBuilderState}
-          />
-        );
-
-      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-        return (
-          <ProcessingTemporalMilestoneEditor
-            queryBuilderState={queryBuilderState}
-          />
-        );
-
-      case MILESTONING_STEROTYPES.BITEMPORAL:
-        return (
-          <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
-        );
-
-      default:
-        return null;
-    }
+    return null;
   }
 };
 
@@ -224,9 +228,8 @@ export const MilestoningParametersEditor = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
     close: () => void;
-    stereotype: string;
   }) => {
-    const { queryBuilderState, close, stereotype } = props;
+    const { queryBuilderState, close } = props;
 
     return (
       <Dialog
@@ -245,7 +248,6 @@ export const MilestoningParametersEditor = observer(
           <div className="modal__body query-builder__parameters__modal__body">
             <TemporalMilestoneEditor
               queryBuilderState={queryBuilderState}
-              stereotype={stereotype}
             />
             <div className="panel__content__form__section__header__label">
               List of compatible milestoning parameters

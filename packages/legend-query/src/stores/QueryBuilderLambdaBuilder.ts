@@ -148,20 +148,9 @@ export const buildLambdaFunction = (
   if (stereotype) {
     switch (stereotype) {
       case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
-        let parameter;
-        if (
-          queryBuilderState.querySetupState.classMilestoningTemporalValues
-            .length === 1
-        ) {
-          parameter =
-            queryBuilderState.querySetupState.classMilestoningTemporalValues[0];
-        } else {
-          parameter =
-            queryBuilderState.querySetupState.classMilestoningTemporalValues[1];
-        }
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            parameter,
+            queryBuilderState.querySetupState.businessDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -170,21 +159,24 @@ export const buildLambdaFunction = (
       case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.classMilestoningTemporalValues[0],
+            queryBuilderState.querySetupState.processingDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
         break;
       }
       case MILESTONING_STEROTYPES.BITEMPORAL: {
-        queryBuilderState.querySetupState.classMilestoningTemporalValues.forEach(
-          (parameter) =>
-            getAllFunction.parametersValues.push(
-              guaranteeNonNullable(
-                parameter,
-                `Milestoning class should have a parameter of type 'Date'`,
-              ),
-            ),
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            queryBuilderState.querySetupState.processingDate,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
+        );
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            queryBuilderState.querySetupState.businessDate,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
         );
         break;
       }

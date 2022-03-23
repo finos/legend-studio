@@ -162,10 +162,10 @@ export class FilterConditionState {
       );
       const processingDate =
         derivedPropertyExpressionState.queryBuilderState.querySetupState
-          .processingDate;
+          .ProcessingDate;
       const businessDate =
         derivedPropertyExpressionState.queryBuilderState.querySetupState
-          .businessDate;
+          .BusinessDate;
       const paramLength =
         derivedPropertyExpressionState.propertyExpression.parametersValues
           .length;
