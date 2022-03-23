@@ -347,9 +347,9 @@ const indexPureModelContextData = (
       (index.otherElementsByBuilder.get(builder) ?? []).concat(elements),
     );
   });
+
   // report
-  report.elementCount.total =
-    (report.elementCount.total ?? 0) + index.elements.length;
+  report.elementCount.total = report.elementCount.total + index.elements.length;
   report.elementCount.other =
     (report.elementCount.other ?? 0) +
     otherElementsByClass.size +

@@ -230,7 +230,6 @@ const profileRoundtrip = async (
   startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__keepSectionIndex: true,
-    quiet: !options.debug,
   });
   if (options.debug) {
     log.info(
