@@ -39,6 +39,7 @@ import {
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
+import type { ExtraModelLoaderRendererConfiguration } from '../../../stores/LegendStudioPlugin';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -46,8 +47,12 @@ export const ModelLoader = observer(() => {
   const modelLoaderState = editorStore.getCurrentEditorState(ModelLoaderState);
   const nativeInputTypes = Object.values(MODEL_UPDATER_INPUT_TYPE);
   const externalFormatInputTypes = modelLoaderState.modelImportDescriptions;
+  const extraModelLoaderRendererConfigs =
+    modelLoaderState.extraModelLoaderRendererConfigurations;
   // input type
   const currentInputType = modelLoaderState.currentInputType;
+  const currentExtraNativeInputType =
+    modelLoaderState.currentExtraNativeInputType;
   const currentExternalInputType = modelLoaderState.currentExternalInputType;
   const currentExternalInputLabel = currentExternalInputType
     ? modelLoaderState.getImportConfiguration(currentExternalInputType).label
@@ -60,6 +65,10 @@ export const ModelLoader = observer(() => {
     (inputType: ImportConfigurationDescription): (() => void) =>
     (): void =>
       modelLoaderState.setCurrentExternalFormatInputType(inputType);
+  const setCurrentExtraNativeInput =
+    (inputType: ExtraModelLoaderRendererConfiguration): (() => void) =>
+    (): void =>
+      modelLoaderState.setCurrentExtraNativeInputType(inputType);
   // replace flag
   const replace = modelLoaderState.replace;
   const toggleReplace = (): void => modelLoaderState.setReplaceFlag(!replace);
@@ -124,6 +133,17 @@ export const ModelLoader = observer(() => {
                         {prettyCONSTName(inputType)}
                       </MenuContentItem>
                     ))}
+                    {extraModelLoaderRendererConfigs.map(
+                      (config: ExtraModelLoaderRendererConfiguration) => (
+                        <MenuContentItem
+                          key={config.key}
+                          className="model-loader__header__configs__type-option__group__option"
+                          onClick={setCurrentExtraNativeInput(config)}
+                        >
+                          {prettyCONSTName(config.key)}
+                        </MenuContentItem>
+                      ),
+                    )}
                   </div>
                 </div>
                 {Boolean(externalFormatInputTypes) && (
@@ -158,6 +178,8 @@ export const ModelLoader = observer(() => {
               <div className="model-loader__header__configs__type__label">
                 {currentExternalInputType
                   ? currentExternalInputLabel
+                  : currentExtraNativeInputType
+                  ? prettyCONSTName(currentExtraNativeInputType)
                   : prettyCONSTName(currentInputType)}
               </div>
               <div className="model-loader__header__configs__type__icon">
@@ -165,18 +187,23 @@ export const ModelLoader = observer(() => {
               </div>
             </div>
           </DropdownMenu>
-          <div
-            className="model-loader__header__configs__edit-mode"
-            onClick={toggleReplace}
-          >
-            <div className="model-loader__header__configs__edit-mode__icon">
-              {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
+          {!modelLoaderState.currentExtraNativeInputType && (
+            <div
+              className="model-loader__header__configs__edit-mode"
+              onClick={toggleReplace}
+            >
+              <div className="model-loader__header__configs__edit-mode__icon">
+                {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
+              </div>
+              <div className="model-loader__header__configs__edit-mode__label">
+                replace
+              </div>
             </div>
-            <div className="model-loader__header__configs__edit-mode__label">
-              replace
-            </div>
-          </div>
-          {!modelLoaderState.currentExternalInputType && (
+          )}
+          {!(
+            modelLoaderState.currentExternalInputType ||
+            modelLoaderState.currentExtraNativeInputType
+          ) && (
             <button
               className="model-loader__header__configs__load-project-entities-btn"
               tabIndex={-1}
@@ -187,25 +214,35 @@ export const ModelLoader = observer(() => {
             </button>
           )}
         </div>
-        <div className="model-loader__header__action">
-          <button
-            className="btn--dark model-loader__header__load-btn"
-            onClick={loadModel}
-            disabled={modelLoaderState.isLoadingModel}
-            tabIndex={-1}
-            title="Load model"
-          >
-            Load
-          </button>
-        </div>
+        {!modelLoaderState.currentExtraNativeInputType && (
+          <div className="model-loader__header__action">
+            <button
+              className="btn--dark model-loader__header__load-btn"
+              onClick={loadModel}
+              disabled={modelLoaderState.isLoadingModel}
+              tabIndex={-1}
+              title="Load model"
+            >
+              Load
+            </button>
+          </div>
+        )}
       </div>
       <div className="panel__content model-loader__editor">
-        <StudioTextInputEditor
-          language={EDITOR_LANGUAGE.JSON}
-          inputValue={modelLoaderState.modelText}
-          updateInput={updateModel}
-          showMiniMap={true}
-        />
+        {modelLoaderState.currentExtraNativeInputType ? (
+          modelLoaderState
+            .getExtraModelLoaderRendererConfig(
+              modelLoaderState.currentExtraNativeInputType,
+            )
+            .renderer(modelLoaderState)
+        ) : (
+          <StudioTextInputEditor
+            language={EDITOR_LANGUAGE.JSON}
+            inputValue={modelLoaderState.modelText}
+            updateInput={updateModel}
+            showMiniMap={true}
+          />
+        )}
       </div>
     </div>
   );
