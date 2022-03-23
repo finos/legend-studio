@@ -20,6 +20,7 @@ import type { ElementEditorState } from './editor-state/element-editor-state/Ele
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { Class, PackageableElement } from '@finos/legend-graph';
+import type { ModelLoaderState } from './editor-state/ModelLoaderState';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,
@@ -51,6 +52,12 @@ export type EditorExtensionStateCreator = (
 export type ClassPreviewRenderer = (
   _class: Class,
 ) => React.ReactNode | undefined;
+
+export type ExtraModelLoaderRendererConfiguration = {
+  key: string;
+  defaultModelText: string;
+  renderer: (modelLoaderState: ModelLoaderState) => React.ReactNode | undefined;
+};
 
 export abstract class LegendStudioPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'LegendStudioPlugin';
@@ -92,6 +99,11 @@ export abstract class LegendStudioPlugin extends AbstractPlugin {
    * Get the list of configurations for the renderer of editor extension states.
    */
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
+
+  /**
+   * Get the list of configurations for the renderer of model loader.
+   */
+  getExtraModelLoaderRendererConfigurations?(): ExtraModelLoaderRendererConfiguration[];
 }
 
 export type ElementTypeGetter = (
