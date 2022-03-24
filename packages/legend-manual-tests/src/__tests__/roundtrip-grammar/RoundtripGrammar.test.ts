@@ -108,6 +108,9 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   ],
   'merge-operation-mapping.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
+  // TODO: remove this when https://github.com/finos/legend-engine/pull/519 is merged.
+  'ESService-path-offset.pure': SKIP,
+
   // TODO: remove these when the issue of source ID in relational property mapping is resolved.
   // Engine is removing these sources when the owner is the parent class mapping and studio is not
   'basic-class-mapping-extends.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],

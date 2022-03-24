@@ -16,24 +16,30 @@
 
 import { observable, computed, makeObservable, action } from 'mobx';
 import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
-import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  deleteEntry,
+  hashArray,
+  type Hashable,
+} from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
+import type { ServiceParameterMapping } from './ESService_ServiceParameterMapping';
 import type { ServiceStoreService } from '../model/ESService_ServiceStoreService';
 import type { RootServiceInstanceSetImplementation } from './ESService_RootServiceInstanceSetImplementation';
-import type { ServiceRequestBuildInfo } from './ESService_ServiceRequestBuildInfo';
 
 export class ServiceMapping implements Hashable {
   owner!: RootServiceInstanceSetImplementation;
   service!: ServiceStoreService;
-  pathOffset?: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  requestBuildInfo?: ServiceRequestBuildInfo | undefined;
+  parameterMappings: ServiceParameterMapping[] = [];
+  path: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor() {
     makeObservable(this, {
       service: observable,
-      requestBuildInfo: observable,
+      parameterMappings: observable,
       setService: action,
-      setRequestBuildInfo: action,
+      addServiceMapping: action,
+      deleteServiceMapping: action,
       hashCode: computed,
     });
   }
@@ -42,18 +48,20 @@ export class ServiceMapping implements Hashable {
     this.service.setId(value);
   }
 
-  setRequestBuildInfo(value: ServiceRequestBuildInfo | undefined): void {
-    this.requestBuildInfo = value;
+  addServiceMapping(value: ServiceParameterMapping): void {
+    addUniqueEntry(this.parameterMappings, value);
+  }
+
+  deleteServiceMapping(value: ServiceParameterMapping): void {
+    deleteEntry(this.parameterMappings, value);
   }
 
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_MAPPING,
       this.service.id,
-      this.pathOffset
-        ? hashObjectWithoutSourceInformation(this.pathOffset)
-        : '',
-      this.requestBuildInfo?.toString() ?? '',
+      hashArray(this.parameterMappings),
+      this.path ? hashObjectWithoutSourceInformation(this.path) : '',
     ]);
   }
 }

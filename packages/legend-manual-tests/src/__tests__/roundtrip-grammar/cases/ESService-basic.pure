@@ -115,12 +115,9 @@ Mapping test::mapping
   {
     ~service [test::testServiceStoreCompilationWithSingleService1] TestService
     (
-      ~request
+      ~paramMapping
       (
-        parameters
-        (
-          serializationFormat = 'CSV'
-        )
+        serializationFormat : 'CSV'
       )
     )
   }

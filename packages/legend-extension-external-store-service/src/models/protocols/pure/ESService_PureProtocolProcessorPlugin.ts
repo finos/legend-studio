@@ -75,7 +75,6 @@ import { ServiceMapping } from '../../metamodels/pure/model/packageableElements/
 import { V1_ServiceStoreConnection } from './v1/model/packageableElements/store/serviceStore/connection/V1_ESService_ServicestoreConnection';
 import {
   V1_buildServiceParameterMapping,
-  V1_buildServiceRequestBuildInfo,
   V1_buildServiceStoreElement,
   V1_resolveService,
   V1_resolveServiceStore,
@@ -83,12 +82,10 @@ import {
 import { ServiceStoreConnection } from '../../metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
 import { V1_ServiceMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceMapping';
 import {
-  V1_transformServiceRequestBuildInfo,
+  V1_transformServiceParameterMapping,
   V1_transformServiceStoreElement,
   V1_transformServiceToServicePtr,
 } from './v1/transformation/pureGraph/V1_ESService_TransformerHelper';
-import { ServiceRequestBuildInfo } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
-import { ServiceRequestParametersBuildInfo } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo';
 
 const SERVICE_STORE_ELEMENT_CLASSIFIER_PATH =
   'meta::external::store::service::metamodel::ServiceStore';
@@ -264,26 +261,16 @@ export class ESService_PureProtocolProcessorPlugin
                 serviceMapping.service,
                 context,
               );
-              mapping.pathOffset = serviceMapping.pathOffset;
-              if (serviceMapping.requestBuildInfo) {
-                mapping.requestBuildInfo = V1_buildServiceRequestBuildInfo(
-                  serviceMapping.requestBuildInfo,
-                  mapping.service,
-                );
-              }
-              if (
-                serviceMapping.parameterMappings &&
-                serviceMapping.parameterMappings.length > 0
-              ) {
-                const requestBuildInfo = new ServiceRequestBuildInfo();
-                requestBuildInfo.requestParametersBuildInfo =
-                  new ServiceRequestParametersBuildInfo();
-                requestBuildInfo.requestParametersBuildInfo.parameterBuildInfoList =
-                  serviceMapping.parameterMappings.map((parameter) =>
-                    V1_buildServiceParameterMapping(parameter, mapping.service),
+              mapping.path = serviceMapping.pathOffset;
+              mapping.parameterMappings = serviceMapping.parameterMappings.map(
+                (parameter) => {
+                  const parameterMapping = V1_buildServiceParameterMapping(
+                    parameter,
+                    mapping.service,
                   );
-                mapping.requestBuildInfo = requestBuildInfo;
-              }
+                  return parameterMapping;
+                },
+              );
               return mapping;
             });
           return rootServiceInstanceSetImplementation;
@@ -336,12 +323,14 @@ export class ESService_PureProtocolProcessorPlugin
               mapping.service = V1_transformServiceToServicePtr(
                 serviceMapping.service,
               );
-              mapping.pathOffset = serviceMapping.pathOffset;
-              if (serviceMapping.requestBuildInfo) {
-                mapping.requestBuildInfo = V1_transformServiceRequestBuildInfo(
-                  serviceMapping.requestBuildInfo,
-                );
-              }
+              mapping.pathOffset = serviceMapping.path;
+              mapping.parameterMappings = serviceMapping.parameterMappings.map(
+                (parameter) => {
+                  const parameterMapping =
+                    V1_transformServiceParameterMapping(parameter);
+                  return parameterMapping;
+                },
+              );
               return mapping;
             },
           );

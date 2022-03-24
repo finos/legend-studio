@@ -15,19 +15,36 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { ServiceRequestBodyBuildInfo } from './ESService_ServiceRequestBodyBuildInfo';
-import type { ServiceRequestParametersBuildInfo } from './ESService_ServiceRequestParametersBuildInfo';
+import type { RawLambda } from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
+import { ServiceParameterMapping } from './ESService_ServiceParameterMapping';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-export class ServiceRequestBuildInfo implements Hashable {
-  requestBodyBuildInfo?: ServiceRequestBodyBuildInfo | undefined;
-  requestParametersBuildInfo?: ServiceRequestParametersBuildInfo | undefined;
+export class ParameterIndexedParameterMapping
+  extends ServiceParameterMapping
+  implements Hashable
+{
+  transform!: RawLambda;
 
-  get hashCode(): string {
+  constructor() {
+    super();
+
+    makeObservable(this, {
+      transform: observable,
+      setTransform: action,
+      hashCode: computed,
+    });
+  }
+
+  setTransform(value: RawLambda): void {
+    this.transform = value;
+  }
+
+  override get hashCode(): string {
     return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_BUILD_INFO,
-      this.requestBodyBuildInfo?.toString() ?? '',
-      this.requestParametersBuildInfo?.toString() ?? '',
+      SERVICE_STORE_HASH_STRUCTURE.PARAMETER_INDEXED_PARAMETER_MAPPING,
+      this.serviceParameter.name,
+      this.transform,
     ]);
   }
 }

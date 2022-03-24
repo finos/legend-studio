@@ -112,36 +112,6 @@ export const roundtripTestData = [
           },
           security: [],
         },
-        {
-          _type: 'service',
-          id: 'TestServiceForPost',
-          method: 'POST',
-          parameters: [
-            {
-              location: 'QUERY',
-              name: 'serializationFormat',
-              serializationFormat: {},
-              type: {
-                _type: 'string',
-                list: false,
-              },
-            },
-          ],
-          path: '/testServiceForPost',
-          requestBody: {
-            _type: 'complex',
-            binding: 'anything::binding1',
-            list: false,
-            type: 'test::A',
-          },
-          response: {
-            _type: 'complex',
-            binding: 'anything::binding1',
-            list: false,
-            type: 'test::A',
-          },
-          security: [],
-        },
       ],
       includedStores: [],
     },
@@ -272,175 +242,52 @@ export const roundtripTestData = [
           root: 'true',
           servicesMapping: [
             {
-              requestBuildInfo: {
-                requestParametersBuildInfo: {
-                  parameterBuildInfoList: [
-                    {
-                      serviceParameter: 'serializationFormat',
-                      transform: {
-                        _type: 'lambda',
-                        body: [
-                          {
-                            _type: 'string',
-                            multiplicity: {
-                              lowerBound: 1,
-                              upperBound: 1,
-                            },
-                            values: ['CSV'],
-                          },
-                        ],
-                        parameters: [],
-                      },
-                    },
-                  ],
-                },
-              },
-              service: {
-                service: 'TestService',
-                serviceStore: 'anything::ServiceStore1',
-              },
-            },
-            {
-              requestBuildInfo: {
-                requestParametersBuildInfo: {
-                  parameterBuildInfoList: [
-                    {
-                      serviceParameter: 'serializationFormat',
-                      transform: {
-                        _type: 'lambda',
-                        body: [
-                          {
-                            _type: 'string',
-                            multiplicity: {
-                              lowerBound: 1,
-                              upperBound: 1,
-                            },
-                            values: ['CSV'],
-                          },
-                        ],
-                        parameters: [],
-                      },
-                    },
-                  ],
-                },
-              },
-              pathOffset: {
-                _type: 'path',
-                path: [
-                  {
-                    _type: 'propertyPath',
-                    parameters: [],
-                    property: 'employees',
-                  },
-                ],
-                startType: '$service.response',
-              },
-              service: {
-                service: 'TestService',
-                serviceStore: 'anything::ServiceStore1',
-              },
-            },
-            {
-              requestBuildInfo: {
-                requestBodyBuildInfo: {
+              parameterMappings: [
+                {
+                  _type: 'parameter',
+                  serviceParameter: 'serializationFormat',
                   transform: {
                     _type: 'lambda',
                     body: [
                       {
-                        _type: 'func',
-                        function: 'new',
-                        parameters: [
-                          {
-                            _type: 'packageableElementPtr',
-                            fullPath: 'test::requestBody',
-                          },
-                          {
-                            _type: 'string',
-                            multiplicity: {
-                              lowerBound: 1,
-                              upperBound: 1,
-                            },
-                            values: [],
-                          },
-                          {
-                            _type: 'collection',
-                            multiplicity: {
-                              lowerBound: 1,
-                              upperBound: 1,
-                            },
-                            values: [
-                              {
-                                _type: 'keyExpression',
-                                add: false,
-                                expression: {
-                                  _type: 'property',
-                                  parameters: [
-                                    {
-                                      _type: 'var',
-                                      name: 'this',
-                                    },
-                                  ],
-                                  property: 'prop',
-                                },
-                                key: {
-                                  _type: 'string',
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
-                                  values: ['propA'],
-                                },
-                              },
-                              {
-                                _type: 'keyExpression',
-                                add: false,
-                                expression: {
-                                  _type: 'integer',
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
-                                  values: [1],
-                                },
-                                key: {
-                                  _type: 'string',
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
-                                  values: ['propB'],
-                                },
-                              },
-                            ],
-                          },
-                        ],
+                        _type: 'string',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        values: ['CSV'],
                       },
                     ],
                     parameters: [],
                   },
                 },
-                requestParametersBuildInfo: {
-                  parameterBuildInfoList: [
-                    {
-                      serviceParameter: 'serializationFormat',
-                      transform: {
-                        _type: 'lambda',
-                        body: [
-                          {
-                            _type: 'string',
-                            multiplicity: {
-                              lowerBound: 1,
-                              upperBound: 1,
-                            },
-                            values: ['CSV'],
-                          },
-                        ],
-                        parameters: [],
-                      },
-                    },
-                  ],
-                },
+              ],
+              service: {
+                service: 'TestService',
+                serviceStore: 'anything::ServiceStore1',
               },
+            },
+            {
+              parameterMappings: [
+                {
+                  _type: 'parameter',
+                  serviceParameter: 'serializationFormat',
+                  transform: {
+                    _type: 'lambda',
+                    body: [
+                      {
+                        _type: 'string',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        values: ['CSV'],
+                      },
+                    ],
+                    parameters: [],
+                  },
+                },
+              ],
               pathOffset: {
                 _type: 'path',
                 path: [
@@ -453,7 +300,7 @@ export const roundtripTestData = [
                 startType: '$service.response',
               },
               service: {
-                service: 'TestServiceForPost',
+                service: 'TestService',
                 serviceStore: 'anything::ServiceStore1',
               },
             },
