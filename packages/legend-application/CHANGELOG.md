@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 2.0.0
+
+### Major Changes
+
+- [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `APPLICATION_LOG_EVENT` to `APPLICATION_EVENT` which is meant to be used for more than just logging.
+
 ## 1.2.2
 
 ## 1.2.1
