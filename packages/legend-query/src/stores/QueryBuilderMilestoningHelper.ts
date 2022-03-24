@@ -29,8 +29,36 @@ import {
   DEFAULT_MILESTONING_PARAMETERS,
   type AbstractPropertyExpression,
   Association,
+  VariableExpression,
+  PrimitiveInstanceValue,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import type { QueryBuilderDerivedPropertyExpressionState } from './QueryBuilderPropertyEditorState';
+
+export const checkEquality = (
+  //handle latest
+  param1: ValueSpecification | undefined,
+  param2: ValueSpecification | undefined,
+): boolean => {
+  if (
+    param1 instanceof VariableExpression &&
+    param2 instanceof VariableExpression
+  ) {
+    return param1.name === param2.name;
+  } else if (
+    param1 instanceof PrimitiveInstanceValue &&
+    param2 instanceof PrimitiveInstanceValue
+  ) {
+    if (
+      param1.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE &&
+      param2.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE
+    ) {
+      return true;
+    }
+    return param1.values[0] === param2.values[0];
+  }
+  return param1 === param2;
+};
 
 export const milestoningParameters = {
   BUSINESS_TEMPORAL: false,
@@ -186,7 +214,8 @@ export const fillMilestonedDerivedPropertyArguments = (
       }
       const parameter = querySetupState.businessDate;
       milestoningParameters.BUSINESS_TEMPORAL = true;
-      derivedPropertyExpressionState.businessDate = parameter;
+      derivedPropertyExpressionState.businessDate =
+        querySetupState.BusinessDate;
       return parameter;
     }
     case MILESTONING_STEROTYPES.BITEMPORAL: {
@@ -206,11 +235,13 @@ export const fillMilestonedDerivedPropertyArguments = (
       }
       milestoningParameters.BUSINESS_TEMPORAL = true;
       milestoningParameters.PROCESSING_TEMPORAL = true;
-      derivedPropertyExpressionState.businessDate = querySetupState.businessDate;
-      derivedPropertyExpressionState.processingDate = querySetupState.processingDate;
       if (idx === 0) {
+        derivedPropertyExpressionState.processingDate =
+          querySetupState.ProcessingDate;
         return querySetupState.processingDate;
       } else {
+        derivedPropertyExpressionState.businessDate =
+          querySetupState.BusinessDate;
         return querySetupState.businessDate;
       }
     }
@@ -223,7 +254,8 @@ export const fillMilestonedDerivedPropertyArguments = (
         );
       }
       const parameter = querySetupState.processingDate;
-      derivedPropertyExpressionState.processingDate = parameter;
+      derivedPropertyExpressionState.processingDate =
+        derivedPropertyExpressionState.queryBuilderState.querySetupState.ProcessingDate;
       milestoningParameters.PROCESSING_TEMPORAL = true;
       return parameter;
     }

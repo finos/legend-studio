@@ -30,10 +30,12 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, Randomizer } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
 import { Dialog, RefreshIcon } from '@finos/legend-art';
+import { addDays, format } from 'date-fns';
+import { DATE_FORMAT } from '@finos/legend-application';
 
 const MilestoningParameterEditor = observer(
   (props: {
@@ -99,6 +101,15 @@ const MilestoningParameterEditor = observer(
           TYPICAL_MULTIPLICITY_TYPE.ONE,
         ),
       );
+      parameter.values = [
+        format(
+          new Randomizer().getRandomDate(
+            new Date(Date.now()),
+            addDays(Date.now(), 100),
+          ),
+          DATE_FORMAT,
+        ),
+      ];
       if (stereotype === MILESTONING_STEROTYPES.BUSINESS_TEMPORAL) {
         queryBuilderState.querySetupState.setBusinessDate(parameter);
       } else {
@@ -225,10 +236,7 @@ const TemporalMilestoneEditor: React.FC<{
 };
 
 export const MilestoningParametersEditor = observer(
-  (props: {
-    queryBuilderState: QueryBuilderState;
-    close: () => void;
-  }) => {
+  (props: { queryBuilderState: QueryBuilderState; close: () => void }) => {
     const { queryBuilderState, close } = props;
 
     return (
@@ -246,9 +254,7 @@ export const MilestoningParametersEditor = observer(
             <div className="modal__title">Milestoning Parameters</div>
           </div>
           <div className="modal__body query-builder__parameters__modal__body">
-            <TemporalMilestoneEditor
-              queryBuilderState={queryBuilderState}
-            />
+            <TemporalMilestoneEditor queryBuilderState={queryBuilderState} />
             <div className="panel__content__form__section__header__label">
               List of compatible milestoning parameters
             </div>

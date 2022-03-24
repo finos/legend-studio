@@ -259,6 +259,18 @@ export const fillDerivedPropertyArguments = (
     ),
     ...propertyArguments,
   ]);
+  // if (temporalTarget === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL) {
+  //   derivedPropertyExpressionState.processingDate =
+  //     derivedPropertyExpressionState.queryBuilderState.querySetupState.processingDate;
+  // } else if (temporalTarget === MILESTONING_STEROTYPES.BITEMPORAL) {
+  //   derivedPropertyExpressionState.processingDate =
+  //     derivedPropertyExpressionState.queryBuilderState.querySetupState.processingDate;
+  //   derivedPropertyExpressionState.businessDate =
+  //     derivedPropertyExpressionState.queryBuilderState.querySetupState.businessDate;
+  // } else if (temporalTarget === MILESTONING_STEROTYPES.BUSINESS_TEMPORAL) {
+  //   derivedPropertyExpressionState.businessDate =
+  //     derivedPropertyExpressionState.queryBuilderState.querySetupState.businessDate;
+  // }
 };
 
 export class QueryBuilderDerivedPropertyExpressionState {

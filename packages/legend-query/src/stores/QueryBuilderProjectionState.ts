@@ -82,6 +82,7 @@ import {
 } from './QueryBuilderPreviewDataHelper';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
 import { LambdaEditorState } from '@finos/legend-application';
+import { checkEquality } from './QueryBuilderMilestoningHelper';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
@@ -190,33 +191,55 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
         case MILESTONING_STEROTYPES.BITEMPORAL:
           if (paramLength === 3) {
             if (
-              derivedPropertyExpressionState.businessDate ===
+              checkEquality(
+                derivedPropertyExpressionState.businessDate,
                 derivedPropertyExpressionState.propertyExpression
-                  .parametersValues[2] &&
-              derivedPropertyExpressionState.businessDate !==
+                  .parametersValues[2],
+              ) &&
+              !checkEquality(
+                derivedPropertyExpressionState.businessDate,
                 derivedPropertyExpressionState.queryBuilderState.querySetupState
-                  .businessDate
+                  .businessDate,
+              )
             ) {
               const businessDate = guaranteeNonNullable(
-                derivedPropertyExpressionState.queryBuilderState
-                  .querySetupState.BusinessDate,
+                derivedPropertyExpressionState.queryBuilderState.querySetupState
+                  .BusinessDate,
               );
-              derivedPropertyExpressionState.propertyExpression.parametersValues[2] = businessDate;
+              derivedPropertyExpressionState.propertyExpression.parametersValues[2] =
+                businessDate;
               derivedPropertyExpressionState.businessDate = businessDate;
             }
-            if (
-              derivedPropertyExpressionState.processingDate ===
+            console.log(derivedPropertyExpressionState.processingDate);
+            console.log(
+              derivedPropertyExpressionState.propertyExpression
+                .parametersValues[1],
+            );
+            console.log(
+              checkEquality(
+                derivedPropertyExpressionState.processingDate,
                 derivedPropertyExpressionState.propertyExpression
-                  .parametersValues[1] &&
-              derivedPropertyExpressionState.processingDate !==
+                  .parametersValues[1],
+              ),
+            );
+            if (
+              checkEquality(
+                derivedPropertyExpressionState.processingDate,
+                derivedPropertyExpressionState.propertyExpression
+                  .parametersValues[1],
+              ) &&
+              !checkEquality(
+                derivedPropertyExpressionState.processingDate,
                 derivedPropertyExpressionState.queryBuilderState.querySetupState
-                  .processingDate
+                  .processingDate,
+              )
             ) {
               const processingDate = guaranteeNonNullable(
-                derivedPropertyExpressionState.queryBuilderState
-                  .querySetupState.ProcessingDate,
+                derivedPropertyExpressionState.queryBuilderState.querySetupState
+                  .ProcessingDate,
               );
-              derivedPropertyExpressionState.propertyExpression.parametersValues[1] = processingDate;
+              derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+                processingDate;
               derivedPropertyExpressionState.processingDate = processingDate;
             }
           }
@@ -224,36 +247,46 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
         case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
           if (
             paramLength === 2 &&
-            derivedPropertyExpressionState.businessDate ===
+            checkEquality(
+              derivedPropertyExpressionState.businessDate,
               derivedPropertyExpressionState.propertyExpression
-                .parametersValues[1] &&
-            derivedPropertyExpressionState.businessDate !==
+                .parametersValues[1],
+            ) &&
+            !checkEquality(
+              derivedPropertyExpressionState.businessDate,
               derivedPropertyExpressionState.queryBuilderState.querySetupState
-                .businessDate
+                .businessDate,
+            )
           ) {
             const businessDate = guaranteeNonNullable(
               derivedPropertyExpressionState.queryBuilderState.querySetupState
                 .BusinessDate,
             );
-            derivedPropertyExpressionState.propertyExpression.parametersValues[1] = businessDate;
+            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+              businessDate;
             derivedPropertyExpressionState.businessDate = businessDate;
           }
           break;
         case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
           if (
             paramLength === 2 &&
-            derivedPropertyExpressionState.processingDate ===
+            checkEquality(
+              derivedPropertyExpressionState.processingDate,
               derivedPropertyExpressionState.propertyExpression
-                .parametersValues[1] &&
-            derivedPropertyExpressionState.processingDate !==
+                .parametersValues[1],
+            ) &&
+            !checkEquality(
+              derivedPropertyExpressionState.processingDate,
               derivedPropertyExpressionState.queryBuilderState.querySetupState
-                .processingDate
+                .processingDate,
+            )
           ) {
             const processingDate = guaranteeNonNullable(
               derivedPropertyExpressionState.queryBuilderState.querySetupState
                 .ProcessingDate,
             );
-            derivedPropertyExpressionState.propertyExpression.parametersValues[1] = processingDate;
+            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
+              processingDate;
             derivedPropertyExpressionState.processingDate = processingDate;
           }
           break;
