@@ -64,7 +64,7 @@ export const ModelLoader = observer(() => {
     (inputType: ImportConfigurationDescription): (() => void) =>
     (): void =>
       modelLoaderState.setCurrentExternalFormatInputType(inputType);
-  const setCurrentExtraNativeInput =
+  const setCurrentExtraInput =
     (inputType: ExtraModelLoaderExtensionsConfiguration): (() => void) =>
     (): void =>
       modelLoaderState.setCurrentExtraInputType(inputType);
@@ -155,12 +155,12 @@ export const ModelLoader = observer(() => {
                     </div>
                   </>
                 )}
-                {Boolean(externalFormatInputTypes) && (
+                {Boolean(extraModelLoaderExtensionsConfigs.length > 0) && (
                   <>
                     <div className="model-loader__header__configs__type-option__group__separator" />
-                    <div className="model-loader__header__configs__type-option__group model-loader__header__configs__type-option__group--external">
+                    <div className="model-loader__header__configs__type-option__group model-loader__header__configs__type-option__group--extension">
                       <div className="model-loader__header__configs__type-option__group__name">
-                        external
+                        extensions
                       </div>
                       <div className="model-loader__header__configs__type-option__group__options">
                         {extraModelLoaderExtensionsConfigs.map(
@@ -168,7 +168,7 @@ export const ModelLoader = observer(() => {
                             <MenuContentItem
                               key={config.key}
                               className="model-loader__header__configs__type-option__group__option"
-                              onClick={setCurrentExtraNativeInput(config)}
+                              onClick={setCurrentExtraInput(config)}
                             >
                               {config?.label ?? prettyCONSTName(config.key)}
                             </MenuContentItem>
