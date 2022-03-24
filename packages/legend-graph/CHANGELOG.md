@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 2.0.0
+
+### Major Changes
+
+- [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `GRAPH_MANAGER_LOG_EVENT` to `GRAPH_MANAGER_EVENT` and `V1_ENGINE_LOG_EVENT` to `V1_ENGINE_EVENT` which are meant to be used for more than just logging.
+
+* [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `AbstractPureGraphManager.pureProtocolToEntities()` to `pureProtocolTextToEntities()`.
+
+### Minor Changes
+
+- [#977](https://github.com/finos/legend-studio/pull/977) [`37490b13`](https://github.com/finos/legend-studio/commit/37490b13d6156ad610bba2799e5621632885163d) ([@akphi](https://github.com/akphi)) - Graph builder methods will now output a report when completed.
+
 ## 1.3.0
 
 ### Minor Changes

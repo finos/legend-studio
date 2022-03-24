@@ -1,5 +1,11 @@
 # @finos/legend-taxonomy
 
+## 1.1.0
+
+### Minor Changes
+
+- [#977](https://github.com/finos/legend-studio/pull/977) [`37490b13`](https://github.com/finos/legend-studio/commit/37490b13d6156ad610bba2799e5621632885163d) ([@akphi](https://github.com/akphi)) - Show progress message and report metrics for graph builder process.
+
 ## 1.0.2
 
 ## 1.0.1

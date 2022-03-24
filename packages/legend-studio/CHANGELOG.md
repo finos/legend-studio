@@ -1,5 +1,19 @@
 # @finos/legend-studio
 
+## 4.0.0
+
+### Major Changes
+
+- [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `LEGEND_STUDIO_LOG_EVENT_TYPE` to `LEGEND_STUDIO_APP_EVENT` which is meant to be used for more than just logging.
+
+### Minor Changes
+
+- [#977](https://github.com/finos/legend-studio/pull/977) [`37490b13`](https://github.com/finos/legend-studio/commit/37490b13d6156ad610bba2799e5621632885163d) ([@akphi](https://github.com/akphi)) - Show progress message and report metrics for graph builder process.
+
+### Patch Changes
+
+- [#982](https://github.com/finos/legend-studio/pull/982) [`4b0d8c67`](https://github.com/finos/legend-studio/commit/4b0d8c670d7621440ecde8b6406487b008be2153) ([@gayathrir11](https://github.com/gayathrir11)) - Enable `lambdaEditor` and allow DnD for returnType in FunctionEditor
+
 ## 3.1.0
 
 ### Minor Changes
