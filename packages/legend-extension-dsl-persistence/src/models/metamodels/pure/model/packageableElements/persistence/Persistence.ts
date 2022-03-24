@@ -1,7 +1,8 @@
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils';
 import {
+  Binding,
   Class,
-  IdentifiedConnection,
+  Connection,
   PackageableElement,
   PackageableElementReference,
   PackageableElementVisitor,
@@ -98,24 +99,30 @@ export abstract class Persister implements Hashable {
 }
 
 export class StreamingPersister extends Persister implements Hashable {
-  connections: IdentifiedConnection[] = [];
+  binding!: Binding;
+  connection?: Connection;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.STREAMING_PERSISTER,
-      hashArray(this.connections),
+      this.binding,
+      this.connection ?? '',
     ]);
   }
 }
 
 export class BatchPersister extends Persister implements Hashable {
-  connections: IdentifiedConnection[] = [];
+  binding!: Binding;
+  connection?: Connection;
+  ingestMode!: IngestMode;
   targetShape!: TargetShape;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
-      hashArray(this.connections),
+      this.binding,
+      this.connection ?? '',
+      this.ingestMode,
       this.targetShape,
     ]);
   }
@@ -171,10 +178,27 @@ export abstract class TargetShape implements Hashable {
   abstract get hashCode(): string;
 }
 
+export class FlatTarget extends TargetShape implements Hashable {
+  modelClass?: PackageableElementReference<Class>;
+  targetName!: string;
+  partitionFields: string[] = [];
+  deduplicationStrategy!: DeduplicationStrategy;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET,
+      this.modelClass?.hashValue ?? '',
+      this.targetName,
+      hashArray(this.partitionFields),
+      this.deduplicationStrategy,
+    ]);
+  }
+}
+
 export class MultiFlatTarget extends TargetShape implements Hashable {
   modelClass!: PackageableElementReference<Class>;
   transactionScope!: TransactionScope;
-  parts: PropertyAndFlatTarget[] = [];
+  parts: MultiFlatTargetPart[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -186,45 +210,19 @@ export class MultiFlatTarget extends TargetShape implements Hashable {
   }
 }
 
-export class FlatTarget extends TargetShape implements Hashable {
-  modelClass!: PackageableElementReference<Class>;
+export class MultiFlatTargetPart implements Hashable {
+  modelProperty!: string;
   targetName!: string;
-  partitionProperties: string[] = [];
+  partitionFields: string[] = [];
   deduplicationStrategy!: DeduplicationStrategy;
-  ingestMode!: IngestMode;
-
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET,
-      this.modelClass.hashValue,
-      this.targetName,
-      hashArray(this.partitionProperties),
-      this.deduplicationStrategy,
-      this.ingestMode,
-    ]);
-  }
-}
-
-export class OpaqueTarget extends TargetShape implements Hashable {
-  targetName!: string;
-
-  override get hashCode(): string {
-    return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.OPAQUE_TARGET,
-      this.targetName,
-    ]);
-  }
-}
-
-export class PropertyAndFlatTarget implements Hashable {
-  property!: string;
-  flatTarget!: FlatTarget;
 
   get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PROPERTY_AND_FLAT_TARGET,
-      this.property,
-      this.flatTarget,
+      this.modelProperty,
+      this.targetName,
+      hashArray(this.partitionFields),
+      this.deduplicationStrategy,
     ]);
   }
 }
@@ -268,12 +266,12 @@ export class MaxVersionDeduplicationStrategy
   extends DeduplicationStrategy
   implements Hashable
 {
-  versionProperty!: string;
+  versionField!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.MAX_VERSION_DEDUPLICATION_STRATEGY,
-      this.versionProperty,
+      this.versionField,
     ]);
   }
 }
@@ -390,13 +388,13 @@ export class DeleteIndicatorMergeStrategy
   extends MergeStrategy
   implements Hashable
 {
-  deleteProperty!: string;
+  deleteField!: string;
   deleteValues: string[] = [];
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DELETE_INDICATOR_MERGE_STRATEGY,
-      this.deleteProperty,
+      this.deleteField,
       hashArray(this.deleteValues),
     ]);
   }
@@ -436,12 +434,12 @@ export class NoAuditing extends Auditing implements Hashable {
 }
 
 export class DateTimeAuditing extends Auditing implements Hashable {
-  dateTimeProperty!: string;
+  dateTimeField!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_AUDITING,
-      this.dateTimeProperty,
+      this.dateTimeField,
     ]);
   }
 }
@@ -460,14 +458,14 @@ export class BatchIdTransactionMilestoning
   extends TransactionMilestoning
   implements Hashable
 {
-  batchIdInFieldName!: string;
-  batchIdOutFieldName!: string;
+  batchIdInName!: string;
+  batchIdOutName!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_ID_TRANSACTION_MILESTONING,
-      this.batchIdInFieldName,
-      this.batchIdOutFieldName,
+      this.batchIdInName,
+      this.batchIdOutName,
     ]);
   }
 }
@@ -476,14 +474,14 @@ export class DateTimeTransactionMilestoning
   extends TransactionMilestoning
   implements Hashable
 {
-  dateTimeInFieldName!: string;
-  dateTimeOutFieldName!: string;
+  dateTimeInName!: string;
+  dateTimeOutName!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_TRANSACTION_MILESTONING,
-      this.dateTimeInFieldName,
-      this.dateTimeOutFieldName,
+      this.dateTimeInName,
+      this.dateTimeOutName,
     ]);
   }
 }
@@ -492,18 +490,18 @@ export class BatchIdAndDateTimeTransactionMilestoning
   extends TransactionMilestoning
   implements Hashable
 {
-  batchIdInFieldName!: string;
-  batchIdOutFieldName!: string;
-  dateTimeInFieldName!: string;
-  dateTimeOutFieldName!: string;
+  batchIdInName!: string;
+  batchIdOutName!: string;
+  dateTimeInName!: string;
+  dateTimeOutName!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING,
-      this.batchIdInFieldName,
-      this.batchIdOutFieldName,
-      this.dateTimeInFieldName,
-      this.dateTimeOutFieldName,
+      this.batchIdInName,
+      this.batchIdOutName,
+      this.dateTimeInName,
+      this.dateTimeOutName,
     ]);
   }
 }
@@ -522,15 +520,15 @@ export class DateTimeValidityMilestoning
   extends ValidityMilestoning
   implements Hashable
 {
-  dateTimeFromFieldName!: string;
-  dateTimeThruFieldName!: string;
+  dateTimeFromName!: string;
+  dateTimeThruName!: string;
   derivation!: ValidityDerivation;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_VALIDITY_MILESTONING,
-      this.dateTimeFromFieldName,
-      this.dateTimeThruFieldName,
+      this.dateTimeFromName,
+      this.dateTimeThruName,
       this.derivation,
     ]);
   }
@@ -548,12 +546,12 @@ export class SourceSpecifiesFromDateTime
   extends ValidityDerivation
   implements Hashable
 {
-  sourceDateTimeFromProperty!: string;
+  sourceDateTimeFromField!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.SOURCE_SPECIFIES_FROM_DATE_TIME,
-      this.sourceDateTimeFromProperty,
+      this.sourceDateTimeFromField,
     ]);
   }
 }
@@ -562,14 +560,14 @@ export class SourceSpecifiesFromAndThruDateTime
   extends ValidityDerivation
   implements Hashable
 {
-  sourceDateTimeFromProperty!: string;
-  sourceDateTimeThruProperty!: string;
+  sourceDateTimeFromField!: string;
+  sourceDateTimeThruField!: string;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.SOURCE_SPECIFIES_FROM_AND_THRU_DATE_TIME,
-      this.sourceDateTimeFromProperty,
-      this.sourceDateTimeThruProperty,
+      this.sourceDateTimeFromField,
+      this.sourceDateTimeThruField,
     ]);
   }
 }

@@ -27,11 +27,10 @@ import {
   NontemporalSnapshot,
   Notifier,
   Notifyee,
-  OpaqueTarget,
   PagerDutyNotifyee,
   Persistence,
   Persister,
-  PropertyAndFlatTarget,
+  MultiFlatTargetPart,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
@@ -73,11 +72,10 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
-  V1_OpaqueTarget,
   V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
-  V1_PropertyAndFlatTarget,
+  V1_MultiFlatTargetPart,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -90,15 +88,17 @@ import {
   V1_ValidityDerivation,
   V1_ValidityMilestoning,
 } from '../../../model/packageableElements/persistence/V1_Persistence';
-import type { V1_GraphTransformerContext } from '@finos/legend-graph';
 import {
-  IdentifiedConnection,
+  Binding,
+  PackageableElementReference,
+  type V1_GraphTransformerContext,
   V1_initPackageableElement,
   V1_transformElementReference,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
-import { V1_IdentifiedConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
+import { V1_Binding } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding';
+import { V1_ModelUnit } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_ModelUnit';
 import { V1_transformConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 
 /**********
  * persistence
@@ -152,19 +152,30 @@ export const V1_transformPersister = (
 ): V1_Persister => {
   if (element instanceof StreamingPersister) {
     const protocol = new V1_StreamingPersister();
-    if (element.connections) {
-      protocol.connections = element.connections.map((c) =>
-        V1_transformIdentifiedConnection(c, context),
+    protocol.binding = V1_transformBinding(element.binding, context);
+
+    if (element.connection) {
+      protocol.connection = V1_transformConnection(
+        element.connection,
+        true,
+        context,
       );
     }
+
     return protocol;
   } else if (element instanceof BatchPersister) {
     const protocol = new V1_BatchPersister();
-    if (element.connections) {
-      protocol.connections = element.connections.map((c) =>
-        V1_transformIdentifiedConnection(c, context),
+    protocol.binding = V1_transformBinding(element.binding, context);
+
+    if (element.connection) {
+      protocol.connection = V1_transformConnection(
+        element.connection,
+        true,
+        context,
       );
     }
+
+    protocol.ingestMode = V1_transformIngestMode(element.ingestMode, context);
     protocol.targetShape = V1_transformTargetShape(
       element.targetShape,
       context,
@@ -210,21 +221,36 @@ export const V1_transformNotifyee = (
 };
 
 /**********
- * connection
+ * binding
  **********/
 
-export const V1_transformIdentifiedConnection = (
-  element: IdentifiedConnection,
+export const V1_transformBinding = (
+  element: Binding,
   context: V1_GraphTransformerContext,
-): V1_IdentifiedConnection => {
-  const connection = new V1_IdentifiedConnection();
-  connection.id = element.id;
-  connection.connection = V1_transformConnection(
-    element.connection,
-    true,
-    context,
-  );
-  return connection;
+): V1_Binding => {
+  const protocol = new V1_Binding();
+  V1_initPackageableElement(protocol, element);
+  protocol.name = element.name;
+  protocol.package = element.package?.fullPath ?? '';
+  protocol.schemaId = element.schemaId;
+  protocol.schemaSet = element.schemaSet.valueForSerialization;
+  protocol.contentType = element.contentType;
+  const modelUnit = new V1_ModelUnit();
+  modelUnit.packageableElementExcludes =
+    element.modelUnit.packageableElementExcludes.map((path) =>
+      path instanceof PackageableElementReference
+        ? path.valueForSerialization ?? ''
+        : path,
+    );
+  modelUnit.packageableElementIncludes =
+    element.modelUnit.packageableElementIncludes.map((path) =>
+      path instanceof PackageableElementReference
+        ? path.valueForSerialization ?? ''
+        : path,
+    );
+  protocol.modelUnit = modelUnit;
+  protocol.includedStores = [];
+  return protocol;
 };
 
 /**********
@@ -235,16 +261,31 @@ export const V1_transformTargetShape = (
   element: TargetShape,
   context: V1_GraphTransformerContext,
 ): V1_TargetShape => {
-  if (element instanceof MultiFlatTarget) {
-    return V1_transformMultiFlatTarget(element, context);
-  } else if (element instanceof FlatTarget) {
+  if (element instanceof FlatTarget) {
     return V1_transformFlatTarget(element, context);
-  } else if (element instanceof OpaqueTarget) {
-    return V1_transformOpaqueTarget(element, context);
+  } else if (element instanceof MultiFlatTarget) {
+    return V1_transformMultiFlatTarget(element, context);
   }
   throw new UnsupportedOperationError(
     `Unable to transform target shape '${element}'`,
   );
+};
+
+export const V1_transformFlatTarget = (
+  element: FlatTarget,
+  context: V1_GraphTransformerContext,
+): V1_FlatTarget => {
+  const protocol = new V1_FlatTarget();
+  if (element.modelClass) {
+    protocol.modelClass = V1_transformElementReference(element.modelClass);
+  }
+  protocol.targetName = element.targetName;
+  protocol.partitionFields = element.partitionFields;
+  protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(
+    element.deduplicationStrategy,
+    context,
+  );
+  return protocol;
 };
 
 export const V1_transformMultiFlatTarget = (
@@ -258,43 +299,23 @@ export const V1_transformMultiFlatTarget = (
     context,
   );
   protocol.parts = element.parts.map((p) =>
-    V1_transformPropertyAndFlatTarget(p, context),
+    V1_transformMultiFlatTargetPart(p, context),
   );
   return protocol;
 };
 
-export const V1_transformPropertyAndFlatTarget = (
-  element: PropertyAndFlatTarget,
+export const V1_transformMultiFlatTargetPart = (
+  element: MultiFlatTargetPart,
   context: V1_GraphTransformerContext,
-): V1_PropertyAndFlatTarget => {
-  const protocol = new V1_PropertyAndFlatTarget();
-  protocol.property = element.property;
-  protocol.flatTarget = V1_transformFlatTarget(element.flatTarget, context);
-  return protocol;
-};
-
-export const V1_transformFlatTarget = (
-  element: FlatTarget,
-  context: V1_GraphTransformerContext,
-): V1_FlatTarget => {
-  const protocol = new V1_FlatTarget();
-  protocol.modelClass = V1_transformElementReference(element.modelClass);
+): V1_MultiFlatTargetPart => {
+  const protocol = new V1_MultiFlatTargetPart();
+  protocol.modelProperty = element.modelProperty;
   protocol.targetName = element.targetName;
-  protocol.partitionProperties = element.partitionProperties;
+  protocol.partitionFields = element.partitionFields;
   protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(
     element.deduplicationStrategy,
     context,
   );
-  protocol.ingestMode = V1_transformIngestMode(element.ingestMode, context);
-  return protocol;
-};
-
-export const V1_transformOpaqueTarget = (
-  element: OpaqueTarget,
-  context: V1_GraphTransformerContext,
-): V1_OpaqueTarget => {
-  const protocol = new V1_OpaqueTarget();
-  protocol.targetName = element.targetName;
   return protocol;
 };
 
@@ -326,7 +347,7 @@ export const V1_transformDeduplicationStrategy = (
     return new V1_AnyVersionDeduplicationStrategy();
   } else if (element instanceof MaxVersionDeduplicationStrategy) {
     const protocol = new V1_MaxVersionDeduplicationStrategy();
-    protocol.versionProperty = element.versionProperty;
+    protocol.versionField = element.versionField;
     return protocol;
   }
   throw new UnsupportedOperationError(
@@ -419,7 +440,7 @@ export const V1_transformMergeStrategy = (
     return new V1_NoDeletesMergeStrategy();
   } else if (element instanceof DeleteIndicatorMergeStrategy) {
     const protocol = new V1_DeleteIndicatorMergeStrategy();
-    protocol.deleteProperty = element.deleteProperty;
+    protocol.deleteField = element.deleteField;
     protocol.deleteValues = element.deleteValues;
     return protocol;
   }
@@ -440,7 +461,7 @@ export const V1_transformAuditing = (
     return new V1_NoAuditing();
   } else if (element instanceof DateTimeAuditing) {
     const protocol = new V1_DateTimeAuditing();
-    protocol.dateTimeProperty = element.dateTimeProperty;
+    protocol.dateTimeField = element.dateTimeField;
     return protocol;
   }
   throw new UnsupportedOperationError(
@@ -458,20 +479,20 @@ export const V1_transformTransactionMilestoning = (
 ): V1_TransactionMilestoning => {
   if (element instanceof BatchIdTransactionMilestoning) {
     const protocol = new V1_BatchIdTransactionMilestoning();
-    protocol.batchIdInFieldName = element.batchIdInFieldName;
-    protocol.batchIdOutFieldName = element.batchIdOutFieldName;
+    protocol.batchIdInName = element.batchIdInName;
+    protocol.batchIdOutName = element.batchIdOutName;
     return protocol;
   } else if (element instanceof DateTimeTransactionMilestoning) {
     const protocol = new V1_DateTimeTransactionMilestoning();
-    protocol.dateTimeInFieldName = element.dateTimeInFieldName;
-    protocol.dateTimeOutFieldName = element.dateTimeOutFieldName;
+    protocol.dateTimeInName = element.dateTimeInName;
+    protocol.dateTimeOutName = element.dateTimeOutName;
     return protocol;
   } else if (element instanceof BatchIdAndDateTimeTransactionMilestoning) {
     const protocol = new V1_BatchIdAndDateTimeTransactionMilestoning();
-    protocol.batchIdInFieldName = element.batchIdInFieldName;
-    protocol.batchIdOutFieldName = element.batchIdOutFieldName;
-    protocol.dateTimeInFieldName = element.dateTimeInFieldName;
-    protocol.dateTimeOutFieldName = element.dateTimeOutFieldName;
+    protocol.batchIdInName = element.batchIdInName;
+    protocol.batchIdOutName = element.batchIdOutName;
+    protocol.dateTimeInName = element.dateTimeInName;
+    protocol.dateTimeOutName = element.dateTimeOutName;
     return protocol;
   }
   throw new UnsupportedOperationError(
@@ -489,8 +510,8 @@ export const V1_transformValidityMilestoning = (
 ): V1_ValidityMilestoning => {
   if (element instanceof DateTimeValidityMilestoning) {
     const protocol = new V1_DateTimeValidityMilestoning();
-    protocol.dateTimeFromFieldName = element.dateTimeFromFieldName;
-    protocol.dateTimeThruFieldName = element.dateTimeThruFieldName;
+    protocol.dateTimeFromName = element.dateTimeFromName;
+    protocol.dateTimeThruName = element.dateTimeThruName;
     protocol.derivation = V1_transformValidityDerivation(
       element.derivation,
       context,
@@ -508,12 +529,12 @@ export const V1_transformValidityDerivation = (
 ): V1_ValidityDerivation => {
   if (element instanceof SourceSpecifiesFromDateTime) {
     const protocol = new V1_SourceSpecifiesFromDateTime();
-    protocol.sourceDateTimeFromProperty = element.sourceDateTimeFromProperty;
+    protocol.sourceDateTimeFromField = element.sourceDateTimeFromField;
     return protocol;
   } else if (element instanceof SourceSpecifiesFromAndThruDateTime) {
     const protocol = new V1_SourceSpecifiesFromAndThruDateTime();
-    protocol.sourceDateTimeFromProperty = element.sourceDateTimeFromProperty;
-    protocol.sourceDateTimeThruProperty = element.sourceDateTimeThruProperty;
+    protocol.sourceDateTimeFromField = element.sourceDateTimeFromField;
+    protocol.sourceDateTimeThruField = element.sourceDateTimeThruField;
     return protocol;
   }
   throw new UnsupportedOperationError(

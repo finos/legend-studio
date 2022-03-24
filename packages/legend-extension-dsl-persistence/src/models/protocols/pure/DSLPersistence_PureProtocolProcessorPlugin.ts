@@ -2,12 +2,12 @@ import packageJson from '../../../../package.json';
 
 import { Persistence } from '../../metamodels/pure/model/packageableElements/persistence/Persistence';
 import { V1_Persistence } from './v1/model/packageableElements/persistence/V1_Persistence';
-
 import {
   V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceModelSchema,
 } from './v1/transformation/pureProtocol/V1_DSLPersistence_ProtocolHelper';
-
+import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_PersistenceBuilder';
+import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_PersistenceTransformer';
 import {
   PackageableElement,
   PureProtocolProcessorPlugin,
@@ -20,14 +20,9 @@ import {
   V1_GraphTransformerContext,
   V1_PackageableElement,
 } from '@finos/legend-graph';
-
 import { assertType, type PlainObject } from '@finos/legend-shared';
-
 import { deserialize, serialize } from 'serializr';
-import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_PersistenceBuilder';
-import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_PersistenceTransformer';
 
-//TODO: ledav -- update value once Pure model is updated
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::persistence::metamodel::Persistence';
 
@@ -90,7 +85,7 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
         plugins: PureProtocolProcessorPlugin[],
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_Persistence) {
-          return serialize(V1_persistenceModelSchema, elementProtocol);
+          return serialize(V1_persistenceModelSchema(plugins), elementProtocol);
         }
         return undefined;
       },
@@ -104,7 +99,7 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
         plugins: PureProtocolProcessorPlugin[],
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE) {
-          return deserialize(V1_persistenceModelSchema, json);
+          return deserialize(V1_persistenceModelSchema(plugins), json);
         }
         return undefined;
       },

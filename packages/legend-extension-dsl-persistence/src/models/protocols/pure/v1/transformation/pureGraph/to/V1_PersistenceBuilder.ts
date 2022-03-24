@@ -27,11 +27,10 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
-  V1_OpaqueTarget,
   V1_PagerDutyNotifyee,
   type V1_Persistence,
   V1_Persister,
-  V1_PropertyAndFlatTarget,
+  V1_MultiFlatTargetPart,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -73,10 +72,9 @@ import {
   NontemporalSnapshot,
   Notifier,
   Notifyee,
-  OpaqueTarget,
   PagerDutyNotifyee,
   Persister,
-  PropertyAndFlatTarget,
+  MultiFlatTargetPart,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
@@ -91,13 +89,21 @@ import {
 } from '../../../../../../metamodels/pure/model/packageableElements/persistence/Persistence';
 import { getPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
 import {
+  Binding,
+  Connection,
   GraphBuilderError,
-  IdentifiedConnection,
+  ModelUnit,
+  toOptionalPackageableElementReference,
+  V1_Connection,
   type V1_GraphBuilderContext,
+  V1_resolveSchemaSet,
 } from '@finos/legend-graph';
-import { guaranteeNonEmptyString } from '@finos/legend-shared';
-import type { V1_IdentifiedConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
 import { V1_ProtocolToMetaModelConnectionBuilder } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
+import {
+  assertNonNullable,
+  guaranteeNonEmptyString,
+} from '@finos/legend-shared';
+import type { V1_Binding } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding';
 
 /**********
  * persistence
@@ -151,19 +157,22 @@ export const V1_buildPersister = (
 ): Persister => {
   if (protocol instanceof V1_StreamingPersister) {
     const persister = new StreamingPersister();
-    if (protocol.connections) {
-      persister.connections = protocol.connections.map((c) =>
-        V1_buildIdentifiedConnection(c, context),
-      );
+    persister.binding = V1_buildBinding(protocol.binding, context);
+
+    if (protocol.connection) {
+      persister.connection = V1_buildConnection(protocol.connection, context);
     }
+
     return persister;
   } else if (protocol instanceof V1_BatchPersister) {
     const persister = new BatchPersister();
-    if (protocol.connections) {
-      persister.connections = protocol.connections.map((c) =>
-        V1_buildIdentifiedConnection(c, context),
-      );
+    persister.binding = V1_buildBinding(protocol.binding, context);
+
+    if (protocol.connection) {
+      persister.connection = V1_buildConnection(protocol.connection, context);
     }
+
+    persister.ingestMode = V1_buildIngestMode(protocol.ingestMode, context);
     persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
     return persister;
   }
@@ -202,17 +211,53 @@ export const V1_buildNotifyee = (
 };
 
 /**********
+ * binding
+ **********/
+
+export const V1_buildBinding = (
+  protocol: V1_Binding,
+  context: V1_GraphBuilderContext,
+): Binding => {
+  const binding = new Binding(protocol.name);
+  binding.schemaId = protocol.schemaId;
+
+  const schemaSet = protocol.schemaSet
+    ? V1_resolveSchemaSet(protocol.schemaSet, context)
+    : undefined;
+  binding.schemaSet = toOptionalPackageableElementReference(schemaSet);
+
+  binding.contentType = guaranteeNonEmptyString(
+    protocol.contentType,
+    `Binding 'contentType' '${protocol.contentType}' is not supported`,
+  );
+
+  assertNonNullable(protocol.modelUnit, `Binding 'modelUnit' field is missing`);
+
+  const modelUnit = new ModelUnit();
+  modelUnit.packageableElementIncludes =
+    protocol.modelUnit.packageableElementIncludes.map((e) =>
+      context.resolveElement(e, true),
+    );
+  modelUnit.packageableElementExcludes =
+    protocol.modelUnit.packageableElementExcludes.map((e) =>
+      context.resolveElement(e, true),
+    );
+  binding.modelUnit = modelUnit;
+
+  return binding;
+};
+
+/**********
  * connection
  **********/
 
-export const V1_buildIdentifiedConnection = (
-  protocol: V1_IdentifiedConnection,
+export const V1_buildConnection = (
+  protocol: V1_Connection,
   context: V1_GraphBuilderContext,
-): IdentifiedConnection => {
-  const connection = protocol.connection.accept_ConnectionVisitor(
+): Connection => {
+  return protocol.accept_ConnectionVisitor(
     new V1_ProtocolToMetaModelConnectionBuilder(context),
   );
-  return new IdentifiedConnection(protocol.id, connection);
 };
 
 /**********
@@ -223,14 +268,31 @@ export const V1_buildTargetShape = (
   protocol: V1_TargetShape,
   context: V1_GraphBuilderContext,
 ): TargetShape => {
-  if (protocol instanceof V1_MultiFlatTarget) {
-    return V1_buildMultiFlatTarget(protocol, context);
-  } else if (protocol instanceof V1_FlatTarget) {
+  if (protocol instanceof V1_FlatTarget) {
     return V1_buildFlatTarget(protocol, protocol.modelClass, context);
-  } else if (protocol instanceof V1_OpaqueTarget) {
-    return V1_buildOpaqueTarget(protocol, context);
+  } else if (protocol instanceof V1_MultiFlatTarget) {
+    return V1_buildMultiFlatTarget(protocol, context);
   }
   throw new GraphBuilderError(`Unrecognized target shape '${protocol}'`);
+};
+
+export const V1_buildFlatTarget = (
+  protocol: V1_FlatTarget,
+  modelClass: string | undefined,
+  context: V1_GraphBuilderContext,
+): FlatTarget => {
+  const targetShape = new FlatTarget();
+  if (modelClass) {
+    targetShape.modelClass = context.resolveClass(modelClass);
+  }
+  targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
+  targetShape.partitionFields = protocol.partitionFields;
+  targetShape.deduplicationStrategy = V1_buildDeduplicationStrategy(
+    protocol.deduplicationStrategy,
+    context,
+  );
+
+  return targetShape;
 };
 
 export const V1_buildMultiFlatTarget = (
@@ -244,63 +306,24 @@ export const V1_buildMultiFlatTarget = (
     context,
   );
   targetShape.parts = protocol.parts.map((p) =>
-    V1_buildPropertyAndFlatTarget(p, protocol.modelClass, context),
+    V1_buildMultiFlatTargetPart(p, context),
   );
   return targetShape;
 };
 
-export const V1_buildFlatTarget = (
-  protocol: V1_FlatTarget,
-  modelClass: string,
+export const V1_buildMultiFlatTargetPart = (
+  protocol: V1_MultiFlatTargetPart,
   context: V1_GraphBuilderContext,
-): FlatTarget => {
-  const targetShape = new FlatTarget();
-
-  // Flat: modelClass will match protocol.modelClass
-  // MultiFlat: protocol.modelClass will not be populated;
-  //            instead infer it from rootModelClass.property target type
-
-  targetShape.modelClass = context.resolveClass(modelClass);
-  targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
-  targetShape.partitionProperties = protocol.partitionProperties;
-  targetShape.deduplicationStrategy = V1_buildDeduplicationStrategy(
+): MultiFlatTargetPart => {
+  const part = new MultiFlatTargetPart();
+  part.modelProperty = protocol.modelProperty;
+  part.targetName = protocol.targetName;
+  part.partitionFields = protocol.partitionFields;
+  part.deduplicationStrategy = V1_buildDeduplicationStrategy(
     protocol.deduplicationStrategy,
     context,
   );
-  targetShape.ingestMode = V1_buildIngestMode(protocol.ingestMode, context);
-  return targetShape;
-};
-
-export const V1_buildOpaqueTarget = (
-  protocol: V1_OpaqueTarget,
-  context: V1_GraphBuilderContext,
-): OpaqueTarget => {
-  const targetShape = new OpaqueTarget();
-  targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
-  return targetShape;
-};
-
-export const V1_buildPropertyAndFlatTarget = (
-  protocol: V1_PropertyAndFlatTarget,
-  groupModelClass: string,
-  context: V1_GraphBuilderContext,
-): PropertyAndFlatTarget => {
-  const element = new PropertyAndFlatTarget();
-  element.property = protocol.property;
-
-  // resolve target type of property to populate model class in flat target
-  const property = context.graph
-    .getClass(groupModelClass)
-    .getProperty(protocol.property);
-  const targetModelClass = property.genericType.value.rawType.path;
-
-  element.flatTarget = V1_buildFlatTarget(
-    protocol.flatTarget,
-    targetModelClass,
-    context,
-  );
-
-  return element;
+  return part;
 };
 
 export const V1_buildTransactionScope = (
@@ -329,7 +352,7 @@ export const V1_buildDeduplicationStrategy = (
     return new AnyVersionDeduplicationStrategy();
   } else if (protocol instanceof V1_MaxVersionDeduplicationStrategy) {
     const strategy = new MaxVersionDeduplicationStrategy();
-    strategy.versionProperty = protocol.versionProperty;
+    strategy.versionField = protocol.versionField;
     return strategy;
   }
   throw new GraphBuilderError(
@@ -420,7 +443,7 @@ export const V1_buildMergeStrategy = (
     return new NoDeletesMergeStrategy();
   } else if (protocol instanceof V1_DeleteIndicatorMergeStrategy) {
     const strategy = new DeleteIndicatorMergeStrategy();
-    strategy.deleteProperty = protocol.deleteProperty;
+    strategy.deleteField = protocol.deleteField;
     strategy.deleteValues = protocol.deleteValues;
     return strategy;
   }
@@ -439,7 +462,7 @@ export const V1_buildAuditing = (
     return new NoAuditing();
   } else if (protocol instanceof V1_DateTimeAuditing) {
     const auditing = new DateTimeAuditing();
-    auditing.dateTimeProperty = protocol.dateTimeProperty;
+    auditing.dateTimeField = protocol.dateTimeField;
     return auditing;
   }
   throw new GraphBuilderError(`Unrecognized auditing mode '${protocol}'`);
@@ -455,20 +478,20 @@ export const V1_buildTransactionMilestoning = (
 ): TransactionMilestoning => {
   if (protocol instanceof V1_BatchIdTransactionMilestoning) {
     const milestoning = new BatchIdTransactionMilestoning();
-    milestoning.batchIdInFieldName = protocol.batchIdInFieldName;
-    milestoning.batchIdOutFieldName = protocol.batchIdOutFieldName;
+    milestoning.batchIdInName = protocol.batchIdInName;
+    milestoning.batchIdOutName = protocol.batchIdOutName;
     return milestoning;
   } else if (protocol instanceof V1_DateTimeTransactionMilestoning) {
     const milestoning = new DateTimeTransactionMilestoning();
-    milestoning.dateTimeInFieldName = protocol.dateTimeInFieldName;
-    milestoning.dateTimeOutFieldName = protocol.dateTimeOutFieldName;
+    milestoning.dateTimeInName = protocol.dateTimeInName;
+    milestoning.dateTimeOutName = protocol.dateTimeOutName;
     return milestoning;
   } else if (protocol instanceof V1_BatchIdAndDateTimeTransactionMilestoning) {
     const milestoning = new BatchIdAndDateTimeTransactionMilestoning();
-    milestoning.batchIdInFieldName = protocol.batchIdInFieldName;
-    milestoning.batchIdOutFieldName = protocol.batchIdOutFieldName;
-    milestoning.dateTimeInFieldName = protocol.dateTimeInFieldName;
-    milestoning.dateTimeOutFieldName = protocol.dateTimeOutFieldName;
+    milestoning.batchIdInName = protocol.batchIdInName;
+    milestoning.batchIdOutName = protocol.batchIdOutName;
+    milestoning.dateTimeInName = protocol.dateTimeInName;
+    milestoning.dateTimeOutName = protocol.dateTimeOutName;
     return milestoning;
   }
   throw new GraphBuilderError(
@@ -486,8 +509,8 @@ export const V1_buildValidityMilestoning = (
 ): ValidityMilestoning => {
   if (protocol instanceof V1_DateTimeValidityMilestoning) {
     const milestoning = new DateTimeValidityMilestoning();
-    milestoning.dateTimeFromFieldName = protocol.dateTimeFromFieldName;
-    milestoning.dateTimeThruFieldName = protocol.dateTimeThruFieldName;
+    milestoning.dateTimeFromName = protocol.dateTimeFromName;
+    milestoning.dateTimeThruName = protocol.dateTimeThruName;
     milestoning.derivation = V1_buildValidityDerivation(
       protocol.derivation,
       context,
@@ -505,12 +528,12 @@ export const V1_buildValidityDerivation = (
 ): ValidityDerivation => {
   if (protocol instanceof V1_SourceSpecifiesFromDateTime) {
     const derivation = new SourceSpecifiesFromDateTime();
-    derivation.sourceDateTimeFromProperty = protocol.sourceDateTimeFromProperty;
+    derivation.sourceDateTimeFromField = protocol.sourceDateTimeFromField;
     return derivation;
   } else if (protocol instanceof V1_SourceSpecifiesFromAndThruDateTime) {
     const derivation = new SourceSpecifiesFromAndThruDateTime();
-    derivation.sourceDateTimeFromProperty = protocol.sourceDateTimeFromProperty;
-    derivation.sourceDateTimeThruProperty = protocol.sourceDateTimeThruProperty;
+    derivation.sourceDateTimeFromField = protocol.sourceDateTimeFromField;
+    derivation.sourceDateTimeThruField = protocol.sourceDateTimeThruField;
     return derivation;
   }
   throw new GraphBuilderError(

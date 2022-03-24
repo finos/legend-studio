@@ -27,11 +27,10 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
-  V1_OpaqueTarget,
   V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
-  V1_PropertyAndFlatTarget,
+  V1_MultiFlatTargetPart,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -43,6 +42,11 @@ import {
   V1_ValidityDerivation,
   V1_ValidityMilestoning,
 } from '../../model/packageableElements/persistence/V1_Persistence';
+import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
+import {
+  V1_deserializeConnectionValue,
+  V1_serializeConnectionValue,
+} from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper';
 import {
   deserializeArray,
   PlainObject,
@@ -55,11 +59,11 @@ import {
   custom,
   deserialize,
   list,
-  object,
+  ModelSchema,
   primitive,
   serialize,
 } from 'serializr';
-import { V1_IdentifiedConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
+import { V1_bindingModelSchema } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DSLExternalFormat_ProtocolHelper';
 
 /**********
  * persistence
@@ -67,25 +71,28 @@ import { V1_IdentifiedConnection } from '@finos/legend-graph/lib/models/protocol
 
 export const V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE = 'persistence';
 
-export const V1_persistenceModelSchema = createModelSchema(V1_Persistence, {
-  _type: usingConstantValueSchema(V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE),
-  documentation: primitive(),
-  name: primitive(),
-  notifier: custom(
-    (val) => serialize(V1_notifierModelSchema, val),
-    (val) => deserialize(V1_notifierModelSchema, val),
-  ),
-  package: primitive(),
-  persister: custom(
-    (val) => V1_serializePersister(val),
-    (val) => V1_deserializePersister(val),
-  ),
-  service: primitive(),
-  trigger: custom(
-    (val) => V1_serializeTrigger(val),
-    (val) => V1_deserializeTrigger(val),
-  ),
-});
+export const V1_persistenceModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_Persistence> =>
+  createModelSchema(V1_Persistence, {
+    _type: usingConstantValueSchema(V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE),
+    documentation: primitive(),
+    name: primitive(),
+    notifier: custom(
+      (val) => serialize(V1_notifierModelSchema, val),
+      (val) => deserialize(V1_notifierModelSchema, val),
+    ),
+    package: primitive(),
+    persister: custom(
+      (val) => V1_serializePersister(val, plugins),
+      (val) => V1_deserializePersister(val, plugins),
+    ),
+    service: primitive(),
+    trigger: custom(
+      (val) => V1_serializeTrigger(val),
+      (val) => V1_deserializeTrigger(val),
+    ),
+  });
 
 /**********
  * trigger
@@ -140,30 +147,52 @@ enum V1_PersisterType {
   BATCH_PERSISTER = 'batchPersister',
 }
 
-const V1_streamingPersisterModelSchema = createModelSchema(
-  V1_StreamingPersister,
-  {
+const V1_streamingPersisterModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_StreamingPersister> =>
+  createModelSchema(V1_StreamingPersister, {
     _type: usingConstantValueSchema(V1_PersisterType.STREAMING_PERSISTER),
-    connections: list(object(V1_IdentifiedConnection)),
-  },
-);
+    binding: custom(
+      (val) => serialize(V1_bindingModelSchema, val),
+      (val) => deserialize(V1_bindingModelSchema, val),
+    ),
+    connection: custom(
+      (val) => V1_serializeConnectionValue(val, true, plugins),
+      (val) => V1_deserializeConnectionValue(val, true, plugins),
+    ),
+  });
 
-const V1_batchPersisterModelSchema = createModelSchema(V1_BatchPersister, {
-  _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
-  connections: list(object(V1_IdentifiedConnection)),
-  targetShape: custom(
-    (val) => V1_serializeTargetShape(val),
-    (val) => V1_deserializeTargetShape(val),
-  ),
-});
+const V1_batchPersisterModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_BatchPersister> =>
+  createModelSchema(V1_BatchPersister, {
+    _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
+    binding: custom(
+      (val) => serialize(V1_bindingModelSchema, val),
+      (val) => deserialize(V1_bindingModelSchema, val),
+    ),
+    connection: custom(
+      (val) => V1_serializeConnectionValue(val, true, plugins),
+      (val) => V1_deserializeConnectionValue(val, true, plugins),
+    ),
+    ingestMode: custom(
+      (val) => V1_serializeIngestMode(val),
+      (val) => V1_deserializeIngestMode(val),
+    ),
+    targetShape: custom(
+      (val) => V1_serializeTargetShape(val),
+      (val) => V1_deserializeTargetShape(val),
+    ),
+  });
 
 const V1_serializePersister = (
   protocol: V1_Persister,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_Persister> => {
   if (protocol instanceof V1_StreamingPersister) {
-    return serialize(V1_streamingPersisterModelSchema, protocol);
+    return serialize(V1_streamingPersisterModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_BatchPersister) {
-    return serialize(V1_batchPersisterModelSchema, protocol);
+    return serialize(V1_batchPersisterModelSchema(plugins), protocol);
   }
   throw new UnsupportedOperationError(
     `Unable to serialize persister`,
@@ -173,12 +202,13 @@ const V1_serializePersister = (
 
 const V1_deserializePersister = (
   json: PlainObject<V1_Persister>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_Persister => {
   switch (json._type) {
     case V1_PersisterType.STREAMING_PERSISTER:
-      return deserialize(V1_streamingPersisterModelSchema, json);
+      return deserialize(V1_streamingPersisterModelSchema(plugins), json);
     case V1_PersisterType.BATCH_PERSISTER:
-      return deserialize(V1_batchPersisterModelSchema, json);
+      return deserialize(V1_batchPersisterModelSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize persister '${json._type}'`,
@@ -246,10 +276,20 @@ const V1_deserializeNotifyee = (
  **********/
 
 enum V1_TargetShapeType {
-  MULTI_FLAT_TARGET = 'multiFlatTarget',
   FLAT_TARGET = 'flatTarget',
-  OPAQUE_TARGET = 'opaqueTarget',
+  MULTI_FLAT_TARGET = 'multiFlatTarget',
 }
+
+const V1_flatTargetModelSchema = createModelSchema(V1_FlatTarget, {
+  _type: usingConstantValueSchema(V1_TargetShapeType.FLAT_TARGET),
+  deduplicationStrategy: custom(
+    (val) => V1_serializeDeduplicationStrategy(val),
+    (val) => V1_deserializeDeduplicationStrategy(val),
+  ),
+  modelClass: primitive(),
+  partitionFields: list(primitive()),
+  targetName: primitive(),
+});
 
 const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
   _type: usingConstantValueSchema(V1_TargetShapeType.MULTI_FLAT_TARGET),
@@ -258,37 +298,26 @@ const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
     (val) =>
       serializeArray(
         val,
-        (v) => serialize(V1_propertyAndFlatTargetSchema, v),
+        (v) => serialize(V1_multiFlatTargetPartSchema, v),
         true,
       ),
     (val) =>
       deserializeArray(
         val,
-        (v) => deserialize(V1_propertyAndFlatTargetSchema, v),
+        (v) => deserialize(V1_multiFlatTargetPartSchema, v),
         false,
       ),
   ),
   transactionScope: primitive(),
 });
 
-const V1_flatTargetModelSchema = createModelSchema(V1_FlatTarget, {
-  _type: usingConstantValueSchema(V1_TargetShapeType.FLAT_TARGET),
+const V1_multiFlatTargetPartSchema = createModelSchema(V1_MultiFlatTargetPart, {
   deduplicationStrategy: custom(
     (val) => V1_serializeDeduplicationStrategy(val),
     (val) => V1_deserializeDeduplicationStrategy(val),
   ),
-  ingestMode: custom(
-    (val) => V1_serializeIngestMode(val),
-    (val) => V1_deserializeIngestMode(val),
-  ),
-  modelClass: primitive(),
-  partitionProperties: list(primitive()),
-  targetName: primitive(),
-});
-
-const V1_opaqueTargetModelSchema = createModelSchema(V1_OpaqueTarget, {
-  _type: usingConstantValueSchema(V1_TargetShapeType.OPAQUE_TARGET),
-  modelClass: primitive(),
+  partitionFields: list(primitive()),
+  property: primitive(),
   targetName: primitive(),
 });
 
@@ -299,8 +328,6 @@ const V1_serializeTargetShape = (
     return serialize(V1_multiFlatTargetModelSchema, protocol);
   } else if (protocol instanceof V1_FlatTarget) {
     return serialize(V1_flatTargetModelSchema, protocol);
-  } else if (protocol instanceof V1_OpaqueTarget) {
-    return serialize(V1_opaqueTargetModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Unable to serialize target shape`,
@@ -316,25 +343,12 @@ const V1_deserializeTargetShape = (
       return deserialize(V1_multiFlatTargetModelSchema, json);
     case V1_TargetShapeType.FLAT_TARGET:
       return deserialize(V1_flatTargetModelSchema, json);
-    case V1_TargetShapeType.OPAQUE_TARGET:
-      return deserialize(V1_opaqueTargetModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize target shape '${json._type}'`,
       );
   }
 };
-
-const V1_propertyAndFlatTargetSchema = createModelSchema(
-  V1_PropertyAndFlatTarget,
-  {
-    flatTarget: custom(
-      (val) => serialize(V1_flatTargetModelSchema, val),
-      (val) => deserialize(V1_flatTargetModelSchema, val),
-    ),
-    property: primitive(),
-  },
-);
 
 /**********
  * deduplication strategy
@@ -344,7 +358,6 @@ enum V1_DeduplicationStrategyType {
   NO_DEDUPLICATION_STRATEGY = 'noDeduplicationStrategy',
   ANY_VERSION_DEDUPLICATION_STRATEGY = 'anyVersionDeduplicationStrategy',
   MAX_VERSION_DEDUPLICATION_STRATEGY = 'maxVersionDeduplicationStrategy',
-  OPAQUE_DEDUPLICATION_STRATEGY = 'opaqueDeduplicationStrategy',
 }
 
 const V1_noDeduplicationStrategyModelSchema = createModelSchema(
@@ -371,7 +384,7 @@ const V1_maxVersionDeduplicationStrategyModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_DeduplicationStrategyType.MAX_VERSION_DEDUPLICATION_STRATEGY,
     ),
-    versionProperty: primitive(),
+    versionField: primitive(),
   },
 );
 
@@ -527,7 +540,7 @@ const V1_serializeIngestMode = (
     return serialize(V1_appendOnlyModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Unable to serialize batch mode`,
+    `Unable to serialize ingest mode`,
     protocol,
   );
 };
@@ -552,7 +565,7 @@ const V1_deserializeIngestMode = (
       return deserialize(V1_appendOnlyModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize batch mode '${json._type}'`,
+        `Unable to deserialize ingest mode '${json._type}'`,
       );
   }
 };
@@ -562,7 +575,6 @@ const V1_deserializeIngestMode = (
 enum V1_MergeStrategyType {
   NO_DELETES_MERGE_STRATEGY = 'noDeletesMergeStrategy',
   DELETE_INDICATOR_MERGE_STRATEGY = 'deleteIndicatorMergeStrategy',
-  OPAQUE_MERGE_STRATEGY = 'opaqueMergeStrategy',
 }
 
 const V1_noDeletesMergeStrategyModelSchema = createModelSchema(
@@ -580,7 +592,7 @@ const V1_deleteIndicatorMergeStrategyModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_MergeStrategyType.DELETE_INDICATOR_MERGE_STRATEGY,
     ),
-    deleteProperty: primitive(),
+    deleteField: primitive(),
     deleteValues: list(primitive()),
   },
 );
@@ -621,7 +633,6 @@ const V1_deserializeMergeStrategy = (
 enum V1_AuditingType {
   NO_AUDITING = 'noAuditing',
   DATE_TIME_AUDITING = 'batchDateTimeAuditing',
-  OPAQUE_AUDITING = 'opaqueAuditing',
 }
 
 const V1_noAuditingModelSchema = createModelSchema(V1_NoAuditing, {
@@ -630,7 +641,7 @@ const V1_noAuditingModelSchema = createModelSchema(V1_NoAuditing, {
 
 const V1_dateTimeAuditingModelSchema = createModelSchema(V1_DateTimeAuditing, {
   _type: usingConstantValueSchema(V1_AuditingType.DATE_TIME_AUDITING),
-  dateTimeFieldName: primitive(),
+  dateTimeName: primitive(),
 });
 
 const V1_serializeAuditing = (
@@ -667,7 +678,6 @@ enum V1_TransactionMilestoningType {
   BATCH_ID_TRANSACTION_MILESTONING = 'batchIdTransactionMilestoning',
   DATE_TIME_TRANSACTION_MILESTONING = 'dateTimeTransactionMilestoning',
   BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING = 'batchIdAndDateTimeTransactionMilestoning',
-  OPAQUE_TRANSACTION_MILESTONING = 'opaqueTransactionMilestoning',
 }
 
 const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
@@ -676,8 +686,8 @@ const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_TransactionMilestoningType.BATCH_ID_TRANSACTION_MILESTONING,
     ),
-    batchIdInFieldName: primitive(),
-    batchIdOutFieldName: primitive(),
+    batchIdInName: primitive(),
+    batchIdOutName: primitive(),
   },
 );
 
@@ -687,8 +697,8 @@ const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_TransactionMilestoningType.DATE_TIME_TRANSACTION_MILESTONING,
     ),
-    dateTimeInFieldName: primitive(),
-    dateTimeOutFieldName: primitive(),
+    dateTimeInName: primitive(),
+    dateTimeOutName: primitive(),
   },
 );
 
@@ -697,10 +707,10 @@ const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
     _type: usingConstantValueSchema(
       V1_TransactionMilestoningType.BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING,
     ),
-    batchIdInFieldName: primitive(),
-    batchIdOutFieldName: primitive(),
-    dateTimeInFieldName: primitive(),
-    dateTimeOutFieldName: primitive(),
+    batchIdInName: primitive(),
+    batchIdOutName: primitive(),
+    dateTimeInName: primitive(),
+    dateTimeOutName: primitive(),
   });
 
 const V1_serializeTransactionMilestoning = (
@@ -748,7 +758,6 @@ const V1_deserializeTransactionMilestoning = (
 
 enum V1_ValidityMilestoningType {
   DATE_TIME_VALIDITY_MILESTONING = 'dateTimeValidityMilestoning',
-  OPAQUE_VALIDITY_MILESTONING = 'opaqueValidityMilestoning',
 }
 
 const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
@@ -757,8 +766,8 @@ const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_ValidityMilestoningType.DATE_TIME_VALIDITY_MILESTONING,
     ),
-    dateTimeFromFieldName: primitive(),
-    dateTimeThruFieldName: primitive(),
+    dateTimeFromName: primitive(),
+    dateTimeThruName: primitive(),
     derivation: custom(
       (val) => V1_serializeValidityDerivation(val),
       (val) => V1_deserializeValidityDerivation(val),
@@ -804,7 +813,7 @@ const V1_sourceSpecifiesFromDateTimeModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_ValidityDerivationType.SOURCE_SPECIFIES_FROM_DATE_TIME,
     ),
-    sourceDateTimeFromProperty: primitive(),
+    sourceDateTimeFromField: primitive(),
   },
 );
 
@@ -814,8 +823,8 @@ const V1_sourceSpecifiesFromAndThruDateTimeModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_ValidityDerivationType.SOURCE_SPECIFIES_FROM_AND_THRU_DATE_TIME,
     ),
-    sourceDateTimeFromProperty: primitive(),
-    sourceDateTimeThruProperty: primitive(),
+    sourceDateTimeFromField: primitive(),
+    sourceDateTimeThruField: primitive(),
   },
 );
 
