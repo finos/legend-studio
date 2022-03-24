@@ -48,7 +48,7 @@
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@testing-library/react": "12.1.4",
-    "@types/react": "17.0.41",
+    "@types/react": "17.0.42",
     "@types/react-dom": "17.0.14",
     "@types/react-router-dom": "5.3.2",
     "date-fns": "2.28.0",
@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.11.3",
+    "@testing-library/dom": "8.11.4",
     "cross-env": "7.0.3",
     "eslint": "8.11.0",
     "jest": "27.5.1",
