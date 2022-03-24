@@ -171,6 +171,8 @@ export const V1_buildDatasourceSpecification = (
       protocol.projectId,
       protocol.defaultDataset,
     );
+    bigQuerySpec.proxyHost = protocol.proxyHost;
+    bigQuerySpec.proxyPort = protocol.proxyPort;
     return bigQuerySpec;
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
     const metamodel = new LocalH2DatasourceSpecification();

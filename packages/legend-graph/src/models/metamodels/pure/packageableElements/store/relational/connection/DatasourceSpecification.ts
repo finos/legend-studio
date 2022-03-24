@@ -426,6 +426,8 @@ export class BigQueryDatasourceSpecification
 {
   projectId: string;
   defaultDataset: string;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
 
   constructor(projectId: string, defaultDataset: string) {
     super();
@@ -433,9 +435,13 @@ export class BigQueryDatasourceSpecification
     makeObservable(this, {
       projectId: observable,
       defaultDataset: observable,
+      proxyHost: observable,
+      proxyPort: observable,
       hashCode: computed,
       setProjectId: action,
       setDefaultDataset: action,
+      setProxyHost: action,
+      setProxyPort: action,
     });
     this.projectId = projectId;
     this.defaultDataset = defaultDataset;
@@ -447,12 +453,20 @@ export class BigQueryDatasourceSpecification
   setDefaultDataset(val: string): void {
     this.defaultDataset = val;
   }
+  setProxyHost(val: string | undefined): void {
+    this.proxyHost = val;
+  }
+  setProxyPort(val: string | undefined): void {
+    this.proxyPort = val;
+  }
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
       this.projectId,
       this.defaultDataset,
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
     ]);
   }
 }
