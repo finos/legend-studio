@@ -511,6 +511,27 @@ export const FunctionMainEditor = observer(
       }),
       [handleDropParameter],
     );
+    const handleDropReturnType = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        if (!isReadOnly && item.data.packageableElement instanceof Type) {
+          functionElement.setReturnType(item.data.packageableElement);
+        }
+      },
+      [functionElement, isReadOnly],
+    );
+    const [{ isReturnTypeDragOver }, dropReturnTypeRef] = useDrop(
+      () => ({
+        accept: [
+          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
+          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
+        ],
+        drop: (item: ElementDragSource): void => handleDropReturnType(item),
+        collect: (monitor): { isReturnTypeDragOver: boolean } => ({
+          isReturnTypeDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDropReturnType],
+    );
 
     return (
       <div className="panel__content function-editor__element">
@@ -551,10 +572,18 @@ export const FunctionMainEditor = observer(
             <div className="function-editor__element__item__header__title">
               LAMBDA
             </div>
-            <ReturnTypeEditor
-              functionElement={functionElement}
-              isReadOnly={isReadOnly}
-            />
+            <div
+              ref={dropReturnTypeRef}
+              className={clsx('function-editor__element__item__content', {
+                'panel__content__lists--dnd-over':
+                  isReturnTypeDragOver && !isReadOnly,
+              })}
+            >
+              <ReturnTypeEditor
+                functionElement={functionElement}
+                isReadOnly={isReadOnly}
+              />
+            </div>
           </div>
           <div
             className={clsx('function-editor__element__item__content', {
@@ -572,7 +601,6 @@ export const FunctionMainEditor = observer(
               expectedType={functionElement.returnType.value}
               forceBackdrop={false}
               forceExpansion={true}
-              disablePopUp={true}
             />
           </div>
         </div>
