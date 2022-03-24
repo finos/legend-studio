@@ -31,13 +31,8 @@ import {
   getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
-  PrimitiveInstanceValue,
-  TYPICAL_MULTIPLICITY_TYPE,
-  PRIMITIVE_TYPE,
-  GenericType,
-  GenericTypeExplicitReference,
-  VariableExpression,
 } from '@finos/legend-graph';
+import { getMilestoningDate } from './QueryBuilderMilestoningHelper';
 
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
@@ -107,86 +102,17 @@ export class QueryBuilderSetupState {
   }
 
   get ProcessingDate(): ValueSpecification | undefined {
-    return this.getMilestoningDate(guaranteeNonNullable(this.processingDate));
+    return getMilestoningDate(
+      guaranteeNonNullable(this.processingDate),
+      this.queryBuilderState.graphManagerState.graph,
+    );
   }
 
   get BusinessDate(): ValueSpecification | undefined {
-    return this.getMilestoningDate(guaranteeNonNullable(this.businessDate));
-  }
-
-  getMilestoningDate(
-    milestoningParameter: ValueSpecification,
-  ): ValueSpecification | undefined {
-    const type = milestoningParameter.genericType?.value.rawType;
-    const graph = this.queryBuilderState.graphManagerState.graph;
-    const multiplicity = graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    return getMilestoningDate(
+      guaranteeNonNullable(this.businessDate),
+      this.queryBuilderState.graphManagerState.graph,
     );
-    let value;
-    if (milestoningParameter instanceof PrimitiveInstanceValue) {
-      value = milestoningParameter.values[0];
-    }
-    if (
-      type ===
-      this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.LATESTDATE,
-      )
-    ) {
-      const parameter = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.LATESTDATE,
-            ),
-          ),
-        ),
-        multiplicity,
-      );
-      return parameter;
-    } else if (
-      type ===
-      this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.STRICTDATE,
-      )
-    ) {
-      const parameter = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRICTDATE,
-            ),
-          ),
-        ),
-        multiplicity,
-      );
-      parameter.addValue(value);
-      return parameter;
-    } else if (
-      type ===
-      this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.DATETIME,
-      )
-    ) {
-      const parameter = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.DATETIME,
-            ),
-          ),
-        ),
-        multiplicity,
-      );
-      parameter.addValue(value);
-      return parameter;
-    } else if (milestoningParameter instanceof VariableExpression) {
-      const parameter = new VariableExpression(
-        milestoningParameter.name,
-        multiplicity,
-      );
-      return parameter;
-    }
-    return undefined;
   }
 
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {

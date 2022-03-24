@@ -43,9 +43,6 @@ import {
   extractElementNameFromPath,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-  MILESTONING_STEROTYPES,
-  getMilestoneTemporalStereotype,
-  Class,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -56,7 +53,7 @@ import {
   fromGroupOperation,
   QUERY_BUILDER_GROUP_OPERATION,
 } from './QueryBuilderOperatorsHelper';
-import { checkEquality } from './QueryBuilderMilestoningHelper';
+import { getPropertyExpressionState } from './QueryBuilderMilestoningHelper';
 
 export abstract class QueryBuilderFilterOperator {
   uuid = uuid();
@@ -144,119 +141,7 @@ export class FilterConditionState {
   }
 
   get propertyExpression(): QueryBuilderPropertyExpressionState {
-    const derivedPropertyExpressionStates =
-      this.propertyExpressionState.derivedPropertyExpressionStates;
-    for (let i = 0; i < derivedPropertyExpressionStates.length; i++) {
-      const derivedPropertyExpressionState = guaranteeNonNullable(
-        derivedPropertyExpressionStates[i],
-      );
-      const temporalTarget = getMilestoneTemporalStereotype(
-        guaranteeType(
-          derivedPropertyExpressionState.propertyExpression.func.genericType
-            .value.rawType,
-          Class,
-        ),
-        derivedPropertyExpressionState.queryBuilderState.graphManagerState
-          .graph,
-      );
-      const paramLength =
-        derivedPropertyExpressionState.propertyExpression.parametersValues
-          .length;
-      switch (temporalTarget) {
-        case MILESTONING_STEROTYPES.BITEMPORAL:
-          if (paramLength === 3) {
-            if (
-              checkEquality(
-                derivedPropertyExpressionState.businessDate,
-                derivedPropertyExpressionState.propertyExpression
-                  .parametersValues[2],
-              ) &&
-              !checkEquality(
-                derivedPropertyExpressionState.businessDate,
-                derivedPropertyExpressionState.queryBuilderState.querySetupState
-                  .businessDate,
-              )
-            ) {
-              const businessDate = guaranteeNonNullable(
-                derivedPropertyExpressionState.queryBuilderState.querySetupState
-                  .BusinessDate,
-              );
-              derivedPropertyExpressionState.propertyExpression.parametersValues[2] =
-                businessDate;
-              derivedPropertyExpressionState.businessDate = businessDate;
-            }
-            if (
-              checkEquality(
-                derivedPropertyExpressionState.processingDate,
-                derivedPropertyExpressionState.propertyExpression
-                  .parametersValues[1],
-              ) &&
-              !checkEquality(
-                derivedPropertyExpressionState.processingDate,
-                derivedPropertyExpressionState.queryBuilderState.querySetupState
-                  .processingDate,
-              )
-            ) {
-              const processingDate = guaranteeNonNullable(
-                derivedPropertyExpressionState.queryBuilderState.querySetupState
-                  .ProcessingDate,
-              );
-              derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-                processingDate;
-              derivedPropertyExpressionState.processingDate = processingDate;
-            }
-          }
-          break;
-        case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-          if (
-            paramLength === 2 &&
-            checkEquality(
-              derivedPropertyExpressionState.businessDate,
-              derivedPropertyExpressionState.propertyExpression
-                .parametersValues[1],
-            ) &&
-            !checkEquality(
-              derivedPropertyExpressionState.businessDate,
-              derivedPropertyExpressionState.queryBuilderState.querySetupState
-                .businessDate,
-            )
-          ) {
-            const businessDate = guaranteeNonNullable(
-              derivedPropertyExpressionState.queryBuilderState.querySetupState
-                .BusinessDate,
-            );
-            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-              businessDate;
-            derivedPropertyExpressionState.businessDate = businessDate;
-          }
-          break;
-        case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-          if (
-            paramLength === 2 &&
-            checkEquality(
-              derivedPropertyExpressionState.processingDate,
-              derivedPropertyExpressionState.propertyExpression
-                .parametersValues[1],
-            ) &&
-            !checkEquality(
-              derivedPropertyExpressionState.processingDate,
-              derivedPropertyExpressionState.queryBuilderState.querySetupState
-                .processingDate,
-            )
-          ) {
-            const processingDate = guaranteeNonNullable(
-              derivedPropertyExpressionState.queryBuilderState.querySetupState
-                .ProcessingDate,
-            );
-            derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-              processingDate;
-            derivedPropertyExpressionState.processingDate = processingDate;
-          }
-          break;
-        default:
-      }
-    }
-    return this.propertyExpressionState;
+    return getPropertyExpressionState(this.propertyExpressionState);
   }
 
   changeProperty(propertyExpression: AbstractPropertyExpression): void {

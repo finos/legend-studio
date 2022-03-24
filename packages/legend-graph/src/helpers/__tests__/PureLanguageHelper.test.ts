@@ -18,7 +18,10 @@ import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGenera
 import { unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
-import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../GraphManagerTestUtils';
 import {
   generateFunctionCallString,
   generateFunctionSignature,
@@ -35,8 +38,8 @@ afterEach(() => {
 test(unitTest('Generate default parameter value for type'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
   await flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__simpleGraphEntities as Entity[],
     ),
   );
