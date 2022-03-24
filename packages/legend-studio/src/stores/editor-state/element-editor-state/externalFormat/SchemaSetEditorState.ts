@@ -48,7 +48,7 @@ import type { Entity } from '@finos/legend-model-storage';
 import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
 import type { EditorStore } from '../../../EditorStore';
 import { ElementEditorState } from '../ElementEditorState';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
 
 export enum SCHEMA_SET_TAB_TYPE {
   GENERAL = 'GENERAL',
@@ -185,7 +185,7 @@ export class SchemaSetModelGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.schemaSetEditorState.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.EXTERNAL_FORMAT_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
       this.schemaSetEditorState.editorStore.applicationStore.notifyError(error);
@@ -218,7 +218,7 @@ export class SchemaSetModelGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.schemaSetEditorState.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.EXTERNAL_FORMAT_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
       this.schemaSetEditorState.editorStore.applicationStore.notifyError(error);
@@ -386,7 +386,7 @@ export class SchemaSetEditorState extends ElementEditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.EXTERNAL_FORMAT_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
       if (error instanceof CompilationError) {

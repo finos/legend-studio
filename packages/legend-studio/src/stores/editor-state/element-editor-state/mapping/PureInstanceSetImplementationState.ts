@@ -32,7 +32,7 @@ import {
   type PurePropertyMapping,
   type PureInstanceSetImplementation,
   LAMBDA_PIPE,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   ParserError,
   RawLambda,
   buildSourceInformationSourceId,
@@ -86,7 +86,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -116,7 +116,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -172,9 +172,10 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+        GRAPH_MANAGER_EVENT;
       }
     } else {
       this.clearErrors();
@@ -203,9 +204,10 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+        GRAPH_MANAGER_EVENT;
       }
     } else {
       this.clearErrors();
@@ -310,9 +312,10 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+        GRAPH_MANAGER_EVENT;
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }
@@ -334,9 +337,10 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+        GRAPH_MANAGER_EVENT;
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }

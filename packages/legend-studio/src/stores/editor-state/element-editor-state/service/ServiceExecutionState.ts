@@ -43,7 +43,7 @@ import {
   type ExecutionResult,
   type LightQuery,
   type PackageableRuntime,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   RawLambda,
   PureSingleExecution,
   PureMultiExecution,
@@ -313,7 +313,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -409,7 +409,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -442,7 +442,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

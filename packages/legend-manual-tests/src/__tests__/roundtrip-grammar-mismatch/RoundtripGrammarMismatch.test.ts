@@ -161,7 +161,7 @@ const checkGrammarRoundtripMismatch = async (
     },
     {},
   );
-  const entities = graphManagerState.graphManager.pureProtocolToEntities(
+  const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
     JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
   await TEST__buildGraphWithEntities(graphManagerState, entities, {

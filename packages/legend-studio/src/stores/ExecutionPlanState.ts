@@ -32,7 +32,7 @@ import {
   type Runtime,
   ExecutionPlan,
   ExecutionNode,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   PureClientVersion,
 } from '@finos/legend-graph';
 
@@ -159,7 +159,7 @@ export class ExecutionPlanState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

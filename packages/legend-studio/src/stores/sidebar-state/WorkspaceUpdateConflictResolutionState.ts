@@ -16,8 +16,8 @@
 
 import { action, flowResult, makeObservable, observable, flow } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import {
   type GeneratorFn,
@@ -272,7 +272,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         ),
       ]);
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - startTime,
         'ms',
       );
@@ -280,7 +280,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -366,14 +366,14 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -412,7 +412,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.editorStore.changeDetectionState.conflictResolutionHeadRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
-            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
           ),
         ),
       );
@@ -420,7 +420,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -446,7 +446,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.editorStore.changeDetectionState.conflictResolutionBaseRevisionState.buildEntityHashesIndex(
           workspaceBaseEntities,
           LogEvent.create(
-            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
           ),
         ),
       );
@@ -454,7 +454,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -521,7 +521,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -577,7 +577,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -633,7 +633,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

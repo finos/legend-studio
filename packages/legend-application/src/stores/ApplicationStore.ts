@@ -27,7 +27,7 @@ import {
   ApplicationError,
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
-import { APPLICATION_LOG_EVENT } from './ApplicationLogEvent';
+import { APPLICATION_EVENT } from './ApplicationEvent';
 import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
@@ -278,7 +278,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
    */
   alertUnhandledError = (error: Error): void => {
     this.log.error(
-      LogEvent.create(APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
+      LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
       'Encountered unhandled error in component tree',
       error,
     );

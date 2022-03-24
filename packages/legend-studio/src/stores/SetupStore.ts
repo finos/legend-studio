@@ -15,7 +15,7 @@
  */
 
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
 import type { ApplicationStore } from '@finos/legend-application';
 import {
   type GeneratorFn,
@@ -196,7 +196,7 @@ export class SetupStore {
               );
               this.applicationStore.log.error(
                 LogEvent.create(
-                  LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE,
+                  LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE,
                 ),
                 wrappedError,
               );
@@ -215,7 +215,7 @@ export class SetupStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -357,7 +357,7 @@ export class SetupStore {
       assertErrorThrown(error);
       // TODO handle error when fetching workspaces for an individual project
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
     } finally {
@@ -408,7 +408,7 @@ export class SetupStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);

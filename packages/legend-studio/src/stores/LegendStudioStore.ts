@@ -27,6 +27,7 @@ import {
   type ApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
+  ApplicationTelemetry,
 } from '@finos/legend-application';
 import {
   action,
@@ -37,11 +38,10 @@ import {
   observable,
 } from 'mobx';
 import { User, SDLCMode, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
-import { LegendStudioTelemetryService } from './LegendStudioTelemetryService';
 
 const UNKNOWN_USER_ID = '(unknown)';
 
@@ -106,7 +106,7 @@ export class LegendStudioStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.applicationStore.notifyWarning(error.message);
@@ -115,17 +115,18 @@ export class LegendStudioStore {
     // setup telemetry service
     this.applicationStore.telemetryService.setUserId(currentUserID);
 
-    LegendStudioTelemetryService.create(
+    ApplicationTelemetry.logEvent_GraphInitialized(
       this.applicationStore.telemetryService,
-    ).logEvent_ApplicationLoaded({
-      browser: {
-        userAgent: navigator.userAgent,
+      {
+        browser: {
+          userAgent: navigator.userAgent,
+        },
+        screen: {
+          height: window.screen.height,
+          width: window.screen.width,
+        },
       },
-      screen: {
-        height: window.screen.height,
-        width: window.screen.width,
-      },
-    });
+    );
 
     this.initState.complete();
   }
@@ -140,9 +141,7 @@ export class LegendStudioStore {
                 // if there is an issue with an endpoint in a non prod env, we return authorized as true
                 // but notify the user of the error
                 this.applicationStore.log.error(
-                  LogEvent.create(
-                    LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE,
-                  ),
+                  LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
                   error,
                 );
                 this.applicationStore.notifyError(error);
@@ -225,7 +224,7 @@ export class LegendStudioStore {
         });
       } else {
         this.applicationStore.log.error(
-          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
         this.applicationStore.notifyError(error);

@@ -31,7 +31,7 @@ import {
   openNodes,
   populatePackageTreeNodeChildren,
 } from './shared/PackageTreeUtil';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-art';
 import {
@@ -45,7 +45,7 @@ import {
   Unit,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { APPLICATION_LOG_EVENT } from '@finos/legend-application';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',
@@ -113,9 +113,7 @@ export class ExplorerTreeState {
     }
     if (!treeData || !this.buildState.hasCompleted) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(
-          APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
-        ),
+        LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Can't get explorer tree data for root package '${rootPackageName}' as it hasn't been initialized`,
       );
       throw new IllegalStateError(
@@ -401,9 +399,7 @@ export class ExplorerTreeState {
     }
     if (!opened) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(
-          LEGEND_STUDIO_LOG_EVENT_TYPE.PACKAGE_TREE_BUILDER_FAILURE,
-        ),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.PACKAGE_TREE_BUILDER_FAILURE),
         `Can't open package tree node for element '${element.path}' with package root '${packagePath}'`,
       );
     }

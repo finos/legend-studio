@@ -2001,10 +2001,10 @@ __metadata:
     "@emotion/styled": 11.8.1
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
-    "@fontsource/raleway": 4.5.3
-    "@fontsource/roboto": 4.5.3
-    "@fontsource/roboto-condensed": 4.5.4
-    "@fontsource/roboto-mono": 4.5.3
+    "@fontsource/raleway": 4.5.5
+    "@fontsource/roboto": 4.5.5
+    "@fontsource/roboto-condensed": 4.5.6
+    "@fontsource/roboto-mono": 4.5.5
     "@mui/material": 5.5.2
     "@types/react": 17.0.42
     "@types/react-select": 4.0.18
@@ -2777,31 +2777,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@fontsource/raleway@npm:4.5.3":
-  version: 4.5.3
-  resolution: "@fontsource/raleway@npm:4.5.3"
-  checksum: 57365eaef284414ed287d251c7b53d9f97f857e53b7f2f42899dfaf9401518919397a7e108e3a7bf493afbfa43a559ea4fecb5ae0235df2e351ef42aaaf465a8
+"@fontsource/raleway@npm:4.5.5":
+  version: 4.5.5
+  resolution: "@fontsource/raleway@npm:4.5.5"
+  checksum: caeaa47eb04ca04cd73f5403ce4a0d41488a90a050c4f118879db4429fbe06d343c8a2563a9d8a1c50d7f06bbbf85313ed7093c35c432406016e232c70d186de
   languageName: node
   linkType: hard
 
-"@fontsource/roboto-condensed@npm:4.5.4":
-  version: 4.5.4
-  resolution: "@fontsource/roboto-condensed@npm:4.5.4"
-  checksum: 9cb831884f5064d16b1b922b904fad3e4b1913f38555be06391cb6f6024c6842f1453b7d12fabdb47d077dc7fbb6ce501229ce5cc50828f9d39c44539b77c577
+"@fontsource/roboto-condensed@npm:4.5.6":
+  version: 4.5.6
+  resolution: "@fontsource/roboto-condensed@npm:4.5.6"
+  checksum: cad52555304c844092e22d7d96385bcb8596285cd7af05733a62c28087df815398643269c62fe196965e8ab70c210a46dec4ed8d999b7c1575cdffe5fb8196cc
   languageName: node
   linkType: hard
 
-"@fontsource/roboto-mono@npm:4.5.3":
-  version: 4.5.3
-  resolution: "@fontsource/roboto-mono@npm:4.5.3"
-  checksum: 98779a20a24fd50f0d8bb2a7c283e18a42e7eaf4829895601d63cdf9dc4e2212abf081f7609daa7c700b0bd8d18c530284730dd73ab07e4e2e3bf92b253e6ba8
+"@fontsource/roboto-mono@npm:4.5.5":
+  version: 4.5.5
+  resolution: "@fontsource/roboto-mono@npm:4.5.5"
+  checksum: 2ce679a6706d993b18e8b574b7c0671277a1a4d64db0f2a1fe9393fe81c6b3facfa3773673e1150fbd3f07e79e30065204679843e3a81e65e2287c32ea4a9a35
   languageName: node
   linkType: hard
 
-"@fontsource/roboto@npm:4.5.3":
-  version: 4.5.3
-  resolution: "@fontsource/roboto@npm:4.5.3"
-  checksum: 5c25485184dcb9162834ef2633528b8c21812ae4bbb37e9a32f07b4db93226361d6b60fe71c61b60aeea7e9fe69be6c9d80b05eea477ec71f166a0fd3feb3df5
+"@fontsource/roboto@npm:4.5.5":
+  version: 4.5.5
+  resolution: "@fontsource/roboto@npm:4.5.5"
+  checksum: ab6675e04392ccd5def878762be67dbbf64f77c49c26030c6a1d03c34ce33045b0eb1199ad1bd3f398f362e5fa1fcbcbe25c18af8dda855ab43df45561eea569
   languageName: node
   linkType: hard
 

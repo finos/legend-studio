@@ -31,7 +31,7 @@ import {
   type RawExecutionPlan,
   type ExecutionResult,
   type RawLambda,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   PureClientVersion,
   EXECUTION_SERIALIZATION_FORMAT,
   RawExecutionResult,
@@ -161,7 +161,7 @@ export class QueryBuilderResultState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.queryBuilderState.applicationStore.notifyError(error);
@@ -193,7 +193,7 @@ export class QueryBuilderResultState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.queryBuilderState.applicationStore.notifyError(error);
@@ -227,7 +227,7 @@ export class QueryBuilderResultState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.queryBuilderState.applicationStore.notifyError(error);

@@ -23,7 +23,7 @@ import {
   UnsupportedOperationError,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 import type { EditorStore } from '../EditorStore';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -168,7 +168,7 @@ export class ModelLoaderState extends EditorState {
         switch (this.currentInputType) {
           case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
             entities =
-              this.editorStore.graphManagerState.graphManager.pureProtocolToEntities(
+              this.editorStore.graphManagerState.graphManager.pureProtocolTextToEntities(
                 this.modelText,
               );
             break;
@@ -197,7 +197,7 @@ export class ModelLoaderState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.MODEL_LOADER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -221,7 +221,7 @@ export class ModelLoaderState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.MODEL_LOADER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

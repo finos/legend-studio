@@ -15,7 +15,7 @@
  */
 
 import { flow, flowResult, makeObservable, runInAction } from 'mobx';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../graphManager/GraphManagerLogEvent';
+import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent';
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
@@ -512,9 +512,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             V1_deserializePureModelContextData(modelContextData),
           ),
       );
-      stopWatch.record(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED,
-      );
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
       const buildInputs = [
@@ -539,14 +537,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphBuilderState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
       };
       return report;
     } catch (error) {
       assertErrorThrown(error);
       graphBuilderState.fail();
       this.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
       );
       throw new SystemGraphBuilderError(error);
     } finally {
@@ -595,9 +593,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ),
       );
-      stopWatch.record(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED,
-      );
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
       const buildInputs: V1_GraphBuilderInput[] = Array.from(
@@ -627,13 +623,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       report.otherStats.projectCount = dependencyEntitiesMap.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
       };
       return report;
     } catch (error) {
       assertErrorThrown(error);
       this.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
       );
       graphBuilderState.fail();
       throw new DependencyGraphBuilderError(error);
@@ -661,9 +657,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
       );
-      stopWatch.record(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED,
-      );
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
       const buildInputs: V1_GraphBuilderInput[] = [
@@ -688,13 +682,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphBuilderState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
       };
       return report;
     } catch (error) {
       assertErrorThrown(error);
       this.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
       );
       graphBuilderState.fail();
       /**
@@ -737,9 +731,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ),
       );
-      stopWatch.record(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED,
-      );
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
       const buildInputs = Array.from(generatedDataMap.entries()).map(
@@ -770,13 +762,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       report.otherStats.generationCount = generatedDataMap.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
-        [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+        [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
       };
       return report;
     } catch (error) {
       assertErrorThrown(error);
       this.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
       );
       graphBuilderState.fail();
       /**
@@ -804,41 +796,39 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       `Indexing ${report.elementCount.total} elements...`,
     );
     yield flowResult(this.initializeAndIndexElements(graph, inputs, options));
-    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_INDEXED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_INDEXED);
 
     // build section index
     graphBuilderState.setMessage(`Building section indices...`);
     yield flowResult(this.buildSectionIndices(graph, inputs, options));
-    stopWatch.record(
-      GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SECTION_INDICES_BUILT,
-    );
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SECTION_INDICES_BUILT);
 
     // build types
     graphBuilderState.setMessage(`Building domain models...`);
     yield flowResult(this.buildTypes(graph, inputs, options));
-    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DOMAIN_MODELS_BUILT);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DOMAIN_MODELS_BUILT);
 
     // build stores
     graphBuilderState.setMessage(`Building stores...`);
     yield flowResult(this.buildStores(graph, inputs, options));
-    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_STORES_BUILT);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_STORES_BUILT);
 
     // build mappings
     graphBuilderState.setMessage(`Building mappings...`);
     yield flowResult(this.buildMappings(graph, inputs, options));
-    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_MAPPINGS_BUILT);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_MAPPINGS_BUILT);
 
     // build connections and runtimes
     graphBuilderState.setMessage(`Building connections and runtimes...`);
     yield flowResult(this.buildConnectionsAndRuntimes(graph, inputs, options));
     stopWatch.record(
-      GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_CONNECTIONS_AND_RUNTIMES_BUILT,
+      GRAPH_MANAGER_EVENT.GRAPH_BUILDER_CONNECTIONS_AND_RUNTIMES_BUILT,
     );
 
     // build services
     graphBuilderState.setMessage(`Building services...`);
     yield flowResult(this.buildServices(graph, inputs, options));
-    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SERVICES_BUILT);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SERVICES_BUILT);
 
     // build other elements
     graphBuilderState.setMessage(`Building other elements...`);
@@ -847,9 +837,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.buildGenerationSpecifications(graph, inputs, options),
     );
     yield flowResult(this.buildOtherElements(graph, inputs, options));
-    stopWatch.record(
-      GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT,
-    );
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT);
 
     // post-process
     graphBuilderState.setMessage(`Post-processing graph...`);
@@ -858,7 +846,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
       }),
     );
-    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_POST_PROCESSED);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_POST_PROCESSED);
   }
 
   private getBuilderContext(
@@ -1392,9 +1380,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphData,
     );
     this.log.info(
-      LogEvent.create(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
-      ),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED),
       Date.now() - startTime,
       'ms',
     );
@@ -1407,9 +1393,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       await this.entitiesToPureModelContextData(entities),
     );
     this.log.info(
-      LogEvent.create(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED,
-      ),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MODEL_TO_GRAMMAR_TRANSFORMED),
       Date.now() - startTime,
       'ms',
     );
@@ -1729,7 +1713,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  pureProtocolToEntities = (protocol: string): Entity[] => {
+  pureProtocolTextToEntities = (protocol: string): Entity[] => {
     const graphData = V1_deserializePureModelContextData(JSON.parse(protocol));
     return this.pureModelContextDataToEntities(graphData);
   };
@@ -2287,7 +2271,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     this.log.info(
       LogEvent.create(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED,
+        GRAPH_MANAGER_EVENT.GRAPH_META_MODEL_TO_PROTOCOL_TRANSFORMED,
       ),
       Date.now() - startTime,
       'ms',
@@ -2307,7 +2291,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...generatedModel.allOwnElements,
     ].map((element) => this.elementToProtocol(element));
     this.log.info(
-      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_COMPILE_CONTEXT_COLLECTED),
       Date.now() - startTime,
       'ms',
     );
@@ -2435,7 +2419,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     } catch (error) {
       assertErrorThrown(error);
       this.log.warn(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_MANAGER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
         `Can't extract assertion result`,
       );
       json = undefined;

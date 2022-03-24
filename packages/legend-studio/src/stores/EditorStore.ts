@@ -68,7 +68,7 @@ import { PackageableConnectionEditorState } from './editor-state/element-editor-
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState';
 import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState';
@@ -100,7 +100,7 @@ import {
   type Type,
   type Store,
   type GraphManagerState,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   PACKAGEABLE_ELEMENT_TYPE,
   PrimitiveType,
   Class,
@@ -128,10 +128,10 @@ import {
   type BlockingAlertInfo,
   ActionAlertActionType,
   ActionAlertType,
-  APPLICATION_LOG_EVENT,
+  APPLICATION_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import type { EditorMode } from './editor/EditorMode';
 import { StandardEditorMode } from './editor/StandardEditorMode';
@@ -536,7 +536,7 @@ export class EditorStore {
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
         this.applicationStore.log.info(
-          LogEvent.create(APPLICATION_LOG_EVENT.DEVELOPMENT_ISSUE),
+          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
@@ -634,9 +634,7 @@ export class EditorStore {
         } catch (error) {
           assertErrorThrown(error);
           this.applicationStore.log.error(
-            LogEvent.create(
-              LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_SETUP_FAILURE,
-            ),
+            LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
             error,
           );
           this.applicationStore.notifyError(error);
@@ -815,7 +813,7 @@ export class EditorStore {
         entities,
       );
       this.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
         Date.now() - startTime,
         'ms',
       );
@@ -839,7 +837,7 @@ export class EditorStore {
             this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
               entities,
               LogEvent.create(
-                CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+                CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
               ),
             ),
           );
@@ -858,7 +856,7 @@ export class EditorStore {
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
-            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
           ),
         ),
         this.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex(),
@@ -871,7 +869,7 @@ export class EditorStore {
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
       this.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======

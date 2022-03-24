@@ -24,7 +24,7 @@ import {
 } from '@finos/legend-shared';
 import { flow, action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../EditorStore';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 
 export type ExternalFormatTypeOption = {
   value: string;
@@ -77,7 +77,7 @@ export class ExternalFormatState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.EXTERNAL_FORMAT_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

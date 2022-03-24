@@ -14,4 +14,8 @@
  * limitations under the License.
  */
 
-export class V1_PureModelContext {}
+export enum V1_ENGINE_EVENT {
+  GRAMMAR_TO_JSON = 'GRAMMAR_TO_JSON',
+  JSON_TO_GRAMMAR = 'JSON_TO_GRAMMAR',
+  COMPILATION = 'COMPILATION',
+}

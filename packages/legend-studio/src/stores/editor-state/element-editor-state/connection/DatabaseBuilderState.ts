@@ -27,7 +27,7 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
 import type { EditorStore } from '../../../EditorStore';
 import {
   type RelationalDatabaseConnection,
@@ -253,7 +253,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -302,7 +302,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -343,7 +343,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -467,7 +467,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -579,7 +579,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

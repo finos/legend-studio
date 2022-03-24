@@ -34,7 +34,7 @@ import type {
   AbstractPureGraphManager,
   GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager';
-import { GRAPH_MANAGER_LOG_EVENT } from './graphManager/GraphManagerLogEvent';
+import { GRAPH_MANAGER_EVENT } from './graphManager/GraphManagerEvent';
 import type { GraphPluginManager } from './GraphPluginManager';
 import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
 import type { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
@@ -238,7 +238,7 @@ export class GraphManagerState {
       );
     }
     this.log.info(
-      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_HASHES_PRECOMPUTED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_HASHES_PRECOMPUTED),
       '[ASYNC]',
       Date.now() - startTime,
       'ms',

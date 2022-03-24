@@ -30,7 +30,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 import {
   type GenerationTreeNodeData,
   type GenerationOutputResult,
@@ -189,7 +189,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -213,7 +213,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -268,7 +268,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -322,7 +322,7 @@ export class GraphGenerationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.graphState.editorStore.applicationStore.notifyError(
@@ -413,7 +413,7 @@ export class GraphGenerationState {
         genOutput.cleanFileName(rootFolder);
         if (generationResultMap.has(genOutput.fileName)) {
           this.editorStore.applicationStore.log.warn(
-            LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+            LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );
         }

@@ -43,7 +43,7 @@ import {
   assertNonNullable,
   NetworkClient,
 } from '@finos/legend-shared';
-import { APPLICATION_LOG_EVENT } from '../stores/ApplicationLogEvent';
+import { APPLICATION_EVENT } from '../stores/ApplicationEvent';
 import { configureComponents } from '@finos/legend-art';
 import type { GraphPluginManager } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager';
@@ -130,19 +130,19 @@ export const setupLegendApplicationUILibrary = async (
       if (document.fonts.check(`1em ${MONOSPACED_FONT_FAMILY}`)) {
         monacoEditorAPI.remeasureFonts();
         logger.info(
-          LogEvent.create(APPLICATION_LOG_EVENT.TEXT_EDITOR_FONT_LOADED),
+          LogEvent.create(APPLICATION_EVENT.TEXT_EDITOR_FONT_LOADED),
           `Monospaced font '${MONOSPACED_FONT_FAMILY}' has been loaded`,
         );
       } else {
         logger.error(
-          LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_SETUP_FAILURE),
+          LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP_FAILURE),
           fontLoadFailureErrorMessage,
         );
       }
     })
     .catch(() =>
       logger.error(
-        LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_SETUP_FAILURE),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_SETUP_FAILURE),
         fontLoadFailureErrorMessage,
       ),
     );
@@ -231,9 +231,7 @@ export abstract class LegendApplication {
     } catch (error) {
       assertErrorThrown(error);
       this.logger.error(
-        LogEvent.create(
-          APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
-        ),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_CONFIGURATION_FAILURE),
         error,
       );
     }
@@ -249,9 +247,7 @@ export abstract class LegendApplication {
     } catch (error) {
       assertErrorThrown(error);
       this.logger.error(
-        LogEvent.create(
-          APPLICATION_LOG_EVENT.APPLICATION_CONFIGURATION_FAILURE,
-        ),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_CONFIGURATION_FAILURE),
         error,
       );
     }
@@ -289,13 +285,13 @@ export abstract class LegendApplication {
       await this.loadApplication();
 
       this.logger.info(
-        LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_LOADED),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOADED),
         'Legend application loaded',
       );
     } catch (error) {
       assertErrorThrown(error);
       this.logger.error(
-        LogEvent.create(APPLICATION_LOG_EVENT.APPLICATION_FAILURE),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_FAILURE),
         'Failed to load Legend application',
       );
       throw error;

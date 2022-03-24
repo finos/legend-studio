@@ -37,7 +37,7 @@ import {
   type PropertyMapping,
   type Property,
   LAMBDA_PIPE,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   ParserError,
   RawLambda,
   FlatDataPropertyMapping,
@@ -94,7 +94,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -127,7 +127,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
         } catch (error) {
           assertErrorThrown(error);
           this.editorStore.applicationStore.log.error(
-            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+            LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
             error,
           );
         }
@@ -232,7 +232,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {
