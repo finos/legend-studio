@@ -125,9 +125,13 @@ export class ViewerStore {
               ),
         );
       } else if (gav) {
-        const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
+        const {
+          groupId,
+          artifactId,
+          versionId: _versionId,
+        } = parseGAVCoordinates(gav);
         this.editorStore.applicationStore.navigator.goTo(
-          generateViewProjectByGAVRoute(groupId, artifactId, versionId),
+          generateViewProjectByGAVRoute(groupId, artifactId, _versionId),
         );
       }
     }
@@ -251,6 +255,9 @@ export class ViewerStore {
     // fetch available file generation descriptions
     yield flowResult(
       this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+    );
+    yield flowResult(
+      this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
     );
 
     // generate
@@ -478,8 +485,14 @@ export class ViewerStore {
         );
       } else if (gav) {
         this.projectGAVCoordinates = parseGAVCoordinates(gav);
-        const { groupId, artifactId, versionId } = this.projectGAVCoordinates;
-        yield flowResult(this.initializeForGAV(groupId, artifactId, versionId));
+        const {
+          groupId,
+          artifactId,
+          versionId: _versionId,
+        } = this.projectGAVCoordinates;
+        yield flowResult(
+          this.initializeForGAV(groupId, artifactId, _versionId),
+        );
       } else {
         throw new IllegalStateError(
           `Can't initialize viewer when neither 'projectId' nor 'gav' is provided`,

@@ -35,7 +35,6 @@ import {
 import {
   type QueryBuilderFilterState,
   QueryBuilderFilterTreeGroupNodeData,
-  QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QueryBuilderFilterTreeConditionNodeData,
 } from './QueryBuilderFilterState';
 import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState';
@@ -80,6 +79,8 @@ import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
 import { isValidMilestoningLambda } from './QueryBuilderMilestoningHelper';
+import { toGroupOperation } from './QueryBuilderOperatorsHelper';
+import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -105,19 +106,6 @@ const getNullableNumberValueFromValueSpec = (
   return undefined;
 };
 
-const toGroupOperation = (
-  functionName: string,
-): QUERY_BUILDER_FILTER_GROUP_OPERATION => {
-  if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.AND)) {
-    return QUERY_BUILDER_FILTER_GROUP_OPERATION.AND;
-  } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.OR)) {
-    return QUERY_BUILDER_FILTER_GROUP_OPERATION.OR;
-  }
-  throw new UnsupportedOperationError(
-    `Can't derive group operation from function name '${functionName}'`,
-  );
-};
-
 const processFilterExpression = (
   expression: SimpleFunctionExpression,
   filterState: QueryBuilderFilterState,
@@ -126,32 +114,11 @@ const processFilterExpression = (
   const propertyExpression = expression.parametersValues[0];
   if (propertyExpression instanceof AbstractPropertyExpression) {
     const currentPropertyExpression = propertyExpression.parametersValues[0];
-    if (
-      currentPropertyExpression instanceof AbstractPropertyExpression &&
-      currentPropertyExpression.func.genericType.value.rawType instanceof
-        Class &&
-      currentPropertyExpression.func.owner._generatedMilestonedProperties
-        .length !== 0
-    ) {
-      const name = currentPropertyExpression.func.name;
-      const func =
-        currentPropertyExpression.func.owner._generatedMilestonedProperties.find(
-          (e) => e.name === name,
-        );
-      if (func) {
-        const targetStereotype = getMilestoneTemporalStereotype(
-          currentPropertyExpression.func.genericType.value.rawType,
-          filterState.queryBuilderState.graphManagerState.graph,
-        );
-        if (targetStereotype) {
-          isValidMilestoningLambda(
-            currentPropertyExpression,
-            targetStereotype,
-            guaranteeType(func, DerivedProperty),
-            filterState.queryBuilderState.graphManagerState.graph,
-          );
-        }
-      }
+    if (currentPropertyExpression) {
+      isValidMilestoningLambda(
+        currentPropertyExpression,
+        filterState.queryBuilderState.graphManagerState.graph,
+      );
     }
   }
   const parentNode = parentFilterNodeId
@@ -199,7 +166,7 @@ const processFilterExpression = (
       }
     }
     throw new UnsupportedOperationError(
-      `Can't process filter expression: no compatible filter operator processer available from plugins`,
+      `Can't process filter() expression: no compatible filter operator processer available from plugins`,
     );
   }
 };
@@ -473,7 +440,10 @@ export class QueryBuilderLambdaProcessor
       }
 
       return;
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER)) {
+    } else if (
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER) ||
+      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER)
+    ) {
       assertTrue(
         valueSpecification.parametersValues.length === 2,
         `Can't process filter() expression: filter() expects 1 argument`,
@@ -489,31 +459,62 @@ export class QueryBuilderLambdaProcessor
         new QueryBuilderLambdaProcessor(this.queryBuilderState, undefined),
       );
 
-      // check caller
-      assertTrue(
+      if (
         matchFunctionName(
           precedingExpression.functionName,
           SUPPORTED_FUNCTIONS.GET_ALL,
-        ),
-        `Can't process filter() expression: only support filter() immediately following getAll()`,
-      );
+        )
+      ) {
+        assertTrue(
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER),
+          `Can't process filter() expression: only supports ${SUPPORTED_FUNCTIONS.FILTER}() immediately following getAll() (got '${functionName}')`,
+        );
+        const filterLambda = valueSpecification.parametersValues[1];
+        assertType(
+          filterLambda,
+          LambdaFunctionInstanceValue,
+          `Can't process filter() expression: filter() expects argument #1 to be a lambda function`,
+        );
+        processFilterLambda(filterLambda, filterState);
+        /**
+         * NOTE: Since group operations like and/or do not take more than 2 parameters, if there are
+         * more than 2 clauses in each group operations, then these clauses are converted into an
+         * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
+         * After building the filter state.
+         */
+        filterState.simplifyTree();
 
-      const filterLambda = valueSpecification.parametersValues[1];
-      assertType(
-        filterLambda,
-        LambdaFunctionInstanceValue,
-        `Can't process filter() expression: filter() expects argument #1 to be a lambda function`,
-      );
-      processFilterLambda(filterLambda, filterState);
-      /**
-       * NOTE: Since group operations like and/or do not take more than 2 parameters, if there are
-       * more than 2 clauses in each group operations, then these clauses are converted into an
-       * unbalanced tree. However, this would look quite bad for UX, as such, we simplify the tree.
-       * After building the filter state.
-       */
-      filterState.simplifyTree();
-
-      return;
+        return;
+      } else if (
+        matchFunctionName(
+          precedingExpression.functionName,
+          SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        ) ||
+        matchFunctionName(
+          precedingExpression.functionName,
+          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        )
+      ) {
+        assertTrue(
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER),
+          `Can't process post-filter expression: only supports ${SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following TDS project()/groupBy() (got '${functionName}')`,
+        );
+        const postFilterState = this.queryBuilderState.postFilterState;
+        const postFilterLambda = valueSpecification.parametersValues[1];
+        assertType(
+          postFilterLambda,
+          LambdaFunctionInstanceValue,
+          `Can't process post-filter expression: expects argument #1 to be a lambda function`,
+        );
+        processPostFilterLambda(postFilterLambda, postFilterState);
+        postFilterState.setShowPostFilterPanel(true);
+        postFilterState.simplifyTree();
+        return;
+      } else {
+        throw new UnsupportedOperationError(
+          "`Can't process filter() expression: only support filter() immediately following getAll() or TDS project()/groupBy()",
+        );
+      }
     } else if (
       matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
     ) {
@@ -986,32 +987,10 @@ export class QueryBuilderLambdaProcessor
       let currentPropertyExpression: ValueSpecification = valueSpecification;
       while (currentPropertyExpression instanceof AbstractPropertyExpression) {
         const propertyExpression = currentPropertyExpression;
-        if (
-          currentPropertyExpression.func.genericType.value.rawType instanceof
-            Class &&
-          currentPropertyExpression.func.owner._generatedMilestonedProperties
-            .length !== 0
-        ) {
-          const name = currentPropertyExpression.func.name;
-          const func =
-            currentPropertyExpression.func.owner._generatedMilestonedProperties.find(
-              (e) => e.name === name,
-            );
-          if (func) {
-            const targetStereotype = getMilestoneTemporalStereotype(
-              currentPropertyExpression.func.genericType.value.rawType,
-              this.queryBuilderState.graphManagerState.graph,
-            );
-            if (targetStereotype) {
-              isValidMilestoningLambda(
-                currentPropertyExpression,
-                targetStereotype,
-                guaranteeType(func, DerivedProperty),
-                this.queryBuilderState.graphManagerState.graph,
-              );
-            }
-          }
-        }
+        isValidMilestoningLambda(
+          currentPropertyExpression,
+          this.queryBuilderState.graphManagerState.graph,
+        );
         currentPropertyExpression = guaranteeNonNullable(
           currentPropertyExpression.parametersValues[0],
         );
@@ -1051,6 +1030,7 @@ export class QueryBuilderLambdaProcessor
       const columnState = new QueryBuilderSimpleProjectionColumnState(
         projectionState,
         valueSpecification,
+        false,
       );
 
       projectionState.addColumn(columnState, { skipSorting: true });
@@ -1082,7 +1062,7 @@ export const processQueryParameters = (
       queryParameterState,
       parameter,
     );
-    variableState.mockParameterValues();
+    variableState.mockParameterValue();
     queryParameterState.addParameter(variableState);
   });
 };

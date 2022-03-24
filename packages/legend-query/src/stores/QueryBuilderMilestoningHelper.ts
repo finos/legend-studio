@@ -23,17 +23,20 @@ import {
   Class,
   type PureModel,
   type ValueSpecification,
-  type DerivedProperty,
+  DerivedProperty,
   getMilestoneTemporalStereotype,
   MILESTONING_STEROTYPES,
   DEFAULT_MILESTONING_PARAMETERS,
-  type AbstractPropertyExpression,
+  AbstractPropertyExpression,
   Association,
   VariableExpression,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import type { QueryBuilderDerivedPropertyExpressionState } from './QueryBuilderPropertyEditorState';
+import {
+  fillDerivedPropertyArguments,
+  type QueryBuilderDerivedPropertyExpressionState,
+} from './QueryBuilderPropertyEditorState';
 
 export const checkEquality = (
   //handle latest
@@ -58,11 +61,6 @@ export const checkEquality = (
     return param1.values[0] === param2.values[0];
   }
   return param1 === param2;
-};
-
-export const milestoningParameters = {
-  BUSINESS_TEMPORAL: false,
-  PROCESSING_TEMPORAL: false,
 };
 
 export const getSourceTemporalStereotype = (
@@ -213,7 +211,6 @@ export const fillMilestonedDerivedPropertyArguments = (
         );
       }
       const parameter = querySetupState.businessDate;
-      milestoningParameters.BUSINESS_TEMPORAL = true;
       derivedPropertyExpressionState.businessDate =
         querySetupState.BusinessDate;
       return parameter;
@@ -233,8 +230,6 @@ export const fillMilestonedDerivedPropertyArguments = (
           ),
         );
       }
-      milestoningParameters.BUSINESS_TEMPORAL = true;
-      milestoningParameters.PROCESSING_TEMPORAL = true;
       if (idx === 0) {
         derivedPropertyExpressionState.processingDate =
           querySetupState.ProcessingDate;
@@ -256,7 +251,6 @@ export const fillMilestonedDerivedPropertyArguments = (
       const parameter = querySetupState.processingDate;
       derivedPropertyExpressionState.processingDate =
         derivedPropertyExpressionState.queryBuilderState.querySetupState.ProcessingDate;
-      milestoningParameters.PROCESSING_TEMPORAL = true;
       return parameter;
     }
     default:
@@ -265,36 +259,54 @@ export const fillMilestonedDerivedPropertyArguments = (
 };
 
 export const isValidMilestoningLambda = (
-  propertyExpression: AbstractPropertyExpression,
-  targetStereotype: MILESTONING_STEROTYPES,
-  generatedMilestoningProperty: DerivedProperty,
+  propertyExpression: ValueSpecification,
   graph: PureModel,
 ): void => {
-  const sourceStereotype = getSourceTemporalStereotype(
-    generatedMilestoningProperty,
-    graph,
-  );
   if (
-    sourceStereotype !== MILESTONING_STEROTYPES.BITEMPORAL &&
-    targetStereotype !== sourceStereotype
+    propertyExpression instanceof AbstractPropertyExpression &&
+    propertyExpression.func.genericType.value.rawType instanceof Class &&
+    propertyExpression.func.owner._generatedMilestonedProperties.length !== 0
   ) {
-    if (targetStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
-      if (
-        propertyExpression.parametersValues.length !== 3 &&
-        !sourceStereotype
-      ) {
-        throw new UnsupportedOperationError(
-          "Property of milestoning sterotype 'Bitemporal' should have two parameters",
-        );
-      } else if (propertyExpression.parametersValues.length < 2) {
-        throw new UnsupportedOperationError(
-          "Property of milestoning sterotype 'Bitemporal' should have atleast one parameter",
-        );
-      }
-    } else if (propertyExpression.parametersValues.length !== 2) {
-      throw new UnsupportedOperationError(
-        `Property of milestoning sterotype '${targetStereotype}' should have one parameters`,
+    const name = propertyExpression.func.name;
+    const func =
+      propertyExpression.func.owner._generatedMilestonedProperties.find(
+        (e) => e.name === name,
       );
+    if (func) {
+      const targetStereotype = getMilestoneTemporalStereotype(
+        propertyExpression.func.genericType.value.rawType,
+        graph,
+      );
+
+      if (targetStereotype) {
+        const sourceStereotype = getSourceTemporalStereotype(
+          guaranteeType(func, DerivedProperty),
+          graph,
+        );
+        if (
+          sourceStereotype !== MILESTONING_STEROTYPES.BITEMPORAL &&
+          targetStereotype !== sourceStereotype
+        ) {
+          if (targetStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+            if (
+              propertyExpression.parametersValues.length !== 3 &&
+              !sourceStereotype
+            ) {
+              throw new UnsupportedOperationError(
+                "Property of milestoning sterotype 'Bitemporal' should have two parameters",
+              );
+            } else if (propertyExpression.parametersValues.length < 2) {
+              throw new UnsupportedOperationError(
+                "Property of milestoning sterotype 'Bitemporal' should have atleast one parameter",
+              );
+            }
+          } else if (propertyExpression.parametersValues.length !== 2) {
+            throw new UnsupportedOperationError(
+              `Property of milestoning sterotype '${targetStereotype}' should have one parameters`,
+            );
+          }
+        }
+      }
     }
   }
 };
@@ -324,5 +336,54 @@ export const getPropagatedDate = (
       return queryBuilderState.querySetupState.processingDate;
     default:
       return undefined;
+  }
+};
+
+// To populate default dates to the next level in the property chain if the date values of the current
+// level are changed when date propagation is supported to the next level.
+export const propagateDefaultDates = (
+  derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[],
+  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
+  idx: number,
+): void => {
+  const index = derivedPropertyExpressionStates.findIndex(
+    (propertyState: QueryBuilderDerivedPropertyExpressionState) =>
+      propertyState === derivedPropertyExpressionState,
+  );
+  if (
+    index + 1 !== derivedPropertyExpressionStates.length &&
+    !isDatePropagationSupported(
+      guaranteeNonNullable(derivedPropertyExpressionStates[index + 1]),
+      derivedPropertyExpressionState?.queryBuilderState.graphManagerState.graph,
+      derivedPropertyExpressionState,
+    ) &&
+    guaranteeNonNullable(derivedPropertyExpressionStates[index + 1])
+      .propertyExpression.func.genericType.value.rawType instanceof Class &&
+    derivedPropertyExpressionState.propertyExpression.func.owner
+      ._generatedMilestonedProperties.length !== 0
+  ) {
+    const temporalTarget = getMilestoneTemporalStereotype(
+      guaranteeType(
+        guaranteeNonNullable(derivedPropertyExpressionStates[index + 1])
+          .propertyExpression.func.genericType.value.rawType,
+        Class,
+      ),
+      derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
+    );
+    if (temporalTarget) {
+      if (
+        derivedPropertyExpressionStates[index + 1]?.parameterValues &&
+        guaranteeNonNullable(
+          derivedPropertyExpressionStates[index + 1]?.parameterValues,
+        ).length <= idx
+      ) {
+        fillDerivedPropertyArguments(
+          guaranteeNonNullable(derivedPropertyExpressionStates[index + 1]),
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState
+            .graph,
+          true,
+        );
+      }
+    }
   }
 };

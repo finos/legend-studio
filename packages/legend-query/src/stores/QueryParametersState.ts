@@ -96,7 +96,7 @@ export class QueryParameterState {
   uuid = uuid();
   queryParameterState: QueryParametersState;
   parameter: VariableExpression;
-  values: InstanceValue | undefined;
+  value: InstanceValue | undefined;
 
   constructor(
     queryParameterState: QueryParametersState,
@@ -104,16 +104,16 @@ export class QueryParameterState {
   ) {
     makeObservable(this, {
       parameter: observable,
-      values: observable,
-      setValues: action,
-      mockParameterValues: action,
+      value: observable,
+      setValue: action,
+      mockParameterValue: action,
     });
     this.queryParameterState = queryParameterState;
     this.parameter = variableExpression;
   }
 
-  mockParameterValues(): void {
-    this.setValues(
+  mockParameterValue(): void {
+    this.setValue(
       this.generateMockValues(
         this.parameter.genericType?.value.rawType,
         this.parameter.multiplicity,
@@ -160,8 +160,8 @@ export class QueryParameterState {
     return undefined;
   }
 
-  setValues(values: InstanceValue | undefined): void {
-    this.values = values;
+  setValue(value: InstanceValue | undefined): void {
+    this.value = value;
   }
 
   static createDefault(
@@ -186,7 +186,7 @@ export class QueryParameterState {
   changeVariableType(type: Type): void {
     if (type !== this.variableType) {
       this.parameter.genericType?.value.setRawType(type);
-      this.mockParameterValues();
+      this.mockParameterValue();
     }
   }
 
@@ -201,7 +201,7 @@ export class QueryParameterState {
     ) {
       current.setLowerBound(lowerBound);
       current.setUpperBound(uppderBound);
-      this.mockParameterValues();
+      this.mockParameterValue();
     }
   }
 

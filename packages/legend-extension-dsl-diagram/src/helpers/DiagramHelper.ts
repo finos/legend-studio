@@ -15,9 +15,9 @@
  */
 
 import type { PureModel } from '@finos/legend-graph';
-import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/ClassView';
-import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/Diagram';
-import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/Point';
+import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
+import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
+import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 
 /**
  * Get absolute position of element on the screen by recursively walking up element tree

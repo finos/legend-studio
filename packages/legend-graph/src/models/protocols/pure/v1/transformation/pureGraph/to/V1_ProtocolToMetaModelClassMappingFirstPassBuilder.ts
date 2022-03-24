@@ -48,6 +48,8 @@ import { V1_resolvePathsInRawLambda } from './helpers/V1_ValueSpecificationPathR
 import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
 import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
+import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
+import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation';
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   implements V1_ClassMappingVisitor<SetImplementation>
@@ -105,6 +107,36 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
       targetClass,
       InferableMappingElementRootExplicitValue.create(classMapping.root),
       getClassMappingOperationType(classMapping.operation),
+    );
+  }
+
+  visit_MergeOperationClassMapping(
+    classMapping: V1_MergeOperationClassMapping,
+  ): SetImplementation {
+    assertNonEmptyString(
+      classMapping.class,
+      `Merge Operation class mapping 'class' field is missing or empty`,
+    );
+    assertNonNullable(
+      classMapping.root,
+      `Merge Operation class mapping 'root' field is missing`,
+    );
+    assertNonNullable(
+      classMapping.operation,
+      `Merge Operation class mapping operation is missing`,
+    );
+    const targetClass = this.context.resolveClass(classMapping.class);
+    return new MergeOperationSetImplementation(
+      V1_getInferredClassMappingId(targetClass.value, classMapping),
+      this.parent,
+      targetClass,
+      InferableMappingElementRootExplicitValue.create(classMapping.root),
+      getClassMappingOperationType(classMapping.operation),
+      V1_resolvePathsInRawLambda(
+        this.context,
+        classMapping.validationFunction.parameters,
+        classMapping.validationFunction.body,
+      ),
     );
   }
 

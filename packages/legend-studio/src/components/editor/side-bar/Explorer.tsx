@@ -123,7 +123,7 @@ const ElementRenamer = observer(() => {
     if (element && canRenameElement) {
       explorerTreeState.setElementToRename(undefined);
       flowResult(editorStore.renameElement(element, path)).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };
@@ -202,10 +202,10 @@ const ExplorerContextMenu = observer(
         ? node.packageableElement
         : undefined
       : editorStore.graphManagerState.graph.root;
-    const deleteElement = (): void => {
+    const removeElement = (): void => {
       if (node) {
         flowResult(editorStore.deleteElement(node.packageableElement)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -242,7 +242,7 @@ const ExplorerContextMenu = observer(
           .then(() =>
             applicationStore.notifySuccess('Copied element link to clipboard'),
           )
-          .catch(applicationStore.alertIllegalUnhandledError);
+          .catch(applicationStore.alertUnhandledError);
       }
     };
 
@@ -278,9 +278,9 @@ const ExplorerContextMenu = observer(
             <MenuContentItemLabel>Rename</MenuContentItemLabel>
           </MenuContentItem>
           {node && (
-            <MenuContentItem onClick={deleteElement}>
+            <MenuContentItem onClick={removeElement}>
               <MenuContentItemBlankIcon />
-              <MenuContentItemLabel>Delete</MenuContentItemLabel>
+              <MenuContentItemLabel>Remove</MenuContentItemLabel>
             </MenuContentItem>
           )}
         </MenuContent>
@@ -293,7 +293,7 @@ const ExplorerContextMenu = observer(
         {!isReadOnly && node && (
           <>
             <MenuContentItem onClick={renameElement}>Rename</MenuContentItem>
-            <MenuContentItem onClick={deleteElement}>Delete</MenuContentItem>
+            <MenuContentItem onClick={removeElement}>Remove</MenuContentItem>
           </>
         )}
         {node && (
@@ -785,7 +785,7 @@ export const Explorer = observer(() => {
     editorStore.conflictResolutionState.confirmHasResolvedAllConflicts();
     flowResult(
       editorStore.conflictResolutionState.buildGraphInConflictResolutionMode(),
-    ).catch(applicationStore.alertIllegalUnhandledError);
+    ).catch(applicationStore.alertUnhandledError);
   };
 
   return (
@@ -870,6 +870,19 @@ export const Explorer = observer(() => {
               <>
                 <PanelLoadingIndicator isLoading={isLoading} />
                 {showExplorerTrees && <ExplorerTrees />}
+                {!showExplorerTrees &&
+                  !editorStore.graphManagerState.graph.buildState.hasFailed && (
+                    <div className="explorer__content__progress-msg">
+                      {editorStore.initState.message ??
+                        editorStore.graphManagerState.graph.systemModel
+                          .buildState.message ??
+                        editorStore.graphManagerState.graph.dependencyManager
+                          .buildState.message ??
+                        editorStore.graphManagerState.graph.generationModel
+                          .buildState.message ??
+                        editorStore.graphManagerState.graph.buildState.message}
+                    </div>
+                  )}
                 {!showExplorerTrees &&
                   editorStore.graphManagerState.graph.buildState.hasFailed && (
                     <BlankPanelContent>

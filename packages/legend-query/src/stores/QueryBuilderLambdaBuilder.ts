@@ -15,6 +15,7 @@
  */
 
 import {
+  assertTrue,
   guaranteeNonNullable,
   isNonNullable,
   UnsupportedOperationError,
@@ -53,6 +54,13 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+import {
+  type QueryBuilderPostFilterState,
+  type QueryBuilderPostFilterTreeNodeData,
+  QueryBuilderPostFilterTreeConditionNodeData,
+  QueryBuilderPostFilterTreeGroupNodeData,
+} from './QueryBuilderPostFilterState';
+import { fromGroupOperation } from './QueryBuilderOperatorsHelper';
 
 export const buildGetAllFunction = (
   _class: Class,
@@ -89,8 +97,8 @@ export const buildParametersLetLambdaFunc = (
   );
   letlambdaFunction.expressionSequence =
     queryBuilderState.queryParametersState.parameters
-      .map((_var) => {
-        if (_var.values) {
+      .map((queryParamState) => {
+        if (queryParamState.value) {
           const letFunc = new SimpleFunctionExpression(
             extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
             multiplicityOne,
@@ -99,15 +107,107 @@ export const buildParametersLetLambdaFunc = (
             GenericTypeExplicitReference.create(new GenericType(typeString)),
             multiplicityOne,
           );
-          letVar.values = [_var.variableName];
+          letVar.values = [queryParamState.variableName];
           letFunc.parametersValues.push(letVar);
-          letFunc.parametersValues.push(_var.values);
+          letFunc.parametersValues.push(queryParamState.value);
           return letFunc;
         }
         return undefined;
       })
       .filter(isNonNullable);
   return letlambdaFunction;
+};
+
+const buildPostFilterExpression = (
+  filterState: QueryBuilderPostFilterState,
+  node: QueryBuilderPostFilterTreeNodeData,
+): ValueSpecification | undefined => {
+  if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
+    return node.condition.operator.buildPostFilterConditionExpression(
+      node.condition,
+    );
+  } else if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
+    const multiplicityOne =
+      filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      );
+    const func = new SimpleFunctionExpression(
+      extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
+      multiplicityOne,
+    );
+    const clauses = node.childrenIds
+      .map((e) => filterState.nodes.get(e))
+      .filter(isNonNullable)
+      .map((e) => buildPostFilterExpression(filterState, e))
+      .filter(isNonNullable);
+    /**
+     * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
+     * like and/or do not take more than 2 parameters, as such, if we have more than 2, we need
+     * to create a chain of this operation to accomondate.
+     *
+     * This means that in the read direction, we might need to flatten the chains down to group with
+     * multiple clauses. This means user's intended grouping will not be kept.
+     */
+    if (clauses.length > 2) {
+      const firstClause = clauses[0] as ValueSpecification;
+      let currentClause: ValueSpecification = clauses[
+        clauses.length - 1
+      ] as ValueSpecification;
+      for (let i = clauses.length - 2; i > 0; --i) {
+        const clause1 = clauses[i] as ValueSpecification;
+        const clause2 = currentClause;
+        const groupClause = new SimpleFunctionExpression(
+          extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
+          multiplicityOne,
+        );
+        groupClause.parametersValues = [clause1, clause2];
+        currentClause = groupClause;
+      }
+      func.parametersValues = [firstClause, currentClause];
+    } else {
+      func.parametersValues = clauses;
+    }
+    return func.parametersValues.length ? func : undefined;
+  }
+  return undefined;
+};
+
+export const processPostFilterOnLambda = (
+  postFilterState: QueryBuilderPostFilterState,
+  lambda: LambdaFunction,
+): LambdaFunction => {
+  const postFilterConditionExpressions = postFilterState.rootIds
+    .map((e) => guaranteeNonNullable(postFilterState.nodes.get(e)))
+    .map((e) => buildPostFilterExpression(postFilterState, e))
+    .filter(isNonNullable);
+  if (
+    !postFilterConditionExpressions.length ||
+    lambda.expressionSequence.length !== 1
+  ) {
+    return lambda;
+  }
+  assertTrue(
+    postFilterState.queryBuilderState.fetchStructureState.isProjectionMode(),
+    'Can only apply post-filter while fetching projection columns',
+  );
+  const multiplicityOne =
+    postFilterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+  const filterLambda = buildGenericLambdaFunctionInstanceValue(
+    postFilterState.lambdaParameterName,
+    postFilterConditionExpressions,
+    postFilterState.queryBuilderState.graphManagerState.graph,
+  );
+  // main filter expression
+  const filterExpression = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FILTER),
+    multiplicityOne,
+  );
+  const currentExpression = guaranteeNonNullable(lambda.expressionSequence[0]);
+  filterExpression.parametersValues = [currentExpression, filterLambda];
+  lambda.expressionSequence[0] = filterExpression;
+  return lambda;
 };
 
 export const buildLambdaFunction = (
@@ -193,7 +293,6 @@ export const buildLambdaFunction = (
   if (filterFunction) {
     lambdaFunction.expressionSequence[0] = filterFunction;
   }
-
   // build fetch structure
   if (queryBuilderState.fetchStructureState.isProjectionMode()) {
     if (
@@ -424,7 +523,8 @@ export const buildLambdaFunction = (
     serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
     lambdaFunction.expressionSequence[0] = serializeFunction;
   }
-
+  // build post-filter
+  processPostFilterOnLambda(queryBuilderState.postFilterState, lambdaFunction);
   // build result set modifiers
   queryBuilderState.resultSetModifierState.processModifiersOnLambda(
     lambdaFunction,

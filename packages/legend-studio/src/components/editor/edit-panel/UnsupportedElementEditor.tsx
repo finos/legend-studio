@@ -26,7 +26,7 @@ export const UnsupportedEditorPanel = observer(
     const { text, isReadOnly } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
+    const handleTextModeClick = applicationStore.guardUnhandledError(() =>
       flowResult(editorStore.toggleTextMode()),
     );
 

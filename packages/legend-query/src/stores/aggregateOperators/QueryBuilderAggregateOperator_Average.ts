@@ -21,6 +21,7 @@ import {
   type VariableExpression,
   type PureModel,
   type AbstractPropertyExpression,
+  type Type,
 } from '@finos/legend-graph';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
@@ -86,5 +87,14 @@ export class QueryBuilderAggregateOperator_Average extends QueryBuilderAggregate
       SUPPORTED_FUNCTIONS.AVERAGE,
       this,
     );
+  }
+
+  override getReturnType(
+    aggregateColumnState: QueryBuilderAggregateColumnState,
+  ): Type {
+    const graph =
+      aggregateColumnState.aggregationState.projectionState.queryBuilderState
+        .graphManagerState.graph;
+    return graph.getType(PRIMITIVE_TYPE.FLOAT);
   }
 }

@@ -87,7 +87,7 @@ export const QueryBuilderLambdaEditor = observer(
               }
               await flowResult(queryBuilderState.compileQuery());
             };
-            handler().catch(applicationStore.alertIllegalUnhandledError);
+            handler().catch(applicationStore.alertUnhandledError);
           },
         },
       ],

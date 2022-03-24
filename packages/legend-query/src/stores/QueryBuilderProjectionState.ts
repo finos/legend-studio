@@ -20,6 +20,7 @@ import {
   makeAutoObservable,
   makeObservable,
   observable,
+  flow,
 } from 'mobx';
 import {
   type GeneratorFn,
@@ -34,6 +35,8 @@ import {
   addUniqueEntry,
   guaranteeNonNullable,
   findLast,
+  assertTrue,
+  assertNonEmptyString,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -48,6 +51,9 @@ import {
   type AbstractPropertyExpression,
   type CompilationError,
   type ExecutionResult,
+  type Type,
+  type VariableExpression,
+  PackageableElementExplicitReference,
   GRAPH_MANAGER_LOG_EVENT,
   TdsExecutionResult,
   PureClientVersion,
@@ -56,9 +62,12 @@ import {
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
+  TYPICAL_MULTIPLICITY_TYPE,
+  RawVariableExpression,
+  Enumeration,
   getMilestoneTemporalStereotype,
-  MILESTONING_STEROTYPES,
   Class,
+  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -122,6 +131,8 @@ export abstract class QueryBuilderProjectionColumnState {
   setColumnName(val: string): void {
     this.columnName = val;
   }
+
+  abstract getReturnType(): Type | undefined;
 }
 
 export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProjectionColumnState {
@@ -131,6 +142,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
   constructor(
     projectionState: QueryBuilderProjectionState,
     propertyExpression: AbstractPropertyExpression,
+    humanizePropertyName: boolean,
   ) {
     super(projectionState, '');
 
@@ -146,6 +158,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     );
     this.columnName = getPropertyChainName(
       this.propertyExpressionState.propertyExpression,
+      humanizePropertyName,
     );
   }
 
@@ -153,7 +166,10 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     this.lambdaParameterName = val;
   }
 
-  changeProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
+  changeProperty(
+    node: QueryBuilderExplorerTreePropertyNodeData,
+    humanizePropertyName: boolean,
+  ): void {
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.projectionState.queryBuilderState,
       buildPropertyExpressionFromExplorerTreeNodeData(
@@ -165,6 +181,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     );
     this.columnName = getPropertyChainName(
       this.propertyExpressionState.propertyExpression,
+      humanizePropertyName,
     );
   }
 
@@ -210,18 +227,6 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
                 businessDate;
               derivedPropertyExpressionState.businessDate = businessDate;
             }
-            console.log(derivedPropertyExpressionState.processingDate);
-            console.log(
-              derivedPropertyExpressionState.propertyExpression
-                .parametersValues[1],
-            );
-            console.log(
-              checkEquality(
-                derivedPropertyExpressionState.processingDate,
-                derivedPropertyExpressionState.propertyExpression
-                  .parametersValues[1],
-              ),
-            );
             if (
               checkEquality(
                 derivedPropertyExpressionState.processingDate,
@@ -294,6 +299,11 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
       }
     }
     return this.propertyExpressionState;
+  }
+
+  override getReturnType(): Type | undefined {
+    return this.propertyExpressionState.propertyExpression.func.genericType
+      .value.rawType;
   }
 }
 
@@ -394,13 +404,16 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
 export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderProjectionColumnState {
   derivationLambdaEditorState: QueryBuilderDerivationProjectionLambdaState;
   lambda: RawLambda;
+  returnType: Type | undefined;
 
   constructor(projectionState: QueryBuilderProjectionState, lambda: RawLambda) {
     super(projectionState, '(derivation)');
 
     makeObservable(this, {
       lambda: observable,
+      returnType: observable,
       setLambda: action,
+      fetchDerivationLambdaReturnType: flow,
     });
 
     this.derivationLambdaEditorState =
@@ -413,6 +426,63 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
 
   setLambda(val: RawLambda): void {
     this.lambda = val;
+  }
+
+  setReturnType(val: Type | undefined): void {
+    this.returnType = val;
+  }
+
+  /**
+   * Fetches lambda return type for derivation column.
+   * Throws error if unable to fetch type or if type is not primitive or an enumeration
+   * as expected by a projection column
+   */
+  *fetchDerivationLambdaReturnType(): GeneratorFn<void> {
+    assertTrue(Array.isArray(this.lambda.parameters));
+    const projectionParameter = this.lambda.parameters as object[];
+    const graph =
+      this.projectionState.queryBuilderState.graphManagerState.graph;
+    const multiplicityOne = graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+    assertTrue(projectionParameter.length === 1);
+    const variable = projectionParameter[0] as VariableExpression;
+    assertNonEmptyString(variable.name);
+    // assign variable to query class
+    const rawVariableExpression = new RawVariableExpression(
+      variable.name,
+      multiplicityOne,
+      PackageableElementExplicitReference.create(
+        guaranteeNonNullable(
+          this.projectionState.queryBuilderState.querySetupState._class,
+        ),
+      ),
+    );
+    const _rawVariableExpression =
+      this.projectionState.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+        rawVariableExpression,
+      );
+    const isolatedLambda = new RawLambda(
+      [_rawVariableExpression],
+      this.lambda.body,
+    );
+    const type =
+      (yield this.projectionState.queryBuilderState.graphManagerState.graphManager.getLambdaReturnType(
+        isolatedLambda,
+        graph,
+      )) as string;
+    const resolvedType = graph.getType(type);
+    assertTrue(
+      Object.values(PRIMITIVE_TYPE).includes(
+        resolvedType.path as PRIMITIVE_TYPE,
+      ) || resolvedType instanceof Enumeration,
+      'projection column must have primitive return type',
+    );
+    this.setReturnType(resolvedType);
+  }
+
+  override getReturnType(): Type | undefined {
+    return this.returnType;
   }
 }
 
@@ -521,7 +591,7 @@ export class QueryBuilderProjectionState {
       derivationColumnState.derivationLambdaEditorState.convertLambdaObjectToGrammarString(
         false,
       ),
-    ).catch(this.queryBuilderState.applicationStore.alertIllegalUnhandledError);
+    ).catch(this.queryBuilderState.applicationStore.alertUnhandledError);
   }
 
   replaceColumn(

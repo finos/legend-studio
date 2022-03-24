@@ -69,7 +69,14 @@ export {
   TagReference,
   TagExplicitReference,
 } from './models/metamodels/pure/packageableElements/domain/TagReference';
-
+// metamodel external formats
+export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
+export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit';
+export { SchemaSet } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
+export { Schema as ExternalFormatSchema } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema';
+export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
+export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
+export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
@@ -126,6 +133,8 @@ export { V1_Lambda } from './models/protocols/pure/v1/model/valueSpecification/r
 export { V1_Variable } from './models/protocols/pure/v1/model/valueSpecification/V1_Variable';
 export { V1_ValueSpecification } from './models/protocols/pure/v1/model/valueSpecification/V1_ValueSpecification';
 export { V1_Multiplicity } from './models/protocols/pure/v1/model/packageableElements/domain/V1_Multiplicity';
+export { V1_ExternalFormatDescription } from './models/protocols/pure/v1/engine/externalFormat/V1_ExternalFormatDescription';
+export { V1_ExternalFormatModelGenerationInput } from './models/protocols/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
@@ -149,6 +158,7 @@ export * from './helpers/MappingResolutionHelper';
 export * from './helpers/ValidationHelper';
 export * from './helpers/Stubable'; // TODO: to be removed
 export * from './helpers/DomainHelper';
+export * from './helpers/PureLanguageHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
@@ -174,6 +184,8 @@ export {
   AbstractPureGraphManager,
   type GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager';
+export { GraphBuilderReport } from './graphManager/GraphBuilderReport';
+export { GraphManagerTelemetry } from './graphManager/GraphManagerTelemetry';
 export * from './graphManager/GraphManagerUtils';
 export { GRAPH_MANAGER_LOG_EVENT } from './graphManager/GraphManagerLogEvent';
 export * from './graphManager/DSLMapping_PureGraphManagerPlugin_Extension';
@@ -184,6 +196,7 @@ export {
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
 } from './graphManager/action/execution/ExecutionResult';
+export { ExternalFormatDescription } from './graphManager/action/externalFormat/ExternalFormatDescription';
 export * from './graphManager/action/execution/ExecutionResultHelper';
 export * from './graphManager/PureGraphManagerPlugin';
 export * from './graphManager/action/query/Query';
@@ -228,7 +241,10 @@ export {
   V1_serializeRawValueSpecification,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_transformPropertyReference } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_MappingTransformer';
-export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
+export {
+  V1_EngineServerClient,
+  V1_ENGINE_LOG_EVENT,
+} from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
 export { V1_deserializePureModelContextData as V1_jsonToPureModelContextData } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
 export {
@@ -239,6 +255,7 @@ export {
 export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
 export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 export * from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
+export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

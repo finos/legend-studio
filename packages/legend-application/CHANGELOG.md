@@ -1,5 +1,15 @@
 # @finos/legend-application
 
+## 1.2.2
+
+## 1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- [#899](https://github.com/finos/legend-studio/pull/899) [`d4f0aec5`](https://github.com/finos/legend-studio/commit/d4f0aec5d536b3ad167ac702cc5c2070c265ed51) ([@akphi](https://github.com/akphi)) - Create `LegendApplicationDocumentationRegistry` with shape `documentation: { url: string, entries: Record<string, string>}` to store links/references for documentation.
+
 ## 1.1.9
 
 ## 1.1.8

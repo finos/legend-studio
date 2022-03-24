@@ -9,5 +9,17 @@
     "src/**/__tests__/**/*.tsx",
     "src/**/__mocks__/**/*.ts",
     "src/**/__mocks__/**/*.tsx"
+  ],
+  "references": [
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
+    {
+      "path": "../legend-extension-external-store-service/tsconfig.build.json"
+    },
+    { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
+    {
+      "path": "../legend-extension-external-format-json-schema/tsconfig.build.json"
+    }
   ]
 }

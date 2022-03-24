@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { type CSSProperties, useRef, useEffect, forwardRef } from 'react';
+import {
+  type CSSProperties,
+  useRef,
+  useEffect,
+  forwardRef,
+  type LegacyRef,
+} from 'react';
 import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './Icon';
 import CreatableSelect, { type Props } from 'react-select/creatable';
 import Select, { createFilter } from 'react-select';
@@ -182,7 +188,9 @@ export const CustomSelectorInput = forwardRef<
         }),
       }}
       menuPortalTarget={document.body}
-      ref={ref}
+      // coercing a type for ref as we will eventually remove dependency on `react-select`
+      // See https://github.com/finos/legend-studio/issues/615
+      ref={ref as LegacyRef<any>} // eslint-disable-line @typescript-eslint/no-explicit-any
       isDisabled={Boolean(disabled)}
       className={`${stylePrefix} ${className} ${
         hasError ? 'selector-input--has-error' : ''

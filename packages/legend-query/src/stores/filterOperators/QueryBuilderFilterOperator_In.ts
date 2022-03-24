@@ -32,12 +32,14 @@ import {
 } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
-  buildNotExpression,
   buildFilterConditionExpression,
-  unwrapNotExpression,
-  getCollectionValueSpecificationType,
 } from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import {
+  buildNotExpression,
+  unwrapNotExpression,
+  getCollectionValueSpecificationType,
+} from '../QueryBuilderOperatorsHelper';
 
 export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -77,7 +79,8 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
         return true;
       }
       const collectionType = getCollectionValueSpecificationType(
-        filterConditionState,
+        filterConditionState.filterState.queryBuilderState.graphManagerState
+          .graph,
         valueSpec.values,
       );
       if (!collectionType) {
@@ -160,7 +163,8 @@ export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
-      filterConditionState,
+      filterConditionState.filterState.queryBuilderState.graphManagerState
+        .graph,
       super.buildFilterConditionExpression(filterConditionState),
     );
   }

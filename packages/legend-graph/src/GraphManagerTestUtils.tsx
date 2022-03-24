@@ -16,7 +16,11 @@
 
 /// <reference types="jest-extended" />
 import { flowResult } from 'mobx';
-import { Log, AbstractPluginManager } from '@finos/legend-shared';
+import {
+  type LoggerPlugin,
+  Log,
+  AbstractPluginManager,
+} from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
 import { GraphManagerState } from './GraphManagerState';
 import { GraphManagerStateProvider } from './GraphManagerStateProvider';
@@ -31,9 +35,14 @@ export class TEST__GraphPluginManager
   extends AbstractPluginManager
   implements GraphPluginManager
 {
+  protected loggerPlugins: LoggerPlugin[] = [];
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
+
+  registerLoggerPlugin(plugin: LoggerPlugin): void {
+    this.loggerPlugins.push(plugin);
+  }
 
   registerPureGraphManagerPlugin(plugin: PureGraphManagerPlugin): void {
     this.pureGraphManagerPlugins.push(plugin);
@@ -60,14 +69,19 @@ export class TEST__GraphPluginManager
   getPureGraphPlugins(): PureGraphPlugin[] {
     return this.pureGraphPlugins;
   }
+
+  getLoggerPlugins(): LoggerPlugin[] {
+    return [...this.loggerPlugins];
+  }
 }
 
 export const TEST__getTestGraphManagerState = (
   pluginManager?: GraphPluginManager,
+  log?: Log,
 ): GraphManagerState =>
   new GraphManagerState(
     pluginManager ?? new TEST__GraphPluginManager(),
-    new Log(),
+    log ?? new Log(),
   );
 
 export const TEST__provideMockedGraphManagerState = (customization?: {
@@ -157,7 +171,7 @@ export const TEST__buildGraphWithEntities = async (
   entities: Entity[],
   options?: GraphBuilderOptions,
 ): Promise<void> => {
-  await flowResult(graphManagerState.initializeSystem());
+  await flowResult(graphManagerState.initializeSystem(options));
   await flowResult(
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,

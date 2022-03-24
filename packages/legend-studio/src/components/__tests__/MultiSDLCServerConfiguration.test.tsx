@@ -122,7 +122,7 @@ test(
         WebApplicationNavigator,
       ).getCurrentLocationPath(),
     ).toEqual(TEST_ROUTE_PATTERN);
-    await waitFor(() => expect(queryByText('Next')).not.toBeNull());
+    await waitFor(() => expect(queryByText('Edit Workspace')).not.toBeNull());
     // now because such route pattern would never be supported, the app would redirect user to the setup page
     // with the default SDLC instance
     expect(
@@ -175,7 +175,7 @@ test(integrationTest('SDLC server can be specified via URL'), async () => {
   await waitFor(() =>
     expect(config.currentSDLCServerOption.key).toEqual('server2'),
   );
-  await waitFor(() => expect(queryByText('Next')).not.toBeNull());
+  await waitFor(() => expect(queryByText('Edit Workspace')).not.toBeNull());
 });
 
 test(
@@ -229,7 +229,7 @@ test(
         WebApplicationNavigator,
       ).getCurrentLocationPath(),
     ).toEqual(generateSetupRoute(config.defaultSDLCServerOption, undefined));
-    await waitFor(() => expect(queryByText('Next')).not.toBeNull());
+    await waitFor(() => expect(queryByText('Edit Workspace')).not.toBeNull());
   },
 );
 
@@ -277,7 +277,7 @@ test(
         WebApplicationNavigator,
       ).getCurrentLocationPath(),
     ).toEqual(generateSetupRoute(config.defaultSDLCServerOption, undefined));
-    await waitFor(() => expect(queryByText('Next')).not.toBeNull());
+    await waitFor(() => expect(queryByText('Edit Workspace')).not.toBeNull());
   },
 );
 

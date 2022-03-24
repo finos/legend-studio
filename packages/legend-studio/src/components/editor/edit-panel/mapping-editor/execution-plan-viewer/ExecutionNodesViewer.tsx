@@ -116,25 +116,24 @@ const TDSResultTypeViewer: React.FC<{
           {colName}
         </button>
       </div>
-      {!(colType === undefined) && (
+      {colType !== undefined && (
         <div className="property-basic-editor__type">
           <button className="property-basic-editor__name" title={`Column Type`}>
             {colType.name}
           </button>
         </div>
       )}
-      {!(colSourceDatatype === undefined) &&
-        colSourceDatatype instanceof VarChar && (
-          <div className="property-basic-editor__type">
-            <button
-              className="property-basic-editor__name input-label"
-              title={`Relational type`}
-            >
-              {`VarChar(${colSourceDatatype.size})`}
-            </button>
-          </div>
-        )}
-      {!(colSourceDatatype === undefined) &&
+      {colSourceDatatype !== undefined && colSourceDatatype instanceof VarChar && (
+        <div className="property-basic-editor__type">
+          <button
+            className="property-basic-editor__name input-label"
+            title={`Relational type`}
+          >
+            {`VarChar(${colSourceDatatype.size})`}
+          </button>
+        </div>
+      )}
+      {colSourceDatatype !== undefined &&
         !(colSourceDatatype instanceof VarChar) && (
           <div className="property-basic-editor__type">
             <button
@@ -199,7 +198,7 @@ export const ExecutionNodesViewer = observer(
   (props: { displayData: string; executionPlanState: ExecutionPlanState }) => {
     const { displayData, executionPlanState } = props;
     let currentElement;
-    if (!(executionPlanState.selectedNode === undefined)) {
+    if (executionPlanState.selectedNode !== undefined) {
       if (
         executionPlanState.selectedNode instanceof ExecutionPlanViewTreeNodeData
       ) {
@@ -213,7 +212,7 @@ export const ExecutionNodesViewer = observer(
     const nativeViewModes = Object.values(EXECUTION_PLAN_VIEW_MODE);
     return (
       <div className="execution-plan-viewer">
-        {!(executionPlanState.selectedNode === undefined) && (
+        {executionPlanState.selectedNode !== undefined && (
           <div className="panel__header edit-panel__header">
             <div className="edit-panel__header__tabs">
               <button className="edit-panel__header__tab edit-panel__header__tab--active">

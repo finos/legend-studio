@@ -114,20 +114,21 @@ const DerivedPropertyParameterEditor = observer(
             .graph,
         )
       ) {
+        const graph =
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState
+            .graph;
         const targetStereotype = getMilestoneTemporalStereotype(
           guaranteeType(
             derivedPropertyExpressionState.derivedProperty.genericType.value
               .rawType,
             Class,
           ),
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState
-            .graph,
+          graph,
         );
         if (targetStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
           fillDerivedPropertyArguments(
             derivedPropertyExpressionState,
-            derivedPropertyExpressionState.queryBuilderState.graphManagerState
-              .graph,
+            graph,
             true,
           );
         }

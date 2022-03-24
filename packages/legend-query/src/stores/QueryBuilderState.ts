@@ -101,6 +101,37 @@ import {
   QueryParametersState,
   QueryParameterState,
 } from './QueryParametersState';
+import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState';
+import {
+  QueryBuilderPostFilterOperator_Equal,
+  QueryBuilderPostFilterOperator_NotEqual,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_Equal';
+import { QueryBuilderPostFilterOperator_LessThan } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThan';
+import { QueryBuilderPostFilterOperator_LessThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThanEqual';
+import { QueryBuilderPostFilterOperator_GreaterThan } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThan';
+import { QueryBuilderPostFilterOperator_GreaterThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThanEqual';
+import {
+  QueryBuilderPostFilterOperator_NotStartWith,
+  QueryBuilderPostFilterOperator_StartWith,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_StartWith';
+import {
+  QueryBuilderPostFilterOperator_Contain,
+  QueryBuilderPostFilterOperator_NotContain,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_Contain';
+import {
+  QueryBuilderPostFilterOperator_EndWith,
+  QueryBuilderPostFilterOperator_NotEndWith,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_EndWith';
+import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator';
+import {
+  QueryBuilderPostFilterOperator_In,
+  QueryBuilderPostFilterOperator_NotIn,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_In';
+import {
+  QueryBuilderPostFilterOperator_IsEmpty,
+  QueryBuilderPostFilterOperator_IsNotEmpty,
+} from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty';
+import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -126,8 +157,10 @@ export class QueryBuilderState {
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
   queryParametersState: QueryParametersState;
+  queryFunctionsExplorerState: QueryFunctionsExplorerState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
+  postFilterState: QueryBuilderPostFilterState;
   resultSetModifierState: QueryResultSetModifierState;
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
@@ -150,8 +183,28 @@ export class QueryBuilderState {
     new QueryBuilderFilterOperator_IsEmpty(),
     new QueryBuilderFilterOperator_IsNotEmpty(),
   ];
+  postFilterOperators: QueryBuilderPostFilterOperator[] = [
+    new QueryBuilderPostFilterOperator_Equal(),
+    new QueryBuilderPostFilterOperator_NotEqual(),
+    new QueryBuilderPostFilterOperator_LessThan(),
+    new QueryBuilderPostFilterOperator_LessThanEqual(),
+    new QueryBuilderPostFilterOperator_GreaterThan(),
+    new QueryBuilderPostFilterOperator_GreaterThanEqual(),
+    new QueryBuilderPostFilterOperator_StartWith(),
+    new QueryBuilderPostFilterOperator_NotStartWith(),
+    new QueryBuilderPostFilterOperator_Contain(),
+    new QueryBuilderPostFilterOperator_NotContain(),
+    new QueryBuilderPostFilterOperator_EndWith(),
+    new QueryBuilderPostFilterOperator_NotEndWith(),
+    new QueryBuilderPostFilterOperator_In(),
+    new QueryBuilderPostFilterOperator_NotIn(),
+    new QueryBuilderPostFilterOperator_IsEmpty(),
+    new QueryBuilderPostFilterOperator_IsNotEmpty(),
+  ];
   isCompiling = false;
   backdrop = false;
+  showFunctionPanel = false;
+  showParameterPanel = true;
 
   constructor(
     applicationStore: ApplicationStore<LegendApplicationConfig>,
@@ -162,8 +215,10 @@ export class QueryBuilderState {
       querySetupState: observable,
       explorerState: observable,
       queryParametersState: observable,
+      queryFunctionsExplorerState: observable,
       fetchStructureState: observable,
       filterState: observable,
+      postFilterState: observable,
       resultSetModifierState: observable,
       resultState: observable,
       queryTextEditorState: observable,
@@ -171,6 +226,8 @@ export class QueryBuilderState {
       isCompiling: observable,
       backdrop: observable,
       mode: observable,
+      showFunctionPanel: observable,
+      showParameterPanel: observable,
       classOptions: computed,
       mappingOptions: computed,
       runtimeOptions: computed,
@@ -181,6 +238,8 @@ export class QueryBuilderState {
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
+      setShowFunctionPanel: action,
+      setShowParameterPanel: action,
       changeClass: action,
       changeFetchStructure: action,
       compileQuery: flow,
@@ -192,8 +251,13 @@ export class QueryBuilderState {
     this.querySetupState = new QueryBuilderSetupState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.queryParametersState = new QueryParametersState(this);
+    this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.postFilterState = new QueryBuilderPostFilterState(
+      this,
+      this.postFilterOperators,
+    );
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
@@ -207,6 +271,13 @@ export class QueryBuilderState {
 
   setBackdrop(val: boolean): void {
     this.backdrop = val;
+  }
+
+  setShowFunctionPanel(val: boolean): void {
+    this.showFunctionPanel = val;
+  }
+  setShowParameterPanel(val: boolean): void {
+    this.showParameterPanel = val;
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
@@ -240,12 +311,17 @@ export class QueryBuilderState {
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
+    this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
     const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
     );
     this.fetchStructureState = fetchStructureState;
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.postFilterState = new QueryBuilderPostFilterState(
+      this,
+      this.postFilterOperators,
+    );
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.fetchStructureState.graphFetchTreeState.initialize();
   }
@@ -276,7 +352,7 @@ export class QueryBuilderState {
       );
       if (options?.notifyError) {
         this.applicationStore.notifyError(
-          `Unable to initialize query builder: ${error.message}`,
+          `Can't initialize query builder: ${error.message}`,
         );
       }
       this.queryUnsupportedState.setLambdaError(error);
@@ -353,7 +429,7 @@ export class QueryBuilderState {
         this.queryParametersState,
         milestoningParameter,
       );
-      variableState.mockParameterValues();
+      variableState.mockParameterValue();
       this.queryParametersState.addParameter(variableState);
     }
     return milestoningParameter;
@@ -402,9 +478,7 @@ export class QueryBuilderState {
       await onSaveQuery(rawLambda);
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notifyError(
-        `Unable to save query: ${error.message}`,
-      );
+      this.applicationStore.notifyError(`Can't save query: ${error.message}`);
     }
   }
 

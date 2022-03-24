@@ -57,7 +57,7 @@ export interface LegendTaxonomyConfigurationData
      * the new API calls, we need to update them to use the latest version of
      * finos/legend-depot though
      */
-    TEMP__useLegacyDepotServerAPIRoutes?: boolean;
+    TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean;
   };
   engine: { url: string; queryUrl?: string };
   query: { url: string };
@@ -72,7 +72,7 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly queryUrl: string;
   readonly studioUrl: string;
-  readonly TEMP__useLegacyDepotServerAPIRoutes?: boolean | undefined;
+  readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
   currentTaxonomyServerOption!: TaxonomyServerOption;
   taxonomyServerOptions: TaxonomyServerOption[] = [];
@@ -156,8 +156,8 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
       configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
     );
-    this.TEMP__useLegacyDepotServerAPIRoutes =
-      configData.depot.TEMP__useLegacyDepotServerAPIRoutes;
+    this.TEMPORARY__useLegacyDepotServerAPIRoutes =
+      configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
   }
 
   get defaultTaxonomyServerOption(): TaxonomyServerOption {

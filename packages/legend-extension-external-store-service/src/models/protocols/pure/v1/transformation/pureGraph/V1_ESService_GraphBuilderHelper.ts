@@ -15,19 +15,20 @@
  */
 
 import { getServiceStore } from '../../../../../../graphManager/ESService_GraphManagerHelper';
-import type { ServiceStore } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
+import type { ServiceStore } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
 import {
   RawLambda,
+  V1_resolveBinding,
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
 } from '@finos/legend-graph';
-import type { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
+import type { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreServicePtr';
 import {
   ServiceStoreService,
   HTTP_METHOD,
-} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreService';
-import type { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
-import { ServiceGroup } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceGroup';
+} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService';
+import type { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroupPtr';
+import { ServiceGroup } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceGroup';
 import {
   type V1_TypeReference,
   V1_BooleanTypeReference,
@@ -35,7 +36,7 @@ import {
   V1_FloatTypeReference,
   V1_IntegerTypeReference,
   V1_StringTypeReference,
-} from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
+} from '../../model/packageableElements/store/serviceStore/model/V1_ESService_TypeReference';
 import {
   type TypeReference,
   BooleanTypeReference,
@@ -43,39 +44,39 @@ import {
   FloatTypeReference,
   IntegerTypeReference,
   StringTypeReference,
-} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
-import { V1_resolveBinding } from '@finos/legend-extension-dsl-serializer';
+} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_TypeReference';
 import {
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
+import type { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceParameter';
 import {
   LOCATION,
   ServiceParameter,
-} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceParameter';
-import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
-import type { ServiceParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceParameterMapping';
-import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
-import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
-import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
-import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreElement';
-import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreService';
-import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroup';
-import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
-import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
+} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter';
+import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceParameterMapping';
+import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ParameterIndexedParameterMapping';
+import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreElement';
+import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreElement';
+import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreService';
+import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroup';
+import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme';
+import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
 import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
-import { SerializationFormat } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SerializationFormat';
-import type { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_SerializationFormat';
+import { SerializationFormat } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SerializationFormat';
+import type { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SerializationFormat';
 import {
   getServiceStoreService,
   getServiceGroup,
   getParameter,
 } from '../../../../../../helpers/ESService_Helper';
-import { ParameterIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ParameterIndexedParameterMapping';
-import { PropertyIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/PropertyIndexedParameterMapping';
+import { ServiceRequestBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
+import type { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBuildInfo';
+import { ServiceRequestBodyBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBodyBuildInfo';
+import { ServiceRequestParametersBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo';
+import { ServiceRequestParameterBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParameterBuildInfo';
 
 export const V1_resolveServiceStore = (
   path: string,
@@ -180,6 +181,7 @@ export const V1_buildServiceParameter = (
     `Service parameter location '${protocol.location}' is not supported`,
   );
   serviceParameter.allowReserved = protocol.allowReserved;
+  serviceParameter.required = protocol.required;
   serviceParameter.enumeration = protocol.enumeration;
   if (protocol.serializationFormat !== undefined) {
     serviceParameter.serializationFormat = V1_buildSerializationFormat(
@@ -192,32 +194,63 @@ export const V1_buildServiceParameter = (
 export const V1_buildServiceParameterMapping = (
   protocol: V1_ServiceParameterMapping,
   service: ServiceStoreService,
-): ServiceParameterMapping => {
+): ServiceRequestParameterBuildInfo => {
   if (protocol instanceof V1_ParameterIndexedParameterMapping) {
-    const mapping = new ParameterIndexedParameterMapping();
-    mapping.serviceParameter = getParameter(
+    const requestParameterBuildInfo = new ServiceRequestParameterBuildInfo();
+    requestParameterBuildInfo.serviceParameter = getParameter(
       protocol.serviceParameter,
       service.parameters,
     );
-    const lambda = new RawLambda(
+    requestParameterBuildInfo.transform = new RawLambda(
       protocol.transform.parameters,
       protocol.transform.body,
     );
-    mapping.transform = lambda;
-    return mapping;
-  } else if (protocol instanceof V1_PropertyIndexedParameterMapping) {
-    const mapping = new PropertyIndexedParameterMapping();
-    mapping.serviceParameter = getParameter(
-      protocol.serviceParameter,
-      service.parameters,
-    );
-    mapping.property = protocol.property;
-    return mapping;
+    return requestParameterBuildInfo;
   }
   throw new UnsupportedOperationError(
     `Can't build service parameter mapping`,
     protocol,
   );
+};
+
+export const V1_buildServiceRequestBuildInfo = (
+  protocol: V1_ServiceRequestBuildInfo,
+  service: ServiceStoreService,
+): ServiceRequestBuildInfo => {
+  const requestBuildInfo = new ServiceRequestBuildInfo();
+
+  if (protocol.requestBodyBuildInfo) {
+    const requestBodyBuildInfo = new ServiceRequestBodyBuildInfo();
+    requestBodyBuildInfo.transform = new RawLambda(
+      protocol.requestBodyBuildInfo.transform.parameters,
+      protocol.requestBodyBuildInfo.transform.body,
+    );
+    requestBuildInfo.requestBodyBuildInfo = requestBodyBuildInfo;
+  }
+
+  if (protocol.requestParametersBuildInfo) {
+    const requestParametersBuildInfo = new ServiceRequestParametersBuildInfo();
+    requestParametersBuildInfo.parameterBuildInfoList =
+      protocol.requestParametersBuildInfo.parameterBuildInfoList.map(
+        (parameterBuildInfo) => {
+          const requestParameterBuildInfo =
+            new ServiceRequestParameterBuildInfo();
+          requestParameterBuildInfo.serviceParameter = getParameter(
+            parameterBuildInfo.serviceParameter,
+            service.parameters,
+          );
+          requestParameterBuildInfo.transform = new RawLambda(
+            parameterBuildInfo.transform.parameters,
+            parameterBuildInfo.transform.body,
+          );
+          return requestParameterBuildInfo;
+        },
+      );
+
+    requestBuildInfo.requestParametersBuildInfo = requestParametersBuildInfo;
+  }
+
+  return requestBuildInfo;
 };
 
 const V1_buildSecurityScheme = (

@@ -60,6 +60,7 @@ import {
   V1_Timestamp,
   V1_Other,
   V1_Decimal,
+  V1_SemiStructured,
 } from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
 import { V1_View } from '../../../model/packageableElements/store/relational/model/V1_View';
 import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
@@ -130,6 +131,7 @@ enum V1_RelationalDataTypeType {
   TIMESTAMP = 'Timestamp',
   ARRAY = 'Array',
   OTHER = 'Other',
+  SEMISTRUCTURED = 'SemiStructured',
 }
 
 const V1_otherRelationalDataTypeModelSchema = createModelSchema(V1_Other, {
@@ -208,6 +210,13 @@ const V1_varCharRelationalDataTypeModelSchema = createModelSchema(V1_VarChar, {
   size: primitive(),
 });
 
+const V1_semiStructuredRelationalDataTypeModelSchema = createModelSchema(
+  V1_SemiStructured,
+  {
+    _type: usingConstantValueSchema(V1_RelationalDataTypeType.SEMISTRUCTURED),
+  },
+);
+
 const V1_serializeColType = (
   protocol: V1_RelationalDataType,
 ): PlainObject<V1_RelationalDataType> => {
@@ -245,6 +254,8 @@ const V1_serializeColType = (
     return serialize(V1_decimalRelationalDataTypeModelSchema, protocol);
   } else if (protocol instanceof V1_Other) {
     return serialize(V1_otherRelationalDataTypeModelSchema, protocol);
+  } else if (protocol instanceof V1_SemiStructured) {
+    return serialize(V1_semiStructuredRelationalDataTypeModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize relational data type`,
@@ -292,6 +303,8 @@ const V1_deserializeColType = (
       return deserialize(V1_decimalRelationalDataTypeModelSchema, json);
     case V1_RelationalDataTypeType.OTHER:
       return deserialize(V1_otherRelationalDataTypeModelSchema, json);
+    case V1_RelationalDataTypeType.SEMISTRUCTURED:
+      return deserialize(V1_semiStructuredRelationalDataTypeModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize relational column data type '${json._type}'`,

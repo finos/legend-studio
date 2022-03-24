@@ -1,5 +1,43 @@
 # @finos/legend-graph
 
+## 1.3.0
+
+### Minor Changes
+
+- [#885](https://github.com/finos/legend-studio/pull/885) [`b921da54`](https://github.com/finos/legend-studio/commit/b921da548336581e86ec84d8254f252538c7bb8b) ([@AFine-gs](https://github.com/AFine-gs)) - Add support for `Merge` operation class mapping.
+
+* [#889](https://github.com/finos/legend-studio/pull/889) [`de29c049`](https://github.com/finos/legend-studio/commit/de29c0499dfc11480fb7801cfa180d2131e65c00) ([@gayathrir11](https://github.com/gayathrir11)) - Add support for `SemiStructured` relational type.
+
+- [#931](https://github.com/finos/legend-studio/pull/931) [`9b133f6b`](https://github.com/finos/legend-studio/commit/9b133f6bfaf5f845831f8772180ce6c1cc1a07eb) ([@AFine-gs](https://github.com/AFine-gs)) - Add support for `Redshift` connector
+
+### Patch Changes
+
+- [#973](https://github.com/finos/legend-studio/pull/973) [`93fbe86f`](https://github.com/finos/legend-studio/commit/93fbe86fd07eb92e62044ea94236c45b642caa67) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Optimize graph builder indexing.
+
+* [#971](https://github.com/finos/legend-studio/pull/971) [`1fe4f871`](https://github.com/finos/legend-studio/commit/1fe4f871a80ea1a76354665fff153fcfb2e1d58c) ([@akphi](https://github.com/akphi)) - Run duplication check before adding new element to the graph using `PureModel.addElement()`.
+
+- [#838](https://github.com/finos/legend-studio/pull/838) [`854d8aa5`](https://github.com/finos/legend-studio/commit/854d8aa58ff31f67f698d99a498e0d51bfd668a2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rename `DSL Serializer` to `DSL External Format` and move it to core.
+
+## 1.2.1
+
+### Patch Changes
+
+- [#923](https://github.com/finos/legend-studio/pull/923) [`966fb26a`](https://github.com/finos/legend-studio/commit/966fb26af90b120272d79389a539099828c74851) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TDSRow` system classes.
+
+## 1.2.0
+
+### Minor Changes
+
+- [#330](https://github.com/finos/legend-studio/pull/330) [`0b9263c`](https://github.com/finos/legend-studio/commit/0b9263c887753473a217e7b1c4a325dfdc3084aa) ([@aamend](https://github.com/aamend)) - Supporting Delta Lake JDBC connection.
+
+### Patch Changes
+
+- [#888](https://github.com/finos/legend-studio/pull/888) [`aab22647`](https://github.com/finos/legend-studio/commit/aab22647524a4da0fd8cd0c7934c1a4a94a17797) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Added helper to generate function signature in text.
+
+* [#899](https://github.com/finos/legend-studio/pull/899) [`d4f0aec5`](https://github.com/finos/legend-studio/commit/d4f0aec5d536b3ad167ac702cc5c2070c265ed51) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Deprecate and remove `TestDatabase`, and `UserPassword` authentication strategies for relational database connection.
+
+- [#901](https://github.com/finos/legend-studio/pull/901) [`58d25ea1`](https://github.com/finos/legend-studio/commit/58d25ea122ffab5a28b4b36aa93fc0ec44762b46) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Properly list enumeration mappings from dependencies ([#867](https://github.com/finos/legend-studio/issues/867)).
+
 ## 1.1.2
 
 ### Patch Changes

@@ -327,8 +327,9 @@ export class WorkspaceReviewState {
         actions: [
           {
             label: 'Create new workspace',
-            handler: (): Promise<void> =>
+            handler: this.editorStore.applicationStore.guardUnhandledError(() =>
               flowResult(this.recreateWorkspaceAfterCommittingReview()),
+            ),
             type: ActionAlertActionType.PROCEED,
           },
           {

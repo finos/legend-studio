@@ -677,7 +677,7 @@ export const FunctionEditor = observer(() => {
         true,
         true,
       ),
-    ).catch(applicationStore.alertIllegalUnhandledError);
+    ).catch(applicationStore.alertUnhandledError);
   }, [applicationStore, functionEditorState]);
 
   return (

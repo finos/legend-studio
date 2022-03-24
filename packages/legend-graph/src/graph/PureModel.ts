@@ -27,6 +27,7 @@ import {
   guaranteeType,
   returnUndefOnError,
   getClass,
+  IllegalStateError,
 } from '@finos/legend-shared';
 import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
 import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
@@ -135,6 +136,10 @@ export class SystemModel extends BasicModel {
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.SYSTEM, extensionElementClasses);
+
+    this.buildState.setMessageFormatter(
+      (message: string) => `[system] ${message}`,
+    );
   }
 
   /**
@@ -147,7 +152,7 @@ export class SystemModel extends BasicModel {
       guaranteeType(
         this.getOwnNullableElement(_package, true),
         Package,
-        `Unable to find auto-import package '${_package}'`,
+        `Can't find auto-import package '${_package}'`,
       ),
     );
   }
@@ -156,6 +161,10 @@ export class SystemModel extends BasicModel {
 export class GenerationModel extends BasicModel {
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.MODEL_GENERATION, extensionElementClasses);
+
+    this.buildState.setMessageFormatter(
+      (message: string) => `[generation] ${message}`,
+    );
   }
 }
 
@@ -429,7 +438,12 @@ export class PureModel extends BasicModel {
   }
 
   addElement(element: PackageableElement): void {
-    this.getNullableElement(element.path);
+    const existingElement = this.getNullableElement(element.path);
+    if (existingElement) {
+      throw new IllegalStateError(
+        `Can't create element '${element.path}': another element with the same path already existed`,
+      );
+    }
     if (element instanceof Mapping) {
       this.setOwnMapping(element.path, element);
     } else if (element instanceof Store) {

@@ -45,7 +45,7 @@ const LegendQueryApplicationInner = observer(() => {
 
   useEffect(() => {
     flowResult(queryStore.initialize()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [queryStore, applicationStore]);
 
@@ -96,8 +96,8 @@ export const LegendQueryApplication = observer(
       <DepotServerClientProvider
         config={{
           serverUrl: config.depotServerUrl,
-          TEMP__useLegacyDepotServerAPIRoutes:
-            config.TEMP__useLegacyDepotServerAPIRoutes,
+          TEMPORARY__useLegacyDepotServerAPIRoutes:
+            config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
         <GraphManagerStateProvider

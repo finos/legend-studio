@@ -22,9 +22,9 @@ import {
   PanelLoadingIndicator,
   RobotIcon,
   SaveIcon,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import { DndProvider } from 'react-dnd';
@@ -53,15 +53,14 @@ const QueryExportInner = observer(
   (props: { queryExportState: QueryExportState }) => {
     const { queryExportState } = props;
     const applicationStore = useApplicationStore();
-
     const allowCreate = queryExportState.allowPersist;
     const allowSave =
       queryExportState.allowPersist && queryExportState.allowUpdate;
-    const create = applicationStore.guaranteeSafeAction(() =>
-      flowResult(queryExportState.persistQuery(true)),
+    const create = applicationStore.guardUnhandledError(() =>
+      queryExportState.persistQuery(true),
     );
-    const save = applicationStore.guaranteeSafeAction(() =>
-      flowResult(queryExportState.persistQuery(false)),
+    const save = applicationStore.guardUnhandledError(() =>
+      queryExportState.persistQuery(false),
     );
 
     // name
@@ -157,7 +156,7 @@ const QueryEditorHeader = observer(() => {
     if (queryStore.onSaveQuery) {
       queryStore.queryBuilderState
         .saveQuery(queryStore.onSaveQuery)
-        .catch(applicationStore.alertIllegalUnhandledError);
+        .catch(applicationStore.alertUnhandledError);
     }
   };
 
@@ -232,6 +231,18 @@ const QueryEditorInner = observer(() => {
         <PanelLoadingIndicator isLoading={isLoadingEditor} />
         {!isLoadingEditor && (
           <QueryBuilder queryBuilderState={queryStore.queryBuilderState} />
+        )}
+        {isLoadingEditor && (
+          <BlankPanelContent>
+            {queryStore.buildGraphState.message ??
+              queryStore.graphManagerState.graph.systemModel.buildState
+                .message ??
+              queryStore.graphManagerState.graph.dependencyManager.buildState
+                .message ??
+              queryStore.graphManagerState.graph.generationModel.buildState
+                .message ??
+              queryStore.graphManagerState.graph.buildState.message}
+          </BlankPanelContent>
         )}
       </div>
     </div>

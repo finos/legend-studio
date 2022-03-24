@@ -30,7 +30,6 @@ import {
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
-  guaranteeType,
   isNonNullable,
   Randomizer,
   returnUndefOnError,
@@ -54,9 +53,6 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
-  getMilestoneTemporalStereotype,
-  Class,
-  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -66,12 +62,9 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
+import type { QueryBuilderDerivedPropertyExpressionState } from '../stores/QueryBuilderPropertyEditorState';
 import {
-  fillDerivedPropertyArguments,
-  type QueryBuilderDerivedPropertyExpressionState,
-} from '../stores/QueryBuilderPropertyEditorState';
-import {
-  isDatePropagationSupported,
+  propagateDefaultDates,
   removePropagatedDates,
 } from '../stores/QueryBuilderMilestoningHelper';
 
@@ -253,6 +246,33 @@ export const DatePrimitiveInstanceValueEditor = observer(
         <input
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
           type="date"
+          spellCheck={false}
+          value={value}
+          onChange={changeValue}
+        />
+      </div>
+    );
+  },
+);
+
+export const DateTimePrimitiveInstanceValueEditor = observer(
+  (props: {
+    valueSpecification: PrimitiveInstanceValue;
+    className?: string | undefined;
+  }) => {
+    const { valueSpecification, className } = props;
+    const value = valueSpecification.values[0] as string;
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      valueSpecification.changeValue(event.target.value, 0);
+    };
+
+    return (
+      <div className={clsx('query-builder-value-spec-editor', className)}>
+        <input
+          className="panel__content__form__section__input query-builder-value-spec-editor__input"
+          // Despite its name this would actually allow us to register time in UTC
+          // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
+          type="datetime-local"
           spellCheck={false}
           value={value}
           onChange={changeValue}
@@ -556,9 +576,14 @@ export const DateInstanceValueEditor = observer(
 
     return (
       <div className="query-builder-value-spec-editor__date">
-        {(valueSpecification.genericType.value.rawType === strictDate ||
-          valueSpecification.genericType.value.rawType === dateTime) && (
+        {valueSpecification.genericType.value.rawType === strictDate && (
           <DatePrimitiveInstanceValueEditor
+            valueSpecification={valueSpecification}
+            className={className}
+          />
+        )}
+        {valueSpecification.genericType.value.rawType === dateTime && (
+          <DateTimePrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
             className={className}
           />
@@ -604,60 +629,6 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
     derivedPropertyExpressionState,
     derivedPropertyExpressionStates,
   } = props;
-  if (derivedPropertyExpressionState && idx !== undefined) {
-    // const temporalTarget = getMilestoneTemporalStereotype(
-    //   guaranteeType(
-    //     derivedPropertyExpressionState.propertyExpression.func.genericType.value
-    //       .rawType,
-    //     Class,
-    //   ),
-    //   derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
-    // );
-    // const paramLength =
-    //   derivedPropertyExpressionState.propertyExpression.parametersValues.length;
-    // switch (temporalTarget) {
-    //   case MILESTONING_STEROTYPES.BITEMPORAL:
-    //     if (paramLength === 3) {
-    //       derivedPropertyExpressionState.propertyExpression.parametersValues[2] =
-    //         guaranteeNonNullable(
-    //           derivedPropertyExpressionState.queryBuilderState.querySetupState
-    //             .businessDate,
-    //         );
-    //       derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-    //         guaranteeNonNullable(
-    //           derivedPropertyExpressionState.queryBuilderState.querySetupState
-    //             .processingDate,
-    //         );
-    //     }
-    //     break;
-    //   case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-    //     if (paramLength === 2) {
-    //       derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-    //         guaranteeNonNullable(
-    //           derivedPropertyExpressionState.queryBuilderState.querySetupState
-    //             .businessDate,
-    //         );
-    //     }
-    //     break;
-    //   case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-    //     if (paramLength === 2) {
-    //       derivedPropertyExpressionState.propertyExpression.parametersValues[1] =
-    //         guaranteeNonNullable(
-    //           derivedPropertyExpressionState.queryBuilderState.querySetupState
-    //             .processingDate,
-    //         );
-    //     }
-    //     break;
-    //   default:
-    // }
-    //store a variable state to know whether two states are connected or not and then update accordingly leveraging that variable
-    // console.log(idx);
-    // derivedPropertyExpressionState.propertyExpression.parametersValues[idx] =
-    //   guaranteeNonNullable(
-    //     derivedPropertyExpressionState.queryBuilderState.querySetupState
-    //       .milestoning,
-    //   );
-  }
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
     switch (_type.path) {
@@ -690,58 +661,16 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.LATESTDATE:
-        // To populate default dates to the next level in the property chain if the date values of the current
-        // level are changed when date propagation is supported to the next level.
         if (
           derivedPropertyExpressionState &&
           idx !== undefined &&
           derivedPropertyExpressionStates
         ) {
-          const index = derivedPropertyExpressionStates.findIndex(
-            (propertyState: QueryBuilderDerivedPropertyExpressionState) =>
-              propertyState === derivedPropertyExpressionState,
+          propagateDefaultDates(
+            derivedPropertyExpressionStates,
+            derivedPropertyExpressionState,
+            idx,
           );
-          if (
-            index + 1 !== derivedPropertyExpressionStates.length &&
-            !isDatePropagationSupported(
-              guaranteeNonNullable(derivedPropertyExpressionStates[index + 1]),
-              derivedPropertyExpressionState?.queryBuilderState
-                .graphManagerState.graph,
-              derivedPropertyExpressionState,
-            ) &&
-            guaranteeNonNullable(derivedPropertyExpressionStates[index + 1])
-              .propertyExpression.func.genericType.value.rawType instanceof
-              Class &&
-            derivedPropertyExpressionState.propertyExpression.func.owner
-              ._generatedMilestonedProperties.length !== 0
-          ) {
-            const temporalTarget = getMilestoneTemporalStereotype(
-              guaranteeType(
-                guaranteeNonNullable(derivedPropertyExpressionStates[index + 1])
-                  .propertyExpression.func.genericType.value.rawType,
-                Class,
-              ),
-              derivedPropertyExpressionState.queryBuilderState.graphManagerState
-                .graph,
-            );
-            if (temporalTarget) {
-              if (
-                derivedPropertyExpressionStates[index + 1]?.parameterValues &&
-                guaranteeNonNullable(
-                  derivedPropertyExpressionStates[index + 1]?.parameterValues,
-                ).length <= idx
-              ) {
-                fillDerivedPropertyArguments(
-                  guaranteeNonNullable(
-                    derivedPropertyExpressionStates[index + 1],
-                  ),
-                  derivedPropertyExpressionState.queryBuilderState
-                    .graphManagerState.graph,
-                  true,
-                );
-              }
-            }
-          }
         }
         return (
           <DateInstanceValueEditor

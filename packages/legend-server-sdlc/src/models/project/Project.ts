@@ -34,6 +34,7 @@ export class Project {
   name!: string;
   projectId!: string;
   projectType!: ProjectType;
+  webUrl!: string;
   tags: string[] = [];
 
   static readonly serialization = new SerializationFactory(
@@ -43,6 +44,7 @@ export class Project {
       projectId: primitive(),
       projectType: primitive(),
       tags: list(primitive()),
+      webUrl: primitive(),
     }),
   );
 }

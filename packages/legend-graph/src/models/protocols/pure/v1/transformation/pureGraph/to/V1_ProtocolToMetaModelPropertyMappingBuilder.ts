@@ -89,7 +89,9 @@ import {
 } from '../../../../../../../helpers/MappingHelper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
+import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/BindingTransformer';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
+import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
 const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
@@ -533,6 +535,15 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       sourceSetImplementation,
       targetSetImplementation,
     );
+    if (protocol.bindingTransformer?.binding) {
+      const bindingTransformer = new BindingTransformer();
+      const binding = V1_resolveBinding(
+        protocol.bindingTransformer.binding,
+        this.context,
+      );
+      bindingTransformer.binding = binding;
+      relationalPropertyMapping.bindingTransformer = bindingTransformer;
+    }
     // NOTE: we only need to use the raw form of the operation for the editor
     // but we need to process it anyway so we can:
     // 1. do analytics on table alias map

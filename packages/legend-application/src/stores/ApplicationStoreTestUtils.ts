@@ -17,7 +17,7 @@
 import { ApplicationStore } from './ApplicationStore';
 import { createBrowserHistory } from 'history';
 import { WebApplicationNavigator } from './WebApplicationNavigator';
-import type { LegendApplicationConfig } from './ApplicationConfig';
+import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 
 export const TEST_DATA__applicationVersion = {

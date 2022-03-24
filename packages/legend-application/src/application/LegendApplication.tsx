@@ -33,7 +33,7 @@ import type {
   LegendApplicationConfig,
   LegendApplicationConfigurationData,
   LegendApplicationVersionData,
-} from '../stores/ApplicationConfig';
+} from '../stores/LegendApplicationConfig';
 import {
   type AbstractPlugin,
   type AbstractPreset,
@@ -55,32 +55,34 @@ export abstract class LegendApplicationLogger {
   abstract error(event: LogEvent, ...data: unknown[]): void;
 }
 
-const { debug, info, warn, error } = console;
-
 export class LegendApplicationWebConsole extends LegendApplicationLogger {
   debug(event: LogEvent, ...data: unknown[]): void {
-    debug(
+    // eslint-disable-next-line no-console
+    console.debug(
       `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
       ...data,
     );
   }
 
   info(event: LogEvent, ...data: unknown[]): void {
-    info(
+    // eslint-disable-next-line no-console
+    console.info(
       `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
       ...data,
     );
   }
 
   warn(event: LogEvent, ...data: unknown[]): void {
-    warn(
+    // eslint-disable-next-line no-console
+    console.warn(
       `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
       ...data,
     );
   }
 
   error(event: LogEvent, ...data: unknown[]): void {
-    error(
+    // eslint-disable-next-line no-console
+    console.error(
       `[${event.timestamp}] ${event.name} ${data.length ? ':' : ''}`,
       ...data,
     );

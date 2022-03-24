@@ -150,7 +150,7 @@ const ReviewExplorer = observer(() => {
 
   useEffect(() => {
     flowResult(reviewStore.fetchReviewComparison()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, reviewStore]);
 
@@ -191,13 +191,13 @@ const ReviewInner = observer(() => {
   useEffect(() => {
     reviewStore.setProjectIdAndReviewId(projectId, reviewId);
     flowResult(reviewStore.initialize()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
     flowResult(reviewStore.getReview()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
     flowResult(reviewStore.fetchProject()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, reviewStore, projectId, reviewId]);
 

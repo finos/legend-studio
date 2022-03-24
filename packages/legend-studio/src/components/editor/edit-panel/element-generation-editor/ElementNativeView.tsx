@@ -42,7 +42,7 @@ export const ElementNativeView = observer(
           break;
         case ELEMENT_NATIVE_VIEW_MODE.GRAMMAR:
           flowResult(currentElementState.generateElementGrammar()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
           break;
         default:

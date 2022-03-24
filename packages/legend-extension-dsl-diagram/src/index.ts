@@ -22,19 +22,19 @@ export { DiagramEditorState } from './stores/studio/DiagramEditorState';
 
 export { DiagramRenderer, DIAGRAM_INTERACTION_MODE } from './DiagramRenderer';
 
-export { Diagram } from './models/metamodels/pure/packageableElements/diagram/Diagram';
-export { ClassView } from './models/metamodels/pure/packageableElements/diagram/ClassView';
+export { Diagram } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
+export { ClassView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
 export {
   RelationshipView,
   manageInsidePointsDynamically,
-} from './models/metamodels/pure/packageableElements/diagram/RelationshipView';
-export { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/PropertyHolderView';
-export { PropertyView } from './models/metamodels/pure/packageableElements/diagram/PropertyView';
-export { AssociationView } from './models/metamodels/pure/packageableElements/diagram/AssociationView';
-export { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/GeneralizationView';
-export { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/Point';
-export { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/Rectangle';
-export { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/PositionedRectangle';
+} from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
+export { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView';
+export { PropertyView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
+export { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView';
+export { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
+export { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
+export { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
+export { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
 
 export * from './helpers/DiagramHelper';
 export { V1_DSLDiagram_PackageableElementPointerType } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin';

@@ -68,6 +68,7 @@ const promoteQueryToService = async (
   queryBuilderExtension: QueryBuilder_EditorExtensionState,
 ): Promise<void> => {
   const editorStore = queryBuilderExtension.editorStore;
+  const applicationStore = editorStore.applicationStore;
   const queryBuilderState = queryBuilderExtension.queryBuilderState;
   try {
     const mapping = guaranteeNonNullable(
@@ -96,13 +97,11 @@ const promoteQueryToService = async (
     editorStore.openElement(service);
     await flowResult(
       queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined),
-    ).catch(editorStore.applicationStore.alertIllegalUnhandledError);
-    editorStore.applicationStore.notifySuccess(
-      `Service '${service.name}' created`,
-    );
+    ).catch(applicationStore.alertUnhandledError);
+    applicationStore.notifySuccess(`Service '${service.name}' created`);
   } catch (error) {
     assertErrorThrown(error);
-    editorStore.applicationStore.notifyError(error);
+    applicationStore.notifyError(error);
   }
 };
 
@@ -201,27 +200,31 @@ export class QueryBuilder_LegendStudioPlugin
           element: PackageableElement | undefined,
         ): React.ReactNode | undefined => {
           if (element instanceof Class) {
-            const buildQuery = async (): Promise<void> => {
-              const queryBuilderExtension = editorStore.getEditorExtensionState(
-                QueryBuilder_EditorExtensionState,
-              );
-              await flowResult(
-                queryBuilderExtension.setEmbeddedQueryBuilderMode({
-                  actionConfigs: [
-                    {
-                      key: 'promote-to-service-btn',
-                      renderer: (): React.ReactNode => (
-                        <PromoteToServiceQueryBuilderAction />
-                      ),
-                    },
-                  ],
-                  queryBuilderMode: new StandardQueryBuilderMode(),
-                }),
-              );
-              if (queryBuilderExtension.mode) {
-                queryBuilderExtension.queryBuilderState.changeClass(element);
-              }
-            };
+            const buildQuery = editorStore.applicationStore.guardUnhandledError(
+              async () => {
+                const queryBuilderExtension =
+                  editorStore.getEditorExtensionState(
+                    QueryBuilder_EditorExtensionState,
+                  );
+                await flowResult(
+                  queryBuilderExtension.setEmbeddedQueryBuilderMode({
+                    actionConfigs: [
+                      {
+                        key: 'promote-to-service-btn',
+                        renderer: (): React.ReactNode => (
+                          <PromoteToServiceQueryBuilderAction />
+                        ),
+                      },
+                    ],
+                    queryBuilderMode: new StandardQueryBuilderMode(),
+                  }),
+                );
+                if (queryBuilderExtension.mode) {
+                  queryBuilderExtension.queryBuilderState.changeClass(element);
+                }
+              },
+            );
+
             return (
               <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
             );
@@ -294,30 +297,34 @@ export class QueryBuilder_LegendStudioPlugin
           classView: ClassView | undefined,
         ): React.ReactNode | undefined => {
           if (classView) {
-            const buildQuery = async (): Promise<void> => {
-              const queryBuilderExtension =
-                diagramEditorState.editorStore.getEditorExtensionState(
-                  QueryBuilder_EditorExtensionState,
-                );
-              await flowResult(
-                queryBuilderExtension.setEmbeddedQueryBuilderMode({
-                  actionConfigs: [
-                    {
-                      key: 'promote-to-service-btn',
-                      renderer: (): React.ReactNode => (
-                        <PromoteToServiceQueryBuilderAction />
-                      ),
-                    },
-                  ],
-                  queryBuilderMode: new StandardQueryBuilderMode(),
-                }),
+            const buildQuery =
+              diagramEditorState.editorStore.applicationStore.guardUnhandledError(
+                async () => {
+                  const queryBuilderExtension =
+                    diagramEditorState.editorStore.getEditorExtensionState(
+                      QueryBuilder_EditorExtensionState,
+                    );
+                  await flowResult(
+                    queryBuilderExtension.setEmbeddedQueryBuilderMode({
+                      actionConfigs: [
+                        {
+                          key: 'promote-to-service-btn',
+                          renderer: (): React.ReactNode => (
+                            <PromoteToServiceQueryBuilderAction />
+                          ),
+                        },
+                      ],
+                      queryBuilderMode: new StandardQueryBuilderMode(),
+                    }),
+                  );
+                  if (queryBuilderExtension.mode) {
+                    queryBuilderExtension.queryBuilderState.changeClass(
+                      classView.class.value,
+                    );
+                  }
+                },
               );
-              if (queryBuilderExtension.mode) {
-                queryBuilderExtension.queryBuilderState.changeClass(
-                  classView.class.value,
-                );
-              }
-            };
+
             return (
               <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
             );

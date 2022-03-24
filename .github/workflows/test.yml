@@ -24,23 +24,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 2 # recommended for improving relevancy of test coverage reporting
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16
       - name: Install dependencies
         run: yarn
       - name: Test
@@ -57,21 +57,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16
       - name: Run engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: docker compose --file=grammar-test-setup-docker-compose.yml up --detach

@@ -44,7 +44,10 @@ import {
   TableDatabaseBuilderTreeNodeData,
 } from '../../../../stores/editor-state/element-editor-state/connection/DatabaseBuilderState';
 import { capitalize } from '@finos/legend-shared';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
@@ -96,13 +99,13 @@ const DatabaseBuilderTreeNodeContainer: React.FC<
   };
 
   const renderCheckedIcon = (
-    node: DatabaseBuilderTreeNodeData,
+    _node: DatabaseBuilderTreeNodeData,
   ): React.ReactNode => {
-    if (node instanceof ColumnDatabaseBuilderTreeNodeData) {
+    if (_node instanceof ColumnDatabaseBuilderTreeNodeData) {
       return null;
-    } else if (isPartiallySelected(node)) {
+    } else if (isPartiallySelected(_node)) {
       return <CircleIcon />;
-    } else if (node.isChecked) {
+    } else if (_node.isChecked) {
       return <CheckCircleIcon />;
     }
     return <EmptyCircleIcon />;
@@ -160,10 +163,10 @@ export const DatabaseBuilderExplorer = observer(
     databaseBuilderState: DatabaseBuilderState;
   }) => {
     const { treeData, databaseBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const onNodeSelect = (node: DatabaseBuilderTreeNodeData): void => {
       flowResult(databaseBuilderState.onNodeSelect(node, treeData)).catch(
-        databaseBuilderState.editorStore.applicationStore
-          .alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     };
 
@@ -216,12 +219,13 @@ export const DatabaseBuilder = observer(
     isReadOnly: boolean;
   }) => {
     const { databaseBuilderState, isReadOnly } = props;
-    const buildDb =
-      databaseBuilderState.editorStore.applicationStore.guaranteeSafeAction(
-        () => flowResult(databaseBuilderState.buildDatabaseWithTreeData()),
-      );
-    const saveOrUpdateDatabase = (): Promise<void> =>
-      flowResult(databaseBuilderState.createOrUpdateDatabase());
+    const applicationStore = useApplicationStore();
+    const buildDb = applicationStore.guardUnhandledError(() =>
+      flowResult(databaseBuilderState.buildDatabaseWithTreeData()),
+    );
+    const saveOrUpdateDatabase = applicationStore.guardUnhandledError(() =>
+      flowResult(databaseBuilderState.createOrUpdateDatabase()),
+    );
     const closeModal = (): void => {
       databaseBuilderState.setShowModal(false);
     };
@@ -231,10 +235,9 @@ export const DatabaseBuilder = observer(
 
     useEffect(() => {
       flowResult(databaseBuilderState.fetchSchemaDefinitions()).catch(
-        databaseBuilderState.editorStore.applicationStore
-          .alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
-    }, [databaseBuilderState]);
+    }, [databaseBuilderState, applicationStore]);
 
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       if (!databaseBuilderState.currentDatabase) {

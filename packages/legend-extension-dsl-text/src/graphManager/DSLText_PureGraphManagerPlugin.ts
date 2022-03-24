@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { Text } from '../models/metamodels/pure/model/packageableElements/text/Text';
+import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
 import {
   PureGraphManagerPlugin,
   type PackageableElement,

@@ -221,6 +221,12 @@
     cursor: pointer;
   }
 
+  &__visit-btn {
+    height: 2.8rem;
+    width: 2.8rem;
+    margin-left: 0.5rem;
+  }
+
   &__remove-btn[disabled] {
     background: var(--color-light-grey-400);
   }

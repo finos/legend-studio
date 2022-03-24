@@ -32,7 +32,7 @@ import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../../stores/studio/TextEditorState';
 import { TextElementEditor } from './TextElementEditor';
 import type { PackageableElement } from '@finos/legend-graph';
-import { Text } from '../../models/metamodels/pure/model/packageableElements/text/Text';
+import { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';

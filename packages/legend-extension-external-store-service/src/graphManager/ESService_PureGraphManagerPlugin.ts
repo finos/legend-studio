@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStore';
+import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
 import {
   PureGraphManagerPlugin,
   type DSLMapping_PureGraphManagerPlugin_Extension,
@@ -23,7 +23,7 @@ import {
   type PureGrammarElementLabeler,
   type PureGrammarConnectionLabeler,
 } from '@finos/legend-graph';
-import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ServiceStoreConnection';
+import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
 
 const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
 const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';

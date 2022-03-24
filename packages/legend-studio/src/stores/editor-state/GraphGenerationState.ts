@@ -62,6 +62,7 @@ import {
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
+import { ExternalFormatState } from './ExternalFormatState';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -76,8 +77,11 @@ export class GraphGenerationState {
   isRunningGlobalGenerate = false;
   generatedEntities = new Map<string, Entity[]>();
   isClearingGenerationEntities = false;
+  externalFormatState: ExternalFormatState;
+  // NOTE: this will eventually be removed once we also do model/schema import using external format
+  // See https://github.com/finos/legend-studio/issues/866
   fileGenerationConfigurations: GenerationConfigurationDescription[] = [];
-  // File generation output
+  // file generation output
   rootFileDirectory: GenerationDirectory;
   filesIndex = new Map<string, GenerationFile>();
   selectedNode?: GenerationTreeNodeData | undefined;
@@ -88,13 +92,14 @@ export class GraphGenerationState {
       generatedEntities: observable.shallow,
       isClearingGenerationEntities: observable,
       fileGenerationConfigurations: observable,
+      externalFormatState: observable,
       rootFileDirectory: observable,
       filesIndex: observable,
       selectedNode: observable.ref,
       fileGenerationConfigurationOptions: computed,
       supportedFileGenerationConfigurationsForCurrentElement: computed,
       setFileGenerationConfigurations: action,
-      addMissingGenerationSpecifications: action,
+      possiblyAddMissingGenerationSpecifications: action,
       processGenerationResult: action,
       reprocessGenerationFileState: action,
       reprocessNodeTree: action,
@@ -110,6 +115,7 @@ export class GraphGenerationState {
 
     this.editorStore = editorStore;
     this.rootFileDirectory = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
+    this.externalFormatState = new ExternalFormatState(editorStore);
   }
 
   get fileGenerationConfigurationOptions(): FileGenerationTypeOption[] {
@@ -343,7 +349,7 @@ export class GraphGenerationState {
    * 1. no generation specification has been defined in graph
    * 2. there exists a generation element
    */
-  addMissingGenerationSpecifications(): void {
+  possiblyAddMissingGenerationSpecifications(): void {
     if (
       !this.editorStore.graphManagerState.graph.ownGenerationSpecifications
         .length

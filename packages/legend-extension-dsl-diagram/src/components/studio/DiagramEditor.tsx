@@ -102,7 +102,7 @@ import {
   useEditorStore,
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
-import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/Point';
+import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
 
 const DiagramEditorContextMenu = observer(
@@ -195,7 +195,7 @@ const DiagramRendererHotkeyInfosModal = observer(
                   Remove selected element(s)
                 </div>
                 <div className="hotkey__combination diagram-editor__hotkey__keys">
-                  <div className="hotkey__key">Delete</div>
+                  <div className="hotkey__key">Remove</div>
                 </div>
               </div>
               <div className="diagram-editor__hotkey__group">
@@ -732,7 +732,7 @@ const DiagramEditorInlineClassRenamerInner = observer(
       if (canRenameClass) {
         diagramEditorState.setInlineClassRenamerState(undefined);
         flowResult(editorStore.renameElement(_class, newClassPath)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };

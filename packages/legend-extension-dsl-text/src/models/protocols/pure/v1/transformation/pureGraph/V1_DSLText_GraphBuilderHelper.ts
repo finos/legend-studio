@@ -15,7 +15,7 @@
  */
 
 import { getText } from '../../../../../../graphManager/DSLText_GraphManagerHelper';
-import type { Text } from '../../../../../metamodels/pure/model/packageableElements/text/Text';
+import type { Text } from '../../../../../metamodels/pure/model/packageableElements/text/DSLText_Text';
 import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,

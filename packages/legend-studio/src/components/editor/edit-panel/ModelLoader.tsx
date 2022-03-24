@@ -64,11 +64,9 @@ export const ModelLoader = observer(() => {
   const replace = modelLoaderState.replace;
   const toggleReplace = (): void => modelLoaderState.setReplaceFlag(!replace);
   // actions
-  const loadCurrentProjectEntities = (): void => {
-    flowResult(modelLoaderState.loadCurrentProjectEntities()).catch(
-      applicationStore.alertIllegalUnhandledError,
-    );
-  };
+  const loadCurrentProjectEntities = applicationStore.guardUnhandledError(() =>
+    flowResult(modelLoaderState.loadCurrentProjectEntities()),
+  );
   const loadModel = (): void => {
     if (editorStore.hasUnpushedChanges) {
       editorStore.setActionAltertInfo({
@@ -85,7 +83,7 @@ export const ModelLoader = observer(() => {
             handler: (): void => {
               editorStore.setIgnoreNavigationBlocking(true);
               flowResult(modelLoaderState.loadModel()).catch(
-                applicationStore.alertIllegalUnhandledError,
+                applicationStore.alertUnhandledError,
               );
             },
           },
@@ -98,7 +96,7 @@ export const ModelLoader = observer(() => {
       });
     } else {
       flowResult(modelLoaderState.loadModel()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };

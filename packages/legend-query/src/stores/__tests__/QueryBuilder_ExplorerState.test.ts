@@ -17,6 +17,7 @@
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA__SimpleRelationalInheritanceModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
+import TEST_DATA_AssociationMappingModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
 import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -40,6 +41,7 @@ import {
 } from './TEST_DATA__MappingData';
 import {
   EXPECTED__MappingData_ComplexM2MModel,
+  EXPECTED__MappingData__AssociationMapping,
   EXPECTED__MappingData__Auto_M2M,
   EXPECTED__MappingData__COVIDDataSimpleModel,
   EXPECTED__MappingData__Relational_Inheritance,
@@ -67,6 +69,7 @@ type TestCase = [
     rootClass: string;
     expectedMappingData: TestNodePropertyMappingData[];
     entities: Entity[];
+    maxDepth?: number;
   },
 ];
 
@@ -121,6 +124,17 @@ const cases: TestCase[] = [
       entities: TEST_DATA__SimpleRelationalInheritanceModel,
     },
   ],
+  [
+    'Simple association mapping with inlcudes',
+    {
+      mapping: 'model::parentMapping',
+      rootClass: 'model::Person',
+      expectedMappingData:
+        EXPECTED__MappingData__AssociationMapping as TestNodePropertyMappingData[],
+      entities: TEST_DATA_AssociationMappingModel,
+      maxDepth: 2,
+    },
+  ],
 ];
 
 const buildMappingData = (
@@ -128,6 +142,7 @@ const buildMappingData = (
   graphManagerState: GraphManagerState,
   mappingData: QueryBuilderPropertyMappingData,
   max_depth: number,
+  mapping: Mapping,
   current_depth?: number | undefined,
 ): NodePropertyMappingData => {
   const depth = current_depth === undefined ? 0 : current_depth;
@@ -138,6 +153,7 @@ const buildMappingData = (
       graphManagerState,
       property,
       mappingData,
+      mapping,
     ),
     childNodes: [],
   };
@@ -152,6 +168,7 @@ const buildMappingData = (
           graphManagerState,
           propertyMappingData.mappingData,
           max_depth,
+          mapping,
           depth + 1,
         ),
       );
@@ -164,14 +181,14 @@ const generatePropertyMappingDataTree = (
   mapping: Mapping,
   _class: Class,
   graphManagerState: GraphManagerState,
-  max_depth = 1000,
+  max_depth: number,
 ): NodePropertyMappingData[] => {
   const mappingData = getRootMappingData(mapping, _class);
   const properties = _class
     .getAllProperties()
     .concat(_class.getAllDerivedProperties());
   return properties.map((p) =>
-    buildMappingData(p, graphManagerState, mappingData, max_depth),
+    buildMappingData(p, graphManagerState, mappingData, max_depth, mapping),
   );
 };
 
@@ -188,7 +205,8 @@ const transformToTestPropertyMappingData = (
 
 describe(integrationTest('Build property mapping data'), () => {
   test.each(cases)('%s', async (testName, testCase) => {
-    const { mapping, rootClass, expectedMappingData, entities } = testCase;
+    const { mapping, rootClass, expectedMappingData, entities, maxDepth } =
+      testCase;
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new Query_GraphPreset()]).install();
     const mockedQueryStore = TEST__provideMockedLegendQueryStore({
@@ -209,6 +227,7 @@ describe(integrationTest('Build property mapping data'), () => {
       _mapping,
       _class,
       graphManagerState,
+      maxDepth === undefined ? 1000 : maxDepth,
     );
     expect(expectedMappingData).toIncludeSameMembers(
       transformToTestPropertyMappingData(actualMappingData),

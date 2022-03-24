@@ -46,6 +46,13 @@ import {
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 
+/**
+ * Prefix URL patterns coming from extensions with `/extensions/`
+ * to avoid potential conflicts with main routes.
+ */
+const generateExtensionUrlPattern = (pattern: string): string =>
+  `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
+
 export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useLegendStudioStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
@@ -55,7 +62,7 @@ export const LegendStudioApplicationRoot = observer(() => {
 
   useEffect(() => {
     flowResult(studioStore.initialize()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, studioStore]);
 
@@ -112,7 +119,7 @@ export const LegendStudioApplicationRoot = observer(() => {
             <Route
               key={entry.key}
               exact={true}
-              path={entry.urlPatterns}
+              path={entry.urlPatterns.map(generateExtensionUrlPattern)}
               component={entry.component as React.ComponentType<unknown>}
             />
           ))}

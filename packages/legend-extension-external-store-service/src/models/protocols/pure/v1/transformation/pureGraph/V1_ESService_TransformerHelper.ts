@@ -21,7 +21,7 @@ import {
   FloatTypeReference,
   IntegerTypeReference,
   ComplexTypeReference,
-} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/TypeReference';
+} from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_TypeReference';
 import {
   type V1_TypeReference,
   V1_StringTypeReference,
@@ -29,31 +29,30 @@ import {
   V1_FloatTypeReference,
   V1_ComplexTypeReference,
   V1_IntegerTypeReference,
-} from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
+} from '../../model/packageableElements/store/serviceStore/model/V1_ESService_TypeReference';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { ServiceParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ServiceParameterMapping';
-import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
-import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
 import {
   type V1_GraphTransformerContext,
   V1_RawLambda,
 } from '@finos/legend-graph';
-import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
-import type { ServiceParameter } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceParameter';
-import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
-import { ServiceStoreService } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreService';
-import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreService';
-import { ServiceGroup } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceGroup';
-import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroup';
-import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
-import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
-import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ServiceStoreElement';
-import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
-import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
-import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/SecurityScheme';
+import type { ServiceParameter } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter';
+import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceParameter';
+import { ServiceStoreService } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService';
+import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreService';
+import { ServiceGroup } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceGroup';
+import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroup';
+import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroupPtr';
+import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreServicePtr';
+import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreElement';
+import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreElement';
+import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
+import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme';
 import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
-import { ParameterIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ParameterIndexedParameterMapping';
-import { PropertyIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/PropertyIndexedParameterMapping';
+import type { ServiceRequestBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
+import { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBuildInfo';
+import { V1_ServiceRequestParametersBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParametersBuildInfo';
+import { V1_ServiceRequestBodyBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBodyBuildInfo';
+import { V1_ServiceRequestParameterBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParameterBuildInfo';
 
 export const V1_transformStringTypeReference = (
   metamodel: StringTypeReference,
@@ -117,27 +116,46 @@ export const V1_transformTypeReference = (
   );
 };
 
-export const V1_transformServiceParameterMapping = (
-  metamodel: ServiceParameterMapping,
-): V1_ServiceParameterMapping => {
-  if (metamodel instanceof ParameterIndexedParameterMapping) {
-    const mapping = new V1_ParameterIndexedParameterMapping();
-    mapping.serviceParameter = metamodel.serviceParameter.name;
+export const V1_transformServiceRequestBuildInfo = (
+  metamodel: ServiceRequestBuildInfo,
+): V1_ServiceRequestBuildInfo => {
+  const protocol = new V1_ServiceRequestBuildInfo();
+
+  if (metamodel.requestBodyBuildInfo) {
     const lambda = new V1_RawLambda();
-    lambda.parameters = metamodel.transform.parameters;
-    lambda.body = metamodel.transform.body;
-    mapping.transform = lambda;
-    return mapping;
-  } else if (metamodel instanceof PropertyIndexedParameterMapping) {
-    const mapping = new V1_PropertyIndexedParameterMapping();
-    mapping.serviceParameter = metamodel.serviceParameter.name;
-    mapping.property = metamodel.property;
-    return mapping;
+    lambda.parameters = metamodel.requestBodyBuildInfo.transform.parameters;
+    lambda.body = metamodel.requestBodyBuildInfo.transform.body;
+
+    const requestBodyBuildInfo = new V1_ServiceRequestBodyBuildInfo();
+    requestBodyBuildInfo.transform = lambda;
+
+    protocol.requestBodyBuildInfo = requestBodyBuildInfo;
   }
-  throw new UnsupportedOperationError(
-    `Can't transform service parameter mapping`,
-    metamodel,
-  );
+
+  if (metamodel.requestParametersBuildInfo) {
+    const requestParametersBuildInfo =
+      new V1_ServiceRequestParametersBuildInfo();
+
+    requestParametersBuildInfo.parameterBuildInfoList =
+      metamodel.requestParametersBuildInfo.parameterBuildInfoList.map(
+        (paramBuildInfo) => {
+          const lambda = new V1_RawLambda();
+          lambda.parameters = paramBuildInfo.transform.parameters;
+          lambda.body = paramBuildInfo.transform.body;
+
+          const requestParameterBuildInfo =
+            new V1_ServiceRequestParameterBuildInfo();
+          requestParameterBuildInfo.serviceParameter =
+            paramBuildInfo.serviceParameter.name;
+          requestParameterBuildInfo.transform = lambda;
+
+          return requestParameterBuildInfo;
+        },
+      );
+    protocol.requestParametersBuildInfo = requestParametersBuildInfo;
+  }
+
+  return protocol;
 };
 
 export const V1_transformServiceParameter = (
@@ -148,6 +166,7 @@ export const V1_transformServiceParameter = (
   serviceParameter.type = V1_transformTypeReference(metamodel.type);
   serviceParameter.location = metamodel.location;
   serviceParameter.allowReserved = metamodel.allowReserved;
+  serviceParameter.required = metamodel.required;
   serviceParameter.enumeration = metamodel.enumeration;
   serviceParameter.serializationFormat = metamodel.serializationFormat;
   return serviceParameter;

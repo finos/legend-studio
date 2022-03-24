@@ -28,9 +28,10 @@ import {
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_LOG_EVENT } from './ApplicationLogEvent';
-import type { LegendApplicationConfig } from './ApplicationConfig';
+import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
+import type { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -105,6 +106,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
   config: T;
+  docRegistry: LegendApplicationDocumentationRegistry;
 
   log: Log = new Log();
   telemetryService = new TelemetryService();
@@ -129,6 +131,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     });
 
     this.config = config;
+    this.docRegistry = config.docRegistry;
     this.navigator = navigator;
 
     // Register plugins
@@ -256,10 +259,10 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
    * ever occurs, it still shows very apparently in the UI, as such, printing out in the console is not good enough,
    * but crashing the app is bad too, so this is a good balance.
    */
-  notifyAndReturnAlternativeOnError = <T extends SuperGenericFunction, W>(
-    fn: T,
+  notifyAndReturnAlternativeOnError = <U extends SuperGenericFunction, W>(
+    fn: U,
     alternative: W,
-  ): ReturnType<T> | W | undefined => {
+  ): ReturnType<U> | W | undefined => {
     try {
       return fn();
     } catch (error) {
@@ -273,10 +276,10 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
    * When we call store/state functions from the component, we should handle error thrown at these functions instead
    * of throwing them to the UI. This enforces that by throwing `IllegalStateError`
    */
-  alertIllegalUnhandledError = (error: Error): void => {
+  alertUnhandledError = (error: Error): void => {
     this.log.error(
       LogEvent.create(APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
-      'Encountered unhandled rejection in component',
+      'Encountered unhandled error in component tree',
       error,
     );
     this.notifyIllegalState(error.message);
@@ -285,10 +288,11 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   /**
    * Guarantee that the action being used by the component does not throw unhandled errors
    */
-  guaranteeSafeAction =
-    (actionFn: () => Promise<void>): (() => Promise<void>) =>
-    (): Promise<void> =>
-      actionFn().catch(this.alertIllegalUnhandledError);
+  guardUnhandledError =
+    (actionFn: () => Promise<void>): (() => void) =>
+    (): void => {
+      actionFn().catch(this.alertUnhandledError);
+    };
 
   async copyTextToClipboard(text: string): Promise<void> {
     if (typeof navigator.clipboard.writeText === 'function') {

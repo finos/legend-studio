@@ -61,25 +61,23 @@ const buildSass = async () => {
     )}`,
   );
 
-  await Promise.all(
-    readdirSync(outputPath).map(async (fileOrDir) => {
-      if (extname(fileOrDir) === '.css') {
-        const filePath = resolve(outputPath, fileOrDir);
-        const copyrightText = generateBundleCopyrightText(workspaceDir);
-        writeFileSync(
-          filePath,
-          `${copyrightText}\n\n${getFileContent(filePath)}`,
-          (err) => {
-            exitWithError(
-              `Failed to add copyright header to bundled output file: ${filePath}. Error:\n${
-                err.message || err
-              }`,
-            );
-          },
-        );
-      }
-    }),
-  );
+  readdirSync(outputPath).forEach((fileOrDir) => {
+    if (extname(fileOrDir) === '.css') {
+      const filePath = resolve(outputPath, fileOrDir);
+      const copyrightText = generateBundleCopyrightText(workspaceDir);
+      writeFileSync(
+        filePath,
+        `${copyrightText}\n\n${getFileContent(filePath)}`,
+        (err) => {
+          exitWithError(
+            `Failed to add copyright header to bundled output file: ${filePath}. Error:\n${
+              err.message || err
+            }`,
+          );
+        },
+      );
+    }
+  });
 };
 
 buildSass();

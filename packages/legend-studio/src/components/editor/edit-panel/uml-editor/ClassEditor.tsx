@@ -96,8 +96,7 @@ const PropertyBasicEditor = observer(
     const isPropertyFromAssociation = property.owner instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
     const isPropertyDuplicated = (val: Property): boolean =>
-      _class.properties.filter((property) => property.name === val.name)
-        .length >= 2;
+      _class.properties.filter((p) => p.name === val.name).length >= 2;
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property.setName(event.target.value);
@@ -188,7 +187,6 @@ const PropertyBasicEditor = observer(
               spellCheck={false}
               onChange={changeValue}
               placeholder={`Property name`}
-              name={`Property name`}
               validationErrorMessage={
                 isPropertyDuplicated(property)
                   ? 'Duplicated property'
@@ -288,7 +286,6 @@ const PropertyBasicEditor = observer(
             spellCheck={false}
             value={lowerBound}
             onChange={changeLowerBound}
-            name={`Type from bound`}
           />
           <div className="property-basic-editor__multiplicity__range">..</div>
           <input
@@ -297,7 +294,6 @@ const PropertyBasicEditor = observer(
             spellCheck={false}
             value={upperBound}
             onChange={changeUpperBound}
-            name={`Type to bound`}
           />
         </div>
         {!isIndirectProperty && (
@@ -433,7 +429,7 @@ const DerivedPropertyBasicEditor = observer(
     };
     const visitOwner = (): void =>
       editorStore.openElement(derivedProperty.owner);
-    const remove = applicationStore.guaranteeSafeAction(async () => {
+    const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(dpState.convertLambdaObjectToGrammarString(false));
       deleteDerivedProperty();
     });
@@ -464,7 +460,6 @@ const DerivedPropertyBasicEditor = observer(
               value={derivedProperty.name}
               placeholder={`Property name`}
               onChange={changeValue}
-              name={`Derived property name`}
             />
           )}
           {!isInheritedProperty && !isReadOnly && isEditingType && (
@@ -558,7 +553,6 @@ const DerivedPropertyBasicEditor = observer(
               disabled={isInheritedProperty || isReadOnly}
               value={lowerBound}
               onChange={changeLowerBound}
-              name={`Type from bound`}
             />
             <div className="property-basic-editor__multiplicity__range">..</div>
             <input
@@ -567,7 +561,6 @@ const DerivedPropertyBasicEditor = observer(
               disabled={isInheritedProperty || isReadOnly}
               value={upperBound}
               onChange={changeUpperBound}
-              name={`Type to bound`}
             />
           </div>
           {!isInheritedProperty && (
@@ -640,7 +633,7 @@ const ConstraintEditor = observer(
     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       constraint.setName(event.target.value);
     // Actions
-    const remove = applicationStore.guaranteeSafeAction(async () => {
+    const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(
         constraintState.convertLambdaObjectToGrammarString(false),
       );
@@ -673,7 +666,6 @@ const ConstraintEditor = observer(
               value={constraint.name}
               onChange={changeName}
               placeholder={`Constraint name`}
-              name={`Constraint name`}
             />
           )}
           {isInheritedConstraint && (
@@ -1108,10 +1100,10 @@ export const ClassFormEditor = observer(
     useEffect(() => {
       classState.decorate();
       flowResult(classState.convertConstraintLambdaObjects()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
       flowResult(classState.convertDerivedPropertyLambdaObjects()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, classState]);
 

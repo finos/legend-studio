@@ -63,7 +63,7 @@ const ShareModal = observer(
         .then(() =>
           applicationStore.notifySuccess('Copied project link to clipboard'),
         )
-        .catch(applicationStore.alertIllegalUnhandledError)
+        .catch(applicationStore.alertUnhandledError)
         .finally(() => closeModal());
     };
     const renderOptions = versions.map((version) => ({

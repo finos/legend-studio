@@ -140,3 +140,35 @@ export const EXPECTED__MappingData__Relational_Inheritance = [
   { childNodes: [], mappingData: { mapped: false }, name: 'incType' },
   { childNodes: [], mappingData: { mapped: true }, name: 'employeeSize' },
 ];
+
+export const EXPECTED__MappingData__AssociationMapping = [
+  {
+    childNodes: [
+      {
+        childNodes: [
+          {
+            childNodes: [
+              {
+                childNodes: [],
+                mappingData: { mapped: true },
+                name: 'employee',
+              },
+              { childNodes: [], mappingData: { mapped: true }, name: 'name' },
+            ],
+            mappingData: { mapped: true },
+            name: 'firm',
+          },
+          { childNodes: [], mappingData: { mapped: true }, name: 'firstName' },
+          { childNodes: [], mappingData: { mapped: true }, name: 'lastName' },
+        ],
+        mappingData: { mapped: true },
+        name: 'employee',
+      },
+      { childNodes: [], mappingData: { mapped: true }, name: 'name' },
+    ],
+    mappingData: { mapped: true },
+    name: 'firm',
+  },
+  { childNodes: [], mappingData: { mapped: true }, name: 'firstName' },
+  { childNodes: [], mappingData: { mapped: true }, name: 'lastName' },
+];

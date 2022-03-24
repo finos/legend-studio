@@ -25,23 +25,23 @@ jobs:
     if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # disabling shallow clone is recommended for improving relevancy of reporting
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16
         # Install step is needed for Typescript scanning to work properly since
         # we refer to another packages in `tsconfig` files, which is used by Sonar
         # See https://community.sonarsource.com/t/sonarts-is-not-able-to-analyse-typescript-files/21510/5
@@ -58,54 +58,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16
       - name: Install dependencies
         run: yarn
       - name: Check typings
-        run: yarn check:tsc
+        run: yarn check:ts
       - name: Run lint
         run: yarn lint:ci
 
-  check-operations:
-    name: Run Operational Checks
+  check-codebase-maintenance:
+    name: Run Codebase Maintenance Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
       - name: Get Yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Setup Yarn cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Setup Node
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16
       - name: Install dependencies
         run: yarn
-      - name: Check package constraints
-        run: yarn check:pkg-constraints
-      - name: Check Typescript project reference configuration
-        run: yarn check:project-ref
+      - name: Check package manifests
+        run: yarn check:pkg
       - name: Check code formatting
         run: yarn check:format
       - name: Check copyright headers

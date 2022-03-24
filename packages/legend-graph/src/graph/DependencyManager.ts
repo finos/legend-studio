@@ -44,6 +44,7 @@ import type {
 } from '../models/metamodels/pure/packageableElements/domain/Measure';
 import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
 import type { Entity } from '@finos/legend-model-storage';
+import type { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
 
 class DependencyModel extends BasicModel {
   constructor(
@@ -58,6 +59,8 @@ class DependencyModel extends BasicModel {
 export class DependencyManager {
   root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
   projectDependencyModelsIndex = new Map<string, BasicModel>();
+
+  // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
@@ -77,6 +80,7 @@ export class DependencyManager {
       associations: computed,
       functions: computed,
       stores: computed,
+      databases: computed,
       mappings: computed,
       services: computed,
       runtimes: computed,
@@ -87,6 +91,9 @@ export class DependencyManager {
     });
 
     this.extensionElementClasses = extensionElementClasses;
+    this.buildState.setMessageFormatter(
+      (message: string) => `[dependency] ${message}`,
+    );
   }
 
   /**
@@ -192,6 +199,9 @@ export class DependencyManager {
   }
   get stores(): Store[] {
     return this.models.map((dep) => Array.from(dep.ownStores)).flat();
+  }
+  get databases(): Database[] {
+    return this.models.map((dep) => Array.from(dep.ownDatabases)).flat();
   }
   get mappings(): Mapping[] {
     return this.models.map((dep) => Array.from(dep.ownMappings)).flat();

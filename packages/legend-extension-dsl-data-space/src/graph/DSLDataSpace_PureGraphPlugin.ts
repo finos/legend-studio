@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
 import type { Clazz } from '@finos/legend-shared';
 import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
 
